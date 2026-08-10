@@ -13,7 +13,8 @@
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "./xml.js";
 import { resolveChartSeries, chartDataTable, isNumericColumn, CHART_META, shouldShowDataLabels } from "../core/chart.js";
-import { resolveSeriesColors, resolveColor, resolveFont } from "../core/theme.js";
+import { resolveColor, resolveFont } from "../core/theme.js";
+import { DEFAULT_CHART_PALETTE } from "../core/chart.js";
 import { colorElement } from "./drawing.js";
 import { ZipWriter } from "./zip.js";
 
@@ -224,8 +225,8 @@ function lnXml(color, widthPt = 2) {
 }
 
 function txPrXml(theme, size = 900, color = "tx1") {
-  // 图表组件字体（deck fonts.chart / 主题 chartStyles.fontFamily），缺省 = 主题默认字体
-  const fonts = resolveFont(theme, theme.chartStyles?.fontFamily || null);
+  // 图表字体：官方 Chart.fontFamily（C3 对齐），缺省 = 官方默认字体
+  const fonts = resolveFont(theme, null);
   return (
     el("c:txPr", {}, [
       el("a:bodyPr"),
@@ -356,7 +357,7 @@ function catAxXml(theme, id, crossId) {
       el("c:minorTickMark", { val: "none" }),
       el("c:tickLblPos", { val: "nextTo" }),
       // 轴线：主题轴色细线（雷达图放射线也变浅）
-      el("c:spPr", {}, lnXml(resolveColor(theme, theme.chartStyles.axisColor) || "#d8dce1", 0.75)),
+      el("c:spPr", {}, lnXml(resolveColor(theme, theme.colors?.line) || "#d8dce1", 0.75)),
       txPrXml(theme, 900, "tx1"),
       el("c:crossAx", { val: crossId }),
       el("c:crosses", { val: "autoZero" }),
@@ -378,7 +379,7 @@ function valAxXml(theme, id, crossId, opts = {}) {
   if (!opts.hideGrid) {
     // 网格线：主题网格色、0.5pt 细线（雷达图圆环线变浅变细，不密不黑）
     kids.push(
-      el("c:majorGridlines", {}, el("c:spPr", {}, lnXml(resolveColor(theme, theme.chartStyles.gridColor) || "#e5e7eb", 0.5)))
+      el("c:majorGridlines", {}, el("c:spPr", {}, lnXml(resolveColor(theme, theme.colors?.line) || "#e5e7eb", 0.5)))
     );
   }
   kids.push(
@@ -472,7 +473,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
       chartElems.push(el(`c:${type === "area" ? "areaChart" : "lineChart"}`, {}, kids.join("")));
     } else if (type === "pie" || type === "doughnut") {
       // 每个扇区显式配色（dPt）+ 分类名/百分比标签（dLbls），与预览一致
-      const palette = resolveSeriesColors(theme);
+      const palette = DEFAULT_CHART_PALETTE;
       const pieSers = groupSeries.map((s, i) => {
         const idx = globalIdx++;
         return pieSerXml(theme, idx, s.name, s.color, catRef(), valRef(s), palette, data.rows.length, shouldShowDataLabels(el, type));
@@ -587,7 +588,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
       }),
     ].join(""));
 
-  return { xml, relsXml, xlsx: buildChartXlsx(chartEl, resolveFont(theme, theme.chartStyles?.fontFamily || null)) };
+  return { xml, relsXml, xlsx: buildChartXlsx(chartEl, resolveFont(theme, null)) };
 }
 
 /** 图表元素 → slide 内 graphicFrame（引用 chart part，媒体/部件由 pptx.js 汇总）。 */

@@ -16,9 +16,9 @@ export const NS_R = "http://schemas.openxmlformats.org/officeDocument/2006/relat
 export const NS_REL = "http://schemas.openxmlformats.org/package/2006/relationships";
 export const NS_CONTENT_TYPES = "http://schemas.openxmlformats.org/package/2006/content-types";
 
-// 默认字体：deck.fonts 未声明时使用（微软雅黑）。字体由 deck 级声明 + 主题预设提供。
-const FONT_DEFAULT = "Microsoft YaHei";
-// 取字体（兼容 {latin, ea} 或未传）：OOXML 三槽位统一用 latin，中文符号由 ea 槽承载。
+// 默认字体（官方 Style Priority 默认值：fontFamily = "MiSans"）。
+const FONT_DEFAULT = "MiSans";
+// 取字体：OOXML 三槽位统一用 latin，中文符号由 ea 槽承载。
 const F = (fonts) => fonts?.latin || FONT_DEFAULT;
 
 // ----------------------------------------------------------------------------
@@ -231,8 +231,6 @@ export function buildSlideLayoutRels() {
 // 元素默认色尽量写 schemeClr → 导出后在 PowerPoint 里可换主题。
 export function themeColorSlots(theme) {
   const c = theme.colors;
-  const acc = (hex) => el("a:srgbClr", { val: hexToRgbVal(hex) });
-  const series = Array.isArray(c.series) && c.series.length ? c.series : [];
   return {
     dk1: "windowText",
     lt1: "window",
@@ -240,22 +238,23 @@ export function themeColorSlots(theme) {
     lt2: c.bg,
     accent1: c.primary,
     accent2: c.accent,
-    accent3: series[2] || c.primary,
-    accent4: series[3] || c.accent,
-    accent5: series[4] || c.primary,
-    accent6: series[5] || c.accent,
+    // accent3-6：colors 显式键回退（success/warning/danger/primaryDeep 为默认主题推荐值）
+    accent3: c.accent3 || c.success || c.primary,
+    accent4: c.accent4 || c.warning || c.accent,
+    accent5: c.accent5 || c.danger || c.primary,
+    accent6: c.accent6 || c.primaryDeep || c.accent,
   };
 }
 
 export function buildTheme(theme) {
-  const f = F(theme.fonts);
+  const f = F(null);
   const c = theme.colors;
   const slots = themeColorSlots(theme);
   const srgb = (hex) => el("a:srgbClr", { val: hexToRgbVal(hex) });
   const sys = (val, last) => el("a:sysClr", { val, lastClr: last });
 
   const clrScheme =
-    el("a:clrScheme", { name: theme.name || "open-pptd" }, [
+    el("a:clrScheme", { name: "open-pptd" }, [
       el("a:dk1", {}, sys("windowText", "000000")),
       el("a:lt1", {}, sys("window", "FFFFFF")),
       el("a:dk2", {}, srgb(slots.dk2)),
@@ -317,7 +316,7 @@ export function buildTheme(theme) {
 
   return (
     xmlHeader() +
-    `<a:theme xmlns:a="${NS_A}" name="${escAttr(theme.name || "open-pptd")}">` +
+    `<a:theme xmlns:a="${NS_A}" name="open-pptd">` +
     // tableStyleLst 属于 themeElements（fmtScheme 之后），不可放外面
     `<a:themeElements>${clrScheme}${fontScheme}${fmtScheme}` +
     `<a:tableStyleLst>` +

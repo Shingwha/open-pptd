@@ -84,9 +84,9 @@ export async function buildPptx(deck, options = {}) {
   zip.add("_rels/.rels", buildRootRels());
   zip.add("docProps/core.xml", buildCoreProps(deck.title || "未命名演示文稿"));
   zip.add("docProps/app.xml", buildAppPropsV2(slideCount));
-  zip.add("ppt/presentation.xml", buildPresentation(deck.title || "未命名演示文稿", slideCount, size, theme.fonts, embeddedFonts));
+  zip.add("ppt/presentation.xml", buildPresentation(deck.title || "未命名演示文稿", slideCount, size, null, embeddedFonts));
   zip.add("ppt/_rels/presentation.xml.rels", buildPresentationRels(slideCount, embeddedFonts.rels));
-  zip.add("ppt/slideMasters/slideMaster1.xml", buildSlideMaster(theme.fonts));
+  zip.add("ppt/slideMasters/slideMaster1.xml", buildSlideMaster(null));
   zip.add("ppt/slideMasters/_rels/slideMaster1.xml.rels", buildSlideMasterRels());
   zip.add("ppt/slideLayouts/slideLayout1.xml", buildSlideLayout());
   zip.add("ppt/slideLayouts/_rels/slideLayout1.xml.rels", buildSlideLayoutRels());

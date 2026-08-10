@@ -12,7 +12,7 @@
 // ============================================================================
 
 import { parseFontInfo, checkEmbeddable, buildEot, subsetTtf } from "../core/font.js";
-import { parseFontResources, FONT_SLOT_KEYS } from "../core/theme.js";
+import { parseFontResources } from "../core/theme.js";
 
 const escAttr = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
@@ -34,8 +34,7 @@ export function collectFontSpecs(deck) {
     seen.add(family);
     specs.push({ family, file: v.file || null, url: v.url || null, subset: !!v.subset });
   };
-  for (const res of Object.values(parseFontResources(fonts))) push(res); // 资源表
-  for (const key of FONT_SLOT_KEYS) push(fonts[key]);                   // 组件槽内联
+  for (const res of Object.values(parseFontResources(fonts))) push(res); // 资源表（扩展字段）
   return specs;
 }
 

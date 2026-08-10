@@ -97,9 +97,10 @@ export function createFontManager(state) {
   /** 保存项目：嵌入勾选的字体 → deck.fonts 资源表（key = family）。 */
   function syncToDeck() {
     const fonts = state.deck.fonts || (state.deck.fonts = {});
-    const slots = new Set(["latin", "ea", "title", "subtitle", "body", "caption", "quote", "table", "chart"]);
+    // 资源表只保留合法声明（对象 + family 字段）；清理 v1 组件槽（字符串值）等杂物
     for (const key of Object.keys(fonts)) {
-      if (!slots.has(key)) delete fonts[key]; // 清理旧资源表（跟随当前库）
+      const v = fonts[key];
+      if (!v || typeof v !== "object" || !(v.family || v.name)) delete fonts[key];
     }
     for (const [family, f] of Object.entries(state.fontLibrary)) {
       if (!f.embed) continue;

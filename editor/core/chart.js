@@ -5,7 +5,13 @@
 // 这里只实现一次：resolveChartSeries() 输出归一化系列，ECharts 与 OOXML 都消费它。
 // ============================================================================
 
-import { resolveSeriesColors } from "./theme.js";
+
+
+/** 图表默认系列色板（官方色循环 C3 对齐前使用；主题 colors 不再承载系列色）。 */
+export const DEFAULT_CHART_PALETTE = [
+  "#002E5D", "#3A6EA5", "#7FB2D9", "#C9A227",
+  "#B5503C", "#5C8A6A", "#7B6BA8", "#8A8F98",
+];
 
 export const CHART_META = {
   bar: { label: "柱状图", axes: "cartesian", encode: { x: "x", y: "y" } },
@@ -45,7 +51,7 @@ function colIndex(data, name) {
 export function resolveChartSeries(theme, el) {
   const data = el.data || { cols: [], rows: [] };
   const seriesDefaults = el.seriesDefaults || {};
-  const palette = resolveSeriesColors(theme);
+  const palette = DEFAULT_CHART_PALETTE;
   const series = [];
   const valuesBySeries = [];
 

@@ -3,25 +3,25 @@
 // ============================================================================
 
 import * as echarts from "../vendor/echarts.mjs";
-import { resolveChartSeries, CHART_META, shouldShowDataLabels } from "../core/chart.js";
+import { resolveChartSeries, CHART_META, shouldShowDataLabels, DEFAULT_CHART_PALETTE } from "../core/chart.js";
 import { resolveColor, resolveFont } from "../core/theme.js";
 
 const AXIS_TEXT = { color: "#6b7280", fontSize: 11 };
 
-/** 主题图表样式解析（网格/轴/文字色跟随主题） */
+/** 主题图表样式（网格/轴/文字色跟随主题 colors 键，缺省用内置默认）。 */
 function chartStyleColors(theme) {
   return {
-    labelColor: resolveColor(theme, theme.chartStyles.labelColor) || "#1f2937",
-    axisColor: resolveColor(theme, theme.chartStyles.axisColor) || "#d8dce1",
-    gridColor: resolveColor(theme, theme.chartStyles.gridColor) || "#f0f2f5",
-    legendColor: resolveColor(theme, theme.chartStyles.legendColor) || "#1f2937",
+    labelColor: resolveColor(theme, theme.colors?.text) || "#1f2937",
+    axisColor: resolveColor(theme, theme.colors?.line) || "#d8dce1",
+    gridColor: resolveColor(theme, theme.colors?.line) || "#f0f2f5",
+    legendColor: resolveColor(theme, theme.colors?.text) || "#1f2937",
   };
 }
 
 export function buildChartOption(theme, el) {
   const { series, cats, valuesBySeries } = resolveChartSeries(theme, el);
-  // 图表组件字体（deck fonts.chart / 主题 chartStyles.fontFamily），缺省 = 主题默认字体
-  const fonts = resolveFont(theme, theme.chartStyles?.fontFamily || null);
+  // 图表字体：官方 Chart.fontFamily（C3 对齐），缺省 = 官方默认字体
+  const fonts = resolveFont(theme, null);
   const { labelColor, axisColor, gridColor, legendColor } = chartStyleColors(theme);
 
   const base = {

@@ -45,8 +45,6 @@ export function buildShapeDefGeom(shapeDef) {
  * （PowerPoint 官方存储结构，见 tests/reference/test-text.pptx 透明文字）。 */
 const TOKEN_SLOT = { text: "dk2", bg: "lt2", primary: "accent1", accent: "accent2" };
 
-const TOKEN_ALPHA_RE = /^\$([a-zA-Z-]+)([0-9a-fA-F]{2})$/;
-
 /** 合并 hex 自带 alpha 与元素 opacity（0~1）→ a:alpha val（1/1000 %）。 */
 function alphaVal(hex, opacity) {
   let a = 1;
@@ -59,13 +57,10 @@ function alphaVal(hex, opacity) {
 export function colorElement(theme, color, opacity) {
   if (color == null) return "";
   if (typeof color === "string" && color.startsWith("$")) {
-    // 派生色（$primary-deep/soft/tint）与令牌透明度（$primary20）：
-    // PowerPoint 对背景中 schemeClr 的 tint/shade 渲染不稳定，导出直接用解析后的具体色值（= 预览所见）
-    if (color === "$primary-deep" || color === "$primary-soft" || color === "$primary-tint" || TOKEN_ALPHA_RE.test(color)) {
-      return solidRgb(resolveColor(theme, color), opacity);
-    }
     const key = color.slice(1);
     if (TOKEN_SLOT[key]) return el("a:schemeClr", { val: TOKEN_SLOT[key] }, alphaVal(null, opacity));
+    // 主题 colors 的其余键：PowerPoint 对背景中 schemeClr 的 tint/shade 渲染不稳定，
+    // 派生色键（primarySoft 等）导出直接用解析后的具体色值（= 预览所见）
     return solidRgb(resolveColor(theme, color), opacity);
   }
   if (typeof color === "string" && color.startsWith("#")) {

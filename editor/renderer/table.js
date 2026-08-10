@@ -1,29 +1,31 @@
 // ============================================================================
-// renderer/table.js — 表格预览（内容高度自适应 + 主题化表头/斑马纹）
+// renderer/table.js — 表格预览（内容高度自适应 + 官方 TableStyleConfig 继承链）
 // ============================================================================
 
-import { resolveColor, resolveTableStyle } from "../core/theme.js";
+import { resolveColor, resolveTableStyle, resolveTableCellStyle } from "../core/theme.js";
 import { estimateTableLayout, TABLE_FONT_SIZE, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../core/table.js";
+
+const H_ALIGN = { left: "left", center: "center", right: "right", justify: "justify", distributed: "justify" };
 
 export function renderTable(theme, el) {
   const [x, y, w] = el.bounds;
-  const { rowHeights, totalH } = estimateTableLayout(el);
+  const { rowHeights, totalH, columnWidths } = estimateTableLayout(el);
   const box = document.createElement("div");
   box.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${totalH}px;overflow:hidden;`;
   box.dataset.elementId = el.elementId;
   box.dataset.elementType = "table";
   if (el.opacity != null) box.style.opacity = el.opacity;
 
-  const ts = resolveTableStyle(theme);
+  const ts = resolveTableStyle(theme, el.style);
   const rows = el.rows || [];
-  const colWs = estimateTableLayout(el).columnWidths;
-  const borderColor = ts.borderColor || "#d8dce1";
+  const colWs = columnWidths;
+  const rowCount = rows.length;
+  const colCount = colWs.length;
 
   const table = document.createElement("table");
   table.style.cssText =
     "width:100%;height:100%;border-collapse:collapse;table-layout:fixed;" +
-    `font-size:${TABLE_FONT_SIZE}px;` +
-    (ts.fontFamily ? `font-family:"${ts.fontFamily}",sans-serif;` : "");
+    `font-size:${TABLE_FONT_SIZE}px;`;
 
   const colgroup = document.createElement("colgroup");
   colWs.forEach((cw) => {
@@ -35,25 +37,32 @@ export function renderTable(theme, el) {
 
   rows.forEach((row, r) => {
     const tr = document.createElement("tr");
-    tr.style.height = `${rowHeights[r] ?? TABLE_MIN_ROW}px`;
-    const isHeader = r === 0;
+    tr.style.height = `${rowHeights[r] ?? 26}px`;
     row.forEach((cell, c) => {
-      const td = document.createElement(isHeader ? "th" : "td");
+      const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
+      const td = document.createElement("td");
       td.innerHTML = richTextToHtml(theme, cell?.text ?? "");
-      const bg = isHeader
-        ? ts.headerFill
-        : r % 2 === 1
-          ? ts.zebraFill || "#ffffff"
-          : "#ffffff";
+      // 填充：单元格内联 > 分类样式 > cellStyle > Table.fill > 透明（官方默认）
+      const fill = cell?.fill ?? s.fill ?? el.fill ?? null;
+      const fillColor = fill ? (typeof fill === "string" ? resolveColor(theme, fill) : resolveColor(theme, fill.color)) : null;
+      // 边框：单元格内联 > 分类样式 > 官方默认黑（四边）
+      const borderColor = cell?.border?.color ?? s.border?.color ?? "#000000";
+      const borderStyle = cell?.border?.style ?? s.border?.style ?? "solid";
+      const borderWidth = (cell?.border?.width ?? s.border?.width ?? 1) + "px";
+      // 对齐：CellStyle.align [h, v]；官方默认 ["center","middle"]
+      const hAlign = H_ALIGN[(cell?.align ?? s.align)?.[0]] || "center";
+      const vAlign = (cell?.align ?? s.align)?.[1] || "middle";
       td.style.cssText = [
-        `border:1px solid ${borderColor}`,
+        `border:${borderStyle === "solid" ? borderWidth + " solid" : borderWidth + " dashed"} ${borderColor}`,
         `padding:${TABLE_CELL_PAD}px ${TABLE_CELL_PAD_X}px`,
-        "text-align:left",
-        "vertical-align:middle",
-        `font-weight:${isHeader && ts.headerBold ? "600" : "400"}`,
-        `color:${isHeader ? ts.headerColor : resolveColor(theme, "#374151")}`,
-        `background:${bg}`,
-        isHeader ? "font-size:13.5px" : "",
+        `text-align:${hAlign}`,
+        `vertical-align:${vAlign}`,
+        `font-weight:${s.bold ? "600" : "400"}`,
+        s.italic ? "font-style:italic" : "",
+        `color:${resolveColor(theme, s.color) || "#000000"}`,
+        `background:${fillColor || "transparent"}`,
+        s.fontFamily ? `font-family:"${s.fontFamily}",sans-serif` : "",
+        `font-size:${s.fontSize ?? TABLE_FONT_SIZE}px`,
         "overflow:hidden",
         "text-overflow:ellipsis",
         "white-space:normal",

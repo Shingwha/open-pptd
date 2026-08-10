@@ -13,5 +13,19 @@ theme:
       fontSize: 22
       color: "$primary"
       bold: true
+  tableStyles:
+    default:
+      cellStyle:
+        fontSize: 13
+        color: "$text"
+        fill: {type: solid, color: "#FFFFFF"}
+        border: {style: solid, width: 1, color: "#E5E7EB"}
+      firstRowStyle:
+        fill: {type: solid, color: "$primary"}
+        color: "#FFFFFF"
+        bold: true
+      bodyStyles:
+        - {fill: {type: solid, color: "#F8FAFC"}}
+        - {fill: {type: solid, color: "#FFFFFF"}}
 pages:
   - pages/01-table.page

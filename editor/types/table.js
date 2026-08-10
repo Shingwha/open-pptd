@@ -26,6 +26,7 @@ registerType({
           elementId: nextElementId("table"),
           elementType: "table",
           bounds: [220, 150, 460, 120],
+          style: "$default",
           columnWidths: [0.4, 0.3, 0.3],
           rows: [
             [{ text: "指标" }, { text: "数值" }, { text: "说明" }],

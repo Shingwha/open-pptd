@@ -10,6 +10,7 @@ elements:
   - elementId: tb1
     elementType: table
     bounds: [60, 140, 800, 220]
+    style: "$default"
     rows:
       - [产品线, 一季度, 二季度, 三季度]
       - [企业版, 128, 156, 189]

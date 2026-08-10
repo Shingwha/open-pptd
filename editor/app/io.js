@@ -32,7 +32,9 @@ export function createIo({ state, view }) {
   // 主题与状态应用
   // --------------------------------------------------------------------------
   function applyTheme(themeInput) {
-    state.deck.theme = themeInput || THEME_PRESETS.blue;
+    // 序列化永远写对象：字符串 key（旧项目）展开为完整主题对象，深拷贝隔离预设引用
+    const resolved = typeof themeInput === "string" ? THEME_PRESETS[themeInput] || null : themeInput;
+    state.deck.theme = resolved ? JSON.parse(JSON.stringify(resolved)) : THEME_PRESETS.blue;
     // deck 级字体声明覆盖主题字体（无声明则用主题默认，如微软雅黑）
     state.theme = mergeFonts(normalizeTheme(state.deck.theme), state.deck.fonts);
   }
@@ -41,6 +43,11 @@ export function createIo({ state, view }) {
   function applyHistory(deckSnapshot) {
     if (!deckSnapshot) return;
     state.deck = deckSnapshot;
+    // 历史快照可能含字符串主题 key（旧项目）→ 展开为对象，保证保存永远写对象
+    if (typeof state.deck.theme === "string") {
+      const preset = THEME_PRESETS[state.deck.theme];
+      state.deck.theme = preset ? JSON.parse(JSON.stringify(preset)) : null;
+    }
     state.theme = mergeFonts(normalizeTheme(state.deck.theme), state.deck.fonts);
     if (state.currentPage >= state.deck.pages.length) state.currentPage = state.deck.pages.length - 1;
     state.selectedId = null;
@@ -92,7 +99,7 @@ export function createIo({ state, view }) {
     if (!silent) {
       // 缺失页面提示：Agent 写入中的项目「有一页显示一页」，不阻断预览
       const suffix = missing > 0 ? ` · ${missing} 页缺失（写入中？）` : "";
-      showToast(`已加载 · ${state.deck.pages.length} 页 · 主题「${state.theme.name}」${suffix}`, missing > 0 ? "info" : "info");
+      showToast(`已加载 · ${state.deck.pages.length} 页 · 主题已应用${suffix}`, missing > 0 ? "info" : "info");
     }
   }
 

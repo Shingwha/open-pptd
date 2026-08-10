@@ -153,15 +153,18 @@ npm run test:incremental      # 渐进加载（写入中的项目逐页显示）
 
 ## 5. 下一步任务
 
-### 5.1 B：theme / tableStyles 官方化（优先，已与用户确认）
+### 5.1 B：theme / tableStyles 官方化（**实施中**，2026-08-10 起）
 
-> 2026-08-10 已清理 v1 主题体系（themes/ 目录、主题画廊、v1 文档、SKILL.md），内置 `theme-presets.js`（默认 + 15 套色系）保留为编辑器运行所需。
+> **2026-08-10 清理**：v1 主题体系已全部移除——`themes/`（10 套演示主题 + manifest）、`scripts/gen-themes-manifest.js`、根 `index.html` 主题画廊与 `editor/gallery.js`（根入口改为重定向到编辑器）。内置 `editor/core/theme-presets.js`（15 套色系 + 默认主题）保留为编辑器运行所需，B 阶段转成官方 theme 对象。
 
-- [ ] **manifest theme 内联对象**：官方 `theme: {colors, textStyles, tableStyles}`（Record 结构，见 `references/official/pptd.md` Theme/TextStyleConfig 接口）——v1 的 `theme: "blue"` 字符串键是扩展，需迁移：编辑器 UI 的"主题切换"（toolbar theme-select）改为写入完整 theme 对象；`normalizeTheme` 保留字符串 key 解析（内部预设），但**序列化永远写对象**
-- [ ] **取消 `fonts` 组件槽**（v1 扩展）：`fonts.title/body/…` 字体分工 → 迁移到 `theme.textStyles.<key>.fontFamily`（官方能力等价）；**保留字体资源表为扩展字段**（`fonts: {资源名: {family, url/file, subset}}`，官方编辑器忽略、本编辑器用于嵌入，实现依据 `references/font-embedding.md`）
-- [ ] **tableStyles 官方化**：v1 `{headerFill, headerColor, zebraFill…}` → 官方 `TableStyleConfig`（`cellStyle/firstRowStyle/lastRowStyle/firstColumnStyle/lastColumnStyle/bodyStyles[]/rowOverColumn`，CellStyle = TextStyleConfig + fill/border(BorderSpec)/align；table 元素 `style` 字段 `"$key"` 引用或内联对象）——**注意**：表格单元格模型（裸值行 → Cell 对象）属于 C2，本阶段只做"主题内 tableStyles 结构 + 表格 writer 按官方样式继承链消费"
-- [ ] **表格 writer 消费链**：cellStyle 基线 → firstRow/lastRow → firstColumn/lastColumn → bodyStyles 循环 → rowOverColumn 仲裁（默认 true = 行优先）；边框用 BorderSpec（`border: [上,右,下,左]` 四边独立，见官方 CellStyle 说明）
-- [ ] 内置 15 套色系预设转成预生成官方 theme 对象（含 tableStyles）；`tests/projects/` 各项目 manifest 迁移为官方格式（现在已是内联对象格式，补 tableStyles 即可）
+**已完成：**
+
+- [x] **Theme 严格官方化**（references/official/pptd.md §3）：`{colors, textStyles, tableStyles}` 三字段，删除全部 v1 扩展——`name`（→ `THEME_NAMES` 映射表）、`chartStyles`（图表样式改用 colors 键回退 + 内置 `DEFAULT_CHART_PALETTE`，官方色循环 C3 对齐）、`colors.series` 数组、`fonts.latin/ea` 默认字体槽（→ 官方默认 "MiSans"）、动态派生令牌 `$primary-soft/tint/deep` 与透明度令牌 `$primary20`/`$xxxAA`（→ 预设 colors 显式 `primarySoft/primaryTint/primaryDeep` hex 键，预览=导出恒定；透明度用官方 HEX8 `#RRGGBBAA`）
+- [x] **tableStyles 官方化**：`Record<string, TableStyleConfig>`；`resolveTableStyle(theme, "$key"|内联)` + `resolveTableCellStyle`（官方继承链：cellStyle 基底 → bodyStyles 数据行循环 → 位置分类，rowOverColumn 默认 true=行优先）；表格 writer/renderer 同步消费——填充链（cell.fill > 分类 > cellStyle > Table.fill > 透明）、BorderSpec 四边独立（null=清除）、CellStyle.align → tcPr anchor + pPr algn（官方默认 [center, middle]）、边框默认 {solid,1,#000000}
+- [x] **17 套色系预设官方化**：每套只写 colors（官方结构），派生色显式算好写入；tests/projects/table 增加官方 tableStyles.default 示例 + `style: "$default"` 引用；新建表格元素默认 `style: "$default"`
+- [x] **字体槽迁移**：`deck.fonts` 组件槽（latin/ea/title/body…）废弃（遇旧项目 warn + 忽略，官方等价 = `theme.textStyles.<key>.fontFamily`）；**字体资源表扩展保留**（`{key: {family, url/file, subset}}` → 本编辑器嵌入，官方编辑器宽容忽略）
+- [x] **序列化永远写对象**：io.applyTheme/applyHistory 字符串主题 key 展开为对象 + 深拷贝隔离预设引用
+- [ ] 剩余：浏览器验证（serve + 导出 + PowerPoint 检查表格渲染与预览一致）
 - [ ] 重写主题体系（原 themes/ 演示模板已删，后续以官方格式重建，可并入阶段 D）
 
 ### 5.2 C2：table Cell 对象模型（暂缓）
