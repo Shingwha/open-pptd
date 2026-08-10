@@ -1,0 +1,24 @@
+version: v2
+title: 暑期成长营 · 课程介绍
+gallery:
+  name: 活力课堂
+  style: playful 活力教育
+  color: yellow 黄色
+  font: 幼圆（全字体统一）
+  scene: 培训 / 课件 / 校园活动
+theme: yellow
+fonts:
+  title: YouYuan
+  subtitle: YouYuan
+  body: YouYuan
+  caption: YouYuan
+  quote: YouYuan
+  table: YouYuan
+  chart: YouYuan
+size: [960, 540]
+pages:
+  - pages/1_cover.page
+  - pages/2_toc.page
+  - pages/3_chapter.page
+  - pages/4_content.page
+  - pages/5_final.page

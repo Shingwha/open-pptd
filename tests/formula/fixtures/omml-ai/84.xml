@@ -1,0 +1,2 @@
+<?xml version="1.0"?>
+<m:oMath xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"><m:nary><m:naryPr><m:chr m:val="∑"/><m:limLoc m:val="subSup"/><m:grow m:val="1"/><m:subHide m:val="off"/><m:supHide m:val="on"/></m:naryPr><m:sub><m:r><m:t>i∈S</m:t></m:r></m:sub><m:sup/><m:e><m:r><m:t>f(i)</m:t></m:r></m:e></m:nary></m:oMath>

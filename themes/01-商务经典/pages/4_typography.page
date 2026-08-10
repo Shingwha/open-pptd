@@ -1,0 +1,310 @@
+pageType: content
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # —— 页眉 ——
+  - elementId: tp-page
+    elementType: text
+    bounds: [888, 28, 40, 24]
+    content:
+      fontSize: 13
+      bold: true
+      color: "$primary"
+      align: [right, middle]
+      text: '04'
+  - elementId: tp-tag
+    elementType: text
+    bounds: [48, 36, 240, 18]
+    content:
+      fontSize: 11
+      bold: true
+      color: "$accent"
+      align: [left, middle]
+      text: 01 · TYPOGRAPHY
+  - elementId: tp-title
+    elementType: text
+    bounds: [48, 60, 560, 32]
+    content:
+      fontSize: 22
+      bold: true
+      color: "$text"
+      align: [left, top]
+      fontFamily: "Noto Serif SC"
+      text: 字体与版式系统
+  # —— 左列：样式层级 ——
+  - elementId: tp-h1t
+    elementType: text
+    bounds: [48, 112, 340, 16]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [left, middle]
+      text: H1 · 主标题（思源宋体 Bold）
+  - elementId: tp-h1
+    elementType: text
+    bounds: [48, 130, 440, 46]
+    content:
+      fontSize: 30
+      bold: true
+      color: "$primary"
+      align: [left, top]
+      fontFamily: "Noto Serif SC"
+      text: 2026 战略规划与增长路线图
+  - elementId: tp-h2t
+    elementType: text
+    bounds: [48, 200, 340, 16]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [left, middle]
+      text: H2 · 章节标题（思源宋体）
+  - elementId: tp-h2
+    elementType: text
+    bounds: [48, 218, 440, 32]
+    content:
+      fontSize: 21
+      bold: true
+      color: "$text"
+      align: [left, top]
+      fontFamily: "Noto Serif SC"
+      text: 三大增长支柱：客户、产品与运营
+  - elementId: tp-bt
+    elementType: text
+    bounds: [48, 274, 340, 16]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [left, middle]
+      text: 正文（思源黑体 14px）
+  - elementId: tp-b
+    elementType: text
+    bounds: [48, 292, 440, 80]
+    content:
+      fontSize: 14
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.7
+      text: |
+        咨询汇报以信息密度与结论先行著称：每页一个核心观点，用数据说话，
+        避免装饰性元素。正文行距 1.7，段落间距克制，重点词以加粗强调。
+  # —— 左列底部：排版要点卡 ——
+  - elementId: tp-tips-bg
+    elementType: shape
+    bounds: [48, 388, 440, 100]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: {color: "$primary-soft"}
+  - elementId: tp-tips-t
+    elementType: text
+    bounds: [64, 398, 200, 16]
+    content:
+      fontSize: 10
+      bold: true
+      color: "$accent"
+      align: [left, middle]
+      text: 排版要点
+  - elementId: tp-tips-1i
+    elementType: icon
+    bounds: [64, 424, 14, 14]
+    icon: check-circle
+    fill: {color: "$primary"}
+  - elementId: tp-tips-1
+    elementType: text
+    bounds: [86, 422, 380, 18]
+    content:
+      fontSize: 11
+      color: "$text"
+      align: [left, middle]
+      text: 结论先行 —— 每页只讲一个核心观点
+  - elementId: tp-tips-2i
+    elementType: icon
+    bounds: [64, 448, 14, 14]
+    icon: check-circle
+    fill: {color: "$primary"}
+  - elementId: tp-tips-2
+    elementType: text
+    bounds: [86, 446, 380, 18]
+    content:
+      fontSize: 11
+      color: "$text"
+      align: [left, middle]
+      text: 数字说话 —— 用数据与趋势替代形容词
+  - elementId: tp-tips-3i
+    elementType: icon
+    bounds: [64, 472, 14, 14]
+    icon: check-circle
+    fill: {color: "$primary"}
+  - elementId: tp-tips-3
+    elementType: text
+    bounds: [86, 470, 380, 18]
+    content:
+      fontSize: 11
+      color: "$text"
+      align: [left, middle]
+      text: 留白克制 —— 少装饰、多对比、对齐一致
+  # —— 右列：引用块 ——
+  - elementId: tp-q-bg
+    elementType: shape
+    bounds: [508, 112, 404, 96]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: {color: "$primary-soft"}
+  - elementId: tp-q-bar
+    elementType: shape
+    bounds: [508, 112, 4, 96]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: tp-q
+    elementType: text
+    bounds: [530, 126, 366, 44]
+    content:
+      fontSize: 15
+      italic: true
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.5
+      fontFamily: "Noto Serif SC"
+      text: 没有数据的故事只是观点；没有故事的只是一堆数字。
+  - elementId: tp-qs
+    elementType: text
+    bounds: [530, 172, 366, 18]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [left, middle]
+      text: — 引用样式 · 思源宋体斜体
+  # —— 右列：字体家族 ——
+  - elementId: tp-ft
+    elementType: text
+    bounds: [508, 232, 340, 16]
+    content:
+      fontSize: 10
+      bold: true
+      color: "$muted"
+      align: [left, middle]
+      text: 字体家族（网络 + 系统）
+  - elementId: tp-f1
+    elementType: text
+    bounds: [508, 254, 300, 24]
+    content:
+      fontSize: 15
+      color: "$text"
+      align: [left, middle]
+      fontFamily: "Noto Serif SC"
+      text: 思源宋体 Noto Serif SC
+  - elementId: tp-f1u
+    elementType: text
+    bounds: [760, 254, 152, 24]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [right, middle]
+      text: 标题衬线 · 网络
+  - elementId: tp-f2
+    elementType: text
+    bounds: [508, 288, 300, 24]
+    content:
+      fontSize: 15
+      color: "$text"
+      align: [left, middle]
+      fontFamily: "Noto Sans SC"
+      text: 思源黑体 Noto Sans SC
+  - elementId: tp-f2u
+    elementType: text
+    bounds: [760, 288, 152, 24]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [right, middle]
+      text: 正文无衬线 · 网络
+  - elementId: tp-f3
+    elementType: text
+    bounds: [508, 322, 300, 24]
+    content:
+      fontSize: 15
+      color: "$text"
+      align: [left, middle]
+      fontFamily: "EB Garamond"
+      text: EB Garamond 0123456789
+  - elementId: tp-f3u
+    elementType: text
+    bounds: [760, 322, 152, 24]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [right, middle]
+      text: 西文衬线 · 网络
+  - elementId: tp-f4
+    elementType: text
+    bounds: [508, 356, 300, 24]
+    content:
+      fontSize: 15
+      color: "$text"
+      align: [left, middle]
+      fontFamily: "Microsoft YaHei"
+      text: 微软雅黑 Microsoft YaHei
+  - elementId: tp-f4u
+    elementType: text
+    bounds: [760, 356, 152, 24]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [right, middle]
+      text: 系统回退
+  - elementId: tp-f5
+    elementType: text
+    bounds: [508, 390, 300, 24]
+    content:
+      fontSize: 15
+      color: "$text"
+      align: [left, middle]
+      fontFamily: "KaiTi"
+      text: 楷体 KaiTi
+  - elementId: tp-f5u
+    elementType: text
+    bounds: [760, 390, 152, 24]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [right, middle]
+      text: 系统备选
+  # —— 右列底部：嵌入说明 ——
+  - elementId: tp-fnote
+    elementType: shape
+    bounds: [508, 440, 404, 48]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: {color: "$primary-soft"}
+  - elementId: tp-fnote-t
+    elementType: text
+    bounds: [524, 448, 372, 32]
+    content:
+      fontSize: 11
+      color: "$muted"
+      align: [left, top]
+      lineHeight: 1.5
+      text: 网络字体在导出 PPTX 时自动子集化嵌入（仅保留用到的字），文件体积可控且换机不丢字体。
+  # —— 骨架：页脚 ——
+  - elementId: tp-foot-line
+    elementType: line
+    bounds: [48, 508, 864, 1]
+    viewBox: [864, 1]
+    points: "0,0 864,0"
+    border: {style: solid, width: 1, color: "$line"}
+  - elementId: tp-foot
+    elementType: text
+    bounds: [48, 516, 420, 14]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [left, middle]
+      text: 麦肯锡咨询 · 风格指南
+  - elementId: tp-foot2
+    elementType: text
+    bounds: [768, 516, 144, 14]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [right, middle]
+      text: CONFIDENTIAL

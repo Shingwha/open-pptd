@@ -1,0 +1,87 @@
+pageType: cover
+background:
+  type: solid
+  color: "$primary-deep"
+elements:
+  # —— 顶部亮蓝细条 ——
+  - elementId: cv-topbar
+    elementType: shape
+    bounds: [0, 0, 960, 4]
+    shapeName: rect
+    fill: {color: "$accent"}
+  # —— 保密角标 ——
+  - elementId: cv-tag
+    elementType: text
+    bounds: [48, 44, 460, 20]
+    content:
+      fontSize: 11
+      bold: true
+      color: "$accent"
+      align: [left, middle]
+      text: STRICTLY PRIVATE AND CONFIDENTIAL
+  # —— 标题上方短装饰线 ——
+  - elementId: cv-line
+    elementType: shape
+    bounds: [48, 128, 56, 4]
+    shapeName: rect
+    fill: {color: "$accent"}
+  # —— 主标题（思源宋体衬线） ——
+  - elementId: cv-title
+    elementType: text
+    bounds: [48, 152, 780, 150]
+    content:
+      fontSize: 44
+      bold: true
+      color: "#FFFFFF"
+      align: [left, top]
+      lineHeight: 1.28
+      fontFamily: "Noto Serif SC"
+      text: |
+        2026 战略规划
+        与增长路线图
+  # —— 副标题 ——
+  - elementId: cv-sub
+    elementType: text
+    bounds: [48, 330, 640, 60]
+    content:
+      fontSize: 17
+      color: "#FFFFFFB3"
+      align: [left, top]
+      lineHeight: 1.5
+      text: 以客户为中心的增长战略 —— 三年愿景 · 五大支柱 · 一页蓝图
+  # —— 左下信息 ——
+  - elementId: cv-meta
+    elementType: text
+    bounds: [48, 478, 620, 22]
+    content:
+      fontSize: 12
+      color: "#FFFFFF99"
+      align: [left, middle]
+      text: 战略委员会  ｜  2026 年 1 月  ｜  版本 V1.0
+  # —— 右上年度水印 ——
+  - elementId: cv-year
+    elementType: text
+    bounds: [796, 42, 116, 96]
+    content:
+      fontSize: 84
+      bold: true
+      color: "#FFFFFF0D"
+      align: [right, top]
+      fontFamily: "Noto Serif SC"
+      text: '26'
+  # —— 右下同心圆环装饰 ——
+  - elementId: cv-ring1
+    elementType: shape
+    bounds: [660, 300, 220, 220]
+    shapeName: ellipse
+    border: {style: solid, width: 1, color: "#FFFFFF22"}
+  - elementId: cv-ring2
+    elementType: shape
+    bounds: [722, 362, 96, 96]
+    shapeName: ellipse
+    border: {style: solid, width: 1, color: "#FFFFFF14"}
+  - elementId: cv-dot
+    elementType: shape
+    bounds: [850, 268, 34, 34]
+    shapeName: ellipse
+    fill: {color: "$accent33"}

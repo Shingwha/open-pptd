@@ -1,0 +1,258 @@
+pageType: toc
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # —— 页眉 ——
+  - elementId: ag-tag
+    elementType: text
+    bounds: [48, 36, 160, 18]
+    content:
+      fontSize: 11
+      bold: true
+      color: "$accent"
+      align: [left, middle]
+      text: AGENDA
+  - elementId: ag-title
+    elementType: text
+    bounds: [48, 60, 560, 34]
+    content:
+      fontSize: 26
+      bold: true
+      color: "$text"
+      align: [left, top]
+      fontFamily: "Noto Serif SC"
+      text: 今日议程
+  - elementId: ag-line
+    elementType: shape
+    bounds: [48, 100, 48, 4]
+    shapeName: rect
+    fill: {color: "$accent"}
+  # —— 议程 01 ——
+  - elementId: ag-n1
+    elementType: text
+    bounds: [48, 132, 64, 44]
+    content:
+      fontSize: 32
+      bold: true
+      color: "$primary"
+      align: [left, top]
+      fontFamily: "Noto Serif SC"
+      text: '01'
+  - elementId: ag-t1
+    elementType: text
+    bounds: [132, 134, 380, 26]
+    content:
+      fontSize: 16
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 字体与版式
+  - elementId: ag-d1
+    elementType: text
+    bounds: [132, 162, 380, 20]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: 标题层级 / 字体家族 / 引用与说明
+  - elementId: ag-s1
+    elementType: line
+    bounds: [48, 198, 464, 1]
+    viewBox: [464, 1]
+    points: "0,0 464,0"
+    border: {style: solid, width: 1, color: "$line"}
+  # —— 议程 02 ——
+  - elementId: ag-n2
+    elementType: text
+    bounds: [48, 216, 64, 44]
+    content:
+      fontSize: 32
+      bold: true
+      color: "$primary"
+      align: [left, top]
+      fontFamily: "Noto Serif SC"
+      text: '02'
+  - elementId: ag-t2
+    elementType: text
+    bounds: [132, 218, 380, 26]
+    content:
+      fontSize: 16
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 数据图表
+  - elementId: ag-d2
+    elementType: text
+    bounds: [132, 246, 380, 20]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: 柱状 / 面积 / 环形 · 麦肯锡式图表
+  - elementId: ag-s2
+    elementType: line
+    bounds: [48, 282, 464, 1]
+    viewBox: [464, 1]
+    points: "0,0 464,0"
+    border: {style: solid, width: 1, color: "$line"}
+  # —— 议程 03 ——
+  - elementId: ag-n3
+    elementType: text
+    bounds: [48, 300, 64, 44]
+    content:
+      fontSize: 32
+      bold: true
+      color: "$primary"
+      align: [left, top]
+      fontFamily: "Noto Serif SC"
+      text: '03'
+  - elementId: ag-t3
+    elementType: text
+    bounds: [132, 302, 380, 26]
+    content:
+      fontSize: 16
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 表格与视觉
+  - elementId: ag-d3
+    elementType: text
+    bounds: [132, 330, 380, 20]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: 表格 / 图标 / 形状卡片与配色
+  - elementId: ag-s3
+    elementType: line
+    bounds: [48, 366, 464, 1]
+    viewBox: [464, 1]
+    points: "0,0 464,0"
+    border: {style: solid, width: 1, color: "$line"}
+  # —— 议程 04 ——
+  - elementId: ag-n4
+    elementType: text
+    bounds: [48, 384, 64, 44]
+    content:
+      fontSize: 32
+      bold: true
+      color: "$primary"
+      align: [left, top]
+      fontFamily: "Noto Serif SC"
+      text: '04'
+  - elementId: ag-t4
+    elementType: text
+    bounds: [132, 386, 380, 26]
+    content:
+      fontSize: 16
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 结语
+  - elementId: ag-d4
+    elementType: text
+    bounds: [132, 414, 380, 20]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: 联系方式与下一步行动
+  - elementId: ag-s4
+    elementType: line
+    bounds: [48, 450, 464, 1]
+    viewBox: [464, 1]
+    points: "0,0 464,0"
+    border: {style: solid, width: 1, color: "$line"}
+  # —— 右侧说明卡 ——
+  - elementId: ag-card
+    elementType: shape
+    bounds: [540, 136, 372, 272]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill: {color: "$primary-soft"}
+  - elementId: ag-c-tag
+    elementType: text
+    bounds: [566, 164, 240, 16]
+    content:
+      fontSize: 10
+      bold: true
+      color: "$accent"
+      align: [left, middle]
+      text: ABOUT THIS DECK
+  - elementId: ag-c-title
+    elementType: text
+    bounds: [566, 190, 320, 26]
+    content:
+      fontSize: 16
+      bold: true
+      color: "$text"
+      align: [left, top]
+      text: 模板设计说明
+  - elementId: ag-c-body
+    elementType: text
+    bounds: [566, 226, 322, 130]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, top]
+      lineHeight: 1.7
+      text: |
+        配色采用麦肯锡墨蓝与亮蓝，标题为思源宋体衬线、正文思源黑体；
+        所有图表、表格与文字均可直接替换。
+        导出 PPTX 时网络字体自动子集化嵌入，换机打开不丢字体。
+  - elementId: ag-c-s1
+    elementType: shape
+    bounds: [566, 372, 22, 22]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ag-c-s2
+    elementType: shape
+    bounds: [598, 372, 22, 22]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: ag-c-s3
+    elementType: shape
+    bounds: [630, 372, 22, 22]
+    shapeName: rect
+    fill: {color: "#00B4A5"}
+  - elementId: ag-c-sw
+    elementType: text
+    bounds: [664, 372, 220, 22]
+    content:
+      fontSize: 11
+      color: "$muted"
+      align: [left, middle]
+      text: PRIMARY · ACCENT · TEAL
+  # —— 骨架：页码 / 页脚 ——
+  - elementId: ag-page
+    elementType: text
+    bounds: [888, 28, 40, 24]
+    content:
+      fontSize: 13
+      bold: true
+      color: "$primary"
+      align: [right, middle]
+      text: '02'
+  - elementId: ag-foot-line
+    elementType: line
+    bounds: [48, 508, 864, 1]
+    viewBox: [864, 1]
+    points: "0,0 864,0"
+    border: {style: solid, width: 1, color: "$line"}
+  - elementId: ag-foot
+    elementType: text
+    bounds: [48, 516, 420, 14]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [left, middle]
+      text: 麦肯锡咨询 · 风格指南
+  - elementId: ag-foot2
+    elementType: text
+    bounds: [768, 516, 144, 14]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [right, middle]
+      text: CONFIDENTIAL

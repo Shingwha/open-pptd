@@ -1,0 +1,118 @@
+pageType: content
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # —— 页眉（极简：无装饰条）——
+  - elementId: ov-title
+    elementType: text
+    bounds: [96, 48, 400, 34]
+    content:
+      fontSize: 16
+      color: "$muted"
+      align: [left, middle]
+      text: '视觉系统 · 三要素'
+  - elementId: ov-page
+    elementType: text
+    bounds: [856, 48, 48, 28]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [right, middle]
+      text: '03'
+  - elementId: ov-foot
+    elementType: text
+    bounds: [96, 496, 400, 20]
+    content:
+      fontSize: 11
+      color: "$muted"
+      align: [left, middle]
+      text: 'NORDIK STUDIO · 2025'
+  # —— 要素一 ——
+  - elementId: ov-k1-v
+    elementType: text
+    bounds: [96, 120, 300, 84]
+    content:
+      fontSize: 72
+      bold: true
+      color: "#111827"
+      align: [left, top]
+      text: '2 色'
+  - elementId: ov-k1-n
+    elementType: text
+    bounds: [430, 128, 400, 34]
+    content:
+      fontSize: 22
+      color: "#111827"
+      align: [left, middle]
+      text: '黑白双色系统'
+  - elementId: ov-k1-d
+    elementType: text
+    bounds: [430, 168, 400, 24]
+    content:
+      fontSize: 13
+      color: "$muted"
+      align: [left, middle]
+      text: '白为底，黑为骨，无第三种颜色'
+  - elementId: ov-k1-line
+    elementType: shape
+    bounds: [96, 224, 768, 1]
+    shapeName: rect
+    fill: {color: "#E8E8E8"}
+  # —— 要素二 ——
+  - elementId: ov-k2-v
+    elementType: text
+    bounds: [96, 248, 300, 84]
+    content:
+      fontSize: 72
+      bold: true
+      color: "#111827"
+      align: [left, top]
+      text: '8pt'
+  - elementId: ov-k2-n
+    elementType: text
+    bounds: [430, 256, 400, 34]
+    content:
+      fontSize: 22
+      color: "#111827"
+      align: [left, middle]
+      text: '网格基础单位'
+  - elementId: ov-k2-d
+    elementType: text
+    bounds: [430, 296, 400, 24]
+    content:
+      fontSize: 13
+      color: "$muted"
+      align: [left, middle]
+      text: '一切间距与字号皆为 8 的倍数'
+  - elementId: ov-k2-line
+    elementType: shape
+    bounds: [96, 352, 768, 1]
+    shapeName: rect
+    fill: {color: "#E8E8E8"}
+  # —— 要素三 ——
+  - elementId: ov-k3-v
+    elementType: text
+    bounds: [96, 376, 300, 84]
+    content:
+      fontSize: 72
+      bold: true
+      color: "#111827"
+      align: [left, top]
+      text: '50%'
+  - elementId: ov-k3-n
+    elementType: text
+    bounds: [430, 384, 400, 34]
+    content:
+      fontSize: 22
+      color: "#111827"
+      align: [left, middle]
+      text: '最低留白占比'
+  - elementId: ov-k3-d
+    elementType: text
+    bounds: [430, 424, 400, 24]
+    content:
+      fontSize: 13
+      color: "$muted"
+      align: [left, middle]
+      text: '版面一半留给呼吸'

@@ -1,0 +1,2 @@
+<?xml version="1.0"?>
+<m:oMath xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"><m:r><m:t>σ(z)=</m:t></m:r><m:f><m:fPr><m:type m:val="bar"/></m:fPr><m:num><m:r><m:t>1</m:t></m:r></m:num><m:den><m:r><m:t>1+</m:t></m:r><m:sSup><m:e><m:r><m:t>e</m:t></m:r></m:e><m:sup><m:r><m:t>−z</m:t></m:r></m:sup></m:sSup></m:den></m:f></m:oMath>

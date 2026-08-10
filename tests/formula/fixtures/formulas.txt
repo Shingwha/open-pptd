@@ -1,0 +1,255 @@
+# ============================================================================
+# formulas.txt — 公式转换回归语料（每行一个 LaTeX，# 开头为注释）
+# ----------------------------------------------------------------------------
+# 用途：MathML → OMML 转换器（editor/core/mathml2omml.js）的字节级回归测试。
+# 覆盖矩阵（对照官方 MML2OMML.XSL 输出，见 tests/fixtures/formulas/omml-ai/）：
+#   A 官方 AI 公式 18（原始黄金基线）
+#   B 重音 14 / C 括号与 fence 16 / D 根号 8 / E 分数与二项式 12 / F 上下标 12
+#   G n-ary 求和积分 18 / H 极限与算子 10 / I 矩阵与 cases 16 / J 字体命令 12
+#   K 覆盖与 under 10 / L 文本与函数名 10 / M 箭头与关系 8 / N 特殊符号 8
+#   O 颜色 4 / P 空格与对齐 6 / Q 嵌套压力 14 / R 多脚本与杂项 8
+# 合计 18 + 188 = 206 行（含注释），用例约 188 个
+# 生成：scripts/dump-formula-mml.mjs → mml-XX.xml
+#       python scripts/formula-oracle.py <mml> → 官方参考（本机 Office XSLT）
+# 回归：scripts/test-formula.mjs（用固化参考，无需 Office）
+# ============================================================================
+
+# ── A. 官方 AI 公式（原始黄金基线 18）──────────────────────────────────────
+h_\theta(x) = \theta^T x
+J(\theta) = \frac{1}{2m}\sum_{i=1}^{m}(h_\theta(x^{(i)}) - y^{(i)})^2
+\sigma(z) = \frac{1}{1 + e^{-z}}
+\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_{j=1}^{K} e^{z_j}}
+L = -\frac{1}{N}\sum_{i=1}^{N}\left[y_i \log \hat{y}_i + (1-y_i)\log(1-\hat{y}_i)\right]
+\theta_j := \theta_j - \alpha \frac{\partial}{\partial \theta_j} J(\theta)
+\text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+\text{ReLU}(x) = \max(0, x)
+\mathcal{N}(x|\mu,\sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}
+P(A|B) = \frac{P(B|A)P(A)}{P(B)}
+H(X) = -\sum_{i=1}^{n} p(x_i) \log_2 p(x_i)
+D_{KL}(P \| Q) = \sum_{x} P(x) \log \frac{P(x)}{Q(x)}
+\mathbb{E}[X] = \sum_{i} x_i p_i
+J(\theta) = \frac{1}{m}\sum_{i=1}^{m}\mathcal{L}(y^{(i)},\hat{y}^{(i)}) + \lambda \|\theta\|_2^2
+\cos \theta = \frac{A \cdot B}{\|A\| \|B\|}
+m_t = \beta_1 m_{t-1} + (1-\beta_1) g_t
+P(B) = \sum_{i=1}^{n} P(A_i) P(B|A_i)
+\hat{\theta}_{MLE} = \arg\max_{\theta} \prod_{i=1}^{n} P(x_i|\theta)
+
+# ── B. 重音（14）────────────────────────────────────────────────────────────
+\bar{x}
+\overline{AB}
+\vec{v}
+\dot{x}
+\ddot{x}
+\hat{\theta}
+\tilde{x}
+\check{a}
+\acute{e}
+\grave{e}
+\breve{a}
+\widehat{xyz}
+\widetilde{abc}
+\vec{F} = m\ddot{\vec{r}}
+
+# ── C. 括号与 fence（16）────────────────────────────────────────────────────
+(x + y)^2
+\left(\frac{a}{b}\right)
+\left[ \frac{1}{2} \right]
+\left\{ x \mid x > 0 \right\}
+\langle a, b \rangle
+\lfloor x \rfloor
+\lceil x \rceil
+\|v\|
+\left\| A \right\|
+\left. \frac{df}{dx} \right|_{x=0}
+\left( 1 + \frac{1}{n} \right)^n
+\left[ \left( a + b \right) c \right]
+\left\{ \begin{matrix} a & b \\ c & d \end{matrix} \right\}
+\left(\sum_{i=1}^{n} x_i\right)^2
+\left| \begin{matrix} a & b \\ c & d \end{matrix} \right|
+(a+b)(c+d)
+
+# ── D. 根号（8）─────────────────────────────────────────────────────────────
+\sqrt{x}
+\sqrt[3]{x}
+\sqrt{1 + x^2}
+\sqrt{a^2 + b^2}
+\sqrt{\frac{a}{b}}
+\sqrt{\sqrt{x}}
+\sqrt[n]{\frac{a^n + b^n}{2}}
+x = \frac{-b \pm \sqrt{b^2-4ac}}{2a}
+
+# ── E. 分数与二项式（12）────────────────────────────────────────────────────
+\frac{1}{2}
+\frac{a+b}{c+d}
+\frac{\frac{1}{x}}{\frac{1}{y}}
+\dfrac{dy}{dx}
+\tfrac{1}{2}
+\binom{n}{k}
+\binom{n}{k} p^k (1-p)^{n-k}
+a/b
+x = y/z + w
+\frac{\partial^2 u}{\partial x^2}
+\cfrac{1}{1 + \cfrac{1}{2}}
+\frac{n!}{k!(n-k)!}
+
+# ── F. 上下标（12）──────────────────────────────────────────────────────────
+x^2
+x^{n+1}
+x_i
+x_{ij}
+x_i^2
+x_i^{(t)}
+a_1 + a_2 + \cdots + a_n
+e^{i\pi} + 1 = 0
+2^{2^n}
+x^{y^{z}}
+f'(x) + f''(x)
+x_1^2 + x_2^2 = r^2
+
+# ── G. n-ary 求和与积分（18）────────────────────────────────────────────────
+\sum_{i=1}^{n} i
+\sum_{i=1}^{n} \sum_{j=1}^{m} a_{ij}
+\sum_{i=1}^{n} x_i y_i
+\sum_{i \in S} f(i)
+\sum_{i} p(x_i) \log p(x_i)
+\int_0^1 x^2 \, dx
+\int_a^b f(x) dx
+\int \int_D f(x,y) dA
+\iint_{D} f(x,y) \, dx \, dy
+\iiint_{V} \rho \, dV
+\oint_C \mathbf{F} \cdot d\mathbf{r}
+\prod_{i=1}^{n} p_i
+\prod_{i=1}^{n} (1 - x_i)
+\coprod_{i=1}^{n} A_i
+\bigcup_{i=1}^{n} A_i
+\bigcap_{i=1}^{n} A_i
+\bigvee_{i=1}^{n} P_i
+\sum_{\substack{1 \le i \le n \\ i \ne j}} a_{ij}
+
+# ── H. 极限与算子（10）──────────────────────────────────────────────────────
+\lim_{x \to 0} \frac{\sin x}{x}
+\lim_{n \to \infty} \left(1 + \frac{1}{n}\right)^n
+\max_{0 \le x \le 1} f(x)
+\min_{i} a_i
+\arg\max_{\theta} L(\theta)
+\sup_{x \in A} f(x)
+\inf_{x \in A} f(x)
+\lim_{x \to \infty} e^{-x} = 0
+\operatorname{argmin}_{x} \|Ax - b\|
+\Pr[X > x] = 1 - F(x)
+
+# ── I. 矩阵与 cases（16）────────────────────────────────────────────────────
+\begin{matrix} a & b \\ c & d \end{matrix}
+\begin{pmatrix} a & b \\ c & d \end{pmatrix}
+\begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}
+\begin{vmatrix} a & b \\ c & d \end{vmatrix}
+\begin{Vmatrix} a & b \\ c & d \end{Vmatrix}
+\begin{pmatrix} a_{11} & a_{12} & \cdots & a_{1n} \\ a_{21} & a_{22} & \cdots & a_{2n} \\ \vdots & \vdots & \ddots & \vdots \\ a_{n1} & a_{n2} & \cdots & a_{nn} \end{pmatrix}
+f(x) = \begin{cases} x^2 & x > 0 \\ 0 & x = 0 \\ -x^2 & x < 0 \end{cases}
+\begin{aligned} y &= x^2 + 2x + 1 \\ &= (x+1)^2 \end{aligned}
+\begin{aligned} a &= b + c \\ d &= e + f \end{aligned}
+\begin{gathered} x = y \\ z = w \end{gathered}
+A = \begin{pmatrix} a & b \\ c & d \end{pmatrix}^{-1}
+\begin{pmatrix} \alpha & \beta \\ \gamma & \delta \end{pmatrix}
+\begin{bmatrix} \mathbf{I} & \mathbf{0} \\ \mathbf{0} & \mathbf{I} \end{bmatrix}
+\det \begin{pmatrix} a & b \\ c & d \end{pmatrix} = ad - bc
+\begin{matrix} 1 & 2 & 3 \\ 4 & 5 & 6 \\ 7 & 8 & 9 \end{matrix}
+\begin{cases} a_1 x + b_1 y = c_1 \\ a_2 x + b_2 y = c_2 \end{cases}
+
+# ── J. 字体命令（12）────────────────────────────────────────────────────────
+\mathbf{A} = \mathbf{B}
+\mathbb{R}^n
+\mathbb{N} \subset \mathbb{Z} \subset \mathbb{Q} \subset \mathbb{R} \subset \mathbb{C}
+\mathcal{L}(\theta)
+\mathfrak{g}
+\mathsf{Var}(X)
+\mathrm{d}x
+\mathit{abc}
+\boldsymbol{\beta}
+\mathbf{x}^T \mathbf{y}
+\mathbb{E}[X^2]
+\mathcal{O}(n \log n)
+
+# ── K. 覆盖与 under（10）────────────────────────────────────────────────────
+\overset{!}{=}
+\underset{x}{\min} f(x)
+\overbrace{a + b + \cdots + z}^{26}
+\underbrace{a + b + \cdots + z}_{26}
+\stackrel{\text{def}}{=}
+\xrightarrow{n \to \infty}
+\xrightarrow[below]{above}
+\overset{\Delta}{=}
+\underbrace{x_1 + x_2 + \cdots + x_n}_{\text{n terms}}
+\overrightarrow{AB}
+
+# ── L. 文本与函数名（10）────────────────────────────────────────────────────
+\sin^2 x + \cos^2 x = 1
+\tan \theta = \frac{\sin \theta}{\cos \theta}
+\log_2 N
+\ln x
+\exp(-x^2)
+\max(x, y)
+\text{if } x < 0 \text{ then } -x \text{ else } x
+\text{softmax}(x_i) = \frac{e^{x_i}}{\sum_j e^{x_j}}
+f(x) = \sin x + \cos x
+\gcd(a, b) \cdot \operatorname{lcm}(a, b)
+
+# ── M. 箭头与关系（8）───────────────────────────────────────────────────────
+x \to y
+A \rightarrow B
+A \leftarrow B
+P \Rightarrow Q
+P \Leftrightarrow Q
+f: X \mapsto Y
+x \longrightarrow y
+a \le b \le c \quad a \ge b \ge c
+
+# ── N. 特殊符号（8）─────────────────────────────────────────────────────────
+\infty
+\frac{\partial f}{\partial x}
+\nabla \cdot \mathbf{F} = 0
+\ell = 2\pi r
+\hbar = \frac{h}{2\pi}
+\forall x \in A, \exists y \in B
+\alpha + \beta = \gamma
+\pm \sqrt{a} \mp \sqrt{b}
+
+# ── O. 颜色（4）─────────────────────────────────────────────────────────────
+\color{red} x + y
+\color{#3366FF} a = b
+\textcolor{blue}{x^2}
+\color{red}{\frac{a}{b}}
+
+# ── P. 空格与对齐（6）───────────────────────────────────────────────────────
+a \, b
+a \: b
+a \quad b \qquad c
+a\!b
+x \phantom{abc} y
+\int_0^1 x \, dx = \frac{1}{2}
+
+# ── Q. 嵌套压力（14）────────────────────────────────────────────────────────
+\sqrt[3]{\frac{x^2 + y^2}{2}} + \frac{\sqrt{x}}{1 + \sqrt{x}}
+\left( \frac{1 + \sqrt{5}}{2} \right)^n
+\sum_{i=1}^{n} \frac{x_i - \mu}{\sigma}
+\frac{d}{dx} \left( \frac{f(x)}{g(x)} \right)
+\int_0^{\infty} e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+\left( \sum_{i=1}^{n} a_i \right) \left( \sum_{j=1}^{m} b_j \right)
+\frac{\partial}{\partial t} \left( \frac{\partial u}{\partial x} \right)
+\sqrt{1 + \sqrt{1 + \sqrt{1 + x}}}
+\lim_{x \to 0^+} \frac{\ln x}{x}
+\hat{\beta} = (X^T X)^{-1} X^T y
+\frac{1}{\sqrt{2\pi\sigma^2}} \exp\left( -\frac{(x-\mu)^2}{2\sigma^2} \right)
+\sum_{k=0}^{\infty} \frac{x^k}{k!} = e^x
+\begin{pmatrix} \frac{1}{2} & \sqrt{3} \\ -\sqrt{3} & \frac{1}{2} \end{pmatrix}
+\left\| \mathbf{x} - \mathbf{y} \right\|_2 \le \left\| \mathbf{x} - \mathbf{z} \right\|_2 + \left\| \mathbf{z} - \mathbf{y} \right\|_2
+
+# ── R. 多脚本与杂项（8）─────────────────────────────────────────────────────
+{}_a^b X
+{}_n P_r = \frac{n!}{(n-r)!}
+{}_n C_k = \frac{n!}{k!(n-k)!}
+f(x) = \begin{cases} 1 & x \ge 0 \\ 0 & x < 0 \end{cases} \quad g(x) = -f(x)
+e = mc^2
+\frac{\mathrm{d}}{\mathrm{d}x} \left( x^n \right) = n x^{n-1}
+\left( \begin{array}{c} n \\ k \end{array} \right) = \binom{n}{k}
+\mathcal{F}\{f(t)\} = \int_{-\infty}^{\infty} f(t) e^{-2\pi i \xi t} dt

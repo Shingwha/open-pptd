@@ -1,0 +1,73 @@
+pageType: cover
+background:
+  type: solid
+  color: "$primary-soft"
+elements:
+  - elementId: cv-tag
+    elementType: text
+    bounds: [72, 72, 320, 24]
+    content:
+      fontSize: 12
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      letterSpacing: 3
+      text: 'QUARTERLY · 夏'
+  - elementId: cv-title
+    elementType: text
+    bounds: [72, 140, 700, 130]
+    content:
+      style: "$title"
+      fontSize: 48
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.3
+      text: |
+        慢调
+        把日子过成诗
+  - elementId: cv-line
+    elementType: shape
+    bounds: [76, 300, 70, 3]
+    shapeName: roundRect
+    adjustments: [50000]
+    fill: {color: "$primary"}
+  - elementId: cv-sub
+    elementType: text
+    bounds: [72, 324, 620, 30]
+    content:
+      fontSize: 16
+      color: "$muted"
+      align: [left, middle]
+      text: '家居 · 器物 · 饮食 —— 2025 夏季刊'
+  - elementId: cv-card1
+    elementType: shape
+    bounds: [640, 140, 116, 116]
+    shapeName: roundRect
+    adjustments: [16000]
+    fill: {color: "$primary-tint"}
+  - elementId: cv-card2
+    elementType: shape
+    bounds: [772, 140, 116, 116]
+    shapeName: roundRect
+    adjustments: [16000]
+    fill: {color: "#B98A8A"}
+  - elementId: cv-card3
+    elementType: shape
+    bounds: [640, 272, 116, 116]
+    shapeName: roundRect
+    adjustments: [16000]
+    fill: {color: "#8B9DB5"}
+  - elementId: cv-card4
+    elementType: shape
+    bounds: [772, 272, 116, 116]
+    shapeName: roundRect
+    adjustments: [16000]
+    fill: {color: "#BCC5B6"}
+  - elementId: cv-meta
+    elementType: text
+    bounds: [72, 484, 500, 24]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: '慢调编辑部  ｜  2025 年 6 月'

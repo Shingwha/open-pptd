@@ -1,0 +1,63 @@
+pageType: cover
+background:
+  type: solid
+  color: "$primary-deep"
+elements:
+  - elementId: cv-line-t1
+    elementType: shape
+    bounds: [300, 90, 360, 2]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: cv-line-t2
+    elementType: shape
+    bounds: [330, 96, 300, 1]
+    shapeName: rect
+    fill: {color: "$accent66"}
+  - elementId: cv-tag
+    elementType: text
+    bounds: [280, 130, 400, 30]
+    content:
+      style: "$body"
+      fontSize: 15
+      color: "$accent"
+      align: [center, middle]
+      letterSpacing: 6
+      text: '守正创新 · 实干争先'
+  - elementId: cv-title
+    elementType: text
+    bounds: [180, 196, 600, 90]
+    content:
+      style: "$title"
+      fontSize: 44
+      color: "#FFFFFF"
+      align: [center, middle]
+      letterSpacing: 4
+      text: '2025 年度工作报告'
+  - elementId: cv-sub
+    elementType: text
+    bounds: [280, 300, 400, 30]
+    content:
+      style: "$body"
+      fontSize: 16
+      color: "#FFFFFFB3"
+      align: [center, middle]
+      text: '凝心聚力推动高质量发展'
+  - elementId: cv-line-b1
+    elementType: shape
+    bounds: [330, 372, 300, 1]
+    shapeName: rect
+    fill: {color: "$accent66"}
+  - elementId: cv-line-b2
+    elementType: shape
+    bounds: [300, 378, 360, 2]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: cv-meta
+    elementType: text
+    bounds: [280, 440, 400, 26]
+    content:
+      style: "$body"
+      fontSize: 14
+      color: "#FFFFFF99"
+      align: [center, middle]
+      text: '云州市工业和信息化局  ｜  2025 年 1 月'

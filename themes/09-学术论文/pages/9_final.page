@@ -1,0 +1,161 @@
+pageType: final
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # ── 页眉（统一）──
+  - elementId: fn-topbar
+    elementType: shape
+    bounds: [0, 0, 960, 4]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: fn-head
+    elementType: text
+    bounds: [48, 22, 400, 26]
+    content:
+      fontSize: 13
+      bold: true
+      color: "$primary-deep"
+      align: [left, middle]
+      text: '4 结论与展望'
+  - elementId: fn-page
+    elementType: text
+    bounds: [860, 22, 52, 26]
+    content:
+      fontSize: 12
+      color: "$primary"
+      align: [right, middle]
+      text: '09'
+  - elementId: fn-underline
+    elementType: shape
+    bounds: [48, 52, 864, 1]
+    shapeName: rect
+    fill: {color: "$line"}
+  - elementId: fn-foot
+    elementType: text
+    bounds: [48, 512, 420, 18]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [left, middle]
+      text: 'Attention-based Time Series Forecasting'
+  - elementId: fn-foot2
+    elementType: text
+    bounds: [640, 512, 272, 18]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [right, middle]
+      text: 'ICML 2026'
+  # ── 4.1 主要结论 ──
+  - elementId: fn-s1bar
+    elementType: shape
+    bounds: [48, 76, 4, 18]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: fn-s1
+    elementType: text
+    bounds: [60, 74, 400, 22]
+    content:
+      fontSize: 14
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '4.1  主要结论'
+  - elementId: fn-c1
+    elementType: text
+    bounds: [48, 106, 864, 30]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: '（1）门控融合的注意力框架显著提升长序列预测精度：R² 由 0.89 提升至 0.96，RMSE 平均降低 35%–52%。'
+  - elementId: fn-c2
+    elementType: text
+    bounds: [48, 144, 864, 30]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: '（2）消融实验表明门控融合贡献最大，自适应位置编码与多头结构亦各有显著增益。'
+  - elementId: fn-c3
+    elementType: text
+    bounds: [48, 182, 864, 30]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: '（3）模型在电力、交通、ETT 三类数据集上均优于 ARIMA / LSTM / Transformer 基线，且参数更少、收敛更快。'
+  # ── 4.2 未来工作 ──
+  - elementId: fn-s2bar
+    elementType: shape
+    bounds: [48, 236, 4, 18]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: fn-s2
+    elementType: text
+    bounds: [60, 234, 400, 22]
+    content:
+      fontSize: 14
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '4.2  未来工作'
+  - elementId: fn-w1
+    elementType: text
+    bounds: [48, 266, 864, 28]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: '· 扩展到多变量与缺失值场景，探索自适应窗口机制'
+  - elementId: fn-w2
+    elementType: text
+    bounds: [48, 300, 864, 28]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, top]
+      lineHeight: 1.6
+      text: '· 结合概率预测输出不确定性区间（分位数回归 / 置信带）'
+  # ── 参考文献 ──
+  - elementId: fn-s3bar
+    elementType: shape
+    bounds: [48, 352, 4, 18]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: fn-s3
+    elementType: text
+    bounds: [60, 350, 400, 22]
+    content:
+      fontSize: 14
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '参考文献'
+  - elementId: fn-refs
+    elementType: text
+    bounds: [48, 380, 864, 70]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [left, top]
+      lineHeight: 1.8
+      text: |-
+        [1] Vaswani A, et al. Attention Is All You Need. NeurIPS, 2017.
+        [2] Hochreiter S, Schmidhuber J. Long Short-Term Memory. Neural Computation, 1997.
+        [3] Zhou H, et al. Informer: Beyond Efficient Transformer for Long Sequence Time-Series Forecasting. AAAI, 2021.
+  # ── 致谢 ──
+  - elementId: fn-thanks
+    elementType: text
+    bounds: [330, 474, 300, 30]
+    content:
+      fontSize: 15
+      bold: true
+      color: "$primary-deep"
+      align: [center, middle]
+      text: '谢谢聆听，欢迎交流讨论'

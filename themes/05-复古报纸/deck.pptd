@@ -1,0 +1,24 @@
+version: v2
+title: 老城记忆 · 城市文化展
+gallery:
+  name: 复古报纸
+  style: retro 复古报纸
+  color: brown 棕色
+  font: 宋体（全字体统一）
+  scene: 展览 / 文创 / 怀旧主题
+theme: brown
+fonts:
+  title: SimSun
+  subtitle: SimSun
+  body: SimSun
+  caption: SimSun
+  quote: SimSun
+  table: SimSun
+  chart: SimSun
+size: [960, 540]
+pages:
+  - pages/1_cover.page
+  - pages/2_toc.page
+  - pages/3_chapter.page
+  - pages/4_content.page
+  - pages/5_final.page

@@ -1,0 +1,16 @@
+version: v2
+title: 星核 AI 引擎 · 新品发布会
+gallery:
+  name: 深色科技
+  style: dark-tech 深色科技
+  color: cyan 青色
+  font: 微软雅黑
+  scene: 发布会 / 技术分享 / 研发规划
+theme: cyan
+size: [960, 540]
+pages:
+  - pages/1_cover.page
+  - pages/2_toc.page
+  - pages/3_chapter.page
+  - pages/4_content.page
+  - pages/5_final.page

@@ -1,0 +1,109 @@
+pageType: chapter
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # —— 装订线 ——
+  - elementId: ch-topline
+    elementType: shape
+    bounds: [0, 0, 960, 4]
+    shapeName: rect
+    fill: {color: "$primary"}
+  # —— 左侧「印章式」大编号方块（直角，白底上的深绿方块）——
+  - elementId: ch-seal
+    elementType: shape
+    bounds: [48, 148, 128, 128]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ch-num
+    elementType: text
+    bounds: [48, 148, 128, 128]
+    content:
+      fontSize: 44
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: '01'
+  - elementId: ch-seallabel
+    elementType: text
+    bounds: [48, 288, 128, 22]
+    content:
+      fontSize: 11
+      color: "$muted"
+      align: [center, middle]
+      text: '第 01 章'
+  # —— 右侧章节名 ——
+  - elementId: ch-title
+    elementType: text
+    bounds: [224, 156, 660, 44]
+    content:
+      fontSize: 30
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '总  则'
+  - elementId: ch-line
+    elementType: shape
+    bounds: [228, 214, 64, 4]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: ch-desc
+    elementType: text
+    bounds: [224, 234, 660, 24]
+    content:
+      fontSize: 13
+      color: "$muted"
+      align: [left, middle]
+      text: '目的与依据 · 适用范围 · 术语与定义'
+  # —— 条款式要点（行首条款号 + 标题 + 描述，行间细线）——
+  - elementId: ch-item1
+    elementType: text
+    bounds: [224, 296, 660, 28]
+    content:
+      fontSize: 14
+      color: "$text"
+      align: [left, middle]
+      text: '1.1  目的与依据    规范项目全过程管理，明确各阶段职责与交付标准'
+  - elementId: ch-line1
+    elementType: shape
+    bounds: [224, 330, 640, 1]
+    shapeName: rect
+    fill: {color: "$line"}
+  - elementId: ch-item2
+    elementType: text
+    bounds: [224, 336, 660, 28]
+    content:
+      fontSize: 14
+      color: "$text"
+      align: [left, middle]
+      text: '1.2  适用范围    公司全部立项项目及关联协作方'
+  - elementId: ch-line2
+    elementType: shape
+    bounds: [224, 370, 640, 1]
+    shapeName: rect
+    fill: {color: "$line"}
+  - elementId: ch-item3
+    elementType: text
+    bounds: [224, 376, 660, 28]
+    content:
+      fontSize: 14
+      color: "$text"
+      align: [left, middle]
+      text: '1.3  术语定义    里程碑、变更、验收等关键术语见附则'
+  # —— 页脚 ——
+  - elementId: ch-foot
+    elementType: text
+    bounds: [48, 504, 420, 20]
+    content:
+      fontSize: 11
+      color: "$muted"
+      align: [left, middle]
+      text: '青松手册 · 规范文档系列'
+  - elementId: ch-foot2
+    elementType: text
+    bounds: [640, 504, 272, 20]
+    content:
+      fontSize: 11
+      color: "$muted"
+      align: [right, middle]
+      text: '第 3 页 / 共 9 页'

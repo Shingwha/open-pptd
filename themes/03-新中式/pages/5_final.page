@@ -1,0 +1,115 @@
+pageType: final
+background:
+  type: solid
+  color: "#F7F3EA"
+elements:
+  - elementId: fn-tag
+    elementType: text
+    bounds: [72, 96, 320, 24]
+    content:
+      fontSize: 12
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      letterSpacing: 4
+      text: '茶事历 · 丁未年'
+  - elementId: fn-title
+    elementType: text
+    bounds: [72, 150, 700, 80]
+    content:
+      style: "$title"
+      fontSize: 40
+      color: "#2B2620"
+      align: [left, middle]
+      text: '四季茶会，与君共赴'
+  - elementId: fn-line
+    elementType: shape
+    bounds: [76, 240, 80, 3]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: fn-c1
+    elementType: shape
+    bounds: [72, 276, 256, 150]
+    shapeName: rect
+    fill: {color: "#FFFFFF"}
+    border: {width: 1, color: "#D9CDB4"}
+  - elementId: fn-c1-t
+    elementType: text
+    bounds: [96, 300, 210, 36]
+    content:
+      style: "$title"
+      fontSize: 18
+      color: "#2B2620"
+      align: [left, top]
+      text: '春 · 问茶'
+  - elementId: fn-c1-d
+    elementType: text
+    bounds: [96, 344, 210, 60]
+    content:
+      style: "$body"
+      fontSize: 13
+      color: "#6E6355"
+      align: [left, top]
+      text: |
+        三月采新芽
+        茶园开放日
+  - elementId: fn-c2
+    elementType: shape
+    bounds: [352, 276, 256, 150]
+    shapeName: rect
+    fill: {color: "#FFFFFF"}
+    border: {width: 1, color: "#D9CDB4"}
+  - elementId: fn-c2-t
+    elementType: text
+    bounds: [376, 300, 210, 36]
+    content:
+      style: "$title"
+      fontSize: 18
+      color: "#2B2620"
+      align: [left, top]
+      text: '夏 · 听雨'
+  - elementId: fn-c2-d
+    elementType: text
+    bounds: [376, 344, 210, 60]
+    content:
+      style: "$body"
+      fontSize: 13
+      color: "#6E6355"
+      align: [left, top]
+      text: |
+        六月荷风里
+        老茶品鉴会
+  - elementId: fn-c3
+    elementType: shape
+    bounds: [632, 276, 256, 150]
+    shapeName: rect
+    fill: {color: "#FFFFFF"}
+    border: {width: 1, color: "#D9CDB4"}
+  - elementId: fn-c3-t
+    elementType: text
+    bounds: [656, 300, 210, 36]
+    content:
+      style: "$title"
+      fontSize: 18
+      color: "#2B2620"
+      align: [left, top]
+      text: '秋 · 拾月'
+  - elementId: fn-c3-d
+    elementType: text
+    bounds: [656, 344, 210, 60]
+    content:
+      style: "$body"
+      fontSize: 13
+      color: "#6E6355"
+      align: [left, top]
+      text: |
+        九月桂花酿
+        茶器展
+  - elementId: fn-meta
+    elementType: text
+    bounds: [72, 484, 500, 24]
+    content:
+      fontSize: 12
+      color: "#8A8070"
+      align: [left, middle]
+      text: '山月茶事  ｜  苏州  |  2025'

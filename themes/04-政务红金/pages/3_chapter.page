@@ -1,0 +1,47 @@
+pageType: chapter
+background:
+  type: solid
+  color: "$primary-soft"
+elements:
+  - elementId: ch-num
+    elementType: text
+    bounds: [320, 88, 320, 170]
+    content:
+      fontSize: 140
+      bold: true
+      color: "$primary20"
+      align: [center, top]
+      text: '01'
+  - elementId: ch-line
+    elementType: shape
+    bounds: [380, 280, 200, 3]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: ch-title
+    elementType: text
+    bounds: [160, 304, 640, 60]
+    content:
+      style: "$title"
+      fontSize: 36
+      color: "$primary"
+      align: [center, middle]
+      letterSpacing: 3
+      text: '年度工作回顾'
+  - elementId: ch-sub
+    elementType: text
+    bounds: [260, 384, 440, 30]
+    content:
+      style: "$body"
+      fontSize: 16
+      color: "$muted"
+      align: [center, middle]
+      text: '承压前行、稳中有进'
+  - elementId: ch-foot
+    elementType: text
+    bounds: [64, 496, 400, 22]
+    content:
+      style: "$body"
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: '云州市工业和信息化局  ｜  2025'

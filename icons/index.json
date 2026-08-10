@@ -1,0 +1,770 @@
+{
+  "arrow-right": {
+    "label": "右箭头",
+    "cat": "方向"
+  },
+  "arrow-left": {
+    "label": "左箭头",
+    "cat": "方向"
+  },
+  "arrow-up": {
+    "label": "上箭头",
+    "cat": "方向"
+  },
+  "arrow-down": {
+    "label": "下箭头",
+    "cat": "方向"
+  },
+  "arrow-up-right": {
+    "label": "右上箭头",
+    "cat": "方向"
+  },
+  "arrow-repeat": {
+    "label": "循环",
+    "cat": "方向"
+  },
+  "arrow-right-circle": {
+    "label": "右箭头圆",
+    "cat": "方向"
+  },
+  "arrow-left-circle": {
+    "label": "左箭头圆",
+    "cat": "方向"
+  },
+  "arrow-up-circle": {
+    "label": "上箭头圆",
+    "cat": "方向"
+  },
+  "arrow-down-circle": {
+    "label": "下箭头圆",
+    "cat": "方向"
+  },
+  "arrows-expand": {
+    "label": "向外展开",
+    "cat": "方向"
+  },
+  "arrows-collapse": {
+    "label": "向内收缩",
+    "cat": "方向"
+  },
+  "chevron-right": {
+    "label": "右尖括号",
+    "cat": "方向"
+  },
+  "chevron-left": {
+    "label": "左尖括号",
+    "cat": "方向"
+  },
+  "chevron-up": {
+    "label": "上尖括号",
+    "cat": "方向"
+  },
+  "chevron-down": {
+    "label": "下尖括号",
+    "cat": "方向"
+  },
+  "arrow-down-right": {
+    "label": "斜向下箭头",
+    "cat": "方向"
+  },
+  "box-arrow-up-right": {
+    "label": "外链",
+    "cat": "方向"
+  },
+  "forward": {
+    "label": "快进",
+    "cat": "方向"
+  },
+  "reply": {
+    "label": "回复",
+    "cat": "方向"
+  },
+  "check": {
+    "label": "对勾",
+    "cat": "状态"
+  },
+  "check-circle": {
+    "label": "对勾圆圈",
+    "cat": "状态"
+  },
+  "check-circle-fill": {
+    "label": "对勾圆圈实心",
+    "cat": "状态"
+  },
+  "check-lg": {
+    "label": "大对勾",
+    "cat": "状态"
+  },
+  "x": {
+    "label": "叉号",
+    "cat": "状态"
+  },
+  "x-circle": {
+    "label": "叉号圆圈",
+    "cat": "状态"
+  },
+  "x-lg": {
+    "label": "大叉号",
+    "cat": "状态"
+  },
+  "exclamation-triangle": {
+    "label": "警告三角",
+    "cat": "状态"
+  },
+  "exclamation-circle": {
+    "label": "感叹圆圈",
+    "cat": "状态"
+  },
+  "info-circle": {
+    "label": "信息圆圈",
+    "cat": "状态"
+  },
+  "question-circle": {
+    "label": "问号圆圈",
+    "cat": "状态"
+  },
+  "plus": {
+    "label": "加号",
+    "cat": "状态"
+  },
+  "plus-lg": {
+    "label": "大加号",
+    "cat": "状态"
+  },
+  "dash": {
+    "label": "横杠",
+    "cat": "状态"
+  },
+  "ban": {
+    "label": "禁止",
+    "cat": "状态"
+  },
+  "check2-all": {
+    "label": "全部完成",
+    "cat": "状态"
+  },
+  "bar-chart": {
+    "label": "柱状图",
+    "cat": "图表"
+  },
+  "bar-chart-line": {
+    "label": "柱线图",
+    "cat": "图表"
+  },
+  "bar-chart-steps": {
+    "label": "阶梯图",
+    "cat": "图表"
+  },
+  "pie-chart": {
+    "label": "饼图",
+    "cat": "图表"
+  },
+  "graph-up": {
+    "label": "上升折线",
+    "cat": "图表"
+  },
+  "graph-up-arrow": {
+    "label": "上升箭头图",
+    "cat": "图表"
+  },
+  "graph-down": {
+    "label": "下降折线",
+    "cat": "图表"
+  },
+  "activity": {
+    "label": "脉搏",
+    "cat": "图表"
+  },
+  "speedometer": {
+    "label": "速度表",
+    "cat": "图表"
+  },
+  "lightning-charge": {
+    "label": "闪电",
+    "cat": "图表"
+  },
+  "lightning-charge-fill": {
+    "label": "闪电实心",
+    "cat": "图表"
+  },
+  "funnel": {
+    "label": "漏斗",
+    "cat": "图表"
+  },
+  "infinity": {
+    "label": "无限",
+    "cat": "图表"
+  },
+  "file-text": {
+    "label": "文档",
+    "cat": "文档"
+  },
+  "file-earmark-text": {
+    "label": "文档带角",
+    "cat": "文档"
+  },
+  "file-earmark-pdf": {
+    "label": "PDF 文档",
+    "cat": "文档"
+  },
+  "file-spreadsheet": {
+    "label": "表格文档",
+    "cat": "文档"
+  },
+  "folder": {
+    "label": "文件夹",
+    "cat": "文档"
+  },
+  "folder2-open": {
+    "label": "打开文件夹",
+    "cat": "文档"
+  },
+  "clipboard-data": {
+    "label": "剪贴板数据",
+    "cat": "文档"
+  },
+  "clipboard-check": {
+    "label": "剪贴板对勾",
+    "cat": "文档"
+  },
+  "files": {
+    "label": "多文件",
+    "cat": "文档"
+  },
+  "bookmark-star": {
+    "label": "书签星标",
+    "cat": "文档"
+  },
+  "journal-text": {
+    "label": "日志",
+    "cat": "文档"
+  },
+  "archive": {
+    "label": "归档箱",
+    "cat": "文档"
+  },
+  "envelope": {
+    "label": "邮件",
+    "cat": "沟通"
+  },
+  "envelope-fill": {
+    "label": "邮件实心",
+    "cat": "沟通"
+  },
+  "telephone": {
+    "label": "电话",
+    "cat": "沟通"
+  },
+  "telephone-fill": {
+    "label": "电话实心",
+    "cat": "沟通"
+  },
+  "chat-dots": {
+    "label": "对话气泡",
+    "cat": "沟通"
+  },
+  "chat-dots-fill": {
+    "label": "对话气泡实心",
+    "cat": "沟通"
+  },
+  "chat-square-text": {
+    "label": "文字气泡",
+    "cat": "沟通"
+  },
+  "send": {
+    "label": "发送",
+    "cat": "沟通"
+  },
+  "megaphone": {
+    "label": "喇叭",
+    "cat": "沟通"
+  },
+  "mic": {
+    "label": "麦克风",
+    "cat": "沟通"
+  },
+  "bell": {
+    "label": "铃铛",
+    "cat": "沟通"
+  },
+  "bell-fill": {
+    "label": "铃铛实心",
+    "cat": "沟通"
+  },
+  "person": {
+    "label": "单人",
+    "cat": "人员"
+  },
+  "person-fill": {
+    "label": "单人实心",
+    "cat": "人员"
+  },
+  "people": {
+    "label": "多人",
+    "cat": "人员"
+  },
+  "people-fill": {
+    "label": "多人实心",
+    "cat": "人员"
+  },
+  "person-plus": {
+    "label": "添加人员",
+    "cat": "人员"
+  },
+  "person-check": {
+    "label": "人员对勾",
+    "cat": "人员"
+  },
+  "person-badge": {
+    "label": "人员徽章",
+    "cat": "人员"
+  },
+  "person-circle": {
+    "label": "人员头像",
+    "cat": "人员"
+  },
+  "headset": {
+    "label": "耳麦",
+    "cat": "人员"
+  },
+  "hand-thumbs-up": {
+    "label": "点赞",
+    "cat": "人员"
+  },
+  "hand-thumbs-down": {
+    "label": "点踩",
+    "cat": "人员"
+  },
+  "cash": {
+    "label": "现金",
+    "cat": "财务"
+  },
+  "cash-stack": {
+    "label": "现金堆",
+    "cat": "财务"
+  },
+  "coin": {
+    "label": "硬币",
+    "cat": "财务"
+  },
+  "currency-dollar": {
+    "label": "美元",
+    "cat": "财务"
+  },
+  "currency-euro": {
+    "label": "欧元",
+    "cat": "财务"
+  },
+  "currency-yen": {
+    "label": "日元",
+    "cat": "财务"
+  },
+  "currency-exchange": {
+    "label": "汇率",
+    "cat": "财务"
+  },
+  "bank": {
+    "label": "银行",
+    "cat": "财务"
+  },
+  "credit-card": {
+    "label": "信用卡",
+    "cat": "财务"
+  },
+  "safe": {
+    "label": "保险箱",
+    "cat": "财务"
+  },
+  "wallet": {
+    "label": "钱包",
+    "cat": "财务"
+  },
+  "percent": {
+    "label": "百分号",
+    "cat": "财务"
+  },
+  "calculator": {
+    "label": "计算器",
+    "cat": "财务"
+  },
+  "piggy-bank": {
+    "label": "存钱罐",
+    "cat": "财务"
+  },
+  "calendar": {
+    "label": "日历",
+    "cat": "时间"
+  },
+  "calendar-check": {
+    "label": "日历对勾",
+    "cat": "时间"
+  },
+  "calendar-event": {
+    "label": "日历事件",
+    "cat": "时间"
+  },
+  "calendar-date": {
+    "label": "日历日期",
+    "cat": "时间"
+  },
+  "clock": {
+    "label": "时钟",
+    "cat": "时间"
+  },
+  "clock-history": {
+    "label": "历史时钟",
+    "cat": "时间"
+  },
+  "alarm": {
+    "label": "闹钟",
+    "cat": "时间"
+  },
+  "hourglass-split": {
+    "label": "沙漏",
+    "cat": "时间"
+  },
+  "stopwatch": {
+    "label": "秒表",
+    "cat": "时间"
+  },
+  "geo-alt": {
+    "label": "定位针",
+    "cat": "位置"
+  },
+  "geo-alt-fill": {
+    "label": "定位针实心",
+    "cat": "位置"
+  },
+  "map": {
+    "label": "地图",
+    "cat": "位置"
+  },
+  "pin-map": {
+    "label": "地图针",
+    "cat": "位置"
+  },
+  "globe": {
+    "label": "地球",
+    "cat": "位置"
+  },
+  "globe-americas": {
+    "label": "美洲地球",
+    "cat": "位置"
+  },
+  "compass": {
+    "label": "罗盘",
+    "cat": "位置"
+  },
+  "building": {
+    "label": "大楼",
+    "cat": "位置"
+  },
+  "house": {
+    "label": "房屋",
+    "cat": "位置"
+  },
+  "house-fill": {
+    "label": "房屋实心",
+    "cat": "位置"
+  },
+  "door-open": {
+    "label": "开门",
+    "cat": "位置"
+  },
+  "lightbulb": {
+    "label": "灯泡",
+    "cat": "概念"
+  },
+  "lightbulb-fill": {
+    "label": "灯泡实心",
+    "cat": "概念"
+  },
+  "star": {
+    "label": "星形",
+    "cat": "概念"
+  },
+  "star-fill": {
+    "label": "星形实心",
+    "cat": "概念"
+  },
+  "star-half": {
+    "label": "半星",
+    "cat": "概念"
+  },
+  "heart": {
+    "label": "心形",
+    "cat": "概念"
+  },
+  "heart-fill": {
+    "label": "心形实心",
+    "cat": "概念"
+  },
+  "trophy": {
+    "label": "奖杯",
+    "cat": "概念"
+  },
+  "trophy-fill": {
+    "label": "奖杯实心",
+    "cat": "概念"
+  },
+  "flag": {
+    "label": "旗帜",
+    "cat": "概念"
+  },
+  "flag-fill": {
+    "label": "旗帜实心",
+    "cat": "概念"
+  },
+  "bullseye": {
+    "label": "靶心",
+    "cat": "概念"
+  },
+  "award": {
+    "label": "奖章",
+    "cat": "概念"
+  },
+  "rocket": {
+    "label": "火箭",
+    "cat": "概念"
+  },
+  "rocket-takeoff": {
+    "label": "火箭发射",
+    "cat": "概念"
+  },
+  "fire": {
+    "label": "火焰",
+    "cat": "概念"
+  },
+  "droplet": {
+    "label": "水滴",
+    "cat": "概念"
+  },
+  "cloud": {
+    "label": "云朵",
+    "cat": "概念"
+  },
+  "cloud-fill": {
+    "label": "云朵实心",
+    "cat": "概念"
+  },
+  "sun": {
+    "label": "太阳",
+    "cat": "概念"
+  },
+  "moon": {
+    "label": "月亮",
+    "cat": "概念"
+  },
+  "moon-stars": {
+    "label": "星月",
+    "cat": "概念"
+  },
+  "gem": {
+    "label": "宝石",
+    "cat": "概念"
+  },
+  "flower1": {
+    "label": "花朵",
+    "cat": "概念"
+  },
+  "eye": {
+    "label": "眼睛",
+    "cat": "概念"
+  },
+  "eye-slash": {
+    "label": "闭眼",
+    "cat": "概念"
+  },
+  "gear": {
+    "label": "齿轮",
+    "cat": "工具"
+  },
+  "gear-fill": {
+    "label": "齿轮实心",
+    "cat": "工具"
+  },
+  "gear-wide-connected": {
+    "label": "齿轮连线",
+    "cat": "工具"
+  },
+  "sliders": {
+    "label": "调节滑杆",
+    "cat": "工具"
+  },
+  "wrench": {
+    "label": "扳手",
+    "cat": "工具"
+  },
+  "tools": {
+    "label": "工具套装",
+    "cat": "工具"
+  },
+  "hammer": {
+    "label": "锤子",
+    "cat": "工具"
+  },
+  "search": {
+    "label": "搜索",
+    "cat": "工具"
+  },
+  "download": {
+    "label": "下载",
+    "cat": "工具"
+  },
+  "upload": {
+    "label": "上传",
+    "cat": "工具"
+  },
+  "cloud-arrow-down": {
+    "label": "云端下载",
+    "cat": "工具"
+  },
+  "cloud-arrow-up": {
+    "label": "云端上传",
+    "cat": "工具"
+  },
+  "share": {
+    "label": "分享",
+    "cat": "工具"
+  },
+  "link-45deg": {
+    "label": "链接",
+    "cat": "工具"
+  },
+  "layers": {
+    "label": "图层",
+    "cat": "工具"
+  },
+  "grid": {
+    "label": "网格",
+    "cat": "工具"
+  },
+  "list-check": {
+    "label": "清单",
+    "cat": "工具"
+  },
+  "list-ul": {
+    "label": "列表",
+    "cat": "工具"
+  },
+  "pencil": {
+    "label": "铅笔",
+    "cat": "工具"
+  },
+  "trash": {
+    "label": "垃圾桶",
+    "cat": "工具"
+  },
+  "trash-fill": {
+    "label": "垃圾桶实心",
+    "cat": "工具"
+  },
+  "box": {
+    "label": "盒子",
+    "cat": "工具"
+  },
+  "box-seam": {
+    "label": "包裹",
+    "cat": "工具"
+  },
+  "key": {
+    "label": "钥匙",
+    "cat": "工具"
+  },
+  "lock": {
+    "label": "锁",
+    "cat": "安全"
+  },
+  "lock-fill": {
+    "label": "锁实心",
+    "cat": "安全"
+  },
+  "unlock": {
+    "label": "开锁",
+    "cat": "安全"
+  },
+  "shield-check": {
+    "label": "盾牌对勾",
+    "cat": "安全"
+  },
+  "shield-lock": {
+    "label": "盾牌锁",
+    "cat": "安全"
+  },
+  "shield-shaded": {
+    "label": "盾牌",
+    "cat": "安全"
+  },
+  "fingerprint": {
+    "label": "指纹",
+    "cat": "安全"
+  },
+  "display": {
+    "label": "显示器",
+    "cat": "设备"
+  },
+  "laptop": {
+    "label": "笔记本",
+    "cat": "设备"
+  },
+  "phone": {
+    "label": "手机",
+    "cat": "设备"
+  },
+  "tablet": {
+    "label": "平板",
+    "cat": "设备"
+  },
+  "printer": {
+    "label": "打印机",
+    "cat": "设备"
+  },
+  "camera": {
+    "label": "相机",
+    "cat": "设备"
+  },
+  "images": {
+    "label": "图片集",
+    "cat": "设备"
+  },
+  "music-note": {
+    "label": "音符",
+    "cat": "设备"
+  },
+  "play-circle": {
+    "label": "播放",
+    "cat": "设备"
+  },
+  "pause-circle": {
+    "label": "暂停",
+    "cat": "设备"
+  },
+  "stop-circle": {
+    "label": "停止",
+    "cat": "设备"
+  },
+  "volume-up": {
+    "label": "音量",
+    "cat": "设备"
+  },
+  "wifi": {
+    "label": "无线",
+    "cat": "设备"
+  },
+  "battery-full": {
+    "label": "满电",
+    "cat": "设备"
+  },
+  "cpu": {
+    "label": "芯片",
+    "cat": "设备"
+  },
+  "usb-drive": {
+    "label": "U 盘",
+    "cat": "设备"
+  },
+  "keyboard": {
+    "label": "键盘",
+    "cat": "设备"
+  }
+}

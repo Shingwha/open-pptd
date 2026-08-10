@@ -1,0 +1,137 @@
+pageType: content
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # ── 页眉（统一）──
+  - elementId: ex-topbar
+    elementType: shape
+    bounds: [0, 0, 960, 4]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ex-head
+    elementType: text
+    bounds: [48, 22, 400, 26]
+    content:
+      fontSize: 13
+      bold: true
+      color: "$primary-deep"
+      align: [left, middle]
+      text: '3 实验 · 3.1 收敛与对比'
+  - elementId: ex-page
+    elementType: text
+    bounds: [860, 22, 52, 26]
+    content:
+      fontSize: 12
+      color: "$primary"
+      align: [right, middle]
+      text: '07'
+  - elementId: ex-underline
+    elementType: shape
+    bounds: [48, 52, 864, 1]
+    shapeName: rect
+    fill: {color: "$line"}
+  - elementId: ex-foot
+    elementType: text
+    bounds: [48, 512, 420, 18]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [left, middle]
+      text: 'Attention-based Time Series Forecasting'
+  - elementId: ex-foot2
+    elementType: text
+    bounds: [640, 512, 272, 18]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [right, middle]
+      text: 'ICML 2026'
+  # ── 小节标题 3.1 ──
+  - elementId: ex-s1bar
+    elementType: shape
+    bounds: [48, 76, 4, 18]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: ex-s1
+    elementType: text
+    bounds: [60, 74, 400, 22]
+    content:
+      fontSize: 14
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '3.1  收敛与对比'
+  # 实验设置说明（一行 caption）
+  - elementId: ex-setup
+    elementType: text
+    bounds: [48, 104, 864, 20]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: '数据集：Electricity（2012）· 输入长度 168 · 预测长度 24 · 优化器 AdamW（lr=1e-3）'
+  # ── 图 2：训练损失收敛曲线（折线图）──
+  - elementId: ex-c1
+    elementType: chart
+    bounds: [48, 136, 424, 216]
+    data:
+      cols: [Epoch, 基线 LSTM, 本文模型]
+      rows:
+        - [1, 0.86, 0.70]
+        - [2, 0.74, 0.52]
+        - [3, 0.63, 0.40]
+        - [4, 0.55, 0.32]
+        - [5, 0.48, 0.27]
+        - [6, 0.43, 0.23]
+        - [7, 0.39, 0.20]
+        - [8, 0.36, 0.18]
+        - [9, 0.35, 0.17]
+        - [10, 0.34, 0.16]
+    series:
+      - type: line
+        encode: {category: Epoch, y: 基线 LSTM}
+        name: 基线 LSTM
+      - type: line
+        encode: {category: Epoch, y: 本文模型}
+        name: 本文模型
+  - elementId: ex-c1cap
+    elementType: text
+    bounds: [48, 362, 424, 20]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: '图 2  训练损失收敛曲线（MSE，越低越好）'
+  # ── 图 3：模型 RMSE 对比（柱状图）──
+  - elementId: ex-c2
+    elementType: chart
+    bounds: [500, 136, 412, 216]
+    data:
+      cols: [模型, RMSE]
+      rows:
+        - [ARIMA, 0.94]
+        - [LSTM, 0.61]
+        - [Transformer, 0.47]
+        - [本文模型, 0.29]
+    series:
+      - type: bar
+        encode: {category: 模型, y: RMSE}
+        name: RMSE
+  - elementId: ex-c2cap
+    elementType: text
+    bounds: [500, 362, 412, 20]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: '图 3  各模型 RMSE 对比（越低越好）'
+  # ── 底部说明 ──
+  - elementId: ex-note
+    elementType: text
+    bounds: [48, 404, 864, 20]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: '本文模型第 4 个 epoch 即达到基线最终水平，收敛更快且损失更低；RMSE 较 Transformer 降低 38%。'

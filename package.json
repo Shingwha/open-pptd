@@ -1,0 +1,17 @@
+{
+  "name": "open-pptd",
+  "version": "0.3.0",
+  "type": "module",
+  "description": "PPTD 网页编辑器 + 自研零依赖 PPTX writer（skill 运行时不需 npm install）",
+  "bin": { "open-pptd": "bin/open-pptd.js" },
+  "scripts": {
+    "test": "node tests/formula/test-formula.mjs",
+    "test:formula": "node tests/formula/test-formula.mjs",
+    "test:icon": "node tests/icon/test-icon.mjs",
+    "test:smoke": "node tests/smoke-cache.mjs",
+    "test:live": "node tests/live-reload.mjs",
+    "test:incremental": "node tests/incremental-load.mjs",
+    "test:fixtures": "node tests/formula/dump-formula-mml.mjs"
+  },
+  "license": "MIT"
+}

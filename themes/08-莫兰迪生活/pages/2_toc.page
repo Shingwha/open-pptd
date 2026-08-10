@@ -1,0 +1,165 @@
+pageType: toc
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  - elementId: tc-title
+    elementType: text
+    bounds: [64, 60, 300, 44]
+    content:
+      style: "$title"
+      fontSize: 30
+      color: "$text"
+      align: [left, middle]
+      text: '本期内容'
+  - elementId: tc-title-en
+    elementType: text
+    bounds: [64, 106, 300, 22]
+    content:
+      fontSize: 13
+      color: "$muted"
+      align: [left, middle]
+      letterSpacing: 3
+      text: 'CONTENTS'
+  - elementId: tc-line
+    elementType: shape
+    bounds: [64, 142, 52, 3]
+    shapeName: roundRect
+    adjustments: [50000]
+    fill: {color: "$primary"}
+  - elementId: tc-c1
+    elementType: shape
+    bounds: [64, 172, 400, 70]
+    shapeName: roundRect
+    adjustments: [14000]
+    fill: {color: "$primary-soft"}
+  - elementId: tc-n1
+    elementType: text
+    bounds: [84, 184, 40, 46]
+    content:
+      fontSize: 16
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: '01'
+  - elementId: tc-name1
+    elementType: text
+    bounds: [136, 182, 316, 26]
+    content:
+      fontSize: 15
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 家的呼吸感
+  - elementId: tc-desc1
+    elementType: text
+    bounds: [136, 210, 316, 22]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: 留白与器物的对话
+  - elementId: tc-c2
+    elementType: shape
+    bounds: [496, 172, 400, 70]
+    shapeName: roundRect
+    adjustments: [14000]
+    fill: {color: "$primary-tint"}
+  - elementId: tc-n2
+    elementType: text
+    bounds: [516, 184, 40, 46]
+    content:
+      fontSize: 16
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: '02'
+  - elementId: tc-name2
+    elementType: text
+    bounds: [568, 182, 316, 26]
+    content:
+      fontSize: 15
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 手作器物志
+  - elementId: tc-desc2
+    elementType: text
+    bounds: [568, 210, 316, 22]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: 陶艺师的四季
+  - elementId: tc-c3
+    elementType: shape
+    bounds: [64, 258, 400, 70]
+    shapeName: roundRect
+    adjustments: [14000]
+    fill: {color: "$primary-tint"}
+  - elementId: tc-n3
+    elementType: text
+    bounds: [84, 270, 40, 46]
+    content:
+      fontSize: 16
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: '03'
+  - elementId: tc-name3
+    elementType: text
+    bounds: [136, 268, 316, 26]
+    content:
+      fontSize: 15
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 夏日食单
+  - elementId: tc-desc3
+    elementType: text
+    bounds: [136, 296, 316, 22]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: 二十四节气的餐桌
+  - elementId: tc-c4
+    elementType: shape
+    bounds: [496, 258, 400, 70]
+    shapeName: roundRect
+    adjustments: [14000]
+    fill: {color: "$primary-soft"}
+  - elementId: tc-n4
+    elementType: text
+    bounds: [516, 270, 40, 46]
+    content:
+      fontSize: 16
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: '04'
+  - elementId: tc-name4
+    elementType: text
+    bounds: [568, 268, 316, 26]
+    content:
+      fontSize: 15
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 城市慢行地图
+  - elementId: tc-desc4
+    elementType: text
+    bounds: [568, 296, 316, 22]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: 六条散步路线
+  - elementId: tc-foot
+    elementType: text
+    bounds: [64, 500, 400, 20]
+    content:
+      fontSize: 11
+      color: "$muted"
+      align: [left, middle]
+      text: '慢调编辑部  ｜  2025 夏季刊'

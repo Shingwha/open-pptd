@@ -1,0 +1,159 @@
+pageType: toc
+background:
+  type: solid
+  color: "#F7F3EA"
+elements:
+  - elementId: tc-title
+    elementType: text
+    bounds: [64, 64, 300, 44]
+    content:
+      style: "$title"
+      fontSize: 30
+      color: "#2B2620"
+      align: [left, middle]
+      text: 目录
+  - elementId: tc-title-en
+    elementType: text
+    bounds: [64, 110, 300, 22]
+    content:
+      fontSize: 13
+      color: "$primary"
+      align: [left, middle]
+      letterSpacing: 3
+      text: 目 录
+  - elementId: tc-line
+    elementType: shape
+    bounds: [64, 146, 52, 3]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: tc-n1
+    elementType: text
+    bounds: [64, 182, 80, 40]
+    content:
+      fontSize: 18
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '壹'
+  - elementId: tc-name1
+    elementType: text
+    bounds: [160, 182, 420, 40]
+    content:
+      style: "$body"
+      fontSize: 16
+      bold: true
+      color: "#2B2620"
+      align: [left, middle]
+      text: 品牌之源 · 山月十年
+  - elementId: tc-desc1
+    elementType: text
+    bounds: [600, 182, 280, 40]
+    content:
+      fontSize: 12
+      color: "#8A8070"
+      align: [right, middle]
+      text: 茶园 · 制茶 · 茶人
+  - elementId: tc-sep1
+    elementType: shape
+    bounds: [64, 238, 832, 1]
+    shapeName: rect
+    fill: {color: "#D9CDB4"}
+  - elementId: tc-n2
+    elementType: text
+    bounds: [64, 254, 80, 40]
+    content:
+      fontSize: 18
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '贰'
+  - elementId: tc-name2
+    elementType: text
+    bounds: [160, 254, 420, 40]
+    content:
+      style: "$body"
+      fontSize: 16
+      bold: true
+      color: "#2B2620"
+      align: [left, middle]
+      text: 新季茶品 · 春山三味
+  - elementId: tc-desc2
+    elementType: text
+    bounds: [600, 254, 280, 40]
+    content:
+      fontSize: 12
+      color: "#8A8070"
+      align: [right, middle]
+      text: 明前龙井 · 碧螺春 · 白毫银针
+  - elementId: tc-sep2
+    elementType: shape
+    bounds: [64, 310, 832, 1]
+    shapeName: rect
+    fill: {color: "#D9CDB4"}
+  - elementId: tc-n3
+    elementType: text
+    bounds: [64, 326, 80, 40]
+    content:
+      fontSize: 18
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '叁'
+  - elementId: tc-name3
+    elementType: text
+    bounds: [160, 326, 420, 40]
+    content:
+      style: "$body"
+      fontSize: 16
+      bold: true
+      color: "#2B2620"
+      align: [left, middle]
+      text: 茶席美学 · 器物与空间
+  - elementId: tc-desc3
+    elementType: text
+    bounds: [600, 326, 280, 40]
+    content:
+      fontSize: 12
+      color: "#8A8070"
+      align: [right, middle]
+      text: 器 · 席 · 境
+  - elementId: tc-sep3
+    elementType: shape
+    bounds: [64, 382, 832, 1]
+    shapeName: rect
+    fill: {color: "#D9CDB4"}
+  - elementId: tc-n4
+    elementType: text
+    bounds: [64, 398, 80, 40]
+    content:
+      fontSize: 18
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '肆'
+  - elementId: tc-name4
+    elementType: text
+    bounds: [160, 398, 420, 40]
+    content:
+      style: "$body"
+      fontSize: 16
+      bold: true
+      color: "#2B2620"
+      align: [left, middle]
+      text: 年度计划 · 茶事历
+  - elementId: tc-desc4
+    elementType: text
+    bounds: [600, 398, 280, 40]
+    content:
+      fontSize: 12
+      color: "#8A8070"
+      align: [right, middle]
+      text: 四季茶会 · 山月学堂
+  - elementId: tc-foot
+    elementType: text
+    bounds: [64, 500, 400, 20]
+    content:
+      fontSize: 11
+      color: "#8A8070"
+      align: [left, middle]
+      text: '山月茶事  ｜  2025'

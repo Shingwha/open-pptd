@@ -1,0 +1,31 @@
+pageType: final
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  - elementId: fn-title
+    elementType: text
+    bounds: [96, 320, 600, 100]
+    content:
+      style: "$title"
+      fontSize: 52
+      color: "#111827"
+      align: [left, top]
+      lineHeight: 1.25
+      text: '少，即是多'
+  - elementId: fn-sub
+    elementType: text
+    bounds: [96, 436, 400, 24]
+    content:
+      fontSize: 13
+      color: "$muted"
+      align: [left, middle]
+      text: 'NORDIK STUDIO · 2025'
+  - elementId: fn-tag
+    elementType: text
+    bounds: [96, 64, 300, 22]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: 'THANK YOU'

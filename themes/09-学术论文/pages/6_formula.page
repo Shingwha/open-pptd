@@ -1,0 +1,158 @@
+pageType: content
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # ── 页眉（统一）──
+  - elementId: fm-topbar
+    elementType: shape
+    bounds: [0, 0, 960, 4]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: fm-head
+    elementType: text
+    bounds: [48, 22, 400, 26]
+    content:
+      fontSize: 13
+      bold: true
+      color: "$primary-deep"
+      align: [left, middle]
+      text: '2 方法 · 2.2 注意力机制'
+  - elementId: fm-page
+    elementType: text
+    bounds: [860, 22, 52, 26]
+    content:
+      fontSize: 12
+      color: "$primary"
+      align: [right, middle]
+      text: '06'
+  - elementId: fm-underline
+    elementType: shape
+    bounds: [48, 52, 864, 1]
+    shapeName: rect
+    fill: {color: "$line"}
+  - elementId: fm-foot
+    elementType: text
+    bounds: [48, 512, 420, 18]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [left, middle]
+      text: 'Attention-based Time Series Forecasting'
+  - elementId: fm-foot2
+    elementType: text
+    bounds: [640, 512, 272, 18]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [right, middle]
+      text: 'ICML 2026'
+  # ── 小节标题 2.2 ──
+  - elementId: fm-s1bar
+    elementType: shape
+    bounds: [48, 76, 4, 18]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: fm-s1
+    elementType: text
+    bounds: [60, 74, 400, 22]
+    content:
+      fontSize: 14
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '2.2  注意力机制'
+  # ── Eq.(1) 缩放点积注意力 ──
+  - elementId: fm-eq1
+    elementType: formula
+    bounds: [48, 110, 780, 52]
+    latex: '\text{Attention}(Q, K, V) = \text{softmax}\left( \frac{Q K^{\top}}{\sqrt{d_k}} \right) V'
+    fontSize: 16
+    align: left
+  - elementId: fm-n1
+    elementType: text
+    bounds: [852, 110, 48, 52]
+    content:
+      fontSize: 13
+      bold: true
+      color: "$primary"
+      align: [right, middle]
+      text: '(1)'
+  - elementId: fm-c1
+    elementType: text
+    bounds: [48, 170, 864, 22]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: '其中 Q、K、V 分别为查询、键、值矩阵，d_k 为键的维度，用于缩放点积防止数值过大。'
+  - elementId: fm-sep1
+    elementType: shape
+    bounds: [48, 204, 864, 1]
+    shapeName: rect
+    fill: {color: "$line"}
+  # ── Eq.(2) 多头注意力 ──
+  - elementId: fm-eq2
+    elementType: formula
+    bounds: [48, 224, 780, 92]
+    latex: |
+      \text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h) W^{O}
+
+      \text{head}_i = \text{Attention}(Q W_i^{Q},\, K W_i^{K},\, V W_i^{V})
+    fontSize: 16
+    align: left
+  - elementId: fm-n2
+    elementType: text
+    bounds: [852, 224, 48, 92]
+    content:
+      fontSize: 13
+      bold: true
+      color: "$primary"
+      align: [right, middle]
+      text: '(2)'
+  - elementId: fm-c2
+    elementType: text
+    bounds: [48, 324, 864, 22]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: '其中 head_i 为第 i 个注意力头，W_i^Q / W_i^K / W_i^V 为头部投影矩阵，W^O 为输出投影。'
+  - elementId: fm-sep2
+    elementType: shape
+    bounds: [48, 358, 864, 1]
+    shapeName: rect
+    fill: {color: "$line"}
+  # ── Eq.(3) 训练目标 ──
+  - elementId: fm-eq3
+    elementType: formula
+    bounds: [48, 378, 780, 52]
+    latex: '\mathcal{L}_{\text{MSE}} = \frac{1}{T} \sum_{t=1}^{T} (y_t - \hat{y}_t)^2'
+    fontSize: 16
+    align: left
+  - elementId: fm-n3
+    elementType: text
+    bounds: [852, 378, 48, 52]
+    content:
+      fontSize: 13
+      bold: true
+      color: "$primary"
+      align: [right, middle]
+      text: '(3)'
+  - elementId: fm-c3
+    elementType: text
+    bounds: [48, 438, 864, 22]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: '其中 y_t 为真实值，ŷ_t 为模型预测，T 为序列长度；模型以最小化 MSE 为目标进行训练。'
+  # ── 底部说明（展示用途）──
+  - elementId: fm-note
+    elementType: text
+    bounds: [48, 476, 864, 20]
+    content:
+      fontSize: 11
+      color: "$muted"
+      align: [left, middle]
+      text: '注：以上公式均为 PowerPoint 原生可编辑公式（导出后双击可修改）；浏览器预览由原生 MathML 渲染，两端一致。'

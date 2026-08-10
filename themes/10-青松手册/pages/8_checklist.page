@@ -1,0 +1,296 @@
+pageType: content
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # —— 页眉文档头 + 装订线 ——
+  - elementId: ck-topline
+    elementType: shape
+    bounds: [0, 0, 960, 4]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ck-head
+    elementType: text
+    bounds: [48, 22, 400, 24]
+    content:
+      fontSize: 12
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: 'QH-2025-07 · 第 04 章'
+  - elementId: ck-page
+    elementType: text
+    bounds: [872, 22, 48, 24]
+    content:
+      fontSize: 13
+      bold: true
+      color: "$primary"
+      align: [right, middle]
+      text: '08'
+  - elementId: ck-title
+    elementType: text
+    bounds: [48, 56, 600, 30]
+    content:
+      fontSize: 22
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: '验收与复盘'
+  # —— 小节 4.1 验收清单（左栏）——
+  - elementId: ck-s1box
+    elementType: shape
+    bounds: [48, 102, 24, 24]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ck-s1num
+    elementType: text
+    bounds: [48, 102, 24, 24]
+    content:
+      fontSize: 12
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: '4.1'
+  - elementId: ck-s1
+    elementType: text
+    bounds: [84, 102, 400, 24]
+    content:
+      fontSize: 15
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: '验收清单（六项全过方可签收）'
+  - elementId: ck-s1line
+    elementType: shape
+    bounds: [380, 113, 40, 2]
+    shapeName: rect
+    fill: {color: "$accent"}
+  # 左栏 6 项（check 图标 + 文字）
+  - elementId: ck-c1
+    elementType: icon
+    bounds: [52, 146, 16, 16]
+    icon: check
+    fill: {color: "$primary"}
+  - elementId: ck-t1
+    elementType: text
+    bounds: [80, 142, 380, 22]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, middle]
+      text: '交付物完整：文档、代码、数据包齐备'
+  - elementId: ck-c2
+    elementType: icon
+    bounds: [52, 178, 16, 16]
+    icon: check
+    fill: {color: "$primary"}
+  - elementId: ck-t2
+    elementType: text
+    bounds: [80, 174, 380, 22]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, middle]
+      text: '验收测试通过：关键用例通过率 100%'
+  - elementId: ck-c3
+    elementType: icon
+    bounds: [52, 210, 16, 16]
+    icon: check
+    fill: {color: "$primary"}
+  - elementId: ck-t3
+    elementType: text
+    bounds: [80, 206, 380, 22]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, middle]
+      text: '文档归档：操作手册与接口文档已提交'
+  - elementId: ck-c4
+    elementType: icon
+    bounds: [52, 242, 16, 16]
+    icon: check
+    fill: {color: "$primary"}
+  - elementId: ck-t4
+    elementType: text
+    bounds: [80, 238, 380, 22]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, middle]
+      text: '培训交接：使用方完成培训并签字确认'
+  - elementId: ck-c5
+    elementType: icon
+    bounds: [52, 274, 16, 16]
+    icon: check
+    fill: {color: "$primary"}
+  - elementId: ck-t5
+    elementType: text
+    bounds: [80, 270, 380, 22]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, middle]
+      text: '问题清零：遗留问题均有处理方案与责任人'
+  - elementId: ck-c6
+    elementType: icon
+    bounds: [52, 306, 16, 16]
+    icon: check
+    fill: {color: "$primary"}
+  - elementId: ck-t6
+    elementType: text
+    bounds: [80, 302, 380, 22]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, middle]
+      text: '评审签字：评审会三分之二以上同意通过'
+  # —— 小节 4.2 退回情形（右栏）——
+  - elementId: ck-s2box
+    elementType: shape
+    bounds: [500, 102, 24, 24]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ck-s2num
+    elementType: text
+    bounds: [500, 102, 24, 24]
+    content:
+      fontSize: 12
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: '4.2'
+  - elementId: ck-s2
+    elementType: text
+    bounds: [536, 102, 400, 24]
+    content:
+      fontSize: 15
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: '应予退回的情形'
+  - elementId: ck-s2line
+    elementType: shape
+    bounds: [672, 113, 40, 2]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: ck-x1
+    elementType: icon
+    bounds: [504, 146, 16, 16]
+    icon: x-circle
+    fill: {color: "$primary"}
+  - elementId: ck-x1t
+    elementType: text
+    bounds: [532, 142, 380, 22]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, middle]
+      text: '交付物与需求说明不一致'
+  - elementId: ck-x2
+    elementType: icon
+    bounds: [504, 178, 16, 16]
+    icon: x-circle
+    fill: {color: "$primary"}
+  - elementId: ck-x2t
+    elementType: text
+    bounds: [532, 174, 380, 22]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, middle]
+      text: '测试用例未覆盖核心业务场景'
+  - elementId: ck-x3
+    elementType: icon
+    bounds: [504, 210, 16, 16]
+    icon: x-circle
+    fill: {color: "$primary"}
+  - elementId: ck-x3t
+    elementType: text
+    bounds: [532, 206, 380, 22]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, middle]
+      text: '文档缺失或与实际实现不符'
+  # —— 复盘小节（右栏，4.2 下方）——
+  - elementId: ck-s3box
+    elementType: shape
+    bounds: [500, 266, 24, 24]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ck-s3num
+    elementType: text
+    bounds: [500, 266, 24, 24]
+    content:
+      fontSize: 12
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: '4.3'
+  - elementId: ck-s3
+    elementType: text
+    bounds: [536, 266, 400, 24]
+    content:
+      fontSize: 15
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: '复盘输出物'
+  - elementId: ck-s3line
+    elementType: shape
+    bounds: [624, 277, 40, 2]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: ck-r1
+    elementType: text
+    bounds: [500, 310, 400, 24]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, middle]
+      text: '· 复盘报告：目标达成度、偏差原因、改进项清单'
+  - elementId: ck-r2
+    elementType: text
+    bounds: [500, 342, 400, 24]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, middle]
+      text: '· 资产沉淀：可复用组件、模板与经验进入知识库'
+  # —— 结论条 ——
+  - elementId: ck-conclbox
+    elementType: shape
+    bounds: [48, 418, 864, 46]
+    shapeName: rect
+    fill: {color: "#FFFFFF"}
+    border: {width: 1, color: "$line"}
+  - elementId: ck-conclbar
+    elementType: shape
+    bounds: [48, 418, 3, 46]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ck-concl
+    elementType: text
+    bounds: [66, 418, 830, 46]
+    content:
+      fontSize: 13
+      color: "$text"
+      align: [left, middle]
+      text: '要点：验收不通过不得进入发布与结算；退回项整改后重新走 4.1 全流程。'
+  # —— 页脚 ——
+  - elementId: ck-foot
+    elementType: text
+    bounds: [48, 508, 420, 18]
+    content:
+      fontSize: 11
+      color: "$muted"
+      align: [left, middle]
+      text: '青松手册 · 项目管理规范手册'
+  - elementId: ck-foot2
+    elementType: text
+    bounds: [640, 508, 272, 18]
+    content:
+      fontSize: 11
+      color: "$muted"
+      align: [right, middle]
+      text: '内部资料 · 请勿外传'

@@ -1,0 +1,262 @@
+pageType: content
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # —— 页眉（居中对称）——
+  - elementId: ov-topbar
+    elementType: shape
+    bounds: [0, 0, 960, 6]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ov-title
+    elementType: text
+    bounds: [230, 36, 500, 34]
+    content:
+      style: "$title"
+      fontSize: 22
+      color: "$primary"
+      align: [center, middle]
+      letterSpacing: 2
+      text: 重点工作完成情况
+  - elementId: ov-titlebar
+    elementType: shape
+    bounds: [380, 76, 200, 3]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: ov-page
+    elementType: text
+    bounds: [872, 36, 48, 28]
+    content:
+      fontSize: 13
+      bold: true
+      color: "$primary"
+      align: [right, middle]
+      text: '03'
+  - elementId: ov-foot
+    elementType: text
+    bounds: [48, 508, 420, 20]
+    content:
+      style: "$body"
+      fontSize: 11
+      color: "$muted"
+      align: [left, middle]
+      text: '云州市工业和信息化局  ｜  2025'
+  # —— 四个进度区块 ——
+  - elementId: ov-b1-name
+    elementType: text
+    bounds: [48, 116, 200, 26]
+    content:
+      style: "$body"
+      fontSize: 14
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '制造业投资'
+  - elementId: ov-b1-bg
+    elementType: shape
+    bounds: [48, 152, 200, 10]
+    shapeName: rect
+    fill: {color: "$primary-soft"}
+  - elementId: ov-b1-fill
+    elementType: shape
+    bounds: [48, 152, 184, 10]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ov-b1-v
+    elementType: text
+    bounds: [48, 172, 200, 34]
+    content:
+      fontSize: 22
+      bold: true
+      color: "$primary"
+      align: [left, top]
+      text: '92%'
+  - elementId: ov-b1-d
+    elementType: text
+    bounds: [48, 210, 200, 22]
+    content:
+      style: "$body"
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: '目标 +10%，超时序推进'
+  - elementId: ov-b2-name
+    elementType: text
+    bounds: [262, 116, 200, 26]
+    content:
+      style: "$body"
+      fontSize: 14
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '技改项目'
+  - elementId: ov-b2-bg
+    elementType: shape
+    bounds: [262, 152, 200, 10]
+    shapeName: rect
+    fill: {color: "$primary-soft"}
+  - elementId: ov-b2-fill
+    elementType: shape
+    bounds: [262, 152, 200, 10]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ov-b2-v
+    elementType: text
+    bounds: [262, 172, 200, 34]
+    content:
+      fontSize: 22
+      bold: true
+      color: "$primary"
+      align: [left, top]
+      text: '100%'
+  - elementId: ov-b2-d
+    elementType: text
+    bounds: [262, 210, 200, 22]
+    content:
+      style: "$body"
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: '完成 132 个，超年度目标 12 个'
+  - elementId: ov-b3-name
+    elementType: text
+    bounds: [476, 116, 200, 26]
+    content:
+      style: "$body"
+      fontSize: 14
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '专精特新培育'
+  - elementId: ov-b3-bg
+    elementType: shape
+    bounds: [476, 152, 200, 10]
+    shapeName: rect
+    fill: {color: "$primary-soft"}
+  - elementId: ov-b3-fill
+    elementType: shape
+    bounds: [476, 152, 200, 10]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ov-b3-v
+    elementType: text
+    bounds: [476, 172, 200, 34]
+    content:
+      fontSize: 22
+      bold: true
+      color: "$primary"
+      align: [left, top]
+      text: '115%'
+  - elementId: ov-b3-d
+    elementType: text
+    bounds: [476, 210, 200, 22]
+    content:
+      style: "$body"
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: '新增 46 家，超额 6 家'
+  - elementId: ov-b4-name
+    elementType: text
+    bounds: [690, 116, 200, 26]
+    content:
+      style: "$body"
+      fontSize: 14
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '安全生产'
+  - elementId: ov-b4-bg
+    elementType: shape
+    bounds: [690, 152, 200, 10]
+    shapeName: rect
+    fill: {color: "$primary-soft"}
+  - elementId: ov-b4-fill
+    elementType: shape
+    bounds: [690, 152, 200, 10]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ov-b4-v
+    elementType: text
+    bounds: [690, 172, 200, 34]
+    content:
+      fontSize: 22
+      bold: true
+      color: "$primary"
+      align: [left, top]
+      text: '100%'
+  - elementId: ov-b4-d
+    elementType: text
+    bounds: [690, 210, 200, 22]
+    content:
+      style: "$body"
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: '全年零事故，全面达标'
+  # —— 汇总表 ——
+  - elementId: ov-tb-t
+    elementType: text
+    bounds: [48, 268, 420, 22]
+    content:
+      style: "$body"
+      fontSize: 14
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      text: '重点指标完成一览'
+  - elementId: ov-table
+    elementType: table
+    bounds: [48, 296, 864, 90]
+    rows:
+      - - text: 指标
+        - text: 年度目标
+        - text: 完成情况
+        - text: 评价
+      - - text: 工业增加值增速
+        - text: +8%
+        - text: +8.6%
+        - text: 超额完成
+      - - text: 工业投资总额
+        - text: 400 亿
+        - text: 412 亿
+        - text: 超额完成
+      - - text: 亿元以上项目
+        - text: 30 个
+        - text: 32 个
+        - text: 全面完成
+      - - text: 民生实事
+        - text: 100%
+        - text: 100%
+        - text: 全面达标
+  # —— 结论 ——
+  - elementId: ov-concl-bg
+    elementType: shape
+    bounds: [48, 408, 864, 48]
+    shapeName: rect
+    fill: {color: "$primary-soft"}
+    border: {width: 1, color: "$accent"}
+  - elementId: ov-concl-tag
+    elementType: shape
+    bounds: [64, 418, 60, 28]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ov-concl-tag-t
+    elementType: text
+    bounds: [64, 418, 60, 28]
+    content:
+      fontSize: 12
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 结论
+  - elementId: ov-concl-t
+    elementType: text
+    bounds: [140, 418, 752, 28]
+    content:
+      style: "$body"
+      fontSize: 13
+      color: "$text"
+      align: [left, middle]
+      text: '四项重点工作全部超额或达标完成，工业经济实现质的有效提升和量的合理增长。'

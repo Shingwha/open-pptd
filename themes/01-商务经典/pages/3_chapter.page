@@ -1,0 +1,111 @@
+pageType: chapter
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # —— 右下超大编号水印（衬线大数字） ——
+  - elementId: ch-num
+    elementType: text
+    bounds: [676, 108, 236, 250]
+    content:
+      fontSize: 170
+      bold: true
+      color: "$primary10"
+      align: [right, top]
+      fontFamily: "Noto Serif SC"
+      text: '01'
+  # —— 左侧亮蓝竖条 ——
+  - elementId: ch-bar
+    elementType: shape
+    bounds: [48, 128, 6, 84]
+    shapeName: rect
+    fill: {color: "$accent"}
+  # —— 章节标签 / 标题 / 描述 ——
+  - elementId: ch-tag
+    elementType: text
+    bounds: [76, 132, 300, 20]
+    content:
+      fontSize: 12
+      bold: true
+      color: "$accent"
+      align: [left, middle]
+      text: PART 01 — TYPOGRAPHY
+  - elementId: ch-title
+    elementType: text
+    bounds: [76, 166, 560, 48]
+    content:
+      fontSize: 36
+      bold: true
+      color: "$text"
+      align: [left, top]
+      fontFamily: "Noto Serif SC"
+      text: 字体与版式
+  - elementId: ch-desc
+    elementType: text
+    bounds: [76, 228, 560, 44]
+    content:
+      fontSize: 14
+      color: "$muted"
+      align: [left, top]
+      text: 标题层级、字体家族、引用与说明文字的排版规范
+  # —— 章节进度 ——
+  - elementId: ch-dot1
+    elementType: shape
+    bounds: [72, 470, 20, 20]
+    shapeName: ellipse
+    fill: {color: "$accent"}
+  - elementId: ch-dot2
+    elementType: shape
+    bounds: [102, 470, 20, 20]
+    shapeName: ellipse
+    fill: {color: "$line"}
+  - elementId: ch-dot3
+    elementType: shape
+    bounds: [132, 470, 20, 20]
+    shapeName: ellipse
+    fill: {color: "$line"}
+  - elementId: ch-dot4
+    elementType: shape
+    bounds: [162, 470, 20, 20]
+    shapeName: ellipse
+    fill: {color: "$line"}
+  - elementId: ch-prog
+    elementType: text
+    bounds: [192, 470, 280, 20]
+    content:
+      fontSize: 11
+      color: "$muted"
+      align: [left, middle]
+      text: 1 / 4 —— 字体与版式
+  # —— 骨架：页码 / 页脚 ——
+  - elementId: ch-page
+    elementType: text
+    bounds: [888, 28, 40, 24]
+    content:
+      fontSize: 13
+      bold: true
+      color: "$primary"
+      align: [right, middle]
+      text: '03'
+  - elementId: ch-foot-line
+    elementType: line
+    bounds: [48, 508, 864, 1]
+    viewBox: [864, 1]
+    points: "0,0 864,0"
+    border: {style: solid, width: 1, color: "$line"}
+  - elementId: ch-foot
+    elementType: text
+    bounds: [48, 516, 420, 14]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [left, middle]
+      text: 麦肯锡咨询 · 风格指南
+  - elementId: ch-foot2
+    elementType: text
+    bounds: [768, 516, 144, 14]
+    content:
+      fontSize: 10
+      color: "$muted"
+      align: [right, middle]
+      text: CONFIDENTIAL

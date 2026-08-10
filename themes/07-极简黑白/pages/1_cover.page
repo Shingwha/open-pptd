@@ -1,0 +1,33 @@
+pageType: cover
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  - elementId: cv-title
+    elementType: text
+    bounds: [96, 300, 600, 120]
+    content:
+      style: "$title"
+      fontSize: 56
+      color: "#111827"
+      align: [left, top]
+      lineHeight: 1.25
+      text: |
+        白与黑
+        品牌视觉提案
+  - elementId: cv-sub
+    elementType: text
+    bounds: [96, 448, 400, 24]
+    content:
+      fontSize: 13
+      color: "$muted"
+      align: [left, middle]
+      text: '2025 · 品牌设计组'
+  - elementId: cv-tag
+    elementType: text
+    bounds: [96, 64, 300, 22]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [left, middle]
+      text: 'NORDIK STUDIO'

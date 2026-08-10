@@ -1,0 +1,64 @@
+pageType: chapter
+background:
+  type: solid
+  color: "#F5EFE0"
+elements:
+  - elementId: ch-num
+    elementType: text
+    bounds: [64, 108, 340, 170]
+    content:
+      fontSize: 150
+      bold: true
+      color: "$primary20"
+      align: [left, top]
+      text: '壹'
+  - elementId: ch-line1
+    elementType: shape
+    bounds: [64, 300, 160, 2]
+    shapeName: rect
+    fill: {color: "#3D3226"}
+  - elementId: ch-line2
+    elementType: shape
+    bounds: [64, 306, 160, 1]
+    shapeName: rect
+    fill: {color: "#8A7B66"}
+  - elementId: ch-title
+    elementType: text
+    bounds: [92, 330, 700, 56]
+    content:
+      style: "$title"
+      fontSize: 38
+      color: "#3D3226"
+      align: [left, middle]
+      text: '街巷春秋'
+  - elementId: ch-sub
+    elementType: text
+    bounds: [92, 398, 700, 30]
+    content:
+      style: "$body"
+      fontSize: 16
+      color: "#6E6355"
+      align: [left, middle]
+      text: '青石板上的往事，一条街巷的百年回声'
+  - elementId: ch-tag
+    elementType: shape
+    bounds: [92, 442, 120, 28]
+    shapeName: rect
+    fill: {color: "#6E1423"}
+  - elementId: ch-tag-t
+    elementType: text
+    bounds: [92, 442, 120, 28]
+    content:
+      fontSize: 13
+      bold: true
+      color: "#F5EFE0"
+      align: [center, middle]
+      text: '壹 · 街巷春秋'
+  - elementId: ch-foot
+    elementType: text
+    bounds: [64, 496, 400, 22]
+    content:
+      fontSize: 12
+      color: "#6E6355"
+      align: [left, middle]
+      text: '老城记忆  ｜  2025'

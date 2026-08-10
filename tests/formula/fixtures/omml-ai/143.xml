@@ -1,0 +1,2 @@
+<?xml version="1.0"?>
+<m:oMath xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"><m:limUpp><m:e><m:limLow><m:e><m:r><m:t>→</m:t></m:r></m:e><m:lim><m:phant><m:e><m:r><m:t>below</m:t></m:r></m:e></m:phant></m:lim></m:limLow></m:e><m:lim><m:phant><m:e><m:r><m:t>above</m:t></m:r></m:e></m:phant></m:lim></m:limUpp></m:oMath>

@@ -1,0 +1,123 @@
+pageType: final
+background:
+  type: solid
+  color: "#F5EFE0"
+elements:
+  - elementId: fn-line-t
+    elementType: shape
+    bounds: [48, 60, 864, 3]
+    shapeName: rect
+    fill: {color: "#3D3226"}
+  - elementId: fn-tag
+    elementType: text
+    bounds: [72, 100, 320, 24]
+    content:
+      fontSize: 13
+      bold: true
+      color: "#6E1423"
+      align: [left, middle]
+      letterSpacing: 3
+      text: '展 览 信 息'
+  - elementId: fn-title
+    elementType: text
+    bounds: [72, 150, 700, 80]
+    content:
+      style: "$title"
+      fontSize: 40
+      color: "#3D3226"
+      align: [left, middle]
+      text: '老城记忆 · 城市文化展'
+  - elementId: fn-line
+    elementType: shape
+    bounds: [76, 244, 80, 2]
+    shapeName: rect
+    fill: {color: "#6E1423"}
+  - elementId: fn-c1
+    elementType: shape
+    bounds: [72, 276, 256, 130]
+    shapeName: rect
+    fill: {color: "#FFFFFF66"}
+    border: {width: 1, color: "#B8A98E"}
+  - elementId: fn-c1-t
+    elementType: text
+    bounds: [96, 296, 210, 30]
+    content:
+      style: "$body"
+      fontSize: 18
+      bold: true
+      color: "#3D3226"
+      align: [left, top]
+      text: '展期'
+  - elementId: fn-c1-d
+    elementType: text
+    bounds: [96, 334, 210, 50]
+    content:
+      style: "$body"
+      fontSize: 13
+      color: "#6E6355"
+      align: [left, top]
+      text: |
+        2025 年 9 月 1 日
+        至 11 月 30 日
+  - elementId: fn-c2
+    elementType: shape
+    bounds: [352, 276, 256, 130]
+    shapeName: rect
+    fill: {color: "#FFFFFF66"}
+    border: {width: 1, color: "#B8A98E"}
+  - elementId: fn-c2-t
+    elementType: text
+    bounds: [376, 296, 210, 30]
+    content:
+      style: "$body"
+      fontSize: 18
+      bold: true
+      color: "#3D3226"
+      align: [left, top]
+      text: '地点'
+  - elementId: fn-c2-d
+    elementType: text
+    bounds: [376, 334, 210, 50]
+    content:
+      style: "$body"
+      fontSize: 13
+      color: "#6E6355"
+      align: [left, top]
+      text: |
+        市档案馆一层展厅
+        （中山路 128 号）
+  - elementId: fn-c3
+    elementType: shape
+    bounds: [632, 276, 256, 130]
+    shapeName: rect
+    fill: {color: "#FFFFFF66"}
+    border: {width: 1, color: "#B8A98E"}
+  - elementId: fn-c3-t
+    elementType: text
+    bounds: [656, 296, 210, 30]
+    content:
+      style: "$body"
+      fontSize: 18
+      bold: true
+      color: "#3D3226"
+      align: [left, top]
+      text: '主办'
+  - elementId: fn-c3-d
+    elementType: text
+    bounds: [656, 334, 210, 50]
+    content:
+      style: "$body"
+      fontSize: 13
+      color: "#6E6355"
+      align: [left, top]
+      text: |
+        市档案馆
+        老街文化协会
+  - elementId: fn-meta
+    elementType: text
+    bounds: [72, 484, 500, 24]
+    content:
+      fontSize: 12
+      color: "#6E6355"
+      align: [left, middle]
+      text: '老城记忆  ｜  2025 年 9 月开展'

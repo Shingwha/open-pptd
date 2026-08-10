@@ -1,0 +1,171 @@
+pageType: toc
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # 顶部粗线
+  - elementId: tc-line
+    elementType: shape
+    bounds: [0, 0, 960, 4]
+    shapeName: rect
+    fill: {color: "$primary"}
+  # 标题
+  - elementId: tc-title
+    elementType: text
+    bounds: [64, 60, 300, 44]
+    content:
+      fontSize: 30
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: '目录'
+  - elementId: tc-title-en
+    elementType: text
+    bounds: [64, 106, 300, 22]
+    content:
+      fontSize: 13
+      color: "$muted"
+      align: [left, middle]
+      text: 'CONTENTS'
+  - elementId: tc-titleline
+    elementType: shape
+    bounds: [64, 142, 52, 4]
+    shapeName: rect
+    fill: {color: "$accent"}
+  # —— 1 引言 ——
+  - elementId: tc-b1
+    elementType: shape
+    bounds: [64, 182, 34, 34]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: tc-n1
+    elementType: text
+    bounds: [64, 182, 34, 34]
+    content:
+      fontSize: 16
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: '1'
+  - elementId: tc-t1
+    elementType: text
+    bounds: [118, 182, 420, 34]
+    content:
+      fontSize: 16
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: '引言：研究动机、贡献与流程'
+  - elementId: tc-p1
+    elementType: text
+    bounds: [820, 182, 76, 34]
+    content:
+      fontSize: 15
+      color: "$text"
+      align: [right, middle]
+      text: '03'
+  # —— 2 方法 ——
+  - elementId: tc-b2
+    elementType: shape
+    bounds: [64, 236, 34, 34]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: tc-n2
+    elementType: text
+    bounds: [64, 236, 34, 34]
+    content:
+      fontSize: 16
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: '2'
+  - elementId: tc-t2
+    elementType: text
+    bounds: [118, 236, 420, 34]
+    content:
+      fontSize: 16
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: '方法：模型架构与注意力机制'
+  - elementId: tc-p2
+    elementType: text
+    bounds: [820, 236, 76, 34]
+    content:
+      fontSize: 15
+      color: "$text"
+      align: [right, middle]
+      text: '04'
+  # —— 3 实验 ——
+  - elementId: tc-b3
+    elementType: shape
+    bounds: [64, 290, 34, 34]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: tc-n3
+    elementType: text
+    bounds: [64, 290, 34, 34]
+    content:
+      fontSize: 16
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: '3'
+  - elementId: tc-t3
+    elementType: text
+    bounds: [118, 290, 420, 34]
+    content:
+      fontSize: 16
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: '实验：收敛曲线、对比与消融'
+  - elementId: tc-p3
+    elementType: text
+    bounds: [820, 290, 76, 34]
+    content:
+      fontSize: 15
+      color: "$text"
+      align: [right, middle]
+      text: '07'
+  # —— 4 结论 ——
+  - elementId: tc-b4
+    elementType: shape
+    bounds: [64, 344, 34, 34]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: tc-n4
+    elementType: text
+    bounds: [64, 344, 34, 34]
+    content:
+      fontSize: 16
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: '4'
+  - elementId: tc-t4
+    elementType: text
+    bounds: [118, 344, 420, 34]
+    content:
+      fontSize: 16
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: '结论与展望'
+  - elementId: tc-p4
+    elementType: text
+    bounds: [820, 344, 76, 34]
+    content:
+      fontSize: 15
+      color: "$text"
+      align: [right, middle]
+      text: '09'
+  # 页脚
+  - elementId: tc-foot
+    elementType: text
+    bounds: [64, 490, 420, 20]
+    content:
+      fontSize: 11
+      color: "$muted"
+      align: [left, middle]
+      text: 'Attention-based Time Series Forecasting'

@@ -1,0 +1,284 @@
+pageType: content
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # —— 页眉 ——
+  - elementId: ov-title
+    elementType: text
+    bounds: [48, 32, 400, 34]
+    content:
+      style: "$title"
+      fontSize: 22
+      color: "$text"
+      align: [left, middle]
+      text: '一周课表 · 天天不同'
+  - elementId: ov-titlebar
+    elementType: shape
+    bounds: [48, 70, 60, 8]
+    shapeName: roundRect
+    adjustments: [50000]
+    fill: {color: "$primary"}
+  - elementId: ov-page
+    elementType: text
+    bounds: [872, 32, 48, 28]
+    content:
+      fontSize: 13
+      bold: true
+      color: "$primary"
+      align: [right, middle]
+      text: '03'
+  - elementId: ov-foot
+    elementType: text
+    bounds: [48, 508, 420, 20]
+    content:
+      fontSize: 11
+      color: "$muted"
+      align: [left, middle]
+      text: '青芽教育  ｜  2025 暑期'
+  # —— 时间轴中线 + 圆点 ——
+  - elementId: ov-axis
+    elementType: line
+    bounds: [478, 96, 4, 330]
+    viewBox: [4, 330]
+    points: "2,0 2,330"
+    border: {style: solid, width: 2, color: "#E3C36B"}
+  - elementId: ov-d1
+    elementType: shape
+    bounds: [470, 106, 20, 20]
+    shapeName: ellipse
+    fill: {color: "$primary"}
+  - elementId: ov-d2
+    elementType: shape
+    bounds: [470, 174, 20, 20]
+    shapeName: ellipse
+    fill: {color: "#FFD166"}
+  - elementId: ov-d3
+    elementType: shape
+    bounds: [470, 242, 20, 20]
+    shapeName: ellipse
+    fill: {color: "#F2B989"}
+  - elementId: ov-d4
+    elementType: shape
+    bounds: [470, 310, 20, 20]
+    shapeName: ellipse
+    fill: {color: "#E3C36B"}
+  - elementId: ov-d5
+    elementType: shape
+    bounds: [470, 378, 20, 20]
+    shapeName: ellipse
+    fill: {color: "$primary"}
+  # —— 左卡（周一/三/五）——
+  - elementId: ov-c1
+    elementType: shape
+    bounds: [140, 96, 310, 64]
+    shapeName: roundRect
+    adjustments: [22000]
+    fill: {color: "$primary"}
+  - elementId: ov-c1-tag
+    elementType: shape
+    bounds: [156, 108, 64, 24]
+    shapeName: roundRect
+    adjustments: [50000]
+    fill: {color: "#FFFFFF"}
+  - elementId: ov-c1-tag-t
+    elementType: text
+    bounds: [156, 108, 64, 24]
+    content:
+      fontSize: 12
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: '周一'
+  - elementId: ov-c1-name
+    elementType: text
+    bounds: [232, 104, 200, 26]
+    content:
+      style: "$body"
+      fontSize: 15
+      bold: true
+      color: "#FFFFFF"
+      align: [left, middle]
+      text: '物理实验室'
+  - elementId: ov-c1-sub
+    elementType: text
+    bounds: [232, 130, 200, 20]
+    content:
+      fontSize: 12
+      color: "#FFFFFFB3"
+      align: [left, middle]
+      text: '上午 9:00 · 王老师'
+  - elementId: ov-c3
+    elementType: shape
+    bounds: [140, 232, 310, 64]
+    shapeName: roundRect
+    adjustments: [22000]
+    fill: {color: "#F2B989"}
+  - elementId: ov-c3-tag
+    elementType: shape
+    bounds: [156, 244, 64, 24]
+    shapeName: roundRect
+    adjustments: [50000]
+    fill: {color: "#FFFFFF"}
+  - elementId: ov-c3-tag-t
+    elementType: text
+    bounds: [156, 244, 64, 24]
+    content:
+      fontSize: 12
+      bold: true
+      color: "#B5503C"
+      align: [center, middle]
+      text: '周三'
+  - elementId: ov-c3-name
+    elementType: text
+    bounds: [232, 240, 200, 26]
+    content:
+      style: "$body"
+      fontSize: 15
+      bold: true
+      color: "#4A2E1A"
+      align: [left, middle]
+      text: '户外运动日'
+  - elementId: ov-c3-sub
+    elementType: text
+    bounds: [232, 266, 200, 20]
+    content:
+      fontSize: 12
+      color: "#5C3A1A"
+      align: [left, middle]
+      text: '下午 14:00 · 李教练'
+  - elementId: ov-c5
+    elementType: shape
+    bounds: [140, 368, 310, 64]
+    shapeName: roundRect
+    adjustments: [22000]
+    fill: {color: "$primary"}
+  - elementId: ov-c5-tag
+    elementType: shape
+    bounds: [156, 380, 64, 24]
+    shapeName: roundRect
+    adjustments: [50000]
+    fill: {color: "#FFFFFF"}
+  - elementId: ov-c5-tag-t
+    elementType: text
+    bounds: [156, 380, 64, 24]
+    content:
+      fontSize: 12
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: '周五'
+  - elementId: ov-c5-name
+    elementType: text
+    bounds: [232, 376, 200, 26]
+    content:
+      style: "$body"
+      fontSize: 15
+      bold: true
+      color: "#FFFFFF"
+      align: [left, middle]
+      text: '团队挑战赛'
+  - elementId: ov-c5-sub
+    elementType: text
+    bounds: [232, 402, 200, 20]
+    content:
+      fontSize: 12
+      color: "#FFFFFFB3"
+      align: [left, middle]
+      text: '上午 9:00 · 全体导师'
+  # —— 右卡（周二/四）——
+  - elementId: ov-c2
+    elementType: shape
+    bounds: [510, 164, 310, 64]
+    shapeName: roundRect
+    adjustments: [22000]
+    fill: {color: "#FFD166"}
+  - elementId: ov-c2-tag
+    elementType: shape
+    bounds: [526, 176, 64, 24]
+    shapeName: roundRect
+    adjustments: [50000]
+    fill: {color: "#FFFFFF"}
+  - elementId: ov-c2-tag-t
+    elementType: text
+    bounds: [526, 176, 64, 24]
+    content:
+      fontSize: 12
+      bold: true
+      color: "#A16207"
+      align: [center, middle]
+      text: '周二'
+  - elementId: ov-c2-name
+    elementType: text
+    bounds: [602, 172, 200, 26]
+    content:
+      style: "$body"
+      fontSize: 15
+      bold: true
+      color: "#33331A"
+      align: [left, middle]
+      text: '天文观测站'
+  - elementId: ov-c2-sub
+    elementType: text
+    bounds: [602, 198, 200, 20]
+    content:
+      fontSize: 12
+      color: "#5C4A12"
+      align: [left, middle]
+      text: '晚上 19:30 · 陈老师'
+  - elementId: ov-c4
+    elementType: shape
+    bounds: [510, 300, 310, 64]
+    shapeName: roundRect
+    adjustments: [22000]
+    fill: {color: "#E3C36B"}
+  - elementId: ov-c4-tag
+    elementType: shape
+    bounds: [526, 312, 64, 24]
+    shapeName: roundRect
+    adjustments: [50000]
+    fill: {color: "#FFFFFF"}
+  - elementId: ov-c4-tag-t
+    elementType: text
+    bounds: [526, 312, 64, 24]
+    content:
+      fontSize: 12
+      bold: true
+      color: "#8A6E3B"
+      align: [center, middle]
+      text: '周四'
+  - elementId: ov-c4-name
+    elementType: text
+    bounds: [602, 308, 200, 26]
+    content:
+      style: "$body"
+      fontSize: 15
+      bold: true
+      color: "#3A331A"
+      align: [left, middle]
+      text: '艺术工坊'
+  - elementId: ov-c4-sub
+    elementType: text
+    bounds: [602, 334, 200, 20]
+    content:
+      fontSize: 12
+      color: "#4A4218"
+      align: [left, middle]
+      text: '下午 14:00 · 周老师'
+  # —— 结营横幅 ——
+  - elementId: ov-final
+    elementType: shape
+    bounds: [48, 452, 864, 44]
+    shapeName: roundRect
+    adjustments: [22000]
+    fill: {color: "$primary-soft"}
+  - elementId: ov-final-t
+    elementType: text
+    bounds: [72, 460, 820, 28]
+    content:
+      style: "$body"
+      fontSize: 14
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: '🎓 周六结营展 · 作品展示 + 成长档案颁发'

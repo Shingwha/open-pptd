@@ -1,0 +1,16 @@
+version: v2
+title: 品牌视觉提案 · 白与黑
+gallery:
+  name: 极简黑白
+  style: minimal 极简
+  color: black 黑白
+  font: 微软雅黑
+  scene: 设计提案 / 学术答辩 / 高端品牌
+theme: black
+size: [960, 540]
+pages:
+  - pages/1_cover.page
+  - pages/2_toc.page
+  - pages/3_chapter.page
+  - pages/4_content.page
+  - pages/5_final.page

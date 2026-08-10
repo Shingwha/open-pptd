@@ -1,0 +1,1 @@
+<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mi>θ</mi></msub><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><msup><mi>θ</mi><mi>T</mi></msup><mi>x</mi></mrow><annotation encoding="application/x-tex">h_\theta(x) = \theta^T x</annotation></semantics></math></span>

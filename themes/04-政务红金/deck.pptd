@@ -1,0 +1,24 @@
+version: v2
+title: 2025 年度工作报告
+gallery:
+  name: 政务红金
+  style: official 政务红金
+  color: vermilion 朱砂
+  font: 黑体 + 仿宋
+  scene: 党建汇报 / 政府工作 / 大型会议
+theme: vermilion
+fonts:
+  title: SimHei
+  subtitle: FangSong
+  body: FangSong
+  caption: FangSong
+  quote: FangSong
+  table: FangSong
+  chart: SimHei
+size: [960, 540]
+pages:
+  - pages/1_cover.page
+  - pages/2_toc.page
+  - pages/3_chapter.page
+  - pages/4_content.page
+  - pages/5_final.page

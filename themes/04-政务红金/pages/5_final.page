@@ -1,0 +1,53 @@
+pageType: final
+background:
+  type: solid
+  color: "$primary-deep"
+elements:
+  - elementId: fn-line-t1
+    elementType: shape
+    bounds: [330, 90, 300, 1]
+    shapeName: rect
+    fill: {color: "$accent66"}
+  - elementId: fn-line-t2
+    elementType: shape
+    bounds: [300, 96, 360, 2]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: fn-title
+    elementType: text
+    bounds: [180, 170, 600, 90]
+    content:
+      style: "$title"
+      fontSize: 42
+      color: "#FFFFFF"
+      align: [center, middle]
+      letterSpacing: 4
+      text: '实干笃行启新程'
+  - elementId: fn-sub
+    elementType: text
+    bounds: [280, 280, 400, 30]
+    content:
+      style: "$body"
+      fontSize: 16
+      color: "#FFFFFFB3"
+      align: [center, middle]
+      text: '奋力谱写工业和信息化事业新篇章'
+  - elementId: fn-line-b1
+    elementType: shape
+    bounds: [300, 360, 360, 2]
+    shapeName: rect
+    fill: {color: "$accent"}
+  - elementId: fn-line-b2
+    elementType: shape
+    bounds: [330, 366, 300, 1]
+    shapeName: rect
+    fill: {color: "$accent66"}
+  - elementId: fn-meta
+    elementType: text
+    bounds: [280, 440, 400, 26]
+    content:
+      style: "$body"
+      fontSize: 14
+      color: "#FFFFFF99"
+      align: [center, middle]
+      text: '云州市工业和信息化局  ｜  2025 年 1 月'

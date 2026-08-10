@@ -1,0 +1,73 @@
+pageType: cover
+background:
+  type: solid
+  color: "#F7F3EA"
+elements:
+  - elementId: cv-line-top
+    elementType: shape
+    bounds: [72, 56, 816, 2]
+    shapeName: rect
+    fill: {color: "#C9BFA4"}
+  - elementId: cv-line-top2
+    elementType: shape
+    bounds: [72, 62, 816, 1]
+    shapeName: rect
+    fill: {color: "#D9D0B8"}
+  - elementId: cv-tag
+    elementType: text
+    bounds: [72, 96, 320, 24]
+    content:
+      fontSize: 12
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      letterSpacing: 4
+      text: '丙午年 · 春茶季'
+  - elementId: cv-title
+    elementType: text
+    bounds: [72, 168, 700, 150]
+    content:
+      style: "$title"
+      fontSize: 44
+      color: "#2B2620"
+      align: [left, top]
+      lineHeight: 1.4
+      text: |
+        山月茶事
+        年度文化发布
+  - elementId: cv-line
+    elementType: shape
+    bounds: [76, 342, 80, 3]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: cv-sub
+    elementType: text
+    bounds: [72, 368, 620, 30]
+    content:
+      style: "$body"
+      fontSize: 17
+      color: "#6E6355"
+      align: [left, middle]
+      text: 一盏山月，半卷江南 —— 从茶园到茶席
+  - elementId: cv-seal
+    elementType: shape
+    bounds: [800, 196, 64, 64]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: cv-seal-t
+    elementType: text
+    bounds: [800, 196, 64, 64]
+    content:
+      fontSize: 20
+      bold: true
+      color: "#F7F3EA"
+      align: [center, middle]
+      text: '山月'
+  - elementId: cv-meta
+    elementType: text
+    bounds: [72, 484, 500, 24]
+    content:
+      fontSize: 12
+      color: "#8A8070"
+      align: [left, middle]
+      text: '山月茶事  ｜  苏州  |  2025 年 3 月'

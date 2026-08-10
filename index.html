@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>open-pptd · 主题画廊</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232563eb'/><path d='M9 16l5 5 9-10' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+    <link rel="stylesheet" href="./editor/styles.css" />
+  </head>
+  <body>
+    <!-- 画廊端口（站点根）：主题封面展示，点击进入编辑器 -->
+    <div id="gallery-view" class="gallery-view">
+      <header class="gallery-top">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <strong>open-pptd</strong>
+          <span class="brand-file">主题画廊</span>
+        </div>
+        <a class="btn" href="./editor/" title="新建空白演示">
+          <span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+          <span class="btn-label">新建空白演示</span>
+        </a>
+      </header>
+      <div id="gallery-body">
+        <div id="gallery-hero">
+          <h1>主题画廊</h1>
+          <p>精选主题模板，点击卡片在编辑器中打开</p>
+        </div>
+        <div id="gallery-grid" class="gallery-grid"></div>
+      </div>
+    </div>
+
+    <script type="module" src="./editor/gallery.js"></script>
+    <script type="module">
+      import { showGallery } from "./editor/gallery.js";
+      showGallery().catch((err) => {
+        console.error("画廊加载失败:", err);
+        document.getElementById("gallery-grid").innerHTML =
+          `<div style="text-align:center;color:#8a94a3;padding:40px">画廊加载失败：${err.message}</div>`;
+      });
+    </script>
+  </body>
+</html>

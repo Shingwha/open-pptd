@@ -1,0 +1,122 @@
+pageType: toc
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  - elementId: tc-title
+    elementType: text
+    bounds: [96, 64, 300, 44]
+    content:
+      style: "$title"
+      fontSize: 28
+      color: "#111827"
+      align: [left, middle]
+      text: '目录'
+  - elementId: tc-n1
+    elementType: text
+    bounds: [96, 152, 60, 40]
+    content:
+      fontSize: 16
+      color: "$muted"
+      align: [left, middle]
+      text: '01'
+  - elementId: tc-name1
+    elementType: text
+    bounds: [176, 152, 400, 40]
+    content:
+      style: "$body"
+      fontSize: 20
+      color: "#111827"
+      align: [left, middle]
+      text: 设计理念
+  - elementId: tc-desc1
+    elementType: text
+    bounds: [600, 152, 264, 40]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [right, middle]
+      text: '极简即本质'
+  - elementId: tc-n2
+    elementType: text
+    bounds: [96, 224, 60, 40]
+    content:
+      fontSize: 16
+      color: "$muted"
+      align: [left, middle]
+      text: '02'
+  - elementId: tc-name2
+    elementType: text
+    bounds: [176, 224, 400, 40]
+    content:
+      style: "$body"
+      fontSize: 20
+      color: "#111827"
+      align: [left, middle]
+      text: 视觉系统
+  - elementId: tc-desc2
+    elementType: text
+    bounds: [600, 224, 264, 40]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [right, middle]
+      text: '字体 · 网格 · 色彩'
+  - elementId: tc-n3
+    elementType: text
+    bounds: [96, 296, 60, 40]
+    content:
+      fontSize: 16
+      color: "$muted"
+      align: [left, middle]
+      text: '03'
+  - elementId: tc-name3
+    elementType: text
+    bounds: [176, 296, 400, 40]
+    content:
+      style: "$body"
+      fontSize: 20
+      color: "#111827"
+      align: [left, middle]
+      text: 应用延展
+  - elementId: tc-desc3
+    elementType: text
+    bounds: [600, 296, 264, 40]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [right, middle]
+      text: '包装 · 空间 · 数字'
+  - elementId: tc-n4
+    elementType: text
+    bounds: [96, 368, 60, 40]
+    content:
+      fontSize: 16
+      color: "$muted"
+      align: [left, middle]
+      text: '04'
+  - elementId: tc-name4
+    elementType: text
+    bounds: [176, 368, 400, 40]
+    content:
+      style: "$body"
+      fontSize: 20
+      color: "#111827"
+      align: [left, middle]
+      text: 实施计划
+  - elementId: tc-desc4
+    elementType: text
+    bounds: [600, 368, 264, 40]
+    content:
+      fontSize: 12
+      color: "$muted"
+      align: [right, middle]
+      text: '节奏 · 预算 · 团队'
+  - elementId: tc-foot
+    elementType: text
+    bounds: [96, 480, 400, 20]
+    content:
+      fontSize: 11
+      color: "$muted"
+      align: [left, middle]
+      text: 'NORDIK STUDIO · 2025'

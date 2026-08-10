@@ -1,0 +1,1 @@
+<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi>lim</mi><mo>⁡</mo></mrow><mrow><mi>x</mi><mo>→</mo><mn>0</mn></mrow></msub><mfrac><mrow><mi>sin</mi><mo>⁡</mo><mi>x</mi></mrow><mi>x</mi></mfrac></mrow><annotation encoding="application/x-tex">\lim_{x \to 0} \frac{\sin x}{x}</annotation></semantics></math></span>

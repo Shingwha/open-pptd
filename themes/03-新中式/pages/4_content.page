@@ -1,0 +1,191 @@
+pageType: content
+background:
+  type: solid
+  color: "#F7F3EA"
+elements:
+  # —— 页眉 ——
+  - elementId: ov-title
+    elementType: text
+    bounds: [48, 36, 300, 34]
+    content:
+      style: "$title"
+      fontSize: 22
+      color: "#2B2620"
+      align: [left, middle]
+      text: 新季茶品
+  - elementId: ov-titlebar
+    elementType: shape
+    bounds: [48, 74, 40, 3]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ov-page
+    elementType: text
+    bounds: [872, 36, 48, 28]
+    content:
+      fontSize: 13
+      bold: true
+      color: "$primary"
+      align: [right, middle]
+      text: '03'
+  - elementId: ov-foot
+    elementType: text
+    bounds: [48, 508, 420, 20]
+    content:
+      fontSize: 11
+      color: "#8A8070"
+      align: [left, middle]
+      text: '山月茶事  ｜  2025'
+  # —— 左侧：印章 + 大字 + 总述 ——
+  - elementId: ov-seal
+    elementType: shape
+    bounds: [72, 110, 56, 56]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ov-seal-t
+    elementType: text
+    bounds: [72, 110, 56, 56]
+    content:
+      fontSize: 17
+      bold: true
+      color: "#F7F3EA"
+      align: [center, middle]
+      text: '山月'
+  - elementId: ov-big
+    elementType: text
+    bounds: [72, 200, 300, 96]
+    content:
+      style: "$title"
+      fontSize: 36
+      color: "#2B2620"
+      align: [left, top]
+      lineHeight: 1.5
+      text: '春山三味'
+  - elementId: ov-desc
+    elementType: text
+    bounds: [72, 320, 300, 90]
+    content:
+      style: "$body"
+      fontSize: 14
+      color: "#6E6355"
+      align: [left, top]
+      lineHeight: 1.8
+      text: |
+        明前采撷，山月三味
+        一曰鲜，二曰醇，三曰甘
+        守十二道工序，敬一盏春
+  # —— 右侧：茶品清单（茶单式，细线分隔）——
+  - elementId: ov-t1
+    elementType: text
+    bounds: [440, 116, 240, 34]
+    content:
+      style: "$title"
+      fontSize: 18
+      color: "#2B2620"
+      align: [left, middle]
+      text: '明前龙井'
+  - elementId: ov-t1-s
+    elementType: text
+    bounds: [700, 116, 200, 34]
+    content:
+      fontSize: 12
+      color: "#8A8070"
+      align: [right, middle]
+      text: '狮峰山 · 特级 · 80°C'
+  - elementId: ov-t1-line
+    elementType: shape
+    bounds: [440, 166, 460, 1]
+    shapeName: rect
+    fill: {color: "#D9CDB4"}
+  - elementId: ov-t2
+    elementType: text
+    bounds: [440, 186, 240, 34]
+    content:
+      style: "$title"
+      fontSize: 18
+      color: "#2B2620"
+      align: [left, middle]
+      text: '碧螺春'
+  - elementId: ov-t2-s
+    elementType: text
+    bounds: [700, 186, 200, 34]
+    content:
+      fontSize: 12
+      color: "#8A8070"
+      align: [right, middle]
+      text: '洞庭山 · 一级 · 75°C'
+  - elementId: ov-t2-line
+    elementType: shape
+    bounds: [440, 236, 460, 1]
+    shapeName: rect
+    fill: {color: "#D9CDB4"}
+  - elementId: ov-t3
+    elementType: text
+    bounds: [440, 256, 240, 34]
+    content:
+      style: "$title"
+      fontSize: 18
+      color: "#2B2620"
+      align: [left, middle]
+      text: '白毫银针'
+  - elementId: ov-t3-s
+    elementType: text
+    bounds: [700, 256, 200, 34]
+    content:
+      fontSize: 12
+      color: "#8A8070"
+      align: [right, middle]
+      text: '太姥山 · 特级 · 85°C'
+  - elementId: ov-t3-line
+    elementType: shape
+    bounds: [440, 306, 460, 1]
+    shapeName: rect
+    fill: {color: "#D9CDB4"}
+  - elementId: ov-t4
+    elementType: text
+    bounds: [440, 326, 240, 34]
+    content:
+      style: "$title"
+      fontSize: 18
+      color: "#2B2620"
+      align: [left, middle]
+      text: '老枞红茶'
+  - elementId: ov-t4-s
+    elementType: text
+    bounds: [700, 326, 200, 34]
+    content:
+      fontSize: 12
+      color: "#8A8070"
+      align: [right, middle]
+      text: '桐木关 · 一级 · 90°C'
+  - elementId: ov-t4-line
+    elementType: shape
+    bounds: [440, 376, 460, 1]
+    shapeName: rect
+    fill: {color: "#D9CDB4"}
+  - elementId: ov-note
+    elementType: text
+    bounds: [440, 396, 460, 60]
+    content:
+      style: "$body"
+      fontSize: 13
+      color: "#8A8070"
+      align: [left, top]
+      lineHeight: 1.7
+      text: |
+        春茶以明前为贵，采摘当日在山月茶寮
+        现炒现装，限量 2000 份
+  # —— 底部印章落款 ——
+  - elementId: ov-seal2
+    elementType: shape
+    bounds: [808, 438, 40, 40]
+    shapeName: rect
+    fill: {color: "$primary"}
+  - elementId: ov-seal2-t
+    elementType: text
+    bounds: [808, 438, 40, 40]
+    content:
+      fontSize: 13
+      bold: true
+      color: "#F7F3EA"
+      align: [center, middle]
+      text: '茶'

@@ -1,0 +1,1 @@
+<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>∫</mo><msub><mo>∫</mo><mi>D</mi></msub><mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo stretchy="false">)</mo><mi>d</mi><mi>A</mi></mrow><annotation encoding="application/x-tex">\int \int_D f(x,y) dA</annotation></semantics></math></span>
