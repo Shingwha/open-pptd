@@ -157,7 +157,7 @@ tests/                  见 §4
 
 **新测试页（chart 19 页）**：14-axis（轴配置+虚线+图表框）、15-hbar（横向柱+barWidth）、16-secondary（次轴）、17-chartex-color（三分类色+层级色）、18-more（dataFilter+pie border）、19-levels（层级裁剪）
 
-**验证状态（2026-08-10 晚二轮）**：**用户实测 iso-chart-09 打开无修复弹窗 ✅**——chartEx 装配根因已修（见下）；9/11/12/17/19 待用户逐页确认显示细节；10/13（heatmap/sankey）空白为预期。
+**验证状态（2026-08-10 晚三轮）**：09 页打开无修复弹窗 ✅（晚二轮）；06 页气泡宽表修复后用户反馈"差不太多了" ✅；11/12/17/19 打开无弹窗但**显示细节待确认**；20/21 页用户大致看过无异常（待最终确认）；10/13（heatmap/sankey）空白为预期，**方案待定**。
 
 ### 2.6 chartEx 装配根因修复（2026-08-10 晚二轮，对照桌面 waterfall-color.pptx 实测）
 
@@ -178,6 +178,8 @@ tests/                  见 §4
   - 20-props：混合图 bar+line + seriesDefaults + 渐变 fill + $主题色 + dataLabels numberFormat + pie 全属性（innerRadius 0.55/startAngle 90/fill 数组 5 色/border/percentage 标签/legend right）+ radar spokeAxis 全字段 + areaColor 渐变 + line nullHandling=zero + xAxis reverse + marker rect/diamond/triangle
   - 21-props2：candlestick **HLC 模式**（无 open，3 系列无 upDownBars——官方行为）+ wickStyle + bar stack percent + barGap/categoryGap + legend top + bubble sizeScale/sizeRange/dataFilter + $引用 + treemap **2D fill**（外层根×内层級，多根数据）
   - 各图不同大小（430×220 / 420×220 / 200×220 / 430×210…）；treemap 2D 验证：上海/杭州 1E40AF、北京 B45309、广州 0c8a60（派生 -10 亮度）
+- [x] **bubble/scatter/bar 默认系列色缺失**（用户实测 06 只有一种气泡）：三系列 `if (s.fill)` 判断，未显式配 fill 时不写 spPr → PowerPoint 对 bubbleChart 不自动循环系列色（bar 会自动所以没暴露）→ 改 `s.color`（模型已解析 fill || palette 默认），与预览一致
+- [x] **06 气泡图测试页语义错误**（用户指出）：两系列共用同一组 x/y/size 列 = 完全重叠；官方宽表语义 = 每系列独立 x/y/size 三列（可 null 填充）→ 重写 06（气泡A x_a/y_a/size_a、气泡B x_b/y_b/size_b，独立位置/大小/颜色）；宽表（06）+ dataFilter 长表（18/21）两种多组用法全覆盖
 - 验证：isolate 51 个导出 ✓；结构核查（gradFill/dPt/firstSliceAng/holeSize/dispBlanksAs zero/orientation maxMin/percentStacked/DFS 编号色）✓；npm test 11/11 ✓；color-consistency 44 通过 ✓
 
 ---
@@ -274,9 +276,9 @@ node tests/color-consistency.mjs tests/projects/table   # 颜色一致性可指�
 | sunburst fill 数组 / levels | ✓ | ✓ | 同上 |
 | sankey nodeAlign/fill 单/数组/Record | ✓ | — | **暂不导出**；预览已消费（Kahn 拓扑序 + 节点色） |
 
-**下一步优先级**：① **验证 chartEx 显示**（AlternateContent 修复后用户已确认 09 无修复弹窗；待确认 11/12/17/19 显示细节 + 期初柱颜色语义）② bar.symbol 方案 ③ bubble sizeScale 导出近似（linear→size² 写缓存）④ area.stack stream 预览 ⑤ heatmap/sankey 最终方案（保持跳过 or 图片化）
+**下一步优先级**：① **heatmap/sankey 最终方案**（PowerPoint 无原生类型，当前导出空白——选项：图片化导出/维持跳过 + 编辑器提示，需用户决策）② **chartEx 显示细节确认**（11/12/17/19 打开无弹窗，待确认 treemap/sunburst 层级色、19 levels 裁剪、17 三图；waterfall 期初柱颜色语义——dataPt 三分类色是否被 PPT 采纳）③ bar.symbol 方案（象形柱）④ bubble sizeScale 导出近似（linear→size² 写缓存）⑤ area.stack stream 预览
 
-**验证状态**：9 页已确认打开无修复弹窗（2026-08-10 晚二轮）；11/12/17/19 待确认显示细节；10/13（heatmap/sankey）导出空白为预期。
+**验证状态**：09 无修复弹窗 ✅（晚二轮）；06 气泡宽表修复 ✅（晚三轮，用户"差不太多了"）；11/12/17/19 待确认显示细节；20/21 大致看过无异常；10/13（heatmap/sankey）导出空白为预期，方案待定。
 
 ### 5.2 D：主题体系重建 + 编辑器 UX（暂缓）
 
