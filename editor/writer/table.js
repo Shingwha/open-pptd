@@ -107,8 +107,12 @@ function tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, cell, cellAlign
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
   const kids = [];
   // OOXML 严格顺序：tcPr 内 lnL/lnR/lnT/lnB 必须先于填充，否则 PowerPoint 忽略边框
-  const borders = parseBorderSpec(cell?.border ?? s.border ?? { style: "solid", width: 1, color: "#000000" });
-  for (const [side, dir] of [["a:lnL", 0], ["a:lnR", 1], ["a:lnT", 2], ["a:lnB", 3]]) {
+  // 边框解析：全链未设置（undefined）→ 文档默认 1px 黑；显式 null → 四边清除
+  const b = cell?.border ?? s.border;
+  const borders = parseBorderSpec(b === undefined ? { style: "solid", width: 1, color: "#000000" } : b);
+  // BorderSpec 数组顺序为 [上,右,下,左]（顺时针），映射到 lnT/lnR/lnB/lnL，
+  // 数组下标与 XML 边名不是直连关系（曾误用 [0,1,2,3]→lnL/lnR/lnT/lnB，边框整体旋转）
+  for (const [side, dir] of [["a:lnL", 3], ["a:lnR", 1], ["a:lnT", 0], ["a:lnB", 2]]) {
     kids.push(lnSide(theme, side, borders[dir]));
   }
   // 填充：单元格内联 > 分类样式 > cellStyle > Table.fill > 透明

@@ -88,7 +88,9 @@ export function renderShape(theme, el) {
   const strokeColor = el.border ? resolveColor(theme, el.border.color) || "#000000" : null;
   const strokeWidth = el.border?.width || 1;
   const strokeDash = el.border?.style === "dash" ? "6 4" : el.border?.style === "dot" ? "2 3" : null;
-  const strokeFor = (p) => (p.stroke && strokeColor) || (p.fill === "none" ? shadeColor(solid, "darkenLess") : null);
+  // 只描引导线/内线路径：无 border → 不描（与 writer 无 border 写 a:ln noFill 一致，
+  // 不再用填充色暗化近似 PowerPoint 的 lnRef 回退线）
+  const strokeFor = (p) => ((p.stroke || p.fill === "none") ? strokeColor : null);
 
   const paths = shapePaths(el.shapeName, w, h, el.adjustments);
   if (!paths) {
@@ -111,7 +113,7 @@ export function renderShape(theme, el) {
     const sc = strokeFor(p);
     if (sc) {
       geom.setAttribute("stroke", sc);
-      geom.setAttribute("stroke-width", p.fill === "none" && !el.border ? Math.max(1.2, strokeWidth) : strokeWidth);
+      geom.setAttribute("stroke-width", p.fill === "none" ? Math.max(1.2, strokeWidth) : strokeWidth);
       if (strokeDash) geom.setAttribute("stroke-dasharray", strokeDash);
     }
     svg.appendChild(geom);

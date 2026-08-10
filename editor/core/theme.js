@@ -168,7 +168,9 @@ export function resolveTableCellStyle(ts, r, c, rowCount, colCount) {
   const apply = (style) => {
     if (!style || typeof style !== "object") return;
     for (const [k, v] of Object.entries(style)) {
-      if (v !== undefined && v !== null) merged[k] = v;
+      // 只跳过 undefined，保留显式 null（BorderSpec 顶层 null = 四边清除语义，
+      // 合并时若丢弃 null，border 会回落到默认 1px 黑边框）
+      if (v !== undefined) merged[k] = v;
     }
   };
   // 1. 基底（最低优先级，先应用）

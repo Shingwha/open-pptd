@@ -46,8 +46,10 @@ export function shapeXml(theme, element, ctx) {
 
   const fill = buildFill(theme, element.fill);
   if (fill) kids.push(fill);
-  const ln = buildLn(theme, element.border);
-  if (ln) kids.push(ln);
+  // 无 border（含显式 null）→ 写 <a:ln><a:noFill/></a:ln>：否则 spPr 缺 a:ln 时
+  // PowerPoint 回退 p:style lnRef（主题线条 idx1 = 2pt accent1），所有形状都带描边
+  const ln = buildLn(theme, element.border) || '<a:ln><a:noFill/></a:ln>';
+  kids.push(ln);
   const sh = buildShadow(theme, element.shadow);
   if (sh) kids.push(sh);
   return (

@@ -10,14 +10,42 @@ import { estimateTableLayout, tableGrid, TABLE_FONT_SIZE, TABLE_CELL_PAD, TABLE_
 
 const H_ALIGN = { left: "left", center: "center", right: "right", justify: "justify", distributed: "justify" };
 
+const DEFAULT_BORDER = { style: "solid", width: 1, color: "#000000" };
+
+/**
+ * BorderSpec → 四边（与 writer/table.js parseBorderSpec 同规则）：
+ *   undefined（全链未设置）→ 默认 1px 黑四边；null → 四边全无；
+ *   两元素数组 [上下, 左右]；四元素数组 [上,右,下,左]；单 Border → 四边相同。
+ */
+function borderSides(b) {
+  if (b === undefined) {
+    return { top: DEFAULT_BORDER, right: DEFAULT_BORDER, bottom: DEFAULT_BORDER, left: DEFAULT_BORDER };
+  }
+  if (b === null) return { top: null, right: null, bottom: null, left: null };
+  if (Array.isArray(b)) {
+    if (b.length === 2) return { top: b[0], bottom: b[0], left: b[1], right: b[1] }; // [上下, 左右]
+    if (b.length === 4) return { top: b[0], right: b[1], bottom: b[2], left: b[3] }; // [上,右,下,左]
+  }
+  return { top: b, right: b, bottom: b, left: b };
+}
+
+/** 单边 CSS（null = 无边框；$ 颜色引用在消费端 resolveColor）。 */
+function sideCss(theme, v) {
+  if (!v) return "none";
+  const color = resolveColor(theme, v.color ?? "#000000") || "#000000";
+  const style = v.style === "dash" ? "dashed" : v.style === "dot" ? "dotted" : "solid";
+  return `${v.width ?? 1}px ${style} ${color}`;
+}
+
 /** 展开网格 → 单元格最终样式（与 writer 同源；covered 位返回 {covered:true}）。 */
 function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) {
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
   const ref = resolveTextStyle(theme, cell?.textStyle);
   const fill = cell?.fill ?? s.fill ?? tableFill ?? null;
   const align = cell?.align ?? s.align ?? ["center", "middle"];
+  const border = cell?.border ?? s.border;
   return {
-    s, ref, fill, align,
+    s, ref, fill, align, borders: borderSides(border),
     color: cell?.color ?? ref.color ?? s.color ?? "#000000",
     fontFamily: cell?.fontFamily ?? ref.fontFamily ?? s.fontFamily,
     fontSize: cell?.fontSize ?? ref.fontSize ?? s.fontSize ?? TABLE_FONT_SIZE,
@@ -28,9 +56,6 @@ function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) {
       ?? (cell?.lineHeight ?? ref.lineHeight ?? s.lineHeight) ?? 1,
     letterSpacing: cell?.letterSpacing ?? ref.letterSpacing ?? s.letterSpacing,
     marginTop: cell?.marginTop ?? ref.marginTop ?? s.marginTop,
-    borderColor: cell?.border?.color ?? s.border?.color ?? "#000000",
-    borderStyle: cell?.border?.style ?? s.border?.style ?? "solid",
-    borderWidth: cell?.border?.width ?? s.border?.width ?? 1,
   };
 }
 
@@ -105,7 +130,11 @@ function tdCss(theme, f, covered) {
   const hAlign = H_ALIGN[f.align[0]] || "center";
   const vAlign = f.align[1] || "middle";
   const parts = [
-    `border:${f.borderStyle === "solid" ? f.borderWidth + "px solid" : f.borderWidth + "px dashed"} ${f.borderColor}`,
+    // 逐边边框（BorderSpec 数组四边独立；预览与 writer 同源同序）
+    `border-top:${sideCss(theme, f.borders.top)}`,
+    `border-right:${sideCss(theme, f.borders.right)}`,
+    `border-bottom:${sideCss(theme, f.borders.bottom)}`,
+    `border-left:${sideCss(theme, f.borders.left)}`,
     `padding:${TABLE_CELL_PAD}px ${TABLE_CELL_PAD_X}px`,
     `text-align:${hAlign}`,
     `vertical-align:${vAlign}`,
