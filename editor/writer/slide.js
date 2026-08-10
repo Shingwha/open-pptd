@@ -5,7 +5,7 @@
 // 本文件只负责：spTree 骨架、背景、rels、媒体/图表收集，以及分派到各元素实现。
 // ============================================================================
 
-import { el, escAttr } from "./xml.js";
+import { el, esc, escAttr, xmlHeader } from "./xml.js";
 import { encodeUtf8 } from "./zip.js";
 import { textXml } from "./text.js";
 import { shapeXml } from "./shape.js";
@@ -38,6 +38,37 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
   let mediaCounter = 0;
   let linkCounter = 0;
   let chartCounter = options.chartBase || 0;
+
+  // 演讲者备注（官方 Page.notes）→ notesSlideN.xml（有备注才生成）
+  // 对照用户 notes-ref.pptx 实测：grpSpPr 带 xfrm + 3 占位符
+  // （sldImg 图像占位 / body 备注文字 / sldNum 页码），bodyPr 为空
+  const notesText = typeof page.notes === "string" ? page.notes.trim() : "";
+  let notesXml = null;
+  if (notesText) {
+    rels.push({ id: "rIdNotes", type: "notesSlide", target: `../notesSlides/notesSlide${slideIndex}.xml` });
+    const paras = notesText.split(/\r?\n/).map((line) =>
+      el("a:p", {}, el("a:r", {}, el("a:rPr", { lang: "zh-CN", altLang: "en-US" }) + el("a:t", {}, esc(line))) + el("a:endParaRPr", { lang: "en-US", altLang: "zh-CN" }))
+    ).join("");
+    const sp = (id, name, phXml, body, locks = "") =>
+      `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="${name}"/>` +
+      `<p:cNvSpPr>${locks ? `<a:spLocks ${locks}/>` : ""}</p:cNvSpPr><p:nvPr>${phXml}</p:nvPr></p:nvSpPr>` +
+      `<p:spPr/>${body ? `<p:txBody><a:bodyPr/><a:lstStyle/>${body}</p:txBody>` : ""}</p:sp>`;
+    notesXml =
+      xmlHeader() +
+      `<p:notes xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ` +
+      `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" ` +
+      `xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">` +
+      `<p:cSld><p:spTree>` +
+      `<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>` +
+      `<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>` +
+      sp(2, "幻灯片图像占位符 1", `<p:ph type="sldImg"/>`, "", 'noGrp="1" noRot="1" noChangeAspect="1"') +
+      sp(3, "备注占位符 2", `<p:ph type="body" idx="1"/>`, paras) +
+      sp(4, "灯片编号占位符 3", `<p:ph type="sldNum" sz="quarter" idx="5"/>`,
+        `<a:p><a:fld id="{7C4E9E91-FCE7-4138-8DA2-1A1079A745F4}" type="slidenum"><a:rPr lang="zh-CN" altLang="en-US" smtClean="0"/><a:t>‹#›</a:t></a:fld><a:endParaRPr lang="zh-CN" altLang="en-US"/></a:p>`) +
+      `</p:spTree></p:cSld>` +
+      `<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr>` +
+      `</p:notes>`;
+  }
 
   const ctx = {
     nextId: () => idCounter++,
@@ -142,7 +173,7 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
       .join("") +
     `</Relationships>`;
 
-  return { xml, relsXml, mediaFiles, chartParts, mediaCount: (options.mediaBase || 0) + mediaCounter };
+  return { xml, relsXml, mediaFiles, chartParts, mediaCount: (options.mediaBase || 0) + mediaCounter, notesXml };
 }
 
 function relType(type) {

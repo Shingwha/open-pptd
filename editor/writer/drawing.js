@@ -215,7 +215,8 @@ export function buildLn(theme, border) {
 export function buildShadow(theme, shadow) {
   if (!shadow) return "";
   const [dx = 0, dy = 0] = shadow.offset || [0, 0];
-  const attrs = { rotWithShape: 0 };
+  // algn="tl" 与 PowerPoint 官方输出一致（缺省 algn="b" 阴影方向不对）
+  const attrs = { algn: "tl", rotWithShape: 0 };
   if (shadow.blur) attrs.blurRad = Math.round(shadow.blur * 12700);
   if (dx || dy) {
     attrs.dist = Math.round(Math.hypot(dx, dy) * 12700);

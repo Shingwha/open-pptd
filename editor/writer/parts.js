@@ -24,7 +24,7 @@ const F = (fonts) => fonts?.latin || FONT_DEFAULT;
 // ----------------------------------------------------------------------------
 // [Content_Types].xml
 // ----------------------------------------------------------------------------
-export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0, chartExIds = []) {
+export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0, chartExIds = [], notesSlideCount = 0) {
   const defaults = [
     el("Default", { Extension: "rels", ContentType: "application/vnd.openxmlformats-package.relationships+xml" }),
     el("Default", { Extension: "xml", ContentType: "application/xml" }),
@@ -65,6 +65,20 @@ export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0, cha
     overrides.push(
       el("Override", { PartName: `/ppt/charts/colors${id}.xml`, ContentType: "application/vnd.ms-office.chartcolorstyle+xml" })
     );
+  }
+  if (notesSlideCount > 0) {
+    overrides.push(
+      el("Override", { PartName: "/ppt/notesMasters/notesMaster1.xml", ContentType: "application/vnd.openxmlformats-officedocument.presentationml.notesMaster+xml" })
+    );
+    // notesMaster 引用独立 theme2.xml（PowerPoint 官方行为，对照 notes-ref.pptx）
+    overrides.push(
+      el("Override", { PartName: "/ppt/theme/theme2.xml", ContentType: "application/vnd.openxmlformats-officedocument.theme+xml" })
+    );
+    for (let i = 1; i <= notesSlideCount; i++) {
+      overrides.push(
+        el("Override", { PartName: `/ppt/notesSlides/notesSlide${i}.xml`, ContentType: "application/vnd.openxmlformats-officedocument.presentationml.notesSlide+xml" })
+      );
+    }
   }
   return (
     xmlHeader() +
@@ -132,7 +146,7 @@ export function buildAppPropsV2(slideCount) {
 // ----------------------------------------------------------------------------
 // ppt/presentation.xml
 // ----------------------------------------------------------------------------
-export function buildPresentation(title, slideCount, size, fonts, embedded = null) {
+export function buildPresentation(title, slideCount, size, fonts, embedded = null, hasNotes = false) {
   const f = F(fonts);
   const [w, h] = size;
   const cx = Math.round(w * 12700);
@@ -142,10 +156,15 @@ export function buildPresentation(title, slideCount, size, fonts, embedded = nul
     sldIds.push(el("p:sldId", { id: String(256 + i), "r:id": `rId${i + 2}` }));
   }
   const attrs = embedded?.lstXml ? ` embedTrueTypeFonts="1"${embedded.subsetMode ? ' saveSubsetFonts="1"' : ""}` : "";
+  // schema 顺序：sldMasterIdLst → notesMasterIdLst → sldIdLst → sldSz → notesSz（对照 notes-ref.pptx）
+  const notesMasterIdLst = hasNotes
+    ? `<p:notesMasterIdLst><p:notesMasterId r:id="rIdNotesMaster"/></p:notesMasterIdLst>`
+    : "";
   return (
     xmlHeader() +
     `<p:presentation xmlns:a="${NS_A}" xmlns:r="${NS_R}" xmlns:p="${NS_P}"${attrs}>` +
     `<p:sldMasterIdLst><p:sldMasterId id="2147483648" r:id="rId1"/></p:sldMasterIdLst>` +
+    notesMasterIdLst +
     `<p:sldIdLst>${sldIds.join("")}</p:sldIdLst>` +
     `<p:sldSz cx="${cx}" cy="${cy}" type="screen16x9"/>` +
     `<p:notesSz cx="6858000" cy="9144000"/>` +
@@ -159,17 +178,76 @@ export function buildPresentation(title, slideCount, size, fonts, embedded = nul
   );
 }
 
-export function buildPresentationRels(slideCount, fontRels = []) {
+export function buildPresentationRels(slideCount, fontRels = [], hasNotes = false) {
   const rels = [
     el("Relationship", { Id: "rId1", Type: `${NS_R}/slideMaster`, Target: "slideMasters/slideMaster1.xml" }),
   ];
   for (let i = 0; i < slideCount; i++) {
     rels.push(el("Relationship", { Id: `rId${i + 2}`, Type: `${NS_R}/slide`, Target: `slides/slide${i + 1}.xml` }));
   }
+  if (hasNotes) {
+    rels.push(el("Relationship", { Id: "rIdNotesMaster", Type: `${NS_R}/notesMaster`, Target: "notesMasters/notesMaster1.xml" }));
+  }
   for (const r of fontRels) {
     rels.push(el("Relationship", { Id: r.id, Type: `${NS_R}/font`, Target: r.target }));
   }
   return xmlHeader() + el("Relationships", { xmlns: NS_REL }, rels.join(""));
+}
+
+// ----------------------------------------------------------------------------
+// ppt/notesMasters/notesMaster1.xml（演讲者备注母版）
+// 对照用户 notes-ref.pptx 实测：bgRef + 6 占位符（hdr/dt/sldImg/body/ftr/sldNum）
+// + 9 级 notesStyle；rels 引用独立 theme2.xml（PowerPoint 官方行为）
+// ----------------------------------------------------------------------------
+export function buildNotesMaster(fonts) {
+  const f = F(fonts);
+  const ph = (id, name, phXml, body, extra = "") =>
+    `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="${name}"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr>${phXml}</p:nvPr></p:nvSpPr>` +
+    `<p:spPr>${extra}</p:spPr>` +
+    `<p:txBody><a:bodyPr vert="horz" lIns="91440" tIns="45720" rIns="91440" bIns="45720" rtlCol="0"/><a:lstStyle/><a:p><a:endParaRPr lang="zh-CN" altLang="en-US"/></a:p></p:txBody></p:sp>`;
+  const bodyPh = (id, name, phXml, body, extra = "") =>
+    `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="${name}"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr>${phXml}</p:nvPr></p:nvSpPr>` +
+    `<p:spPr>${extra}</p:spPr>` +
+    `<p:txBody><a:bodyPr vert="horz" lIns="91440" tIns="45720" rIns="91440" bIns="45720" rtlCol="0"/><a:lstStyle/>${body}</p:txBody></p:sp>`;
+  const xfrm = (x, y, w, h) =>
+    `<a:xfrm><a:off x="${x}" y="${y}"/><a:ext cx="${w}" cy="${h}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom>`;
+  // notesStyle 9 级（官方结构：marL 逐级递增 + 主题字体槽 +mn-lt/+mn-ea/+mn-cs）
+  const lvl = (n, marL) =>
+    `<a:lvl${n}pPr marL="${marL}" algn="l" defTabSz="914400" rtl="0" eaLnBrk="1" latinLnBrk="0" hangingPunct="1">` +
+    `<a:defRPr sz="1200" kern="1200"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill>` +
+    `<a:latin typeface="+mn-lt"/><a:ea typeface="+mn-ea"/><a:cs typeface="+mn-cs"/></a:defRPr></a:lvl${n}pPr>`;
+  const noteStyleLevels = [0, 457200, 914400, 1371600, 1828800, 2286000, 2743200, 3200400, 3657600]
+    .map((marL, i) => lvl(i + 1, marL)).join("");
+  return (
+    xmlHeader() +
+    `<p:notesMaster xmlns:a="${NS_A}" xmlns:r="${NS_R}" xmlns:p="${NS_P}">` +
+    `<p:cSld>` +
+    `<p:bg><p:bgRef idx="1001"><a:schemeClr val="bg1"/></p:bgRef></p:bg>` +
+    `<p:spTree>` +
+    `<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>` +
+    `<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>` +
+    ph(2, "页眉占位符 1", `<p:ph type="hdr" sz="quarter"/>`, "", xfrm(0, 0, 2971800, 458788)) +
+    ph(3, "日期占位符 2", `<p:ph type="dt" idx="1"/>`, "", xfrm(3884613, 0, 2971800, 458788)) +
+    ph(4, "幻灯片图像占位符 3", `<p:ph type="sldImg" idx="2"/>`, "", xfrm(685800, 1143000, 5486400, 3086100) + `<a:noFill/><a:ln w="12700"><a:solidFill><a:prstClr val="black"/></a:solidFill></a:ln>`) +
+    bodyPh(5, "备注占位符 4", `<p:ph type="body" sz="quarter" idx="3"/>`,
+      `<a:p><a:pPr lvl="0"/><a:endParaRPr lang="zh-CN" altLang="en-US"/></a:p>`, xfrm(685800, 4400550, 5486400, 3600450)) +
+    ph(6, "页脚占位符 5", `<p:ph type="ftr" sz="quarter" idx="4"/>`, "", xfrm(0, 8685213, 2971800, 458787)) +
+    ph(7, "灯片编号占位符 6", `<p:ph type="sldNum" sz="quarter" idx="5"/>`, "", xfrm(3884613, 8685213, 2971800, 458787)) +
+    `</p:spTree>` +
+    `</p:cSld>` +
+    `<p:clrMap bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/>` +
+    `<p:notesStyle>${noteStyleLevels}</p:notesStyle>` +
+    `</p:notesMaster>`
+  );
+}
+
+export function buildNotesMasterRels() {
+  return (
+    xmlHeader() +
+    el("Relationships", { xmlns: NS_REL }, [
+      el("Relationship", { Id: "rId1", Type: `${NS_R}/theme`, Target: "../theme/theme2.xml" }),
+    ].join(""))
+  );
 }
 
 // ----------------------------------------------------------------------------

@@ -119,6 +119,8 @@ tests/                  见 §4
 | 合并列数推断 | rows[0].length 在合并后变短 | 列数优先 `columnWidths.length` |
 | 富文本 Markdown 混淆 | 测试页用 `**` | 官方只有 `<strong>` 标签 |
 | **buildFill 无 solid 分支（2026-08-10 回归）** | 清理时删 `fill.color` 兜底分支，但 buildFill 本身没有官方 `{type:"solid", color}` 分支 → 所有对象填充返回空 | buildFill 必须有显式 `type === "solid"` 分支（表格填充/页面背景/形状填充全依赖）；color-consistency.mjs 已加 buildFill 回归用例 |
+| **tblPr 子元素顺序（effectLst）** | 表格阴影 effectLst 放在 tableStyleId 之后（凭 ECMA 记忆，写反）→ PowerPoint 弹修复 | 官方实测（用户 table-shadow-ref.pptx）：**effectLst 在 tableStyleId 之前**；outerShdw 带 `algn="tl"`（缺省 algn="b" 方向错） |
+| **notesMaster 结构** | 首次实现用 bgPr + 2 占位符 + notesMaster 引用 theme1 → 弹修复 | 官方实测（用户 notes-ref.pptx）：**bgRef idx=1001** + 6 占位符（hdr/dt/sldImg/body/ftr/sldNum）+ 9 级 notesStyle + 独立 **theme2.xml**（Content_Types 加 Override）；notesSlide 用 grpSpPr xfrm + 3 占位符（sldImg/body/sldNum） |
 
 ### 2.4 C2 完成明细（表格 Cell 对象模型）
 
