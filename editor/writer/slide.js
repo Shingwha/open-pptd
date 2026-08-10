@@ -5,7 +5,7 @@
 // 本文件只负责：spTree 骨架、背景、rels、媒体/图表收集，以及分派到各元素实现。
 // ============================================================================
 
-import { el, esc, escAttr, xmlHeader } from "./xml.js";
+import { el, escAttr } from "./xml.js";
 import { encodeUtf8 } from "./zip.js";
 import { textXml } from "./text.js";
 import { shapeXml } from "./shape.js";
@@ -38,31 +38,6 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
   let mediaCounter = 0;
   let linkCounter = 0;
   let chartCounter = options.chartBase || 0;
-
-  // 演讲者备注（官方 Page.notes）→ notesSlideN.xml（有备注才生成）
-  const notesText = typeof page.notes === "string" ? page.notes.trim() : "";
-  let notesXml = null;
-  if (notesText) {
-    rels.push({ id: "rIdNotes", type: "notesSlide", target: `../notesSlides/notesSlide${slideIndex}.xml` });
-    const paras = notesText.split(/\r?\n/).map((line) =>
-      el("a:p", {}, el("a:r", {}, el("a:rPr", { lang: "zh-CN" }) + el("a:t", {}, esc(line))))
-    ).join("");
-    notesXml =
-      xmlHeader() +
-      `<p:notes xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ` +
-      `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" ` +
-      `xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">` +
-      `<p:cSld><p:spTree>` +
-      `<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>` +
-      `<p:grpSpPr/>` +
-      `<p:sp><p:nvSpPr><p:cNvPr id="2" name="Notes Placeholder 2"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr>` +
-      `<p:spPr/><p:txBody><a:bodyPr wrap="square" anchor="t"><a:spAutoFit/></a:bodyPr><a:lstStyle/>` +
-      paras +
-      `</p:txBody></p:sp>` +
-      `</p:spTree></p:cSld>` +
-      `<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr>` +
-      `</p:notes>`;
-  }
 
   const ctx = {
     nextId: () => idCounter++,
@@ -167,7 +142,7 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
       .join("") +
     `</Relationships>`;
 
-  return { xml, relsXml, mediaFiles, chartParts, mediaCount: (options.mediaBase || 0) + mediaCounter, notesXml };
+  return { xml, relsXml, mediaFiles, chartParts, mediaCount: (options.mediaBase || 0) + mediaCounter };
 }
 
 function relType(type) {

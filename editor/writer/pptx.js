@@ -22,8 +22,6 @@ import {
   buildSlideLayout,
   buildSlideLayoutRels,
   buildTheme,
-  buildNotesMaster,
-  buildNotesMasterRels,
 } from "./parts.js";
 import { buildSlide } from "./slide.js";
 import { decodeDataUrl, imageSize } from "./util.js";
@@ -95,26 +93,18 @@ export async function buildPptx(deck, options = {}) {
     }
   }
 
-  // 演讲者备注（官方 Page.notes）：任意页有备注 → 生成 notesSlides + notesMaster
-  const hasNotes = pages.some((p) => typeof p.notes === "string" && p.notes.trim());
-  const notesSlideCount = hasNotes ? pages.filter((p) => typeof p.notes === "string" && p.notes.trim()).length : 0;
-
   // 1. 固定部件
-  zip.add("[Content_Types].xml", buildContentTypes(slideCount, chartTotal, embeddedFonts.parts.length, chartExIds, notesSlideCount));
+  zip.add("[Content_Types].xml", buildContentTypes(slideCount, chartTotal, embeddedFonts.parts.length, chartExIds));
   zip.add("_rels/.rels", buildRootRels());
   zip.add("docProps/core.xml", buildCoreProps(deck.title || "未命名演示文稿"));
   zip.add("docProps/app.xml", buildAppPropsV2(slideCount));
-  zip.add("ppt/presentation.xml", buildPresentation(deck.title || "未命名演示文稿", slideCount, size, null, embeddedFonts, hasNotes));
-  zip.add("ppt/_rels/presentation.xml.rels", buildPresentationRels(slideCount, embeddedFonts.rels, hasNotes));
+  zip.add("ppt/presentation.xml", buildPresentation(deck.title || "未命名演示文稿", slideCount, size, null, embeddedFonts));
+  zip.add("ppt/_rels/presentation.xml.rels", buildPresentationRels(slideCount, embeddedFonts.rels));
   zip.add("ppt/slideMasters/slideMaster1.xml", buildSlideMaster(null));
   zip.add("ppt/slideMasters/_rels/slideMaster1.xml.rels", buildSlideMasterRels());
   zip.add("ppt/slideLayouts/slideLayout1.xml", buildSlideLayout());
   zip.add("ppt/slideLayouts/_rels/slideLayout1.xml.rels", buildSlideLayoutRels());
   zip.add("ppt/theme/theme1.xml", buildTheme(theme));
-  if (hasNotes) {
-    zip.add("ppt/notesMasters/notesMaster1.xml", buildNotesMaster(null));
-    zip.add("ppt/notesMasters/_rels/notesMaster1.xml.rels", buildNotesMasterRels());
-  }
 
   // 1.5 字体部件
   for (const part of embeddedFonts.parts) {
@@ -123,24 +113,11 @@ export async function buildPptx(deck, options = {}) {
 
   // 2. 每页 slide + 媒体 + 图表（媒体命名跨页全局唯一，避免同名覆盖）
   let mediaBase = 0;
-  let notesCounter = 0;
   pages.forEach((page, i) => {
     const result = buildSlide(theme, page, i + 1, registry, { chartBase: chartPrefix[i], mediaBase });
     mediaBase = result.mediaCount;
     zip.add(`ppt/slides/slide${i + 1}.xml`, result.xml);
     zip.add(`ppt/slides/_rels/slide${i + 1}.xml.rels`, result.relsXml);
-    if (result.notesXml) {
-      notesCounter += 1;
-      zip.add(`ppt/notesSlides/notesSlide${notesCounter}.xml`, result.notesXml);
-      // notesSlide rels：notesMaster（rId1）+ 所属 slide（rId2）
-      const notesRels =
-        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
-        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
-        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesMaster" Target="../notesMasters/notesMaster1.xml"/>` +
-        `<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="../slides/slide${i + 1}.xml"/>` +
-        `</Relationships>`;
-      zip.add(`ppt/notesSlides/_rels/notesSlide${notesCounter}.xml.rels`, notesRels);
-    }
     for (const media of result.mediaFiles) {
       allMedia.push(media);
       zip.add(media.path, media.bytes);

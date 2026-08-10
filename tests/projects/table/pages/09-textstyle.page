@@ -15,7 +15,6 @@ elements:
       text: 'Cell.textStyle: "$title" / "$caption" 引用（只影响文字字段）'
   - elementId: tb1
     elementType: table
-    shadow: {blur: 8, color: "#00000040", offset: [2, 3]}
     bounds: [60, 108, 840, 200]
     columnWidths: [0.34, 0.33, 0.33]
     style: "$default"

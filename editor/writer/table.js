@@ -22,7 +22,7 @@ import { buildParagraph } from "./text.js";
 import { parseRichText } from "../core/richtext.js";
 import { resolveTableStyle, resolveTableCellStyle, resolveTextStyle } from "../core/theme.js";
 import { estimateTableLayout, tableGrid } from "../core/table.js";
-import { colorElement, buildFill, buildShadow } from "./drawing.js";
+import { colorElement, buildFill } from "./drawing.js";
 
 const V_ANCHOR = { top: "t", middle: "ctr", bottom: "b" };
 
@@ -77,10 +77,7 @@ export function tableXml(theme, tableEl, ctx) {
   const tbl = el("a:tbl", {}, [
     // 引用 theme1.xml 中定义的空白表格样式（无边框/无填充，不覆盖手绘），
     // 让 PowerPoint 有样式可循，单元格级 ln 边框才会渲染
-    // 官方 Table.shadow → a:tblPr > a:effectLst（CT_TableProperties 顺序：tableStyleId → … → effectLst）
-    el("a:tblPr", { firstRow: "0", bandRow: "0", horzBanding: "0" },
-      el("a:tableStyleId", {}, "{00000000-0000-0000-0000-000000000000}") +
-      (tableEl.shadow ? buildShadow(theme, tableEl.shadow) : "")),
+    el("a:tblPr", { firstRow: "0", bandRow: "0", horzBanding: "0" }, el("a:tableStyleId", {}, "{00000000-0000-0000-0000-000000000000}")),
     el("a:tblGrid", {}, gridCols),
     trs,
   ].join(""));
