@@ -2,18 +2,20 @@
 // writer/table.js — 表格导出（p:graphicFrame + a:tbl，原生可编辑）
 // ----------------------------------------------------------------------------
 // 样式消费严格按官方继承链（Style Priority §1.2 表格单元格）：
-//   cellStyle 基底 → bodyStyles 循环 → 位置分类（rowOverColumn 仲裁）→ 单元格内联
-// 填充：单元格内联 fill > 分类样式 fill > cellStyle fill > Table.fill > 透明
-// 边框：BorderSpec（四边独立，null=无）；对齐：CellStyle.align [水平, 垂直]
-// 单元格富文本走统一 buildParagraph（与文字元素同一套样式逻辑）。
+//   富文本标签 > span 内联 > 段落 > Cell 内联字段 > Cell.textStyle 引用 >
+//   位置分类（rowOverColumn 仲裁）> bodyStyles 循环 > cellStyle 基底 > 默认
+// 填充链：cell.fill > 分类 fill > cellStyle fill > Table.fill > 透明
+// 边框：BorderSpec（四边独立，null=无）；CT_TableCellProperties 的 lnL/lnR/lnT/lnB
+//   直接承载 CT_LineProperties（w/cap/cmpd/algn 属性在 lnL 上，不能包 a:ln）
+// 对齐：cell.align > 分类 align > 官方默认 [center, middle]
 // ============================================================================
 
 import { el, escAttr } from "./xml.js";
 import { buildParagraph } from "./text.js";
 import { parseRichText } from "../core/richtext.js";
-import { resolveTableStyle, resolveTableCellStyle, resolveFont } from "../core/theme.js";
+import { resolveTableStyle, resolveTableCellStyle, resolveTextStyle, resolveFont } from "../core/theme.js";
 import { estimateTableLayout } from "../core/table.js";
-import { colorElement, buildFill, buildLn } from "./drawing.js";
+import { colorElement, buildFill } from "./drawing.js";
 
 const V_ANCHOR = { top: "t", middle: "ctr", bottom: "b" };
 
@@ -25,6 +27,20 @@ function parseBorderSpec(spec) {
     if (spec.length === 4) return [spec[0], spec[1], spec[2], spec[3]]; // [上, 右, 下, 左]
   }
   return [spec, spec, spec, spec]; // 单 Border = 四边相同
+}
+
+/**
+ * 单边边框 XML：<a:lnX w cap cmpd algn>（CT_LineProperties 直接承载在线元素上）。
+ * 子元素顺序（CT_LineProperties schema）：fill 组 → prstDash → headEnd/tailEnd。
+ * 无边框 → 空 <a:lnX/>（PowerPoint 重存行为一致）。
+ */
+function lnSide(theme, side, b) {
+  if (!b) return el(side);
+  const w = Math.round((b.width ?? 1) * 12700);
+  const kids = [el("a:solidFill", {}, colorElement(theme, b.color ?? "#000000"))];
+  if (b.style === "dash") kids.push(el("a:prstDash", { val: "dash" }));
+  else if (b.style === "dot") kids.push(el("a:prstDash", { val: "dot" }));
+  return el(side, { w, cap: "flat", cmpd: "sng", algn: "ctr" }, kids.join(""));
 }
 
 export function tableXml(theme, tableEl, ctx) {
@@ -76,39 +92,40 @@ export function tableXml(theme, tableEl, ctx) {
 function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill) {
   // 官方继承链合并 → 单元格最终样式（颜色保留 $ 引用）
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
+  // Cell.textStyle 引用（theme.textStyles，只影响文字字段，不含 fill/border/align）
+  const ref = resolveTextStyle(theme, cell?.textStyle);
   const text = cell?.text ?? "";
   const tree = parseRichText(text);
 
-  // 文字基线（TextStyleConfig 字段；未设置的回退官方默认）
+  // 文字基线（低 → 高：分类样式 < Cell.textStyle < Cell 内联）
   const base = {
-    color: s.color ?? "#000000",
-    fontSize: s.fontSize ?? 13,
-    bold: !!s.bold,
-    italic: !!s.italic,
-    lineHeight: s.lineHeight ?? 1,
-    lineHeightPx: s.lineHeightPx,
-    letterSpacing: s.letterSpacing,
-    marginTop: s.marginTop,
-    backgroundColor: s.backgroundColor,
+    color: cell?.color ?? ref.color ?? s.color ?? "#000000",
+    fontSize: cell?.fontSize ?? ref.fontSize ?? s.fontSize ?? 13,
+    bold: !!(cell?.bold ?? ref.bold ?? s.bold),
+    italic: !!(cell?.italic ?? ref.italic ?? s.italic),
+    backgroundColor: cell?.backgroundColor ?? ref.backgroundColor ?? s.backgroundColor,
+    lineHeight: cell?.lineHeight ?? ref.lineHeight ?? s.lineHeight ?? 1,
+    lineHeightPx: cell?.lineHeightPx ?? ref.lineHeightPx ?? s.lineHeightPx,
+    letterSpacing: cell?.letterSpacing ?? ref.letterSpacing ?? s.letterSpacing,
+    marginTop: cell?.marginTop ?? ref.marginTop ?? s.marginTop,
+    fontFamily: cell?.fontFamily ?? ref.fontFamily ?? s.fontFamily,
   };
-  if (s.fontFamily) base.fontFamily = s.fontFamily;
-  // 水平对齐（CellStyle.align [h, v] → 段落 algn；v → tcPr anchor）
-  if (Array.isArray(s.align) && s.align[0]) base.textAlign = s.align[0];
+  // 对齐：cell.align > 分类 align > 官方默认 [center, middle]
+  const align = cell?.align ?? s.align ?? ["center", "middle"];
+  base.textAlign = align[0];
   const paras = tree.paragraphs
     .map((p) => buildParagraph(theme, p, base, () => null))
     .join("");
   const body =
-    `<a:txBody><a:bodyPr anchor="${V_ANCHOR[s.align?.[1]] || "ctr"}" lIns="114300" tIns="0" rIns="114300" bIns="0"><a:noAutofit/></a:bodyPr>` +
+    `<a:txBody><a:bodyPr anchor="${V_ANCHOR[align[1]] || "ctr"}"><a:noAutofit/></a:bodyPr>` +
     `<a:lstStyle/>${paras}</a:txBody>`;
 
   // OOXML 严格顺序：tcPr 内 lnL/lnR/lnT/lnB 必须先于填充，否则 PowerPoint 忽略边框
   const kids = [];
   // 边框：单元格内联 > 分类样式 > 官方默认 {solid, 1, #000000}
-  // 注意：元素必须带 a: 前缀（漏前缀 = 不属于 DrawingML 命名空间 → PowerPoint 不渲染）
   const borders = parseBorderSpec(cell?.border ?? s.border ?? { style: "solid", width: 1, color: "#000000" });
   for (const [side, dir] of [["a:lnL", 0], ["a:lnR", 1], ["a:lnT", 2], ["a:lnB", 3]]) {
-    const b = borders[dir];
-    kids.push(b ? el(side, {}, buildLn(theme, b)) : el(side));
+    kids.push(lnSide(theme, side, borders[dir]));
   }
   // 填充：单元格内联 > 分类样式 > cellStyle > Table.fill > 透明
   const fill = cell?.fill ?? s.fill ?? (tableFill ? tableFill : null);
@@ -117,7 +134,7 @@ function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill) {
     else kids.push(el("a:solidFill", {}, colorElement(theme, fill)));
   }
 
-  const tcPrAttrs = { anchor: V_ANCHOR[s.align?.[1]] || "ctr", marL: 45720, marR: 45720, marT: 0, marB: 0 };
+  const tcPrAttrs = { marL: 45720, marR: 45720, marT: 0, marB: 0, anchor: V_ANCHOR[align[1]] || "ctr" };
   if (cell?.rowSpan > 1) tcPrAttrs.rowSpan = cell.rowSpan;
   if (cell?.colSpan > 1) tcPrAttrs.colSpan = cell.colSpan;
   const tcPr = el("a:tcPr", tcPrAttrs, kids.join(""));
