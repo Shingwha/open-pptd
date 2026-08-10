@@ -26,19 +26,26 @@ function fontSizeToSz(fontSize) {
 }
 
 /** 给 OMML 每个 m:r 注入样式（a:rPr > solidFill / sz，PPT 官方 run 属性风格）。
- * 支持主题令牌（$primary 等）与 hex，切主题自动联动。公式只继承 color/font-size。
+ * 支持主题令牌（$primary 等）与 hex，切主题自动联动。公式只继承 color/font-size；
+ * opacity（0~1，可选）= 文字透明度，a:alpha 加在颜色元素内部（PowerPoint 官方结构）。
  * 导出给富文本行内公式（writer/text.js）复用。 */
-export function injectRunStyle(omml, { color, fontSize } = {}, theme) {
+export function injectRunStyle(omml, { color, fontSize, opacity } = {}, theme) {
   let fill = "";
   if (color) {
     // OOXML 颜色值不允许 # 前缀（#1565C0 → 1565C0）；令牌经 resolveColor 解析
     const resolved = resolveColor(theme, color);
     const hex = resolved ? String(resolved).replace(/^#/, "").toUpperCase() : "";
     if (/^[0-9A-F]{6}$/.test(hex)) {
-      fill = `<a:solidFill><a:srgbClr val="${hex}"/></a:solidFill>`;
+      const alpha =
+        opacity != null && opacity < 1 ? `<a:alpha val="${Math.round(opacity * 100000)}"/>` : "";
+      fill = `<a:solidFill><a:srgbClr val="${hex}">${alpha}</a:srgbClr></a:solidFill>`;
     }
   }
   const szAttr = Number(fontSize) > 0 ? ` sz="${Math.round(Number(fontSize) * 100)}"` : "";
+  // 无显式色但需要透明度 → 默认文字色槽 tx1 + a:alpha（PowerPoint 官方结构）
+  if (!fill && opacity != null && opacity < 1) {
+    fill = `<a:solidFill><a:schemeClr val="tx1"><a:alpha val="${Math.round(opacity * 100000)}"/></a:schemeClr></a:solidFill>`;
+  }
   if (!fill && !szAttr) return omml;
   // m:r 内：rPr（若有）之后、m:t 之前插入 a:rPr；无 rPr 则插在 <m:r> 后
   return omml.replace(/<m:r>(?:(<m:rPr>[\s\S]*?<\/m:rPr>))?(?=<m:t)/g, (_m, rpr) => {

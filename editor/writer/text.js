@@ -42,7 +42,7 @@ function runXml(theme, s, hrefId) {
   const fill =
     s.gradient && s.gradient.type === "gradient" && Array.isArray(s.gradient.stops)
       ? buildFill(theme, s.gradient)
-      : solidFillElement(theme, s.color);
+      : solidFillElement(theme, s.color, s.opacity);
   if (fill) kids.push(fill);
   // 文字阴影（官方 TextContent.shadow）
   const shdw = shadowElement(theme, s.shadow);
@@ -156,6 +156,7 @@ export function buildParagraph(theme, para, base, registerLink, options = {}) {
 function buildFormulaRun(theme, run, baseStyle, { paraAlone = false, textAlign = null, fallback = false } = {}) {
   const color = run.style?.color || baseStyle.color;
   const fontSize = run.style?.fontSize || baseStyle.fontSize;
+  const opacity = baseStyle.opacity; // 元素级透明度（官方：颜色元素内 a:alpha）
   const mml = latexToMathml(run.latex);
   if (!mml || fallback) {
     const rPr = runXml(theme, { ...baseStyle, ...pickDefined(run.style) }, null);
@@ -163,7 +164,7 @@ function buildFormulaRun(theme, run, baseStyle, { paraAlone = false, textAlign =
   }
   // mathmlToOmml 输出已含 <m:oMath> 根（与官方 XSLT 字节一致），命名空间声明在根上
   const omml = mathmlToOmml(mml).replace(/^<m:oMath>/, `<m:oMath xmlns:m="${M_NS}">`);
-  const styled = injectRunStyle(omml, { color, fontSize }, theme);
+  const styled = injectRunStyle(omml, { color, fontSize, opacity }, theme);
   if (paraAlone) {
     const jc =
       textAlign === "center" || textAlign === "right"
@@ -190,11 +191,7 @@ export function textXml(theme, element, ctx) {
   const spPr =
     buildXfrm(b, element.rotation, element.flip) +
     el("a:prstGeom", { prst: "rect" }, el("a:avLst")) +
-    el("a:noFill") +
-    // 元素级整体透明度（官方 Text.opacity）：alphaModFix 作用于整个文本框
-    (element.opacity != null && element.opacity < 1
-      ? el("a:effectLst", {}, el("a:alphaModFix", { amt: Math.round(element.opacity * 100000) }))
-      : "");
+    el("a:noFill");
   const buildSp = (inner) =>
     el("p:sp", {}, [
       el("p:nvSpPr", {}, [
@@ -205,9 +202,10 @@ export function textXml(theme, element, ctx) {
       el("p:spPr", {}, spPr),
       el("p:txBody", {}, inner),
     ].join(""));
-  const body = buildTextBody(theme, element.content, ctx.registerLink);
+  // 元素级透明度（官方 Text.opacity）→ run 级填充 a:alpha（PowerPoint 存储结构）
+  const body = buildTextBody(theme, element.content, ctx.registerLink, { opacity: element.opacity });
   if (body.includes("<a14:m")) {
-    const fallbackBody = buildTextBody(theme, element.content, ctx.registerLink, { formulaFallback: true });
+    const fallbackBody = buildTextBody(theme, element.content, ctx.registerLink, { formulaFallback: true, opacity: element.opacity });
     const choice = el("mc:Choice", { "xmlns:a14": A14_NS, Requires: "a14" }, buildSp(body));
     const fallback = el("mc:Fallback", {}, buildSp(fallbackBody));
     return el("mc:AlternateContent", { "xmlns:mc": MC_NS }, choice + fallback);
@@ -224,6 +222,8 @@ export function textXml(theme, element, ctx) {
 export function buildTextBody(theme, content, registerLink, options = {}) {
   const tree = parseRichText(content?.text || "");
   const base = computeBaseStyle(theme, content);
+  // 元素级透明度（官方 Text.opacity）→ 所有 run 的填充颜色内 a:alpha
+  if (options.opacity != null) base.opacity = options.opacity;
   const bodyAttrs = { lIns: 0, tIns: 0, rIns: 0, bIns: 0, wrap: "square" };
   if (content?.wrap === false) bodyAttrs.wrap = "none";
   if (content?.textDirection === "vertical") bodyAttrs.vert = "eaVert";

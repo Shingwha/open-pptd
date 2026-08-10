@@ -7,43 +7,55 @@
 import { el, hexToRgbVal } from "./xml.js";
 import { resolveColor } from "../core/theme.js";
 
-/** 颜色 → OOXML 填充元素。主题 token 优先 schemeClr（可换主题），其余 srgbClr。 */
+/** 颜色 → OOXML 填充元素。主题 token 优先 schemeClr（可换主题），其余 srgbClr。
+ * opacity（0~1，可选）：文字/元素透明度——a:alpha 修饰符加在颜色元素内部
+ * （PowerPoint 官方存储结构，见 tests/reference/test-text.pptx 透明文字）。 */
 const TOKEN_SLOT = { text: "dk2", bg: "lt2", primary: "accent1", accent: "accent2" };
 
 const TOKEN_ALPHA_RE = /^\$([a-zA-Z-]+)([0-9a-fA-F]{2})$/;
 
-export function colorElement(theme, color) {
+/** 合并 hex 自带 alpha 与元素 opacity（0~1）→ a:alpha val（1/1000 %）。 */
+function alphaVal(hex, opacity) {
+  let a = 1;
+  if (hex && hex.length === 9) a = parseInt(hex.slice(7, 9), 16) / 255;
+  if (opacity != null) a *= opacity;
+  if (a >= 1) return "";
+  return el("a:alpha", { val: Math.round(a * 100000) });
+}
+
+export function colorElement(theme, color, opacity) {
   if (color == null) return "";
   if (typeof color === "string" && color.startsWith("$")) {
     // 派生色（$primary-deep/soft/tint）与令牌透明度（$primary20）：
     // PowerPoint 对背景中 schemeClr 的 tint/shade 渲染不稳定，导出直接用解析后的具体色值（= 预览所见）
     if (color === "$primary-deep" || color === "$primary-soft" || color === "$primary-tint" || TOKEN_ALPHA_RE.test(color)) {
-      return solidRgb(resolveColor(theme, color));
+      return solidRgb(resolveColor(theme, color), opacity);
     }
     const key = color.slice(1);
-    if (TOKEN_SLOT[key]) return el("a:schemeClr", { val: TOKEN_SLOT[key] });
-    return solidRgb(resolveColor(theme, color));
+    if (TOKEN_SLOT[key]) return el("a:schemeClr", { val: TOKEN_SLOT[key] }, alphaVal(null, opacity));
+    return solidRgb(resolveColor(theme, color), opacity);
   }
   if (typeof color === "string" && color.startsWith("#")) {
-    return solidRgb(color);
+    return solidRgb(color, opacity);
   }
   return "";
 }
 
-/** 颜色 → 完整 a:solidFill 元素（rPr / a:ln / a:outerShdw 等填充位置必须包裹）。 */
-export function solidFillElement(theme, color) {
-  const inner = colorElement(theme, color);
+/** 颜色 → 完整 a:solidFill 元素（rPr / a:ln / a:outerShdw 等填充位置必须包裹）。
+ * 无显式色但需要透明度时，用默认文字色槽 tx1 + a:alpha（PowerPoint 官方结构）。 */
+export function solidFillElement(theme, color, opacity) {
+  let inner;
+  if (color == null && opacity != null && opacity < 1) {
+    inner = el("a:schemeClr", { val: "tx1" }, alphaVal(null, opacity));
+  } else {
+    inner = colorElement(theme, color, opacity);
+  }
   return inner ? el("a:solidFill", {}, inner) : "";
 }
 
-function solidRgb(hex) {
+function solidRgb(hex, opacity) {
   const rgb = hexToRgbVal(hex);
-  const kids = [];
-  if (hex && hex.length === 9) {
-    const alpha = Math.round((parseInt(hex.slice(7, 9), 16) / 255) * 100000);
-    if (alpha < 100000) kids.push(el("a:alpha", { val: alpha }));
-  }
-  return el("a:srgbClr", { val: rgb }, kids.join(""));
+  return el("a:srgbClr", { val: rgb }, alphaVal(hex, opacity));
 }
 
 /** 位置与尺寸（bounds=[x,y,w,h]，pt → EMU）。rotation 为度；flip=[水平, 垂直]。 */
