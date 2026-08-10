@@ -87,8 +87,9 @@ export function buildFill(theme, fill, mediaRef = null) {
   }
   if (typeof fill !== "object") return "";
   if (fill.type === "gradient") {
+    // a:gs pos 单位 = 千分之一百分比（100% = 100000），与 PowerPoint 官方输出一致
     const stops = (fill.stops || []).map((s) =>
-      el("a:gs", { pos: Math.round((s.position ?? 0) * 1000) }, colorElement(theme, s.color))
+      el("a:gs", { pos: Math.round((s.position ?? 0) * 100000) }, colorElement(theme, s.color))
     ).join("");
     const inner = el("a:gsLst", {}, stops);
     if (fill.gradientType === "radial") {
