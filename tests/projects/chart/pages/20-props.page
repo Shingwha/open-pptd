@@ -1,0 +1,134 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [40, 10, 500, 30]
+    content:
+      style: "$title"
+      text: 全属性覆盖（一）：混合图/seriesDefaults/渐变/饼图/雷达/nullHandling
+  - elementId: c1
+    elementType: chart
+    bounds: [40, 50, 430, 220]
+    data:
+      cols: [月份, 营收, 利润]
+      rows:
+        - [1月, 120, 30]
+        - [2月, 200, 55]
+        - [3月, 150, 40]
+        - [4月, 260, 70]
+        - [5月, 180, 45]
+    seriesDefaults:
+      bar: {fill: "$primary", border: {color: "#1E3A5F", width: 1}}
+      line: {lineStyle: dash, width: 2, marker: {shape: circle, size: 4}}
+    series:
+      - type: bar
+        encode: {x: 月份, y: 营收}
+        name: 营收
+      - type: bar
+        encode: {x: 月份, y: 利润}
+        name: 利润
+        fill:
+          type: gradient
+          gradientType: linear
+          angle: 90
+          stops:
+            - {position: 0, color: "#F59E0B"}
+            - {position: 1, color: "#FDE68A"}
+      - type: line
+        encode: {x: 月份, y: 利润}
+        name: 利润线
+        lineColor: "$accent"
+        dataLabels: {content: value, numberFormat: "0.0", fontSize: 8}
+    xAxis: {title: 月份}
+    yAxis: {min: 0, title: 金额}
+    legend: {position: bottom, fontSize: 8}
+  - elementId: c2
+    elementType: chart
+    bounds: [500, 50, 420, 220]
+    data:
+      cols: [品类, 占比]
+      rows:
+        - [企业版, 45]
+        - [专业版, 30]
+        - [标准版, 15]
+        - [基础版, 10]
+    series:
+      - type: pie
+        encode: {category: 品类, value: 占比}
+        name: 占比
+        innerRadius: 0.55
+        startAngle: 90
+        fill: ["#2563EB", "$accent", "#10B981", "#EF4444"]
+        border: {color: "#FFFFFF", width: 2}
+        dataLabels: {content: percentage, fontSize: 9}
+    legend: {position: right, fontSize: 9}
+    title: {text: 环形饼图, fontSize: 12, color: "$primary"}
+  - elementId: c3
+    elementType: chart
+    bounds: [40, 290, 430, 210]
+    data:
+      cols: [维度, 角色A, 角色B]
+      rows:
+        - [速度, 80, 60]
+        - [力量, 70, 85]
+        - [防御, 60, 75]
+        - [敏捷, 90, 55]
+        - [耐力, 75, 80]
+    series:
+      - type: radar
+        encode: {category: 维度, y: 角色A}
+        name: 角色A
+        lineColor: "#2563EB"
+      - type: radar
+        encode: {category: 维度, y: 角色B}
+        name: 角色B
+        lineColor: "#10B981"
+        areaColor:
+          type: gradient
+          gradientType: linear
+          angle: 45
+          stops:
+            - {position: 0, color: "#10B981"}
+            - {position: 1, color: "#A7F3D0"}
+    spokeAxis:
+      show: true
+      min: 0
+      max: 120
+      label: {fontSize: 9, color: "$muted"}
+      axisLine: {color: "#94A3B8", width: 1}
+      gridLine: {style: dash, color: "#CBD5E1", width: 0.5}
+    title: {text: 雷达图全配置, fontSize: 12, color: "$primary"}
+  - elementId: c4
+    elementType: chart
+    bounds: [500, 290, 420, 210]
+    data:
+      cols: [周, 销量, 预测, 目标]
+      rows:
+        - [W1, 42, 40, 50]
+        - [W2, null, 50, 50]
+        - [W3, 48, null, 60]
+        - [W4, 68, 60, 60]
+        - [W5, 61, 66, 70]
+    series:
+      - type: line
+        encode: {x: 周, y: 销量}
+        name: 销量
+        nullHandling: zero
+        lineColor: "#2563EB"
+        width: 2
+        marker: {shape: rect, size: 5, fill: "#2563EB"}
+        dataLabels: {content: value, fontSize: 8}
+      - type: line
+        encode: {x: 周, y: 预测}
+        name: 预测
+        lineColor: "#F59E0B"
+        marker: {shape: diamond, size: 6, fill: "#F59E0B", border: {color: "#B45309", width: 1}}
+      - type: line
+        encode: {x: 周, y: 目标}
+        name: 目标
+        lineColor: "#10B981"
+        marker: {shape: triangle, size: 6, fill: "#10B981"}
+    xAxis: {type: category, reverse: true, title: 周序}
+    yAxis: {min: 0, max: 80}
+    title: {text: "nullHandling: zero + reverse", fontSize: 12, color: "$primary"}

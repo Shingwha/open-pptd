@@ -1,6 +1,6 @@
 # open-pptd v2 交接文档
 
-> 最后更新：2026-08-10（阶段 A ✅ + C1 ✅ + B ✅ + C2 ✅ + **C3 第三批（轴/横柱/次轴/色/rels 根因）+ chartEx 装配根因（AlternateContent/style-部件/汇总列）**，下一步 **C3 验证闭环（treemap/sunburst 逐页比对）**）
+> 最后更新：2026-08-10（阶段 A ✅ + C1 ✅ + B ✅ + C2 ✅ + **C3 第三批 + chartEx 装配根因 + 第四批（渐变 fill 导出 + 全属性测试页 20/21）**，下一步 **C3 验证闭环（用户验证 11/12/17/19/20/21 页）**）
 > **本文件是唯一对接文档**（上下文已清空，仅靠本文继续开发）。
 > 一切格式决策以 `references/official/pptd.md`（官方规范）为唯一依据；
 > 结构疑问先查 `tests/projects/*/reference/` 的权威参考文件（用户 PowerPoint 手工 / python-pptx 官方库生成）。
@@ -44,7 +44,7 @@
 | **Theme 官方化** | ✅ | 严格 `{colors, textStyles, tableStyles}`（pptd.md §3）；17 套预设只写 colors；派生色显式 hex（primarySoft/Tint/Deep）；序列化永远写对象 |
 | **tableStyles 官方化** | ✅ | `Record<string, TableStyleConfig>` + 官方继承链消费（writer/renderer 同源） |
 | **C2 Cell 对象模型** | ✅ | 见 §2.4 |
-| 测试体系 | ✅ | `tests/projects/` 每组件一项目（table 9 页 / text 8 / shape 8 / icon 2 / line 2 / **chart 19 页** / image 1）；`run-all.mjs` 11/11；isolate 32 个隔离导出；产物入各项目 `out/`（gitignore） |
+| 测试体系 | ✅ | `tests/projects/` 每组件一项目（table 9 页 / text 8 / shape 8 / icon 2 / line 2 / **chart 21 页** / image 1）；`run-all.mjs` 11/11；isolate 51 个隔离导出；产物入各项目 `out/`（gitignore） |
 | **C3 chart 官方化** | 🚧 | 13 类型注册 + 8 经典 chartEx 体系；**本轮：轴配置/横向柱/次轴/线型/层级色/图表框/rels 根因**（见 §2.5）；heatmap/sankey 暂不导出（PowerPoint 无原生，方案待定） |
 
 ### 2.2 关键文件地图
@@ -167,6 +167,18 @@ tests/                  见 §4
 - [x] **瀑布图汇总列双通道**：isTotal 语义 = data id=1（C 列汇总，true 行写 1，空值省略 cx:pt 但 ptCount 含空位）+ 隐藏 series（`hidden="1"` `formatIdx="1"`，tx 引用 C1，dataId=1，空 subtotals）；主 series 带 `formatIdx="0"`
 - [x] **xlsx 表头 bug**：buildChartExXlsx 把 cols map 成 `C1/C2` 单元格坐标（waterfall/treemap/sunburst 全中招）→ 真实列名；瀑布图补 C 列汇总数据
 - [x] 补官方结构：chart 级空 `cx:title pos="t" align="ctr" overlay="0"`、axis 级空 `cx:title`、`cx:fmtOvrs > fmtOvr idx=0 → accent1`（waterfall 必有）
+
+### 2.7 C3 第四批（2026-08-10）：渐变 fill 导出修复 + 全属性测试页
+
+**属性覆盖度审查结论**（官方 pptd.md §Chart 全字段 vs 模型/导出/预览）：三端同源已覆盖全部官方字段；本轮发现并修复：
+- [x] **fillXml/lnXml 只处理字符串色**：渐变对象（官方系列 fill/lineColor 支持 GradientFill）在 bar 系列 fill、lineColor、pie fill 数组元素、marker fill、scatter/bubble fill 处 → resolveColor 失败变 #000000 或丢失 → 已升级（对象 → buildFill，drawing.js 渐变/径向全支持）
+- [x] **barSerXml 直接忽略对象 fill**（`typeof s.fill === "string"` 过滤）→ 统一走 fillXml
+- 已知文档化缺口（保持不变）：bar.symbol 象形柱（OOXML 无原生）、bubble sizeScale/sizeRange 导出无直接字段、area.stack stream 导出退化 stacked、heatmap/sankey 不导出
+- [x] **新测试页 20/21**（chart 19 → 21 页）：
+  - 20-props：混合图 bar+line + seriesDefaults + 渐变 fill + $主题色 + dataLabels numberFormat + pie 全属性（innerRadius 0.55/startAngle 90/fill 数组 5 色/border/percentage 标签/legend right）+ radar spokeAxis 全字段 + areaColor 渐变 + line nullHandling=zero + xAxis reverse + marker rect/diamond/triangle
+  - 21-props2：candlestick **HLC 模式**（无 open，3 系列无 upDownBars——官方行为）+ wickStyle + bar stack percent + barGap/categoryGap + legend top + bubble sizeScale/sizeRange/dataFilter + $引用 + treemap **2D fill**（外层根×内层級，多根数据）
+  - 各图不同大小（430×220 / 420×220 / 200×220 / 430×210…）；treemap 2D 验证：上海/杭州 1E40AF、北京 B45309、广州 0c8a60（派生 -10 亮度）
+- 验证：isolate 51 个导出 ✓；结构核查（gradFill/dPt/firstSliceAng/holeSize/dispBlanksAs zero/orientation maxMin/percentStacked/DFS 编号色）✓；npm test 11/11 ✓；color-consistency 44 通过 ✓
 
 ---
 

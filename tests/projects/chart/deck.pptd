@@ -33,3 +33,5 @@ pages:
   - pages/17-chartex-color.page
   - pages/18-more.page
   - pages/19-levels.page
+  - pages/20-props.page
+  - pages/21-props2.page

@@ -1,0 +1,113 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [40, 10, 600, 30]
+    content:
+      style: "$title"
+      text: 全属性覆盖（二）：HLC/percent 堆叠/bubble 尺寸/treemap 2D 色
+  - elementId: c1
+    elementType: chart
+    bounds: [40, 50, 430, 220]
+    data:
+      cols: [日期, 最高, 最低, 收盘, 均价]
+      rows:
+        - ["2024-01-01", 12, 9, 11, 10.5]
+        - ["2024-01-02", 13, 10, 12.5, 11.2]
+        - ["2024-01-03", 14, 11, 13.5, 12.6]
+        - ["2024-01-04", 15, 12, 14, 13.4]
+        - ["2024-01-05", 16, 13, 15.5, 14.2]
+    series:
+      - type: candlestick
+        encode: {x: 日期, high: 最高, low: 最低, close: 收盘}
+        name: K线
+        upBars: {fill: "#EF4444", border: {color: "#B3261E", width: 1}}
+        downBars: {fill: "#10B981", border: {color: "#1E7E3A", width: 1}}
+        wickStyle: {color: "#64748B", width: 1}
+      - type: line
+        encode: {x: 日期, y: 均价}
+        name: 均价
+        smooth: true
+        lineColor: "#F59E0B"
+        width: 1.5
+    title: {text: "股价图 HLC 模式（无 open）", fontSize: 12, color: "$primary"}
+  - elementId: c2
+    elementType: chart
+    bounds: [500, 50, 420, 220]
+    data:
+      cols: [季度, 华东, 华北]
+      rows:
+        - [Q1, 120, 80]
+        - [Q2, 132, 95]
+        - [Q3, 101, 110]
+        - [Q4, 134, 120]
+    series:
+      - type: bar
+        encode: {x: 季度, y: 华东}
+        name: 华东
+        stack: percent
+        fill: "$primary"
+        dataLabels: {content: value, fontSize: 8}
+      - type: bar
+        encode: {x: 季度, y: 华北}
+        name: 华北
+        stack: percent
+        fill: "$accent"
+        dataLabels: {content: value, fontSize: 8}
+    barGap: 0.2
+    categoryGap: 0.4
+    legend: {position: top, fontSize: 9, color: "$muted"}
+    title: {text: "bar stack: percent", fontSize: 12, color: "$primary"}
+  - elementId: c3
+    elementType: chart
+    bounds: [40, 290, 430, 210]
+    data:
+      cols: [分组, x, y, size]
+      rows:
+        - [A, 10, 30, 8]
+        - [A, 20, 50, 14]
+        - [A, 30, 40, 10]
+        - [B, 12, 60, 20]
+        - [B, 24, 80, 16]
+        - [B, 36, 70, 25]
+    series:
+      - type: bubble
+        encode: {x: x, y: y, size: size}
+        name: A 组
+        dataFilter: {col: 分组, value: A}
+        fill: "$primary"
+        sizeScale: linear
+        sizeRange: [6, 26]
+      - type: bubble
+        encode: {x: x, y: y, size: size}
+        name: B 组
+        dataFilter: {col: 分组, value: B}
+        fill: "$accent"
+        sizeScale: sqrt
+        sizeRange: [6, 26]
+    title: {text: "bubble sizeScale/sizeRange + dataFilter", fontSize: 12, color: "$primary"}
+  - elementId: c4
+    elementType: chart
+    bounds: [500, 290, 420, 210]
+    data:
+      cols: [节点, 值, 父]
+      rows:
+        - [华东, 45, null]
+        - [华北, 30, null]
+        - [华南, 25, null]
+        - [上海, 20, 华东]
+        - [杭州, 25, 华东]
+        - [北京, 18, 华北]
+        - [广州, 15, 华南]
+    series:
+      - type: treemap
+        encode: {category: 节点, value: 值, parent: 父}
+        name: 组织
+        levels: 2
+        fill:
+          - ["#2563EB", "#1E40AF"]
+          - ["#F59E0B", "#B45309"]
+          - ["#10B981"]
+        dataLabels: {content: category, fontSize: 8}
+    title: {text: "treemap 2D fill（外层根×内层級）", fontSize: 12, color: "$primary"}

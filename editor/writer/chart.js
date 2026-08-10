@@ -262,6 +262,8 @@ export function buildChartXlsx(chartEl, fonts, sheetOrder) {
 // ----------------------------------------------------------------------------
 /** 主题色解析 + HEX8 透明度 → a:solidFill。 */
 function fillXml(theme, color, alpha) {
+  // 渐变对象（官方系列 fill 支持 GradientFill）→ buildFill；字符串色 → solidFill
+  if (color && typeof color === "object") return buildFill(theme, color);
   let c = resolveColor(theme, color);
   if (!c) c = "#000000";
   let rgb = c;
@@ -279,6 +281,13 @@ function fillXml(theme, color, alpha) {
 
 /** 系列线条（a:ln，主题色解析 + HEX8 + lineStyle → prstDash）。 */
 function lnXml(theme, color, widthPt = 2, style = "solid") {
+  // 渐变对象（官方 lineColor/areaColor 支持 GradientFill）→ buildFill
+  if (color && typeof color === "object") {
+    const kids = [buildFill(theme, color)];
+    const dash = { dash: "dash", dot: "dot" }[style];
+    if (dash) kids.push(el("a:prstDash", { val: dash }));
+    return el("a:ln", { w: Math.round(widthPt * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, kids.join(""));
+  }
   let c = resolveColor(theme, color) || "#000000";
   let a = null;
   if (/^#[0-9a-fA-F]{8}$/.test(c)) {
@@ -397,9 +406,8 @@ function barSerXml(theme, s, sheetRange, idx, labels, chs) {
     seriesNameXml(s.name, sheetRange.nameCol(s)),
   ];
   if (s.fill) {
-    const fill = typeof s.fill === "string" ? fillXml(theme, s.fill) : null;
-    const spPr = [];
-    if (fill) spPr.push(fill);
+    // fillXml 统一处理字符串色 + 渐变对象（官方 BarSeries.fill 支持 GradientFill）
+    const spPr = [fillXml(theme, s.fill)];
     if (s.border && s.border.color) {
       const w = Math.round((s.border.width ?? 1) * 12700);
       spPr.push(el("a:ln", { w, cap: "flat", cmpd: "sng", algn: "ctr" }, fillXml(theme, s.border.color)));
