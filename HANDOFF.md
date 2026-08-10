@@ -1,6 +1,6 @@
 # open-pptd v2 交接文档
 
-> 最后更新：2026-08-10（阶段 A ✅ + C1 ✅ + B ✅ + C2 ✅ + **C3 第三批（轴/横柱/次轴/色/rels 根因）**，下一步 **C3 验证闭环**）
+> 最后更新：2026-08-10（阶段 A ✅ + C1 ✅ + B ✅ + C2 ✅ + **C3 第三批（轴/横柱/次轴/色/rels 根因）+ chartEx 装配根因（AlternateContent/style-部件/汇总列）**，下一步 **C3 验证闭环（treemap/sunburst 逐页比对）**）
 > **本文件是唯一对接文档**（上下文已清空，仅靠本文继续开发）。
 > 一切格式决策以 `references/official/pptd.md`（官方规范）为唯一依据；
 > 结构疑问先查 `tests/projects/*/reference/` 的权威参考文件（用户 PowerPoint 手工 / python-pptx 官方库生成）。
@@ -157,7 +157,16 @@ tests/                  见 §4
 
 **新测试页（chart 19 页）**：14-axis（轴配置+虚线+图表框）、15-hbar（横向柱+barWidth）、16-secondary（次轴）、17-chartex-color（三分类色+层级色）、18-more（dataFilter+pie border）、19-levels（层级裁剪）
 
-**验证状态（2026-08-10 晚）**：rels 根因已修（check11），**待用户重新导出验证** 9/11/12/17/19 页；10/13（heatmap/sankey）空白为预期。
+**验证状态（2026-08-10 晚二轮）**：**用户实测 iso-chart-09 打开无修复弹窗 ✅**——chartEx 装配根因已修（见下）；9/11/12/17/19 待用户逐页确认显示细节；10/13（heatmap/sankey）空白为预期。
+
+### 2.6 chartEx 装配根因修复（2026-08-10 晚二轮，对照桌面 waterfall-color.pptx 实测）
+
+**判损根因（勿回退）**：
+- [x] **slide 层 chartEx 缺 mc:AlternateContent（头号）**：裸 graphicFrame → 必须 `mc:AlternateContent` 包裹（Choice `Requires="cx4"`（2016/5/10 chartex 命名空间）+ Fallback `p:pic` 预览图；mc 规范要求 Choice+Fallback 成对）——Fallback 用 1×1 透明 PNG 占位（生成不了图表截图），r:embed 走 addMedia
+- [x] **缺 chartStyle/chartColorStyle 部件**：chartEx rels 必须 rId2=chartStyle + rId3=chartColorStyle 指向 styleN.xml/colorsN.xml（官方默认模板 id=395/10，逐字节照抄参考）；Content_Types 加 chartstyle/chartcolorstyle Override；每个 chartEx 一套（chartExN → styleN/colorsN）
+- [x] **瀑布图汇总列双通道**：isTotal 语义 = data id=1（C 列汇总，true 行写 1，空值省略 cx:pt 但 ptCount 含空位）+ 隐藏 series（`hidden="1"` `formatIdx="1"`，tx 引用 C1，dataId=1，空 subtotals）；主 series 带 `formatIdx="0"`
+- [x] **xlsx 表头 bug**：buildChartExXlsx 把 cols map 成 `C1/C2` 单元格坐标（waterfall/treemap/sunburst 全中招）→ 真实列名；瀑布图补 C 列汇总数据
+- [x] 补官方结构：chart 级空 `cx:title pos="t" align="ctr" overlay="0"`、axis 级空 `cx:title`、`cx:fmtOvrs > fmtOvr idx=0 → accent1`（waterfall 必有）
 
 ---
 
@@ -253,9 +262,9 @@ node tests/color-consistency.mjs tests/projects/table   # 颜色一致性可指�
 | sunburst fill 数组 / levels | ✓ | ✓ | 同上 |
 | sankey nodeAlign/fill 单/数组/Record | ✓ | — | **暂不导出**；预览已消费（Kahn 拓扑序 + 节点色） |
 
-**下一步优先级**：① **验证 chartEx 显示**（rels 修复后用户重新导出验证 9/11/12/17/19）② bar.symbol 方案 ③ bubble sizeScale 导出近似（linear→size² 写缓存）④ area.stack stream 预览 ⑤ heatmap/sankey 最终方案（保持跳过 or 图片化）
+**下一步优先级**：① **验证 chartEx 显示**（AlternateContent 修复后用户已确认 09 无修复弹窗；待确认 11/12/17/19 显示细节 + 期初柱颜色语义）② bar.symbol 方案 ③ bubble sizeScale 导出近似（linear→size² 写缓存）④ area.stack stream 预览 ⑤ heatmap/sankey 最终方案（保持跳过 or 图片化）
 
-**验证状态**：9/11/12/17/19 页 chartEx 待重验（rels Type 已修，check11 产物）；10/13（heatmap/sankey）导出空白为预期。
+**验证状态**：9 页已确认打开无修复弹窗（2026-08-10 晚二轮）；11/12/17/19 待确认显示细节；10/13（heatmap/sankey）导出空白为预期。
 
 ### 5.2 D：主题体系重建 + 编辑器 UX（暂缓）
 
@@ -282,6 +291,8 @@ node tests/color-consistency.mjs tests/projects/table   # 颜色一致性可指�
 - **表格合并坑**：YAML 层用 rowSpan/colSpan + 省略被覆盖位（官方规则）；OOXML 层用 rowSpan/gridSpan + vMerge/hMerge 占位格接力跨度——两层语义不同，靠 tableGrid 转换
 - **表格默认值**：对齐 `[center, middle]`、边框 `{solid, 1, #000000}`；单元格继承链见 §2.3
 - **chartEx 全空白根因**：slide rels 的 Type 若含 `://` 必须原样输出（relType 别拼前缀）——chartEx 空白不一定是 chart XML 的问题，先查装配层（rels/Content_Types/slide 引用）
+- **chartEx 装配第二坑**：slide 里 chartEx 必须 `mc:AlternateContent`（Choice Requires="cx4" + Fallback，缺 Fallback 违反 mc 规范）+ chartEx rels 必须带 chartStyle/chartColorStyle（styleN/colorsN 部件，官方模板 id=395/10）——否则 PowerPoint 打开报错
+- **waterfall 汇总列 = 双通道**：xlsx C 列（true 行=1）+ data id=1 + 隐藏 series（hidden="1" formatIdx="1"）+ 主 series formatIdx="0"；subtotals 只列 isTotal=true 的 idx（期初 null → 不在 subtotals，渲染为浮动柱）
 - **chartEx 逐点色结构**：`cx:dataPt` + `cx:spPr` + `a:solidFill` + `a:srgbClr`（不是 cx:dataPoint/cx:color/cx:srgbClr）；series 顺序 tx→dataPt*→dataLabels→dataId→layoutPr；tree 类 dataPt idx 是整树先根 DFS 编号（根=0 含中间节点），waterfall 是行序
 - **chartEx 数据布局**：xlsx 层级列根在前；strDim lvl 是列逆序（最深 lvl 在前）；f 引用整个层级列范围
 - **tree 类树构建**：补齐路径连续同名必须去重（否则自挂成环死循环）

@@ -80,6 +80,7 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
       if (!parts) return false; // 类型暂不支持原生导出（预览正常，导出跳过该元素）
       if (parts.chartEx) {
         // chartEx 扩展体系（waterfall/treemap/sunburst）：独立命名 + Worksheet xlsx
+        // + style/colors 样式部件（rId2/rId3，PowerPoint 按此索引默认样式表）
         chartParts.push({
           id: chartId,
           chartEx: true,
@@ -89,6 +90,10 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
           relsBytes: encodeUtf8(parts.relsXml),
           xlsxPath: `ppt/embeddings/Microsoft_Excel_Worksheet${chartId}.xlsx`,
           xlsxBytes: parts.xlsx,
+          stylePath: `ppt/charts/style${chartId}.xml`,
+          styleBytes: encodeUtf8(parts.styleXml),
+          colorsPath: `ppt/charts/colors${chartId}.xml`,
+          colorsBytes: encodeUtf8(parts.colorsXml),
         });
       } else {
         chartParts.push({

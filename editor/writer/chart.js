@@ -24,12 +24,23 @@ import { resolveChartSeries, chartDataTable, isNumericColumn, resolveDataLabels,
 import { resolveColor, resolveFont } from "../core/theme.js";
 import { buildFill, buildLn, buildShadow } from "./drawing.js";
 import { ZipWriter } from "./zip.js";
+import { buildChartStyleXml, buildChartColorStyleXml } from "./chartex-style.js";
 
 /** 原生可导出的类型（经典 c:chartSpace 体系）。 */
 export const EXPORTABLE_CHART_TYPES = ["bar", "line", "area", "scatter", "bubble", "candlestick", "pie", "radar"];
 
 /** chartEx 扩展体系类型（PowerPoint 2016+ 新图表，cx: 命名空间）。 */
 export const CHARTEX_TYPES = ["waterfall", "treemap", "sunburst"];
+
+/** 1×1 透明 PNG（chartEx mc:Fallback 占位预览图）。 */
+const TINY_PNG = (() => {
+  const b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+  if (typeof Buffer !== "undefined") return new Uint8Array(Buffer.from(b64, "base64"));
+  const bin = atob(b64);
+  const u = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  return u;
+})();
 
 // ----------------------------------------------------------------------------
 // 数据 → xlsx 工作表
@@ -988,20 +999,42 @@ export function chartXml(theme, chartEl, ctx, chartId) {
   const inner = isChartEx
     ? el("cx:chart", { "r:id": rId, "xmlns:cx": "http://schemas.microsoft.com/office/drawing/2014/chartex", "xmlns:r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships" })
     : el("c:chart", { "r:id": rId, "xmlns:c": "http://schemas.openxmlformats.org/drawingml/2006/chart" });
-  return (
-    el("p:graphicFrame", {}, [
-      el("p:nvGraphicFramePr", {}, [
-        el("p:cNvPr", { id: ctx.nextId(), name: escAttr(chartEl.elementId) }),
-        el("p:cNvGraphicFramePr", {}, el("a:graphicFrameLocks", { noGrp: "1" })),
-        el("p:nvPr"),
-      ]),
-      el("p:xfrm", {}, [
-        el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) }),
-        el("a:ext", { cx: Math.round(w * 12700), cy: Math.round(h * 12700) }),
-      ]),
-      el("a:graphic", {}, el("a:graphicData", { uri }, inner)),
-    ].join(""))
-  );
+  const frameId = ctx.nextId();
+  const name = escAttr(chartEl.elementId);
+  const xfrm =
+    el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) }) +
+    el("a:ext", { cx: Math.round(w * 12700), cy: Math.round(h * 12700) });
+  const graphicFrame = el("p:graphicFrame", {}, [
+    el("p:nvGraphicFramePr", {}, [
+      el("p:cNvPr", { id: frameId, name }),
+      el("p:cNvGraphicFramePr", {}, el("a:graphicFrameLocks", { noGrp: "1" })),
+      el("p:nvPr"),
+    ]),
+    el("p:xfrm", {}, xfrm),
+    el("a:graphic", {}, el("a:graphicData", { uri }, inner)),
+  ].join(""));
+  if (!isChartEx) return graphicFrame;
+  // chartEx（PowerPoint 2016+ 新图表）：官方结构 = mc:AlternateContent 包裹，
+  // Choice Requires="cx4"（2016/5/10 chartex 命名空间）+ Fallback 预览图
+  // （对照用户 waterfall-color.pptx 实测）。缺 Fallback 违反 mc 规范（必含
+  // Choice + Fallback），Fallback 用 1×1 透明 PNG 占位（生成不了图表截图）。
+  const media = ctx.addMedia(TINY_PNG, "png");
+  const fallbackPic = el("p:pic", {}, [
+    el("p:nvPicPr", {}, [
+      el("p:cNvPr", { id: frameId, name }),
+      el("p:cNvPicPr", {}, el("a:picLocks", {
+        noGrp: "1", noRot: "1", noChangeAspect: "1", noMove: "1", noResize: "1",
+        noEditPoints: "1", noAdjustHandles: "1", noChangeArrowheads: "1", noChangeShapeType: "1",
+      })),
+      el("p:nvPr"),
+    ]),
+    el("p:blipFill", {}, el("a:blip", { "r:embed": media.id }) + el("a:stretch", {}, el("a:fillRect"))),
+    el("p:spPr", {}, xfrm + el("a:prstGeom", { prst: "rect" }, el("a:avLst"))),
+  ].join(""));
+  return el("mc:AlternateContent", {
+    "xmlns:mc": "http://schemas.openxmlformats.org/markup-compatibility/2006",
+    "xmlns:cx4": "http://schemas.microsoft.com/office/drawing/2016/5/10/chartex",
+  }, el("mc:Choice", { Requires: "cx4" }, graphicFrame) + el("mc:Fallback", {}, fallbackPic));
 }
 
 // ----------------------------------------------------------------------------
@@ -1088,14 +1121,15 @@ function cxStrDimXml(colStart, colEnd, levelValues, rowCount) {
   return `<cx:strDim type="cat"><cx:f>${f}</cx:f>${lvls}</cx:strDim>`;
 }
 
-/** cx:numDim（type: "val" 数值 / "size" 面积——treemap/sunburst 用 size）。 */
+/** cx:numDim（type: "val" 数值 / "size" 面积——treemap/sunburst 用 size）。
+ *  空值省略 cx:pt（对照 waterfall-color.pptx：ptCount 含空位但 pt 只写有值的）。 */
 function cxNumDimXml(dimType, colLetter, values, formatCode, rowCount) {
   const f = rowCount > 1
     ? `Sheet1!$${colLetter}$2:$${colLetter}$${rowCount}`
     : `Sheet1!$${colLetter}$1:$${colLetter}$1`;
   const lvl =
     `<cx:lvl ptCount="${values.length}"${formatCode ? ` formatCode="${formatCode}"` : ""}>` +
-    values.map((v, i) => `<cx:pt idx="${i}">${esc(String(v ?? ""))}</cx:pt>`).join("") +
+    values.map((v, i) => (v == null || v === "" ? "" : `<cx:pt idx="${i}">${esc(String(v))}</cx:pt>`)).join("") +
     `</cx:lvl>`;
   return `<cx:numDim type="${dimType}"><cx:f>${f}</cx:f>${lvl}</cx:numDim>`;
 }
@@ -1174,9 +1208,8 @@ function buildChartExParts(theme, chartEl, chartIndex) {
   const rows = data.rows || [];
   let rowCount = rows.length + 1; // +表头
 
-  // 数据布局（xlsx 列序 + dims XML）
-  let sheetOrder = [];
-  let dims = "";
+  // 数据布局（dims XML）
+  let dims = { main: "", extra: "" };
   let layoutPr = "";
   let dataLabels = "";
   let dataPoints = "";
@@ -1184,17 +1217,26 @@ function buildChartExParts(theme, chartEl, chartIndex) {
   const labels = resolveDataLabels(chartEl, s, type);
 
   if (type === "waterfall") {
-    // xlsx: [A=cat, B=val]；subtotals = isTotal 行索引（0-based）
-    sheetOrder = [s._cols.x ?? 0, s._cols.y ?? 1];
+    // xlsx: [A=cat, B=val, C=汇总列]；subtotals = isTotal 行索引（0-based）
     const cats = rows.map((r) => String(r[s._cols.x] ?? ""));
     const vals = rows.map((r) => Number(r[s._cols.y] ?? 0));
     const isTotalCol = s._cols.isTotal;
     const subIdx = isTotalCol != null
       ? rows.map((r, i) => (r[isTotalCol] === true ? i : -1)).filter((i) => i >= 0)
       : [];
-    dims =
+    // 汇总列值（官方结构：isTotal 语义双通道——第二 dataset + 隐藏 series；
+    // 对照用户 waterfall-color.pptx：data id=1 引用 C 列，true 行写 1）
+    const totals = rows.map((r) => (isTotalCol != null && r[isTotalCol] === true ? 1 : null));
+    const dataMain =
       cxStrDimXml("A", "A", [cats], rowCount) +
       cxNumDimXml("val", "B", vals, "G/通用格式", rowCount);
+    const dataTotal = isTotalCol != null
+      ? `<cx:data id="1">` +
+        cxStrDimXml("A", "A", [cats], rowCount) +
+        cxNumDimXml("val", "C", totals, "G/通用格式", rowCount) +
+        `</cx:data>`
+      : "";
+    dims = { main: dataMain, extra: dataTotal };
     layoutPr = subIdx.length
       ? `<cx:layoutPr><cx:subtotals>${subIdx.map((i) => `<cx:idx val="${i}"/>`).join("")}</cx:subtotals></cx:layoutPr>`
       : `<cx:layoutPr><cx:aggregation/></cx:layoutPr>`;
@@ -1225,7 +1267,6 @@ function buildChartExParts(theme, chartEl, chartIndex) {
     const maxLevels = Number.isFinite(s.levels) && s.levels > 0 ? Math.floor(s.levels) : null;
     const { depth, leafRows } = buildHierarchyRows(chartEl, s, maxLevels);
     if (depth === 0) return null;
-    sheetOrder = [];
     rowCount = leafRows.length + 1; // 层级表行数（叶子行 + 表头）
     const levelCols = [];
     for (let L = 0; L < depth; L++) {
@@ -1234,10 +1275,12 @@ function buildChartExParts(theme, chartEl, chartIndex) {
     const sizes = leafRows.map((x) => Number(x.value ?? 0));
     const colLetters = depth === 1 ? ["A"] : ["A", "B", "C", "D", "E", "F", "G", "H"].slice(0, depth);
     sizeLetter = String.fromCharCode(65 + depth); // 层级列后一列（A=65；depth 3 → D）
-    dims =
-      cxStrDimXml("A", colLetters[depth - 1], levelCols, rowCount) +
-      cxNumDimXml("size", sizeLetter, sizes, "G/通用格式", rowCount);
-    sheetOrder = []; // 层级数据由 buildChartExXlsx 专建（不走原列重排）
+    dims = {
+      main:
+        cxStrDimXml("A", colLetters[depth - 1], levelCols, rowCount) +
+        cxNumDimXml("size", sizeLetter, sizes, "G/通用格式", rowCount),
+      extra: "",
+    };
     layoutPr = type === "treemap" ? `<cx:layoutPr><cx:parentLabelLayout val="overlapping"/></cx:layoutPr>` : "";
     dataLabels = labels
       ? `<cx:dataLabels pos="${type === "sunburst" ? "ctr" : "inEnd"}"><cx:visibility seriesName="0" categoryName="1" value="0"/></cx:dataLabels>`
@@ -1255,21 +1298,27 @@ function buildChartExParts(theme, chartEl, chartIndex) {
   })}}`;
 
   const titleText = typeof chartEl.title === "string" ? chartEl.title : chartEl.title?.text || "";
+  // 官方结构：cx:title 始终存在（无标题时空元素带定位属性，对照 waterfall-color.pptx）
   const titleXml = titleText
     ? `<cx:title pos="t" align="ctr" overlay="0"><cx:tx><cx:txData><cx:v>${esc(titleText)}</cx:v></cx:txData></cx:tx></cx:title>`
-    : "";
+    : `<cx:title pos="t" align="ctr" overlay="0"/>`;
   const legendCfg = chartEl.legend;
   const legendXml = legendCfg === true || typeof legendCfg === "object"
     ? `<cx:legend pos="${typeof legendCfg === "object" && legendCfg.position ? legendCfg.position : "t"}" align="ctr" overlay="0"/>`
     : "";
 
-  // 轴（waterfall：分类 + 数值）
+  // 轴（waterfall：分类 + 数值；官方结构 axis 内带空 cx:title）
   let axes = "";
   if (type === "waterfall") {
     axes =
-      `<cx:axis id="0"><cx:catScaling gapWidth="0.5"/><cx:tickLabels/></cx:axis>` +
-      `<cx:axis id="1"><cx:valScaling/><cx:majorGridlines/><cx:tickLabels/></cx:axis>`;
+      `<cx:axis id="0"><cx:catScaling gapWidth="0.5"/><cx:title/><cx:tickLabels/></cx:axis>` +
+      `<cx:axis id="1"><cx:valScaling/><cx:title/><cx:majorGridlines/><cx:tickLabels/></cx:axis>`;
   }
+
+  // 系列默认格式覆盖（官方结构：cx:fmtOvrs > fmtOvr idx=0 → accent1，
+  // 对照 waterfall-color.pptx）
+  const fmtOvrs =
+    `<cx:fmtOvrs><cx:fmtOvr idx="0"><cx:spPr><a:solidFill><a:schemeClr val="accent1"/></a:solidFill></cx:spPr></cx:fmtOvr></cx:fmtOvrs>`;
 
   // 图表框（官方 Chart.fill/border/shadow → cx:chartSpace spPr；chartEx 同样适用）
   const frameSpPr = (chartEl.fill || chartEl.border || chartEl.shadow)
@@ -1280,27 +1329,39 @@ function buildChartExParts(theme, chartEl, chartIndex) {
       `</cx:spPr>`
     : "";
 
+  // 隐藏系列（waterfall 汇总列：hidden="1" + dataId=1，对照 waterfall-color.pptx）
+  const isTotalCol = s._cols.isTotal;
+  const totalSeriesXml = (type === "waterfall" && isTotalCol != null)
+    ? `<cx:series layoutId="waterfall" hidden="1" uniqueId="${guid()}" formatIdx="1">` +
+      `<cx:tx><cx:txData><cx:f>Sheet1!$C$1</cx:f><cx:v>${esc(String((data.cols || [])[isTotalCol] ?? "汇总"))}</cx:v></cx:txData></cx:tx>` +
+      `<cx:dataId val="1"/>` +
+      `<cx:layoutPr><cx:subtotals/></cx:layoutPr>` +
+      `</cx:series>`
+    : "";
+
   const xml =
     xmlHeader() +
     `<cx:chartSpace xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ` +
     `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" ` +
     `xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex">` +
     `<cx:chartData><cx:externalData r:id="rId1" cx:autoUpdate="0"/>` +
-    `<cx:data id="0">${dims}</cx:data></cx:chartData>` +
+    `<cx:data id="0">${dims.main}</cx:data>${dims.extra}</cx:chartData>` +
     `<cx:chart>` +
     titleXml +
     `<cx:plotArea><cx:plotAreaRegion>` +
-    `<cx:series layoutId="${type}" uniqueId="${guid()}">` +
+    `<cx:series layoutId="${type}" uniqueId="${guid()}" formatIdx="0">` +
     `<cx:tx><cx:txData><cx:f>Sheet1!$${type === "waterfall" ? "B" : sizeLetter}$1</cx:f><cx:v>${esc(s.name)}</cx:v></cx:txData></cx:tx>` +
     dataPoints +
     dataLabels +
     `<cx:dataId val="0"/>` +
     layoutPr +
     `</cx:series>` +
+    totalSeriesXml +
     `</cx:plotAreaRegion>${axes}</cx:plotArea>` +
     legendXml +
     `</cx:chart>` +
     frameSpPr +
+    fmtOvrs +
     `</cx:chartSpace>`;
 
   const relsXml =
@@ -1311,21 +1372,51 @@ function buildChartExParts(theme, chartEl, chartIndex) {
         Type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/package",
         Target: `../embeddings/Microsoft_Excel_Worksheet${chartIndex}.xlsx`,
       }),
+      el("Relationship", {
+        Id: "rId2",
+        Type: "http://schemas.microsoft.com/office/2011/relationships/chartStyle",
+        Target: `style${chartIndex}.xml`,
+      }),
+      el("Relationship", {
+        Id: "rId3",
+        Type: "http://schemas.microsoft.com/office/2011/relationships/chartColorStyle",
+        Target: `colors${chartIndex}.xml`,
+      }),
     ].join(""));
 
-  return { chartEx: true, xml, relsXml, xlsx: buildChartExXlsx(chartEl, s, type) };
+  return {
+    chartEx: true,
+    xml,
+    relsXml,
+    xlsx: buildChartExXlsx(chartEl, s, type),
+    styleXml: buildChartStyleXml(),
+    colorsXml: buildChartColorStyleXml(),
+  };
 }
 
-/** chartEx 专用 xlsx：瀑布图 [cat, val]；树/旭日 [级0..级N, size]（叶子路径）。 */
+/** chartEx 专用 xlsx：瀑布图 [cat, val, 汇总列]；树/旭日 [级0..级N, size]（叶子路径）。 */
 function buildChartExXlsx(chartEl, s, type) {
   const fonts = { latin: "Microsoft YaHei" };
   const data = chartEl.data || { cols: [], rows: [] };
   const rows = data.rows || [];
   let table;
   if (type === "waterfall") {
-    const cats = rows.map((r) => String(r[s._cols.x] ?? ""));
-    const vals = rows.map((r) => r[s._cols.y] ?? null);
-    table = [["类别", "数值"], ...cats.map((c, i) => [c, vals[i]])];
+    // 表头 = 测试页列名（对照用户参考：A1=项目 B1=金额 C1=汇总）；
+    // 汇总列 true 行写 1（isTotal 标记，官方数据布局）
+    const srcCols = data.cols || [];
+    const xIdx = s._cols.x ?? 0;
+    const yIdx = s._cols.y ?? 1;
+    const tIdx = s._cols.isTotal;
+    const cats = rows.map((r) => String(r[xIdx] ?? ""));
+    const vals = rows.map((r) => r[yIdx] ?? null);
+    const header = [String(srcCols[xIdx] ?? "类别"), String(srcCols[yIdx] ?? "数值")];
+    if (tIdx != null) header.push(String(srcCols[tIdx] ?? "汇总"));
+    table = [header];
+    rows.forEach((r, i) => {
+      const row = [cats[i], vals[i]];
+      if (tIdx != null) row.push(r[tIdx] === true ? 1 : null);
+      table.push(row);
+    });
   } else {
     const maxLevels = Number.isFinite(s.levels) && s.levels > 0 ? Math.floor(s.levels) : null;
     const { depth, leafRows } = buildHierarchyRows(chartEl, s, maxLevels);
@@ -1338,6 +1429,7 @@ function buildChartExXlsx(chartEl, s, type) {
       table.push([...[...rev].reverse(), value ?? null]); // [根…叶子, 值]
     }
   }
-  const cols = table[0].map((_, i) => `C${i + 1}`);
+  // 真实表头作为 cols（原 bug：map 成 C1/C2 单元格坐标 → xlsx 表头错乱）
+  const cols = table[0];
   return buildChartXlsx({ data: { cols, rows: table.slice(1) } }, fonts, null);
 }

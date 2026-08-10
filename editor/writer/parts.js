@@ -59,6 +59,12 @@ export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0, cha
     overrides.push(
       el("Override", { PartName: `/ppt/charts/chartEx${id}.xml`, ContentType: "application/vnd.ms-office.chartex+xml" })
     );
+    overrides.push(
+      el("Override", { PartName: `/ppt/charts/style${id}.xml`, ContentType: "application/vnd.ms-office.chartstyle+xml" })
+    );
+    overrides.push(
+      el("Override", { PartName: `/ppt/charts/colors${id}.xml`, ContentType: "application/vnd.ms-office.chartcolorstyle+xml" })
+    );
   }
   return (
     xmlHeader() +

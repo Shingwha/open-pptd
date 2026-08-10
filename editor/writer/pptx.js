@@ -126,6 +126,8 @@ export async function buildPptx(deck, options = {}) {
       zip.add(part.path, part.bytes);
       zip.add(part.relsPath, part.relsBytes);
       zip.add(part.xlsxPath, part.xlsxBytes);
+      if (part.stylePath) zip.add(part.stylePath, part.styleBytes);
+      if (part.colorsPath) zip.add(part.colorsPath, part.colorsBytes);
     }
   });
 
