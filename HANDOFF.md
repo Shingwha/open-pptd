@@ -301,7 +301,7 @@ node tests/color-consistency.mjs tests/projects/table   # 颜色一致性可指�
 - [x] **废弃 `elementType: formula`**：`types/formula.js` + `renderer/formula.js` + `writer/formula.js` 已删；`injectRunStyle` 并入 `writer/text.js`（公式 run 样式注入，富文本行内公式唯一消费方）
 - [x] **theme-presets.js 精简**：17 套 THEME_PRESETS + THEME_NAMES 删除（决策：不做主题预设库/编辑器主题切换，见 §5.2），只留 DEFAULT_THEME；消费端全清：theme.js 字符串 key 分支、toolbar.js 主题下拉（+ index.html theme-select）、io.js 字符串展开 + `THEME_PRESETS.blue` 回退、lib/pptd-export.js + bin CLI 的 `--theme` 参数（v1 兼容路径）
 - [ ] **字体嵌入验证**：deck.fonts 资源表扩展 + writer/font.js 管线已就绪无测试覆盖——加带嵌入字体的测试项目（参照 font-embedding.md）
-- [ ] **SKILL.md**：v2 完成后对齐 `C:/Users/法法/Desktop/open-kimi-ppt/SKILL.md` 工作流（step1-5：读上下文/定需求/生成/验证/交付），只改编辑器/导出章节；主题决策步骤写入（见 §5.2）
+- [x] **SKILL.md 已迁移并安装**（2026-08-10）：`SKILL.md` 位于项目根 + 已复制到 `~/.pi/agent/skills/open-pptd-v2/`（含 bin/lib/editor/scripts/references/assets/tests，零依赖可运行）；工作流 step1-5 对齐规范库；能力边界：不支持 pptx→pptd 转换、heatmap/sankey 不导出、fab: 品牌图标不支持、图标清单 references/icons.md（AUTO-GENERATED）；路径用「本 skill 目录」相对写法
 - [ ] 文档同步：README/HANDOFF 随阶段更新
 
 ---
