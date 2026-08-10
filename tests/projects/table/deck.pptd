@@ -67,6 +67,20 @@ theme:
         bold: true
         color: "$success"
       rowOverColumn: true
+    # 三色循环：bodyStyles 3 项按数据行索引 0、1、2 循环
+    tricolor:
+      cellStyle:
+        fontSize: 13
+        border: {style: solid, width: 1, color: "#E5E7EB"}
+      firstRowStyle:
+        fill: {type: solid, color: "#111827"}
+        color: "#FFFFFF"
+        bold: true
+      bodyStyles:
+        - {fill: {type: solid, color: "#FEF3C7"}}
+        - {fill: {type: solid, color: "#DCFCE7"}}
+        - {fill: {type: solid, color: "#DBEAFE"}}
+      rowOverColumn: true
     # 无边框样式：只用填充分层（依赖 cellStyle.border 显式清除）
     noframe:
       cellStyle:
@@ -87,3 +101,4 @@ pages:
   - pages/06-fills.page
   - pages/07-fonts.page
   - pages/08-colors.page
+  - pages/09-textstyle.page

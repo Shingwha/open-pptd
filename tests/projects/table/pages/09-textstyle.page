@@ -1,0 +1,55 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 36, 600, 40]
+    content:
+      style: "$title"
+      text: 单元格 textStyle 引用 + bodyStyles 多色循环
+  - elementId: t2
+    elementType: text
+    bounds: [60, 80, 500, 24]
+    content:
+      style: "$caption"
+      text: 'Cell.textStyle: "$title" / "$caption" 引用（只影响文字字段）'
+  - elementId: tb1
+    elementType: table
+    bounds: [60, 108, 840, 200]
+    columnWidths: [0.34, 0.33, 0.33]
+    style: "$default"
+    rows:
+      - - text: "引用 $title"
+          textStyle: "$title"
+        - text: "引用 $caption"
+          textStyle: "$caption"
+        - text: "无引用（默认 13pt）"
+      - - text: "内联 color 覆盖"
+          textStyle: "$title"
+          color: "$danger"
+        - text: "内联 fontSize 覆盖"
+          textStyle: "$title"
+          fontSize: 10
+        - text: "引用 + 内联 bold 关闭"
+          textStyle: "$title"
+          bold: false
+      - - text: "普通"
+        - text: "普通"
+        - text: "普通"
+  - elementId: t3
+    elementType: text
+    bounds: [60, 316, 500, 24]
+    content:
+      style: "$caption"
+      text: 样式 "$tricolor"：bodyStyles 3 色按数据行索引循环
+  - elementId: tb2
+    elementType: table
+    bounds: [60, 344, 840, 160]
+    columnWidths: [0.34, 0.33, 0.33]
+    style: "$tricolor"
+    rows:
+      - [季度, 营收, 利润]
+      - [Q1, 1280, 320]
+      - [Q2, 1420, 356]
+      - [Q3, 1650, 402]
+      - [Q4, 1890, 458]

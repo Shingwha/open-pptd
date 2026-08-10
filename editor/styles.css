@@ -1210,3 +1210,21 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   .fab-stack { right: 10px; bottom: 12px; }
   .stage-status { max-width: 62vw; }
 }
+
+/* ============================================================================
+ * 表格编辑器（table-editor.js）：选中态 / 覆盖位 / 样式工具条
+ * ========================================================================== */
+.data-table td.grid-cell { position: relative; }
+.data-table td.grid-cell input { width: 100%; box-sizing: border-box; border: none; outline: none; background: transparent; font: inherit; }
+.data-table td.grid-cell.cell-selected { outline: 2px solid #2563eb; outline-offset: -2px; background: #eff6ff; }
+.data-table td.grid-cell.cell-region { background: #dbeafe; }
+.data-table td.grid-cell.cell-covered { background: repeating-linear-gradient(45deg, #f3f4f6, #f3f4f6 6px, #e5e7eb 6px, #e5e7eb 12px); cursor: not-allowed; }
+.cell-style-bar {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  padding: 8px 10px; margin-top: 10px; border: 1px solid #e5e7eb; border-radius: 8px;
+  background: #fafafa; font-size: 12px;
+}
+.cell-style-bar .style-item { display: flex; align-items: center; gap: 4px; }
+.cell-style-bar .style-item label { color: #6b7280; }
+.cell-style-bar .style-item select, .cell-style-bar .style-item input { font-size: 12px; padding: 2px 4px; }
+.cell-style-bar .style-active { background: #2563eb; color: #fff; border-color: #2563eb; }

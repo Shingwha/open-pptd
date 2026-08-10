@@ -64,6 +64,10 @@ export function renderTable(theme, el) {
       const bold = cell?.bold ?? ref.bold ?? s.bold;
       const italic = cell?.italic ?? ref.italic ?? s.italic;
       const backgroundColor = cell?.backgroundColor ?? ref.backgroundColor ?? s.backgroundColor;
+      const lineHeight = cell?.lineHeightPx ?? ref.lineHeightPx ?? s.lineHeightPx
+        ?? (cell?.lineHeight ?? ref.lineHeight ?? s.lineHeight) ?? 1;
+      const letterSpacing = cell?.letterSpacing ?? ref.letterSpacing ?? s.letterSpacing;
+      const marginTop = cell?.marginTop ?? ref.marginTop ?? s.marginTop;
       td.style.cssText = [
         `border:${borderStyle === "solid" ? borderWidth + " solid" : borderWidth + " dashed"} ${borderColor}`,
         `padding:${TABLE_CELL_PAD}px ${TABLE_CELL_PAD_X}px`,
@@ -76,10 +80,12 @@ export function renderTable(theme, el) {
         fontFamily ? `font-family:"${fontFamily}",sans-serif` : "",
         `font-size:${fontSize}px`,
         backgroundColor ? `background-color:${resolveColor(theme, backgroundColor)}` : "",
+        `line-height:${lineHeight}`,
+        letterSpacing ? `letter-spacing:${letterSpacing}px` : "",
+        marginTop ? `padding-top:${TABLE_CELL_PAD + marginTop}px` : "",
         "overflow:hidden",
         "text-overflow:ellipsis",
         "white-space:normal",
-        "line-height:1.35",
       ].filter(Boolean).join(";");
       if (cell?.rowSpan > 1) td.rowSpan = cell.rowSpan;
       if (cell?.colSpan > 1) td.colSpan = cell.colSpan;
