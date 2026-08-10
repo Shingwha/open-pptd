@@ -6,6 +6,39 @@
 
 import { el, hexToRgbVal } from "./xml.js";
 import { resolveColor } from "../core/theme.js";
+import { PRESET_SHAPES } from "../core/preset-geometry.data.js";
+import { SUPPORTED_SHAPES } from "../core/model.js";
+import { custGeomXml } from "./custgeom.js";
+
+/**
+ * 预置几何 → a:prstGeom。
+ * 与 PowerPoint 存储一致：未显式设置 adjustments 时输出空 avLst（用预设内置默认），
+ * 显式设置时按 adjNames 写 gd（仅当元素级 adjustments 非空）。
+ */
+export function buildPresetGeom(shapeName, adjustments) {
+  const def = SUPPORTED_SHAPES[shapeName];
+  if (!def) return el("a:prstGeom", { prst: "rect" }, "<a:avLst/>");
+  if (Array.isArray(adjustments) && adjustments.length) {
+    const names =
+      PRESET_SHAPES[shapeName]?.adjNames || adjustments.map((_, i) => (i === 0 ? "adj" : `adj${i}`));
+    const gds = adjustments.map((v, i) => el("a:gd", { name: names[i] ?? `adj${i}`, fmla: `val ${v}` })).join("");
+    return el("a:prstGeom", { prst: def.preset }, el("a:avLst", {}, gds));
+  }
+  return el("a:prstGeom", { prst: def.preset }, "<a:avLst/>");
+}
+
+/**
+ * ShapeDef（shapeName/adjustments/viewBox/path，见官方 Image.cropShape）→ 几何元素。
+ * custom 走 a:custGeom；缺省回退矩形。
+ */
+export function buildShapeDefGeom(shapeDef) {
+  if (!shapeDef) return el("a:prstGeom", { prst: "rect" });
+  if (shapeDef.shapeName === "custom") {
+    if (!shapeDef.path || !Array.isArray(shapeDef.viewBox)) return el("a:prstGeom", { prst: "rect" });
+    return custGeomXml(shapeDef.viewBox, shapeDef.path);
+  }
+  return buildPresetGeom(shapeDef.shapeName, shapeDef.adjustments);
+}
 
 /** 颜色 → OOXML 填充元素。主题 token 优先 schemeClr（可换主题），其余 srgbClr。
  * opacity（0~1，可选）：文字/元素透明度——a:alpha 修饰符加在颜色元素内部
@@ -114,32 +147,34 @@ export function buildFill(theme, fill, mediaRef = null) {
   if (fill.type === "image") {
     if (!mediaRef) return "";
     const kids = [el("a:blip", { "r:embed": mediaRef.id })];
-    const crop = fill.crop;
-    if (crop) {
-      const sr = el("a:srcRect", {
-        l: crop.left != null ? Math.round(crop.left * 100000) : undefined,
-        t: crop.top != null ? Math.round(crop.top * 100000) : undefined,
-        r: crop.right != null ? Math.round(crop.right * 100000) : undefined,
-        b: crop.bottom != null ? Math.round(crop.bottom * 100000) : undefined,
-      });
-      kids.push(sr);
-    }
-    const mode = fill.fit?.mode || "cover";
-    if (mode === "fill") {
-      kids.push(el("a:stretch", {}, el("a:fillRect", {})));
+    // 调用方已算好的最终 srcRect（元素级 crop+cover 合成）优先，否则按普通 cover 计算
+    if (mediaRef.srcRect) {
+      kids.push(el("a:srcRect", mediaRef.srcRect));
     } else {
-      // cover / contain（填充上下文无法表达 contain 留白，统一等比裁剪 = cover）：
-      // 通过 srcRect 裁剪源图，使目标容器完全覆盖
-      // （需要图片原始尺寸与容器尺寸；调用方可放在 fill.containerW/H 或 mediaRef.containerW/H）
-      const size = mediaRef.size;
-      const cw = mediaRef.containerW || fill.containerW || 960;
-      const ch = mediaRef.containerH || fill.containerH || 540;
-      if (size) {
-        const rect = coverSrcRect(size[0], size[1], cw, ch);
-        if (rect) kids.push(el("a:srcRect", rect));
+      const crop = fill.crop;
+      if (crop) {
+        const sr = {
+          l: crop.left != null ? Math.round(crop.left * 100000) : undefined,
+          t: crop.top != null ? Math.round(crop.top * 100000) : undefined,
+          r: crop.right != null ? Math.round(crop.right * 100000) : undefined,
+          b: crop.bottom != null ? Math.round(crop.bottom * 100000) : undefined,
+        };
+        kids.push(el("a:srcRect", sr));
       }
-      kids.push(el("a:stretch", {}, el("a:fillRect", {})));
+      const mode = fill.fit?.mode || "cover";
+      if (mode !== "fill") {
+        // cover / contain（填充上下文无法表达 contain 留白，统一等比裁剪 = cover）：
+        // 通过 srcRect 裁剪源图，使目标容器完全覆盖
+        const size = mediaRef.size;
+        const cw = mediaRef.containerW || fill.containerW || 960;
+        const ch = mediaRef.containerH || fill.containerH || 540;
+        if (size) {
+          const rect = coverSrcRect(size[0], size[1], cw, ch);
+          if (rect) kids.push(el("a:srcRect", rect));
+        }
+      }
     }
+    kids.push(el("a:stretch", {}, el("a:fillRect", {})));
     return el("a:blipFill", {}, kids.join(""));
   }
   // 兼容旧形态：直接对象（color 字段）

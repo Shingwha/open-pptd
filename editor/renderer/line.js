@@ -1,5 +1,9 @@
 // ============================================================================
-// renderer/line.js — 线条 → SVG（直线 + 箭头 + 虚线）
+// renderer/line.js — 线条 → SVG（直线 / 折线 sharp·round / 贝塞尔 smooth + 箭头）
+// ----------------------------------------------------------------------------
+// 官方语义：points 首尾为经过点，中间为贝塞尔控制点（smooth）；
+// sharp=直线段折线，round=圆角连接折线，smooth=贝塞尔曲线。
+// 2 点时三者等价（直线）。
 // ============================================================================
 
 import { resolveColor } from "../core/theme.js";
@@ -27,19 +31,33 @@ export function renderLine(theme, el) {
   const color = resolveColor(theme, el.border?.color) || "#000000";
   const width = el.border?.width || 1;
   const dash = el.border?.style === "dash" ? "6 4" : el.border?.style === "dot" ? "2 3" : null;
+  const curve = el.curve || "round";
 
   // 曲线（多点）用 path；直线用 line
   let shape;
-  if (rel.length > 2 && el.curve === "smooth") {
+  if (rel.length > 2) {
     shape = document.createElementNS(SVG_NS, "path");
-    let d = `M ${x1} ${y1}`;
-    for (let i = 1; i < rel.length - 1; i++) {
-      const midX = (rel[i][0] + rel[i + 1][0]) / 2;
-      const midY = (rel[i][1] + rel[i + 1][1]) / 2;
-      d += ` Q ${rel[i][0]} ${rel[i][1]} ${midX} ${midY}`;
+    if (curve === "smooth") {
+      // 贝塞尔：首尾为经过点，中间为控制点（2 点直线 / 3 点二次 / 4 点三次 / 更多按 4 点一段连续）
+      let d = `M ${x1} ${y1}`;
+      let i = 1;
+      while (i < rel.length - 1) {
+        const rest = rel.length - 1 - i; // 剩余点数（含最后锚点）
+        if (rest === 1) {
+          // 剩余一个控制点 + 末锚点 → 二次贝塞尔
+          d += ` Q ${rel[i][0]} ${rel[i][1]} ${x2} ${y2}`;
+          i += 2;
+        } else {
+          d += ` C ${rel[i][0]} ${rel[i][1]} ${rel[i + 1][0]} ${rel[i + 1][1]} ${rel[i + 2][0]} ${rel[i + 2][1]}`;
+          i += 3;
+        }
+      }
+      shape.setAttribute("d", d);
+    } else {
+      // sharp / round：经过全部点的折线（仅连接样式不同）
+      shape.setAttribute("d", `M ${x1} ${y1} L ${rel.slice(1).map(([px, py]) => `${px} ${py}`).join(" L ")}`);
+      shape.setAttribute("stroke-linejoin", curve === "round" ? "round" : "miter");
     }
-    d += ` T ${x2} ${y2}`;
-    shape.setAttribute("d", d);
   } else {
     shape = document.createElementNS(SVG_NS, "line");
     shape.setAttribute("x1", x1);
@@ -52,16 +70,16 @@ export function renderLine(theme, el) {
   if (dash) shape.setAttribute("stroke-dasharray", dash);
   svg.appendChild(shape);
 
-  // 箭头（终点）
+  // 箭头方向 = 路径端点切线（曲线取最后一段方向，折线取末段方向）
+  const endAngle = Math.atan2(y2 - rel[rel.length - 2][1], x2 - rel[rel.length - 2][0]);
+  const startAngle = Math.atan2(rel[1][1] - y1, rel[1][0] - x1);
   const endArrow = el.arrow?.[1];
   if (endArrow) {
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-    svg.appendChild(arrowHead(x2, y2, angle, color, Math.max(8, width * 5)));
+    svg.appendChild(arrowHead(x2, y2, endAngle, color, Math.max(8, width * 5)));
   }
   const startArrow = el.arrow?.[0];
   if (startArrow) {
-    const angle = Math.atan2(y1 - y2, x1 - x2);
-    svg.appendChild(arrowHead(x1, y1, angle, color, Math.max(8, width * 5)));
+    svg.appendChild(arrowHead(x1, y1, startAngle, color, Math.max(8, width * 5)));
   }
   return svg;
 }

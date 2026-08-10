@@ -11,21 +11,16 @@ import { PRESET_SHAPES } from "./preset-geometry.data.js";
 export const PAGE_WIDTH = 960;
 export const PAGE_HEIGHT = 540;
 
-/** 支持形状清单（key=shapeName）。基础 5 种 + ECMA-376 预置几何（见 preset-geometry.data.js）。 */
-export const SUPPORTED_SHAPES = {
-  rect: { label: "矩形", preset: "rect", adjustments: null },
-  roundRect: { label: "圆角矩形", preset: "roundRect", adjustments: [16667] },
-  ellipse: { label: "椭圆", preset: "ellipse", adjustments: null },
-  triangle: { label: "三角形", preset: "triangle", adjustments: [50000] },
-  diamond: { label: "菱形", preset: "diamond", adjustments: null },
-  // 以下来自 ECMA-376 预置几何（adjustments 默认值 = 规范 avLst 默认）
-  ...Object.fromEntries(
-    Object.entries(PRESET_SHAPES).map(([name, def]) => [
-      name,
-      { label: def.label, preset: name, adjustments: def.adjDefault.length ? def.adjDefault : null },
-    ])
-  ),
-};
+/** 支持形状清单（key=shapeName）：全部来自 ECMA-376 预置几何数据（187 种，含基础 5 种）。 */
+export const SUPPORTED_SHAPES = Object.fromEntries(
+  Object.entries(PRESET_SHAPES).map(([name, def]) => [
+    name,
+    { label: def.label, category: def.category, preset: name, adjustments: def.adjDefault.length ? def.adjDefault : null },
+  ])
+);
+
+/** 形状菜单分组顺序（其余分组追加在后）。 */
+export const SHAPE_CATEGORIES = [...new Set(Object.values(SUPPORTED_SHAPES).map((s) => s.category))];
 
 export const PAGE_TYPES = ["cover", "table_of_contents", "chapter", "content", "final"];
 

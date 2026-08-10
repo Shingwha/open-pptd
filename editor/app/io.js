@@ -195,7 +195,7 @@ export function createIo({ state, view }) {
         try {
           const res = await fetch(base + src);
           if (!res.ok) return;
-          const mime = extToMime(/\.[a-z0-9]+$/i.exec(src)?.[1]);
+          const mime = extToMime(/\.([a-z0-9]+)$/i.exec(src)?.[1]);
           if (!mime) return;
           state.imageMap[src] = dataUrlOf(await res.arrayBuffer(), mime);
         } catch (err) {

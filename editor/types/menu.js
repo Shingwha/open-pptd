@@ -7,7 +7,11 @@
 
 import { allTypes } from "./registry.js";
 
-const GROUP_ORDER = ["基础", "形状", "箭头", "图标", "图表", "数据"];
+const GROUP_ORDER = [
+  "基础", "形状", "箭头", "图标", "图表", "数据",
+  "基本", "矩形变体", "星与爆炸", "箭头标注", "标注", "括号", "丝带",
+  "卷轴", "数学符号", "图表图形", "选项卡", "动作按钮", "流程图", "连接线",
+];
 
 /** 全部菜单项（id → item；item 可为 { create } 或自带 onClick）。 */
 export function buildAddItems() {

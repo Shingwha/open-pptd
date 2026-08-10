@@ -7,6 +7,8 @@ import { nextElementId } from "../core/model.js";
 import { renderImage } from "../renderer/image.js";
 import { imageXml } from "../writer/image.js";
 import { svgIcon } from "../ui.js";
+import { PRESET_SHAPES } from "../core/preset-geometry.data.js";
+import { SUPPORTED_SHAPES } from "../core/model.js";
 
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif"];
 
@@ -68,6 +70,50 @@ registerType({
     const g = h.group("图片");
     g.appendChild(h.field("地址", h.textInput(el.src || "", (v) => (el.src = v))));
     g.appendChild(h.field("适配", h.selectInput([["cover", "裁剪填充"], ["contain", "完整显示"], ["fill", "拉伸"]], el.fit?.mode || "cover", (v) => ((el.fit ||= {}).mode = v))));
+    // 裁剪（四边比例，0~1；正 = 向内裁，负 = 向外扩）
+    const cropGrid = document.createElement("div");
+    cropGrid.className = "prop-grid";
+    const c = el.crop || {};
+    const setCrop = (k) => (v) => {
+      el.crop = { ...(el.crop || {}), [k]: Number(v) };
+    };
+    cropGrid.appendChild(h.field("左裁", h.numInput(c.left ?? 0, setCrop("left"), { min: -0.9, max: 0.9, step: 0.05 })));
+    cropGrid.appendChild(h.field("右裁", h.numInput(c.right ?? 0, setCrop("right"), { min: -0.9, max: 0.9, step: 0.05 })));
+    cropGrid.appendChild(h.field("上裁", h.numInput(c.top ?? 0, setCrop("top"), { min: -0.9, max: 0.9, step: 0.05 })));
+    cropGrid.appendChild(h.field("下裁", h.numInput(c.bottom ?? 0, setCrop("bottom"), { min: -0.9, max: 0.9, step: 0.05 })));
+    g.appendChild(cropGrid);
+    // 形状裁剪（cropShape：ShapeDef，与形状组件字段一一对应）
+    const cs = el.cropShape || {};
+    g.appendChild(h.field("裁剪形状", h.selectInput(
+      [["rect", "无（矩形）"], ...Object.entries(SUPPORTED_SHAPES).map(([k, v]) => [k, v.label]), ["custom", "自定义路径"]],
+      cs.shapeName || "rect",
+      (v) => {
+        if (v === "rect") el.cropShape = null;
+        else el.cropShape = { ...cs, shapeName: v };
+      }
+    )));
+    if (cs.shapeName && cs.shapeName !== "rect") {
+      const csGrid = document.createElement("div");
+      csGrid.className = "prop-grid";
+      if (cs.shapeName === "custom") {
+        csGrid.appendChild(h.field("viewBox", h.textInput((cs.viewBox || []).join(","), (v) => {
+          const parts = v.split(",").map(Number);
+          if (parts.length === 2 && parts.every(Number.isFinite)) el.cropShape = { ...cs, viewBox: parts };
+        })));
+        csGrid.appendChild(h.field("路径", h.textInput(cs.path || "", (v) => (el.cropShape = { ...cs, path: v }))));
+      } else {
+        const names = PRESET_SHAPES[cs.shapeName]?.adjNames || [];
+        const values = cs.adjustments || SUPPORTED_SHAPES[cs.shapeName]?.adjustments || [];
+        names.forEach((name, i) => {
+          csGrid.appendChild(h.field(name, h.numInput(values[i] ?? 0, (v) => {
+            const next = [...values];
+            next[i] = v;
+            el.cropShape = { ...cs, adjustments: next };
+          }, { min: 0, step: 500 })));
+        });
+      }
+      g.appendChild(csGrid);
+    }
     return [g];
   },
 
