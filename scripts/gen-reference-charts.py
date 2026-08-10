@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""生成图表参考文件 tests/reference/test-chart-all.pptx（python-pptx 官方库）。
+"""生成图表参考文件 tests/projects/chart/reference/test-chart-all.pptx（python-pptx 官方库）。
 
 覆盖 python-pptx 能生成的图表类型（每种一页）：
   bar(column) / line / area / pie / doughnut(≈官方 pie innerRadius) /
@@ -91,5 +91,5 @@ cd.add_series("角色A", (80, 70, 60, 90, 75))
 cd.add_series("角色B", (60, 85, 75, 55, 80))
 add(XL_CHART_TYPE.RADAR, Inches(1), Inches(1), Inches(6), Inches(4), cd, "雷达图")
 
-prs.save("tests/reference/test-chart-all.pptx")
-print("已生成 tests/reference/test-chart-all.pptx（8 页）")
+prs.save("tests/projects/chart/reference/test-chart-all.pptx")
+print("已生成 tests/projects/chart/reference/test-chart-all.pptx（8 页）")

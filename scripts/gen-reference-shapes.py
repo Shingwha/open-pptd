@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # gen-reference-shapes.py — 用 python-pptx 生成「全部预置形状」标准参考文件
-# 输出：tests/reference/test-shapes-all.pptx（187 预置 + 自定义路径页）
+# 输出：tests/projects/shape/reference/test-shapes-all.pptx（187 预置 + 自定义路径页）
 # 布局与 tests/projects/shapes 项目一致（7 页 × 28 + 第 8 页自定义路径）
 import re
 from pptx import Presentation
@@ -144,6 +144,6 @@ for i, (x, y, w, h, vb, path) in enumerate(customs):
     add_shape_xml(slide8, custom_sp(200 + i, x, y, w, h, vb, path))
 print("第 8 页: 7 个自定义路径")
 
-out = "tests/reference/test-shapes-all.pptx"
+out = "tests/projects/shape/reference/test-shapes-all.pptx"
 prs.save(out)
 print(f"✓ 已生成 {out}（{len(OUR_NAMES)} 预置 + 7 自定义，8 页）")

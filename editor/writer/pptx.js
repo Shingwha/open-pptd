@@ -79,8 +79,22 @@ export async function buildPptx(deck, options = {}) {
   }
   const chartTotal = running;
 
+  // chartEx 部件全局编号（与 registerChart 同序：每页 chart 元素顺序）
+  const chartExIds = [];
+  {
+    let n = 0;
+    for (const page of pages) {
+      for (const el of page.elements || []) {
+        if (el.elementType !== "chart") continue;
+        n += 1;
+        const t = el.series?.[0]?.type;
+        if (t === "waterfall" || t === "treemap" || t === "sunburst") chartExIds.push(n);
+      }
+    }
+  }
+
   // 1. 固定部件
-  zip.add("[Content_Types].xml", buildContentTypes(slideCount, chartTotal, embeddedFonts.parts.length));
+  zip.add("[Content_Types].xml", buildContentTypes(slideCount, chartTotal, embeddedFonts.parts.length, chartExIds));
   zip.add("_rels/.rels", buildRootRels());
   zip.add("docProps/core.xml", buildCoreProps(deck.title || "未命名演示文稿"));
   zip.add("docProps/app.xml", buildAppPropsV2(slideCount));

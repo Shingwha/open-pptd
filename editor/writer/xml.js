@@ -36,7 +36,7 @@ export function el(name, attrs = {}, children = "") {
     .map(([k, v]) => ` ${k}="${escAttr(v)}"`)
     .join("");
   const kids = Array.isArray(children) ? children.join("") : children;
-  if (!kids) return `<${name}${attrStr}/>`;
+  if (kids == null || kids === "") return `<${name}${attrStr}/>`;
   return `<${name}${attrStr}>${kids}</${name}>`;
 }
 

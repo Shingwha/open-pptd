@@ -24,7 +24,7 @@ const F = (fonts) => fonts?.latin || FONT_DEFAULT;
 // ----------------------------------------------------------------------------
 // [Content_Types].xml
 // ----------------------------------------------------------------------------
-export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0) {
+export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0, chartExIds = []) {
   const defaults = [
     el("Default", { Extension: "rels", ContentType: "application/vnd.openxmlformats-package.relationships+xml" }),
     el("Default", { Extension: "xml", ContentType: "application/xml" }),
@@ -53,6 +53,11 @@ export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0) {
   for (let i = 1; i <= chartCount; i++) {
     overrides.push(
       el("Override", { PartName: `/ppt/charts/chart${i}.xml`, ContentType: "application/vnd.openxmlformats-officedocument.drawingml.chart+xml" })
+    );
+  }
+  for (const id of chartExIds) {
+    overrides.push(
+      el("Override", { PartName: `/ppt/charts/chartEx${id}.xml`, ContentType: "application/vnd.ms-office.chartex+xml" })
     );
   }
   return (

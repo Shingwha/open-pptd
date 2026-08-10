@@ -42,7 +42,7 @@ export function buildShapeDefGeom(shapeDef) {
 
 /** 颜色 → OOXML 填充元素。主题 token 优先 schemeClr（可换主题），其余 srgbClr。
  * opacity（0~1，可选）：文字/元素透明度——a:alpha 修饰符加在颜色元素内部
- * （PowerPoint 官方存储结构，见 tests/reference/test-text.pptx 透明文字）。 */
+ * （PowerPoint 官方存储结构，见 tests/projects/text/reference/test-text.pptx 透明文字）。 */
 const TOKEN_SLOT = { text: "dk2", bg: "lt2", primary: "accent1", accent: "accent2" };
 
 /** 合并 hex 自带 alpha 与元素 opacity（0~1）→ a:alpha val（1/1000 %）。 */

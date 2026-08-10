@@ -1,7 +1,7 @@
 // ============================================================================
 // writer/chart.js — 图表导出（原生可编辑 Chart XML + 嵌入 xlsx）
 // ----------------------------------------------------------------------------
-// C3 对齐官方（对照 tests/reference/test-chart-all.pptx 由 python-pptx 生成的
+// C3 对齐官方（对照 tests/projects/chart/reference/test-chart-all.pptx 由 python-pptx 生成的
 // 8 类型参考骨架）：
 //   1. 嵌入 xlsx 必须完整部件（Content_Types/rels/docProps/xl workbook/worksheet/
 //      sharedStrings/styles/theme）→ 缺部件 PowerPoint 报「数据文件已损毁」
@@ -24,8 +24,11 @@ import { resolveChartSeries, chartDataTable, isNumericColumn, resolveDataLabels,
 import { resolveColor, resolveFont } from "../core/theme.js";
 import { ZipWriter } from "./zip.js";
 
-/** 原生可导出的类型。 */
+/** 原生可导出的类型（经典 c:chartSpace 体系）。 */
 export const EXPORTABLE_CHART_TYPES = ["bar", "line", "area", "scatter", "bubble", "candlestick", "pie", "radar"];
+
+/** chartEx 扩展体系类型（PowerPoint 2016+ 新图表，cx: 命名空间）。 */
+export const CHARTEX_TYPES = ["waterfall", "treemap", "sunburst"];
 
 // ----------------------------------------------------------------------------
 // 数据 → xlsx 工作表
@@ -602,10 +605,14 @@ function valAxXml(theme, id, crossId, opts = {}) {
 export function buildChartParts(theme, chartEl, chartIndex) {
   const { series, cats, warn } = resolveChartSeries(theme, chartEl);
   const types = [...new Set(series.map((s) => s.type))];
-  const unsupported = types.filter((t) => !EXPORTABLE_CHART_TYPES.includes(t));
+  const unsupported = types.filter((t) => !EXPORTABLE_CHART_TYPES.includes(t) && !CHARTEX_TYPES.includes(t));
   if (unsupported.length) {
     console.warn(`[writer] 图表 ${chartEl.elementId} 类型 ${unsupported.join("/")} 暂不支持原生导出（待官方参考比对），已跳过`);
     return null;
+  }
+  // chartEx 体系（waterfall/treemap/sunburst 独占系列数组）
+  if (types.some((t) => CHARTEX_TYPES.includes(t))) {
+    return buildChartExParts(theme, chartEl, chartIndex);
   }
 
   const table = chartDataTable(chartEl);
@@ -812,7 +819,14 @@ export function buildChartParts(theme, chartEl, chartIndex) {
 /** 图表元素 → slide 内 graphicFrame（引用 chart part，媒体/部件由 pptx.js 汇总）。 */
 export function chartXml(theme, chartEl, ctx, chartId) {
   const [x, y, w, h] = chartEl.bounds;
-  const rId = ctx.chartRef ? ctx.chartRef(chartId) : "rIdChart1";
+  const isChartEx = CHARTEX_TYPES.includes(chartEl.series?.[0]?.type);
+  const rId = ctx.chartRef ? ctx.chartRef(chartId, isChartEx ? "chartEx" : "chart") : "rIdChart1";
+  const uri = isChartEx
+    ? "http://schemas.microsoft.com/office/drawing/2014/chartex"
+    : "http://schemas.openxmlformats.org/drawingml/2006/chart";
+  const inner = isChartEx
+    ? el("cx:chart", { "r:id": rId, "xmlns:cx": "http://schemas.microsoft.com/office/drawing/2014/chartex", "xmlns:r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships" })
+    : el("c:chart", { "r:id": rId, "xmlns:c": "http://schemas.openxmlformats.org/drawingml/2006/chart" });
   return (
     el("p:graphicFrame", {}, [
       el("p:nvGraphicFramePr", {}, [
@@ -824,7 +838,209 @@ export function chartXml(theme, chartEl, ctx, chartId) {
         el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) }),
         el("a:ext", { cx: Math.round(w * 12700), cy: Math.round(h * 12700) }),
       ]),
-      el("a:graphic", {}, el("a:graphicData", { uri: "http://schemas.openxmlformats.org/drawingml/2006/chart" }, el("c:chart", { "r:id": rId, "xmlns:c": "http://schemas.openxmlformats.org/drawingml/2006/chart" }))),
+      el("a:graphic", {}, el("a:graphicData", { uri }, inner)),
     ].join(""))
   );
+}
+
+// ----------------------------------------------------------------------------
+// chartEx（waterfall / treemap / sunburst）——PowerPoint 2016+ 扩展体系
+// 对照用户手工参考（tests/projects/chart/reference/test-chart-all-powerpoint.pptx chartEx1/2/6）：
+//   - 数据：cx:data > cx:strDim（每级一列，lvl 从最深到最浅）+ cx:numDim
+//   - 层级：treemap/sunburst 用多级 lvl（扁平表 = 叶子路径行）；
+//     waterfall 用 cx:subtotals idx 标记汇总行（官方 isTotal 语义）
+//   - series layoutId 决定类型（treemap/sunburst/waterfall）
+//   - 引用：slide graphicData uri=chartex + cx:chart；rels type chartEx；
+//     ContentType application/vnd.ms-office.chartex+xml；
+//     xlsx 命名 Microsoft_Excel_WorksheetN.xlsx
+// ----------------------------------------------------------------------------
+
+/** 父子表 → 叶子路径行（[最深...最浅] 每级一列，浅层列用最浅值补齐）。 */
+function buildHierarchyRows(el, s) {
+  const data = el.data || {};
+  const catCol = s._cols.category;
+  const valCol = s._cols.value;
+  const parentCol = s._cols.parent;
+  const rows = data.rows || [];
+  const nodes = new Map();
+  const childrenOf = new Map();
+  const roots = [];
+  for (const r of rows) {
+    const name = String(r[catCol] ?? "").trim();
+    if (!name) continue;
+    nodes.set(name, { name, value: r[valCol] ?? null, parent: parentCol != null ? r[parentCol] : null });
+    if (!childrenOf.has(name)) childrenOf.set(name, []);
+  }
+  for (const node of nodes.values()) {
+    const p = node.parent == null || node.parent === "" ? null : String(node.parent);
+    if (p == null || !nodes.has(p)) roots.push(node);
+    else childrenOf.get(p).push(node);
+  }
+  const paths = [];
+  const walk = (node, path) => {
+    const p = [...path, node.name];
+    const kids = childrenOf.get(node.name) || [];
+    if (kids.length === 0) paths.push({ path: p, value: node.value });
+    else for (const k of kids) walk(k, p);
+  };
+  for (const root of roots) walk(root, []);
+  const depth = Math.max(0, ...paths.map((x) => x.path.length));
+  // 每行：[叶子(最深) ... 根(最浅)]，浅路径用最浅值补齐
+  const leafRows = paths.map(({ path, value }) => {
+    const rev = [...path].reverse();
+    while (rev.length < depth) rev.push(rev[rev.length - 1]);
+    return { rev, value };
+  });
+  return { depth, leafRows };
+}
+
+/** cx:strDim / cx:numDim 生成（lvl pt 每行一个值；f 引用完整 Sheet 列范围）。 */
+function cxDimXml(type, colLetter, values, formatCode, rowCount) {
+  const lvl =
+    `<cx:lvl ptCount="${values.length}"${formatCode ? ` formatCode="${formatCode}"` : ""}>` +
+    values.map((v, i) => `<cx:pt idx="${i}">${esc(String(v ?? ""))}</cx:pt>`).join("") +
+    `</cx:lvl>`;
+  const f = rowCount > 1 ? `Sheet1!$${colLetter}$2:$${colLetter}$${rowCount}` : `Sheet1!$${colLetter}$1:$${colLetter}$1`;
+  return `<cx:${type}Dim type="${type === "str" ? "cat" : type === "num" ? "val" : "size"}"><cx:f>${f}</cx:f>${lvl}</cx:${type}Dim>`;
+}
+
+/**
+ * chartEx 部件（waterfall/treemap/sunburst）。
+ * @returns {{chartEx: true, xml, relsXml, xlsx}} | null
+ */
+function buildChartExParts(theme, chartEl, chartIndex) {
+  const { series } = resolveChartSeries(theme, chartEl);
+  const s = series[0];
+  const type = s.type;
+  const data = chartEl.data || { cols: [], rows: [] };
+  const rows = data.rows || [];
+  let rowCount = rows.length + 1; // +表头
+
+  // 数据布局（xlsx 列序 + dims XML）
+  let sheetOrder = [];
+  let dims = "";
+  let layoutPr = "";
+  let dataLabels = "";
+  const labels = resolveDataLabels(chartEl, s, type);
+
+  if (type === "waterfall") {
+    // xlsx: [A=cat, B=val]；subtotals = isTotal 行索引（0-based）
+    sheetOrder = [s._cols.x ?? 0, s._cols.y ?? 1];
+    const cats = rows.map((r) => String(r[s._cols.x] ?? ""));
+    const vals = rows.map((r) => Number(r[s._cols.y] ?? 0));
+    const isTotalCol = s._cols.isTotal;
+    const subIdx = isTotalCol != null
+      ? rows.map((r, i) => (r[isTotalCol] === true ? i : -1)).filter((i) => i >= 0)
+      : [];
+    dims =
+      cxDimXml("str", "A", cats, null, rowCount) +
+      cxDimXml("num", "B", vals, "G/通用格式", rowCount);
+    layoutPr = subIdx.length
+      ? `<cx:layoutPr><cx:subtotals>${subIdx.map((i) => `<cx:idx val="${i}"/>`).join("")}</cx:subtotals></cx:layoutPr>`
+      : `<cx:layoutPr><cx:aggregation/></cx:layoutPr>`;
+    dataLabels = labels
+      ? `<cx:dataLabels pos="outEnd"><cx:visibility seriesName="0" categoryName="${labels.content === "category" ? "1" : "0"}" value="${labels.content === "value" ? "1" : "0"}"/></cx:dataLabels>`
+      : "";
+  } else {
+    // treemap / sunburst：xlsx = [级0(最深)...级N-1(根), size]
+    const { depth, leafRows } = buildHierarchyRows(chartEl, s);
+    if (depth === 0) return null;
+    sheetOrder = [];
+    rowCount = leafRows.length + 1; // 层级表行数（叶子行 + 表头）
+    const levelCols = [];
+    for (let L = 0; L < depth; L++) {
+      levelCols.push(leafRows.map((x) => x.rev[L] ?? ""));
+    }
+    const sizes = leafRows.map((x) => Number(x.value ?? 0));
+    const colLetters = depth === 1 ? ["A"] : ["A", "B", "C", "D", "E", "F", "G", "H"].slice(0, depth);
+    const sizeLetter = String.fromCharCode(65 + depth); // 层级列后一列（A=65；depth 3 → D）
+    dims = levelCols.map((lv, i) => cxDimXml("str", colLetters[i], lv, null, rowCount)).join("") +
+      cxDimXml("num", sizeLetter, sizes, "G/通用格式", rowCount);
+    sheetOrder = []; // 层级数据由 buildChartExXlsx 专建（不走原列重排）
+    layoutPr = type === "treemap" ? `<cx:layoutPr><cx:parentLabelLayout val="overlapping"/></cx:layoutPr>` : "";
+    dataLabels = labels
+      ? `<cx:dataLabels pos="${type === "sunburst" ? "ctr" : "inEnd"}"><cx:visibility seriesName="0" categoryName="1" value="0"/></cx:dataLabels>`
+      : "";
+  }
+
+  // —— 层级列数据写入 xlsx：chartEx 的 xlsx 由 buildChartExXlsx 专用构建（见下） ——
+
+  const guid = () => `{${"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  })}}`;
+
+  const titleText = typeof chartEl.title === "string" ? chartEl.title : chartEl.title?.text || "";
+  const titleXml = titleText
+    ? `<cx:title pos="t" align="ctr" overlay="0"><cx:tx><cx:txData><cx:v>${esc(titleText)}</cx:v></cx:txData></cx:tx></cx:title>`
+    : "";
+  const legendCfg = chartEl.legend;
+  const legendXml = legendCfg !== false && type !== "heatmap"
+    ? `<cx:legend pos="${typeof legendCfg === "object" && legendCfg.position ? legendCfg.position : "t"}" align="ctr" overlay="0"/>`
+    : "";
+
+  // 轴（waterfall：分类 + 数值）
+  let axes = "";
+  if (type === "waterfall") {
+    axes =
+      `<cx:axis id="0"><cx:catScaling gapWidth="${0.2}"/><cx:tickLabels/></cx:axis>` +
+      `<cx:axis id="1"><cx:valScaling/><cx:majorGridlines/><cx:tickLabels/></cx:axis>`;
+  }
+
+  const xml =
+    xmlHeader() +
+    `<cx:chartSpace xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ` +
+    `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" ` +
+    `xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex">` +
+    `<cx:chartData><cx:externalData r:id="rId1" cx:autoUpdate="0"/>` +
+    `<cx:data id="0">${dims}</cx:data></cx:chartData>` +
+    `<cx:chart>` +
+    titleXml +
+    `<cx:plotArea><cx:plotAreaRegion>` +
+    `<cx:series layoutId="${type}" uniqueId="${guid()}">` +
+    `<cx:tx><cx:txData><cx:f>Sheet1!$B$1</cx:f><cx:v>${esc(s.name)}</cx:v></cx:txData></cx:tx>` +
+    dataLabels +
+    `<cx:dataId val="0"/>` +
+    layoutPr +
+    `</cx:series>` +
+    `</cx:plotAreaRegion>${axes}</cx:plotArea>` +
+    legendXml +
+    `</cx:chart>` +
+    `</cx:chartSpace>`;
+
+  const relsXml =
+    xmlHeader() +
+    el("Relationships", { xmlns: "http://schemas.openxmlformats.org/package/2006/relationships" }, [
+      el("Relationship", {
+        Id: "rId1",
+        Type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/package",
+        Target: `../embeddings/Microsoft_Excel_Worksheet${chartIndex}.xlsx`,
+      }),
+    ].join(""));
+
+  return { chartEx: true, xml, relsXml, xlsx: buildChartExXlsx(chartEl, s, type) };
+}
+
+/** chartEx 专用 xlsx：瀑布图 [cat, val]；树/旭日 [级0..级N, size]（叶子路径）。 */
+function buildChartExXlsx(chartEl, s, type) {
+  const fonts = { latin: "Microsoft YaHei" };
+  const data = chartEl.data || { cols: [], rows: [] };
+  const rows = data.rows || [];
+  let table;
+  if (type === "waterfall") {
+    const cats = rows.map((r) => String(r[s._cols.x] ?? ""));
+    const vals = rows.map((r) => r[s._cols.y] ?? null);
+    table = [["类别", "数值"], ...cats.map((c, i) => [c, vals[i]])];
+  } else {
+    const { depth, leafRows } = buildHierarchyRows(chartEl, s);
+    const header = [];
+    for (let L = depth - 1; L >= 0; L--) header.push(`级${L + 1}`);
+    header.push("值");
+    table = [header];
+    for (const { rev, value } of leafRows) {
+      table.push([...rev, value ?? null]);
+    }
+  }
+  const cols = table[0].map((_, i) => `C${i + 1}`);
+  return buildChartXlsx({ data: { cols, rows: table.slice(1) } }, fonts, null);
 }

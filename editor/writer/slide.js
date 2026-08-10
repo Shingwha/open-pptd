@@ -66,22 +66,42 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
       chartCounter += 1;
       return chartCounter;
     },
-    chartRef(chartId) {
+    chartRef(chartId, kind) {
       const id = `rIdChart${chartId}`;
-      rels.push({ id, type: "chart", target: `../charts/chart${chartId}.xml` });
+      if (kind === "chartEx") {
+        rels.push({ id, type: "http://schemas.microsoft.com/office/2014/relationships/chartEx", target: `../charts/chartEx${chartId}.xml` });
+      } else {
+        rels.push({ id, type: "chart", target: `../charts/chart${chartId}.xml` });
+      }
       return id;
     },
     collectChart(theme, el, chartId) {
       const parts = buildChartParts(theme, el, chartId);
       if (!parts) return false; // 类型暂不支持原生导出（预览正常，导出跳过该元素）
-      chartParts.push({
-        path: `ppt/charts/chart${chartId}.xml`,
-        bytes: encodeUtf8(parts.xml),
-        relsPath: `ppt/charts/_rels/chart${chartId}.xml.rels`,
-        relsBytes: encodeUtf8(parts.relsXml),
-        xlsxPath: `ppt/embeddings/Microsoft_Excel_Sheet${chartId}.xlsx`,
-        xlsxBytes: parts.xlsx,
-      });
+      if (parts.chartEx) {
+        // chartEx 扩展体系（waterfall/treemap/sunburst）：独立命名 + Worksheet xlsx
+        chartParts.push({
+          id: chartId,
+          chartEx: true,
+          path: `ppt/charts/chartEx${chartId}.xml`,
+          bytes: encodeUtf8(parts.xml),
+          relsPath: `ppt/charts/_rels/chartEx${chartId}.xml.rels`,
+          relsBytes: encodeUtf8(parts.relsXml),
+          xlsxPath: `ppt/embeddings/Microsoft_Excel_Worksheet${chartId}.xlsx`,
+          xlsxBytes: parts.xlsx,
+        });
+      } else {
+        chartParts.push({
+          id: chartId,
+          path: `ppt/charts/chart${chartId}.xml`,
+          bytes: encodeUtf8(parts.xml),
+          relsPath: `ppt/charts/_rels/chart${chartId}.xml.rels`,
+          relsBytes: encodeUtf8(parts.relsXml),
+          xlsxPath: `ppt/embeddings/Microsoft_Excel_Sheet${chartId}.xlsx`,
+          xlsxBytes: parts.xlsx,
+        });
+      }
+      return true;
     },
   };
 

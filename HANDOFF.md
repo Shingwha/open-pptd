@@ -3,7 +3,7 @@
 > 最后更新：2026-08-10（阶段 A ✅ + C1 ✅ + B ✅ + C2 ✅，下一步 **C3 chart 官方化**）
 > **本文件是唯一对接文档**（上下文已清空，仅靠本文继续开发）。
 > 一切格式决策以 `references/official/pptd.md`（官方规范）为唯一依据；
-> 结构疑问先查 `tests/reference/` 的权威参考文件（用户 PowerPoint 手工 / python-pptx 官方库生成）。
+> 结构疑问先查 `tests/projects/*/reference/` 的权威参考文件（用户 PowerPoint 手工 / python-pptx 官方库生成）。
 
 ---
 
@@ -136,10 +136,10 @@ tests/                  见 §4
 | `references/official/shapes.md` | 官方 | 177 种预置形状 + 调整值 |
 | `references/official/fonts.md` | 官方 | 26 款字体清单（默认 MiSans） |
 | `references/font-embedding.md` | 实测（PowerPoint COM） | 字体嵌入协议（金标准 `ppt-fonts.pptx`） |
-| `tests/reference/test-text.pptx` | **用户 PowerPoint 手工** | 文字官方结构基准 |
-| `tests/reference/test-shape.pptx` | **用户 PowerPoint 手工** | 25 形状 + 手绘 custGeom |
-| `tests/reference/test-shapes-all.pptx` | python-pptx 官方库 | 187+7 全量基准 |
-| `tests/reference/test-table-merge.pptx` | **python-pptx 官方库** | 3×3 左上 2×2 合并——合并结构铁证（gridSpan + 占位格接力） |
+| `tests/projects/text/reference/test-text.pptx` | **用户 PowerPoint 手工** | 文字官方结构基准 |
+| `tests/projects/shape/reference/test-shape.pptx` | **用户 PowerPoint 手工** | 25 形状 + 手绘 custGeom |
+| `tests/projects/shape/reference/test-shapes-all.pptx` | python-pptx 官方库 | 187+7 全量基准 |
+| `tests/projects/table/reference/test-table-merge.pptx` | **python-pptx 官方库** | 3×3 左上 2×2 合并——合并结构铁证（gridSpan + 占位格接力） |
 | `tests/projects/table/out/check-table-修改后.pptx` | **用户 PowerPoint 手工**（不在 git） | 表格 4 项修复的比对基准（边框清空/对齐/合并/字体/颜色） |
 
 比对方法（已固化）：解包参考文件 → 找目标效果官方 XML 片段 → 与 `editor/writer/` 输出逐字节对照 → 修复 → 回归。
@@ -222,5 +222,5 @@ node tests/color-consistency.mjs tests/projects/table   # 颜色一致性可指�
 - **表格合并坑**：YAML 层用 rowSpan/colSpan + 省略被覆盖位（官方规则）；OOXML 层用 rowSpan/gridSpan + vMerge/hMerge 占位格接力跨度——两层语义不同，靠 tableGrid 转换
 - **表格默认值**：对齐 `[center, middle]`、边框 `{solid, 1, #000000}`；单元格继承链见 §2.3
 - **富文本无 Markdown**：`**`/`*` 非法，一律 `<strong>/<em>`
-- `tests/projects/*/out/` 是生成产物（gitignore）；`tests/reference/` 的 pptx 需入库（权威基准）
+- `tests/projects/*/out/` 是生成产物（gitignore）；`tests/projects/*/reference/` 的 pptx 需入库（权威基准）
 - 形状数据源：ECMA-376-1_5th_edition_december_2016.zip → OfficeOpenXML-DrawingMLGeometries.zip（重新生成 187 数据用）
