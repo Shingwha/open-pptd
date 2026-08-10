@@ -3,27 +3,29 @@ background: {type: solid, color: "#FFFFFF"}
 elements:
   - elementId: t1
     elementType: text
-    bounds: [60, 40, 400, 40]
+    bounds: [60, 40, 600, 40]
     content:
       style: "$title"
-      text: 气泡图（x/y/size 三通道）
+      text: 气泡图（宽表多组：每系列独立 x/y/size 三列）
   - elementId: c1
     elementType: chart
     bounds: [60, 100, 820, 380]
     data:
-      cols: [x, y, size]
+      cols: [x_a, y_a, size_a, x_b, y_b, size_b]
       rows:
-        - [1, 30, 20]
-        - [2, 55, 35]
-        - [3, 42, 25]
-        - [4, 68, 40]
-        - [5, 90, 30]
+        - [1, 30, 20, 2, 60, 35]
+        - [2, 55, 35, 3, 40, 20]
+        - [3, 42, 25, 5, 80, 45]
+        - [4, 68, 40, 6, 55, 30]
+        - [5, 90, 30, 7, 70, 38]
     series:
       - type: bubble
-        encode: {x: x, y: y, size: size}
+        encode: {x: x_a, y: y_a, size: size_a}
         name: 气泡A
         sizeScale: sqrt
+        fill: "#2563EB"
       - type: bubble
-        encode: {x: x, y: y, size: size}
+        encode: {x: x_b, y: y_b, size: size_b}
         name: 气泡B
         sizeScale: linear
+        fill: "#F59E0B"
