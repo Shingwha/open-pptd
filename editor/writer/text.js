@@ -34,13 +34,17 @@ function runAttrs(s) {
 function runXml(theme, s, hrefId) {
   const attrs = runAttrs(s);
   const kids = [];
-  // OOXML rPr 子元素顺序：fill 组 → highlight → latin/ea/cs → effectLst → hlinkClick
+  // OOXML CT_TextCharacterProperties 子元素顺序（schema 严格，乱序会被 PowerPoint 判损修复）：
+  //   fill 组（solidFill/gradFill）→ effectLst → highlight → latin/ea/cs → hlinkClick
   // 文字渐变优先于单色（官方 TextContent.gradient 作用于文字本身）
   const fill =
     s.gradient && s.gradient.type === "gradient" && Array.isArray(s.gradient.stops)
       ? buildFill(theme, s.gradient)
       : solidFillElement(theme, s.color);
   if (fill) kids.push(fill);
+  // 文字阴影（官方 TextContent.shadow）
+  const shdw = shadowElement(theme, s.shadow);
+  if (shdw) kids.push(shdw);
   if (s.backgroundColor) {
     kids.push(el("a:highlight", {}, el("a:solidFill", {}, colorElement(theme, s.backgroundColor))));
   }
@@ -48,9 +52,6 @@ function runXml(theme, s, hrefId) {
   kids.push(
     `<a:latin typeface="${escAttr(font.latin)}"/><a:ea typeface="${escAttr(font.ea)}"/><a:cs typeface="${escAttr(font.ea)}"/>`
   );
-  // 文字阴影（官方 TextContent.shadow）
-  const shdw = shadowElement(theme, s.shadow);
-  if (shdw) kids.push(shdw);
   if (hrefId) {
     kids.push(el("a:hlinkClick", { "r:id": hrefId, "xmlns:r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships" }));
   }
@@ -138,7 +139,7 @@ export function buildParagraph(theme, para, base, registerLink) {
 }
 
 /**
- * 行内公式 run → <m:oMath>（命名空间自带，无需改动 slide 根）。
+ * 行内公式 run → <m:oMath>（命名空间在根上声明，PowerPoint 原生行内公式）。
  * 官方规范：公式只继承 color 和 font-size；解析失败回退 LaTeX 源码文本。
  */
 function buildFormulaRun(theme, run, baseStyle) {
@@ -149,9 +150,10 @@ function buildFormulaRun(theme, run, baseStyle) {
     const rPr = runXml(theme, { ...baseStyle, ...pickDefined(run.style) }, null);
     return `<a:r>${rPr}<a:t>${esc(run.latex)}</a:t></a:r>`;
   }
-  const omml = mathmlToOmml(mml);
-  const styled = injectRunStyle(omml, { color, fontSize }, theme);
-  return `<m:oMath xmlns:m="${M_NS}">${styled}</m:oMath>`;
+  // mathmlToOmml 输出已含 <m:oMath> 根（与官方 XSLT 字节一致），不可再包裹；
+  // 行内混排时命名空间声明在 m:oMath 根上（m:oMath 不允许嵌套，否则文件被判损）
+  const omml = mathmlToOmml(mml).replace(/^<m:oMath>/, `<m:oMath xmlns:m="${M_NS}">`);
+  return injectRunStyle(omml, { color, fontSize }, theme);
 }
 
 /** 文本元素 → p:sp XML（txBox + txBody）。
