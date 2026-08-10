@@ -18,7 +18,7 @@ import { PRESET_SHAPES } from "../editor/core/preset-geometry.data.js";
 import { parseSvgPath, splitArc, svgArcToOoxml } from "../editor/writer/custgeom.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const outDir = join(ROOT, "tests", "out");
+const outDir = join(ROOT, "tests", "projects", "shape", "out");
 mkdirSync(outDir, { recursive: true });
 
 // ---------------------------------------------------------------------------

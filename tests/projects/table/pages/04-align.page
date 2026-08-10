@@ -1,0 +1,76 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 36, 600, 40]
+    content:
+      style: "$title"
+      text: 对齐 align（水平 × 垂直，CellStyle.align）
+  - elementId: t2
+    elementType: text
+    bounds: [60, 80, 400, 24]
+    content:
+      style: "$caption"
+      text: 内联 style 分类对齐：表头居中 / 数据行左对齐
+  - elementId: tb1
+    elementType: table
+    bounds: [60, 108, 840, 200]
+    style:
+      cellStyle:
+        fontSize: 13
+        border: {style: solid, width: 1, color: "#E5E7EB"}
+        align: [left, middle]
+      firstRowStyle:
+        fill: {type: solid, color: "#2563EB"}
+        color: "#FFFFFF"
+        bold: true
+        align: [center, middle]
+      lastColumnStyle:
+        align: [right, middle]
+        color: "#DC2626"
+      bodyStyles:
+        - {fill: {type: solid, color: "#F9FAFB"}}
+        - {fill: {type: solid, color: "#FFFFFF"}}
+    rows:
+      - [左对齐数据, 居中表头, 右对齐金额]
+      - [产品 A, 一季度, 1280]
+      - [产品 B, 二季度, 1560]
+      - [产品 C, 三季度, 1420]
+  - elementId: t3
+    elementType: text
+    bounds: [60, 316, 400, 24]
+    content:
+      style: "$caption"
+      text: 单元格级 align 覆盖（左上 / 居中 / 右下 / 顶部）
+  - elementId: tb2
+    elementType: table
+    bounds: [60, 344, 840, 160]
+    style:
+      cellStyle:
+        fontSize: 13
+        border: {style: solid, width: 1, color: "#E5E7EB"}
+        fill: {type: solid, color: "#FFFFFF"}
+      firstRowStyle:
+        fill: {type: solid, color: "#111827"}
+        color: "#FFFFFF"
+        bold: true
+        align: [center, middle]
+    rows:
+      - - text: "左上"
+          align: [left, top]
+        - text: "水平居中"
+          align: [center, middle]
+        - text: "右下"
+          align: [right, bottom]
+        - text: "顶部居中"
+          align: [center, top]
+      - - text: "底部靠左"
+          align: [left, bottom]
+        - text: "右对齐"
+          align: [right, middle]
+        - text: "水平居中"
+          align: [center, middle]
+        - text: "底部靠右"
+          align: [right, bottom]
+      - [默认, 默认, 默认, 默认]

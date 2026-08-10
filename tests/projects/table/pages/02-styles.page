@@ -1,0 +1,39 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 36, 500, 40]
+    content:
+      style: "$title"
+      text: 多套表格样式（theme.tableStyles 各 key + 内联）
+  - elementId: t2
+    elementType: text
+    bounds: [60, 80, 200, 24]
+    content:
+      style: "$caption"
+      text: 样式 "$compact"：小字号 / 深色表头 / 细边框
+  - elementId: tb1
+    elementType: table
+    bounds: [60, 108, 840, 180]
+    style: "$compact"
+    rows:
+      - [季度, 营收(万), 利润(万), 同比]
+      - [Q1, 1280, 320, +12%]
+      - [Q2, 1420, 356, +18%]
+      - [Q3, 1650, 402, +15%]
+  - elementId: t3
+    elementType: text
+    bounds: [60, 296, 200, 24]
+    content:
+      style: "$caption"
+      text: 样式 "$colorful"：金表头 / 条纹 / 末行加粗绿色
+  - elementId: tb2
+    elementType: table
+    bounds: [60, 324, 840, 180]
+    style: "$colorful"
+    rows:
+      - [产品, 单价, 销量, 合计]
+      - [A 系列, 99, 320, 31680]
+      - [B 系列, 199, 180, 35820]
+      - [C 系列, 299, 96, 28704]

@@ -8,6 +8,10 @@ theme:
     text: "#1F2937"
     muted: "#6B7280"
     line: "#E5E7EB"
+    success: "#16A34A"
+    warning: "#D97706"
+    danger: "#DC2626"
+    primarySoft: "#EFF6FF"
   textStyles:
     title:
       fontSize: 40
@@ -39,3 +43,5 @@ pages:
   - pages/4_layout.page
   - pages/5_effects.page
   - pages/6_icons.page
+  - pages/7_colors.page
+  - pages/8_fonts.page

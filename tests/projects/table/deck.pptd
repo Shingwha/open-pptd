@@ -1,5 +1,5 @@
 version: v2
-title: 表格组件测试
+title: 表格组件测试（官方 TableStyleConfig 全场景）
 size: [960, 540]
 theme:
   colors:
@@ -8,24 +8,82 @@ theme:
     text: "#1F2937"
     muted: "#6B7280"
     bg: "#FFFFFF"
+    line: "#E5E7EB"
+    success: "#16A34A"
+    warning: "#D97706"
+    danger: "#DC2626"
+    primarySoft: "#EFF6FF"
   textStyles:
     title:
       fontSize: 22
       color: "$primary"
       bold: true
+    caption:
+      fontSize: 12
+      color: "$muted"
   tableStyles:
+    # 标准样式：蓝表头 + 浅色斑马 + 浅灰边框
     default:
       cellStyle:
         fontSize: 13
         color: "$text"
         fill: {type: solid, color: "#FFFFFF"}
-        border: {style: solid, width: 1, color: "#E5E7EB"}
+        border: {style: solid, width: 1, color: "$line"}
       firstRowStyle:
         fill: {type: solid, color: "$primary"}
         color: "#FFFFFF"
         bold: true
       bodyStyles:
-        - {fill: {type: solid, color: "#F8FAFC"}}
+        - {fill: {type: solid, color: "#EFF6FF"}}
         - {fill: {type: solid, color: "#FFFFFF"}}
+      rowOverColumn: true
+    # 紧凑样式：小字号、无斑马纹、细边框
+    compact:
+      cellStyle:
+        fontSize: 11
+        color: "$muted"
+        fill: {type: solid, color: "#FFFFFF"}
+        border: {style: solid, width: 0.5, color: "#D1D5DB"}
+      firstRowStyle:
+        fill: {type: solid, color: "#111827"}
+        color: "#FFFFFF"
+        bold: true
+        fontSize: 11
+      rowOverColumn: true
+    # 彩色样式：金表头 + 绿/白交替条纹 + 彩色文字
+    colorful:
+      cellStyle:
+        fontSize: 13
+        fill: {type: solid, color: "#FFFFFF"}
+        border: {style: solid, width: 1, color: "#FDE68A"}
+      firstRowStyle:
+        fill: {type: solid, color: "#F59E0B"}
+        color: "#FFFFFF"
+        bold: true
+      bodyStyles:
+        - {fill: {type: solid, color: "#FEF3C7"}}
+        - {fill: {type: solid, color: "#ECFDF5"}}
+      lastRowStyle:
+        bold: true
+        color: "$success"
+      rowOverColumn: true
+    # 无边框样式：只用填充分层（依赖 cellStyle.border 显式清除）
+    noframe:
+      cellStyle:
+        fontSize: 13
+        fill: {type: solid, color: "#F9FAFB"}
+        border: null
+      firstRowStyle:
+        fill: {type: solid, color: "$primary"}
+        color: "#FFFFFF"
+        bold: true
+      rowOverColumn: true
 pages:
   - pages/01-table.page
+  - pages/02-styles.page
+  - pages/03-borders.page
+  - pages/04-align.page
+  - pages/05-merge.page
+  - pages/06-fills.page
+  - pages/07-fonts.page
+  - pages/08-colors.page

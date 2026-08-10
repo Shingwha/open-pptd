@@ -1,0 +1,106 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 36, 600, 40]
+    content:
+      style: "$title"
+      text: 边框 BorderSpec（四边独立 / 样式 / 宽度 / 颜色）
+  - elementId: t2
+    elementType: text
+    bounds: [60, 80, 420, 24]
+    content:
+      style: "$caption"
+      text: BorderSpec 数组 [上,右,下,左]：四边不同颜色 / 虚线点线
+  - elementId: tb1
+    elementType: table
+    bounds: [60, 108, 420, 150]
+    style:
+      cellStyle:
+        fontSize: 12
+        align: [center, middle]
+        border:
+          - {style: solid, width: 2, color: "#DC2626"}
+          - {style: dashed, width: 1.5, color: "#16A34A"}
+          - {style: solid, width: 1, color: "#2563EB"}
+          - {style: dotted, width: 1, color: "#D97706"}
+      firstRowStyle:
+        fill: {type: solid, color: "#2563EB"}
+        color: "#FFFFFF"
+        bold: true
+    rows:
+      - [红上边, 绿右边, 蓝下边]
+      - [橙左边, 全边框, 组合边框]
+      - [虚线样式, 点线样式, 实线样式]
+  - elementId: t3
+    elementType: text
+    bounds: [60, 266, 420, 24]
+    content:
+      style: "$caption"
+      text: 官方「外框」语义：分类样式各管一边（首行上 / 末行下 / 首列左 / 末列右）
+  - elementId: tb2
+    elementType: table
+    bounds: [60, 294, 420, 150]
+    style:
+      cellStyle:
+        fontSize: 12
+        border: null
+      firstRowStyle:
+        fill: {type: solid, color: "#111827"}
+        color: "#FFFFFF"
+        bold: true
+        border: [{style: solid, width: 2, color: "#111827"}, null, null, null]
+      lastRowStyle:
+        border: [null, null, {style: solid, width: 2, color: "#111827"}, null]
+      firstColumnStyle:
+        border: [null, null, null, {style: solid, width: 2, color: "#111827"}]
+      lastColumnStyle:
+        border: [null, {style: solid, width: 2, color: "#111827"}, null, null]
+    rows:
+      - [外框表格, 数据 A, 数据 B]
+      - [数据 C, 数据 D, 数据 E]
+      - [数据 F, 数据 G, 外框表格]
+  - elementId: t4
+    elementType: text
+    bounds: [520, 80, 240, 24]
+    content:
+      style: "$caption"
+      text: "样式 $noframe：border: null 全表无边框"
+  - elementId: tb3
+    elementType: table
+    bounds: [520, 108, 380, 150]
+    style: "$noframe"
+    rows:
+      - [指标, 数值, 状态]
+      - [留存率, 68%, 良好]
+      - [转化率, 12.5%, 待提升]
+      - [满意度, 4.6/5, 优秀]
+  - elementId: t5
+    elementType: text
+    bounds: [520, 266, 240, 24]
+    content:
+      style: "$caption"
+      text: 单元格级 border 覆盖（内联 fill + border）
+  - elementId: tb4
+    elementType: table
+    bounds: [520, 294, 380, 150]
+    style:
+      cellStyle:
+        fontSize: 12
+        border: null
+        fill: {type: solid, color: "#F9FAFB"}
+      firstRowStyle:
+        fill: {type: solid, color: "#2563EB"}
+        color: "#FFFFFF"
+        bold: true
+    rows:
+      - - text: "红框高亮"
+          border: {style: solid, width: 2, color: "#DC2626"}
+          fill: {type: solid, color: "#FEE2E2"}
+        - text: "绿框高亮"
+          border: {style: solid, width: 2, color: "#16A34A"}
+          fill: {type: solid, color: "#DCFCE7"}
+        - text: "默认样式"
+      - [普通, 普通, 普通]
+      - [普通, 普通, 普通]

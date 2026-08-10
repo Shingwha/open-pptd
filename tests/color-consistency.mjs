@@ -64,11 +64,15 @@ function checkColor(path, val) {
   }
 }
 
+/** 颜色字段键（其余键即使字符串也不检查，避免把文本内容误判为颜色）。 */
+const COLOR_KEYS = new Set(["color", "backgroundColor", "fill", "lineColor", "areaColor", "headerColor"]);
+
 function walkColor(v, path) {
   if (v && typeof v === "object" && !Array.isArray(v)) {
     for (const [k, val] of Object.entries(v)) walkColor(val, `${path}.${k}`);
   } else if (typeof v === "string") {
-    checkColor(path, v);
+    const key = String(path).split(".").pop();
+    if (COLOR_KEYS.has(key)) checkColor(path, v);
   }
 }
 

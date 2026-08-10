@@ -1,0 +1,78 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 36, 600, 40]
+    content:
+      style: "$title"
+      text: 字体（fontFamily：字符串 / {latin, ea} / 分类样式 / span 内联）
+  - elementId: t2
+    elementType: text
+    bounds: [60, 80, 400, 24]
+    content:
+      style: "$caption"
+      text: cellStyle.fontFamily = "Noto Sans SC"（中西文统一）
+  - elementId: tb1
+    elementType: table
+    bounds: [60, 108, 840, 120]
+    style:
+      cellStyle:
+        fontSize: 13
+        fontFamily: "Noto Sans SC"
+        border: {style: solid, width: 1, color: "#E5E7EB"}
+      firstRowStyle:
+        fill: {type: solid, color: "#2563EB"}
+        color: "#FFFFFF"
+        bold: true
+    rows:
+      - [中文统一字体, English mixed, 数字 123.45]
+      - [思源黑体风格, MiSans 回退, 混合 中文 ABC]
+  - elementId: t3
+    elementType: text
+    bounds: [60, 236, 400, 24]
+    content:
+      style: "$caption"
+      text: 内联 style：{latin, ea} 分工（Arial + 思源宋体）
+  - elementId: tb2
+    elementType: table
+    bounds: [60, 264, 840, 120]
+    style:
+      cellStyle:
+        fontSize: 14
+        border: {style: solid, width: 1, color: "#E5E7EB"}
+      firstRowStyle:
+        fill: {type: solid, color: "#111827"}
+        color: "#FFFFFF"
+        bold: true
+    rows:
+      - - text: "Arial + 思源宋体"
+          fontFamily: {latin: "Arial", ea: "思源宋体"}
+        - text: "KaiTi 楷体"
+          fontFamily: "KaiTi"
+        - text: "默认 MiSans"
+  - elementId: t4
+    elementType: text
+    bounds: [60, 392, 400, 24]
+    content:
+      style: "$caption"
+      text: 分类样式字体：表头衬线 / 数据行等宽；span 内联字体
+  - elementId: tb3
+    elementType: table
+    bounds: [60, 420, 840, 100]
+    style:
+      cellStyle:
+        fontSize: 13
+        border: {style: solid, width: 1, color: "#E5E7EB"}
+      firstRowStyle:
+        fill: {type: solid, color: "#2563EB"}
+        color: "#FFFFFF"
+        bold: true
+        fontFamily: "思源宋体"
+      lastColumnStyle:
+        fontFamily: "Courier New"
+        color: "#16A34A"
+    rows:
+      - [思源宋体表头, 普通数据, 等宽数值]
+      - [普通数据, <span style="font-family:KaiTi">楷体内联</span>, 1024]
+      - [普通数据, <span style="font-family:Arial">Arial span</span>, 2048]

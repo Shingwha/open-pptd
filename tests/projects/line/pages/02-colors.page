@@ -1,0 +1,114 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 30, 500, 36]
+    content:
+      style: "$title"
+      text: 线条颜色变体（主题引用 / HEX / 虚线点线 / 宽度）
+  # ---- 主题色引用 ----
+  - elementId: l1
+    elementType: line
+    bounds: [60, 90, 400, 2]
+    viewBox: [400, 2]
+    points: "0,1 400,1"
+    border: {style: solid, width: 2, color: "$primary"}
+  - elementId: l2
+    elementType: line
+    bounds: [60, 110, 400, 2]
+    viewBox: [400, 2]
+    points: "0,1 400,1"
+    border: {style: solid, width: 2, color: "$accent"}
+  - elementId: l3
+    elementType: line
+    bounds: [60, 130, 400, 2]
+    viewBox: [400, 2]
+    points: "0,1 400,1"
+    border: {style: solid, width: 2, color: "$success"}
+  - elementId: l4
+    elementType: line
+    bounds: [60, 150, 400, 2]
+    viewBox: [400, 2]
+    points: "0,1 400,1"
+    border: {style: solid, width: 2, color: "$warning"}
+  - elementId: l5
+    elementType: line
+    bounds: [60, 170, 400, 2]
+    viewBox: [400, 2]
+    points: "0,1 400,1"
+    border: {style: solid, width: 2, color: "$danger"}
+  - elementId: l6
+    elementType: line
+    bounds: [60, 190, 400, 2]
+    viewBox: [400, 2]
+    points: "0,1 400,1"
+    border: {style: solid, width: 2, color: "$muted"}
+  # ---- 虚线 / 点线 / 宽度 ----
+  - elementId: l7
+    elementType: line
+    bounds: [60, 220, 400, 2]
+    viewBox: [400, 2]
+    points: "0,1 400,1"
+    border: {style: dash, width: 2, color: "$primary"}
+  - elementId: l8
+    elementType: line
+    bounds: [60, 240, 400, 2]
+    viewBox: [400, 2]
+    points: "0,1 400,1"
+    border: {style: dot, width: 2, color: "$primary"}
+  - elementId: l9
+    elementType: line
+    bounds: [60, 260, 400, 2]
+    viewBox: [400, 2]
+    points: "0,1 400,1"
+    border: {style: solid, width: 5, color: "$primary"}
+  - elementId: l10
+    elementType: line
+    bounds: [60, 280, 400, 2]
+    viewBox: [400, 2]
+    points: "0,1 400,1"
+    border: {style: dash, width: 3, color: "#DC2626"}
+  # ---- 斜线 + 箭头 + 颜色 ----
+  - elementId: l11
+    elementType: line
+    bounds: [500, 90, 380, 150]
+    viewBox: [380, 150]
+    points: "0,150 380,0"
+    arrow: [null, "arrow"]
+    border: {style: solid, width: 3, color: "$accent"}
+  - elementId: l12
+    elementType: line
+    bounds: [500, 260, 380, 150]
+    viewBox: [380, 150]
+    points: "0,0 380,150"
+    arrow: ["arrow", null]
+    border: {style: dash, width: 2, color: "#7C3AED"}
+  # ---- 折线颜色 ----
+  - elementId: l13
+    elementType: line
+    bounds: [60, 310, 420, 120]
+    viewBox: [420, 120]
+    points: "0,110 100,10 210,90 320,20 420,100"
+    curve: sharp
+    border: {style: solid, width: 2, color: "$danger"}
+  - elementId: l14
+    elementType: line
+    bounds: [60, 450, 420, 80]
+    viewBox: [420, 80]
+    points: "0,70 90,10 180,60 270,15 360,50 420,30"
+    curve: smooth
+    border: {style: solid, width: 3, color: "#0EA5E9"}
+  # ---- HEX8 半透明 ----
+  - elementId: l15
+    elementType: line
+    bounds: [500, 430, 380, 4]
+    viewBox: [380, 4]
+    points: "0,2 380,2"
+    border: {style: solid, width: 4, color: "#2563EB40"}
+  - elementId: l16
+    elementType: line
+    bounds: [500, 450, 380, 4]
+    viewBox: [380, 4]
+    points: "0,2 380,2"
+    border: {style: solid, width: 4, color: "#2563EB"}

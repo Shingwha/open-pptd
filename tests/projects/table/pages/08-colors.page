@@ -1,0 +1,85 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 36, 600, 40]
+    content:
+      style: "$title"
+      text: 文字颜色体系（主题引用 / HEX6 / HEX8 透明度）
+  - elementId: t2
+    elementType: text
+    bounds: [60, 80, 500, 24]
+    content:
+      style: "$caption"
+      text: 主题色引用（$primary/$accent/$muted/$success/$warning/$danger）
+  - elementId: tb1
+    elementType: table
+    bounds: [60, 108, 840, 130]
+    style: "$noframe"
+    rows:
+      - - text: "主色"
+          color: "$primary"
+          bold: true
+        - text: "强调色"
+          color: "$accent"
+          bold: true
+        - text: "次要文字"
+          color: "$muted"
+        - text: "成功"
+          color: "$success"
+      - - text: "警告"
+          color: "$warning"
+        - text: "危险"
+          color: "$danger"
+          bold: true
+        - text: "正文色"
+          color: "$text"
+        - text: "浅底深字"
+          fill: {type: solid, color: "$primarySoft"}
+          color: "$primary"
+          bold: true
+  - elementId: t3
+    elementType: text
+    bounds: [60, 246, 500, 24]
+    content:
+      style: "$caption"
+      text: HEX6 / HEX8 透明度 / span 内联颜色 / 背景高亮
+  - elementId: tb2
+    elementType: table
+    bounds: [60, 274, 840, 160]
+    style:
+      cellStyle:
+        fontSize: 13
+        border: {style: solid, width: 1, color: "#E5E7EB"}
+      firstRowStyle:
+        fill: {type: solid, color: "#111827"}
+        color: "#FFFFFF"
+        bold: true
+    rows:
+      - - text: "HEX6 纯色"
+          color: "#7C3AED"
+          bold: true
+        - text: "HEX8 半透明"
+          color: "#2563EB80"
+        - text: "HEX8 淡红"
+          color: "#DC262633"
+        - text: "span 内联色"
+      - - text: <span style="color:#DB2777">粉色 span</span> 混合
+        - text: <span style="color:#059669">绿色 span</span> 混合
+        - text: 背景高亮
+          backgroundColor: "#FDE68A"
+        - text: <span style="background-color:#DBEAFE">高亮 span</span> 混合
+  - elementId: t4
+    elementType: text
+    bounds: [60, 442, 500, 24]
+    content:
+      style: "$caption"
+      text: 行内文字装饰组合（加粗 + 斜体 + 删除线 + 上标 + 下标）
+  - elementId: tb3
+    elementType: table
+    bounds: [60, 470, 840, 60]
+    style: "$noframe"
+    rows:
+      - - text: "<strong>加粗</strong> <em>斜体</em> <u>下划线</u> <s>删除线</s>"
+        - text: "X<sup>2</sup> + Y<sub>2</sub> <strong><em>组合</em></strong>"

@@ -1,0 +1,120 @@
+pageType: content
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # —— 页面标题 ——
+  - elementId: pg-title
+    elementType: text
+    bounds: [48, 36, 500, 40]
+    content:
+      style: "$title"
+      text: 字体体系（官方 FontFamily：字符串 / {latin, ea} / span 内联）
+  # —— 官方中文推荐字体（字符串形式 = 中西文统一）——
+  - elementId: f-misans
+    elementType: text
+    bounds: [48, 92, 420, 32]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 18
+      text: MiSans — 默认字体（中文 测试 ABC 123）
+  - elementId: f-noto
+    elementType: text
+    bounds: [48, 130, 420, 32]
+    content:
+      fontFamily: "Noto Sans SC"
+      fontSize: 18
+      text: Noto Sans SC — 思源黑体
+  - elementId: f-songti
+    elementType: text
+    bounds: [48, 168, 420, 32]
+    content:
+      fontFamily: "思源宋体"
+      fontSize: 18
+      text: 思源宋体 — 衬线宋体风格
+  - elementId: f-kaiti
+    elementType: text
+    bounds: [48, 206, 420, 32]
+    content:
+      fontFamily: "KaiTi"
+      fontSize: 18
+      text: KaiTi — 楷体（系统字体）
+  - elementId: f-yahei
+    elementType: text
+    bounds: [48, 244, 420, 32]
+    content:
+      fontFamily: "Microsoft YaHei"
+      fontSize: 18
+      text: Microsoft YaHei — 微软雅黑
+  # —— {latin, ea} 分工 ——
+  - elementId: f-latin
+    elementType: text
+    bounds: [48, 296, 420, 32]
+    content:
+      fontFamily: {latin: "Arial", ea: "MiSans"}
+      fontSize: 18
+      text: Arial + MiSans（拉丁/东亚分工）
+  - elementId: f-latin2
+    elementType: text
+    bounds: [48, 334, 420, 32]
+    content:
+      fontFamily: {latin: "Times New Roman", ea: "思源宋体"}
+      fontSize: 18
+      text: Times New Roman + 思源宋体
+  # —— span 内联字体 ——
+  - elementId: f-span
+    elementType: text
+    bounds: [48, 386, 420, 64]
+    content:
+      fontSize: 18
+      text: <span style="font-family:KaiTi">楷体片段</span> + <span style="font-family:Arial">Arial 片段</span> + <span style="font-family:思源宋体">宋体片段</span> + <span style="font-family:Noto Sans SC">黑体片段</span>
+  # —— 右列：字号 / 字重组合 ——
+  - elementId: f-sizes
+    elementType: text
+    bounds: [520, 92, 400, 32]
+    content:
+      fontSize: 26
+      bold: true
+      text: 26pt 加粗标题
+  - elementId: f-sizes2
+    elementType: text
+    bounds: [520, 130, 400, 32]
+    content:
+      fontSize: 22
+      text: 22pt 常规
+  - elementId: f-sizes3
+    elementType: text
+    bounds: [520, 168, 400, 32]
+    content:
+      fontSize: 14
+      italic: true
+      text: 14pt 斜体
+  - elementId: f-sizes4
+    elementType: text
+    bounds: [520, 206, 400, 32]
+    content:
+      fontSize: 10
+      letterSpacing: 2
+      text: 10pt 字距 2px
+  - elementId: f-sizes5
+    elementType: text
+    bounds: [520, 244, 400, 44]
+    content:
+      fontFamily: "Noto Sans SC"
+      fontSize: 16
+      bold: true
+      color: "$primary"
+      text: 16pt 加粗主题蓝 + 思源黑体
+  - elementId: f-combo
+    elementType: text
+    bounds: [520, 296, 400, 64]
+    content:
+      fontSize: 18
+      text: <strong><em>加粗斜体</em></strong> <u><strong>加粗下划线</strong></u> <s>删除线</s> X<sup>2</sup> H<sub>2</sub>O
+  - elementId: f-mix
+    elementType: text
+    bounds: [520, 386, 400, 64]
+    content:
+      fontSize: 18
+      fontFamily: "MiSans"
+      text: 混合：<span style="font-size:26">26pt</span> · <span style="font-weight:bold">bold span</span> · <span style="color:$accent">色 span</span>

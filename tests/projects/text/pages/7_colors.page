@@ -1,0 +1,126 @@
+pageType: content
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # —— 页面标题 ——
+  - elementId: pg-title
+    elementType: text
+    bounds: [48, 36, 500, 40]
+    content:
+      style: "$title"
+      text: 颜色体系（主题引用 / HEX6 / HEX8 透明度 / 背景高亮）
+  # —— 主题色引用（9 键）——
+  - elementId: c-primary
+    elementType: text
+    bounds: [48, 96, 200, 36]
+    content:
+      color: "$primary"
+      fontSize: 20
+      bold: true
+      text: $primary 主色
+  - elementId: c-accent
+    elementType: text
+    bounds: [264, 96, 200, 36]
+    content:
+      color: "$accent"
+      fontSize: 20
+      bold: true
+      text: $accent 强调
+  - elementId: c-muted
+    elementType: text
+    bounds: [480, 96, 200, 36]
+    content:
+      color: "$muted"
+      fontSize: 20
+      text: $muted 次要
+  - elementId: c-text
+    elementType: text
+    bounds: [696, 96, 200, 36]
+    content:
+      color: "$text"
+      fontSize: 20
+      text: $text 正文
+  - elementId: c-success
+    elementType: text
+    bounds: [48, 144, 200, 36]
+    content:
+      color: "$success"
+      fontSize: 20
+      text: $success 成功
+  - elementId: c-warning
+    elementType: text
+    bounds: [264, 144, 200, 36]
+    content:
+      color: "$warning"
+      fontSize: 20
+      text: $warning 警告
+  - elementId: c-danger
+    elementType: text
+    bounds: [480, 144, 200, 36]
+    content:
+      color: "$danger"
+      fontSize: 20
+      text: $danger 危险
+  - elementId: c-soft
+    elementType: text
+    bounds: [696, 144, 220, 36]
+    content:
+      color: "$primarySoft"
+      fontSize: 20
+      text: $primarySoft 浅色
+  # —— HEX 与透明度 ——
+  - elementId: c-hex6
+    elementType: text
+    bounds: [48, 204, 300, 36]
+    content:
+      color: "#7C3AED"
+      fontSize: 20
+      text: "#7C3AED 纯 HEX"
+  - elementId: c-hex8
+    elementType: text
+    bounds: [360, 204, 340, 36]
+    content:
+      color: "#2563EB80"
+      fontSize: 20
+      text: "#2563EB80 半透明（HEX8）"
+  - elementId: c-runs
+    elementType: text
+    bounds: [48, 252, 860, 40]
+    content:
+      fontSize: 18
+      text: <span style="color:#DB2777">粉色</span> · <span style="color:#059669">绿色</span> · <span style="color:$accent">主题引用 span</span> · <span style="background-color:#FDE68A">黄色高亮</span> · <span style="background-color:#DBEAFE">蓝色高亮</span>
+  # —— 渐变文字（官方 gradient 作用于文字本身）——
+  - elementId: c-grad1
+    elementType: text
+    bounds: [48, 316, 860, 60]
+    content:
+      fontSize: 28
+      bold: true
+      gradient:
+        type: gradient
+        stops:
+          - {position: 0, color: "#2563EB"}
+          - {position: 0.5, color: "#7C3AED"}
+          - {position: 1, color: "#DB2777"}
+      text: 三色渐变标题（blue → purple → pink）
+  - elementId: c-grad2
+    elementType: text
+    bounds: [48, 392, 860, 60]
+    content:
+      fontSize: 28
+      bold: true
+      gradient:
+        type: gradient
+        stops:
+          - {position: 0, color: "$primary"}
+          - {position: 1, color: "$accent"}
+      text: 主题色渐变（$primary → $accent）
+  # —— 背景高亮大块 ——
+  - elementId: c-highlight
+    elementType: text
+    bounds: [48, 468, 860, 44]
+    content:
+      fontSize: 18
+      backgroundColor: "#FEF3C7"
+      text: 整块文字背景高亮（TextContent.backgroundColor = #FEF3C7）

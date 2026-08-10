@@ -1,0 +1,129 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 36, 500, 40]
+    content:
+      style: "$title"
+      text: 图标颜色变体（主题引用 / HEX8 / 渐变）
+  # ---- 主题色引用 ----
+  - elementId: i1
+    elementType: icon
+    bounds: [60, 100, 56, 56]
+    iconName: "bs:check-circle"
+    fill: {type: solid, color: "$primary"}
+  - elementId: i2
+    elementType: icon
+    bounds: [140, 100, 56, 56]
+    iconName: "bs:exclamation-circle"
+    fill: {type: solid, color: "$accent"}
+  - elementId: i3
+    elementType: icon
+    bounds: [220, 100, 56, 56]
+    iconName: "bs:check-circle"
+    fill: {type: solid, color: "$success"}
+  - elementId: i4
+    elementType: icon
+    bounds: [300, 100, 56, 56]
+    iconName: "bs:exclamation-triangle"
+    fill: {type: solid, color: "$warning"}
+  - elementId: i5
+    elementType: icon
+    bounds: [380, 100, 56, 56]
+    iconName: "bs:x-circle"
+    fill: {type: solid, color: "$danger"}
+  - elementId: i6
+    elementType: icon
+    bounds: [460, 100, 56, 56]
+    iconName: "bs:star-fill"
+    fill: {type: solid, color: "$muted"}
+  # ---- HEX8 透明度 ----
+  - elementId: i7
+    elementType: icon
+    bounds: [60, 180, 56, 56]
+    iconName: "bs:heart-fill"
+    fill: {type: solid, color: "#DC262633"}
+  - elementId: i8
+    elementType: icon
+    bounds: [140, 180, 56, 56]
+    iconName: "bs:heart-fill"
+    fill: {type: solid, color: "#DC262680"}
+  - elementId: i9
+    elementType: icon
+    bounds: [220, 180, 56, 56]
+    iconName: "bs:heart-fill"
+    fill: {type: solid, color: "#DC2626"}
+  - elementId: i10
+    elementType: icon
+    bounds: [300, 180, 56, 56]
+    iconName: "bs:hexagon-fill"
+    fill: {type: solid, color: "#2563EB80"}
+  - elementId: i11
+    elementType: icon
+    bounds: [380, 180, 56, 56]
+    iconName: "bs:shield-check"
+    fill: {type: solid, color: "#16A34A80"}
+  # ---- 渐变 ----
+  - elementId: i12
+    elementType: icon
+    bounds: [60, 260, 64, 64]
+    iconName: "bs:rocket-takeoff"
+    fill:
+      type: gradient
+      gradientType: linear
+      angle: 45
+      stops:
+        - {position: 0, color: "$primary"}
+        - {position: 1, color: "$accent"}
+  - elementId: i13
+    elementType: icon
+    bounds: [150, 260, 64, 64]
+    iconName: "bs:lightning-fill"
+    fill:
+      type: gradient
+      gradientType: linear
+      angle: 90
+      stops:
+        - {position: 0, color: "#F59E0B"}
+        - {position: 0.5, color: "#FBBF24"}
+        - {position: 1, color: "#FDE68A"}
+  - elementId: i14
+    elementType: icon
+    bounds: [240, 260, 64, 64]
+    iconName: "fas:globe"
+    fill:
+      type: gradient
+      gradientType: linear
+      angle: -45
+      stops:
+        - {position: 0, color: "#0EA5E9"}
+        - {position: 1, color: "#6366F1"}
+  # ---- 大尺寸 + 深浅底 ----
+  - elementId: i15
+    elementType: icon
+    bounds: [340, 250, 88, 88]
+    iconName: "bs:award"
+    fill: {type: solid, color: "$accent"}
+  # 浅底深箭头（圆在下面，箭头叠上面）
+  - elementId: i17
+    elementType: icon
+    bounds: [60, 350, 88, 88]
+    iconName: "bs:circle-fill"
+    fill: {type: solid, color: "$primarySoft"}
+  - elementId: i16
+    elementType: icon
+    bounds: [60, 350, 88, 88]
+    iconName: "bs:arrow-up"
+    fill: {type: solid, color: "$primary"}
+  # 深底白箭头
+  - elementId: i19
+    elementType: icon
+    bounds: [170, 350, 88, 88]
+    iconName: "bs:circle-fill"
+    fill: {type: solid, color: "#111827"}
+  - elementId: i20
+    elementType: icon
+    bounds: [170, 350, 88, 88]
+    iconName: "bs:arrow-up"
+    fill: {type: solid, color: "#FFFFFF"}

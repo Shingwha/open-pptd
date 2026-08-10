@@ -1,0 +1,57 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 36, 600, 40]
+    content:
+      style: "$title"
+      text: 合并单元格（rowSpan / colSpan，官方省略规则）
+  - elementId: t2
+    elementType: text
+    bounds: [60, 80, 400, 24]
+    content:
+      style: "$caption"
+      text: 左上 2×2 合并（官方示例：被占位省略，无 null 占位）
+  - elementId: tb1
+    elementType: table
+    bounds: [60, 108, 840, 220]
+    style: "$default"
+    rows:
+      # Row 0: top-left 2×2 merge + C1
+      - - text: "合并单元格"
+          fill: {type: solid, color: "$accent"}
+          rowSpan: 2
+          colSpan: 2
+        - text: "一季度"
+        - text: "二季度"
+      # Row 1: (1,0) and (1,1) occupied → only C2 remains
+      - - text: "三季度"
+        - text: "四季度"
+      # Row 2: full three columns
+      - - text: "产品 A"
+        - text: "产品 B"
+        - text: "产品 C"
+  - elementId: t3
+    elementType: text
+    bounds: [60, 336, 400, 24]
+    content:
+      style: "$caption"
+      text: 跨行 2 + 跨列 3（表头分组行）
+  - elementId: tb2
+    elementType: table
+    bounds: [60, 364, 840, 140]
+    style: "$default"
+    rows:
+      - - text: "分组标题（跨 3 列）"
+          fill: {type: solid, color: "$primary"}
+          color: "#FFFFFF"
+          bold: true
+          colSpan: 3
+      - - text: "左列（跨 2 行）"
+          rowSpan: 2
+          fill: {type: solid, color: "$primarySoft"}
+        - text: "数据 1"
+        - text: "数据 2"
+      - - text: "数据 3"
+        - text: "数据 4"

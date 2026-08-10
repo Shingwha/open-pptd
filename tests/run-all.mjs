@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 // 用法：node tests/run-all.mjs
 // 覆盖：
-//   1. 导出 tests/projects/ 下全部组件项目 → tests/out/check-<项目>.pptx
+//   1. 导出 tests/projects/ 下全部组件项目 → tests/projects/<项目>/out/check-<项目>.pptx
 //   2. 包内引用一致性（rels/rId/Content_Types）
 //   3. 颜色两端一致性（预览 resolveColor vs 导出 schemeClr）
 //   4. 预置形状全量回归（187 prst 名 + custGeom 结构）
@@ -16,8 +16,8 @@ import { join, resolve } from "node:path";
 import { run } from "./util/run.js";
 
 const ROOT = resolve(".");
-const outDir = resolve("tests/out");
-mkdirSync(outDir, { recursive: true });
+// 产物输出到每个项目自己的 out/ 目录（tests/projects/<项目>/out/check-<项目>.pptx）
+mkdirSync(resolve("tests"), { recursive: true });
 
 const results = [];
 function record(name, ok, detail = "") {
@@ -33,7 +33,8 @@ const projects = readdirSync(projectsDir)
 
 let allOk = true;
 for (const name of projects) {
-  const out = join(outDir, `check-${name}.pptx`);
+  const out = join(projectsDir, name, "out", `check-${name}.pptx`);
+  mkdirSync(join(projectsDir, name, "out"), { recursive: true });
   const { code, stdout } = await run(`node bin/open-pptd.js export tests/projects/${name}/deck.pptd -o ${out}`);
   if (code !== 0) {
     record(`导出 ${name}`, false, stdout.slice(-200));

@@ -15,8 +15,8 @@ import { buildPptx, magicMatches } from "../editor/writer/pptx.js";
 import { createDeck } from "../editor/core/model.js";
 
 const projectsDir = resolve("tests/projects");
-const outDir = resolve(process.argv[2] || "tests/out");
-mkdirSync(outDir, { recursive: true });
+// 输出到每个项目自己的 out/ 目录（tests/projects/<项目>/out/iso-<项目>-NN.pptx）
+const argOut = process.argv[2] ? resolve(process.argv[2]) : null;
 
 const EXT_BY_EXTNAME = { ".png": "png", ".jpg": "jpg", ".jpeg": "jpg", ".gif": "gif" };
 
@@ -72,6 +72,9 @@ for (const name of projects) {
   const projectDir = join(projectsDir, name);
   const deckPath = join(projectDir, "deck.pptd");
   if (!existsSync(deckPath)) continue;
+  // 每个项目的产物输出到它自己的 out/ 目录
+  const outDir = argOut || join(projectDir, "out");
+  mkdirSync(outDir, { recursive: true });
   const deck = yaml.load(readFileSync(deckPath, "utf8"));
   const theme = normalizeTheme(deck.theme);
   for (let i = 0; i < deck.pages.length; i++) {
@@ -96,5 +99,5 @@ for (const name of projects) {
   }
 }
 
-console.log(`\n共导出 ${exported} 个隔离文件 → ${outDir}`);
+console.log(`\n共导出 ${exported} 个隔离文件 → ${projects.join(", ")} 各自 out/ 目录`);
 console.log("请逐个用 PowerPoint 打开：弹修复的文件即问题组件（对照上面的项目/页编号）。");

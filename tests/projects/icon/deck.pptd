@@ -8,6 +8,10 @@ theme:
     text: "#1F2937"
     muted: "#6B7280"
     bg: "#FFFFFF"
+    success: "#16A34A"
+    warning: "#D97706"
+    danger: "#DC2626"
+    primarySoft: "#EFF6FF"
   textStyles:
     title:
       fontSize: 22
@@ -15,3 +19,4 @@ theme:
       bold: true
 pages:
   - pages/01-icon.page
+  - pages/02-colors.page

@@ -1,0 +1,67 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 36, 600, 40]
+    content:
+      style: "$title"
+      text: 填充（单元格内联 / Table.fill 整表 / 富文本单元格）
+  - elementId: t2
+    elementType: text
+    bounds: [60, 80, 400, 24]
+    content:
+      style: "$caption"
+      text: Table.fill 整表基底 + 单元格内联 fill 覆盖 + 富文本
+  - elementId: tb1
+    elementType: table
+    bounds: [60, 108, 840, 220]
+    style: "$default"
+    fill: {type: solid, color: "#F0FDF4"}
+    rows:
+      - - text: 产品
+        - text: 描述
+        - text: 状态
+      - - text: "**企业版**（加粗 + $primary）"
+          fill: {type: solid, color: "#DBEAFE"}
+        - text: <span style="color:#DC2626">重点标注</span> 红色 span
+        - text: "在线"
+      - - text: 专业版
+        - text: 普通单元格（继承 Table.fill 绿底）
+        - text: <strong>离线</strong>
+      - - text: "渐变填充单元格"
+          fill:
+            type: gradient
+            stops:
+              - {position: 0, color: "#FDE68A"}
+              - {position: 1, color: "#F59E0B"}
+        - text: <span style="font-size:16">大字号 span</span> 混合 <sup>上标</sup>
+        - text: "警告"
+          fill: {type: solid, color: "#FEE2E2"}
+  - elementId: t3
+    elementType: text
+    bounds: [60, 336, 400, 24]
+    content:
+      style: "$caption"
+      text: 主题引用填充（$success / $warning / $danger / $primarySoft）
+  - elementId: tb2
+    elementType: table
+    bounds: [60, 364, 840, 140]
+    style: "$noframe"
+    rows:
+      - - text: "成功"
+          fill: {type: solid, color: "$success"}
+          color: "#FFFFFF"
+          bold: true
+        - text: "警告"
+          fill: {type: solid, color: "$warning"}
+          color: "#FFFFFF"
+          bold: true
+        - text: "危险"
+          fill: {type: solid, color: "$danger"}
+          color: "#FFFFFF"
+          bold: true
+        - text: "浅蓝"
+          fill: {type: solid, color: "$primarySoft"}
+      - [普通, 普通, 普通, 普通]
+      - [普通, 普通, 普通, 普通]
