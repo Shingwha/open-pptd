@@ -118,6 +118,7 @@ tests/                  见 §4
 | **合并失效（2×2 变 2×1）** | ①横向跨度属性名是 **`gridSpan`** 不是 colSpan（colSpan 被忽略只剩 rowSpan）②占位格缺接力跨度 | 主格 `rowSpan + gridSpan`；同行占位 `rowSpan=主格.rowSpan + hMerge="1"`；下行首格 `gridSpan=主格.colSpan + vMerge="1"`；斜向 `hMerge="1" vMerge="1"`（对照 python-pptx `test-table-merge.pptx`） |
 | 合并列数推断 | rows[0].length 在合并后变短 | 列数优先 `columnWidths.length` |
 | 富文本 Markdown 混淆 | 测试页用 `**` | 官方只有 `<strong>` 标签 |
+| **buildFill 无 solid 分支（2026-08-10 回归）** | 清理时删 `fill.color` 兜底分支，但 buildFill 本身没有官方 `{type:"solid", color}` 分支 → 所有对象填充返回空 | buildFill 必须有显式 `type === "solid"` 分支（表格填充/页面背景/形状填充全依赖）；color-consistency.mjs 已加 buildFill 回归用例 |
 
 ### 2.4 C2 完成明细（表格 Cell 对象模型）
 

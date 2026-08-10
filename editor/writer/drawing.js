@@ -126,6 +126,11 @@ export function buildFill(theme, fill, mediaRef = null) {
     return el("a:solidFill", {}, colorElement(theme, fill));
   }
   if (typeof fill !== "object") return "";
+  if (fill.type === "solid") {
+    // 官方 SolidFill（{type: "solid", color}）——此前依赖旧 fill.color 兼容分支，
+    // 清理后一度丢失（表格填充/页面背景全空，2026-08-10 回归）
+    return el("a:solidFill", {}, colorElement(theme, fill.color));
+  }
   if (fill.type === "gradient") {
     // a:gs pos 单位 = 千分之一百分比（100% = 100000），与 PowerPoint 官方输出一致
     const stops = (fill.stops || []).map((s) =>

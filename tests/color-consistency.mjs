@@ -88,5 +88,32 @@ for (const rel of deck.pages || []) {
 for (const [k, v] of Object.entries(deck.theme?.textStyles || {})) walkColor(v, `theme.textStyles.${k}`);
 for (const [k, v] of Object.entries(deck.theme?.colors || {})) walkColor(v, `theme.colors.${k}`);
 
+// —— buildFill 官方 SolidFill 回归（2026-08-10：清理时删 fill.color 兜底分支后，
+//    所有 {type:"solid", color} 填充返回空 → 表格填充/页面背景全丢）——
+{
+  const { buildFill } = await import("../editor/writer/drawing.js");
+  const cases = [
+    { type: "solid", color: "#0F172A" },
+    { type: "solid", color: "$primary" },
+    { type: "solid", color: "#12345678" },
+  ];
+  for (const fill of cases) {
+    const out = buildFill(theme, fill);
+    if (typeof out === "string" && out.includes("solidFill") && out.includes("Clr")) {
+      pass++;
+    } else {
+      fail++;
+      console.log(`✗ buildFill ${JSON.stringify(fill)} → ${JSON.stringify(out)}（官方 SolidFill 应输出 solidFill）`);
+    }
+  }
+  // 渐变/字符串色不受影响
+  const grad = buildFill(theme, { type: "gradient", gradientType: "linear", stops: [{ position: 0, color: "#000000" }, { position: 1, color: "#FFFFFF" }] });
+  if (typeof grad === "string" && grad.includes("gradFill")) pass++;
+  else { fail++; console.log(`✗ buildFill 渐变 → ${JSON.stringify(grad)}`); }
+  const str = buildFill(theme, "#0F172A");
+  if (typeof str === "string" && str.includes("solidFill")) pass++;
+  else { fail++; console.log(`✗ buildFill 字符串色 → ${JSON.stringify(str)}`); }
+}
+
 console.log(`\n颜色一致性: ${pass} 通过, ${fail} 失败`);
 process.exit(fail ? 1 : 0);
