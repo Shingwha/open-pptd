@@ -48,13 +48,15 @@ editor/
   writer/formula.js     injectRunStyle（公式 run 样式注入）
   writer/parts.js       theme1.xml（themeColorSlots）
 tests/
-  projects/text/        text 专项测试项目（6 页全特性，serve 用）
-  projects/isolation/   隔离测试项目（14 页逐组件）
-  reference/test-text.pptx  用户 PowerPoint 手工制作的官方结构基准
-  isolate.mjs           逐页导出 iso-NN.pptx（定位弹修复）
-  split-shape.mjs       形状逐个拆分导出
+  projects/            组件测试项目（每组件一个：text/shape/line/image/icon/table/chart，可 serve）
+  reference/           PowerPoint 官方结构基准（test-text/test-shape/test-shapes-all.pptx）
+  fixtures/formula/    公式回归语料（204 用例 + 微软 XSLT 参考）
+  e2e/                 真实浏览器测试（画廊缓存/渐进加载/实时刷新）
+  run-all.mjs          一键回归（导出全部项目 + 包一致性 + 颜色 + 形状 + 公式 + 图标）
+  isolate.mjs          逐项目逐页导出 iso-<项目>-NN.pptx（定位弹修复）
   package-integrity.mjs 包内引用一致性（rels/rId/Content_Types）
   color-consistency.mjs 预览/导出颜色一致性
+  preset-shapes.mjs    预置形状全量回归（187 prst 名 + custGeom 结构）
 references/official/    官方规范源（pptd.md/fonts.md/shapes.md/slides_categories.md）
 ```
 
@@ -124,7 +126,7 @@ node tests/icon/test-icon.mjs
 - [x] **shape 自定义路径**：`shapeName: "custom"` + viewBox + path → `a:custGeom`（M/L/H/V/C/S/Q/T/A/Z + 相对坐标；近重合端点整圆拆两段 180° 弧；旋转弧贝塞尔降级；镂空内外环顺逆时针）——`writer/custgeom.js`
 - [x] **line 补 `curve` 语义**：sharp=折线尖角 / round=折线圆角 / smooth=贝塞尔（首尾锚点 + 中间控制点）；曲线导出 `cxnSp + custGeom`（viewBox 坐标系随 bounds 拉伸）
 - [x] **image 补 `crop` / `cropShape`**：crop → fit → cropShape 全管线；`cropFitSrcRect` 合成源矩形（cover/contain/fill 数学）；cropShape 支持全部 187 种 + custom；预览 object-view-box + clip-path
-- [x] 隔离项目补对应页（09 形状 23 个 / 10 线条 6 条 / 11 图片 9 张）；新增 `tests/projects/shapes/`（8 页全量）；`tests/preset-shapes.mjs` 自动回归（187 prst 名合法性 + custGeom 结构 + XML 良构）；`scripts/gen-reference-shapes.py` python-pptx 标准参考生成器
+- [x] 隔离项目补对应页（09 形状 23 个 / 10 线条 6 条 / 11 图片 9 张）；新增 `tests/projects/shapes/`（8 页全量）；`tests/preset-shapes.mjs` 自动回归（187 prst 名合法性 + custGeom 结构 + XML 良构）；`scripts/gen-reference-shapes.py` python-pptx 标准参考生成器。**2026-08-10 重构**：tests 改为每组件一个项目（text/shape/line/image/icon/table/chart），`run-all.mjs` 一键回归，isolation/split-shape/gen-compare 已删除
 - [x] **与 PowerPoint 参考文件比对结论**：`tests/reference/test-shape.pptx`（用户手动 25 形状）+ `test-shapes-all.pptx`（python-pptx 全量）；已对齐 avLst 空写 / p:style lnRef（标注引线可见性关键）/ custGeom moveTo 前缀
 
 ### 5.2 B：theme / tableStyles 官方化

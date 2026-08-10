@@ -6,7 +6,7 @@ elements:
     bounds: [60, 60, 400, 40]
     content:
       style: "$title"
-      text: 13 柱状图
+      text: 柱状图
   - elementId: c1
     elementType: chart
     bounds: [60, 140, 800, 340]

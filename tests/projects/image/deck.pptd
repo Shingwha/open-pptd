@@ -1,0 +1,20 @@
+version: v2
+title: 图片组件测试（crop → fit → cropShape）
+size: [960, 540]
+theme:
+  colors:
+    primary: "#2563EB"
+    accent: "#F59E0B"
+    text: "#1F2937"
+    muted: "#6B7280"
+    bg: "#FFFFFF"
+  textStyles:
+    title:
+      fontSize: 22
+      color: "$primary"
+      bold: true
+    caption:
+      fontSize: 12
+      color: "$muted"
+pages:
+  - pages/01-crop.page

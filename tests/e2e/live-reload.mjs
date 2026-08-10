@@ -15,7 +15,7 @@ import { spawn } from "node:child_process";
 import { existsSync, writeFileSync, readFileSync, rmSync, mkdirSync, cpSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { startServer } from "../lib/editor-server.js";
+import { startServer } from "../../lib/editor-server.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SKILL = join(__dirname, "..");

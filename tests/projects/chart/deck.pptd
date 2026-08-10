@@ -1,0 +1,18 @@
+version: v2
+title: 图表组件测试（bar / pie）
+size: [960, 540]
+theme:
+  colors:
+    primary: "#2563EB"
+    accent: "#F59E0B"
+    text: "#1F2937"
+    muted: "#6B7280"
+    bg: "#FFFFFF"
+  textStyles:
+    title:
+      fontSize: 22
+      color: "$primary"
+      bold: true
+pages:
+  - pages/01-bar.page
+  - pages/02-pie.page

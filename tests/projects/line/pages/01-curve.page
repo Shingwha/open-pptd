@@ -6,7 +6,7 @@ elements:
     bounds: [60, 30, 500, 36]
     content:
       style: "$title"
-      text: 10 线条（sharp / round / smooth + 箭头）
+      text: 线条（sharp / round / smooth + 箭头）
   # ---- 直线（基准）----
   - elementId: l1
     elementType: line

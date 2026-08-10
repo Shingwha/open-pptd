@@ -6,7 +6,7 @@ elements:
     bounds: [60, 30, 600, 36]
     content:
       style: "$title"
-      text: 11 图片（crop → fit → cropShape）
+      text: 图片（crop → fit → cropShape）
   # ---- 基准：cover 无裁剪 ----
   - elementId: im1
     elementType: image

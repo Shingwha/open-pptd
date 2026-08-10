@@ -6,7 +6,7 @@ elements:
     bounds: [60, 60, 400, 40]
     content:
       style: "$title"
-      text: 08 图标
+      text: 图标
   - elementId: i1
     elementType: icon
     bounds: [60, 140, 64, 64]
