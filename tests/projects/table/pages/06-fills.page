@@ -22,7 +22,8 @@ elements:
       - - text: 产品
         - text: 描述
         - text: 状态
-      - - text: "**企业版**（加粗 + $primary）"
+      - - text: "<strong>企业版</strong>（富文本加粗 + 单元格 color=$primary）"
+          color: "$primary"
           fill: {type: solid, color: "#DBEAFE"}
         - text: <span style="color:#DC2626">重点标注</span> 红色 span
         - text: "在线"
