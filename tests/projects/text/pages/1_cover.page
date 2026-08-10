@@ -1,4 +1,7 @@
 pageType: cover
+notes: |
+  封面页演讲备注：开场白要点。
+  第二行备注内容。
 background:
   type: solid
   color: "#0F172A"

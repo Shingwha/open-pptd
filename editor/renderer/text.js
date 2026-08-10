@@ -28,7 +28,7 @@ function gradientCss(theme, gradient) {
 }
 
 /** 文字阴影 → CSS text-shadow（offset [x,y] 向下为正，与 OOXML dist/dir 同向）。 */
-function shadowCss(theme, shadow) {
+export function shadowCss(theme, shadow) {
   if (!shadow) return null;
   const [dx = 0, dy = 0] = shadow.offset || [];
   const color = resolveColor(theme, shadow.color) || shadow.color;

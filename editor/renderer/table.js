@@ -6,6 +6,7 @@
 // ============================================================================
 
 import { resolveColor, resolveTableStyle, resolveTableCellStyle, resolveTextStyle } from "../core/theme.js";
+import { shadowCss } from "./text.js";
 import { estimateTableLayout, tableGrid, TABLE_FONT_SIZE, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../core/table.js";
 
 const H_ALIGN = { left: "left", center: "center", right: "right", justify: "justify", distributed: "justify" };
@@ -54,7 +55,8 @@ export function renderTable(theme, el) {
   const table = document.createElement("table");
   table.style.cssText =
     "width:100%;height:100%;border-collapse:collapse;table-layout:fixed;" +
-    `font-size:${TABLE_FONT_SIZE}px;`;
+    `font-size:${TABLE_FONT_SIZE}px;` +
+    (el.shadow ? `box-shadow:${shadowCss(theme, el.shadow)};` : "");
 
   const colgroup = document.createElement("colgroup");
   colWs.forEach((cw) => {

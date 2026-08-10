@@ -168,6 +168,23 @@ tests/                  见 §4
 - [x] **xlsx 表头 bug**：buildChartExXlsx 把 cols map 成 `C1/C2` 单元格坐标（waterfall/treemap/sunburst 全中招）→ 真实列名；瀑布图补 C 列汇总数据
 - [x] 补官方结构：chart 级空 `cx:title pos="t" align="ctr" overlay="0"`、axis 级空 `cx:title`、`cx:fmtOvrs > fmtOvr idx=0 → accent1`（waterfall 必有）
 
+### 2.8 全格式对齐审查（2026-08-10）：官方规范 vs 实现差异扫描 + 修复
+
+**审查范围**：references/official/pptd.md 全 1886 行 vs 模型/writer/renderer/测试（除 chart 已在前几轮深度对齐）。
+
+**本轮修复**：
+- [x] **Page.notes → notesSlide 导出缺失**（官方字段未导出）：实现完整演讲者备注体系——presentation.xml `notesMasterIdLst`（schema 顺序 sldMasterIdLst → notesMasterIdLst → sldIdLst）+ notesMasters/notesMaster1.xml（sldImg + body 占位）+ notesSlides/notesSlideN.xml（多段 a:p）+ 各 rels（notesMaster→theme、notesSlide→notesMaster+slide、slide→notesSlide）+ Content_Types；仅当有备注的页生成
+- [x] **Table.shadow 未消费**：官方 Table 有 shadow → `a:tblPr > a:effectLst`（CT_TableProperties 顺序 tableStyleId → … → effectLst）+ 预览 box-shadow
+- [x] 测试：text/1_cover 加 notes（2 段备注）、table/09-textstyle 加 shadow
+
+**确认一致（✅）**：Presentation 全字段（version 校验）/Page（pageType/background/elements）/ElementBase/Text+TextContent 全字段（textDirection/wrap/gradient/shadow/rotation/opacity/flip）/富文本（标签白名单/plain 简写/\(...\) 公式/style 属性）/Shape（shapeName/adjustments/viewBox/path，187 种 > 官方 177）/Line（viewBox/points/curve/arrow 4 型/border/shadow，**无 fill 符合官方**）/Image（src/cropShape/fit/crop 含负值 outset）/Icon（iconName style:name）/Table+Cell（全字段/BorderSpec 数组/合并省略规则）
+
+**已知差异（低严重性，保留并标注）**：
+- Icon `bs:` 前缀是扩展命名空间（官方仅 fas/far/fab）；本地图源为 Bootstrap Icons 192 个，FA→BS 映射表覆盖常用图标（官方 FA 7 免费库 ~2000+）
+- `deck.fonts` 顶层字段（字体嵌入资源表）为扩展（官方 Presentation 无 fonts）
+- 富文本 style 属性解析宽松（p 接受 letter-spacing 等官方禁止组合；写入时部分被忽略）
+- seriesDefaults 未限制官方 8 类型范围（chartEx 传入也宽容合并）
+
 ### 2.7 C3 第四批（2026-08-10）：渐变 fill 导出修复 + 全属性测试页
 
 **属性覆盖度审查结论**（官方 pptd.md §Chart 全字段 vs 模型/导出/预览）：三端同源已覆盖全部官方字段；本轮发现并修复：
