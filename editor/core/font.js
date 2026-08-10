@@ -93,7 +93,17 @@ function normalizeNameFamily(buf, nameT) {
   const name = table(buf, nameT);
   const count = u16(name, 2);
   const strOff = u16(name, 4);
-  const out = new Uint8Array(name.length + (fam16.length + 8) * 2 + 32);
+  // 预统计需要复制的字符串总字节：源 name 表的字符串可能重叠存储（如 Smiley Sans 的
+  // 多条记录共享/交叉引用同一数据区），记录长度之和可能超过表内字符串区大小，
+  // 不能按 name.length 估算缓冲区，否则重排时会 Uint8Array.set 越界。
+  let copyBytes = 0;
+  for (let i = 0; i < count; i++) {
+    const rec = 6 + i * 12;
+    const pid = u16(name, rec), eid = u16(name, rec + 2), lid = u16(name, rec + 4), nid = u16(name, rec + 6);
+    if (pid === 3 && eid === 1 && lid === 0x409 && (nid === 1 || nid === 2)) continue;
+    copyBytes += u16(name, rec + 8);
+  }
+  const out = new Uint8Array(6 + count * 12 + copyBytes + (fam16.length + 8) * 2 + 32);
   const ov = dv(out);
   ov.setUint16(0, 0, false); // version 0（不做重复记录检测）
   ov.setUint16(2, count, false);
