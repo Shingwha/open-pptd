@@ -15,6 +15,8 @@ import { computeBaseStyle, pickDefined } from "../core/style.js";
 import { colorElement, solidFillElement, buildXfrm, buildFill, shadowElement } from "./drawing.js";
 
 const M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math";
+const A14_NS = "http://schemas.microsoft.com/office/drawing/2010/main";
+const MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 
 const H_ALIGN = { left: "l", center: "ctr", right: "r", justify: "just", distributed: "dist" };
 
@@ -46,7 +48,8 @@ function runXml(theme, s, hrefId) {
   const shdw = shadowElement(theme, s.shadow);
   if (shdw) kids.push(shdw);
   if (s.backgroundColor) {
-    kids.push(el("a:highlight", {}, el("a:solidFill", {}, colorElement(theme, s.backgroundColor))));
+    // CT_Highlight = CT_Color：srgbClr/schemeClr 必须是直接子元素（包 solidFill 会被判损修复）
+    kids.push(el("a:highlight", {}, colorElement(theme, s.backgroundColor)));
   }
   const font = resolveFont(theme, s.fontFamily);
   kids.push(
@@ -123,40 +126,61 @@ function paragraphProps(style) {
 
 /**
  * 构建段落 XML（调用方负责注册超链接）。
- * 公式 run（\(...\)）→ 行内 m:oMath 与 a:r 混排（PowerPoint 原生公式）。
+ * 公式 run（\(...\)）→ a14:m 包装的 m:oMath（PowerPoint 原生行内公式结构）：
+ *   - 行内（与其他 run 混排）：<a14:m><m:oMath>…</m:oMath></a14:m>
+ *   - 独占段落：<a14:m><m:oMathPara><m:oMathParaPr><m:jc/>…<m:oMath>…</m:oMath></m:oMathPara></a14:m>
  * @param {object} para 富文本段落 { style, listType, runs }
  * @param {object} base 基线样式
  * @param {function} registerLink (url) => rId
+ * @param {object} [options] { formulaFallback } 公式降级为纯文本（老 Office Fallback 副本）
  */
-export function buildParagraph(theme, para, base, registerLink) {
+export function buildParagraph(theme, para, base, registerLink, options = {}) {
   const style = { ...base, ...pickDefined(para.style) };
   if (para.listType) style.listType = para.listType; // 列表信息传给段落属性（buChar/缩进）
+  const onlyFormulas = para.runs.length > 0 && para.runs.every((r) => r.formula);
   const runs = para.runs
-    .map((run) => (run.formula ? buildFormulaRun(theme, run, style) : buildRun(theme, run, style, registerLink)))
+    .map((run) =>
+      run.formula
+        ? buildFormulaRun(theme, run, style, { paraAlone: onlyFormulas, textAlign: style.textAlign, fallback: options.formulaFallback })
+        : buildRun(theme, run, style, registerLink)
+    )
     .join("");
   if (!runs) return `<a:p>${paragraphProps(style)}</a:p>`;
   return `<a:p>${paragraphProps(style)}${runs}</a:p>`;
 }
 
 /**
- * 行内公式 run → <m:oMath>（命名空间在根上声明，PowerPoint 原生行内公式）。
- * 官方规范：公式只继承 color 和 font-size；解析失败回退 LaTeX 源码文本。
+ * 行内公式 run → a14:m 包装（PowerPoint 原生行内公式存储结构）。
+ * 官方规范：公式只继承 color 和 font-size；解析失败/fallback 时降级为 LaTeX 源码文本。
  */
-function buildFormulaRun(theme, run, baseStyle) {
+function buildFormulaRun(theme, run, baseStyle, { paraAlone = false, textAlign = null, fallback = false } = {}) {
   const color = run.style?.color || baseStyle.color;
   const fontSize = run.style?.fontSize || baseStyle.fontSize;
   const mml = latexToMathml(run.latex);
-  if (!mml) {
+  if (!mml || fallback) {
     const rPr = runXml(theme, { ...baseStyle, ...pickDefined(run.style) }, null);
     return `<a:r>${rPr}<a:t>${esc(run.latex)}</a:t></a:r>`;
   }
-  // mathmlToOmml 输出已含 <m:oMath> 根（与官方 XSLT 字节一致），不可再包裹；
-  // 行内混排时命名空间声明在 m:oMath 根上（m:oMath 不允许嵌套，否则文件被判损）
+  // mathmlToOmml 输出已含 <m:oMath> 根（与官方 XSLT 字节一致），命名空间声明在根上
   const omml = mathmlToOmml(mml).replace(/^<m:oMath>/, `<m:oMath xmlns:m="${M_NS}">`);
-  return injectRunStyle(omml, { color, fontSize }, theme);
+  const styled = injectRunStyle(omml, { color, fontSize }, theme);
+  if (paraAlone) {
+    const jc =
+      textAlign === "center" || textAlign === "right"
+        ? `<m:oMathParaPr><m:jc m:val="${textAlign}"/></m:oMathParaPr>`
+        : "";
+    return `<a14:m xmlns:a14="${A14_NS}"><m:oMathPara xmlns:m="${M_NS}">${jc}${styled}</m:oMathPara></a14:m>`;
+  }
+  return `<a14:m xmlns:a14="${A14_NS}">${styled}</a14:m>`;
 }
 
 /** 文本元素 → p:sp XML（txBox + txBody）。
+ * spPr 与 PowerPoint 原生文本框一致：xfrm + prstGeom rect + noFill
+ * （CT_ShapeProperties 要求必须含几何；缺几何在部分 Office 实现中会
+ *  被套上默认填充/边框，导致导出文本框出现莫名色块）。
+ */
+/** 文本框 → p:sp XML；含公式时按 PowerPoint 原生结构包 mc:AlternateContent
+ * （Choice = 公式版，Fallback = 公式降级为 LaTeX 源码文本的老 Office 兼容版）。
  * spPr 与 PowerPoint 原生文本框一致：xfrm + prstGeom rect + noFill
  * （CT_ShapeProperties 要求必须含几何；缺几何在部分 Office 实现中会
  *  被套上默认填充/边框，导致导出文本框出现莫名色块）。
@@ -171,8 +195,7 @@ export function textXml(theme, element, ctx) {
     (element.opacity != null && element.opacity < 1
       ? el("a:effectLst", {}, el("a:alphaModFix", { amt: Math.round(element.opacity * 100000) }))
       : "");
-  const body = buildTextBody(theme, element.content, ctx.registerLink);
-  return (
+  const buildSp = (inner) =>
     el("p:sp", {}, [
       el("p:nvSpPr", {}, [
         el("p:cNvPr", { id: ctx.nextId(), name: escAttr(element.elementId) }),
@@ -180,17 +203,25 @@ export function textXml(theme, element, ctx) {
         el("p:nvPr"),
       ]),
       el("p:spPr", {}, spPr),
-      el("p:txBody", {}, body),
-    ].join(""))
-  );
+      el("p:txBody", {}, inner),
+    ].join(""));
+  const body = buildTextBody(theme, element.content, ctx.registerLink);
+  if (body.includes("<a14:m")) {
+    const fallbackBody = buildTextBody(theme, element.content, ctx.registerLink, { formulaFallback: true });
+    const choice = el("mc:Choice", { "xmlns:a14": A14_NS, Requires: "a14" }, buildSp(body));
+    const fallback = el("mc:Fallback", {}, buildSp(fallbackBody));
+    return el("mc:AlternateContent", { "xmlns:mc": MC_NS }, choice + fallback);
+  }
+  return buildSp(body);
 }
 
 /**
  * 构建完整 txBody。
  * @param {object} content 文本元素 content（text/style/color/fontSize/...）
  * @param {function} registerLink (url) => rId
+ * @param {object} [options] { formulaFallback } 公式降级为纯文本（Fallback 副本用）
  */
-export function buildTextBody(theme, content, registerLink) {
+export function buildTextBody(theme, content, registerLink, options = {}) {
   const tree = parseRichText(content?.text || "");
   const base = computeBaseStyle(theme, content);
   const bodyAttrs = { lIns: 0, tIns: 0, rIns: 0, bIns: 0, wrap: "square" };
@@ -205,7 +236,7 @@ export function buildTextBody(theme, content, registerLink) {
   // 编辑，形状会以锚点为中心向两侧暴涨（实测 H 100→1036pt、Top 32→-436pt），
   // 布局被彻底破坏；normAutofit 保持设计框体不变，仅在溢出时等比缩小文字。
   const paras = tree.paragraphs
-    .map((p) => buildParagraph(theme, p, base, registerLink))
+    .map((p) => buildParagraph(theme, p, base, registerLink, options))
     .join("");
   return el("a:bodyPr", bodyAttrs, el("a:normAutofit")) + el("a:lstStyle") + paras;
 }
