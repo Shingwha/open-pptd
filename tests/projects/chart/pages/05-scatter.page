@@ -1,0 +1,26 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 400, 40]
+    content:
+      style: "$title"
+      text: 散点图（marker + dataFilter 语义）
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 820, 380]
+    data:
+      cols: [x, y]
+      rows:
+        - [1, 30]
+        - [2, 55]
+        - [3, 42]
+        - [4, 68]
+        - [5, 90]
+    series:
+      - type: scatter
+        encode: {x: x, y: y}
+        name: 样本
+        marker: {shape: circle, size: 8, fill: "#2563EB"}
+        dataLabels: {content: value}

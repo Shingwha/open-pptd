@@ -19,8 +19,8 @@ elements:
         - [4月, 1050, 720]
     series:
       - type: bar
-        encode: {category: 月份, y: 营收}
+        encode: {x: 月份, y: 营收}
         name: 营收
       - type: bar
-        encode: {category: 月份, y: 成本}
+        encode: {x: 月份, y: 成本}
         name: 成本

@@ -1,0 +1,35 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 400, 40]
+    content:
+      style: "$title"
+      text: 折线图（smooth + marker + 标签）
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 820, 380]
+    data:
+      cols: [月份, 销量, 预测]
+      rows:
+        - [1月, 42, 40]
+        - [2月, 55, 50]
+        - [3月, 48, 52]
+        - [4月, 68, 60]
+        - [5月, 61, 66]
+    series:
+      - type: line
+        encode: {x: 月份, y: 销量}
+        name: 销量
+        smooth: true
+        lineColor: "#2563EB"
+        width: 2
+        marker: {shape: circle, size: 5}
+        dataLabels: {content: value}
+      - type: line
+        encode: {x: 月份, y: 预测}
+        name: 预测
+        lineStyle: dash
+        lineColor: "#F59E0B"
+        dataLabels: {content: value, numberFormat: "0.0"}

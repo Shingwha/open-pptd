@@ -1,0 +1,27 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 400, 40]
+    content:
+      style: "$title"
+      text: 瀑布图（isTotal 分类——导出待参考文件）
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 820, 380]
+    data:
+      cols: [项目, 金额, 汇总]
+      rows:
+        - [期初, 100, null]
+        - [收入, 50, false]
+        - [成本, -30, false]
+        - [税费, -10, false]
+        - [期末, 110, true]
+    series:
+      - type: waterfall
+        encode: {x: 项目, y: 金额, isTotal: 汇总}
+        name: 资金流
+        totalBars: {fill: "#64748B"}
+        increaseBars: {fill: "#10B981"}
+        decreaseBars: {fill: "#EF4444"}

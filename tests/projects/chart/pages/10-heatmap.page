@@ -1,0 +1,29 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 400, 40]
+    content:
+      style: "$title"
+      text: 热力图（colorScheme + colorScale 双端插值）
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 820, 380]
+    data:
+      cols: [行, 列, 值]
+      rows:
+        - [A, 一, 10]
+        - [A, 二, 30]
+        - [A, 三, 20]
+        - [B, 一, 25]
+        - [B, 二, 40]
+        - [B, 三, 15]
+        - [C, 一, 35]
+        - [C, 二, 18]
+        - [C, 三, 28]
+    series:
+      - type: heatmap
+        encode: {x: 行, y: 列, value: 值}
+        colorScheme: ["#E8F0FE", "#2563EB"]
+        colorScale: {type: linear}

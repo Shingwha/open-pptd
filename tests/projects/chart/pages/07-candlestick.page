@@ -1,0 +1,32 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 400, 40]
+    content:
+      style: "$title"
+      text: 股价图（OHLC + 均线 overlay）
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 820, 380]
+    data:
+      cols: [日期, 开盘, 最高, 最低, 收盘]
+      rows:
+        - ["2024-01-01", 10, 12, 9, 11]
+        - ["2024-01-02", 11, 13, 10, 12.5]
+        - ["2024-01-03", 12.5, 14, 11, 13.5]
+        - ["2024-01-04", 13.5, 15, 12, 14]
+        - ["2024-01-05", 14, 16, 13, 15.5]
+    series:
+      - type: candlestick
+        encode: {x: 日期, high: 最高, low: 最低, close: 收盘, open: 开盘}
+        name: K线
+        upBars: {fill: "#FFFFFF", border: {color: "#2563EB", width: 1}}
+        downBars: {fill: "#2563EB", border: {color: "#2563EB", width: 1}}
+      - type: line
+        encode: {x: 日期, y: 收盘}
+        name: 收盘价
+        smooth: true
+        lineColor: "#F59E0B"
+        width: 1.5

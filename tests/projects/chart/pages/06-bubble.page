@@ -1,0 +1,29 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 400, 40]
+    content:
+      style: "$title"
+      text: 气泡图（x/y/size 三通道）
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 820, 380]
+    data:
+      cols: [x, y, size]
+      rows:
+        - [1, 30, 20]
+        - [2, 55, 35]
+        - [3, 42, 25]
+        - [4, 68, 40]
+        - [5, 90, 30]
+    series:
+      - type: bubble
+        encode: {x: x, y: y, size: size}
+        name: 气泡A
+        sizeScale: sqrt
+      - type: bubble
+        encode: {x: x, y: y, size: size}
+        name: 气泡B
+        sizeScale: linear

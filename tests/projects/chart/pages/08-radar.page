@@ -1,0 +1,32 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 400, 40]
+    content:
+      style: "$title"
+      text: 雷达图（多系列共享辐条）
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 820, 380]
+    data:
+      cols: [维度, 角色A, 角色B]
+      rows:
+        - [速度, 80, 60]
+        - [力量, 70, 85]
+        - [防御, 60, 75]
+        - [敏捷, 90, 55]
+        - [耐力, 75, 80]
+    series:
+      - type: radar
+        encode: {category: 维度, y: 角色A}
+        name: 角色A
+        lineColor: "#2563EB"
+      - type: radar
+        encode: {category: 维度, y: 角色B}
+        name: 角色B
+        lineColor: "#F59E0B"
+        areaColor: "#F59E0B"
+    spokeAxis:
+      max: 100

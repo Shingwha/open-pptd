@@ -1,0 +1,36 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 400, 40]
+    content:
+      style: "$title"
+      text: "面积图（stack: value + areaColor）"
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 820, 380]
+    data:
+      cols: [季度, 华东, 华北, 华南]
+      rows:
+        - [Q1, 120, 80, 60]
+        - [Q2, 132, 95, 75]
+        - [Q3, 101, 110, 88]
+        - [Q4, 134, 120, 95]
+    series:
+      - type: area
+        encode: {x: 季度, y: 华东}
+        name: 华东
+        stack: value
+        lineColor: "#2563EB"
+      - type: area
+        encode: {x: 季度, y: 华北}
+        name: 华北
+        stack: value
+        lineColor: "#F59E0B"
+      - type: area
+        encode: {x: 季度, y: 华南}
+        name: 华南
+        stack: value
+        lineColor: "#10B981"
+        areaColor: "#10B981"

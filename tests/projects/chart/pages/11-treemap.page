@@ -1,0 +1,28 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 400, 40]
+    content:
+      style: "$title"
+      text: 矩形树图（parent 层级 + HSL.L 派生）
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 820, 380]
+    data:
+      cols: [名称, 值, 父级]
+      rows:
+        - [全公司, 100, null]
+        - [华东, 45, 全公司]
+        - [华北, 30, 全公司]
+        - [华南, 25, 全公司]
+        - [上海, 20, 华东]
+        - [杭州, 25, 华东]
+        - [北京, 18, 华北]
+        - [广州, 15, 华南]
+    series:
+      - type: treemap
+        encode: {category: 名称, value: 值, parent: 父级}
+        fill: ["#2563EB", "#F59E0B", "#10B981"]
+        dataLabels: {content: category}

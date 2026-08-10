@@ -9,10 +9,20 @@ import { CHART_META, CHART_TYPE_ORDER, DEFAULT_CHART_PALETTE } from "../../core/
 import { showDialog, buildCellInput, row, select, button } from "./base.js";
 
 const SEMANTIC_KEYS = {
-  x: ["x", "category"],
+  x: ["x", "category", "date"],
   y: ["y", "value"],
   category: ["category", "x"],
   value: ["value", "y"],
+  size: ["size"],
+  high: ["high"],
+  low: ["low"],
+  close: ["close"],
+  open: ["open"],
+  isTotal: ["isTotal"],
+  parent: ["parent"],
+  source: ["source"],
+  target: ["target"],
+  flow: ["flow"],
 };
 
 /** 按目标类型元数据重映射 encode（保留已有列引用，自动对齐默认列名）。 */
@@ -62,7 +72,7 @@ export function openChartEditor(el, { theme, onChange }) {
     onChange();
   });
   const labelTxt = document.createElement("span");
-  labelTxt.textContent = "显示数据标签（数值/百分比）";
+  labelTxt.textContent = "显示数据标签（官方默认关）";
   labelRow.appendChild(labelChk);
   labelRow.appendChild(labelTxt);
   container.appendChild(labelRow);
@@ -96,9 +106,10 @@ export function openChartEditor(el, { theme, onChange }) {
     const type = el.series[0]?.type || "bar";
     const meta = CHART_META[type];
     const valCol = findUnusedValCol(el);
+    const valKey = Object.keys(meta.encode).find((k) => !["x", "category", "date", "source", "target"].includes(k)) || "y";
     el.series.push({
       type,
-      encode: { ...meta.encode, y: valCol, value: valCol },
+      encode: { ...meta.encode, [valKey]: valCol },
       name: `系列${el.series.length + 1}`,
     });
     if (el.data && valCol && !el.data.cols.includes(valCol)) {
@@ -221,12 +232,13 @@ export function openChartEditor(el, { theme, onChange }) {
       const hex = String(s.color || palette[i % palette.length] || "#2563eb").replace("#", "");
       colorInput.value = /^[0-9a-f]{6}$/i.test(hex) ? `#${hex}` : "#2563eb";
       colorInput.addEventListener("change", () => { s.color = colorInput.value; onChange(); });
+      const valKey = Object.keys(CHART_META[s.type]?.encode || {}).find((k) => !["x", "category", "date", "source", "target"].includes(k)) || "y";
       const valSel = select(
         (el.data?.cols || []).map((c, idx) => [String(idx), c]),
-        String(Math.max(0, el.data?.cols.indexOf(s.encode?.y ?? s.encode?.value ?? ""))),
+        String(Math.max(0, el.data?.cols.indexOf(s.encode?.[valKey] ?? ""))),
         (v) => {
           const col = el.data?.cols[Number(v)];
-          if (col) { s.encode ||= {}; s.encode.y = col; s.encode.value = col; }
+          if (col) { s.encode ||= {}; s.encode[valKey] = col; }
           onChange();
         }
       );
@@ -275,7 +287,7 @@ function renameColumn(el, idx, newName) {
   if (old === newName || !newName) return;
   data.cols[idx] = newName;
   for (const s of el.series || []) {
-    for (const key of ["x", "y", "category", "value"]) {
+    for (const key of Object.keys(SEMANTIC_KEYS)) {
       if (s.encode?.[key] === old) s.encode[key] = newName;
     }
   }
@@ -288,7 +300,7 @@ function removeColumn(el, idx) {
   data.cols.splice(idx, 1);
   for (const row of data.rows || []) row.splice(idx, 1);
   for (const s of el.series || []) {
-    for (const key of ["x", "y", "category", "value"]) {
+    for (const key of Object.keys(SEMANTIC_KEYS)) {
       if (s.encode?.[key] === removed) {
         const first = data.cols[0];
         s.encode[key] = first;

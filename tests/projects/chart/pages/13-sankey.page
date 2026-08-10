@@ -1,0 +1,25 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 400, 40]
+    content:
+      style: "$title"
+      text: 桑基图（source/target/flow）
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 820, 380]
+    data:
+      cols: [源, 目标, 流量]
+      rows:
+        - [A, B, 40]
+        - [A, C, 60]
+        - [B, D, 25]
+        - [B, E, 15]
+        - [C, E, 35]
+        - [C, F, 25]
+    series:
+      - type: sankey
+        encode: {source: 源, target: 目标, flow: 流量}
+        nodeAlign: justify

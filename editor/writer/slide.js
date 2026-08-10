@@ -73,6 +73,7 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
     },
     collectChart(theme, el, chartId) {
       const parts = buildChartParts(theme, el, chartId);
+      if (!parts) return false; // 类型暂不支持原生导出（预览正常，导出跳过该元素）
       chartParts.push({
         path: `ppt/charts/chart${chartId}.xml`,
         bytes: encodeUtf8(parts.xml),

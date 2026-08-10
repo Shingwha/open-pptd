@@ -1,5 +1,5 @@
 version: v2
-title: 图表组件测试（bar / pie）
+title: 图表组件测试（官方 13 类型）
 size: [960, 540]
 theme:
   colors:
@@ -16,3 +16,14 @@ theme:
 pages:
   - pages/01-bar.page
   - pages/02-pie.page
+  - pages/03-line.page
+  - pages/04-area.page
+  - pages/05-scatter.page
+  - pages/06-bubble.page
+  - pages/07-candlestick.page
+  - pages/08-radar.page
+  - pages/09-waterfall.page
+  - pages/10-heatmap.page
+  - pages/11-treemap.page
+  - pages/12-sunburst.page
+  - pages/13-sankey.page
