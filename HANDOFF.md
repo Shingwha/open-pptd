@@ -13,7 +13,7 @@
 - 导出的 PPTX **PowerPoint 打开零修复弹窗**、渲染与预览一致
 - 不保留 v1 的随意扩展与兼容代码
 
-## 2. 当前状态（阶段 A：text 组件 ✅ 完成）
+## 2. 当前状态（阶段 A ✅ + C1 ✅ 完成，下一步 B）
 
 ### 2.1 已完成
 
@@ -30,6 +30,10 @@
 | 图标 | ✅ | 官方 `iconName: "style:name"`：`bs:` 本地 Bootstrap 192 个 + `fas:/far:/fab:` → FA→Bootstrap 映射表（401 条，`editor/core/icon-name.js`） |
 | autofit | ✅ | `spAutoFit` + 编辑器渲染后同步 bounds 高度（`view.js autoGrowTexts`） |
 | 主题色 | ✅ | `$primary→accent1` 等 schemeClr 槽位 + theme1.xml 定义，预览/导出一致（`tests/color-consistency.mjs` 47 项回归） |
+| **形状 187 种** | ✅ | ECMA-376 附录全量（`preset-geometry.data.js`，含中文标签/分类/多路径）；求值器修复 `3cd4` 角度常量与 `cat2/sat2/at2` 参数序；arcTo/quadBezTo 全支持；`tests/preset-shapes.mjs` 回归 |
+| **自定义路径** | ✅ | `shapeName:"custom"` + viewBox + path → `a:custGeom`（M/L/H/V/C/S/Q/T/A/Z 全命令 + 相对坐标；整圆拆分两段 180° 弧；旋转弧贝塞尔降级）；镂空内外环方向正确 |
+| **线条 curve** | ✅ | `sharp/round/smooth`（折线/圆角连接/贝塞尔首尾锚点+中间控制点）；曲线导出 `cxnSp + custGeom` |
+| **图片 crop/cropShape** | ✅ | crop→fit→cropShape 全管线：`a:srcRect` 合成（cover/contain/fill 数学）+ spPr 几何轮廓；预览 object-view-box + clip-path |
 
 ### 2.2 关键文件地图
 
@@ -67,6 +71,10 @@ references/official/    官方规范源（pptd.md/fonts.md/shapes.md/slides_cate
 | 删除线 | `strike="sng"` 非法 | `strike="sngStrike"`（ST_TextStrikeType） |
 | autofit | normAutofit 缩字与预览矛盾 | `spAutoFit` + 编辑器增高 bounds |
 | 元素翻转 | — | `a:xfrm flipH/flipV`（PowerPoint 对文字自动回正，属 PPT 行为，保留字段） |
+| **图片预载（v1 遗留）** | `io.js` 扩展名正则无捕获组 → `[1]` 恒 undefined → mime 解析永远失败 → 图片回退相对路径 404 | 正则加捕获组 `\.([a-z0-9]+)$/i`（CDP 无头浏览器定位） |
+| **自定义路径不可见** | `a:path` 内 `moveTo/lnTo` 漏 `a:` 前缀（不属于 DrawingML 命名空间）→ PowerPoint 解析不出路径 | `ptCmd` 输出 `a:moveTo/a:lnTo`（writer/custgeom.js） |
+| **标注引线消失** | 预设几何 fill="none" 描边路径（标注引线/弧线/括号中线）用形状线条样式画：spPr 无 `a:ln` 时回退 `p:style lnRef`，无 p:style 则不画 | 形状输出 `p:style`（lnRef idx=1 + fillRef/effectRef/fontRef，与参考文件逐字节一致）；**注意** spPr 有 `a:ln`（含 noFill）会覆盖 lnRef 导致引线消失（python-pptx 实验证实） |
+| **avLst 默认值写法** | 总是写满默认调整值 vs PowerPoint「默认值留空」 | 未显式设置 adjustments 时输出空 `<a:avLst/>`（与参考文件一致） |
 
 ## 3. 参考文件说明
 
@@ -76,6 +84,8 @@ references/official/    官方规范源（pptd.md/fonts.md/shapes.md/slides_cate
 | `references/official/fonts.md` | 官方字体清单（MiSans/Noto Sans SC/思源宋体…） | 字体选择器、默认字体 |
 | `references/official/shapes.md` | 官方 177 种预置形状 + 调整值约束 | 阶段 C1 扩展 shapeName |
 | `tests/reference/test-text.pptx` | **用户用 PowerPoint 手工制作的官方结构基准**：背景高亮 / 公式混排 / 渐变文字 / 翻转 / 30%·50% 透明文字 | 解包比对 writer 输出的权威样本（`python + zipfile` 解包读 `ppt/slides/slide1.xml`） |
+| `tests/reference/test-shape.pptx` | **用户用 PowerPoint 手工制作的形状基准**（25 个：标注/箭头/流程图/括号/立方体/泪滴 + 手绘 custGeom） | 比对 prstGeom/avLst/p:style 结构（标注引线可见性关键样本） |
+| `tests/reference/test-shapes-all.pptx` | **python-pptx 全量基准**（187 预置 + 7 自定义路径，`scripts/gen-reference-shapes.py` 生成） | 逐形状对照导出渲染；含 p:style 但 spPr 有 `a:ln noFill` → 引线不可见（验证了 lnRef 覆盖机制） |
 | `docs/pptd-format.v1.md`、`docs/fonts.v1.md` | v1 自定义格式存档 | 仅供理解历史，**不得作为实现依据** |
 
 比对方法（已固化）：解包用户参考文件 → 找目标效果的官方 XML 片段 → 与 `editor/writer/` 输出逐字节对照 → 修复 → 回归。
@@ -106,18 +116,16 @@ node tests/icon/test-icon.mjs
 
 > 用户参与的完整约定见 `tests/projects/README.md`「PowerPoint 参考文件比对法」。
 
-## 5. 下一步任务（C1 + B，已与用户确认）
+## 5. 下一步任务（B，已与用户确认）
 
-### 5.1 C1：shape / line / image 字段对齐官方（优先）
+### 5.1 C1：shape / line / image 字段对齐官方 ✅ 已完成
 
-隔离测试已证明这三个组件的 XML 导出**不弹修复**（iso-09/10/11），缺的是**字段语义对齐**：
-
-- [ ] **fill 统一官方 `Fill` 类型**：`{color: "…"}` 简写 → `{type: solid, color: "…"}`（shape/line/image/icon 消费端已兼容 `Fill`，主要改：编辑器 UI 写入、主题库文件、`references/official` 对齐）
-- [ ] **shape 26 → 177 种**：`editor/core/preset-geometry.data.js` 目前只有 21 种 ECMA-376 预置 + 基础 5；按 `references/official/shapes.md` 补全 177 种（名称 + 默认 adjustments + avLst 参数名），沿用"几何与 PowerPoint 同源、预览=导出"的现有机制（`preset-geometry.js` 由 `scripts/gen-preset-geometry.mjs` 生成）
-- [ ] **shape 自定义路径**：官方 `shapeName: "custom"` + `viewBox` + `path`（SVG path，支持 M/L/H/V/C/S/Q/A/Z，镂空用内外环顺逆时针）——writer 需新增 `a:custGeom` 输出（从 SVG path 转 OOXML path 格式：`a:pt` + `a:lnTo/arcTo` 等，参考 PowerPoint 官方存储），渲染端用 SVG path 直接画
-- [ ] **line 补 `curve` 语义**：官方 `curve: "sharp"|"round"|"smooth"`（v1 已有 points/viewBox/arrow，缺 curve 字段消费：sharp=直线段、round=圆角连接、smooth=贝塞尔，当前 v1 渲染/导出如何映射需对照）
-- [ ] **image 补 `crop` / `cropShape`**：官方 `ImageCrop`（四边比例裁剪）+ `cropShape`（ShapeDef 裁剪轮廓），渲染顺序 crop → fit → cropShape
-- [ ] 隔离项目补对应页（shape 更多类型 / line curve / image crop），重新走 4.2 验证
+- [x] **shape 26 → 187 种**：ECMA-376 附录全量（名称 + 默认 adjustments + avLst 参数名 + 中文标签/分类/多路径），`scripts/gen-preset-geometry.mjs <presetShapeDefinitions.xml>` 重新生成（规范文件在 /tmp/drawingml/ 或官方 ECMA-376 下载包）；求值器修复 `3cd4` 数字前缀角度常量、`cat2/sat2/at2` OOXML 参数序（arc 形状 4 方程验证）
+- [x] **shape 自定义路径**：`shapeName: "custom"` + viewBox + path → `a:custGeom`（M/L/H/V/C/S/Q/T/A/Z + 相对坐标；近重合端点整圆拆两段 180° 弧；旋转弧贝塞尔降级；镂空内外环顺逆时针）——`writer/custgeom.js`
+- [x] **line 补 `curve` 语义**：sharp=折线尖角 / round=折线圆角 / smooth=贝塞尔（首尾锚点 + 中间控制点）；曲线导出 `cxnSp + custGeom`（viewBox 坐标系随 bounds 拉伸）
+- [x] **image 补 `crop` / `cropShape`**：crop → fit → cropShape 全管线；`cropFitSrcRect` 合成源矩形（cover/contain/fill 数学）；cropShape 支持全部 187 种 + custom；预览 object-view-box + clip-path
+- [x] 隔离项目补对应页（09 形状 23 个 / 10 线条 6 条 / 11 图片 9 张）；新增 `tests/projects/shapes/`（8 页全量）；`tests/preset-shapes.mjs` 自动回归（187 prst 名合法性 + custGeom 结构 + XML 良构）；`scripts/gen-reference-shapes.py` python-pptx 标准参考生成器
+- [x] **与 PowerPoint 参考文件比对结论**：`tests/reference/test-shape.pptx`（用户手动 25 形状）+ `test-shapes-all.pptx`（python-pptx 全量）；已对齐 avLst 空写 / p:style lnRef（标注引线可见性关键）/ custGeom moveTo 前缀
 
 ### 5.2 B：theme / tableStyles 官方化
 
