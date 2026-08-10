@@ -12,48 +12,17 @@
 //   - TextContent.style / Cell.textStyle / Table.style 均按官方字符串 "$key" 引用
 // ============================================================================
 
-import { DEFAULT_THEME, THEME_PRESETS } from "./theme-presets.js";
-export { DEFAULT_THEME, THEME_PRESETS } from "./theme-presets.js";
-
-/** 内置预设 UI 显示名（官方 Theme 无 name 字段，元数据放这里）。 */
-export const THEME_NAMES = {
-  blue: "蓝色",
-  mckinsey: "麦肯锡深蓝",
-  red: "红色",
-  green: "绿色",
-  purple: "紫色",
-  black: "黑白",
-  yellow: "黄色",
-  orange: "橙色",
-  cyan: "青色",
-  gray: "灰色",
-  brown: "棕色",
-  rose: "玫瑰粉",
-  morandi: "莫兰迪",
-  olive: "橄榄绿",
-  sakura: "樱花",
-  vermilion: "朱砂",
-  pine: "青松",
-};
+import { DEFAULT_THEME } from "./theme-presets.js";
+export { DEFAULT_THEME } from "./theme-presets.js";
 
 const HEX_RE = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
 /**
- * 归一化主题：深合并默认主题（官方结构）。
- * input 为字符串时视为主题 key（THEME_PRESETS 键名），找不到则回退默认并告警。
- * 注意：序列化永远写对象（见 io.applyTheme），字符串只在解析旧项目时出现。
+ * 归一化主题：深合并默认主题（官方结构）。官方 theme 永远是对象（v1 字符串 key 兼容已删）。
  */
 export function normalizeTheme(input) {
   const base = JSON.parse(JSON.stringify(DEFAULT_THEME));
   if (!input) return base;
-  if (typeof input === "string") {
-    const key = input;
-    input = THEME_PRESETS[key] || null;
-    if (!input) {
-      console.warn(`[theme] 未知主题「${key}」，回退默认`);
-      return base;
-    }
-  }
   return deepMerge(base, input);
 }
 

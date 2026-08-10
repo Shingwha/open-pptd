@@ -292,10 +292,11 @@ node tests/color-consistency.mjs tests/projects/table   # 颜色一致性可指�
 - [ ] theme-presets.js 17 套 colors 保留（SKILL 取色参考/用户手改 YAML 用）；默认主题兜底（MiSans + 默认 colors）已有
 - 对齐基线：`C:/Users/法法/Desktop/open-kimi-ppt/`（SKILL.md + reference/ + scripts/，v2 完成后 SKILL.md 引用其工作流，只改编辑器/导出章节）
 
-### 5.3 清理遗留（随各阶段推进）
+### 5.3 清理遗留（2026-08-10 已完成一轮）
 
-- [ ] **删除 v1 兼容代码**：`writer/drawing.js` buildFill 的 `fill.color` 旧形态分支（消费端已全写 `{type: solid, color}`）；`renderer/shape.js` 旧形态兼容；`preset-geometry.js` 的 `shapePathD` 兼容接口（菜单图标用，可改走 shapePaths）
-- [ ] **废弃 `elementType: formula`**：`types/formula.js` + `renderer/formula.js`（富文本 `\(...\)` 已完全替代；`writer/formula.js` 的 injectRunStyle 是公式 run 样式注入，逻辑并入 richtext 导出后删除）
+- [x] **删除 v1 兼容代码**：`writer/drawing.js` buildFill 的 `fill.color` 旧形态分支（已删）；`renderer/shape.js` 旧形态兼容（solidFill 严格 `{type: solid, color}`，table.js 同类已同步）；`preset-geometry.js` 的 `shapePathD` 兼容接口（无调用点，已删）
+- [x] **废弃 `elementType: formula`**：`types/formula.js` + `renderer/formula.js` + `writer/formula.js` 已删；`injectRunStyle` 并入 `writer/text.js`（公式 run 样式注入，富文本行内公式唯一消费方）
+- [x] **theme-presets.js 精简**：17 套 THEME_PRESETS + THEME_NAMES 删除（决策：不做主题预设库/编辑器主题切换，见 §5.2），只留 DEFAULT_THEME；消费端全清：theme.js 字符串 key 分支、toolbar.js 主题下拉（+ index.html theme-select）、io.js 字符串展开 + `THEME_PRESETS.blue` 回退、lib/pptd-export.js + bin CLI 的 `--theme` 参数（v1 兼容路径）
 - [ ] **字体嵌入验证**：deck.fonts 资源表扩展 + writer/font.js 管线已就绪无测试覆盖——加带嵌入字体的测试项目（参照 font-embedding.md）
 - [ ] **SKILL.md**：v2 完成后对齐 `C:/Users/法法/Desktop/open-kimi-ppt/SKILL.md` 工作流（step1-5：读上下文/定需求/生成/验证/交付），只改编辑器/导出章节；主题决策步骤写入（见 §5.2）
 - [ ] 文档同步：README/HANDOFF 随阶段更新

@@ -5,10 +5,8 @@
 // 菜单自动出现，无需在此改任何代码。
 // ============================================================================
 
-import { THEME_PRESETS, THEME_NAMES } from "../core/theme.js";
 import { createPage } from "../core/model.js";
 import { buildAddItems, buildAddMenu } from "../types/index.js";
-import { showToast } from "./toast.js";
 
 export function bindToolbar({ state, page, api, view, io }) {
   const $ = (id) => document.getElementById(id);
@@ -86,20 +84,6 @@ export function bindToolbar({ state, page, api, view, io }) {
 
     $("btn-undo").onclick = () => io.applyHistory(state.history.undo(state.deck));
     $("btn-redo").onclick = () => io.applyHistory(state.history.redo());
-
-    const themeSel = $("theme-select");
-    for (const [key, preset] of Object.entries(THEME_PRESETS)) {
-      const opt = document.createElement("option");
-      opt.value = key;
-      opt.textContent = THEME_NAMES[key] || key;
-      themeSel.appendChild(opt);
-    }
-    themeSel.onchange = () => {
-      api.beginChange();
-      io.applyTheme(THEME_PRESETS[themeSel.value]);
-      view.render();
-      showToast(`主题切换为「${THEME_NAMES[themeSel.value] || themeSel.value}」`, "info");
-    };
 
     $("btn-export").onclick = io.exportPptx;
     $("btn-save").onclick = io.saveProject;

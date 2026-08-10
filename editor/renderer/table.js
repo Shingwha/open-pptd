@@ -94,7 +94,14 @@ export function renderTable(theme, el) {
 
 /** td 内联样式（预览；covered 位无文字不显示背景文字样式）。 */
 function tdCss(theme, f, covered) {
-  const fillColor = f.fill ? (typeof f.fill === "string" ? resolveColor(theme, f.fill) : resolveColor(theme, f.fill.color)) : null;
+  // 严格官方形态：fill 字符串色或 {type: "solid", color}（与 writer 同源）
+  const fillColor = f.fill
+    ? typeof f.fill === "string"
+      ? resolveColor(theme, f.fill)
+      : f.fill.type === "solid"
+        ? resolveColor(theme, f.fill.color)
+        : null
+    : null;
   const hAlign = H_ALIGN[f.align[0]] || "center";
   const vAlign = f.align[1] || "middle";
   const parts = [

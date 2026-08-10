@@ -18,7 +18,6 @@ function usage() {
       "  open-pptd serve [--port <port>] [--project <目录>]  启动本地网页编辑器\n" +
       "      --project: 挂载任意项目目录到浏览器（?deck=project/deck.pptd），端口占用自动顺延\n" +
       "  open-pptd export <deck.pptd> [-o <out.pptx>]  命令行导出 PPTX\n" +
-      "                           [--theme <key>]      覆盖主题（见 references/themes.md）\n" +
       "                           [--no-embed-fonts]   不嵌入字体（默认嵌入）\n" +
       "  open-pptd export-project <deck.pptd> [-o <out.zip>]  导出项目包（pptd+pages+media，原样打包）\n"
   );

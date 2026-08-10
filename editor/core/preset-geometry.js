@@ -109,21 +109,6 @@ export function shapePaths(shapeName, w, h, adjustments) {
   return out;
 }
 
-/** 兼容旧接口：第一个路径的 d（无调整形状的菜单图标等）。 */
-export function shapePathD(shapeName, w, h, adjustments) {
-  const def = PRESET_SHAPES[shapeName];
-  if (!def) return null;
-  const g = baseGuides(w, h);
-  const adj = Array.isArray(adjustments) && adjustments.length ? adjustments : def.adjDefault;
-  def.adjNames.forEach((name, i) => {
-    const v = adj[i];
-    g[name] = typeof v === "number" ? v : def.adjDefault[i];
-  });
-  for (const [name, op, args] of def.guides) g[name] = evalFormula(op, args, g);
-  const [fillFlag, stroke, viewBox, cmds] = def.paths[0];
-  return buildPathD(cmds, g, viewBox, w, h);
-}
-
 function buildPathD(cmds, g, viewBox, w, h) {
   const sx = viewBox ? w / viewBox[0] : 1;
   const sy = viewBox ? h / viewBox[1] : 1;

@@ -13,7 +13,7 @@
 
 import * as yaml from "../vendor/js-yaml.mjs";
 import { parseDeck, serializeDeck } from "../core/pptd-io.js";
-import { normalizeTheme, mergeFonts, THEME_PRESETS } from "../core/theme.js";
+import { normalizeTheme, mergeFonts, DEFAULT_THEME } from "../core/theme.js";
 import { syncElementId } from "../core/model.js";
 import { buildPptx, downloadPptx } from "../writer/pptx.js";
 import { ZipWriter } from "../writer/zip.js";
@@ -32,9 +32,10 @@ export function createIo({ state, view }) {
   // 主题与状态应用
   // --------------------------------------------------------------------------
   function applyTheme(themeInput) {
-    // 序列化永远写对象：字符串 key（旧项目）展开为完整主题对象，深拷贝隔离预设引用
-    const resolved = typeof themeInput === "string" ? THEME_PRESETS[themeInput] || null : themeInput;
-    state.deck.theme = resolved ? JSON.parse(JSON.stringify(resolved)) : THEME_PRESETS.blue;
+    // 官方 theme 永远是对象（v1 字符串 key 兼容已删）；深拷贝隔离默认主题引用
+    state.deck.theme = themeInput && typeof themeInput === "object"
+      ? JSON.parse(JSON.stringify(themeInput))
+      : JSON.parse(JSON.stringify(DEFAULT_THEME));
     // deck 级字体声明覆盖主题字体（无声明则用主题默认，如微软雅黑）
     state.theme = mergeFonts(normalizeTheme(state.deck.theme), state.deck.fonts);
   }
@@ -43,11 +44,6 @@ export function createIo({ state, view }) {
   function applyHistory(deckSnapshot) {
     if (!deckSnapshot) return;
     state.deck = deckSnapshot;
-    // 历史快照可能含字符串主题 key（旧项目）→ 展开为对象，保证保存永远写对象
-    if (typeof state.deck.theme === "string") {
-      const preset = THEME_PRESETS[state.deck.theme];
-      state.deck.theme = preset ? JSON.parse(JSON.stringify(preset)) : null;
-    }
     state.theme = mergeFonts(normalizeTheme(state.deck.theme), state.deck.fonts);
     if (state.currentPage >= state.deck.pages.length) state.currentPage = state.deck.pages.length - 1;
     state.selectedId = null;
@@ -72,7 +68,7 @@ export function createIo({ state, view }) {
     state.deck = parseDeck(manifestText, pageFiles);
     state.manifestPath = manifestPath;
     setBrandFile(manifestPath);
-    applyTheme(state.deck.theme || THEME_PRESETS.blue);
+    applyTheme(state.deck.theme || DEFAULT_THEME);
     state.currentPage = 0;
     state.selectedId = null;
     state.history = createHistory();

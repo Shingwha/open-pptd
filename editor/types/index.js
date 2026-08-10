@@ -12,7 +12,6 @@ import "./line.js";
 import "./image.js";
 import "./table.js";
 import "./chart.js";
-import "./formula.js";
 
 export { registerType, getType, allTypes } from "./registry.js";
 export { buildAddItems, buildAddMenu } from "./menu.js";

@@ -172,10 +172,6 @@ export function buildFill(theme, fill, mediaRef = null) {
     kids.push(el("a:stretch", {}, el("a:fillRect", {})));
     return el("a:blipFill", {}, kids.join(""));
   }
-  // 兼容旧形态：直接对象（color 字段）
-  if (fill.color) {
-    return el("a:solidFill", {}, colorElement(theme, fill.color));
-  }
   return "";
 }
 

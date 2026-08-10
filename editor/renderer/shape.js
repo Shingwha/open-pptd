@@ -14,7 +14,8 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 function solidFill(theme, fill) {
   if (!fill) return null;
   if (typeof fill === "string") return resolveColor(theme, fill);
-  if (fill.type === "gradient" || fill.type === "image") return null;
+  // 严格官方形态：对象必须 {type: "solid", color}；渐变/图片/旧 {color} 形态均不支持
+  if (fill.type !== "solid") return null;
   return resolveColor(theme, fill.color);
 }
 
