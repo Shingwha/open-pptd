@@ -25,7 +25,7 @@ function runAttrs(s) {
   if (s.bold) attrs.b = "1";
   if (s.italic) attrs.i = "1";
   if (s.underline) attrs.u = "sng";
-  if (s.strike) attrs.strike = "sng";
+  if (s.strike) attrs.strike = "sngStrike"; // ST_TextStrikeType 合法值（"sng" 非法 → PowerPoint 判损修复）
   if (s.fontSize) attrs.sz = Math.round(s.fontSize * 100);
   if (s.letterSpacing) attrs.spc = Math.round(s.letterSpacing * 100);
   if (s.verticalAlign === "superscript") attrs.baseline = "30000";

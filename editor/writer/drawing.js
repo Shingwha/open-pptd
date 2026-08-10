@@ -178,14 +178,17 @@ export function buildLn(theme, border) {
   return el("a:ln", { w, cap: "flat", cmpd: "sng", algn: "ctr" }, kids.join(""));
 }
 
-/** 阴影 → a:effectLst。shadow: {blur, color, offset:[x,y]}。 */
+/** 阴影 → a:effectLst。shadow: {blur, color, offset:[x,y]}。
+ * CT_OuterShadowEffect 子元素 = 颜色元素本身（包 solidFill 会判损修复）；
+ * dir 为顺时针角度（向下 = 5400000），offset [x,y] 向下为正。 */
 export function buildShadow(theme, shadow) {
   if (!shadow) return "";
-  const blur = Math.round((shadow.blur ?? 6) * 12700);
   const [dx = 0, dy = 0] = shadow.offset || [0, 0];
-  const dist = Math.round(Math.hypot(dx, dy) * 12700);
-  const dir = Math.round((Math.atan2(dx, -dy) * 180) / Math.PI * 60000);
-  const fill = solidFillElement(theme, shadow.color || "#000000");
-  const attrs = { blurRad: blur, dist, dir: dir % 36000000, rotWithShape: 0 };
-  return el("a:effectLst", {}, el("a:outerShdw", attrs, fill));
+  const attrs = { rotWithShape: 0 };
+  if (shadow.blur) attrs.blurRad = Math.round(shadow.blur * 12700);
+  if (dx || dy) {
+    attrs.dist = Math.round(Math.hypot(dx, dy) * 12700);
+    attrs.dir = Math.round((Math.atan2(dy, dx) * 180) / Math.PI * 60000);
+  }
+  return el("a:effectLst", {}, el("a:outerShdw", attrs, colorElement(theme, shadow.color || "#000000")));
 }
