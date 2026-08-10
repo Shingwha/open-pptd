@@ -30,6 +30,15 @@ const faRows = Object.entries(FA_TO_BS)
   .map(([fa, bs]) => ({ fa, bs }))
   .sort((a, b) => a.fa.localeCompare(b.fa));
 
+// 一致性硬校验：FA 映射目标必须存在于本地库，否则中止（防止文档/库再次脱节）
+const badTargets = faRows.filter(({ bs }) => !(bs in ICONS));
+if (badTargets.length) {
+  console.error(`✗ FA_TO_BS 有 ${badTargets.length} 条映射指向库外图标，已中止：`);
+  for (const { fa, bs } of badTargets.slice(0, 20)) console.error(`  - ${fa} → ${bs}`);
+  console.error(`  修复：清理 editor/core/icon-name.js 中无效条目，或先在 assets/icons/ 补齐图标。`);
+  process.exit(1);
+}
+
 const lines = [];
 lines.push(`# Icon Library（本地图标库）`);
 lines.push(``);
@@ -57,7 +66,7 @@ for (const cat of CAT_ORDER) {
   lines.push(``);
   lines.push(`| name | 中文 |`);
   lines.push(`|---|---|`);
-  for (const { name, label } of items) lines.push(`| \`bs:${name}\` | ${label} |`);
+  for (const { name, label } of items) lines.push(`| \`bs:${name}\` | ${label}${ICONS[name]?.src === "fa" ? " *" : ""} |`);
   lines.push(``);
 }
 // 未列出的分类
@@ -67,10 +76,10 @@ for (const [cat, items] of byCat) {
   lines.push(``);
   lines.push(`| name | 中文 |`);
   lines.push(`|---|---|`);
-  for (const { name, label } of items) lines.push(`| \`bs:${name}\` | ${label} |`);
+  for (const { name, label } of items) lines.push(`| \`bs:${name}\` | ${label}${ICONS[name]?.src === "fa" ? " *" : ""} |`);
   lines.push(``);
 }
-lines.push(`## Font Awesome → 本地映射（${faRows.length} 条）`);
+lines.push(`## Font Awesome → 本地映射（${faRows.length} 条，全部命中本地库）`);
 lines.push(``);
 lines.push(`| FA 名 | 用法 | 本地图标 |`);
 lines.push(`|---|---|---|`);
