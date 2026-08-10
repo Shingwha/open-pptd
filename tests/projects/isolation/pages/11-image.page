@@ -1,0 +1,14 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 60, 400, 40]
+    content:
+      style: "$title"
+      text: 11 图片
+  - elementId: im1
+    elementType: image
+    bounds: [60, 140, 200, 120]
+    src: media/test.png
+    fit: {mode: cover}

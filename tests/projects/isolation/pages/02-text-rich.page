@@ -1,0 +1,18 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 60, 400, 40]
+    content:
+      style: "$title"
+      text: 02 富文本
+  - elementId: t2
+    elementType: text
+    bounds: [60, 140, 700, 120]
+    content:
+      fontSize: 17
+      text: |
+        <p><strong>加粗</strong> <em>斜体</em> <u>下划线</u> <s>删除线</s> <sup>上标</sup> <sub>下标</sub></p>
+        <p><span style="color:$primary;">主题色</span> <span style="color:#EF4444;">红色</span> <span style="font-size:24px;">大号</span></p>
+        <p style="text-align:center">居中段落</p>

@@ -1,0 +1,27 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 60, 400, 40]
+    content:
+      style: "$title"
+      text: 05 公式
+  - elementId: t2
+    elementType: text
+    bounds: [60, 140, 800, 60]
+    content:
+      fontSize: 22
+      text: '<p>勾股定理：\(a^2 + b^2 = c^2\) 得证</p>'
+  - elementId: t3
+    elementType: text
+    bounds: [60, 220, 800, 60]
+    content:
+      fontSize: 22
+      text: '<p style="text-align:center">\(\int_0^1 x^2 \mathrm{d}x = \frac{1}{3}\)</p>'
+  - elementId: t4
+    elementType: text
+    bounds: [60, 300, 800, 60]
+    content:
+      fontSize: 20
+      text: '<p>\(x = \frac{-b \pm \sqrt{b^2-4ac}}{2a}\)</p>'

@@ -51,3 +51,14 @@ tests/reference/
 ```
 
 新增测试项目：按组件建目录（如 `shape/`、`chart/`、`table/`），写 `deck.pptd` + `pages/*.page`，在此表登记一行。
+
+## 弹「修复」定位法（隔离测试）
+
+PowerPoint 打开弹修复 = 包内某处 XML 违反 schema。定位步骤：
+
+1. 运行 `node tests/isolate.mjs` —— 把 `tests/projects/isolation/` 项目**每页单独导出**为 `tests/out/iso-NN.pptx`（每页一种组件）
+2. 逐个用 PowerPoint 打开 iso 文件：**哪个弹修复，对应编号的组件类型就是问题源**
+3. 修复后跑 `node tests/package-integrity.mjs <out.pptx> <slideCount>`（rels/rId/Content_Types 一致性）+
+   `node tests/color-consistency.mjs`（颜色两端一致）回归
+
+当前隔离覆盖：text 基础/富文本/列表/链接/公式/效果/变换、icon、shape、line、image、table、chart(bar/pie)。

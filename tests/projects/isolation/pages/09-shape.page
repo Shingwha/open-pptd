@@ -1,0 +1,41 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 60, 400, 40]
+    content:
+      style: "$title"
+      text: 09 形状
+  - elementId: s1
+    elementType: shape
+    bounds: [60, 140, 160, 90]
+    shapeName: roundRect
+    adjustments: [15000]
+    fill: {type: solid, color: "$primary"}
+  - elementId: s2
+    elementType: shape
+    bounds: [250, 140, 100, 100]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+    border: {width: 2, color: "#000000"}
+  - elementId: s3
+    elementType: shape
+    bounds: [390, 140, 120, 110]
+    shapeName: star5
+    fill: {type: solid, color: "#EF4444"}
+  - elementId: s4
+    elementType: shape
+    bounds: [550, 140, 160, 90]
+    shapeName: rect
+    fill:
+      type: gradient
+      gradientType: linear
+      angle: 90
+      stops:
+        - {position: 0, color: "$primary"}
+        - {position: 1, color: "#FFFFFF"}
+    shadow:
+      blur: 8
+      color: "#00000040"
+      offset: [0, 3]

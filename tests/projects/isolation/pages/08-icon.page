@@ -1,0 +1,30 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 60, 400, 40]
+    content:
+      style: "$title"
+      text: 08 图标
+  - elementId: i1
+    elementType: icon
+    bounds: [60, 140, 64, 64]
+    iconName: "bs:lightbulb"
+    fill: {type: solid, color: "$primary"}
+  - elementId: i2
+    elementType: icon
+    bounds: [150, 140, 64, 64]
+    iconName: "fas:house"
+    fill: {type: solid, color: "$accent"}
+  - elementId: i3
+    elementType: icon
+    bounds: [240, 130, 80, 80]
+    iconName: "bs:rocket-takeoff"
+    fill:
+      type: gradient
+      gradientType: linear
+      angle: 45
+      stops:
+        - {position: 0, color: "$primary"}
+        - {position: 1, color: "$accent"}

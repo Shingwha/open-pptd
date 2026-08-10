@@ -1,0 +1,29 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 60, 400, 40]
+    content:
+      style: "$title"
+      text: 10 线条
+  - elementId: l1
+    elementType: line
+    bounds: [60, 150, 700, 2]
+    viewBox: [700, 2]
+    points: "0,1 700,1"
+    border: {style: solid, width: 1, color: "$line"}
+  - elementId: l2
+    elementType: line
+    bounds: [60, 200, 500, 150]
+    viewBox: [500, 150]
+    points: "0,150 150,20 350,130 500,0"
+    curve: smooth
+    border: {style: solid, width: 2, color: "$primary"}
+  - elementId: l3
+    elementType: line
+    bounds: [600, 200, 300, 2]
+    viewBox: [300, 2]
+    points: "0,1 300,1"
+    arrow: [null, "arrow"]
+    border: {style: solid, width: 2, color: "$accent"}

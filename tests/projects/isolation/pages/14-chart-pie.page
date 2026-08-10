@@ -1,0 +1,22 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 60, 400, 40]
+    content:
+      style: "$title"
+      text: 14 饼图
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 140, 600, 340]
+    data:
+      cols: [品类, 占比]
+      rows:
+        - [企业版, 45]
+        - [专业版, 30]
+        - [标准版, 25]
+    series:
+      - type: pie
+        encode: {category: 品类, value: 占比}
+        name: 占比

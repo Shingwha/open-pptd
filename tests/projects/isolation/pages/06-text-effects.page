@@ -1,0 +1,34 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 60, 400, 40]
+    content:
+      style: "$title"
+      text: 06 渐变与阴影
+  - elementId: t2
+    elementType: text
+    bounds: [60, 140, 600, 60]
+    content:
+      fontSize: 26
+      bold: true
+      gradient:
+        type: gradient
+        gradientType: linear
+        angle: 90
+        stops:
+          - {position: 0, color: "$primary"}
+          - {position: 1, color: "$accent"}
+      text: 渐变文字
+  - elementId: t3
+    elementType: text
+    bounds: [60, 230, 600, 60]
+    content:
+      fontSize: 26
+      color: "#2563EB"
+      shadow:
+        blur: 8
+        color: "#00000066"
+        offset: [0, 3]
+      text: 阴影文字

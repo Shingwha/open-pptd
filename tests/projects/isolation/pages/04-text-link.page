@@ -1,0 +1,16 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 60, 400, 40]
+    content:
+      style: "$title"
+      text: 04 超链接
+  - elementId: t2
+    elementType: text
+    bounds: [60, 140, 700, 80]
+    content:
+      fontSize: 18
+      text: |
+        <p>访问 <a href="https://www.kimi.com">Kimi 官网</a> 与 <a href="mailto:test@example.com">发邮件</a></p>

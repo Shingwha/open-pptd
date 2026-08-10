@@ -1,0 +1,17 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 60, 400, 40]
+    content:
+      style: "$title"
+      text: 12 表格
+  - elementId: tb1
+    elementType: table
+    bounds: [60, 140, 800, 220]
+    rows:
+      - [产品线, 一季度, 二季度, 三季度]
+      - [企业版, 128, 156, 189]
+      - [专业版, 86, 92, 105]
+      - [标准版, 45, 52, 61]
