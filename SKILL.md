@@ -12,11 +12,11 @@ open-pptd is a presentation creation and export skill built around the PPTD form
 2. the matching locally generated `.pptx`, with font embedding enabled and fade slide transitions applied by default.
 
 ## The pptd format
-The .pptd format is a simplified abstraction layer over OOXML that follows basic YAML syntax. This abstraction preserves the core content of OOXML (theme, page layout, element positions and definitions, etc.) while removing complex nesting logic such as Masters; every page is self-contained — what you see is what you get. Read `references/official/pptd.md` for the complete definition of this DSL.
+The .pptd format is a simplified abstraction layer over OOXML that follows basic YAML syntax. This abstraction preserves the core content of OOXML (theme, page layout, element positions and definitions, etc.) while removing complex nesting logic such as Masters; every page is self-contained — what you see is what you get. Read `references/pptd.md` for the complete definition of this DSL.
 
 ## 实现能力范围（重要约束）
 
-1. **格式基线**：严格按 `references/official/pptd.md` 规范实现（该规范定义了 PPTD v2 的全部格式）；导出目标为 PowerPoint 可无修复打开、渲染与编辑器预览一致的 PPTX。
+1. **格式基线**：严格按 `references/pptd.md` 规范实现（该规范定义了 PPTD v2 的全部格式）；导出目标为 PowerPoint 可无修复打开、渲染与编辑器预览一致的 PPTX。
 2. **导出链路**：使用本项目本地导出器 `node bin/open-pptd.js export <deck.pptd> [-o <out.pptx>]`（自研 writer，无浏览器依赖）。
 3. **在线浏览/编辑**：`node bin/open-pptd.js serve --project <项目目录>` → 浏览器打开本地编辑器（自研），可预览/编辑/导出。
 4. **不支持 pptx → pptd 转换**：本实现没有「导入现有 .pptx 转成 .pptd 项目」的能力。编辑/复刻类任务只能从 .pptd 项目出发（用户提供或新建）。如需处理用户上传的 .pptx：解包查看其内容作为参考（配色/布局/文案），然后在 .pptd 项目中重建，不承诺逐元素还原。
@@ -24,12 +24,12 @@ The .pptd format is a simplified abstraction layer over OOXML that follows basic
 6. **公式**：富文本支持 LaTeX 公式 `\(...\)`（行内/独占段/整框），导出为 PowerPoint 原生可编辑公式（mc:AlternateContent + a14:m）。
 7. **图标**：`iconName` 格式 `style:name`，支持 `fas:`/`far:`/`fab:`（Font Awesome 语义，映射到本地图标库）与 `bs:`（本库扩展命名空间）；未知图标导出时跳过。
 8. **主题**：无预设主题库；每次生成时根据 PPT 场景特色直接写 `deck.theme`（colors/textStyles/tableStyles）+ 页面 `$key` 引用（主题 = 生成时一次性设计决策）。
-9. **字体**：默认 `MiSans`，支持 `references/official/fonts.md` 所列字体；导出默认嵌入字体（`--no-embed-fonts` 关闭）。
+9. **字体**：默认 `MiSans`，支持 `references/fonts.md` 所列字体；导出默认嵌入字体（`--no-embed-fonts` 关闭）。
 
 ## PPT production workflow
 
 ### step1. Read the context thoroughly
-Read **all files uploaded by the user**, the provided URLs, and the pptd format guide `references/official/pptd.md` to fully understand the user's requirements.
+Read **all files uploaded by the user**, the provided URLs, and the pptd format guide `references/pptd.md` to fully understand the user's requirements.
 
 ### step2. Understand the user's requirements
 Understand the user's requirements based on the context:
@@ -57,7 +57,7 @@ Understand the user's requirements based on the context:
 
 ### step3. Generate the presentation based on the user's requirements
 
-Before generating, first read `references/official/pptd.md` to understand the pptd format definition and constraints.
+Before generating, first read `references/pptd.md` to understand the pptd format definition and constraints.
 
 **主题决策（每次生成必做）**：根据场景特色（行业/受众/用途）确定配色与字体 → 写入 `deck.pptd` 的 `theme`（colors/textStyles/tableStyles）+ 页面元素用 `$key` 引用；不要引用不存在的 `$key`。
 
@@ -74,14 +74,14 @@ Before generating, first read `references/official/pptd.md` to understand the pp
 #### Generating a PPT
 When generating a PPT, adopt different production approaches for different user [design directions]
 ##### Self-directed design
-1. Read the design guide `references/official/slides_categories.md`, and read the scenario document corresponding to the user's query
+1. Read the design guide `references/slides_categories.md`, and read the scenario document corresponding to the user's query
 2. Produce the presentation based on the above
 
 #### Generating content in other formats
-- When the user explicitly asks for an infographic, poster, or a highly visual single-page design, read `references/official/general-poster.md` and implement it as a single-page or few-page editable PPTD; when the user only asks for an image, still build it with PPTD first, then output the image via screenshot or rendering. Do not load this reference file for ordinary PPT requests.
+- When the user explicitly asks for an infographic, poster, or a highly visual single-page design, read `references/general-poster.md` and implement it as a single-page or few-page editable PPTD; when the user only asks for an image, still build it with PPTD first, then output the image via screenshot or rendering. Do not load this reference file for ordinary PPT requests.
 
 ##### Design system
-1. Read the general constraints section of the `references/official/slides_categories.md` guide, and read the scenario document corresponding to the user's query as the design foundation
+1. Read the general constraints section of the `references/slides_categories.md` guide, and read the scenario document corresponding to the user's query as the design foundation
 2. Read the user-provided design system document as the presentation style. It is strictly forbidden to reference or mix in other design styles
 3. Produce the presentation with reference to the above
 
@@ -97,7 +97,7 @@ When generating a PPT, adopt different production approaches for different user 
 2. Produce the presentation using the reference file's style characteristics. You are encouraged to reuse illustrations, fonts, font-size hierarchies, elements, etc. from the original pdf/url
 
 ### step4. PPT validation
-1. Validate the generated pptd against the format definition in `references/official/pptd.md` (required fields, types, bounds, theme tokens, resource paths, etc.) and repair issues over multiple rounds
+1. Validate the generated pptd against the format definition in `references/pptd.md` (required fields, types, bounds, theme tokens, resource paths, etc.) and repair issues over multiple rounds
 2. Visual review with exported page images — **required before PPTX export when the model supports image input (multimodal)**:
    - Start the local editor and preview every page in the browser:
      ```bash

@@ -1,7 +1,7 @@
 // ============================================================================
 // theme.js — 主题令牌系统（严格对齐官方 PPTD Theme）
 // ----------------------------------------------------------------------------
-// 官方结构（references/official/pptd.md §3 Theme）：
+// 官方结构（references/pptd.md §3 Theme）：
 //   Theme = { colors: Record<string, Color>, textStyles: Record<string, TextStyleConfig>,
 //             tableStyles: Record<string, TableStyleConfig> }
 // 原则：任何元素未显式设置的样式，一律从主题取；局部只存"覆盖"。

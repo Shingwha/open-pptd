@@ -1,7 +1,7 @@
 # open-pptd v2 — PPTD 编辑器 + PPTX 导出器
 
 本地运行的演示文稿工具链：**网页编辑器 → PPTD 项目 → 标准 PPTX 导出**。
-严格对照官方 PPTD 格式（Kimi 官方编辑器同源，规范见 `references/official/pptd.md`），
+严格对照官方 PPTD 格式（Kimi 官方编辑器同源，规范见 `references/pptd.md`），
 导出的 PPTX 与 PowerPoint 原生结构一致（打开零修复弹窗、渲染与预览一致）。
 
 - **零依赖**：仅需 Node.js v18+，无需 npm install
@@ -23,7 +23,7 @@ node bin/open-pptd.js serve --project my-deck --port 55173
 # 浏览器打开启动时打印的链接
 ```
 
-格式规范：`references/official/pptd.md`（字段表/约束/示例，**一切格式决策的唯一依据**）、`shapes.md`（187 种预置形状）、`fonts.md`（字体清单）。
+格式规范：`references/pptd.md`（字段表/约束/示例，**一切格式决策的唯一依据**）、`shapes.md`（187 种预置形状）、`fonts.md`（字体清单）。
 
 ## 目录结构
 

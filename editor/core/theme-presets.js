@@ -1,7 +1,7 @@
 // ============================================================================
 // theme-presets.js — 内置默认主题（纯数据无逻辑）
 // ----------------------------------------------------------------------------
-// 结构严格对齐官方 Theme（references/official/pptd.md §3 Theme）：
+// 结构严格对齐官方 Theme（references/pptd.md §3 Theme）：
 //   { colors: Record<string, Color>, textStyles: Record<string, TextStyleConfig>,
 //     tableStyles: Record<string, TableStyleConfig> }
 // 无官方之外的顶层字段。主题 = 生成时一次性设计决策（对齐 Kimi skill 工作流），
@@ -18,7 +18,7 @@
 // ============================================================================
 // theme-presets.js — 内置主题数据（默认主题 + 17 套预设，纯数据无逻辑）
 // ----------------------------------------------------------------------------
-// 结构严格对齐官方 Theme（references/official/pptd.md §3 Theme）：
+// 结构严格对齐官方 Theme（references/pptd.md §3 Theme）：
 //   { colors: Record<string, Color>, textStyles: Record<string, TextStyleConfig>,
 //     tableStyles: Record<string, TableStyleConfig> }
 // 无官方之外的顶层字段（name 等 UI 元数据放在 theme.js 的 THEME_NAMES 映射表）。

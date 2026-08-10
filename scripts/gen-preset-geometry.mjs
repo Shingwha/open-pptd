@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 // ---------------------------------------------------------------------------
-// 中文标签 + 菜单分类（对齐 references/official/shapes.md 的 177 种 + 连接线 10 种）
+// 中文标签 + 菜单分类（对齐 references/shapes.md 的 177 种 + 连接线 10 种）
 // ---------------------------------------------------------------------------
 const LABELS = {
   // 基本形状

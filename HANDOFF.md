@@ -2,7 +2,7 @@
 
 > 最后更新：2026-08-10（阶段 A ✅ + C1 ✅ + B ✅ + C2 ✅ + **C3 第三批 + chartEx 装配根因 + 第四批（渐变 fill 导出 + 全属性测试页 20/21）**，下一步 **C3 验证闭环（用户验证 11/12/17/19/20/21 页）**）
 > **本文件是唯一对接文档**（上下文已清空，仅靠本文继续开发）。
-> 一切格式决策以 `references/official/pptd.md`（官方规范）为唯一依据；
+> 一切格式决策以 `references/pptd.md`（官方规范）为唯一依据；
 > 结构疑问先查 `tests/projects/*/reference/` 的权威参考文件（用户 PowerPoint 手工 / python-pptx 官方库生成）。
 > **工作流（2026-08-10 定）**：哪页打不开/样式不对 → 引导用户创建对应 pptx 参考（含目标元素改动）→ 解包比对 XML → 修复 → 回归。用户参考文件在桌面（见 §3）。
 
@@ -89,7 +89,7 @@ editor/
   interaction/dialogs/  table-editor（网格+样式+合并 UI）、chart-editor、icon-editor
   app/                  state/view/io/toolbar/font-manager
 assets/icons/           Bootstrap Icons 源（192 个）
-references/official/    pptd.md（权威规范）/ shapes.md / fonts.md / slides_categories.md
+references/    pptd.md（权威规范）/ shapes.md / fonts.md / slides_categories.md
 references/font-embedding.md  字体嵌入实现手册（COM 实测）
 scripts/                gen-preset-geometry.mjs / gen-icons.mjs / gen-reference-shapes.py
 tests/                  见 §4
@@ -191,9 +191,9 @@ tests/                  见 §4
 
 | 路径 | 权威级别 | 内容 |
 |---|---|---|
-| `references/official/pptd.md` | **官方规范（唯一依据）** | 全部格式定义。关键章节：§3 Theme/TextStyleConfig/TableStyleConfig（374-455 行）、Table/Cell（914-1007 行）、Chart 13 类型（1009-1500 行）、§5.2 Color Mechanism、§5.3 字段适用性表 |
-| `references/official/shapes.md` | 官方 | 177 种预置形状 + 调整值 |
-| `references/official/fonts.md` | 官方 | 26 款字体清单（默认 MiSans） |
+| `references/pptd.md` | **官方规范（唯一依据）** | 全部格式定义。关键章节：§3 Theme/TextStyleConfig/TableStyleConfig（374-455 行）、Table/Cell（914-1007 行）、Chart 13 类型（1009-1500 行）、§5.2 Color Mechanism、§5.3 字段适用性表 |
+| `references/shapes.md` | 官方 | 177 种预置形状 + 调整值 |
+| `references/fonts.md` | 官方 | 26 款字体清单（默认 MiSans） |
 | `references/font-embedding.md` | 实测（PowerPoint COM） | 字体嵌入协议（金标准 `ppt-fonts.pptx`） |
 | `tests/projects/text/reference/test-text.pptx` | **用户 PowerPoint 手工** | 文字官方结构基准 |
 | `tests/projects/shape/reference/test-shape.pptx` | **用户 PowerPoint 手工** | 25 形状 + 手绘 custGeom |
