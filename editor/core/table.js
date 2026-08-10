@@ -75,7 +75,7 @@ function findCover(grid, r, c) {
       const cs = g.cell.colSpan || 1;
       if (g.r + rs > r && g.c <= c && c < g.c + cs) {
         if (g.r === r && g.c === c) continue; // 自身位置不是覆盖
-        return g.cell;
+        return { cell: g.cell, r: g.r, c: g.c };
       }
     }
   }
@@ -214,7 +214,10 @@ export function estimateLines(text, colWidthPt, fontSize = TABLE_FONT_SIZE) {
  */
 export function estimateTableLayout(el) {
   const rows = Array.isArray(el.rows) ? el.rows : [];
-  const cols = rows[0]?.length || 1;
+  // 列数优先用 columnWidths（合并后 rows[0] 可能变短，行长度不可靠）
+  const cols = Array.isArray(el.columnWidths) && el.columnWidths.length
+    ? el.columnWidths.length
+    : (rows[0]?.length || 1);
   const boundsW = Array.isArray(el.bounds) ? el.bounds[2] : 400;
   const colWs =
     Array.isArray(el.columnWidths) && el.columnWidths.length === cols

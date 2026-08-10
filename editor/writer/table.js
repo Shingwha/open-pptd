@@ -4,17 +4,24 @@
 // 样式消费严格按官方继承链（Style Priority §1.2 表格单元格）：
 //   富文本标签 > span 内联 > 段落 > Cell 内联字段 > Cell.textStyle 引用 >
 //   位置分类（rowOverColumn 仲裁）> bodyStyles 循环 > cellStyle 基底 > 默认
-// 填充链：cell.fill > 分类 fill > cellStyle fill > Table.fill > 透明
-// 边框：BorderSpec（四边独立，null=无）；CT_TableCellProperties 的 lnL/lnR/lnT/lnB
-//   直接承载 CT_LineProperties（w/cap/cmpd/algn 属性在 lnL 上，不能包 a:ln）
+//
+// 合并单元格（PowerPoint 原生结构，对照用户手工合并文件）：
+//   - rowSpan/colSpan 是 <a:tc> 的属性（不是 tcPr！）
+//   - 被合并覆盖的位置**不省略**，输出空占位格 <a:tc vMerge="1">（被行合并
+//     覆盖）或 hMerge="1"（被列合并覆盖），斜向覆盖两者都写
+//   - 每行 tc 数量必须与 gridCol 数量一致（完整网格）
+//   PPTD YAML 层的省略规则由 tableGrid 展开还原（core/table.js）
+//
+// 边框：CT_TableCellProperties 的 lnL/lnR/lnT/lnB 直接承载 CT_LineProperties
+//   （w/cap/cmpd/algn 属性在 lnL 上，不能包 a:ln）
 // 对齐：cell.align > 分类 align > 官方默认 [center, middle]
 // ============================================================================
 
 import { el, escAttr } from "./xml.js";
 import { buildParagraph } from "./text.js";
 import { parseRichText } from "../core/richtext.js";
-import { resolveTableStyle, resolveTableCellStyle, resolveTextStyle, resolveFont } from "../core/theme.js";
-import { estimateTableLayout } from "../core/table.js";
+import { resolveTableStyle, resolveTableCellStyle, resolveTextStyle } from "../core/theme.js";
+import { estimateTableLayout, tableGrid } from "../core/table.js";
 import { colorElement, buildFill } from "./drawing.js";
 
 const V_ANCHOR = { top: "t", middle: "ctr", bottom: "b" };
@@ -51,15 +58,17 @@ export function tableXml(theme, tableEl, ctx) {
   const colWs = columnWidths;
   const rowCount = rows.length;
   const colCount = colWs.length;
+  // PPTD 省略式 rows → 完整网格（covered 位输出 vMerge/hMerge 占位格）
+  const { grid } = tableGrid(rows, colCount);
 
   const gridCols = colWs
     .map((cw) => el("a:gridCol", { w: Math.round(Math.max(0.01, cw) * w * 12700) }))
     .join("");
-  const trs = rows
-    .map((row, r) => {
+  const trs = grid
+    .map((gRow, r) => {
       const rh = rowHeights[r] != null ? rowHeights[r] : 26;
-      const tcs = row
-        .map((cell, c) => tcXml(theme, cell, r, c, ts, rowCount, colCount, tableEl.fill))
+      const tcs = gRow
+        .map((g, c) => (g.covered ? mergePlaceholderTc(theme, g, r, c, ts, rowCount, colCount) : tcXml(theme, g.cell, r, c, ts, rowCount, colCount, tableEl.fill)))
         .join("");
       return el("a:tr", { h: Math.round(Math.max(0.01, rh) * 12700) }, tcs);
     })
@@ -87,6 +96,26 @@ export function tableXml(theme, tableEl, ctx) {
       el("a:graphic", {}, el("a:graphicData", { uri: "http://schemas.openxmlformats.org/drawingml/2006/table" }, tbl)),
     ].join(""))
   );
+}
+
+/** 单元格 tcPr 公共部分（边框 + 填充 + 对齐；rowSpan/colSpan 不在 tcPr）。 */
+function tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, cell, cellAlign) {
+  const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
+  const kids = [];
+  // OOXML 严格顺序：tcPr 内 lnL/lnR/lnT/lnB 必须先于填充，否则 PowerPoint 忽略边框
+  const borders = parseBorderSpec(cell?.border ?? s.border ?? { style: "solid", width: 1, color: "#000000" });
+  for (const [side, dir] of [["a:lnL", 0], ["a:lnR", 1], ["a:lnT", 2], ["a:lnB", 3]]) {
+    kids.push(lnSide(theme, side, borders[dir]));
+  }
+  // 填充：单元格内联 > 分类样式 > cellStyle > Table.fill > 透明
+  const fill = cell?.fill ?? s.fill ?? (tableFill ? tableFill : null);
+  if (fill) {
+    if (fill.type === "solid" || fill.type === "gradient" || fill.type === "image") kids.push(buildFill(theme, fill));
+    else kids.push(el("a:solidFill", {}, colorElement(theme, fill)));
+  }
+  const align = cellAlign ?? s.align ?? ["center", "middle"];
+  const attrs = { marL: 45720, marR: 45720, marT: 0, marB: 0, anchor: V_ANCHOR[align[1]] || "ctr" };
+  return { xml: el("a:tcPr", attrs, kids.join("")), align, s };
 }
 
 function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill) {
@@ -120,23 +149,43 @@ function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill) {
     `<a:txBody><a:bodyPr anchor="${V_ANCHOR[align[1]] || "ctr"}"><a:noAutofit/></a:bodyPr>` +
     `<a:lstStyle/>${paras}</a:txBody>`;
 
-  // OOXML 严格顺序：tcPr 内 lnL/lnR/lnT/lnB 必须先于填充，否则 PowerPoint 忽略边框
-  const kids = [];
-  // 边框：单元格内联 > 分类样式 > 官方默认 {solid, 1, #000000}
-  const borders = parseBorderSpec(cell?.border ?? s.border ?? { style: "solid", width: 1, color: "#000000" });
-  for (const [side, dir] of [["a:lnL", 0], ["a:lnR", 1], ["a:lnT", 2], ["a:lnB", 3]]) {
-    kids.push(lnSide(theme, side, borders[dir]));
-  }
-  // 填充：单元格内联 > 分类样式 > cellStyle > Table.fill > 透明
-  const fill = cell?.fill ?? s.fill ?? (tableFill ? tableFill : null);
-  if (fill) {
-    if (fill.type === "solid" || fill.type === "gradient" || fill.type === "image") kids.push(buildFill(theme, fill));
-    else kids.push(el("a:solidFill", {}, colorElement(theme, fill)));
-  }
+  const tcPr = tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, cell, align).xml;
+  // rowSpan/gridSpan 是 <a:tc> 的属性（PowerPoint 原生结构；横向跨度叫 gridSpan，
+  // 不是 colSpan——写 colSpan 会被 PowerPoint 忽略，只剩 rowSpan 生效）
+  const tcAttrs = {};
+  if (cell?.rowSpan > 1) tcAttrs.rowSpan = cell.rowSpan;
+  if (cell?.colSpan > 1) tcAttrs.gridSpan = cell.colSpan;
+  return el("a:tc", tcAttrs, body + tcPr);
+}
 
-  const tcPrAttrs = { marL: 45720, marR: 45720, marT: 0, marB: 0, anchor: V_ANCHOR[align[1]] || "ctr" };
-  if (cell?.rowSpan > 1) tcPrAttrs.rowSpan = cell.rowSpan;
-  if (cell?.colSpan > 1) tcPrAttrs.colSpan = cell.colSpan;
-  const tcPr = el("a:tcPr", tcPrAttrs, kids.join(""));
-  return el("a:tc", {}, body + tcPr);
+/**
+ * 被合并覆盖的占位格（python-pptx 官方 merge 输出对照，check-table-修改后.pptx
+ * 用户手工文件验证）：
+ *   - 主格右侧同行：rowSpan=主格.rowSpan + hMerge="1"（接力覆盖下方列）
+ *   - 主格下方行首格：gridSpan=主格.colSpan + vMerge="1"（接力覆盖右侧行）
+ *   - 主格下方行其余格：hMerge="1" vMerge="1"（双从属，跨度 1×1）
+ * 内容为空 txBody；tcPr 按分类样式计算（保持边框/填充视觉连续）。
+ */
+function mergePlaceholderTc(theme, g, r, c, ts, rowCount, colCount, tableFill) {
+  const attrs = {};
+  const owner = g.owner; // {cell, r, c}：合并主格
+  const ownerCell = owner?.cell;
+  const rs = ownerCell?.rowSpan || 1;
+  const cs = ownerCell?.colSpan || 1;
+  if (owner && owner.r === r && c > owner.c) {
+    // 主格右侧同行：垂直方向仍被覆盖 → 继承 rowSpan
+    if (rs > 1) attrs.rowSpan = rs;
+    attrs.hMerge = "1";
+  } else if (owner && r > owner.r && c === owner.c) {
+    // 主格下方行首格：水平方向仍被覆盖 → 继承 gridSpan
+    if (cs > 1) attrs.gridSpan = cs;
+    attrs.vMerge = "1";
+  } else if (owner && r > owner.r && c > owner.c) {
+    // 斜向占位：双从属，跨度 1×1
+    attrs.hMerge = "1";
+    attrs.vMerge = "1";
+  }
+  const body = `<a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:endParaRPr/></a:p></a:txBody>`;
+  const tcPr = tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, null, null).xml;
+  return el("a:tc", attrs, body + tcPr);
 }
