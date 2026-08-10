@@ -188,11 +188,12 @@ export function buildChartOption(theme, el) {
   const axes = cartesianAxes(el, cats, { horizontal, percentMax: stackedPercent });
 
   if (primary === "scatter" || primary === "bubble") {
+    const { axisColor, gridColor } = chartStyleColors(theme);
     return {
       ...common,
       tooltip: { trigger: "item", formatter: (p) => `${p.seriesName}<br/>x: ${p.value[0]}<br/>y: ${p.value[1]}${p.value[2] != null ? `<br/>size: ${p.value[2]}` : ""}` },
-      xAxis: { type: "value", axisLine: { lineStyle: { color: axes.xAxis.axisLine.lineStyle.color } }, splitLine: { lineStyle: { color: axes.xAxis.splitLine.lineStyle.color } }, axisLabel: AXIS_TEXT },
-      yAxis: { type: "value", axisLine: { lineStyle: { color: axes.yAxis.axisLine.lineStyle.color } }, splitLine: { lineStyle: { color: axes.yAxis.splitLine.lineStyle.color } }, axisLabel: AXIS_TEXT },
+      xAxis: { type: "value", axisLine: { lineStyle: { color: axisColor } }, splitLine: { lineStyle: { color: gridColor } }, axisLabel: AXIS_TEXT },
+      yAxis: { type: "value", axisLine: { lineStyle: { color: axisColor } }, splitLine: { lineStyle: { color: gridColor } }, axisLabel: AXIS_TEXT },
       series: series.map((s) => {
         const data = (s._values.x ?? []).map((xv, j) => {
           const pt = [Number(xv ?? 0), Number(s._values.y?.[j] ?? 0)];
