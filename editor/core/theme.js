@@ -115,7 +115,8 @@ export function mergeFonts(theme, fonts) {
   if (!fonts || typeof fonts !== "object") return theme;
   const v1Slots = ["latin", "ea", "title", "subtitle", "body", "caption", "quote", "table", "chart"];
   for (const key of v1Slots) {
-    if (fonts[key] != null) {
+    // 仅字符串值才是 v1 遗留（v1 槽 = 字体名字符串）；v2 资源声明是对象，不警告
+    if (typeof fonts[key] === "string") {
       console.warn(`[theme] deck.fonts.${key} 组件槽已废弃（官方用 theme.textStyles.<key>.fontFamily），已忽略`);
     }
   }
