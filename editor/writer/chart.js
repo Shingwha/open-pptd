@@ -894,15 +894,36 @@ function buildHierarchyRows(el, s) {
   return { depth, leafRows };
 }
 
-/** cx:strDim / cx:numDim 生成（lvl pt 每行一个值；f 引用完整 Sheet 列范围）。 */
-function cxDimXml(type, colLetter, values, formatCode, rowCount) {
+/**
+ * cx:strDim（多级分类，一个 strDim 含全部 lvl；f 引用整段列范围——对照用户
+ * chartEx1：<cx:strDim type="cat"><cx:f>Sheet1!$A$2:$C$17</cx:f><cx:lvl>×N）。
+ * levelValues: 每级一个数组（最深级在前，对应最左列）。
+ */
+function cxStrDimXml(colStart, colEnd, levelValues, rowCount) {
+  const f = rowCount > 1
+    ? `Sheet1!$${colStart}$2:$${colEnd}$${rowCount}`
+    : `Sheet1!$${colStart}$1:$${colEnd}$1`;
+  const lvls = levelValues
+    .map((vals) =>
+      `<cx:lvl ptCount="${vals.length}">` +
+      vals.map((v, i) => `<cx:pt idx="${i}">${esc(String(v ?? ""))}</cx:pt>`).join("") +
+      `</cx:lvl>`)
+    .join("");
+  return `<cx:strDim type="cat"><cx:f>${f}</cx:f>${lvls}</cx:strDim>`;
+}
+
+/** cx:numDim（type: "val" 数值 / "size" 面积——treemap/sunburst 用 size）。 */
+function cxNumDimXml(dimType, colLetter, values, formatCode, rowCount) {
+  const f = rowCount > 1
+    ? `Sheet1!$${colLetter}$2:$${colLetter}$${rowCount}`
+    : `Sheet1!$${colLetter}$1:$${colLetter}$1`;
   const lvl =
     `<cx:lvl ptCount="${values.length}"${formatCode ? ` formatCode="${formatCode}"` : ""}>` +
     values.map((v, i) => `<cx:pt idx="${i}">${esc(String(v ?? ""))}</cx:pt>`).join("") +
     `</cx:lvl>`;
-  const f = rowCount > 1 ? `Sheet1!$${colLetter}$2:$${colLetter}$${rowCount}` : `Sheet1!$${colLetter}$1:$${colLetter}$1`;
-  return `<cx:${type}Dim type="${type === "str" ? "cat" : type === "num" ? "val" : "size"}"><cx:f>${f}</cx:f>${lvl}</cx:${type}Dim>`;
+  return `<cx:numDim type="${dimType}"><cx:f>${f}</cx:f>${lvl}</cx:numDim>`;
 }
+
 
 /**
  * chartEx 部件（waterfall/treemap/sunburst）。
@@ -921,6 +942,7 @@ function buildChartExParts(theme, chartEl, chartIndex) {
   let dims = "";
   let layoutPr = "";
   let dataLabels = "";
+  let sizeLetter = "B"; // treemap/sunburst 的 size 列（层级列后一列），series tx 引用
   const labels = resolveDataLabels(chartEl, s, type);
 
   if (type === "waterfall") {
@@ -933,8 +955,8 @@ function buildChartExParts(theme, chartEl, chartIndex) {
       ? rows.map((r, i) => (r[isTotalCol] === true ? i : -1)).filter((i) => i >= 0)
       : [];
     dims =
-      cxDimXml("str", "A", cats, null, rowCount) +
-      cxDimXml("num", "B", vals, "G/通用格式", rowCount);
+      cxStrDimXml("A", "A", [cats], rowCount) +
+      cxNumDimXml("val", "B", vals, "G/通用格式", rowCount);
     layoutPr = subIdx.length
       ? `<cx:layoutPr><cx:subtotals>${subIdx.map((i) => `<cx:idx val="${i}"/>`).join("")}</cx:subtotals></cx:layoutPr>`
       : `<cx:layoutPr><cx:aggregation/></cx:layoutPr>`;
@@ -953,9 +975,10 @@ function buildChartExParts(theme, chartEl, chartIndex) {
     }
     const sizes = leafRows.map((x) => Number(x.value ?? 0));
     const colLetters = depth === 1 ? ["A"] : ["A", "B", "C", "D", "E", "F", "G", "H"].slice(0, depth);
-    const sizeLetter = String.fromCharCode(65 + depth); // 层级列后一列（A=65；depth 3 → D）
-    dims = levelCols.map((lv, i) => cxDimXml("str", colLetters[i], lv, null, rowCount)).join("") +
-      cxDimXml("num", sizeLetter, sizes, "G/通用格式", rowCount);
+    sizeLetter = String.fromCharCode(65 + depth); // 层级列后一列（A=65；depth 3 → D）
+    dims =
+      cxStrDimXml("A", colLetters[depth - 1], levelCols, rowCount) +
+      cxNumDimXml("size", sizeLetter, sizes, "G/通用格式", rowCount);
     sheetOrder = []; // 层级数据由 buildChartExXlsx 专建（不走原列重排）
     layoutPr = type === "treemap" ? `<cx:layoutPr><cx:parentLabelLayout val="overlapping"/></cx:layoutPr>` : "";
     dataLabels = labels
@@ -975,7 +998,7 @@ function buildChartExParts(theme, chartEl, chartIndex) {
     ? `<cx:title pos="t" align="ctr" overlay="0"><cx:tx><cx:txData><cx:v>${esc(titleText)}</cx:v></cx:txData></cx:tx></cx:title>`
     : "";
   const legendCfg = chartEl.legend;
-  const legendXml = legendCfg !== false && type !== "heatmap"
+  const legendXml = legendCfg === true || typeof legendCfg === "object"
     ? `<cx:legend pos="${typeof legendCfg === "object" && legendCfg.position ? legendCfg.position : "t"}" align="ctr" overlay="0"/>`
     : "";
 
@@ -983,7 +1006,7 @@ function buildChartExParts(theme, chartEl, chartIndex) {
   let axes = "";
   if (type === "waterfall") {
     axes =
-      `<cx:axis id="0"><cx:catScaling gapWidth="${0.2}"/><cx:tickLabels/></cx:axis>` +
+      `<cx:axis id="0"><cx:catScaling gapWidth="0.5"/><cx:tickLabels/></cx:axis>` +
       `<cx:axis id="1"><cx:valScaling/><cx:majorGridlines/><cx:tickLabels/></cx:axis>`;
   }
 
@@ -998,7 +1021,7 @@ function buildChartExParts(theme, chartEl, chartIndex) {
     titleXml +
     `<cx:plotArea><cx:plotAreaRegion>` +
     `<cx:series layoutId="${type}" uniqueId="${guid()}">` +
-    `<cx:tx><cx:txData><cx:f>Sheet1!$B$1</cx:f><cx:v>${esc(s.name)}</cx:v></cx:txData></cx:tx>` +
+    `<cx:tx><cx:txData><cx:f>Sheet1!$${type === "waterfall" ? "B" : sizeLetter}$1</cx:f><cx:v>${esc(s.name)}</cx:v></cx:txData></cx:tx>` +
     dataLabels +
     `<cx:dataId val="0"/>` +
     layoutPr +
