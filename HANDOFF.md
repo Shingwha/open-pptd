@@ -280,18 +280,24 @@ node tests/color-consistency.mjs tests/projects/table   # 颜色一致性可指�
 
 **验证状态**：09 无修复弹窗 ✅（晚二轮）；06 气泡宽表修复 ✅（晚三轮，用户"差不太多了"）；11/12/17/19 待确认显示细节；20/21 大致看过无异常；10/13（heatmap/sankey）导出空白为预期，方案待定。
 
-### 5.2 D：主题体系重建 + 编辑器 UX（暂缓）
+### 5.2 D：主题——**不做主题体系/编辑器 UX，对齐 Kimi skill workflow（决策 2026-08-10）**
 
-- [ ] 以官方格式重建演示主题（原 themes/ 10 套已删，deck.pptd + pages/ + tableStyles）
-- [ ] 编辑器主题 UX：toolbar 下拉只换 colors 预设（17 套）→ 考虑主题编辑对话框（colors/textStyles/tableStyles 可视化编辑 → 写官方 theme 对象）
-- [ ] 画廊取舍（根入口已重定向编辑器）
+**决策依据**（已读 `C:/Users/法法/Desktop/open-kimi-ppt/SKILL.md` 全流程分析）：
+- Kimi 的"主题体系"= **格式层 Theme + $key 引用 + 继承链**（pptd.md §3）——v2 已完整实现（normalizeTheme/resolveColor/resolveTextStyle/resolveTableStyle/17 套 colors 预设/tableStyles 官方继承链）
+- Kimi 的 skill 工作流**没有主题切换/主题库/主题面板**：主题是生成时的一次性设计决策（step2 设计方向 → step3 直接写 deck.theme + 每页显式色/$key；step4/5 验证导出不碰主题 UI；export_pptx.py 仅 SDK bridge 加载 deck → 官方 writer 消费 theme）
+- 结论：**取消**编辑器主题 UX（toolbar 下拉/主题编辑对话框/画廊），不重建 themes/ 10 套
+
+**改为（小任务，随 v2 SKILL.md 一起做）**：
+- [ ] v2 SKILL.md 工作流写入"主题决策"步骤：生成前判断设计方向（自研/设计系统/模板/风格迁移）→ 根据 PPT 场景特色定配色+字体（参考 slides_categories 场景指南）→ 生成时直接写 deck.theme.colors/textStyles + 页面 $key 引用
+- [ ] theme-presets.js 17 套 colors 保留（SKILL 取色参考/用户手改 YAML 用）；默认主题兜底（MiSans + 默认 colors）已有
+- 对齐基线：`C:/Users/法法/Desktop/open-kimi-ppt/`（SKILL.md + reference/ + scripts/，v2 完成后 SKILL.md 引用其工作流，只改编辑器/导出章节）
 
 ### 5.3 清理遗留（随各阶段推进）
 
 - [ ] **删除 v1 兼容代码**：`writer/drawing.js` buildFill 的 `fill.color` 旧形态分支（消费端已全写 `{type: solid, color}`）；`renderer/shape.js` 旧形态兼容；`preset-geometry.js` 的 `shapePathD` 兼容接口（菜单图标用，可改走 shapePaths）
 - [ ] **废弃 `elementType: formula`**：`types/formula.js` + `renderer/formula.js`（富文本 `\(...\)` 已完全替代；`writer/formula.js` 的 injectRunStyle 是公式 run 样式注入，逻辑并入 richtext 导出后删除）
 - [ ] **字体嵌入验证**：deck.fonts 资源表扩展 + writer/font.js 管线已就绪无测试覆盖——加带嵌入字体的测试项目（参照 font-embedding.md）
-- [ ] **SKILL.md**：v2 完成后引用 Kimi 官方标准 skill（open-kimi-ppt），只改编辑器/导出章节
+- [ ] **SKILL.md**：v2 完成后对齐 `C:/Users/法法/Desktop/open-kimi-ppt/SKILL.md` 工作流（step1-5：读上下文/定需求/生成/验证/交付），只改编辑器/导出章节；主题决策步骤写入（见 §5.2）
 - [ ] 文档同步：README/HANDOFF 随阶段更新
 
 ---
