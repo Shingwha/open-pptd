@@ -141,6 +141,8 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
 }
 
 function relType(type) {
+  // 完整 URL（如 chartEx 关系类型）原样输出；相对名拼 officeDocument 前缀
+  if (String(type).includes("://")) return type;
   const base = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/";
   return base + type;
 }

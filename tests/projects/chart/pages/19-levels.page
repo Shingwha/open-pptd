@@ -1,0 +1,38 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 500, 40]
+    content:
+      style: "$title"
+      text: treemap levels（显示层级裁剪）
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 420, 380]
+    data:
+      cols: [节点, 值, 父]
+      rows:
+        - [总部, 100, null]
+        - [研发, 40, 总部]
+        - [市场, 35, 总部]
+        - [运营, 25, 总部]
+        - [算法, 20, 研发]
+        - [工程, 20, 研发]
+        - [推广, 15, 市场]
+        - [品牌, 20, 市场]
+    series:
+      - type: treemap
+        encode: {category: 节点, value: 值, parent: 父}
+        name: 组织
+        levels: 2
+        fill: "#2563EB"
+        dataLabels: {content: category}
+  - elementId: c2
+    elementType: text
+    bounds: [500, 120, 420, 60]
+    content:
+      text: "levels: 2 → 只显示「总部」与一级子节点，二级子节点聚合到一级（算法+工程 → 研发）。"
+      style:
+        color: "$muted"
+        fontSize: 12

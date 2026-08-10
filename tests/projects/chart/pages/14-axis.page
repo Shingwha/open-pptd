@@ -1,0 +1,49 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 500, 40]
+    content:
+      style: "$title"
+      text: 轴配置全字段 + 虚线 + 图表框
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 520, 380]
+    data:
+      cols: [月份, 销量, 利润]
+      rows:
+        - [1月, 120, 30]
+        - [2月, 200, 55]
+        - [3月, 150, 40]
+        - [4月, 260, 70]
+        - [5月, 180, 45]
+    series:
+      - type: line
+        encode: {x: 月份, y: 销量}
+        name: 销量
+        lineColor: "#2563EB"
+        lineStyle: dash
+        width: 2
+        marker: {shape: circle, size: 4}
+      - type: line
+        encode: {x: 月份, y: 利润}
+        name: 利润
+        lineColor: "#F59E0B"
+        lineStyle: dot
+        width: 2
+    xAxis:
+      title: 时间（月）
+      axisLine: {color: "#94A3B8", width: 1}
+    yAxis:
+      min: 0
+      max: 300
+      title: 金额（万元）
+      label: {numberFormat: "#,##0", fontSize: 9, color: "$muted"}
+      axisLine: {color: "#94A3B8", width: 1, arrow: true}
+      gridLine: {style: dash, color: "#CBD5E1", width: 0.5}
+    title: {text: 轴配置全字段, fontSize: 16, color: "$primary"}
+    fill: {type: solid, color: "#F8FAFC"}
+    border: {color: "#94A3B8", width: 1}
+    shadow: {blur: 8, color: "#00000022", offset: [3, 3]}
+    legend: {position: bottom, fontSize: 10}

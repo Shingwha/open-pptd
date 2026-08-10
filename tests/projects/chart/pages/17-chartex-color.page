@@ -1,0 +1,66 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 500, 40]
+    content:
+      style: "$title"
+      text: chartEx 三分类色 + 层级色
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 460, 380]
+    data:
+      cols: [项目, 金额, isTotal]
+      rows:
+        - [期初, 100, true]
+        - [收入, 50, false]
+        - [成本, -30, false]
+        - [税费, -10, false]
+        - [利润, 110, true]
+    series:
+      - type: waterfall
+        encode: {x: 项目, y: 金额, isTotal: isTotal}
+        name: 现金流
+        totalBars: {fill: "#1E3A5F", border: {color: "#0F2440", width: 1}}
+        increaseBars: {fill: "#34A853", border: {color: "#1E7E3A", width: 1}}
+        decreaseBars: {fill: "#EA4335", border: {color: "#B3261E", width: 1}}
+        dataLabels: {content: value, fontSize: 9}
+  - elementId: c2
+    elementType: chart
+    bounds: [540, 100, 380, 380]
+    data:
+      cols: [部门, 营收, 上级]
+      rows:
+        - [华东, 45, null]
+        - [华北, 30, null]
+        - [华南, 25, null]
+        - [上海, 20, 华东]
+        - [杭州, 25, 华东]
+        - [北京, 18, 华北]
+        - [天津, 12, 华北]
+        - [广州, 15, 华南]
+        - [深圳, 10, 华南]
+    series:
+      - type: treemap
+        encode: {category: 部门, value: 营收, parent: 上级}
+        name: 营收
+        fill: ["#2563EB", "#F59E0B", "#10B981"]
+        dataLabels: {content: category}
+  - elementId: c3
+    elementType: chart
+    bounds: [540, 100, 380, 180]
+    data:
+      cols: [层级, 数值, 父级]
+      rows:
+        - [研发, 40, null]
+        - [市场, 35, null]
+        - [运营, 25, null]
+        - [算法, 20, 研发]
+        - [工程, 20, 研发]
+    series:
+      - type: sunburst
+        encode: {category: 层级, value: 数值, parent: 父级}
+        name: 分布
+        fill: ["#8B5CF6", "#EC4899", "#14B8A6"]
+        dataLabels: {content: category}

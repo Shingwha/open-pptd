@@ -1,0 +1,52 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 500, 40]
+    content:
+      style: "$title"
+      text: dataFilter 长表分组 + pie border + levels
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 420, 380]
+    data:
+      cols: [分组, x, y, size]
+      rows:
+        - [A, 10, 30, 8]
+        - [A, 20, 50, 14]
+        - [A, 30, 40, 10]
+        - [B, 12, 60, 20]
+        - [B, 24, 80, 16]
+        - [B, 36, 70, 25]
+    series:
+      - type: bubble
+        encode: {x: x, y: y, size: size}
+        name: A 组
+        dataFilter: {col: 分组, value: A}
+        fill: "#2563EB"
+      - type: bubble
+        encode: {x: x, y: y, size: size}
+        name: B 组
+        dataFilter: {col: 分组, value: B}
+        fill: "#F59E0B"
+    sizeScale: sqrt
+    sizeRange: [6, 40]
+  - elementId: c2
+    elementType: chart
+    bounds: [500, 100, 420, 380]
+    data:
+      cols: [类别, 数值]
+      rows:
+        - [甲, 35]
+        - [乙, 25]
+        - [丙, 20]
+        - [丁, 20]
+    series:
+      - type: pie
+        encode: {category: 类别, value: 数值}
+        name: 占比
+        fill: ["#2563EB", "#F59E0B", "#10B981", "#EF4444"]
+        border: {color: "#FFFFFF", width: 2}
+        dataLabels: {content: percentage, fontSize: 10}
+    title: 饼图边框（白描边）

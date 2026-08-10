@@ -1,0 +1,34 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 400, 40]
+    content:
+      style: "$title"
+      text: 横向柱状图（yAxis.type=category）
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 100, 800, 380]
+    data:
+      cols: [城市, 人口, 面积]
+      rows:
+        - [北京, 2189, 16410]
+        - [上海, 2487, 6340]
+        - [广州, 1868, 7434]
+        - [深圳, 1756, 1997]
+    series:
+      - type: bar
+        encode: {x: 人口, y: 城市}
+        name: 人口（万）
+        fill: "$primary"
+      - type: bar
+        encode: {x: 面积, y: 城市}
+        name: 面积（km²）
+        fill: "$accent"
+    yAxis: {type: category, title: 城市}
+    xAxis: {type: value, title: 数值}
+    barWidth: 0.6
+    barGap: 0.15
+    categoryGap: 0.35
+    dataLabels: {content: value, fontSize: 9}

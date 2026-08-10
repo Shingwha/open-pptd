@@ -1,9 +1,10 @@
 # open-pptd v2 交接文档
 
-> 最后更新：2026-08-10（阶段 A ✅ + C1 ✅ + B ✅ + C2 ✅，下一步 **C3 chart 官方化**）
+> 最后更新：2026-08-10（阶段 A ✅ + C1 ✅ + B ✅ + C2 ✅ + **C3 第三批（轴/横柱/次轴/色/rels 根因）**，下一步 **C3 验证闭环**）
 > **本文件是唯一对接文档**（上下文已清空，仅靠本文继续开发）。
 > 一切格式决策以 `references/official/pptd.md`（官方规范）为唯一依据；
 > 结构疑问先查 `tests/projects/*/reference/` 的权威参考文件（用户 PowerPoint 手工 / python-pptx 官方库生成）。
+> **工作流（2026-08-10 定）**：哪页打不开/样式不对 → 引导用户创建对应 pptx 参考（含目标元素改动）→ 解包比对 XML → 修复 → 回归。用户参考文件在桌面（见 §3）。
 
 ---
 
@@ -43,7 +44,8 @@
 | **Theme 官方化** | ✅ | 严格 `{colors, textStyles, tableStyles}`（pptd.md §3）；17 套预设只写 colors；派生色显式 hex（primarySoft/Tint/Deep）；序列化永远写对象 |
 | **tableStyles 官方化** | ✅ | `Record<string, TableStyleConfig>` + 官方继承链消费（writer/renderer 同源） |
 | **C2 Cell 对象模型** | ✅ | 见 §2.4 |
-| 测试体系 | ✅ | `tests/projects/` 每组件一项目（table 9 页 / text 8 / shape 8 / icon 2 / line 2 / chart 2 / image 1）；`run-all.mjs` 11/11；isolate 32 个隔离导出；产物入各项目 `out/`（gitignore） |
+| 测试体系 | ✅ | `tests/projects/` 每组件一项目（table 9 页 / text 8 / shape 8 / icon 2 / line 2 / **chart 19 页** / image 1）；`run-all.mjs` 11/11；isolate 32 个隔离导出；产物入各项目 `out/`（gitignore） |
+| **C3 chart 官方化** | 🚧 | 13 类型注册 + 8 经典 chartEx 体系；**本轮：轴配置/横向柱/次轴/线型/层级色/图表框/rels 根因**（见 §2.5）；heatmap/sankey 暂不导出（PowerPoint 无原生，方案待定） |
 
 ### 2.2 关键文件地图
 
@@ -126,6 +128,37 @@ tests/                  见 §4
 - [x] 测试页 09-textstyle（Cell.textStyle 引用 + tricolor 3 色 bodyStyles 循环）
 - [ ] 小遗留：编辑器输入 `**` 不转换（官方无此语法，保持原样）
 
+### 2.5 C3 第三批完成明细（2026-08-10）
+
+**字段实现（writer + renderer 同源消费）**：
+- [x] **轴配置导出**：AxisConfig 全字段 → catAx/valAx（min/max/reverse/axisLine 含 arrow/gridLine 含 style/title/label 含 numberFormat/show→delete；CT_Scaling 顺序 **max 在 min 前**）
+- [x] **横向柱**：`resolveChartDirection`（显式轴类型或列类型推断）→ barDir=bar + catAx pos l / valAx pos b + 通道交换（seriesChannels：水平时分类在 y 数值在 x）
+- [x] **lineStyle→prstDash**（dash/dot → a:prstDash；系列线与轴线通用）
+- [x] **多轴**：seriesAxisIndex（垂直 yAxisIndex / 水平 xAxisIndex）→ 次轴组 (3,4)+（数值轴换侧 r/t + 隐藏 catAx delete=1，对照用户 chart43/47/48）；支持 N 组
+- [x] **图表框**：Chart.fill/border/shadow → `</c:chart>` 后 c:spPr（对照用户参考结构）；chartEx 同样适用（cx:spPr）
+- [x] **barWidth/barGap/categoryGap**：barWidth → gapWidth=(1-w)/w*100；barGap → overlap 负值；categoryGap → ×750 校准（默认 150）
+- [x] **radar spokeAxis**：min/max/label/axisLine/gridLine/show → catAx/valAx；radar 共享 category 列校验
+- [x] **pie border** → dPt spPr a:ln；**treemap/sunburst levels** → 层级裁剪 + 子树聚合；**scatter/bubble dataFilter** → 长表分组过滤
+- [x] **chartEx 逐点色（对照用户 waterfall-color.pptx / treemap-color.pptx 实测）**：
+  - 元素 `cx:dataPt`（**不是 cx:dataPoint**）+ `cx:spPr` + `a:solidFill` + `a:srgbClr`（HEX8 alpha → a:alpha 子元素）
+  - series 子元素顺序：tx → dataPt* → dataLabels → dataId → layoutPr（**dataPt 在 dataLabels 前**）
+  - waterfall dataPt idx = 数据行索引；treemap/sunburst idx = **整树先根 DFS 节点编号**（根=0 含中间节点）
+  - xlsx 层级列序 = **根在前**（A=根…最右=叶子，size 最后）；strDim lvl = **列逆序（叶子 lvl 在前）**（对照官方默认版 + 用户手填版都吻合）
+- [x] **预览（renderer）**：横向柱/多轴/图表框/5 类型（waterfall/treemap/sunburst/heatmap/sankey）ECharts 分支；层级色/瀑布三分类色与 writer 同源（hierarchyColor）；heatmap 矩阵分类通道
+
+**判损根因修复（勿回退）**：
+- [x] **chartEx 全空白根因（最重要）**：slide rels 的 Relationship Type 被 relType() 无脑拼 `officeDocument/2006/relationships/` 前缀，chartEx 的完整 URL 被二次包装 → PowerPoint 找不到部件 → 整图空白。修复：`relType` 遇含 `://` 原样输出
+- [x] `resolveChartDirection` 返回字符串被当 truthy → barDir 恒 bar；改返回布尔
+- [x] `typeof null === "object"` 崩两处（txPrXml label、dLblsXml）
+- [x] 渲染器颜色入口未 resolveColor → `$primary` 等非法 CSS 色被浏览器忽略 → 图表不可见（seriesColor/marker/pie fills/heatmap scheme/candlestick/边框全修）
+- [x] 横向柱 renderer 硬编码取 `_values.y`（数值在 x）→ 柱子全 null
+- [x] heatmap 的 x/y 被当数值通道转换 → y 轴单分类；改分类通道跳过
+- [x] buildLeafDataPoints 树构建自挂环（补齐路径连续同名）→ 死循环；连续同名去重
+
+**新测试页（chart 19 页）**：14-axis（轴配置+虚线+图表框）、15-hbar（横向柱+barWidth）、16-secondary（次轴）、17-chartex-color（三分类色+层级色）、18-more（dataFilter+pie border）、19-levels（层级裁剪）
+
+**验证状态（2026-08-10 晚）**：rels 根因已修（check11），**待用户重新导出验证** 9/11/12/17/19 页；10/13（heatmap/sankey）空白为预期。
+
 ---
 
 ## 3. 参考文件（权威性说明）
@@ -141,6 +174,10 @@ tests/                  见 §4
 | `tests/projects/shape/reference/test-shapes-all.pptx` | python-pptx 官方库 | 187+7 全量基准 |
 | `tests/projects/table/reference/test-table-merge.pptx` | **python-pptx 官方库** | 3×3 左上 2×2 合并——合并结构铁证（gridSpan + 占位格接力） |
 | `tests/projects/table/out/check-table-修改后.pptx` | **用户 PowerPoint 手工**（不在 git） | 表格 4 项修复的比对基准（边框清空/对齐/合并/字体/颜色） |
+| `C:/Users/法法/Desktop/waterfall-color.pptx` | **用户 PowerPoint 手工**（2026-08-10，不在 git） | **chartEx 逐点色铁证**：`cx:dataPt` + `cx:spPr` + `a:solidFill` + `a:srgbClr`；waterfall dataPt idx=行序；series 子元素顺序 tx→spPr→dataPt*→dataId→layoutPr；xlsx 列序 cat/val；隐藏辅助数据区 A8 起 |
+| `C:/Users/法法/Desktop/treemap-color.pptx`（**默认数据版**，用户未改数据只改色） | **用户 PowerPoint 手工**（2026-08-10，不在 git） | **treemap dataPt idx=先根 DFS 编号**（默认树 3 根 dataPt idx 0/10/17 → 分支1=0、分支3=17）；strDim lvl=列逆序（叶子 lvl 在前）；xlsx 根在前 + A8:D17 分支/茎/叶子模板辅助区；series 顺序 tx→dataPt*→dataLabels→dataId→layoutPr |
+
+> **新工作流（问题驱动，2026-08-10 定）**：哪页打不开/样式有问题 → 引导用户创建对应组件参考（PowerPoint 手工做目标效果）→ 解包逐字节比对（`python 解包 + 正则提取目标 XML`）→ 修复 → `npm test` 回归。创建参考的引导话术见 §4.4。
 
 比对方法（已固化）：解包参考文件 → 找目标效果官方 XML 片段 → 与 `editor/writer/` 输出逐字节对照 → 修复 → 回归。
 
@@ -163,6 +200,20 @@ node tests/color-consistency.mjs tests/projects/table   # 颜色一致性可指�
 3. 弹修复定位：isolate 产物逐个打开，报编号 → 二分定位
 4. 结构比对：用户在 PowerPoint 手工修改 → 另存告知路径（**必须关闭 PowerPoint 防 `~$` 锁**）→ 解包比对
 
+### 4.4 引导用户创建参考文件的通用话术（新工作流）
+
+用户创建参考 = 在 PowerPoint 做目标效果，一般三步：
+1. **插入对应组件**（图表/表格/形状…）并输入与测试页相同的数据
+2. **改目标样式**（颜色/边框/轴设置…）——只改目标元素，其他保持默认
+3. **另存到桌面** → **关闭 PowerPoint**（防 `~$` 锁）→ 告知路径
+
+注意事项：
+- 每类组件只改"目标字段"，颜色选什么不重要（解包只看结构和位置）
+- 涉及多分类颜色（如 waterfall 三分类）时让用户明确每类用不同颜色
+- 层级类图表（树状图）输入格式：**根在左、叶子在右、值最后**（PowerPoint 官方布局；叶子在前会被重排导致比对困惑）
+- 解析用 Windows Python：`os.environ['TEMP']` 拼路径（/tmp 在 Windows Python 无效）
+- 参考文件不入 git（在桌面），比对结论固化到 HANDOFF §2.5/§6
+
 ### 4.3 测试项目覆盖点
 
 - **table 9 页**：样式/边框/对齐/合并/填充/字体/颜色/textStyle 引用 + tricolor 循环
@@ -173,39 +224,38 @@ node tests/color-consistency.mjs tests/projects/table   # 颜色一致性可指�
 
 ## 5. 下一步任务
 
-### 5.1 C3：chart 官方化（**进行中**）——属性覆盖度对照（2026-08-10 核查）
+### 5.1 C3：chart 官方化（**进行中**）——属性覆盖度对照（2026-08-10 晚核查）
 
-**已完成**：13 类型注册 + 约束校验；8 类型经典体系导出（bar/line/area/scatter/bubble/pie/radar/stockChart）；3 类型 chartEx 导出（waterfall/treemap/sunburst）；seriesDefaults 官方合并；dataLabels 官方链；色循环；图表测试 13 页；参考文件入库（chart/reference/）。
+**已完成**：13 类型注册 + 约束校验；8 类型经典体系导出（bar/line/area/scatter/bubble/pie/radar/stockChart）；3 类型 chartEx 导出（waterfall/treemap/sunburst）；seriesDefaults 官方合并；dataLabels 官方链；色循环；图表测试 **19 页**；参考文件入库（chart/reference/ + 桌面 3 个新参考）；**rels Type 根因已修（chartEx 全空白根因）**。
 
 **属性覆盖度**（✓ 实现 / △ 部分 / × 未实现）：
 
 | 官方字段 | 模型/预览 | 导出 | 缺口说明 |
 |---|---|---|---|
 | Chart 顶层 data/series/seriesDefaults | ✓ | ✓ | |
-| title / legend / dataLabels / fontFamily | ✓ | ✓ | title 对象样式未全部消费 |
-| xAxis/yAxis（show/type/min/max/reverse/title/label/axisLine/gridLine） | △ | × | 导出轴固定（catAx/valAx 默认）；**横向柱（yAxis.type=category→barDir=bar）未实现**；label numberFormat 未导出 |
-| barWidth | × | × | 柱宽/槽宽比 |
-| barGap / categoryGap | ✓ | ✓ | → overlap 负值 / gapWidth×750 |
-| spokeAxis（radar show/min/max/label/axisLine/gridLine） | △ | × | 仅 min/max 预览；导出未写 |
-| fill/border/shadow（图表容器框） | × | × | 官方独立于系列色 |
-| LinearSeriesBase（smooth/width/marker/nullHandling/lineColor） | ✓ | △ | **lineStyle dash/dot 导出未写 prstDash** |
-| bar.symbol（象形柱） | × | × | |
-| bar/line/area/candlestick xAxisIndex/yAxisIndex（多轴） | × | × | 官方数组轴规则未实现 |
-| area.stack stream | × | × | OOXML 无直接映射（预览可做） |
-| scatter.dataFilter / bubble.dataFilter | × | × | 长表分组 |
-| bubble sizeScale/sizeRange | × | × | |
+| title / legend / dataLabels / fontFamily | ✓ | ✓ | 样式（color/fontSize/fontFamily）本轮已消费 |
+| xAxis/yAxis（show/type/min/max/reverse/title/label/axisLine/gridLine） | ✓ | ✓ | 全字段 → catAx/valAx（含 arrow→headEnd/tailEnd、label.numberFormat→numFmt）；**横向柱 barDir=bar 已实现** |
+| barWidth / barGap / categoryGap | ✓ | ✓ | barWidth→gapWidth 换算；barGap→overlap 负值；categoryGap→×750 |
+| spokeAxis（radar show/min/max/label/axisLine/gridLine） | ✓ | ✓ | 导出已实现；radar 共享 category 列校验 |
+| fill/border/shadow（图表容器框） | ✓ | ✓ | 经典 → chartSpace spPr；chartEx → cx:spPr |
+| LinearSeriesBase（smooth/width/marker/nullHandling/lineColor） | ✓ | ✓ | **lineStyle dash/dot → prstDash 已实现** |
+| bar.symbol（象形柱） | × | × | OOXML 无原生对应（需图片化/忽略，待定） |
+| bar/line/area/candlestick xAxisIndex/yAxisIndex（多轴） | ✓ | ✓ | 次轴组 (3,4)+，数值轴换侧 + 隐藏 catAx（对照 chart43/47/48） |
+| area.stack stream | △ | × | 预览可做（数据变换），OOXML 无直接映射；导出退化 stacked |
+| scatter/bubble dataFilter | ✓ | ✓ | 长表分组过滤（模型层统一过滤，writer/renderer 同源） |
+| bubble sizeScale/sizeRange | △ | × | 预览已消费（symbolSize 映射）；导出无直接字段（PPT 自动面积比） |
 | candlestick upBars/downBars/wickStyle/OHLC+HLC | ✓ | ✓ | |
-| pie innerRadius/startAngle/fill 数组/dataLabels | ✓ | ✓ | pie border 未导出 |
+| pie innerRadius/startAngle/fill 数组/dataLabels | ✓ | ✓ | **pie border → dPt spPr a:ln 已实现** |
 | radar category 共享约束/areaColor | ✓ | ✓ | |
-| waterfall isTotal→subtotals | ✓ | ✓ | **totalBars/increaseBars/decreaseBars 三分类色未导出**（chartEx 分色机制待研） |
-| heatmap colorScheme/colorScale/colorbar | × | × | PowerPoint 无原生类型；预览也**未消费**三字段 |
-| treemap fill 1D/2D+HSL 派生 / levels | × | × | chartEx 无颜色输出 |
-| sunburst fill 数组 / levels | × | × | 同上 |
-| sankey nodeAlign/fill 单/数组/Record | × | × | PowerPoint 无原生；预览未消费 |
+| waterfall isTotal→subtotals | ✓ | ✓ | **三分类色 → cx:dataPt（对照用户参考实测）已实现** |
+| heatmap colorScheme/colorScale/colorbar | ✓ | — | **暂不导出**（PowerPoint 无原生）；预览已消费（矩阵 + visualMap） |
+| treemap fill 1D/2D+HSL 派生 / levels | ✓ | ✓ | 逐叶色 → cx:dataPt（先根 DFS idx）；levels 裁剪 + 子树聚合 |
+| sunburst fill 数组 / levels | ✓ | ✓ | 同上 |
+| sankey nodeAlign/fill 单/数组/Record | ✓ | — | **暂不导出**；预览已消费（Kahn 拓扑序 + 节点色） |
 
-**下一步优先级**：① 轴配置导出（min/max/reverse/axisLine/gridLine → catAx/valAx XML）② 横向柱 barDir=bar ③ lineStyle→prstDash ④ waterfall 三分类色（chartEx dataPoint 机制研究）⑤ 多轴 xAxisIndex/yAxisIndex ⑥ 图表框 fill/border/shadow ⑦ heatmap/sankey 方案（编辑器 ECharts 截图导出或跳过）
+**下一步优先级**：① **验证 chartEx 显示**（rels 修复后用户重新导出验证 9/11/12/17/19）② bar.symbol 方案 ③ bubble sizeScale 导出近似（linear→size² 写缓存）④ area.stack stream 预览 ⑤ heatmap/sankey 最终方案（保持跳过 or 图片化）
 
-**验证状态**：用户逐页验证 out/check-chart.pptx；10/13 页（heatmap/sankey）导出空白为预期。
+**验证状态**：9/11/12/17/19 页 chartEx 待重验（rels Type 已修，check11 产物）；10/13（heatmap/sankey）导出空白为预期。
 
 ### 5.2 D：主题体系重建 + 编辑器 UX（暂缓）
 
@@ -231,6 +281,16 @@ node tests/color-consistency.mjs tests/projects/table   # 颜色一致性可指�
 - **标注引线坑**：预设几何内部线条由 `p:style lnRef` 驱动，spPr 里出现 `a:ln`（即使 noFill）会覆盖
 - **表格合并坑**：YAML 层用 rowSpan/colSpan + 省略被覆盖位（官方规则）；OOXML 层用 rowSpan/gridSpan + vMerge/hMerge 占位格接力跨度——两层语义不同，靠 tableGrid 转换
 - **表格默认值**：对齐 `[center, middle]`、边框 `{solid, 1, #000000}`；单元格继承链见 §2.3
+- **chartEx 全空白根因**：slide rels 的 Type 若含 `://` 必须原样输出（relType 别拼前缀）——chartEx 空白不一定是 chart XML 的问题，先查装配层（rels/Content_Types/slide 引用）
+- **chartEx 逐点色结构**：`cx:dataPt` + `cx:spPr` + `a:solidFill` + `a:srgbClr`（不是 cx:dataPoint/cx:color/cx:srgbClr）；series 顺序 tx→dataPt*→dataLabels→dataId→layoutPr；tree 类 dataPt idx 是整树先根 DFS 编号（根=0 含中间节点），waterfall 是行序
+- **chartEx 数据布局**：xlsx 层级列根在前；strDim lvl 是列逆序（最深 lvl 在前）；f 引用整个层级列范围
+- **tree 类树构建**：补齐路径连续同名必须去重（否则自挂成环死循环）
+- **ECharts 颜色入口必须 resolveColor**：`$key` 不是合法 CSS 色，浏览器静默忽略 → 图表"看不见"；seriesColor/marker/pie fills/heatmap scheme/candlestick/边框全要走解析
+- **横向柱通道**：barDir=bar 时数值在 x、分类在 y（writer/renderer 都别硬编码 _values.y）
+- **heatmap 的 x/y 是分类通道**：别进 NUM_CHANNELS 数值转换
+- `typeof null === "object"` 是 true：可选参数判空用 `x && typeof x === "object"`
+- `resolveChartDirection` 之类返回布尔，别返回字符串（truthy 陷阱）
+- Windows Python 解析路径：用 `os.environ['TEMP']` 拼，/tmp 无效
 - **富文本无 Markdown**：`**`/`*` 非法，一律 `<strong>/<em>`
 - `tests/projects/*/out/` 是生成产物（gitignore）；`tests/projects/*/reference/` 的 pptx 需入库（权威基准）
 - 形状数据源：ECMA-376-1_5th_edition_december_2016.zip → OfficeOpenXML-DrawingMLGeometries.zip（重新生成 187 数据用）

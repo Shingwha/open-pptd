@@ -27,3 +27,9 @@ pages:
   - pages/11-treemap.page
   - pages/12-sunburst.page
   - pages/13-sankey.page
+  - pages/14-axis.page
+  - pages/15-hbar.page
+  - pages/16-secondary.page
+  - pages/17-chartex-color.page
+  - pages/18-more.page
+  - pages/19-levels.page

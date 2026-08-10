@@ -13,6 +13,8 @@
 //     waterfall 三分类不参与色循环
 // ============================================================================
 
+import { resolveColor } from "./theme.js";
+
 /** 图表默认系列色板（官方色循环；主题 colors 不再承载系列色）。 */
 export const DEFAULT_CHART_PALETTE = [
   "#002E5D", "#3A6EA5", "#7FB2D9", "#C9A227",
@@ -70,6 +72,13 @@ export function validateChartSeries(el) {
   }
   if (series.length > 1 && [...types].some((t) => SOLO_TYPES.has(t))) {
     warns.push(`[chart] ${[...types].filter((t) => SOLO_TYPES.has(t)).join("/")} 系列只能有 1 个元素`);
+  }
+  // 雷达共享分类列约束（官方 §radar：同图所有雷达系列必须引用同一 category 列）
+  if (types.size === 1 && types.has("radar") && series.length > 1) {
+    const catCol = series.map((s) => s.encode?.category).find((v) => v != null);
+    if (catCol != null && series.some((s) => s.encode?.category !== catCol)) {
+      warns.push(`[chart] radar 所有系列必须引用同一 category 列（${catCol}）`);
+    }
   }
   return warns;
 }
@@ -134,10 +143,32 @@ export function resolveChartSeries(theme, el) {
       _cols[ch] = ci;
       _values[ch] = (data.rows || []).map((row) => row[ci] ?? null);
     }
-    // 数值通道（y/value/high/low/close/open/size/flow/x?）字符串 → 数字
+    // 数值通道（y/value/high/low/close/open/size/flow/x?）字符串 → 数字。
+    // 方向规则（官方）：bar/waterfall 水平时 y 是分类通道（保留字符串），x 是数值通道
+    let horizontal = false;
+    if (type === "bar" || type === "waterfall") {
+      const xs = toAxisArray(el.xAxis);
+      const ys = toAxisArray(el.yAxis);
+      const xType = xs[0]?.type ?? inferAxisType(data, encode.x);
+      const yType = ys[0]?.type ?? inferAxisType(data, encode.y);
+      horizontal = yType === "category" && xType !== "category";
+    }
+    // dataFilter（scatter/bubble 长表分组，官方 §scatter/bubble）：保留 col===value 的行
+    const df = merged.dataFilter;
+    if (df && (type === "scatter" || type === "bubble") && df.col != null && df.value !== undefined) {
+      const dci = colIndex(data, df.col);
+      if (dci >= 0) {
+        const want = String(df.value);
+        const keep = (data.rows || []).map((r) => String(r?.[dci] ?? "") === want);
+        for (const ch of Object.keys(_values)) _values[ch] = _values[ch].filter((_, i) => keep[i]);
+      }
+    }
     const NUM_CHANNELS = new Set(["y", "value", "high", "low", "close", "open", "size", "flow"]);
     for (const ch of Object.keys(_values)) {
-      if (NUM_CHANNELS.has(ch)) _values[ch] = _values[ch].map(toNum);
+      if (!NUM_CHANNELS.has(ch)) continue;
+      if (horizontal && ch === "y") continue; // 水平柱的分类通道（字符串）
+      if (type === "heatmap" && (ch === "x" || ch === "y")) continue; // heatmap 的 x/y 是分类通道（官方约束）
+      _values[ch] = _values[ch].map(toNum);
     }
 
     // 默认取色（§5.2）：每类型的色字段
@@ -157,6 +188,7 @@ export function resolveChartSeries(theme, el) {
     }
 
     const cats = _values.category != null ? _values.category.map((v) => String(v ?? ""))
+      : horizontal && _values.y != null ? _values.y.map((v) => String(v ?? ""))
       : _values.x != null ? _values.x.map((v) => String(v ?? "")) : [];
 
     series.push({
@@ -182,6 +214,31 @@ export function resolveChartSeries(theme, el) {
   return { series, cats, warn, data };
 }
 
+/**
+ * 层级图节点色（官方 treemap/sunburst 颜色派生规则，writer/renderer 共享）：
+ *   fill 单值 → 所有根同色；1D 数组按根循环；2D 数组外层按根、内层按级直接取色；
+ *   子节点沿 HSL.L 每级 -10（L_new = max(0, L_old - 10)）。
+ * @param {object} s 归一化后的系列（含 fill）
+ * @param {number} rootIdx 根节点出现顺序索引
+ * @param {number} levelFromRoot 距根的层级（0 = 根）
+ */
+export function hierarchyColor(theme, s, rootIdx, levelFromRoot) {
+  const fill = s?.fill;
+  if (fill == null) return null;
+  if (Array.isArray(fill)) {
+    const f = fill[rootIdx % fill.length];
+    if (Array.isArray(f)) {
+      if (levelFromRoot < f.length) return resolveColor(theme, f[levelFromRoot]) || null;
+      const base = resolveColor(theme, f[f.length - 1]) || null;
+      return base ? darkenByLightness(base, 10 * (levelFromRoot - f.length + 1)) : null;
+    }
+    const base = resolveColor(theme, f) || null;
+    return base ? darkenByLightness(base, 10 * levelFromRoot) : null;
+  }
+  const base = resolveColor(theme, fill) || null;
+  return base ? darkenByLightness(base, 10 * levelFromRoot) : null;
+}
+
 /** 图表数据 → xlsx 表格布局（行：表头 + 数据）。 */
 export function chartDataTable(el) {
   const data = el.data || { cols: [], rows: [] };
@@ -195,7 +252,8 @@ export function chartDataTable(el) {
 
 /**
  * 数据标签显示（官方 §3.3 链：series[i].dataLabels > Chart.dataLabels > 不显示）。
- * @returns {null | {content, numberFormat}} 有效配置（默认 content 按类型）
+ * @returns {null | {content, numberFormat, color, fontSize, fontFamily}} 有效配置
+ * （样式字段来自 DataLabelConfig extends TextStyle，供 writer/renderer 消费）
  */
 export function resolveDataLabels(el, series, type) {
   const DEFAULTS = {
@@ -216,7 +274,14 @@ export function resolveDataLabels(el, series, type) {
   let content = typeof cfg === "object" ? cfg.content : undefined;
   if (content == null) content = DEFAULTS[type] || "value";
   if (!ALLOWED[type] || !ALLOWED[type].includes(content)) content = DEFAULTS[type] || "value";
-  return { content, numberFormat: typeof cfg === "object" ? cfg.numberFormat : undefined };
+  const o = typeof cfg === "object" ? cfg : {};
+  return {
+    content,
+    numberFormat: o.numberFormat,
+    color: o.color,
+    fontSize: o.fontSize,
+    fontFamily: o.fontFamily,
+  };
 }
 
 /** 判断某列是否为数值列（供数据编辑器与导出用）。 */
@@ -277,4 +342,68 @@ function hueOf(r, g, b, max, min, d) {
   if (max === r) return ((g - b) / d) % 6 * 60;
   if (max === g) return ((b - r) / d + 2) * 60;
   return ((r - g) / d + 4) * 60;
+}
+
+// ----------------------------------------------------------------------------
+// 轴配置归一化（writer/renderer 共享；官方 §Chart 方向规则 + §5.3 轴数组规则）
+// ----------------------------------------------------------------------------
+
+/** 轴配置归一化：AxisConfig | AxisConfig[] → AxisConfig[]（省略 = [{}]，官方 §通用规则 5）。 */
+export function toAxisArray(cfg) {
+  if (cfg == null) return [{}];
+  const arr = Array.isArray(cfg) ? cfg : [cfg];
+  return arr.map((c) => (c && typeof c === "object" ? c : {}));
+}
+
+/** 列类型推断（官方：字符串列 → category，全数值列 → value）。 */
+export function inferAxisType(data, colName) {
+  const ci = (data?.cols || []).indexOf(colName);
+  if (ci < 0) return "category";
+  for (const r of data?.rows || []) {
+    const v = r?.[ci];
+    if (v == null || v === "") continue;
+    if (typeof v !== "number" && Number.isNaN(Number(v))) return "category";
+  }
+  return "value";
+}
+
+/**
+ * 图表方向（官方 §Chart 方向规则）：bar/waterfall 由轴类型决定——
+ * xAxis.type==="category"（显式或按数据推断）→ 垂直；yAxis.type==="category" → 水平。
+ * 其余类型（line/area/scatter/bubble/candlestick/heatmap/radar…）恒垂直。
+ * @returns {boolean} true = 水平（barDir=bar）
+ */
+export function resolveChartDirection(el, series) {
+  const s = series.find((x) => x && (x.type === "bar" || x.type === "waterfall"));
+  if (!s) return false;
+  const xs = toAxisArray(el.xAxis);
+  const ys = toAxisArray(el.yAxis);
+  const xType = xs[0]?.type ?? inferAxisType(el.data, s.encode.x);
+  const yType = ys[0]?.type ?? inferAxisType(el.data, s.encode.y);
+  return yType === "category" && xType !== "category";
+}
+
+/**
+ * 系列轴索引（官方 §5.3）：次轴永远放在数值轴一侧——
+ * 垂直图用 series.yAxisIndex，水平图用 series.xAxisIndex。
+ * 返回轴索引（0 = 主轴；≥1 = 第 N 个次轴，需 xAxis/yAxis 数组长度 ≥ index+1）。
+ */
+export function seriesAxisIndex(s, horizontal) {
+  const idx = horizontal ? s.xAxisIndex : s.yAxisIndex;
+  return Number.isFinite(idx) && idx > 0 ? Math.floor(idx) : 0;
+}
+
+/**
+ * 系列数据通道按方向重映射（barDir=bar 时分类通道在 y、数值通道在 x）：
+ * @returns {{cat: {col, vals}, val: {col, vals}}} 或 null（无分类通道）
+ */
+export function seriesChannels(s, horizontal) {
+  if (horizontal) {
+    if (s._cols.y == null || s._cols.x == null) return null;
+    return { cat: { col: s._cols.y, vals: s._values.y }, val: { col: s._cols.x, vals: s._values.x } };
+  }
+  const catCol = s._cols.category ?? s._cols.x;
+  const valCol = s._cols.y ?? s._cols.value;
+  if (catCol == null || valCol == null) return null;
+  return { cat: { col: catCol, vals: s._cats }, val: { col: valCol, vals: s._values.y ?? s._values.value } };
 }
