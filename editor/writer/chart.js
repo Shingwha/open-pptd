@@ -405,9 +405,9 @@ function barSerXml(theme, s, sheetRange, idx, labels, chs) {
     el("c:order", { val: s._index }),
     seriesNameXml(s.name, sheetRange.nameCol(s)),
   ];
-  if (s.fill) {
-    // fillXml 统一处理字符串色 + 渐变对象（官方 BarSeries.fill 支持 GradientFill）
-    const spPr = [fillXml(theme, s.fill)];
+  // s.color = fill || 主题色循环默认（模型解析）；fillXml 统一字符串色 + 渐变
+  if (s.color) {
+    const spPr = [fillXml(theme, s.color)];
     if (s.border && s.border.color) {
       const w = Math.round((s.border.width ?? 1) * 12700);
       spPr.push(el("a:ln", { w, cap: "flat", cmpd: "sng", algn: "ctr" }, fillXml(theme, s.border.color)));
@@ -459,7 +459,9 @@ function scatterSerXml(theme, s, sheetRange, idx, labels, chs) {
     el("c:order", { val: idx }),
     seriesNameXml(s.name, sheetRange.nameCol(s)),
   ];
-  if (s.fill) kids.push(el("c:spPr", {}, fillXml(theme, s.fill)));
+  // s.color = fill || 主题色循环默认（模型解析）——不配 fill 也要写 spPr，
+  // 否则 PowerPoint 对 bubbleChart 等不自动区分系列色（06 页实测只有一种气泡）
+  if (s.color) kids.push(el("c:spPr", {}, fillXml(theme, s.color)));
   const marker = markerXml(theme, s.marker, s.color);
   if (marker) kids.push(marker);
   if (labels) kids.push(dLblsXml(theme, labels));
@@ -476,7 +478,8 @@ function bubbleSerXml(theme, s, sheetRange, idx, labels) {
     el("c:order", { val: idx }),
     seriesNameXml(s.name, sheetRange.nameCol(s)),
   ];
-  if (s.fill) kids.push(el("c:spPr", {}, fillXml(theme, s.fill)));
+  // s.color = fill || 主题色循环默认（同 scatter）
+  if (s.color) kids.push(el("c:spPr", {}, fillXml(theme, s.color)));
   if (labels) kids.push(dLblsXml(theme, labels));
   kids.push(
     el("c:xVal", {}, numRefXml(sheetRange(s._cols.x), s._values.x)),
