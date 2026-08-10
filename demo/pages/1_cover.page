@@ -1,0 +1,44 @@
+pageType: cover
+background:
+  type: solid
+  color: "#0F172A"
+elements:
+  # —— 文字渐变（官方 TextContent.gradient，作用于文字本身）——
+  - elementId: title-grad
+    elementType: text
+    bounds: [60, 140, 840, 110]
+    content:
+      style: "$title"
+      fontSize: 44
+      align: [center, middle]
+      gradient:
+        type: gradient
+        gradientType: linear
+        angle: 90
+        stops:
+          - {position: 0, color: "#60A5FA"}
+          - {position: 1, color: "#F59E0B"}
+      text: PPTD v2 格式对齐验证
+  # —— 文字阴影（官方 TextContent.shadow）——
+  - elementId: subtitle
+    elementType: text
+    bounds: [60, 280, 840, 50]
+    content:
+      style: "$subtitle"
+      fontSize: 20
+      color: "#E2E8F0"
+      align: [center, middle]
+      shadow:
+        blur: 8
+        color: "#00000080"
+        offset: [0, 3]
+      text: 文本框 · 富文本 · 公式混排 · 图标 全链路
+  # —— 说明（显式 [center, middle] 对齐）——
+  - elementId: caption
+    elementType: text
+    bounds: [60, 460, 840, 40]
+    content:
+      fontSize: 13
+      color: "#64748B"
+      align: [center, middle]
+      text: "默认对齐 [left, top] · 1px = 1pt · 16:9 960×540"

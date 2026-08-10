@@ -1,0 +1,105 @@
+pageType: content
+background:
+  type: solid
+  color: "#F8FAFC"
+elements:
+  # —— 页面标题 ——
+  - elementId: pg-title
+    elementType: text
+    bounds: [48, 36, 500, 40]
+    content:
+      style: "$title"
+      text: 元素级变换与文字装饰
+  # —— 文字渐变（径向）——
+  - elementId: ef-1
+    elementType: text
+    bounds: [48, 110, 420, 60]
+    content:
+      fontSize: 26
+      bold: true
+      gradient:
+        type: gradient
+        gradientType: radial
+        stops:
+          - {position: 0, color: "#F59E0B"}
+          - {position: 1, color: "#EF4444"}
+      text: 径向渐变文字
+  # —— 文字阴影 ——
+  - elementId: ef-2
+    elementType: text
+    bounds: [500, 110, 412, 60]
+    content:
+      fontSize: 26
+      bold: true
+      color: "#2563EB"
+      shadow:
+        blur: 10
+        color: "#2563EB66"
+        offset: [0, 5]
+      text: 蓝色投影文字
+  # —— 元素级 opacity ——
+  - elementId: ef-3
+    elementType: text
+    bounds: [48, 210, 300, 50]
+    opacity: 0.35
+    content:
+      fontSize: 20
+      color: "#DC2626"
+      text: "整体透明度 opacity: 0.35"
+  # —— 元素级 rotation ——
+  - elementId: ef-4
+    elementType: text
+    bounds: [380, 210, 240, 50]
+    rotation: 15
+    content:
+      fontSize: 20
+      color: "#059669"
+      text: "旋转 rotation: 15°"
+  # —— 元素级 flip（水平翻转）——
+  - elementId: ef-5
+    elementType: text
+    bounds: [660, 210, 250, 50]
+    flip: [true, false]
+    content:
+      fontSize: 20
+      color: "#7C3AED"
+      text: "水平翻转 flip: [true, false]"
+  # —— 渐变 + 阴影组合 ——
+  - elementId: ef-6
+    elementType: text
+    bounds: [48, 300, 600, 60]
+    content:
+      fontSize: 24
+      bold: true
+      gradient:
+        type: gradient
+        gradientType: linear
+        angle: 45
+        stops:
+          - {position: 0, color: "$primary"}
+          - {position: 1, color: "$accent"}
+      shadow:
+        blur: 6
+        color: "#00000040"
+        offset: [0, 3]
+      text: "渐变 + 阴影组合（主题色引用）"
+  # —— 公式与阴影 ——
+  - elementId: ef-7
+    elementType: text
+    bounds: [48, 390, 864, 70]
+    content:
+      fontSize: 20
+      color: "#1F2937"
+      shadow:
+        blur: 4
+        color: "#00000033"
+        offset: [0, 2]
+      text: '<p>公式与文字同享阴影：\(E = mc^2\) 相对论质能方程</p>'
+  # —— 元素级 opacity + 公式 ——
+  - elementId: ef-8
+    elementType: text
+    bounds: [48, 470, 700, 50]
+    opacity: 0.6
+    content:
+      fontSize: 16
+      text: '<p>整体半透明文本框（含文字与公式）：\(\frac{1}{2} + \frac{1}{3} = \frac{5}{6}\)</p>'

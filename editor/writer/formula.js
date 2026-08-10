@@ -25,21 +25,28 @@ function fontSizeToSz(fontSize) {
   return Math.round(pt * 100);
 }
 
-/** 给 OMML 每个 m:r 注入颜色（a:rPr > a:solidFill，PPT 官方 run 属性风格）。
- * 支持主题令牌（$primary 等）与 hex，切主题自动联动。 */
-function injectColor(omml, color, theme) {
-  if (!color) return omml;
-  // OOXML 颜色值不允许 # 前缀（#1565C0 → 1565C0）；令牌经 resolveColor 解析
-  const resolved = resolveColor(theme, color);
-  if (!resolved) return omml;
-  const hex = String(resolved).replace(/^#/, "").toUpperCase();
-  if (!/^[0-9A-F]{6}$/.test(hex)) return omml; // 非法颜色直接跳过，避免损坏文件
-  const fill = `<a:rPr><a:solidFill><a:srgbClr val="${hex}"/></a:solidFill></a:rPr>`;
+/** 给 OMML 每个 m:r 注入样式（a:rPr > solidFill / sz，PPT 官方 run 属性风格）。
+ * 支持主题令牌（$primary 等）与 hex，切主题自动联动。公式只继承 color/font-size。
+ * 导出给富文本行内公式（writer/text.js）复用。 */
+export function injectRunStyle(omml, { color, fontSize } = {}, theme) {
+  let fill = "";
+  if (color) {
+    // OOXML 颜色值不允许 # 前缀（#1565C0 → 1565C0）；令牌经 resolveColor 解析
+    const resolved = resolveColor(theme, color);
+    const hex = resolved ? String(resolved).replace(/^#/, "").toUpperCase() : "";
+    if (/^[0-9A-F]{6}$/.test(hex)) {
+      fill = `<a:solidFill><a:srgbClr val="${hex}"/></a:solidFill>`;
+    }
+  }
+  const szAttr = Number(fontSize) > 0 ? ` sz="${Math.round(Number(fontSize) * 100)}"` : "";
+  if (!fill && !szAttr) return omml;
   // m:r 内：rPr（若有）之后、m:t 之前插入 a:rPr；无 rPr 则插在 <m:r> 后
   return omml.replace(/<m:r>(?:(<m:rPr>[\s\S]*?<\/m:rPr>))?(?=<m:t)/g, (_m, rpr) => {
-    return rpr ? `<m:r>${rpr}${fill}` : `<m:r>${fill}`;
+    return rpr ? `<m:r>${rpr}<a:rPr${szAttr}>${fill}</a:rPr>` : `<m:r><a:rPr${szAttr}>${fill}</a:rPr>`;
   });
 }
+
+/** 公式元素导出：颜色/字号注入走 injectRunStyle（writer/text.js 行内公式同源）。 */
 
 /** 公式段落：<a:p><a:pPr defRPr/><a14:m><m:oMathPara jc><m:oMath/></m:oMathPara></a14:m></a:p> */
 function formulaParagraph(omml, fontSize, align) {
@@ -86,7 +93,7 @@ export function formulaXml(theme, element, ctx) {
     const mml = latexToMathml(latex);
     if (mml) {
       omml = mathmlToOmml(mml);
-      omml = injectColor(omml, element.color, theme);
+      omml = injectRunStyle(omml, { color: element.color }, theme);
       fallbackText = latex;
     } else {
       fallbackText = latex || "公式为空";

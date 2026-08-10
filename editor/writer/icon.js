@@ -19,6 +19,7 @@ import { el, escAttr } from "./xml.js";
 import { encodeUtf8 } from "./zip.js";
 import { buildXfrm } from "./drawing.js";
 import { ICONS } from "../core/icon-library.js";
+import { resolveIconName } from "../core/icon-name.js";
 import { iconToSvg, normalizeIconFill } from "../core/icon-svg.js";
 
 /** SVG 图片扩展的官方 ext uri（MS-OI29500 SVG 扩展）。 */
@@ -26,9 +27,9 @@ const SVG_EXT_URI = "{96DAC541-7B7A-43D3-8B79-37D633B846F1}";
 
 /** 图标元素 → p:pic XML（SVG 图片）。未知图标返回 ""。 */
 export function iconXml(theme, element, ctx) {
-  const def = ICONS[element.icon];
+  const def = ICONS[resolveIconName(element.iconName)];
   if (!def) {
-    console.warn(`[writer] 未知图标 ${element.icon}（${element.elementId}），已跳过`);
+    console.warn(`[writer] 未知图标 ${element.iconName}（${element.elementId}），已跳过`);
     return "";
   }
   const fill = normalizeIconFill(theme, element.fill);

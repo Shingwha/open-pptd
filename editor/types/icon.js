@@ -5,16 +5,17 @@
 import { registerType } from "./registry.js";
 import { nextElementId } from "../core/model.js";
 import { ICONS } from "../core/icon-library.js";
+import { resolveIconName } from "../core/icon-name.js";
 import { renderIcon, iconThumb } from "../renderer/icon.js";
 import { iconXml } from "../writer/icon.js";
 import { openIconPicker } from "../interaction/dialogs/icon-editor.js";
 
-/** 图标默认模型。 */
+/** 图标默认模型（官方 iconName 格式："style:name"，bs: 为本地 Bootstrap 命名空间）。 */
 function iconElement(key, bounds = [380, 200, 72, 72]) {
   return {
     elementId: nextElementId("icon"),
     elementType: "icon",
-    icon: key,
+    iconName: `bs:${key}`,
     bounds,
     fill: { type: "solid", color: "$text" },
   };
@@ -62,12 +63,13 @@ registerType({
 
   props(el, h) {
     const g = h.group("图标");
-    const def = ICONS[el.icon];
+    const key = resolveIconName(el.iconName);
+    const def = key ? ICONS[key] : null;
     const row = document.createElement("div");
     row.className = "icon-prop-row";
     const thumb = document.createElement("span");
     thumb.className = "icon-prop-thumb";
-    thumb.innerHTML = iconThumb(el.icon, { size: 28 });
+    thumb.innerHTML = key ? iconThumb(key, { size: 28 }) : "?";
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "btn btn-sm";
@@ -83,6 +85,11 @@ registerType({
       const hint = document.createElement("div");
       hint.className = "prop-hint";
       hint.textContent = `${def.label} · ${def.cat} · 点击搜索框可快速筛选`;
+      g.appendChild(hint);
+    } else {
+      const hint = document.createElement("div");
+      hint.className = "prop-hint";
+      hint.textContent = `未知图标 ${el.iconName}（官方 fas: 格式仅映射常见图标）`;
       g.appendChild(hint);
     }
     const grid = document.createElement("div");

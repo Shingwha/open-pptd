@@ -46,14 +46,31 @@ function solidRgb(hex) {
   return el("a:srgbClr", { val: rgb }, kids.join(""));
 }
 
-/** 位置与尺寸（bounds=[x,y,w,h]，pt → EMU）。rotation 为度。 */
-export function buildXfrm(bounds, rotation) {
+/** 位置与尺寸（bounds=[x,y,w,h]，pt → EMU）。rotation 为度；flip=[水平, 垂直]。 */
+export function buildXfrm(bounds, rotation, flip) {
   const [x, y, w, h] = bounds;
   const off = el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) });
   const ext = el("a:ext", { cx: Math.round(w * 12700), cy: Math.round(h * 12700) });
   const attrs = {};
   if (rotation) attrs.rot = Math.round(rotation * 60000);
+  if (Array.isArray(flip)) {
+    if (flip[0]) attrs.flipH = "1";
+    if (flip[1]) attrs.flipV = "1";
+  }
   return el("a:xfrm", attrs, off + ext);
+}
+
+/** 阴影 → a:effectLst（文字/形状阴影共用；offset [x,y] 向下为正 → dist/dir 顺时针）。 */
+export function shadowElement(theme, shadow) {
+  if (!shadow) return "";
+  const [dx = 0, dy = 0] = shadow.offset || [];
+  const attrs = {};
+  if (shadow.blur) attrs.blurRad = Math.round(shadow.blur * 12700);
+  if (dx || dy) {
+    attrs.dist = Math.round(Math.hypot(dx, dy) * 12700);
+    attrs.dir = Math.round((Math.atan2(dy, dx) * 180) / Math.PI * 60000);
+  }
+  return el("a:effectLst", {}, el("a:outerShdw", attrs, colorElement(theme, shadow.color)));
 }
 
 /**

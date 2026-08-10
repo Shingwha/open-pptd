@@ -2,16 +2,42 @@
 // renderer/text.js — 富文本 → DOM（与 writer/text.js 同一继承链）
 // ----------------------------------------------------------------------------
 // 继承链：content 基础样式 → 容器层（root）→ 段落（显式差异）→ run（显式差异）
-// 关键：基础样式只写一次（容器层继承），span/段落内联样式只保留"显式差异"，
-//       避免双击编辑时 domToRichText 把烘焙样式反解析回模型。
+// 关键：基础样式只写一次（容器层继承），span/段落内联样式只保留"显式差异"。
+//
+// 官方默认值（TextContent）：color #000000 / fontSize 18 / fontFamily MiSans /
+// lineHeight 1 / align [left, top]。渲染端补齐浏览器 CSS 与 PPT 默认的差异。
+// 公式（\(...\)）：只继承 color / font-size（官方规范），KaTeX → MathML 原生渲染。
 // ============================================================================
 
 import { parseRichText } from "../core/richtext.js";
 import { computeBaseStyle } from "../core/style.js";
+import { latexToMathml } from "../core/latex.js";
 import { resolveColor, resolveFont } from "../core/theme.js";
 
-/** run 层：只写 run 显式设置的样式（相对 base 的差异）。 */
+const DEFAULT_FONT_SIZE = 18;
+const DEFAULT_LINE_HEIGHT = 1;
+
+/** 文字渐变 → CSS linear-gradient 声明（官方 GradientFill：angle 0°=左→右，顺时针）。 */
+function gradientCss(theme, gradient) {
+  if (!gradient || gradient.gradientType === "radial" || !Array.isArray(gradient.stops) || gradient.stops.length < 2) return null;
+  const angle = Number(gradient.angle) || 0;
+  const stops = gradient.stops
+    .map((s) => `${resolveColor(theme, s.color) || s.color} ${Math.round((s.position ?? 0) * 100)}%`)
+    .join(", ");
+  return `linear-gradient(${angle}deg, ${stops})`;
+}
+
+/** 文字阴影 → CSS text-shadow（offset [x,y] 向下为正，与 OOXML dist/dir 同向）。 */
+function shadowCss(theme, shadow) {
+  if (!shadow) return null;
+  const [dx = 0, dy = 0] = shadow.offset || [];
+  const color = resolveColor(theme, shadow.color) || shadow.color;
+  return `${dx}px ${dy}px ${shadow.blur || 0}px ${color}`;
+}
+
+/** run 层：只写 run 显式设置的样式（相对 base 的差异）。公式 run → KaTeX MathML。 */
 function runSpan(theme, run, base) {
+  if (run.formula) return formulaSpan(theme, run, base);
   const s = run.style || {};
   const node = run.href ? document.createElement("a") : document.createElement("span");
   if (run.href) node.href = run.href;
@@ -42,6 +68,36 @@ function runSpan(theme, run, base) {
   return node;
 }
 
+/**
+ * 公式 run → 内联 span（KaTeX MathML，浏览器原生渲染）。
+ * 官方规范：公式只继承 color 和 font-size（run.style 中已由解析器提取上下文值）。
+ * 解析失败回退显示 LaTeX 源码（浅色底纹提示）。
+ */
+function formulaSpan(theme, run, base) {
+  const node = document.createElement("span");
+  node.className = "pptd-formula";
+  node.dataset.formula = "1";
+  const css = [];
+  const fontSize = run.style?.fontSize || base.fontSize || DEFAULT_FONT_SIZE;
+  css.push(`font-size:${fontSize}px`);
+  const color = (run.style?.color || base.color) && !base.gradient ? resolveColor(theme, run.style?.color || base.color) : null;
+  if (color) css.push(`color:${color}`);
+  node.style.cssText = css.join(";");
+  const mml = latexToMathml(run.latex);
+  if (mml) {
+    node.innerHTML = mml;
+    const math = node.querySelector("math");
+    if (math) {
+      math.style.fontFamily = "'Cambria Math','STIX Two Math','Latin Modern Math',math";
+    }
+  } else {
+    node.textContent = `\\(${run.latex}\\)`;
+    node.style.background = "#FFF3E0";
+    node.style.color = "#E65100";
+  }
+  return node;
+}
+
 /** 段落层：只写段落显式样式（text-align / line-height / margin…）。 */
 function applyParaStyle(el, para) {
   const s = para.style || {};
@@ -69,17 +125,14 @@ export function renderTextContent(theme, content) {
 
   const root = document.createElement("div");
   const css = ["width:100%;height:100%;box-sizing:border-box;overflow:hidden;white-space:pre-line"];
-  // —— content 基础样式 → 容器层（一次，继承）——
-  if (base.fontSize) css.push(`font-size:${base.fontSize}px`);
+  // —— content 基础样式 → 容器层（一次，继承）；未设置时补齐官方默认值 ——
+  css.push(`font-size:${base.fontSize || DEFAULT_FONT_SIZE}px`);
   const color = resolveColor(theme, base.color);
   if (color) css.push(`color:${color}`);
   if (base.bold) css.push("font-weight:bold");
   if (base.italic) css.push("font-style:italic");
-  const deco = [];
-  if (base.underline) deco.push("underline");
-  if (deco.length) css.push(`text-decoration:${deco.join(" ")}`);
   if (base.lineHeightPx) css.push(`line-height:${base.lineHeightPx}px`);
-  else if (base.lineHeight) css.push(`line-height:${base.lineHeight}`);
+  else css.push(`line-height:${base.lineHeight || DEFAULT_LINE_HEIGHT}`);
   if (base.letterSpacing != null) css.push(`letter-spacing:${base.letterSpacing}px`);
   const font = resolveFont(theme, base.fontFamily);
   css.push(`font-family:"${font.latin}","${font.ea}",sans-serif`);
@@ -88,7 +141,20 @@ export function renderTextContent(theme, content) {
     if (bg) css.push(`background:${bg}`);
   }
   if (base.textAlign) css.push(`text-align:${base.textAlign}`);
-  const vAlign = Array.isArray(content?.align) ? content.align[1] : "middle";
+  // 文字渐变：作用于文字本身（background-clip: text），与 color 互斥
+  const grad = gradientCss(theme, base.gradient);
+  if (grad) {
+    css.push(`background:${grad}`);
+    css.push("-webkit-background-clip:text;background-clip:text;color:transparent");
+  }
+  // 文字阴影
+  const shadow = shadowCss(theme, base.shadow);
+  if (shadow) css.push(`text-shadow:${shadow}`);
+  // 垂直文字 / 不换行（官方 textDirection / wrap）
+  if (content?.textDirection === "vertical") css.push("writing-mode:vertical-rl;text-orientation:upright");
+  if (content?.wrap === false) css.push("white-space:pre;overflow:visible");
+  // 垂直对齐（官方缺省 top；middle/bottom 用 flex 撑开）
+  const vAlign = Array.isArray(content?.align) ? content.align[1] : "top";
   if (vAlign === "middle" || vAlign === "bottom") {
     css.push("display:flex;flex-direction:column;justify-content:" + (vAlign === "middle" ? "center" : "flex-end"));
   }
@@ -118,14 +184,21 @@ export function renderTextContent(theme, content) {
   return root;
 }
 
-/** 文本元素 → 定位 DOM（含 bounds）。 */
+/** 文本元素 → 定位 DOM（含 bounds、rotation、opacity、flip）。 */
 export function renderText(theme, el) {
   const [x, y, w, h] = el.bounds;
   const box = document.createElement("div");
   box.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;overflow:hidden;`;
   box.dataset.elementId = el.elementId;
   box.dataset.elementType = "text";
-  if (el.rotation) box.style.transform = `rotate(${el.rotation}deg)`;
+  const transforms = [];
+  if (el.rotation) transforms.push(`rotate(${el.rotation}deg)`);
+  // flip：OOXML 语义为先翻转后旋转 → CSS transform 从右到左应用，scale 放最后
+  if (Array.isArray(el.flip)) {
+    if (el.flip[0]) transforms.push("scaleX(-1)");
+    if (el.flip[1]) transforms.push("scaleY(-1)");
+  }
+  if (transforms.length) box.style.transform = transforms.join(" ");
   if (el.opacity != null) box.style.opacity = el.opacity;
   box.appendChild(renderTextContent(theme, el.content));
   return box;

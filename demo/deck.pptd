@@ -1,0 +1,41 @@
+version: v2
+title: PPTD v2 格式对齐验证
+size: [960, 540]
+theme:
+  colors:
+    primary: "#2563EB"
+    accent: "#F59E0B"
+    text: "#1F2937"
+    muted: "#6B7280"
+    line: "#E5E7EB"
+  textStyles:
+    title:
+      fontSize: 40
+      color: "$primary"
+      bold: true
+    subtitle:
+      fontSize: 18
+      color: "$muted"
+    body:
+      fontSize: 16
+      color: "$text"
+      lineHeight: 1.6
+    caption:
+      fontSize: 12
+      color: "$muted"
+  tableStyles:
+    default:
+      firstRowStyle:
+        fill: {type: solid, color: "$primary"}
+        color: "#FFFFFF"
+        bold: true
+      bodyStyles:
+        - {fill: {type: solid, color: "#F8FAFC"}}
+        - {fill: {type: solid, color: "#FFFFFF"}}
+pages:
+  - pages/1_cover.page
+  - pages/2_richtext.page
+  - pages/3_formula.page
+  - pages/4_layout.page
+  - pages/5_effects.page
+  - pages/6_icons.page

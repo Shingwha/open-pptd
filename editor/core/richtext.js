@@ -11,6 +11,10 @@ const BLOCK_TAGS = new Set(["p", "li"]);
 const LIST_TAGS = new Set(["ul", "ol"]);
 const INLINE_TAGS = new Set(["span", "strong", "em", "u", "s", "sup", "sub", "a", "br"]);
 
+// LaTeX 公式分隔符：\(...\)（官方 PPTD 富文本规范）。公式内不允许富文本标签，
+// 且只继承 color / font-size 两种样式（官方规定）。
+const FORMULA_RE = /\\\(([\s\S]*?)\\\)/g;
+
 const TOKEN_RE = /<\/?([a-zA-Z][\w-]*)((?:\s+[^<>]*?)?)\/?>|([^<]+)/g;
 
 function extractAttr(attrStr, name) {
@@ -189,6 +193,15 @@ function nodesToParagraphs(nodes) {
       para.runs.push({ text, style, href: h });
     }
   };
+  /** 公式 run：只继承当前上下文的 color / font-size（官方规范），不参与 run 合并。 */
+  const pushFormula = (latex, extraStyle) => {
+    ensurePara();
+    const merged = mergeStyle(styleStack[styleStack.length - 1], extraStyle);
+    const style = {};
+    if (merged.color) style.color = merged.color;
+    if (merged.fontSize) style.fontSize = merged.fontSize;
+    para.runs.push({ formula: true, latex, style });
+  };
   const sameStyle = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
   const walk = (nodeList) => {
@@ -196,7 +209,20 @@ function nodesToParagraphs(nodes) {
       if (node.type === "text") {
         // 跳过全空白文本节点（标签间换行/缩进），避免产生空段落
         if (!node.text.trim()) continue;
-        pushRun(node.text, null, null);
+        // 文本中混排公式：\(...\) 拆分为 formula run（官方 PPTD 富文本规范）
+        let last = 0;
+        let m;
+        FORMULA_RE.lastIndex = 0;
+        while ((m = FORMULA_RE.exec(node.text)) !== null) {
+          if (m.index > last) pushRun(node.text.slice(last, m.index), null, null);
+          pushFormula(m[1], null);
+          last = m.index + m[0].length;
+        }
+        if (last === 0) {
+          pushRun(node.text, null, null);
+        } else if (last < node.text.length) {
+          pushRun(node.text.slice(last), null, null);
+        }
         continue;
       }
       const name = node.name;
@@ -253,7 +279,7 @@ function nodesToParagraphs(nodes) {
   // 文本中间独立的 <br/> 空行段原样保留（预览可见，导出一致）。
   for (const para of paragraphs) {
     const lastRun = para.runs[para.runs.length - 1];
-    if (!lastRun) continue;
+    if (!lastRun || lastRun.formula) continue; // 公式 run 无 text，无尾部换行问题
     const stripped = lastRun.text.replace(/\n+$/, "");
     if (stripped === lastRun.text) continue; // 无尾部换行
     if (stripped === "" && para.runs.length === 1) continue; // 段内仅 <br/>（空行段）→ 保留原样
@@ -262,7 +288,7 @@ function nodesToParagraphs(nodes) {
   }
   while (paragraphs.length > 0) {
     const last = paragraphs[paragraphs.length - 1];
-    if (last.runs.some((r) => r.text.trim() !== "")) break; // 有实际内容 → 停
+    if (last.runs.some((r) => (r.formula ? true : r.text.trim() !== ""))) break; // 有实际内容 → 停
     paragraphs.pop(); // 末尾空段 → 丢弃
   }
   return paragraphs;
@@ -284,10 +310,12 @@ export function parseRichText(input) {
   return { paragraphs };
 }
 
-/** 纯文本提取（用于无障碍/测试）。 */
+/** 纯文本提取（公式以 \(...\) 源码形式保留，编辑/无障碍用）。 */
 export function richTextPlainText(input) {
   return parseRichText(input)
-    .paragraphs.map((p) => p.runs.map((r) => r.text).join(""))
+    .paragraphs.map((p) =>
+      p.runs.map((r) => (r.formula ? `\\(${r.latex}\\)` : r.text)).join("")
+    )
     .join("\n");
 }
 

@@ -25,8 +25,8 @@ export const DEFAULT_THEME = {
     ],
   },
   fonts: {
-    latin: "Microsoft YaHei",
-    ea: "Microsoft YaHei",
+    latin: "MiSans",
+    ea: "MiSans",
   },
   textStyles: {
     title:    { fontSize: 32, color: "$text", bold: true, lineHeight: 1.3 },

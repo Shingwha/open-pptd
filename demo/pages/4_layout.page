@@ -1,0 +1,88 @@
+pageType: content
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # —— 页面标题 ——
+  - elementId: pg-title
+    elementType: text
+    bounds: [48, 36, 500, 40]
+    content:
+      style: "$title"
+      text: 布局字段（默认值对齐官方）
+  # —— 默认对齐 [left, top]（不写 align）——
+  - elementId: lo-1
+    elementType: text
+    bounds: [48, 96, 250, 120]
+    content:
+      fontSize: 15
+      text: |
+        不写 align
+        默认 [left, top]
+        行距默认 1
+  # —— 显式 [left, middle] ——
+  - elementId: lo-2
+    elementType: text
+    bounds: [330, 96, 250, 120]
+    content:
+      fontSize: 15
+      align: [left, middle]
+      text: |
+        显式 [left, middle]
+        垂直居中
+        行距 1.4
+      lineHeight: 1.4
+  # —— 显式 [center, bottom] ——
+  - elementId: lo-3
+    elementType: text
+    bounds: [612, 96, 300, 120]
+    content:
+      fontSize: 15
+      align: [center, bottom]
+      text: |
+        显式 [center, bottom]
+        右下角对齐
+  # —— 背景色高亮 + 固定行高 ——
+  - elementId: lo-4
+    elementType: text
+    bounds: [48, 240, 420, 80]
+    content:
+      fontSize: 15
+      backgroundColor: "#FEF3C7"
+      lineHeightPx: 24
+      text: |
+        文字背景高亮 #FEF3C7
+        固定行高 lineHeightPx: 24
+  # —— 字距 letterSpacing ——
+  - elementId: lo-5
+    elementType: text
+    bounds: [500, 240, 412, 40]
+    content:
+      fontSize: 16
+      letterSpacing: 4
+      text: "字距 letterSpacing: 4（加宽）"
+  # —— 不换行 wrap: false（超出溢出）——
+  - elementId: lo-6
+    elementType: text
+    bounds: [48, 340, 300, 40]
+    content:
+      fontSize: 16
+      wrap: false
+      color: "#DC2626"
+      text: "wrap: false 不换行超出边界溢出显示"
+  # —— 竖排文字 textDirection ——
+  - elementId: lo-7
+    elementType: text
+    bounds: [620, 300, 80, 160]
+    content:
+      fontSize: 16
+      textDirection: vertical
+      align: [center, middle]
+      text: "竖排文字：textDirection: vertical"
+  # —— 主题样式引用 $body ——
+  - elementId: lo-8
+    elementType: text
+    bounds: [48, 400, 500, 60]
+    content:
+      style: "$body"
+      text: "主题引用 style: \"$body\"（fontSize 16 / color $text / lineHeight 1.6）"

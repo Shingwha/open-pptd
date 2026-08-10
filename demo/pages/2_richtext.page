@@ -1,0 +1,54 @@
+pageType: content
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # —— 页面标题 ——
+  - elementId: pg-title
+    elementType: text
+    bounds: [48, 36, 500, 40]
+    content:
+      style: "$title"
+      text: 富文本标签全家桶
+  - elementId: pg-sub
+    elementType: text
+    bounds: [48, 84, 600, 30]
+    content:
+      style: "$caption"
+      text: "<p>官方 Rich Text：p / span / strong / em / u / s / sup / sub / a / ul / ol / li</p>"
+  # —— 语义标签 + 行内样式 + 段落样式 ——
+  - elementId: rt-1
+    elementType: text
+    bounds: [48, 140, 864, 150]
+    content:
+      fontSize: 17
+      align: [left, top]
+      text: |
+        <p><strong>加粗</strong> · <em>斜体</em> · <u>下划线</u> · <s>删除线</s> · <sup>上标</sup>与<sub>下标</sub></p>
+        <p><span style="color:$primary;">主题色引用 $primary</span> · <span style="color:#EF4444;">十六进制</span> · <span style="font-size:24px;">行内字号</span> · <span style="background-color:#FEF3C7;">文字高亮</span></p>
+        <p style="text-align:center; line-height:1.8">居中段落 + 1.8 倍行距（段落级样式）</p>
+        <p style="text-align:right">右对齐段落，行距继承默认</p>
+  # —— 超链接 ——
+  - elementId: rt-2
+    elementType: text
+    bounds: [48, 310, 500, 40]
+    content:
+      fontSize: 15
+      text: '<p>超链接：<a href="https://www.kimi.com">Kimi 官网</a>（自动蓝色下划线）</p>'
+  # —— 有序 / 无序列表 ——
+  - elementId: rt-3
+    elementType: text
+    bounds: [48, 370, 420, 130]
+    content:
+      fontSize: 15
+      text: |
+        <p>无序列表：</p>
+        <ul><li>第一项</li><li>第二项</li><li>第三项</li></ul>
+  - elementId: rt-4
+    elementType: text
+    bounds: [520, 370, 392, 130]
+    content:
+      fontSize: 15
+      text: |
+        <p>有序列表：</p>
+        <ol><li>步骤一</li><li>步骤二</li><li>步骤三</li></ol>

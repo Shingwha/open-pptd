@@ -8,8 +8,13 @@
 import { esc, escAttr, el } from "./xml.js";
 import { parseRichText } from "../core/richtext.js";
 import { resolveFont } from "../core/theme.js";
+import { latexToMathml } from "../core/latex.js";
+import { mathmlToOmml } from "../core/mathml2omml.js";
+import { injectRunStyle } from "./formula.js";
 import { computeBaseStyle, pickDefined } from "../core/style.js";
-import { colorElement, solidFillElement, buildXfrm } from "./drawing.js";
+import { colorElement, solidFillElement, buildXfrm, buildFill, shadowElement } from "./drawing.js";
+
+const M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math";
 
 const H_ALIGN = { left: "l", center: "ctr", right: "r", justify: "just", distributed: "dist" };
 
@@ -29,8 +34,12 @@ function runAttrs(s) {
 function runXml(theme, s, hrefId) {
   const attrs = runAttrs(s);
   const kids = [];
-  // OOXML rPr 子元素顺序：fill 组 → highlight → latin/ea/cs → hlinkClick
-  const fill = solidFillElement(theme, s.color);
+  // OOXML rPr 子元素顺序：fill 组 → highlight → latin/ea/cs → effectLst → hlinkClick
+  // 文字渐变优先于单色（官方 TextContent.gradient 作用于文字本身）
+  const fill =
+    s.gradient && s.gradient.type === "gradient" && Array.isArray(s.gradient.stops)
+      ? buildFill(theme, s.gradient)
+      : solidFillElement(theme, s.color);
   if (fill) kids.push(fill);
   if (s.backgroundColor) {
     kids.push(el("a:highlight", {}, el("a:solidFill", {}, colorElement(theme, s.backgroundColor))));
@@ -39,6 +48,9 @@ function runXml(theme, s, hrefId) {
   kids.push(
     `<a:latin typeface="${escAttr(font.latin)}"/><a:ea typeface="${escAttr(font.ea)}"/><a:cs typeface="${escAttr(font.ea)}"/>`
   );
+  // 文字阴影（官方 TextContent.shadow）
+  const shdw = shadowElement(theme, s.shadow);
+  if (shdw) kids.push(shdw);
   if (hrefId) {
     kids.push(el("a:hlinkClick", { "r:id": hrefId, "xmlns:r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships" }));
   }
@@ -110,6 +122,7 @@ function paragraphProps(style) {
 
 /**
  * 构建段落 XML（调用方负责注册超链接）。
+ * 公式 run（\(...\)）→ 行内 m:oMath 与 a:r 混排（PowerPoint 原生公式）。
  * @param {object} para 富文本段落 { style, listType, runs }
  * @param {object} base 基线样式
  * @param {function} registerLink (url) => rId
@@ -118,10 +131,27 @@ export function buildParagraph(theme, para, base, registerLink) {
   const style = { ...base, ...pickDefined(para.style) };
   if (para.listType) style.listType = para.listType; // 列表信息传给段落属性（buChar/缩进）
   const runs = para.runs
-    .map((run) => buildRun(theme, run, style, registerLink))
+    .map((run) => (run.formula ? buildFormulaRun(theme, run, style) : buildRun(theme, run, style, registerLink)))
     .join("");
   if (!runs) return `<a:p>${paragraphProps(style)}</a:p>`;
   return `<a:p>${paragraphProps(style)}${runs}</a:p>`;
+}
+
+/**
+ * 行内公式 run → <m:oMath>（命名空间自带，无需改动 slide 根）。
+ * 官方规范：公式只继承 color 和 font-size；解析失败回退 LaTeX 源码文本。
+ */
+function buildFormulaRun(theme, run, baseStyle) {
+  const color = run.style?.color || baseStyle.color;
+  const fontSize = run.style?.fontSize || baseStyle.fontSize;
+  const mml = latexToMathml(run.latex);
+  if (!mml) {
+    const rPr = runXml(theme, { ...baseStyle, ...pickDefined(run.style) }, null);
+    return `<a:r>${rPr}<a:t>${esc(run.latex)}</a:t></a:r>`;
+  }
+  const omml = mathmlToOmml(mml);
+  const styled = injectRunStyle(omml, { color, fontSize }, theme);
+  return `<m:oMath xmlns:m="${M_NS}">${styled}</m:oMath>`;
 }
 
 /** 文本元素 → p:sp XML（txBox + txBody）。
@@ -132,9 +162,13 @@ export function buildParagraph(theme, para, base, registerLink) {
 export function textXml(theme, element, ctx) {
   const b = element.bounds;
   const spPr =
-    buildXfrm(b, element.rotation) +
+    buildXfrm(b, element.rotation, element.flip) +
     el("a:prstGeom", { prst: "rect" }, el("a:avLst")) +
-    el("a:noFill");
+    el("a:noFill") +
+    // 元素级整体透明度（官方 Text.opacity）：alphaModFix 作用于整个文本框
+    (element.opacity != null && element.opacity < 1
+      ? el("a:effectLst", {}, el("a:alphaModFix", { amt: Math.round(element.opacity * 100000) }))
+      : "");
   const body = buildTextBody(theme, element.content, ctx.registerLink);
   return (
     el("p:sp", {}, [
@@ -160,10 +194,10 @@ export function buildTextBody(theme, content, registerLink) {
   const bodyAttrs = { lIns: 0, tIns: 0, rIns: 0, bIns: 0, wrap: "square" };
   if (content?.wrap === false) bodyAttrs.wrap = "none";
   if (content?.textDirection === "vertical") bodyAttrs.vert = "eaVert";
-  // 垂直对齐：与预览一致（缺省 middle，避免导出文字顶对齐“偏上”）
+  // 垂直对齐（官方缺省 [left, top] → anchor "t"）
   const vAlignMap = { top: "t", middle: "ctr", bottom: "b" };
-  const v = Array.isArray(content?.align) ? content.align[1] : "middle";
-  bodyAttrs.anchor = vAlignMap[v] || "ctr";
+  const v = Array.isArray(content?.align) ? content.align[1] : "top";
+  bodyAttrs.anchor = vAlignMap[v] || "t";
   // 自动调整：用 normAutofit（溢出时缩字），不用 spAutoFit。
   // spAutoFit = “调整形状大小以容纳文字”：在 PowerPoint 中一旦点进文本框
   // 编辑，形状会以锚点为中心向两侧暴涨（实测 H 100→1036pt、Top 32→-436pt），

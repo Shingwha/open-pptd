@@ -6,14 +6,15 @@
 // ============================================================================
 
 import { ICONS } from "../core/icon-library.js";
+import { resolveIconName } from "../core/icon-name.js";
 import { iconSvgBody, normalizeIconFill } from "../core/icon-svg.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-/** 图标元素 → SVG（等比缩放居中，不拉伸变形）。 */
+/** 图标元素 → SVG（等比缩放居中，不拉伸变形）。未知图标 → 占位框。 */
 export function renderIcon(theme, el) {
   const [x, y, w, h] = el.bounds;
-  const def = ICONS[el.icon];
+  const def = ICONS[resolveIconName(el.iconName)];
   const svg = document.createElementNS(SVG_NS, "svg");
   svg.setAttribute("width", w);
   svg.setAttribute("height", h);

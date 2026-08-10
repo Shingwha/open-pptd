@@ -40,6 +40,9 @@ export function computeBaseStyle(theme, content) {
     lineHeightPx: content?.lineHeightPx,
     letterSpacing: content?.letterSpacing,
     marginTop: content?.marginTop,
+    // 文字装饰（官方 TextContent）：渐变作用于文字本身，阴影为文字阴影
+    gradient: content?.gradient,
+    shadow: content?.shadow,
     // content.align = [水平, 垂直]；水平对齐统一映射为 textAlign（预览=导出）
     textAlign: Array.isArray(content?.align) ? content.align[0] : undefined,
   };

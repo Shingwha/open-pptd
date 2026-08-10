@@ -1,0 +1,55 @@
+pageType: content
+background:
+  type: solid
+  color: "#FFFFFF"
+elements:
+  # —— 页面标题 ——
+  - elementId: pg-title
+    elementType: text
+    bounds: [48, 36, 500, 40]
+    content:
+      style: "$title"
+      text: LaTeX 公式混排（\(...\) 富文本内嵌）
+  - elementId: pg-sub
+    elementType: text
+    bounds: [48, 84, 760, 30]
+    content:
+      style: "$caption"
+      text: "公式只继承 color / font-size；对齐由 <p style=\"text-align:...\"> 控制"
+  # —— 行内混排 ——
+  - elementId: fm-1
+    elementType: text
+    bounds: [48, 140, 864, 60]
+    content:
+      fontSize: 22
+      text: '<p>勾股定理：\(a^2 + b^2 = c^2\)，其中 \(c\) 为斜边</p>'
+  # —— 行内混排（span 内公式继承颜色字号）——
+  - elementId: fm-2
+    elementType: text
+    bounds: [48, 210, 864, 60]
+    content:
+      fontSize: 20
+      text: '<p>二次方程：<span style="color:$primary; font-size:26px;">\(x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}\)</span>（继承主题色与 26px）</p>'
+  # —— 独立公式段落 + 对齐 ——
+  - elementId: fm-3
+    elementType: text
+    bounds: [48, 280, 864, 70]
+    content:
+      fontSize: 22
+      text: |
+        <p style="text-align:center">\(\int_0^1 x^2 \mathrm{d}x = \frac{1}{3}\)</p>
+  - elementId: fm-4
+    elementType: text
+    bounds: [48, 360, 864, 60]
+    content:
+      fontSize: 20
+      text: |
+        <p style="text-align:right">\(\sum_{i=1}^{n} i = \frac{n(n+1)}{2}\)</p>
+  # —— 复杂公式（矩阵 / 分段函数）——
+  - elementId: fm-5
+    elementType: text
+    bounds: [48, 430, 864, 80]
+    content:
+      fontSize: 16
+      text: |
+        <p>\(\begin{pmatrix} a & b \\ c & d \end{pmatrix}\) 与分段函数 \(f(x) = \begin{cases} x^2 & x > 0 \\ 0 & x \leq 0 \end{cases}\)</p>

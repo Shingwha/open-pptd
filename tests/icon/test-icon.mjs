@@ -51,15 +51,15 @@ ok(bullseye.includes("A7 7") && bullseye.includes("a7 7"), "bullseye 弧命令�
 
 console.log("== 2. 全图标导出 → 包结构对齐官方格式 ==");
 const elements = keys.map((key, i) => ({
-  elementId: `ic-${i}`, elementType: "icon", icon: key,
+  elementId: `ic-${i}`, elementType: "icon", iconName: `bs:${key}`,
   bounds: [20 + (i % 16) * 58, 16 + Math.floor(i / 16) * 42, 32, 32],
-  fill: { color: i % 3 === 0 ? "$primary" : i % 3 === 1 ? "$accent" : "$text" },
+  fill: { type: "solid", color: i % 3 === 0 ? "$primary" : i % 3 === 1 ? "$accent" : "$text" },
 }));
 const deck = {
   version: "v2", title: "图标回归测试", theme: "blue", size: [960, 540],
   pages: [{ pageType: "content", background: { type: "solid", color: "#FFFFFF" }, elements }],
 };
-const bytes = buildPptx(deck);
+const bytes = await buildPptx(deck);
 const dir = mkdtempSync(join(tmpdir(), "icon-test-"));
 try {
   const files = unzip(bytes, dir);

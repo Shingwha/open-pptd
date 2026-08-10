@@ -4,7 +4,6 @@
 
 import { registerType } from "./registry.js";
 import { nextElementId } from "../core/model.js";
-import { richTextPlainText } from "../core/richtext.js";
 import { renderText } from "../renderer/text.js";
 import { textXml } from "../writer/text.js";
 import { svgIcon } from "../ui.js";
@@ -31,13 +30,13 @@ registerType({
       {
         id: "text",
         label: "文字",
-        desc: "双击编辑内容",
+        desc: "双击编辑内容（支持富文本与 \(公式\)）",
         icon: svgIcon('<path d="M5 5h14M12 5v14M9 19h6"/>'),
         create: () => ({
           elementId: nextElementId("text"),
           elementType: "text",
           bounds: [340, 220, 280, 60],
-          content: { text: "双击编辑文字", fontSize: 20, align: ["center", "middle"] },
+          content: { text: "双击编辑文字", align: ["center", "middle"] },
         }),
       },
     ],
@@ -48,11 +47,11 @@ registerType({
 
   props(el, h) {
     const g = h.group("文字");
-    // 内容：纯文本编辑，textarea 高度跟随文字数量（样式由下方控件控制）
-    const ta = h.textInput(richTextPlainText(el.content?.text || ""), (v) => {
+    // 内容：富文本 DSL 源码编辑（保留 <p>/<span> 标签与 \(...\) 公式，精确往返）
+    const ta = h.textInput(el.content?.text || "", (v) => {
       if (!el.content) el.content = {};
       el.content.text = v;
-    }, { rows: 2, placeholder: "输入文字内容…" });
+    }, { rows: 3, placeholder: "文本内容… 支持 <p>/<strong>/<u> 标签与 \(LaTeX\) 公式" });
     g.appendChild(h.field("内容", ta));
 
     g.appendChild(h.field("样式", h.selectInput(STYLE_OPTIONS, el.content?.style || "", (v) => {
@@ -70,19 +69,33 @@ registerType({
       if (v) el.content.fontFamily = v;
       else delete el.content.fontFamily;
     })));
-    grid.appendChild(h.field("行距", h.numInput(el.content?.lineHeight || 1.25, (v) => ((el.content ||= {}).lineHeight = v), { min: 0.5, step: 0.05 })));
+    grid.appendChild(h.field("行距", h.numInput(el.content?.lineHeight || 1, (v) => ((el.content ||= {}).lineHeight = v), { min: 0.5, step: 0.05 })));
+    grid.appendChild(h.field("字距", h.numInput(el.content?.letterSpacing ?? 0, (v) => {
+      if (!el.content) el.content = {};
+      if (v) el.content.letterSpacing = v;
+      else delete el.content.letterSpacing;
+    }, { step: 0.5 })));
     grid.appendChild(h.field("对齐", h.selectInput(ALIGN_OPTIONS, Array.isArray(el.content?.align) ? el.content.align[0] : "left", (v) => {
-      (el.content ||= {}).align = [v, Array.isArray(el.content.align) ? el.content.align[1] : "middle"];
+      (el.content ||= {}).align = [v, Array.isArray(el.content.align) ? el.content.align[1] : "top"];
     })));
-    grid.appendChild(h.field("垂直", h.selectInput(VALIGN_OPTIONS, Array.isArray(el.content?.align) ? el.content.align[1] : "middle", (v) => {
+    grid.appendChild(h.field("垂直", h.selectInput(VALIGN_OPTIONS, Array.isArray(el.content?.align) ? el.content.align[1] : "top", (v) => {
       (el.content ||= {}).align = [Array.isArray(el.content.align) ? el.content.align[0] : "left", v];
+    })));
+    grid.appendChild(h.field("方向", h.selectInput([["horizontal", "横排"], ["vertical", "竖排"]], el.content?.textDirection || "horizontal", (v) => {
+      if (!el.content) el.content = {};
+      if (v === "vertical") el.content.textDirection = v;
+      else delete el.content.textDirection;
     })));
     const checks = document.createElement("div");
     checks.className = "prop-checks";
     checks.append(
       h.checkbox("粗体", !!el.content?.bold, (v) => ((el.content ||= {}).bold = v)),
       h.checkbox("斜体", !!el.content?.italic, (v) => ((el.content ||= {}).italic = v)),
-      h.checkbox("下划线", !!el.content?.underline, (v) => ((el.content ||= {}).underline = v))
+      h.checkbox("自动换行", el.content?.wrap !== false, (v) => {
+        if (!el.content) el.content = {};
+        if (!v) el.content.wrap = false;
+        else delete el.content.wrap;
+      })
     );
     grid.appendChild(checks);
     g.appendChild(grid);
@@ -99,7 +112,7 @@ registerType({
       })
     );
     h.label("字号");
-    h.select(FONT_SIZE_OPTIONS.map((n) => [String(n || ""), n ? `${n}px` : "默认"]), String(c.fontSize || ""), (v) =>
+    h.select(FONT_SIZE_OPTIONS.map((n) => [String(n || ""), n ? `${n}px` : "默认 18px"]), String(c.fontSize || ""), (v) =>
       h.change(() => {
         el.content.fontSize = v ? Number(v) : null;
       })
@@ -107,12 +120,11 @@ registerType({
     h.label("样式");
     h.btn("B", "加粗", () => h.change(() => (el.content.bold = !el.content.bold)), c.bold);
     h.btn("I", "斜体", () => h.change(() => (el.content.italic = !el.content.italic)), c.italic);
-    h.btn("U", "下划线", () => h.change(() => (el.content.underline = !el.content.underline)), c.underline);
     h.label("对齐");
     h.select(ALIGN_OPTIONS, Array.isArray(c.align) ? c.align[0] : "left", (v) =>
       h.change(() => {
-        // 垂直对齐缺省与属性面板/渲染/导出一致（middle），避免快速条调水平对齐时把垂直悄悄写成 top
-        el.content.align = [v, c.align?.[1] || "middle"];
+        // 垂直对齐缺省与官方一致（top），避免快速条调水平对齐时把垂直悄悄写成 middle
+        el.content.align = [v, c.align?.[1] || "top"];
       })
     );
     h.label("颜色");
