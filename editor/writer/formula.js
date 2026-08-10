@@ -70,7 +70,7 @@ function formulaParagraph(omml, fontSize, align) {
 
 /** 构造一个 p:sp 文本框（formula 用）；inner = txBody 段落内容。
  * spPr 与普通文本框一致：xfrm + prstGeom rect + noFill；
- * autofit 用 normAutofit（固定框体、溢出缩字），避免 PPT 编辑时 spAutoFit 暴涨。 */
+ * autofit 用 spAutoFit（PowerPoint 文本框原生默认，与普通文本框一致）。 */
 function formulaShape(theme, element, id, inner) {
   const b = element.bounds;
   const x = Math.round(b[0] * 12700);
@@ -82,7 +82,7 @@ function formulaShape(theme, element, id, inner) {
     `<p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr>` +
     `<p:spPr><a:xfrm><a:off x="${x}" y="${y}"/><a:ext cx="${w}" cy="${h}"/></a:xfrm>` +
     `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>` +
-    `<p:txBody><a:bodyPr lIns="0" tIns="0" rIns="0" bIns="0" anchor="ctr"><a:normAutofit/></a:bodyPr>` +
+    `<p:txBody><a:bodyPr lIns="0" tIns="0" rIns="0" bIns="0" anchor="ctr"><a:spAutoFit/></a:bodyPr>` +
     `<a:lstStyle/>${inner}</p:txBody></p:sp>`
   );
 }

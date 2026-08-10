@@ -231,12 +231,11 @@ export function buildTextBody(theme, content, registerLink, options = {}) {
   const vAlignMap = { top: "t", middle: "ctr", bottom: "b" };
   const v = Array.isArray(content?.align) ? content.align[1] : "top";
   bodyAttrs.anchor = vAlignMap[v] || "t";
-  // 自动调整：用 normAutofit（溢出时缩字），不用 spAutoFit。
-  // spAutoFit = “调整形状大小以容纳文字”：在 PowerPoint 中一旦点进文本框
-  // 编辑，形状会以锚点为中心向两侧暴涨（实测 H 100→1036pt、Top 32→-436pt），
-  // 布局被彻底破坏；normAutofit 保持设计框体不变，仅在溢出时等比缩小文字。
+  // 自动调整：spAutoFit（PowerPoint 文本框原生默认，与编辑器「框随内容增高」一致）。
+  // 编辑器渲染后会把 bounds 高度同步为内容实际高度（app/view.js autoGrowTexts），
+  // 因此导出框高 = 内容高，打开 PPT 不缩字、不裁剪；编辑时 PowerPoint 按内容重新适配。
   const paras = tree.paragraphs
     .map((p) => buildParagraph(theme, p, base, registerLink, options))
     .join("");
-  return el("a:bodyPr", bodyAttrs, el("a:normAutofit")) + el("a:lstStyle") + paras;
+  return el("a:bodyPr", bodyAttrs, el("a:spAutoFit")) + el("a:lstStyle") + paras;
 }

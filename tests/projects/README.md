@@ -37,8 +37,9 @@ node bin/open-pptd.js serve --project tests/projects/text
 | 文字高亮 | `a:highlight` 多包一层 `a:solidFill`（CT_Highlight 是 CT_Color 直接子元素） | 输出 `<a:highlight><a:srgbClr …/></a:highlight>` |
 | rPr 子元素顺序 | `effectLst` 排在 `latin/ea/cs` 之后，违反 CT_TextCharacterProperties 序列 | 顺序：fill → effectLst → highlight → latin/ea/cs → hlinkClick |
 | 文字/背景/形状渐变 | `a:gs pos` 单位写错（`*1000`，实际 100% = 100000） | `pos = position * 100000`（参考 `test-text.pptx` 官方 `pos="100000"`） |
-| 元素整体透明度 | — | `spPr > effectLst > alphaModFix amt`（PowerPoint 标准） |
-| 元素翻转 | — | `a:xfrm flipH/flipV` |
+| 元素翻转 | — | `a:xfrm flipH/flipV`（PowerPoint 对文字对象翻转后自动回正，属 PPT 行为，字段保留） |
+| 文字透明度 | `spPr effectLst alphaModFix` 是形状填充语义，对文字无效 | run 级 `solidFill > 颜色元素 > a:alpha`（无色时用 `schemeClr tx1`，参考 test-text.pptx 透明文字） |
+| 文本框自动调整 | `normAutofit` 溢出缩字，与编辑器「框随内容增高」矛盾 | `spAutoFit`（PowerPoint 原生默认）；编辑器渲染后同步 bounds 高度（view.js autoGrowTexts） |
 
 ### 参考文件存放
 
