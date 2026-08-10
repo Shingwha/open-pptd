@@ -173,29 +173,39 @@ node tests/color-consistency.mjs tests/projects/table   # 颜色一致性可指�
 
 ## 5. 下一步任务
 
-### 5.1 C3：chart 官方化（**下一步，优先**）——目前最薄弱
+### 5.1 C3：chart 官方化（**进行中**）——属性覆盖度对照（2026-08-10 核查）
 
-**现状**：`core/chart.js` CHART_META 仅 7 类型（bar/line/area/pie/doughnut/scatter/radar）；`writer/chart.js` 仅 bar/pie/scatter 简化实现（无 candlestick/waterfall/heatmap/treemap/sunburst/sankey/bubble）；`renderer/chart.js` 用 ECharts；`interaction/dialogs/chart-editor.js` 网格数据编辑。主题已无 chartStyles（B 阶段移除）→ `DEFAULT_CHART_PALETTE` 硬编码 8 色。
+**已完成**：13 类型注册 + 约束校验；8 类型经典体系导出（bar/line/area/scatter/bubble/pie/radar/stockChart）；3 类型 chartEx 导出（waterfall/treemap/sunburst）；seriesDefaults 官方合并；dataLabels 官方链；色循环；图表测试 13 页；参考文件入库（chart/reference/）。
 
-**官方要求**（pptd.md 1009-1500 行，逐节对照）：
+**属性覆盖度**（✓ 实现 / △ 部分 / × 未实现）：
 
-- [ ] **Chart 顶层结构**（§Chart，1017 行）：`data: ChartData`（cols/rows，约束：cols 唯一非空、行长度一致、数值列字符串解析、缺失用 null）；`series[]`（13 类型，无顶层 type）；`seriesDefaults`（§3.4 合并规则：标量覆盖/对象浅合并/数组整替，type/encode 不允许在 defaults 内）；`xAxis/yAxis`（单对象或数组 + xAxisIndex/yAxisIndex，次要轴在数值轴侧）；`barWidth/barGap/categoryGap`（bar/waterfall）；`spokeAxis`（radar）；`title/legend/dataLabels/fontFamily`；`fill/border/shadow`（图表容器框，与系列色独立）
-- [ ] **13 系列类型注册**（CHART_META 全量 + 类型共存约束 + 每类字段）：
-  - bar/line/area/radar（LinearSeriesBase：smooth/lineStyle/width/marker/nullHandling/lineColor/areaColor）
-  - scatter（marker 不能 false）/ bubble（size 通道）
-  - candlestick（open/high/low/close + upBars/downBars，仅与 bar/line/area 共存）
-  - pie/doughnut（单系列 fill 数组按扇区循环）
-  - waterfall（totalBars/increaseBars/decreaseBars 三类映射，不参与色循环）
-  - heatmap（colorScheme + colorScale：linear 端点插值 / diverging 三点对齐中点）
-  - treemap（fill 1-D/2-D 数组，子节点沿 HSL.L 每级减 10%）
-  - sunburst / sankey（flow 通道）
-- [ ] **色彩机制对齐**（§5.2）：系列 fill/lineColor/areaColor > seriesDefaults > **theme color cycle**——官方只说"colors are picked in the order the series appear in the array"，未明确定义取色序（需对照官方编辑器实现，或与用户确认；当前 DEFAULT_CHART_PALETTE 为过渡）
-- [ ] **writer/chart.js 重写**：`c:chart` XML 各类型（chartSpace/plotArea/ser/axes/dLbls/…，现仅 bar/pie/scatter）；xlsx 数据组装（buildChartXlsx）
-- [ ] **renderer/chart.js**：ECharts option 同步各类型（现 7 类型简化）
-- [ ] **chart-editor.js**：类型切换/系列样式编辑（填充色/线色/标签）
-- [ ] **测试项目扩充**：现 2 页（bar/pie）→ 各类型 + 颜色变体页
+| 官方字段 | 模型/预览 | 导出 | 缺口说明 |
+|---|---|---|---|
+| Chart 顶层 data/series/seriesDefaults | ✓ | ✓ | |
+| title / legend / dataLabels / fontFamily | ✓ | ✓ | title 对象样式未全部消费 |
+| xAxis/yAxis（show/type/min/max/reverse/title/label/axisLine/gridLine） | △ | × | 导出轴固定（catAx/valAx 默认）；**横向柱（yAxis.type=category→barDir=bar）未实现**；label numberFormat 未导出 |
+| barWidth | × | × | 柱宽/槽宽比 |
+| barGap / categoryGap | ✓ | ✓ | → overlap 负值 / gapWidth×750 |
+| spokeAxis（radar show/min/max/label/axisLine/gridLine） | △ | × | 仅 min/max 预览；导出未写 |
+| fill/border/shadow（图表容器框） | × | × | 官方独立于系列色 |
+| LinearSeriesBase（smooth/width/marker/nullHandling/lineColor） | ✓ | △ | **lineStyle dash/dot 导出未写 prstDash** |
+| bar.symbol（象形柱） | × | × | |
+| bar/line/area/candlestick xAxisIndex/yAxisIndex（多轴） | × | × | 官方数组轴规则未实现 |
+| area.stack stream | × | × | OOXML 无直接映射（预览可做） |
+| scatter.dataFilter / bubble.dataFilter | × | × | 长表分组 |
+| bubble sizeScale/sizeRange | × | × | |
+| candlestick upBars/downBars/wickStyle/OHLC+HLC | ✓ | ✓ | |
+| pie innerRadius/startAngle/fill 数组/dataLabels | ✓ | ✓ | pie border 未导出 |
+| radar category 共享约束/areaColor | ✓ | ✓ | |
+| waterfall isTotal→subtotals | ✓ | ✓ | **totalBars/increaseBars/decreaseBars 三分类色未导出**（chartEx 分色机制待研） |
+| heatmap colorScheme/colorScale/colorbar | × | × | PowerPoint 无原生类型；预览也**未消费**三字段 |
+| treemap fill 1D/2D+HSL 派生 / levels | × | × | chartEx 无颜色输出 |
+| sunburst fill 数组 / levels | × | × | 同上 |
+| sankey nodeAlign/fill 单/数组/Record | × | × | PowerPoint 无原生；预览未消费 |
 
-**实施顺序建议**：① CHART_META 13 类型注册 + 类型约束校验 → ② writer 各类型 c:chart XML（对照 PowerPoint 原生 chart XML 或 python-pptx 生成参考）→ ③ renderer ECharts 同步 → ④ 编辑器 UI → ⑤ 测试页 + 回归。**每完成一类就用 python-pptx 生成参考文件入库比对**（同合并修复的做法）。
+**下一步优先级**：① 轴配置导出（min/max/reverse/axisLine/gridLine → catAx/valAx XML）② 横向柱 barDir=bar ③ lineStyle→prstDash ④ waterfall 三分类色（chartEx dataPoint 机制研究）⑤ 多轴 xAxisIndex/yAxisIndex ⑥ 图表框 fill/border/shadow ⑦ heatmap/sankey 方案（编辑器 ECharts 截图导出或跳过）
+
+**验证状态**：用户逐页验证 out/check-chart.pptx；10/13 页（heatmap/sankey）导出空白为预期。
 
 ### 5.2 D：主题体系重建 + 编辑器 UX（暂缓）
 
