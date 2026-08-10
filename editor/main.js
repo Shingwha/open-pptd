@@ -1,11 +1,7 @@
 // ============================================================================
-// main.js — 入口（组合根 + 路由）
+// main.js — 入口（组合根）
 // ----------------------------------------------------------------------------
-// 单页三视图（hash 路由）：
-//   #gallery          画廊（默认：多主题卡片）
-//   #deck/<key>       主题详情（逐页预览）
-//   #edit?deck=<url>  编辑器（懒初始化，仅进入编辑视图才装配）
-// 编辑器只做"装配"：把 state / api / controller / props / view / io /
+// 编辑器装配：把 state / api / controller / props / view / io /
 // toolbar / keyboard 组装起来并启动。业务逻辑都在对应模块里：
 //   app/state.js    状态 + 纯模型操作
 //   app/view.js     渲染编排（画布/缩略条/面板/快速条）
@@ -123,15 +119,6 @@ function boot() {
   const deckParam = new URLSearchParams(location.search).get("deck");
   const deckUrl = deckParam ? (/^https?:/.test(deckParam) ? deckParam : new URL(deckParam, ROOT).href) : null;
   initEditor(deckUrl);
-}
-
-// 「画廊」返回链接：有未保存修改时确认（<a> 跳转前拦截）
-const toGallery = $("btn-to-gallery");
-if (toGallery) {
-  toGallery.addEventListener("click", (ev) => {
-    const dirty = window.__pptdEditor && window.__pptdEditor.state.dirty;
-    if (dirty && !window.confirm("有未保存的修改，返回画廊将丢弃。继续？")) ev.preventDefault();
-  });
 }
 
 boot();

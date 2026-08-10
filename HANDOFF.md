@@ -51,7 +51,7 @@ tests/
   projects/            组件测试项目（每组件一个：text/shape/line/image/icon/table/chart，可 serve）
   reference/           PowerPoint 官方结构基准（test-text/test-shape/test-shapes-all.pptx）
   fixtures/formula/    公式回归语料（204 用例 + 微软 XSLT 参考）
-  e2e/                 真实浏览器测试（画廊缓存/渐进加载/实时刷新）
+  e2e/                 真实浏览器测试（渐进加载/实时刷新）
   run-all.mjs          一键回归（导出全部项目 + 包一致性 + 颜色 + 形状 + 公式 + 图标）
   isolate.mjs          逐项目逐页导出 iso-<项目>-NN.pptx（定位弹修复）
   package-integrity.mjs 包内引用一致性（rels/rId/Content_Types）
@@ -131,17 +131,19 @@ node tests/icon/test-icon.mjs
 
 ### 5.2 B：theme / tableStyles 官方化
 
+> **2026-08-10 清理**：v1 主题体系已全部移除——`themes/`（10 套演示主题 + manifest）、`scripts/gen-themes-manifest.js`、根 `index.html` 主题画廊与 `editor/gallery.js`（根入口改为重定向到编辑器）。内置 `editor/core/theme-presets.js`（15 套色系 + 默认主题）保留为编辑器运行所需，B 阶段转成官方 theme 对象。
+
 - [ ] **manifest theme 内联对象**：`theme: {colors, textStyles, tableStyles}`（官方）——v1 的 `theme: "blue"` 字符串键是扩展，需迁移：编辑器 UI 的"主题切换"改为写入完整 theme 对象；`normalizeTheme` 保留字符串 key 解析（内部预设），但**序列化永远写对象**
-- [ ] **取消 `fonts` 组件槽**（v1 扩展）：`fonts.title/body/…` 字体分工 → 迁移到 `theme.textStyles.<key>.fontFamily`（官方能力等价）；**保留字体资源表为扩展字段**（`fonts: {资源名: {family, url/file, subset}}`，官方编辑器忽略、本编辑器用于嵌入）
+- [ ] **取消 `fonts` 组件槽**（v1 扩展）：`fonts.title/body/…` 字体分工 → 迁移到 `theme.textStyles.<key>.fontFamily`（官方能力等价）；**保留字体资源表为扩展字段**（`fonts: {资源名: {family, url/file, subset}}`，官方编辑器忽略、本编辑器用于嵌入，实现依据见 `references/font-embedding.md`）
 - [ ] **tableStyles 官方化**：v1 `{headerFill, headerColor, zebraFill…}` → 官方 `TableStyleConfig`（`cellStyle/firstRowStyle/lastRowStyle/firstColumnStyle/lastColumnStyle/bodyStyles/rowOverColumn`，CellStyle 含 fill/border/align）——**注意**：表格单元格模型（裸值行 → Cell 对象）属于 C2，本阶段只做"主题内 tableStyles 结构 + 表格 writer 按官方样式继承链消费"
 - [ ] 内置 15 套色系预设转成预生成官方 theme 对象；`tests/projects/` 各项目 manifest 迁移为官方格式
-- [ ] 主题库（`themes/`，v1 自定义 10 套）标注为待重写（阶段 D）
+- [ ] 重写主题体系（原 `themes/` 演示模板已删，需以官方格式重建）
 
 ### 5.3 后续（暂缓）
 
 - C2：table Cell 对象模型（`columnWidths/rowHeights/textStyle/rowSpan/colSpan`）
 - C3：chart 13 系列 + ChartData
-- 清理：废弃 `elementType: formula`（富文本已替代）、`themes/` 重写、SKILL.md/README 更新
+- 清理：废弃 `elementType: formula`（富文本已替代）；主题体系以官方格式重建（B 阶段）；SKILL 改用 Kimi 标准 skill（只改编辑器/导出相关章节）
 
 ## 6. 注意事项
 

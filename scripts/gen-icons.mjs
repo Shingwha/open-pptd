@@ -17,7 +17,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const ICONS_DIR = join(ROOT, "icons");
+const ICONS_DIR = join(ROOT, "assets", "icons");
 const OUT = join(ROOT, "editor", "core", "icon-library.js");
 const CHECK = process.argv.includes("--check");
 
