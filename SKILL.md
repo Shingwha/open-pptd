@@ -22,9 +22,14 @@ The .pptd format is a simplified abstraction layer over OOXML that follows basic
 4. **不支持 pptx → pptd 转换**：本实现没有「导入现有 .pptx 转成 .pptd 项目」的能力。编辑/复刻类任务只能从 .pptd 项目出发（用户提供或新建）。如需处理用户上传的 .pptx：解包查看其内容作为参考（配色/布局/文案），然后在 .pptd 项目中重建，不承诺逐元素还原。
 5. **图表限制**：13 种类型中 **heatmap / sankey 暂不导出**（PowerPoint 无原生类型，导出时该元素被跳过、页面留空并告警）——生成时避免使用这两种类型；其余 11 种（bar/line/area/scatter/bubble/candlestick/pie/radar/waterfall/treemap/sunburst）完整导出。
 6. **公式**：富文本支持 LaTeX 公式 `\(...\)`（行内/独占段/整框），导出为 PowerPoint 原生可编辑公式（mc:AlternateContent + a14:m）。
-7. **图标**：`iconName` 格式 `style:name`，支持 `fas:`/`far:`/`fab:`（Font Awesome 语义，映射到本地图标库）与 `bs:`（本库扩展命名空间）；未知图标导出时跳过。
+7. **图标**：`iconName` 格式 `style:name`。完整可用清单见 `references/icons.md`（AUTO-GENERATED）：
+   - `bs:<name>` 直引本地库 192 个图标（优先用，保证存在）；
+   - `fas:`/`far:<fa-name>` 按 Font Awesome 语义映射到本地近似图标（仅映射表覆盖的 FA 名可用，约 1100 条）；
+   - `fab:` 品牌图标**不支持**（本地库无品牌 logo，用图片元素代替）；
+   - 未知图标导出时跳过，生成时必须先查表确认。
+8. **形状**：`references/shapes.md` 为完整清单（177 种预置形状 + 参数/默认值），全部支持；`shapeName: "custom"` 可用 viewBox+path 自定义。
 8. **主题**：无预设主题库；每次生成时根据 PPT 场景特色直接写 `deck.theme`（colors/textStyles/tableStyles）+ 页面 `$key` 引用（主题 = 生成时一次性设计决策）。
-9. **字体**：默认 `MiSans`，支持 `references/fonts.md` 所列字体；导出默认嵌入字体（`--no-embed-fonts` 关闭）。
+8. **字体**：默认 `MiSans`，支持 `references/fonts.md` 所列字体；导出默认嵌入字体（`--no-embed-fonts` 关闭）。
 
 ## PPT production workflow
 

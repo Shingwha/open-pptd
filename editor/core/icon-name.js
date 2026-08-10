@@ -11,7 +11,7 @@
 import { ICONS } from "./icon-library.js";
 
 /** FA → Bootstrap 近似图标映射（常见图标；命名高度重合的 FA 键直接映射）。 */
-const FA_TO_BS = {
+export const FA_TO_BS = {
   // 通用 / 界面
   "house": "house", "home": "house", "heart": "heart", "star": "star",
   "gear": "gear", "cog": "gear", "gears": "gear-wide-connected",
