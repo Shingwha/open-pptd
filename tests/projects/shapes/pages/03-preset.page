@@ -1,0 +1,367 @@
+pageType: content
+background:
+  type: solid
+  color: '#FFFFFF'
+elements:
+  - elementId: t1
+    elementType: text
+    bounds:
+      - 40
+      - 24
+      - 880
+      - 34
+    content:
+      style: $title
+      text: 预置形状 3/7（ECMA-376 全部 187 种）
+  - elementId: s57
+    elementType: shape
+    bounds:
+      - 40
+      - 74
+      - 160
+      - 92
+    shapeName: diagStripe
+    adjustments:
+      - 50000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s58
+    elementType: shape
+    bounds:
+      - 220
+      - 74
+      - 160
+      - 92
+    shapeName: diamond
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s59
+    elementType: shape
+    bounds:
+      - 400
+      - 74
+      - 160
+      - 92
+    shapeName: dodecagon
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s60
+    elementType: shape
+    bounds:
+      - 580
+      - 74
+      - 160
+      - 92
+    shapeName: donut
+    adjustments:
+      - 25000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s61
+    elementType: shape
+    bounds:
+      - 760
+      - 74
+      - 160
+      - 92
+    shapeName: doubleWave
+    adjustments:
+      - 6250
+      - 0
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s62
+    elementType: shape
+    bounds:
+      - 40
+      - 186
+      - 160
+      - 92
+    shapeName: downArrow
+    adjustments:
+      - 50000
+      - 50000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s63
+    elementType: shape
+    bounds:
+      - 220
+      - 186
+      - 160
+      - 92
+    shapeName: downArrowCallout
+    adjustments:
+      - 25000
+      - 25000
+      - 25000
+      - 64977
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s64
+    elementType: shape
+    bounds:
+      - 400
+      - 186
+      - 160
+      - 92
+    shapeName: ellipse
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s65
+    elementType: shape
+    bounds:
+      - 580
+      - 186
+      - 160
+      - 92
+    shapeName: ellipseRibbon
+    adjustments:
+      - 25000
+      - 50000
+      - 12500
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s66
+    elementType: shape
+    bounds:
+      - 760
+      - 186
+      - 160
+      - 92
+    shapeName: ellipseRibbon2
+    adjustments:
+      - 25000
+      - 50000
+      - 12500
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s67
+    elementType: shape
+    bounds:
+      - 40
+      - 298
+      - 160
+      - 92
+    shapeName: flowChartAlternateProcess
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s68
+    elementType: shape
+    bounds:
+      - 220
+      - 298
+      - 160
+      - 92
+    shapeName: flowChartCollate
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s69
+    elementType: shape
+    bounds:
+      - 400
+      - 298
+      - 160
+      - 92
+    shapeName: flowChartConnector
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s70
+    elementType: shape
+    bounds:
+      - 580
+      - 298
+      - 160
+      - 92
+    shapeName: flowChartDecision
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s71
+    elementType: shape
+    bounds:
+      - 760
+      - 298
+      - 160
+      - 92
+    shapeName: flowChartDelay
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s72
+    elementType: shape
+    bounds:
+      - 40
+      - 410
+      - 160
+      - 92
+    shapeName: flowChartDisplay
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s73
+    elementType: shape
+    bounds:
+      - 220
+      - 410
+      - 160
+      - 92
+    shapeName: flowChartDocument
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s74
+    elementType: shape
+    bounds:
+      - 400
+      - 410
+      - 160
+      - 92
+    shapeName: flowChartExtract
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s75
+    elementType: shape
+    bounds:
+      - 580
+      - 410
+      - 160
+      - 92
+    shapeName: flowChartInputOutput
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s76
+    elementType: shape
+    bounds:
+      - 760
+      - 410
+      - 160
+      - 92
+    shapeName: flowChartInternalStorage
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s77
+    elementType: shape
+    bounds:
+      - 40
+      - 522
+      - 160
+      - 92
+    shapeName: flowChartMagneticDisk
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s78
+    elementType: shape
+    bounds:
+      - 220
+      - 522
+      - 160
+      - 92
+    shapeName: flowChartMagneticDrum
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s79
+    elementType: shape
+    bounds:
+      - 400
+      - 522
+      - 160
+      - 92
+    shapeName: flowChartMagneticTape
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s80
+    elementType: shape
+    bounds:
+      - 580
+      - 522
+      - 160
+      - 92
+    shapeName: flowChartManualInput
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s81
+    elementType: shape
+    bounds:
+      - 760
+      - 522
+      - 160
+      - 92
+    shapeName: flowChartManualOperation
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s82
+    elementType: shape
+    bounds:
+      - 40
+      - 634
+      - 160
+      - 92
+    shapeName: flowChartMerge
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s83
+    elementType: shape
+    bounds:
+      - 220
+      - 634
+      - 160
+      - 92
+    shapeName: flowChartMultidocument
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s84
+    elementType: shape
+    bounds:
+      - 400
+      - 634
+      - 160
+      - 92
+    shapeName: flowChartOfflineStorage
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary

@@ -1,0 +1,401 @@
+pageType: content
+background:
+  type: solid
+  color: '#FFFFFF'
+elements:
+  - elementId: t1
+    elementType: text
+    bounds:
+      - 40
+      - 24
+      - 880
+      - 34
+    content:
+      style: $title
+      text: 预置形状 5/7（ECMA-376 全部 187 种）
+  - elementId: s113
+    elementType: shape
+    bounds:
+      - 40
+      - 74
+      - 160
+      - 92
+    shapeName: leftCircularArrow
+    adjustments:
+      - 12500
+      - -1142319
+      - 1142319
+      - 10800000
+      - 12500
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s114
+    elementType: shape
+    bounds:
+      - 220
+      - 74
+      - 160
+      - 92
+    shapeName: leftRightArrow
+    adjustments:
+      - 50000
+      - 50000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s115
+    elementType: shape
+    bounds:
+      - 400
+      - 74
+      - 160
+      - 92
+    shapeName: leftRightArrowCallout
+    adjustments:
+      - 25000
+      - 25000
+      - 25000
+      - 48123
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s116
+    elementType: shape
+    bounds:
+      - 580
+      - 74
+      - 160
+      - 92
+    shapeName: leftRightCircularArrow
+    adjustments:
+      - 12500
+      - 1142319
+      - 20457681
+      - 11942319
+      - 12500
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s117
+    elementType: shape
+    bounds:
+      - 760
+      - 74
+      - 160
+      - 92
+    shapeName: leftRightRibbon
+    adjustments:
+      - 50000
+      - 50000
+      - 16667
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s118
+    elementType: shape
+    bounds:
+      - 40
+      - 186
+      - 160
+      - 92
+    shapeName: leftRightUpArrow
+    adjustments:
+      - 25000
+      - 25000
+      - 25000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s119
+    elementType: shape
+    bounds:
+      - 220
+      - 186
+      - 160
+      - 92
+    shapeName: leftUpArrow
+    adjustments:
+      - 25000
+      - 25000
+      - 25000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s120
+    elementType: shape
+    bounds:
+      - 400
+      - 186
+      - 160
+      - 92
+    shapeName: lightningBolt
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s121
+    elementType: shape
+    bounds:
+      - 580
+      - 186
+      - 160
+      - 92
+    shapeName: line
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s122
+    elementType: shape
+    bounds:
+      - 760
+      - 186
+      - 160
+      - 92
+    shapeName: lineInv
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s123
+    elementType: shape
+    bounds:
+      - 40
+      - 298
+      - 160
+      - 92
+    shapeName: mathDivide
+    adjustments:
+      - 23520
+      - 5880
+      - 11760
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s124
+    elementType: shape
+    bounds:
+      - 220
+      - 298
+      - 160
+      - 92
+    shapeName: mathEqual
+    adjustments:
+      - 23520
+      - 11760
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s125
+    elementType: shape
+    bounds:
+      - 400
+      - 298
+      - 160
+      - 92
+    shapeName: mathMinus
+    adjustments:
+      - 23520
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s126
+    elementType: shape
+    bounds:
+      - 580
+      - 298
+      - 160
+      - 92
+    shapeName: mathMultiply
+    adjustments:
+      - 23520
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s127
+    elementType: shape
+    bounds:
+      - 760
+      - 298
+      - 160
+      - 92
+    shapeName: mathNotEqual
+    adjustments:
+      - 23520
+      - 6600000
+      - 11760
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s128
+    elementType: shape
+    bounds:
+      - 40
+      - 410
+      - 160
+      - 92
+    shapeName: mathPlus
+    adjustments:
+      - 23520
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s129
+    elementType: shape
+    bounds:
+      - 220
+      - 410
+      - 160
+      - 92
+    shapeName: moon
+    adjustments:
+      - 50000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s130
+    elementType: shape
+    bounds:
+      - 400
+      - 410
+      - 160
+      - 92
+    shapeName: nonIsoscelesTrapezoid
+    adjustments:
+      - 25000
+      - 25000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s131
+    elementType: shape
+    bounds:
+      - 580
+      - 410
+      - 160
+      - 92
+    shapeName: noSmoking
+    adjustments:
+      - 18750
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s132
+    elementType: shape
+    bounds:
+      - 760
+      - 410
+      - 160
+      - 92
+    shapeName: notchedRightArrow
+    adjustments:
+      - 50000
+      - 50000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s133
+    elementType: shape
+    bounds:
+      - 40
+      - 522
+      - 160
+      - 92
+    shapeName: octagon
+    adjustments:
+      - 29289
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s134
+    elementType: shape
+    bounds:
+      - 220
+      - 522
+      - 160
+      - 92
+    shapeName: parallelogram
+    adjustments:
+      - 25000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s135
+    elementType: shape
+    bounds:
+      - 400
+      - 522
+      - 160
+      - 92
+    shapeName: pentagon
+    adjustments:
+      - 105146
+      - 110557
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s136
+    elementType: shape
+    bounds:
+      - 580
+      - 522
+      - 160
+      - 92
+    shapeName: pie
+    adjustments:
+      - 0
+      - 16200000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s137
+    elementType: shape
+    bounds:
+      - 760
+      - 522
+      - 160
+      - 92
+    shapeName: pieWedge
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s138
+    elementType: shape
+    bounds:
+      - 40
+      - 634
+      - 160
+      - 92
+    shapeName: plaque
+    adjustments:
+      - 16667
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s139
+    elementType: shape
+    bounds:
+      - 220
+      - 634
+      - 160
+      - 92
+    shapeName: plaqueTabs
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s140
+    elementType: shape
+    bounds:
+      - 400
+      - 634
+      - 160
+      - 92
+    shapeName: plus
+    adjustments:
+      - 25000
+    fill:
+      type: solid
+      color: $primary

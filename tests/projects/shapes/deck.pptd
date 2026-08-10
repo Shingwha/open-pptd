@@ -1,0 +1,29 @@
+version: v2
+title: 形状全量测试（187 预置 + 自定义路径）
+size:
+  - 960
+  - 540
+theme:
+  colors:
+    primary: '#2563EB'
+    accent: '#F59E0B'
+    text: '#111827'
+    muted: '#6B7280'
+    bg: '#FFFFFF'
+  textStyles:
+    title:
+      fontSize: 22
+      color: $primary
+      bold: true
+    caption:
+      fontSize: 12
+      color: $muted
+pages:
+  - pages/01-preset.page
+  - pages/02-preset.page
+  - pages/03-preset.page
+  - pages/04-preset.page
+  - pages/05-preset.page
+  - pages/06-preset.page
+  - pages/07-preset.page
+  - pages/08-custom.page

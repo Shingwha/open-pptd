@@ -1,0 +1,410 @@
+pageType: content
+background:
+  type: solid
+  color: '#FFFFFF'
+elements:
+  - elementId: t1
+    elementType: text
+    bounds:
+      - 40
+      - 24
+      - 880
+      - 34
+    content:
+      style: $title
+      text: 预置形状 1/7（ECMA-376 全部 187 种）
+  - elementId: s1
+    elementType: shape
+    bounds:
+      - 40
+      - 74
+      - 160
+      - 92
+    shapeName: accentBorderCallout1
+    adjustments:
+      - 18750
+      - -8333
+      - 112500
+      - -38333
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s2
+    elementType: shape
+    bounds:
+      - 220
+      - 74
+      - 160
+      - 92
+    shapeName: accentBorderCallout2
+    adjustments:
+      - 18750
+      - -8333
+      - 18750
+      - -16667
+      - 112500
+      - -46667
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s3
+    elementType: shape
+    bounds:
+      - 400
+      - 74
+      - 160
+      - 92
+    shapeName: accentBorderCallout3
+    adjustments:
+      - 18750
+      - -8333
+      - 18750
+      - -16667
+      - 100000
+      - -16667
+      - 112963
+      - -8333
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s4
+    elementType: shape
+    bounds:
+      - 580
+      - 74
+      - 160
+      - 92
+    shapeName: accentCallout1
+    adjustments:
+      - 18750
+      - -8333
+      - 112500
+      - -38333
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s5
+    elementType: shape
+    bounds:
+      - 760
+      - 74
+      - 160
+      - 92
+    shapeName: accentCallout2
+    adjustments:
+      - 18750
+      - -8333
+      - 18750
+      - -16667
+      - 112500
+      - -46667
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s6
+    elementType: shape
+    bounds:
+      - 40
+      - 186
+      - 160
+      - 92
+    shapeName: accentCallout3
+    adjustments:
+      - 18750
+      - -8333
+      - 18750
+      - -16667
+      - 100000
+      - -16667
+      - 112963
+      - -8333
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s7
+    elementType: shape
+    bounds:
+      - 220
+      - 186
+      - 160
+      - 92
+    shapeName: actionButtonBackPrevious
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s8
+    elementType: shape
+    bounds:
+      - 400
+      - 186
+      - 160
+      - 92
+    shapeName: actionButtonBeginning
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s9
+    elementType: shape
+    bounds:
+      - 580
+      - 186
+      - 160
+      - 92
+    shapeName: actionButtonBlank
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s10
+    elementType: shape
+    bounds:
+      - 760
+      - 186
+      - 160
+      - 92
+    shapeName: actionButtonDocument
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s11
+    elementType: shape
+    bounds:
+      - 40
+      - 298
+      - 160
+      - 92
+    shapeName: actionButtonEnd
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s12
+    elementType: shape
+    bounds:
+      - 220
+      - 298
+      - 160
+      - 92
+    shapeName: actionButtonForwardNext
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s13
+    elementType: shape
+    bounds:
+      - 400
+      - 298
+      - 160
+      - 92
+    shapeName: actionButtonHelp
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s14
+    elementType: shape
+    bounds:
+      - 580
+      - 298
+      - 160
+      - 92
+    shapeName: actionButtonHome
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s15
+    elementType: shape
+    bounds:
+      - 760
+      - 298
+      - 160
+      - 92
+    shapeName: actionButtonInformation
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s16
+    elementType: shape
+    bounds:
+      - 40
+      - 410
+      - 160
+      - 92
+    shapeName: actionButtonMovie
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s17
+    elementType: shape
+    bounds:
+      - 220
+      - 410
+      - 160
+      - 92
+    shapeName: actionButtonReturn
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s18
+    elementType: shape
+    bounds:
+      - 400
+      - 410
+      - 160
+      - 92
+    shapeName: actionButtonSound
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s19
+    elementType: shape
+    bounds:
+      - 580
+      - 410
+      - 160
+      - 92
+    shapeName: arc
+    adjustments:
+      - 16200000
+      - 0
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s20
+    elementType: shape
+    bounds:
+      - 760
+      - 410
+      - 160
+      - 92
+    shapeName: bentArrow
+    adjustments:
+      - 25000
+      - 25000
+      - 25000
+      - 43750
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s21
+    elementType: shape
+    bounds:
+      - 40
+      - 522
+      - 160
+      - 92
+    shapeName: bentConnector2
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s22
+    elementType: shape
+    bounds:
+      - 220
+      - 522
+      - 160
+      - 92
+    shapeName: bentConnector3
+    adjustments:
+      - 50000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s23
+    elementType: shape
+    bounds:
+      - 400
+      - 522
+      - 160
+      - 92
+    shapeName: bentConnector4
+    adjustments:
+      - 50000
+      - 50000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s24
+    elementType: shape
+    bounds:
+      - 580
+      - 522
+      - 160
+      - 92
+    shapeName: bentConnector5
+    adjustments:
+      - 50000
+      - 50000
+      - 50000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s25
+    elementType: shape
+    bounds:
+      - 760
+      - 522
+      - 160
+      - 92
+    shapeName: bentUpArrow
+    adjustments:
+      - 25000
+      - 25000
+      - 25000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s26
+    elementType: shape
+    bounds:
+      - 40
+      - 634
+      - 160
+      - 92
+    shapeName: bevel
+    adjustments:
+      - 12500
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s27
+    elementType: shape
+    bounds:
+      - 220
+      - 634
+      - 160
+      - 92
+    shapeName: blockArc
+    adjustments:
+      - 10800000
+      - 0
+      - 25000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s28
+    elementType: shape
+    bounds:
+      - 400
+      - 634
+      - 160
+      - 92
+    shapeName: borderCallout1
+    adjustments:
+      - 18750
+      - -8333
+      - 112500
+      - -38333
+    fill:
+      type: solid
+      color: $primary

@@ -1,0 +1,418 @@
+pageType: content
+background:
+  type: solid
+  color: '#FFFFFF'
+elements:
+  - elementId: t1
+    elementType: text
+    bounds:
+      - 40
+      - 24
+      - 880
+      - 34
+    content:
+      style: $title
+      text: 预置形状 2/7（ECMA-376 全部 187 种）
+  - elementId: s29
+    elementType: shape
+    bounds:
+      - 40
+      - 74
+      - 160
+      - 92
+    shapeName: borderCallout2
+    adjustments:
+      - 18750
+      - -8333
+      - 18750
+      - -16667
+      - 112500
+      - -46667
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s30
+    elementType: shape
+    bounds:
+      - 220
+      - 74
+      - 160
+      - 92
+    shapeName: borderCallout3
+    adjustments:
+      - 18750
+      - -8333
+      - 18750
+      - -16667
+      - 100000
+      - -16667
+      - 112963
+      - -8333
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s31
+    elementType: shape
+    bounds:
+      - 400
+      - 74
+      - 160
+      - 92
+    shapeName: bracePair
+    adjustments:
+      - 8333
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s32
+    elementType: shape
+    bounds:
+      - 580
+      - 74
+      - 160
+      - 92
+    shapeName: bracketPair
+    adjustments:
+      - 16667
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s33
+    elementType: shape
+    bounds:
+      - 760
+      - 74
+      - 160
+      - 92
+    shapeName: callout1
+    adjustments:
+      - 18750
+      - -8333
+      - 112500
+      - -38333
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s34
+    elementType: shape
+    bounds:
+      - 40
+      - 186
+      - 160
+      - 92
+    shapeName: callout2
+    adjustments:
+      - 18750
+      - -8333
+      - 18750
+      - -16667
+      - 112500
+      - -46667
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s35
+    elementType: shape
+    bounds:
+      - 220
+      - 186
+      - 160
+      - 92
+    shapeName: callout3
+    adjustments:
+      - 18750
+      - -8333
+      - 18750
+      - -16667
+      - 100000
+      - -16667
+      - 112963
+      - -8333
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s36
+    elementType: shape
+    bounds:
+      - 400
+      - 186
+      - 160
+      - 92
+    shapeName: can
+    adjustments:
+      - 25000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s37
+    elementType: shape
+    bounds:
+      - 580
+      - 186
+      - 160
+      - 92
+    shapeName: chartPlus
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s38
+    elementType: shape
+    bounds:
+      - 760
+      - 186
+      - 160
+      - 92
+    shapeName: chartStar
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s39
+    elementType: shape
+    bounds:
+      - 40
+      - 298
+      - 160
+      - 92
+    shapeName: chartX
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s40
+    elementType: shape
+    bounds:
+      - 220
+      - 298
+      - 160
+      - 92
+    shapeName: chevron
+    adjustments:
+      - 50000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s41
+    elementType: shape
+    bounds:
+      - 400
+      - 298
+      - 160
+      - 92
+    shapeName: chord
+    adjustments:
+      - 2700000
+      - 16200000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s42
+    elementType: shape
+    bounds:
+      - 580
+      - 298
+      - 160
+      - 92
+    shapeName: circularArrow
+    adjustments:
+      - 12500
+      - 1142319
+      - 20457681
+      - 10800000
+      - 12500
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s43
+    elementType: shape
+    bounds:
+      - 760
+      - 298
+      - 160
+      - 92
+    shapeName: cloud
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s44
+    elementType: shape
+    bounds:
+      - 40
+      - 410
+      - 160
+      - 92
+    shapeName: cloudCallout
+    adjustments:
+      - -20833
+      - 62500
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s45
+    elementType: shape
+    bounds:
+      - 220
+      - 410
+      - 160
+      - 92
+    shapeName: corner
+    adjustments:
+      - 50000
+      - 50000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s46
+    elementType: shape
+    bounds:
+      - 400
+      - 410
+      - 160
+      - 92
+    shapeName: cornerTabs
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s47
+    elementType: shape
+    bounds:
+      - 580
+      - 410
+      - 160
+      - 92
+    shapeName: cube
+    adjustments:
+      - 25000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s48
+    elementType: shape
+    bounds:
+      - 760
+      - 410
+      - 160
+      - 92
+    shapeName: curvedConnector2
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s49
+    elementType: shape
+    bounds:
+      - 40
+      - 522
+      - 160
+      - 92
+    shapeName: curvedConnector3
+    adjustments:
+      - 50000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s50
+    elementType: shape
+    bounds:
+      - 220
+      - 522
+      - 160
+      - 92
+    shapeName: curvedConnector4
+    adjustments:
+      - 50000
+      - 50000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s51
+    elementType: shape
+    bounds:
+      - 400
+      - 522
+      - 160
+      - 92
+    shapeName: curvedConnector5
+    adjustments:
+      - 50000
+      - 50000
+      - 50000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s52
+    elementType: shape
+    bounds:
+      - 580
+      - 522
+      - 160
+      - 92
+    shapeName: curvedDownArrow
+    adjustments:
+      - 25000
+      - 50000
+      - 25000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s53
+    elementType: shape
+    bounds:
+      - 760
+      - 522
+      - 160
+      - 92
+    shapeName: curvedLeftArrow
+    adjustments:
+      - 25000
+      - 50000
+      - 25000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s54
+    elementType: shape
+    bounds:
+      - 40
+      - 634
+      - 160
+      - 92
+    shapeName: curvedRightArrow
+    adjustments:
+      - 25000
+      - 50000
+      - 25000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s55
+    elementType: shape
+    bounds:
+      - 220
+      - 634
+      - 160
+      - 92
+    shapeName: curvedUpArrow
+    adjustments:
+      - 25000
+      - 50000
+      - 25000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s56
+    elementType: shape
+    bounds:
+      - 400
+      - 634
+      - 160
+      - 92
+    shapeName: decagon
+    adjustments:
+      - 105146
+    fill:
+      type: solid
+      color: $primary

@@ -1,0 +1,374 @@
+pageType: content
+background:
+  type: solid
+  color: '#FFFFFF'
+elements:
+  - elementId: t1
+    elementType: text
+    bounds:
+      - 40
+      - 24
+      - 880
+      - 34
+    content:
+      style: $title
+      text: 预置形状 4/7（ECMA-376 全部 187 种）
+  - elementId: s85
+    elementType: shape
+    bounds:
+      - 40
+      - 74
+      - 160
+      - 92
+    shapeName: flowChartOffpageConnector
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s86
+    elementType: shape
+    bounds:
+      - 220
+      - 74
+      - 160
+      - 92
+    shapeName: flowChartOnlineStorage
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s87
+    elementType: shape
+    bounds:
+      - 400
+      - 74
+      - 160
+      - 92
+    shapeName: flowChartOr
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s88
+    elementType: shape
+    bounds:
+      - 580
+      - 74
+      - 160
+      - 92
+    shapeName: flowChartPredefinedProcess
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s89
+    elementType: shape
+    bounds:
+      - 760
+      - 74
+      - 160
+      - 92
+    shapeName: flowChartPreparation
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s90
+    elementType: shape
+    bounds:
+      - 40
+      - 186
+      - 160
+      - 92
+    shapeName: flowChartProcess
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s91
+    elementType: shape
+    bounds:
+      - 220
+      - 186
+      - 160
+      - 92
+    shapeName: flowChartPunchedCard
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s92
+    elementType: shape
+    bounds:
+      - 400
+      - 186
+      - 160
+      - 92
+    shapeName: flowChartPunchedTape
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s93
+    elementType: shape
+    bounds:
+      - 580
+      - 186
+      - 160
+      - 92
+    shapeName: flowChartSort
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s94
+    elementType: shape
+    bounds:
+      - 760
+      - 186
+      - 160
+      - 92
+    shapeName: flowChartSummingJunction
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s95
+    elementType: shape
+    bounds:
+      - 40
+      - 298
+      - 160
+      - 92
+    shapeName: flowChartTerminator
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s96
+    elementType: shape
+    bounds:
+      - 220
+      - 298
+      - 160
+      - 92
+    shapeName: foldedCorner
+    adjustments:
+      - 16667
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s97
+    elementType: shape
+    bounds:
+      - 400
+      - 298
+      - 160
+      - 92
+    shapeName: frame
+    adjustments:
+      - 12500
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s98
+    elementType: shape
+    bounds:
+      - 580
+      - 298
+      - 160
+      - 92
+    shapeName: funnel
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s99
+    elementType: shape
+    bounds:
+      - 760
+      - 298
+      - 160
+      - 92
+    shapeName: gear6
+    adjustments:
+      - 15000
+      - 3526
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s100
+    elementType: shape
+    bounds:
+      - 40
+      - 410
+      - 160
+      - 92
+    shapeName: gear9
+    adjustments:
+      - 10000
+      - 1763
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s101
+    elementType: shape
+    bounds:
+      - 220
+      - 410
+      - 160
+      - 92
+    shapeName: halfFrame
+    adjustments:
+      - 33333
+      - 33333
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s102
+    elementType: shape
+    bounds:
+      - 400
+      - 410
+      - 160
+      - 92
+    shapeName: heart
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s103
+    elementType: shape
+    bounds:
+      - 580
+      - 410
+      - 160
+      - 92
+    shapeName: heptagon
+    adjustments:
+      - 102572
+      - 105210
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s104
+    elementType: shape
+    bounds:
+      - 760
+      - 410
+      - 160
+      - 92
+    shapeName: hexagon
+    adjustments:
+      - 25000
+      - 115470
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s105
+    elementType: shape
+    bounds:
+      - 40
+      - 522
+      - 160
+      - 92
+    shapeName: homePlate
+    adjustments:
+      - 50000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s106
+    elementType: shape
+    bounds:
+      - 220
+      - 522
+      - 160
+      - 92
+    shapeName: horizontalScroll
+    adjustments:
+      - 12500
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s107
+    elementType: shape
+    bounds:
+      - 400
+      - 522
+      - 160
+      - 92
+    shapeName: irregularSeal1
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s108
+    elementType: shape
+    bounds:
+      - 580
+      - 522
+      - 160
+      - 92
+    shapeName: irregularSeal2
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s109
+    elementType: shape
+    bounds:
+      - 760
+      - 522
+      - 160
+      - 92
+    shapeName: leftArrow
+    adjustments:
+      - 50000
+      - 50000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s110
+    elementType: shape
+    bounds:
+      - 40
+      - 634
+      - 160
+      - 92
+    shapeName: leftArrowCallout
+    adjustments:
+      - 25000
+      - 25000
+      - 25000
+      - 64977
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s111
+    elementType: shape
+    bounds:
+      - 220
+      - 634
+      - 160
+      - 92
+    shapeName: leftBrace
+    adjustments:
+      - 8333
+      - 50000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s112
+    elementType: shape
+    bounds:
+      - 400
+      - 634
+      - 160
+      - 92
+    shapeName: leftBracket
+    adjustments:
+      - 8333
+    fill:
+      type: solid
+      color: $primary

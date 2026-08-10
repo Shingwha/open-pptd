@@ -1,0 +1,397 @@
+pageType: content
+background:
+  type: solid
+  color: '#FFFFFF'
+elements:
+  - elementId: t1
+    elementType: text
+    bounds:
+      - 40
+      - 24
+      - 880
+      - 34
+    content:
+      style: $title
+      text: 预置形状 6/7（ECMA-376 全部 187 种）
+  - elementId: s141
+    elementType: shape
+    bounds:
+      - 40
+      - 74
+      - 160
+      - 92
+    shapeName: quadArrow
+    adjustments:
+      - 22500
+      - 22500
+      - 22500
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s142
+    elementType: shape
+    bounds:
+      - 220
+      - 74
+      - 160
+      - 92
+    shapeName: quadArrowCallout
+    adjustments:
+      - 18515
+      - 18515
+      - 18515
+      - 48123
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s143
+    elementType: shape
+    bounds:
+      - 400
+      - 74
+      - 160
+      - 92
+    shapeName: rect
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s144
+    elementType: shape
+    bounds:
+      - 580
+      - 74
+      - 160
+      - 92
+    shapeName: ribbon
+    adjustments:
+      - 16667
+      - 50000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s145
+    elementType: shape
+    bounds:
+      - 760
+      - 74
+      - 160
+      - 92
+    shapeName: ribbon2
+    adjustments:
+      - 16667
+      - 50000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s146
+    elementType: shape
+    bounds:
+      - 40
+      - 186
+      - 160
+      - 92
+    shapeName: rightArrow
+    adjustments:
+      - 50000
+      - 50000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s147
+    elementType: shape
+    bounds:
+      - 220
+      - 186
+      - 160
+      - 92
+    shapeName: rightArrowCallout
+    adjustments:
+      - 25000
+      - 25000
+      - 25000
+      - 64977
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s148
+    elementType: shape
+    bounds:
+      - 400
+      - 186
+      - 160
+      - 92
+    shapeName: rightBrace
+    adjustments:
+      - 8333
+      - 50000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s149
+    elementType: shape
+    bounds:
+      - 580
+      - 186
+      - 160
+      - 92
+    shapeName: rightBracket
+    adjustments:
+      - 8333
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s150
+    elementType: shape
+    bounds:
+      - 760
+      - 186
+      - 160
+      - 92
+    shapeName: round1Rect
+    adjustments:
+      - 16667
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s151
+    elementType: shape
+    bounds:
+      - 40
+      - 298
+      - 160
+      - 92
+    shapeName: round2DiagRect
+    adjustments:
+      - 16667
+      - 0
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s152
+    elementType: shape
+    bounds:
+      - 220
+      - 298
+      - 160
+      - 92
+    shapeName: round2SameRect
+    adjustments:
+      - 16667
+      - 0
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s153
+    elementType: shape
+    bounds:
+      - 400
+      - 298
+      - 160
+      - 92
+    shapeName: roundRect
+    adjustments:
+      - 16667
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s154
+    elementType: shape
+    bounds:
+      - 580
+      - 298
+      - 160
+      - 92
+    shapeName: rtTriangle
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s155
+    elementType: shape
+    bounds:
+      - 760
+      - 298
+      - 160
+      - 92
+    shapeName: smileyFace
+    adjustments:
+      - 4653
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s156
+    elementType: shape
+    bounds:
+      - 40
+      - 410
+      - 160
+      - 92
+    shapeName: snip1Rect
+    adjustments:
+      - 16667
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s157
+    elementType: shape
+    bounds:
+      - 220
+      - 410
+      - 160
+      - 92
+    shapeName: snip2DiagRect
+    adjustments:
+      - 0
+      - 16667
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s158
+    elementType: shape
+    bounds:
+      - 400
+      - 410
+      - 160
+      - 92
+    shapeName: snip2SameRect
+    adjustments:
+      - 16667
+      - 0
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s159
+    elementType: shape
+    bounds:
+      - 580
+      - 410
+      - 160
+      - 92
+    shapeName: snipRoundRect
+    adjustments:
+      - 16667
+      - 16667
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s160
+    elementType: shape
+    bounds:
+      - 760
+      - 410
+      - 160
+      - 92
+    shapeName: squareTabs
+    adjustments: null
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s161
+    elementType: shape
+    bounds:
+      - 40
+      - 522
+      - 160
+      - 92
+    shapeName: star10
+    adjustments:
+      - 42533
+      - 105146
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s162
+    elementType: shape
+    bounds:
+      - 220
+      - 522
+      - 160
+      - 92
+    shapeName: star12
+    adjustments:
+      - 37500
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s163
+    elementType: shape
+    bounds:
+      - 400
+      - 522
+      - 160
+      - 92
+    shapeName: star16
+    adjustments:
+      - 37500
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s164
+    elementType: shape
+    bounds:
+      - 580
+      - 522
+      - 160
+      - 92
+    shapeName: star24
+    adjustments:
+      - 37500
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s165
+    elementType: shape
+    bounds:
+      - 760
+      - 522
+      - 160
+      - 92
+    shapeName: star32
+    adjustments:
+      - 37500
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s166
+    elementType: shape
+    bounds:
+      - 40
+      - 634
+      - 160
+      - 92
+    shapeName: star4
+    adjustments:
+      - 12500
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s167
+    elementType: shape
+    bounds:
+      - 220
+      - 634
+      - 160
+      - 92
+    shapeName: star5
+    adjustments:
+      - 19098
+      - 105146
+      - 110557
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s168
+    elementType: shape
+    bounds:
+      - 400
+      - 634
+      - 160
+      - 92
+    shapeName: star6
+    adjustments:
+      - 28868
+      - 115470
+    fill:
+      type: solid
+      color: $primary

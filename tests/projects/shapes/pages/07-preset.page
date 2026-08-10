@@ -1,0 +1,282 @@
+pageType: content
+background:
+  type: solid
+  color: '#FFFFFF'
+elements:
+  - elementId: t1
+    elementType: text
+    bounds:
+      - 40
+      - 24
+      - 880
+      - 34
+    content:
+      style: $title
+      text: 预置形状 7/7（ECMA-376 全部 187 种）
+  - elementId: s169
+    elementType: shape
+    bounds:
+      - 40
+      - 74
+      - 160
+      - 92
+    shapeName: star7
+    adjustments:
+      - 34601
+      - 102572
+      - 105210
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s170
+    elementType: shape
+    bounds:
+      - 220
+      - 74
+      - 160
+      - 92
+    shapeName: star8
+    adjustments:
+      - 37500
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s171
+    elementType: shape
+    bounds:
+      - 400
+      - 74
+      - 160
+      - 92
+    shapeName: straightConnector1
+    adjustments: null
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s172
+    elementType: shape
+    bounds:
+      - 580
+      - 74
+      - 160
+      - 92
+    shapeName: stripedRightArrow
+    adjustments:
+      - 50000
+      - 50000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s173
+    elementType: shape
+    bounds:
+      - 760
+      - 74
+      - 160
+      - 92
+    shapeName: sun
+    adjustments:
+      - 25000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s174
+    elementType: shape
+    bounds:
+      - 40
+      - 186
+      - 160
+      - 92
+    shapeName: swooshArrow
+    adjustments:
+      - 25000
+      - 16667
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s175
+    elementType: shape
+    bounds:
+      - 220
+      - 186
+      - 160
+      - 92
+    shapeName: teardrop
+    adjustments:
+      - 100000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s176
+    elementType: shape
+    bounds:
+      - 400
+      - 186
+      - 160
+      - 92
+    shapeName: trapezoid
+    adjustments:
+      - 25000
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s177
+    elementType: shape
+    bounds:
+      - 580
+      - 186
+      - 160
+      - 92
+    shapeName: triangle
+    adjustments:
+      - 50000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s178
+    elementType: shape
+    bounds:
+      - 760
+      - 186
+      - 160
+      - 92
+    shapeName: upArrowCallout
+    adjustments:
+      - 25000
+      - 25000
+      - 25000
+      - 64977
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s179
+    elementType: shape
+    bounds:
+      - 40
+      - 298
+      - 160
+      - 92
+    shapeName: upDownArrow
+    adjustments:
+      - 50000
+      - 50000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s180
+    elementType: shape
+    bounds:
+      - 220
+      - 298
+      - 160
+      - 92
+    shapeName: upDownArrowCallout
+    adjustments:
+      - 25000
+      - 25000
+      - 25000
+      - 48123
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s181
+    elementType: shape
+    bounds:
+      - 400
+      - 298
+      - 160
+      - 92
+    shapeName: uturnArrow
+    adjustments:
+      - 25000
+      - 25000
+      - 25000
+      - 43750
+      - 75000
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s182
+    elementType: shape
+    bounds:
+      - 580
+      - 298
+      - 160
+      - 92
+    shapeName: verticalScroll
+    adjustments:
+      - 12500
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s183
+    elementType: shape
+    bounds:
+      - 760
+      - 298
+      - 160
+      - 92
+    shapeName: wave
+    adjustments:
+      - 12500
+      - 0
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s184
+    elementType: shape
+    bounds:
+      - 40
+      - 410
+      - 160
+      - 92
+    shapeName: wedgeEllipseCallout
+    adjustments:
+      - -20833
+      - 62500
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s185
+    elementType: shape
+    bounds:
+      - 220
+      - 410
+      - 160
+      - 92
+    shapeName: wedgeRectCallout
+    adjustments:
+      - -20833
+      - 62500
+    fill:
+      type: solid
+      color: '#3A6EA5'
+  - elementId: s186
+    elementType: shape
+    bounds:
+      - 400
+      - 410
+      - 160
+      - 92
+    shapeName: wedgeRoundRectCallout
+    adjustments:
+      - -20833
+      - 62500
+      - 16667
+    fill:
+      type: solid
+      color: $primary
+  - elementId: s187
+    elementType: shape
+    bounds:
+      - 580
+      - 410
+      - 160
+      - 92
+    shapeName: upArrow
+    adjustments:
+      - 50000
+      - 50000
+    fill:
+      type: solid
+      color: '#3A6EA5'

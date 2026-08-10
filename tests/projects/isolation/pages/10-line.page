@@ -3,27 +3,55 @@ background: {type: solid, color: "#FFFFFF"}
 elements:
   - elementId: t1
     elementType: text
-    bounds: [60, 60, 400, 40]
+    bounds: [60, 30, 500, 36]
     content:
       style: "$title"
-      text: 10 线条
+      text: 10 线条（sharp / round / smooth + 箭头）
+  # ---- 直线（基准）----
   - elementId: l1
     elementType: line
-    bounds: [60, 150, 700, 2]
+    bounds: [60, 90, 700, 2]
     viewBox: [700, 2]
     points: "0,1 700,1"
     border: {style: solid, width: 1, color: "$line"}
+  # ---- 斜直线 + 箭头 ----
   - elementId: l2
     elementType: line
-    bounds: [60, 200, 500, 150]
-    viewBox: [500, 150]
-    points: "0,150 150,20 350,130 500,0"
-    curve: smooth
-    border: {style: solid, width: 2, color: "$primary"}
-  - elementId: l3
-    elementType: line
-    bounds: [600, 200, 300, 2]
-    viewBox: [300, 2]
-    points: "0,1 300,1"
+    bounds: [60, 110, 400, 120]
+    viewBox: [400, 120]
+    points: "0,120 400,0"
     arrow: [null, "arrow"]
     border: {style: solid, width: 2, color: "$accent"}
+  # ---- sharp：经过全部点的折线（尖角）----
+  - elementId: l3
+    elementType: line
+    bounds: [60, 250, 420, 120]
+    viewBox: [420, 120]
+    points: "0,110 100,10 210,90 320,20 420,100"
+    curve: sharp
+    border: {style: solid, width: 2, color: "$primary"}
+  # ---- round：同折线，圆角连接 ----
+  - elementId: l4
+    elementType: line
+    bounds: [60, 390, 420, 120]
+    viewBox: [420, 120]
+    points: "0,110 100,10 210,90 320,20 420,100"
+    curve: round
+    border: {style: solid, width: 3, color: "#10B981"}
+  # ---- smooth：贝塞尔（首尾锚点 + 中间控制点）----
+  - elementId: l5
+    elementType: line
+    bounds: [520, 250, 380, 120]
+    viewBox: [380, 120]
+    points: "0,100 90,0 200,120 380,20"
+    curve: smooth
+    border: {style: solid, width: 2, color: "$primary"}
+  # ---- smooth 二次贝塞尔（3 点：中间为控制点）----
+  - elementId: l6
+    elementType: line
+    bounds: [520, 390, 380, 120]
+    viewBox: [380, 120]
+    points: "0,100 190,0 380,100"
+    curve: smooth
+    arrow: [null, "arrow"]
+    border: {style: solid, width: 2, color: "#EF4444"}

@@ -1,0 +1,124 @@
+pageType: content
+background:
+  type: solid
+  color: '#FFFFFF'
+elements:
+  - elementId: t1
+    elementType: text
+    bounds:
+      - 40
+      - 24
+      - 880
+      - 34
+    content:
+      style: $title
+      text: '自定义路径 shapeName: custom（viewBox + SVG path）'
+  - elementId: c1
+    elementType: shape
+    bounds:
+      - 40
+      - 74
+      - 150
+      - 150
+    shapeName: custom
+    viewBox:
+      - 1000
+      - 1000
+    path: M500,0 A500,500 0 1 1 499,0 Z M500,200 A300,300 0 1 0 499,200 Z
+    fill:
+      type: solid
+      color: $primary
+  - elementId: c2
+    elementType: shape
+    bounds:
+      - 220
+      - 74
+      - 240
+      - 120
+    shapeName: custom
+    viewBox:
+      - 1000
+      - 500
+    path: M100,400 C150,50 400,50 500,250 S800,400 900,100 L900,400 Z
+    fill:
+      type: solid
+      color: '#F59E0B'
+    border:
+      style: solid
+      width: 2
+      color: '#1F2937'
+  - elementId: c3
+    elementType: shape
+    bounds:
+      - 500
+      - 74
+      - 220
+      - 130
+    shapeName: custom
+    viewBox:
+      - 100
+      - 60
+    path: m10,50 q40,-40 80,0 t80,0 h40 v10 h-40 t-80,0 q-40,-40 -80,0 z
+    fill:
+      type: solid
+      color: '#10B981'
+  - elementId: c4
+    elementType: shape
+    bounds:
+      - 760
+      - 74
+      - 160
+      - 120
+    shapeName: custom
+    viewBox:
+      - 800
+      - 600
+    path: M400,300 A300,200 30 1 1 700,100 Z
+    fill:
+      type: solid
+      color: '#8B5CF6'
+  - elementId: c5
+    elementType: shape
+    bounds:
+      - 40
+      - 250
+      - 140
+      - 110
+    shapeName: custom
+    viewBox:
+      - 200
+      - 160
+    path: M100,20 L180,80 L100,140 L20,80 Z M100,50 L60,80 L100,110 L140,80 Z
+    fill:
+      type: solid
+      color: '#EF4444'
+  - elementId: c6
+    elementType: shape
+    bounds:
+      - 220
+      - 250
+      - 180
+      - 110
+    shapeName: custom
+    viewBox:
+      - 360
+      - 220
+    path: M0,110 A180,110 0 1 1 359,110 A180,110 0 1 1 0,110 Z
+    fill:
+      type: solid
+      color: $accent
+  - elementId: c7
+    elementType: shape
+    bounds:
+      - 440
+      - 250
+      - 160
+      - 110
+    shapeName: custom
+    viewBox:
+      - 320
+      - 220
+    path: M160,0 L320,220 L160,170 L0,220 Z
+    fill:
+      type: solid
+      color: '#3B82F6'

@@ -3,39 +3,133 @@ background: {type: solid, color: "#FFFFFF"}
 elements:
   - elementId: t1
     elementType: text
-    bounds: [60, 60, 400, 40]
+    bounds: [60, 30, 500, 36]
     content:
       style: "$title"
-      text: 09 形状
+      text: 09 形状（预置几何：arcTo / quadBezTo / 多路径 / 自定义）
+  # ---- 基础（已有 rect/roundRect/ellipse/triangle/diamond/star5 见旧版，这里补新类别）----
   - elementId: s1
     elementType: shape
-    bounds: [60, 140, 160, 90]
-    shapeName: roundRect
-    adjustments: [15000]
+    bounds: [40, 90, 120, 90]
+    shapeName: arc
     fill: {type: solid, color: "$primary"}
   - elementId: s2
     elementType: shape
-    bounds: [250, 140, 100, 100]
-    shapeName: ellipse
+    bounds: [180, 90, 120, 90]
+    shapeName: pie
+    adjustments: [0, 16200000]
     fill: {type: solid, color: "$accent"}
-    border: {width: 2, color: "#000000"}
   - elementId: s3
     elementType: shape
-    bounds: [390, 140, 120, 110]
-    shapeName: star5
+    bounds: [320, 90, 100, 100]
+    shapeName: donut
     fill: {type: solid, color: "#EF4444"}
   - elementId: s4
     elementType: shape
-    bounds: [550, 140, 160, 90]
-    shapeName: rect
-    fill:
-      type: gradient
-      gradientType: linear
-      angle: 90
-      stops:
-        - {position: 0, color: "$primary"}
-        - {position: 1, color: "#FFFFFF"}
-    shadow:
-      blur: 8
-      color: "#00000040"
-      offset: [0, 3]
+    bounds: [440, 90, 120, 90]
+    shapeName: blockArc
+    adjustments: [10800000, 0, 30000]
+    fill: {type: solid, color: "$primary"}
+  - elementId: s5
+    elementType: shape
+    bounds: [580, 90, 110, 90]
+    shapeName: chord
+    fill: {type: solid, color: "#8B5CF6"}
+  - elementId: s6
+    elementType: shape
+    bounds: [710, 90, 130, 90]
+    shapeName: cloud
+    fill: {type: solid, color: "#3B82F6"}
+  # ---- 明暗面多路径 + 曲线路径 ----
+  - elementId: s7
+    elementType: shape
+    bounds: [40, 200, 110, 110]
+    shapeName: bevel
+    fill: {type: solid, color: "$primary"}
+  - elementId: s8
+    elementType: shape
+    bounds: [170, 200, 110, 110]
+    shapeName: can
+    fill: {type: solid, color: "#64748B"}
+  - elementId: s9
+    elementType: shape
+    bounds: [300, 200, 110, 110]
+    shapeName: smileyFace
+    fill: {type: solid, color: "#F59E0B"}
+  - elementId: s10
+    elementType: shape
+    bounds: [430, 200, 110, 110]
+    shapeName: sun
+    fill: {type: solid, color: "#F59E0B"}
+  - elementId: s11
+    elementType: shape
+    bounds: [560, 200, 110, 110]
+    shapeName: moon
+    fill: {type: solid, color: "#6366F1"}
+  - elementId: s12
+    elementType: shape
+    bounds: [690, 200, 100, 100]
+    shapeName: teardrop
+    fill: {type: solid, color: "#10B981"}
+  - elementId: s13
+    elementType: shape
+    bounds: [810, 200, 100, 100]
+    shapeName: gear9
+    fill: {type: solid, color: "#6B7280"}
+  # ---- 箭头 / 标注 / 括号 / 流程图 / 动作按钮 ----
+  - elementId: s14
+    elementType: shape
+    bounds: [40, 330, 150, 80]
+    shapeName: bentArrow
+    adjustments: [25000, 25000, 25000, 40000]
+    fill: {type: solid, color: "$primary"}
+  - elementId: s15
+    elementType: shape
+    bounds: [210, 330, 130, 80]
+    shapeName: circularArrow
+    fill: {type: solid, color: "$accent"}
+  - elementId: s16
+    elementType: shape
+    bounds: [360, 330, 140, 80]
+    shapeName: wedgeRoundRectCallout
+    adjustments: [0, 80000, 16667]
+    fill: {type: solid, color: "#3B82F6"}
+  - elementId: s17
+    elementType: shape
+    bounds: [520, 330, 120, 80]
+    shapeName: bracePair
+    fill: {type: solid, color: "#64748B"}
+    border: {style: solid, width: 2, color: "#1F2937"}
+  - elementId: s18
+    elementType: shape
+    bounds: [660, 330, 110, 80]
+    shapeName: flowChartDecision
+    fill: {type: solid, color: "#10B981"}
+  - elementId: s19
+    elementType: shape
+    bounds: [790, 330, 130, 80]
+    shapeName: actionButtonHelp
+    fill: {type: solid, color: "#EF4444"}
+  # ---- 自定义路径：官方示例镂空圆环（外环顺时针 + 内环逆时针）+ 自定义箭头 ----
+  - elementId: s20
+    elementType: shape
+    bounds: [60, 440, 100, 100]
+    shapeName: custom
+    viewBox: [1000, 1000]
+    path: "M500,0 A500,500 0 1 1 499,0 Z M500,200 A300,300 0 1 0 499,200 Z"
+    fill: {type: solid, color: "$primary"}
+  - elementId: s21
+    elementType: shape
+    bounds: [200, 445, 220, 90]
+    shapeName: custom
+    viewBox: [1000, 1000]
+    path: "M0,500 L700,500 L700,300 L1000,650 L700,1000 L700,800 L0,800 Z"
+    fill: {type: solid, color: "$accent"}
+    border: {style: solid, width: 2, color: "#1F2937"}
+  - elementId: s22
+    elementType: shape
+    bounds: [460, 440, 140, 100]
+    shapeName: custom
+    viewBox: [100, 100]
+    path: "M50,5 C90,5 95,35 95,50 C95,65 90,95 50,95 C10,95 5,65 5,50 C5,35 10,5 50,5 Z M50,25 C35,25 25,35 25,50 C25,65 35,75 50,75 C65,75 75,65 75,50 C75,35 65,25 50,25 Z"
+    fill: {type: solid, color: "#8B5CF6"}

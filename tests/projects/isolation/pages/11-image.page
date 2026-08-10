@@ -3,12 +3,132 @@ background: {type: solid, color: "#FFFFFF"}
 elements:
   - elementId: t1
     elementType: text
-    bounds: [60, 60, 400, 40]
+    bounds: [60, 30, 600, 36]
     content:
       style: "$title"
-      text: 11 图片
+      text: 11 图片（crop → fit → cropShape）
+  # ---- 基准：cover 无裁剪 ----
   - elementId: im1
     elementType: image
-    bounds: [60, 140, 200, 120]
+    bounds: [40, 90, 200, 120]
     src: media/test.png
     fit: {mode: cover}
+  - elementId: im1b
+    elementType: text
+    bounds: [40, 214, 200, 24]
+    content:
+      style: "$caption"
+      text: cover（基准）
+  # ---- 四边裁剪 + cover（240×120 → 裁后 1:1 → cover 200×120）----
+  - elementId: im2
+    elementType: image
+    bounds: [260, 90, 200, 120]
+    src: media/test.png
+    fit: {mode: cover}
+    crop: {left: 0.2, top: 0.1, right: 0.2, bottom: 0.1}
+  - elementId: im2b
+    elementType: text
+    bounds: [260, 214, 220, 24]
+    content:
+      style: "$caption"
+      text: cover + crop 20/10/20/10
+  # ---- fill + 单边裁剪（拉伸语义：裁左 40%）----
+  - elementId: im3
+    elementType: image
+    bounds: [480, 90, 200, 120]
+    src: media/test.png
+    fit: {mode: fill}
+    crop: {left: 0.4}
+  - elementId: im3b
+    elementType: text
+    bounds: [480, 214, 220, 24]
+    content:
+      style: "$caption"
+      text: fill + 左裁 40%
+  # ---- contain + 裁剪（按裁后比例缩放居中）----
+  - elementId: im4
+    elementType: image
+    bounds: [700, 90, 200, 120]
+    src: media/test.png
+    fit: {mode: contain}
+    crop: {top: 0.25, bottom: 0.25}
+  - elementId: im4b
+    elementType: text
+    bounds: [700, 214, 220, 24]
+    content:
+      style: "$caption"
+      text: contain + 上下裁 25%
+  # ---- 负裁剪（向外扩透明边，比例）----
+  - elementId: im5
+    elementType: image
+    bounds: [40, 260, 200, 120]
+    src: media/test.png
+    fit: {mode: fill}
+    crop: {left: -0.2, right: -0.2}
+  - elementId: im5b
+    elementType: text
+    bounds: [40, 384, 240, 24]
+    content:
+      style: "$caption"
+      text: fill + 左右外扩 20%
+  # ---- cropShape：圆角矩形轮廓裁剪 ----
+  - elementId: im6
+    elementType: image
+    bounds: [260, 260, 200, 120]
+    src: media/test.png
+    fit: {mode: cover}
+    cropShape: {shapeName: roundRect, adjustments: [20000]}
+    border: {style: solid, width: 2, color: "$primary"}
+  - elementId: im6b
+    elementType: text
+    bounds: [260, 384, 240, 24]
+    content:
+      style: "$caption"
+      text: cropShape 圆角矩形
+  # ---- cropShape：心形 + cover ----
+  - elementId: im7
+    elementType: image
+    bounds: [480, 260, 130, 120]
+    src: media/test.png
+    fit: {mode: cover}
+    cropShape: {shapeName: heart}
+  - elementId: im7b
+    elementType: text
+    bounds: [470, 384, 160, 24]
+    content:
+      style: "$caption"
+      text: cropShape 心形
+  # ---- cropShape：自定义路径（镂空圆环）+ crop 叠加 ----
+  - elementId: im8
+    elementType: image
+    bounds: [640, 260, 140, 120]
+    src: media/test.png
+    fit: {mode: cover}
+    crop: {left: 0.1, right: 0.1}
+    cropShape:
+      shapeName: custom
+      viewBox: [1000, 1000]
+      path: "M500,0 A500,500 0 1 1 499,0 Z M500,200 A300,300 0 1 0 499,200 Z"
+  - elementId: im8b
+    elementType: text
+    bounds: [630, 384, 180, 24]
+    content:
+      style: "$caption"
+      text: crop + 自定义镂空
+  # ---- cropShape：椭圆 ----
+  - elementId: im9
+    elementType: image
+    bounds: [800, 260, 130, 120]
+    src: media/test.png
+    fit: {mode: cover}
+    cropShape: {shapeName: ellipse}
+    shadow:
+      blur: 8
+      color: "#00000040"
+      offset: [0, 3]
+  - elementId: im9b
+    elementType: text
+    bounds: [800, 384, 150, 24]
+    content:
+      style: "$caption"
+      text: cropShape 椭圆
