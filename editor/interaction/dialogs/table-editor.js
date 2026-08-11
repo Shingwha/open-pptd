@@ -51,7 +51,7 @@ export function openTableEditor(el, { onChange }) {
   let cols = 1;
   let theme = null;
   let ts = null;
-  let gd = { grid: [] };
+  let gd = [];
   let rowHeights = [];
   let columnWidths = [];
 
@@ -59,25 +59,25 @@ export function openTableEditor(el, { onChange }) {
   const grid = createExcelGrid({
     getRows: () => rows.length,
     getCols: () => cols,
-    cellValue: (r, c) => gd.grid[r]?.[c]?.cell?.text ?? "",
+    cellValue: (r, c) => gd[r]?.[c]?.cell?.text ?? "",
     onCellChange: (r, c, v) => {
-      const g = gd.grid[r]?.[c];
+      const g = gd[r]?.[c];
       if (g && !g.covered) {
         g.cell ||= {};
         g.cell.text = v;
         commit();
       }
     },
-    covered: (r, c) => !!gd.grid[r]?.[c]?.covered,
-    rowSpan: (r, c) => gd.grid[r]?.[c]?.cell?.rowSpan || 1,
-    colSpan: (r, c) => gd.grid[r]?.[c]?.cell?.colSpan || 1,
+    covered: (r, c) => !!gd[r]?.[c]?.covered,
+    rowSpan: (r, c) => gd[r]?.[c]?.cell?.rowSpan || 1,
+    colSpan: (r, c) => gd[r]?.[c]?.cell?.colSpan || 1,
     cellCss: (r, c) => {
-      const g = gd.grid[r]?.[c];
+      const g = gd[r]?.[c];
       if (!g) return "";
       return tdCss(theme, cellFinal(theme, ts, r, c, rows.length, cols, g.covered ? null : g.cell, el.fill), g.covered);
     },
     inputCss: (r, c) => {
-      const g = gd.grid[r]?.[c];
+      const g = gd[r]?.[c];
       if (!g || g.covered) return "";
       const hl = resolveColor(theme, cellFinal(theme, ts, r, c, rows.length, cols, g.cell, el.fill).backgroundColor);
       return hl ? `background:${hl}` : "";
@@ -86,7 +86,7 @@ export function openTableEditor(el, { onChange }) {
     colWidths: () => columnWidths,
     colHeadContent: (c) => String.fromCharCode(65 + c),
     cellTitle: (r, c) => {
-      const g = gd.grid[r]?.[c];
+      const g = gd[r]?.[c];
       if (!g) return "";
       if (g.covered) return "被合并单元格覆盖";
       const m = (g.cell?.rowSpan || 1) > 1 || (g.cell?.colSpan || 1) > 1;
@@ -141,7 +141,7 @@ export function openTableEditor(el, { onChange }) {
         commit();
       }, { disabled: true });
       const s = grid.getSel();
-      const cellAt = s && !grid.isRegion() ? gd.grid[s.r]?.[s.c]?.cell : null;
+      const cellAt = s && !grid.isRegion() ? gd[s.r]?.[s.c]?.cell : null;
       const isMerged = cellAt && ((cellAt.rowSpan || 1) > 1 || (cellAt.colSpan || 1) > 1);
       splitBtn.disabled = !isMerged;
       splitBtn.title = isMerged ? "" : "选中合并单元格后可拆分";
@@ -239,7 +239,7 @@ export function openTableEditor(el, { onChange }) {
       panel.appendChild(hint);
       return panel;
     }
-    const cell = gd.grid[s.r]?.[s.c]?.cell;
+    const cell = gd[s.r]?.[s.c]?.cell;
     if (!cell) return panel;
 
     const set = (fn) => { fn(cell); commit(); render(); };
