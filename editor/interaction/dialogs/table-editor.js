@@ -13,27 +13,18 @@
 // ============================================================================
 
 import { showDialog, buildCellInput, button, select } from "./base.js";
-import { tableGrid, tryMerge, trySplit, normalizeCells, validateDims } from "../../core/table.js";
-import { resolveColor } from "../../core/theme.js";
+import { tableGrid, tryMerge, trySplit, normalizeCells, validateDims, estimateTableLayout } from "../../core/table.js";
+import { resolveColor, resolveTableStyle } from "../../core/theme.js";
 import { colorField } from "../../ui.js";
+import { cellFinal, tdCss } from "../../renderer/table.js";
 
 const H_ALIGNS = [["left", "左"], ["center", "居中"], ["right", "右"], ["justify", "两端"]];
 const V_ALIGNS = [["top", "上"], ["middle", "中"], ["bottom", "下"]];
 const FONT_SIZES = [10, 12, 13, 14, 16, 18, 20, 24, 28, 32];
 
-/** 主题色 → hex（编辑器预览用；$ 引用在 CSS 里无效）。 */
-function cssColor(v) {
-  const theme = window.__pptdEditor?.state?.theme;
-  return theme ? (resolveColor(theme, v) || v) : v;
-}
-
-/** 主题语义色 swatch（与属性面板 colorField 同源）。 */
-function themeSwatches() {
-  const state = window.__pptdEditor?.state;
-  const theme = state?.theme;
-  const c = theme?.colors || {};
-  const keys = ["primary", "accent", "text", "muted", "line", "success", "warning", "danger", "primaryDeep"];
-  return keys.map((k) => ({ key: `$${k}`, value: resolveColor(theme, c[k]) || "#cccccc" }));
+/** 当前编辑器主题（对话框内预览与画布同源）。 */
+function editorTheme() {
+  return window.__pptdEditor?.state?.theme || null;
 }
 
 export function openTableEditor(el, { onChange }) {
@@ -54,6 +45,14 @@ export function openTableEditor(el, { onChange }) {
 
   function commit() {
     onChange();
+  }
+
+  /** 主题语义色 swatch（与属性面板 colorField 同源）。 */
+  function themeSwatches() {
+    const theme = editorTheme();
+    const c = theme?.colors || {};
+    const keys = ["primary", "accent", "text", "muted", "line", "success", "warning", "danger", "primaryDeep"];
+    return keys.map((k) => ({ key: `$${k}`, value: resolveColor(theme, c[k]) || "#cccccc" }));
   }
 
   const isRegion = () => sel && sel.r1 != null;
@@ -118,12 +117,25 @@ export function openTableEditor(el, { onChange }) {
     );
     grid.appendChild(toolbar);
 
-    // ---- 网格 ----
+    // ---- 网格（所见即所得：与 renderer/table.js 同源样式链） ----
+    const theme = editorTheme();
+    const ts = resolveTableStyle(theme, el.style);
+    const { rowHeights, columnWidths } = estimateTableLayout(el);
+    const rowCount = gd.length;
     const table = document.createElement("table");
     table.className = "data-table";
+    // 列宽比例（与预览同源）
+    const colgroup = document.createElement("colgroup");
+    columnWidths.forEach((cw) => {
+      const col = document.createElement("col");
+      col.style.width = `${(cw * 100).toFixed(3)}%`;
+      colgroup.appendChild(col);
+    });
+    table.appendChild(colgroup);
     const tbody = document.createElement("tbody");
     gd.forEach((gRow, r) => {
       const tr = document.createElement("tr");
+      tr.style.height = `${rowHeights[r] ?? 26}px`;
       // 行删除按钮列（跨行合并的主格所在行才显示）
       const td0 = document.createElement("td");
       td0.className = "row-del";
@@ -149,6 +161,9 @@ export function openTableEditor(el, { onChange }) {
         td.className = "grid-cell";
         td.dataset.tr = String(r);
         td.dataset.tc = String(c);
+        // 完整样式链（覆盖格用 null 单元格，预览同源）
+        const f = cellFinal(theme, ts, r, c, rowCount, cols, g.covered ? null : g.cell, el.fill);
+        td.style.cssText = tdCss(theme, f, g.covered);
         if (g.covered) {
           td.classList.add("cell-covered");
           td.title = "被合并单元格覆盖";
@@ -158,8 +173,7 @@ export function openTableEditor(el, { onChange }) {
         td.title = `(${r + 1}, ${c + 1})${(g.cell?.rowSpan || 1) > 1 || (g.cell?.colSpan || 1) > 1 ? " · 合并格" : ""}`;
         if ((g.cell?.rowSpan || 1) > 1) td.rowSpan = g.cell.rowSpan;
         if ((g.cell?.colSpan || 1) > 1) td.colSpan = g.cell.colSpan;
-        td.style.cssText = cellCss(g.cell);
-        const input = buildCellInput(g.cell?.text ?? "", "单元格文本（双击编辑）", () => {
+        const input = buildCellInput(g.cell?.text ?? "", "双击编辑", () => {
           g.cell.text = input.value;
           commit();
         });
@@ -205,6 +219,9 @@ export function openTableEditor(el, { onChange }) {
     table.addEventListener("pointerdown", (e) => {
       const td = e.target.closest("td.grid-cell:not(.cell-covered)");
       if (!td) return;
+      const inp = td.querySelector("input");
+      // 编辑态（已聚焦）：不拦截，允许 input 内选择/操作文字
+      if (inp && document.activeElement === inp) return;
       e.preventDefault(); // 阻止文本选择与 input 聚焦（拖拽选区的前提）
       const r = Number(td.dataset.tr);
       const c = Number(td.dataset.tc);
@@ -274,11 +291,11 @@ export function openTableEditor(el, { onChange }) {
     iBtn.className += cell.italic ? " style-active" : "";
     // 字色 / 填充：三合一颜色控件（色块弹层 + 取色器 + hex）
     const colorCtl = colorField(cell.color || "$text", (v) => set((c) => { v ? (c.color = v) : delete c.color; }), {
-      resolve: (val) => resolveColor(window.__pptdEditor?.state?.theme, val),
+      resolve: (val) => resolveColor(editorTheme(), val),
       swatches: themeSwatches(),
     });
     const fillCtl = colorField(cell.fill?.color || "", (v) => set((c) => { v ? (c.fill = { type: "solid", color: v }) : delete c.fill; }), {
-      resolve: (val) => resolveColor(window.__pptdEditor?.state?.theme, val),
+      resolve: (val) => resolveColor(editorTheme(), val),
       swatches: themeSwatches(),
     });
     // 字号（预设 + 数字）
@@ -286,12 +303,9 @@ export function openTableEditor(el, { onChange }) {
     // 对齐
     const hSel = select(H_ALIGNS, cell.align?.[0] || "", (v) => set((c) => { c.align = [v || "left", c.align?.[1] || "middle"]; }));
     const vSel = select(V_ALIGNS, cell.align?.[1] || "", (v) => set((c) => { c.align = [c.align?.[0] || "left", v || "middle"]; }));
-    // textStyle 引用
-    const tsInp = document.createElement("input");
-    tsInp.placeholder = "$key（如 $body）";
-    tsInp.value = cell.textStyle || "";
-    tsInp.className = "style-ts";
-    tsInp.addEventListener("change", () => set((c) => { tsInp.value ? (c.textStyle = tsInp.value) : delete c.textStyle; }));
+    // textStyle 引用（主题 textStyles 键下拉）
+    const tsKeys = Object.keys(editorTheme()?.textStyles || {});
+    const tsSel = select([["", "（无）"], ...tsKeys.map((k) => [k, `$${k}`])], cell.textStyle || "", (v) => set((c) => { v ? (c.textStyle = v) : delete c.textStyle; }));
 
     bar.append(
       T("样式", [bBtn, iBtn]),
@@ -300,7 +314,7 @@ export function openTableEditor(el, { onChange }) {
       T("填充", fillCtl),
       T("水平", hSel),
       T("垂直", vSel),
-      T("textStyle", tsInp)
+      T("textStyle", tsSel)
     );
     return bar;
   }
@@ -320,54 +334,76 @@ export function openTableEditor(el, { onChange }) {
   showDialog("表格编辑", container);
 }
 
-/** 单元格样式 → td 内联样式（与预览 renderer/table.js 一致的简化版）。 */
-function cellCss(cell) {
-  const parts = [];
-  if (cell?.fill?.color) parts.push(`background:${cssColor(cell.fill.color)}`);
-  if (cell?.bold) parts.push("font-weight:600");
-  if (cell?.italic) parts.push("font-style:italic");
-  if (cell?.color) parts.push(`color:${cssColor(cell.color)}`);
-  if (cell?.fontSize) parts.push(`font-size:${cell.fontSize}px`);
-  if (cell?.align?.[0]) parts.push(`text-align:${cell.align[0]}`);
-  return parts.join(";");
-}
+/** 行高/列宽比例编辑对话框（滑块 + 数字；拖动一项按比例缩放其余项，保持和 = 1）。 */
 
-/** 行高/列宽比例编辑对话框（官方约束：各项和 = 1）。 */
+/** 行高/列宽比例编辑对话框（滑块 + 数字；拖动一项按比例缩放其余项，保持和 = 1）。 */
 function editDims(el, commit, rerender) {
   const body = document.createElement("div");
-  body.style.cssText = "display:flex;flex-direction:column;gap:10px;min-width:320px;";
+  body.style.cssText = "display:flex;flex-direction:column;gap:12px;min-width:340px;";
   const mk = (label, dims, onSet) => {
     const wrap = document.createElement("div");
     const title = document.createElement("div");
-    title.style.cssText = "font-weight:600;margin-bottom:4px;";
+    title.style.cssText = "font-weight:600;margin-bottom:6px;font-size:13px;";
     title.textContent = label;
-    const row = document.createElement("div");
-    row.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;";
-    dims.forEach((v, i) => {
-      const inp = document.createElement("input");
-      inp.type = "number";
-      inp.step = "0.05";
-      inp.min = "0.05";
-      inp.max = "1";
-      inp.value = v.toFixed(2);
-      inp.style.width = "56px";
-      inp.title = `第 ${i + 1} 项`;
-      inp.addEventListener("change", () => {
-        dims[i] = Number(inp.value) || 1 / dims.length;
+    const rows = dims.map((v, i) => {
+      const r = document.createElement("div");
+      r.style.cssText = "display:flex;align-items:center;gap:8px;margin-bottom:4px;";
+      const idx = document.createElement("span");
+      idx.style.cssText = "width:44px;flex:none;font-size:12px;color:#6b7280;";
+      idx.textContent = i === 0 ? "表头" : `第 ${i + 1} 项`;
+      const range = document.createElement("input");
+      range.type = "range";
+      range.min = "1";
+      range.max = "100";
+      range.step = "1";
+      range.value = String(Math.round(v * 100));
+      range.style.cssText = "flex:1;min-width:0;";
+      const num = document.createElement("input");
+      num.type = "number";
+      num.min = "1";
+      num.max = "100";
+      num.step = "1";
+      num.value = String(Math.round(v * 100));
+      num.style.cssText = "width:52px;flex:none;";
+      num.title = "百分比";
+      const apply = (pct) => {
+        const next = Math.min(99, Math.max(1, Number(pct) || 1)) / 100;
+        const old = dims[i];
+        if (Math.abs(old - next) < 0.001) return;
+        // 保持和 = 1：其余项等比缩放
+        const others = dims.reduce((a, x, j) => a + (j === i ? 0 : x), 0);
+        if (others > 0) {
+          const scale = (1 - next) / others;
+          dims.forEach((x, j) => { if (j !== i) dims[j] = Math.min(0.99, Math.max(0.01, x * scale)); });
+        }
+        dims[i] = next;
+        refreshAll();
         onSet();
-      });
-      row.appendChild(inp);
+      };
+      range.addEventListener("input", () => apply(range.value));
+      num.addEventListener("change", () => apply(num.value));
+      r.append(idx, range, num);
+      return { r, range, num };
     });
-    wrap.append(title, row);
+    const refreshAll = () => {
+      rows.forEach(({ range, num }, i) => {
+        range.value = String(Math.round(dims[i] * 100));
+        num.value = String(Math.round(dims[i] * 100));
+      });
+    };
+    wrap.append(title);
+    rows.forEach(({ r }) => wrap.appendChild(r));
     return wrap;
   };
   const dimsChanged = () => {
+    validateDims(el.columnWidths, "columnWidths");
+    validateDims(el.rowHeights, "rowHeights");
     commit();
     rerender();
   };
   body.append(
-    mk("列宽比例（columnWidths，和 = 1）", el.columnWidths, dimsChanged),
-    mk("行高比例（rowHeights，和 = 1）", el.rowHeights, dimsChanged)
+    mk("列宽比例（百分比，和 = 100%）", el.columnWidths, dimsChanged),
+    mk("行高比例（百分比，和 = 100%）", el.rowHeights, dimsChanged)
   );
   showDialog("行高 / 列宽", body);
 }

@@ -38,7 +38,7 @@ function sideCss(theme, v) {
 }
 
 /** 展开网格 → 单元格最终样式（与 writer 同源；covered 位返回 {covered:true}）。 */
-function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) {
+export function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) {
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
   const ref = resolveTextStyle(theme, cell?.textStyle);
   const fill = cell?.fill ?? s.fill ?? tableFill ?? null;
@@ -118,7 +118,7 @@ export function renderTable(theme, el) {
 }
 
 /** td 内联样式（预览；covered 位无文字不显示背景文字样式）。 */
-function tdCss(theme, f, covered) {
+export function tdCss(theme, f, covered) {
   // 严格官方形态：fill 字符串色或 {type: "solid", color}（与 writer 同源）
   const fillColor = f.fill
     ? typeof f.fill === "string"

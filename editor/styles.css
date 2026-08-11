@@ -1240,9 +1240,10 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   border: 0;
   outline: none;
   background: transparent;
-  padding: 5px 6px;
-  font-size: 12px;
-  color: var(--ink);
+  padding: 4px 6px;
+  font: inherit; /* 继承 td 完整样式链（字号/粗细/斜体） */
+  color: inherit; /* 继承 td 文字颜色（表头白字/主题色等，所见即所得） */
+  text-align: inherit; /* 继承单元格对齐 */
 }
 .data-table thead input { font-weight: 600; color: var(--primary); }
 .data-table input:focus { background: var(--primary-soft); }
