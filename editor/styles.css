@@ -1218,13 +1218,6 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .table-toolbar .btn { flex: 0 0 auto; }
 .toolbar-sep { width: 1px; height: 18px; background: var(--line-strong); margin: 0 4px; }
 .table-body { display: flex; gap: 10px; align-items: stretch; }
-.table-grid {
-  flex: 1;
-  min-width: 0;
-  height: min(52vh, 480px); /* 固定高度：内容滚动，面板不随选中状态跳动 */
-  overflow: auto;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
 }
 
 .data-table {
@@ -1538,20 +1531,11 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 }
 .chart-body { display: flex; gap: 10px; align-items: stretch; }
 .chart-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
-.chart-grid-box {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--bg);
-  overflow: hidden;
 }
-.chart-grid-scroll { overflow: auto; max-height: min(38vh, 340px); }
-.chart-grid-scroll .data-table { min-width: 100%; }
-/* 列头：字母小标 + 列名输入（两行） */
-.chart-grid-scroll th.col-head { padding: 3px 4px; line-height: 1.35; }
-.chart-grid-scroll .col-letter { font-size: 10px; color: #8a94a6; text-align: center; }
-.chart-grid-scroll th.col-head input {
+/* 列头（图表：字母小标 + 列名输入两行；组件 .excel-grid 内） */
+.excel-grid th.col-head { padding: 3px 4px; line-height: 1.35; }
+.excel-grid .col-letter { font-size: 10px; color: #8a94a6; text-align: center; }
+.excel-grid .chart-col-head input {
   width: 100%;
   box-sizing: border-box;
   border: none;
@@ -1565,7 +1549,8 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   padding: 1px 2px;
   border-radius: 4px;
 }
-.chart-grid-scroll th.col-head input:focus { background: var(--primary-soft); }
+.excel-grid .chart-col-head input:focus { background: var(--primary-soft); }
+.excel-grid .data-table { min-width: 100%; }
 /* 系列列表 */
 .series-box {
   border: 1px solid var(--line);
@@ -1592,3 +1577,21 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .series-item input[type="text"] { flex: 1; min-width: 60px; }
 .series-item select { max-width: 120px; }
 .series-item .btn-ghost { flex: none; }
+
+/* —— Excel 式数据网格组件（excel-grid.js，表格/图表共用） —— */
+.excel-grid {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.excel-grid .table-toolbar { border: none; border-bottom: 1px solid var(--line); border-radius: 0; }
+.excel-grid-scroll {
+  flex: 1;
+  min-width: 0;
+  height: min(52vh, 480px); /* 固定高度：内容滚动，面板不随选中状态跳动 */
+  overflow: auto;
+}
