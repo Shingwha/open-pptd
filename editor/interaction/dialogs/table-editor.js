@@ -22,7 +22,7 @@ import { tableGrid, tryMerge, trySplit, normalizeCells, validateDims, estimateTa
 import { resolveColor, resolveTableStyle } from "../../core/theme.js";
 import * as ui from "../../ui.js";
 import { cellFinal, tdCss } from "../../renderer/table.js";
-import { renderGroup } from "../fields.js";
+import { renderGroup, themeSwatches } from "../fields.js";
 
 const H_ALIGNS = [["left", "左"], ["center", "居中"], ["right", "右"], ["justify", "两端"]];
 const V_ALIGNS = [["top", "上"], ["middle", "中"], ["bottom", "下"]];
@@ -52,14 +52,6 @@ export function openTableEditor(el, { onChange }) {
   const isRegion = () => sel && sel.r1 != null;
   const regionRows = () => (isRegion() ? sel.r2 - sel.r1 + 1 : 1);
   const regionCols = () => (isRegion() ? sel.c2 - sel.c1 + 1 : 1);
-
-  /** 主题语义色 swatch（与属性面板 colorField 同源）。 */
-  function themeSwatches() {
-    const theme = editorTheme();
-    const c = theme?.colors || {};
-    const keys = ["primary", "accent", "text", "muted", "line", "success", "warning", "danger", "primaryDeep"];
-    return keys.map((k) => ({ key: `$${k}`, value: resolveColor(theme, c[k]) || "#cccccc" }));
-  }
 
   // --------------------------------------------------------------------------
   // 选区高亮（不重建 DOM，只切 class）
@@ -488,7 +480,7 @@ export function openTableEditor(el, { onChange }) {
       colorField: (v, c, o) =>
         ui.colorField(v, c, {
           resolve: (val) => resolveColor(editorTheme(), val),
-          swatches: themeSwatches(),
+          swatches: themeSwatches(editorTheme()),
           ...o,
         }),
       selectInput: (options, value, onCommit, o) => ui.selectInput(options, value, onCommit, o),

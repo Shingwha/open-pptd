@@ -165,16 +165,17 @@ export function resolveChartSeries(theme, el) {
       _values[ch] = _values[ch].map(toNum);
     }
 
-    // 默认取色（§5.2）：每类型的色字段
+    // 默认取色（§5.2）：每类型的色字段。编辑器 UI 写 s.color（通用字段），
+    // 官方 fill/lineColor 优先（含 seriesDefaults 合并值），color 兜底。
     let color = null;
     if (type === "line" || type === "area" || type === "radar") {
-      color = merged.lineColor || palette[i % palette.length];
+      color = merged.lineColor || merged.color || palette[i % palette.length];
     } else if (type === "bar" || type === "scatter" || type === "bubble") {
-      color = merged.fill || palette[i % palette.length];
+      color = merged.fill || merged.color || palette[i % palette.length];
     } else if (type === "pie") {
-      color = merged.fill || palette[0]; // 数组由渲染/导出按点循环
+      color = merged.fill || merged.color || palette[0]; // 数组由渲染/导出按点循环
     } else {
-      color = merged.fill || null; // candlestick/waterfall/heatmap/treemap/sunburst/sankey 不适用
+      color = merged.fill || merged.color || null; // candlestick/waterfall/heatmap/treemap/sunburst/sankey 不适用
     }
     let areaColor = merged.areaColor || null;
     if ((type === "area" || type === "radar") && !areaColor && color) {
