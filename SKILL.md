@@ -152,7 +152,7 @@ When generating a PPT, adopt different production approaches for different user 
 5. Default PPTX options:
    - page transition: `fade` (淡入淡出), written to every slide by the local writer;
    - font embedding: enabled by default; may be disabled with `--no-embed-fonts`;
-   - embedded fonts require the font files to be resolvable locally (see `references/fonts.md` → PPTX 字体嵌入方法).
+   - embedded fonts require the font files to be resolvable locally (see `references/fonts.md` → PPTX 字体嵌入方法). **嵌入注册名规则**：页面 `fontFamily` 必须与字体 name 表 ID16（无则取 ID1）完全一致，否则 PowerPoint 不认嵌入字体（含大小写/空格，见 fonts.md）
 6. After export, verify that the output exists and report the generated path. Confirm that every slide has exactly one root-level fade transition in valid CT_Slide order (`cSld`, optional `clrMapOvr`, `transition`, optional `timing/extLst`) and that the PPTX ZIP passes integrity checks. A byte-string search for `<p:fade>` is insufficient because Office ignores transitions nested inside `cSld`. Run the integrity check:
 
    ```bash

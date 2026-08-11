@@ -65,7 +65,9 @@ fonts:
   body: MiSans       # 系统字体字符串：只声明不嵌入
 ```
 
-- `family` 必须与字体 name 表完全一致（含大小写/空格），否则 PowerPoint 不认
+- `family` 是**嵌入注册名**：页面元素中的 `fontFamily` 必须与它完全一致（含大小写/空格），否则 PowerPoint 认不出嵌入字体，回退系统字体
+- **注册名取值规则**：writer 优先取字体 name 表 **ID16（typographic family）**，无 ID16 时回退 **ID1（family）**；所以 `family` 必须写「字体文件的注册名」，而不是任意展示名/全名
+- **实例名陷阱（Google Fonts 思源/Noto 系常见）**：此类字体 ID1 是实例名（如 `Source Han Serif SC Heavy`）、ID16 是族名（如 `Source Han Serif SC`）。**若页面按 ID1 实例名引用，注册名与引用名失配，嵌入失效**。对策：写 deck 前先确认注册名（编辑器「字体管理」或 fontTools 查 name 表 ID16/ID1），页面统一引用注册名；若确需实例名展示，可修改字体副本的 ID16 使两者一致
 - `subset: true` 时只嵌入文档用到的字符（TTF 支持，中文可小 100 倍以上）；**不写 = 全量嵌入**；CFF/OTF（OTTO 魔数）不支持子集化，自动回退全量嵌入
 - 只写 `family` 字符串的槽位（系统字体 / 资源 key）不会触发嵌入
 
