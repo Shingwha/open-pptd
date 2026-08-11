@@ -34,13 +34,13 @@ ok(KEYS.every((k) => DEFAULT_THEME.colors[k] === consult[k]), "DEFAULT_THEME.col
 
 console.log("== 2. references/themes.md 色值表与代码一致 ==");
 const md = readFileSync(resolve("references/themes.md"), "utf8");
-const mainTbl = md.split("主色与图表系列色")[1].split("其余 11 键")[0];
+const mainTbl = md.split("Primary and chart series colors")[1].split("The remaining 11 keys")[0];
 for (const row of mainTbl.split("\n").filter((l) => /^\| (consult|tech|orange|green|red|purple|mono|brown|morandi|sakura) \|/.test(l))) {
   const c = row.split("|").map((s) => s.trim());
   const code = ["primary", "accent", "accent3", "accent4", "accent5", "accent6"].map((k) => THEME_PALETTES[c[1]].colors[k].toUpperCase());
   ok(JSON.stringify(c.slice(2, 8)) === JSON.stringify(code), `themes.md 主色表 ${c[1]}`);
 }
-const restTbl = md.split("其余 11 键")[1].split("> 用法：")[0];
+const restTbl = md.split("The remaining 11 keys")[1].split("> Usage:")[0];
 for (const row of restTbl.split("\n").filter((l) => /^\| (text|muted|line|success|warning|danger|primarySoft|primaryTint|primaryDeep) \|/.test(l))) {
   const c = row.split("|").map((s) => s.trim());
   for (let i = 0; i < 10; i++) {

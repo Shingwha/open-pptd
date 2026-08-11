@@ -1,164 +1,168 @@
-# Font system
+# Font System
 
-## 字体总览
+## Overview
 
-- **内置字体库**：`assets/fonts/`（技能资源文件夹，不上传 GitHub），共 **29 种免费商用字体**，全部实测过 name 表注册名、fsType 可嵌入、支持子集化。
-- **使用方式**：deck.fonts 资源项写 `{family: <注册名>}` 即自动嵌入（默认子集化），模型无需下载/放置任何字体文件。
-- **默认字体**：`Microsoft YaHei`（微软雅黑，Windows 系统自带）。它不在内置字体库（微软版权，不可分发/嵌入），属系统字体——仅声明不嵌入，任何 Windows 机器打开都一致显示。如需跨机器一致的品牌字体（如 MiSans），在 deck.fonts 声明并让页面显式引用即可。
-- **系统字体**：未命中注册表的 fontFamily 仅声明不嵌入，依赖打开方系统已装。常用系统字体的注册名/平台覆盖见下方「系统字体」章节（CLI `fonts list` 也可查）。
+- **Built-in font library**: `assets/fonts/` (skill resource folder, not uploaded to GitHub) contains **29 free-for-commercial-use fonts**, all verified for name-table family names, embeddable fsType, and subsetting support.
+- **Usage**: declare `{family: <registered-name>}` in `deck.fonts` and the font is embedded automatically (subsetted by default). No need to download or place font files.
+- **Default font**: `Microsoft YaHei` (built into Windows, declared only — not embedded). It is not in the built-in library (Microsoft copyright, cannot be redistributed/embedded), so it is a system font: declared only, consistent on any Windows machine. For a cross-machine brand font, declare it in `deck.fonts` and reference it explicitly on pages.
+- **System fonts**: any `fontFamily` that misses the registry is declared only (not embedded) and depends on the opening system. Common system fonts and their platform coverage are listed under "System Fonts" below (also queryable via `node bin/open-pptd.js fonts list`).
+- **Display names vs registered names**: talk to the user in display names (e.g. 得意黑, 思源宋体) when asking for font preferences; write **registered names** into `deck.fonts` / page `fontFamily`.
 
-## Selection principles
+## Selection Principles
 
-1. Language matching: when the user's query is in Chinese or a Chinese PPT deliverable is requested, both Chinese and English fonts need to be specified; otherwise, only English fonts need to be set
-2. Selection approach: it is recommended to prioritize highly readable fonts for body text, and to use stylized fonts plus special treatments (all caps, widened letter spacing, bold, italics, etc.) in titles or special pages to strengthen the style
-3. The font combination must support the overall visual style positioning
-4. Name consistency: **页面 `fontFamily` 必须与下表「注册名」完全一致（含大小写/空格），这是嵌入生效的唯一要求**——直接抄注册名，不要写展示名
+1. Language matching: when the user's query is in Chinese or a Chinese PPT deliverable is requested, specify both Chinese and English fonts; otherwise set English fonts only.
+2. Selection approach: prioritize highly readable fonts for body text; use stylized fonts plus special treatments (all caps, widened letter spacing, bold, italics, etc.) in titles or special pages to strengthen the style.
+3. The font combination must support the overall visual style positioning.
+4. Name consistency: **the page `fontFamily` must exactly match the registered name in the tables below (including case and spaces) — this is the only requirement for embedding to take effect**. Copy the registered name directly; never write the display name.
 
-## 内置字体库（29 种，全部免费商用 + 子集化嵌入）
+> The sans table below is ordered by recommendation: **steady, formal, widely applicable fonts first** — pick from the top of the list for a professional look; stylized/creative fonts follow for titles and special pages.
 
-### 黑体（sans）
+## Built-in Font Library (29 fonts, all free-for-commercial-use + subsettable embedding)
 
-| 展示名 | 注册名（family） | 风格与特点 | 适合场景 |
+### Sans (黑体)
+
+| Display name | Registered name (family) | Style & character | Best for |
 |---|---|---|---|
-| MiSans | `MiSans` | 小米系统黑体，现代清晰，多字重 | 科技/企业/产品 |
-| 得意黑 | `Smiley Sans` | 窄身斜体黑体，人文与几何平衡（斜体字形） | 创意科技/品牌展示/标题 |
-| 思源真黑 | `Gen Shin Gothic` | 方正硬朗，工业感 | 工业/机械/标题 |
-| 思源柔黑 | `Gen Jyuu GothicL` | 圆润柔和，亲和 | 生活/轻松/正文 |
-| 阿里妈妈数黑体 | `Alimama ShuHeiTi` | 几何黑体，规整商业感（粗体字重） | 商业/科技/电商 |
-| 霞鹜新晰黑 | `LXGW Neo XiHei` | 清晰现代，简洁利落 | 科技/正文/通用 |
-| Liter | `Liter` | 现代无衬线，理性干净 | 科技/产品 |
-| HedvigLettersSans | `Hedvig Letters Sans` | 非设计师视角，个性辨识度 | 创意设计/品牌 |
-| QuattrocentoSans | `Quattrocento Sans` | 经典优雅无衬线，小字号清晰 | 学术/企业/教育 |
-| Coda | `Coda` | 圆润友好，开放曲线 | 商务/亲和品牌 |
+| 思源真黑 | `Gen Shin Gothic` | Square, sturdy, industrial feel | Industry/mechanical/titles/formal reports |
+| 阿里妈妈数黑体 | `Alimama ShuHeiTi` | Geometric sans, orderly commercial look (bold weight) | Business/tech/e-commerce |
+| 霞鹜新晰黑 | `LXGW Neo XiHei` | Clear, modern, clean and neat | Tech/body text/general |
+| Liter | `Liter` | Modern sans-serif, rational and clean | Tech/products |
+| Quattrocento Sans | `Quattrocento Sans` | Classic elegant sans-serif, legible at small sizes | Academic/business/education |
+| MiSans | `MiSans` | Xiaomi system sans, modern and clear, multiple weights | Tech/enterprise/products (backup choice) |
+| 得意黑 | `Smiley Sans` | Narrow slanted sans, balance of humanist and geometric (italic glyphs) | Creative tech/brand display/titles |
+| 思源柔黑 | `Gen Jyuu GothicL` | Rounded and soft, friendly | Lifestyle/light/body text |
+| HedvigLettersSans | `Hedvig Letters Sans` | Non-designer perspective, distinctive personality | Creative design/brand |
+| Coda | `Coda` | Rounded, friendly, open curves | Business/friendly brands |
 
-### 宋/衬线（serif）
+### Serif (宋/衬线)
 
-| 展示名 | 注册名（family） | 风格与特点 | 适合场景 |
+| Display name | Registered name (family) | Style & character | Best for |
 |---|---|---|---|
-| 思源宋体 | `Source Han Serif CN` | 笔画对比鲜明，优雅 | 文学/设计/正式演示 |
-| LXGW Bright | `LXGW WenKai` | 霞鹜文楷，楷书与仿宋融合，温润清秀 | 文学/教育/人文 |
-| 霞鹜緻宋 | `LXGW ZhiSong MN` | 现代感宋体 | 文学/古典/印刷风 |
-| 霞鹜铭心宋 | `LXGW Heart Serif MN` | 笔画清秀 | 文学/古典/标题 |
-| Oranienbaum | `Oranienbaum` | 高对比几何衬线，古典优雅 | 文化/艺术/时尚 |
-| SortsMillGoudy | `Sorts Mill Goudy` | 古典衬线，柔和易读 | 文学/人文 |
-| Unna | `Unna` | 新古典衬线，垂直韵律 | 文学/出版/学术 |
+| 思源宋体 | `Source Han Serif CN` | Strong stroke contrast, elegant | Literature/design/formal presentations |
+| 霞鹜文楷 | `LXGW WenKai` | Kai with fangsong fusion, warm and delicate | Literature/education/humanities |
+| 霞鹜緻宋 | `LXGW ZhiSong MN` | Modern serif | Literature/classic/print style |
+| 霞鹜铭心宋 | `LXGW Heart Serif MN` | Delicate strokes | Literature/classic/titles |
+| Oranienbaum | `Oranienbaum` | High-contrast geometric serif, classical elegance | Culture/art/fashion |
+| Sorts Mill Goudy | `Sorts Mill Goudy` | Classical serif, soft and readable | Literature/humanities |
+| Unna | `Unna` | Neo-classical serif, vertical rhythm | Literature/publishing/academic |
 
-### 手写/书法（handwriting）
+### Handwriting / Calligraphy (手写/书法)
 
-| 展示名 | 注册名（family） | 风格与特点 | 适合场景 |
+| Display name | Registered name (family) | Style & character | Best for |
 |---|---|---|---|
-| 飞波正点体 | `Feibo Zheng Dots` | 毛笔书法，笔画厚重有力 | 电影海报/电商/品牌展示 |
-| 阿里妈妈刀隶体 | `Alimama DaoLiTi` | 隶书风格，刀削笔画，古拙有力 | 国潮/文化/艺术展示 |
-| 阿里妈妈东方大楷 | `Alimama DongFangDaKai` | 颜体大楷，丰腴厚重 | 文化/品牌发布/国风主题 |
-| 站酷文艺体 | `zcoolwenyiti` | 清新手写感，文艺气息 | 轻设计/生活方式 |
-| ZCOOL KuaiLe | `HappyZcool-2016` | 活泼可爱手写圆体 | 动漫/儿童/娱乐 |
-| 霞鹜臻楷 | `LXGW ZhenKai` | 楷书韵味 | 国风/文学/正式 |
+| 飞波正点体 | `Feibo Zheng Dots` | Brush calligraphy, heavy and forceful strokes | Movie posters/e-commerce/brand display |
+| 阿里妈妈刀隶体 | `Alimama DaoLiTi` | Clerical-script style, chiseled strokes, archaic and forceful | Guochao/culture/art display |
+| 阿里妈妈东方大楷 | `Alimama DongFangDaKai` | Yan-style regular script, full and heavy | Culture/brand launch/Chinese-style themes |
+| 站酷文艺体 | `zcoolwenyiti` | Fresh handwritten feel, literary | Light design/lifestyle |
+| 站酷快乐体 | `HappyZcool-2016` | Lively cute rounded handwriting | Anime/kids/entertainment |
+| 霞鹜臻楷 | `LXGW ZhenKai` | Regular-script charm | Chinese style/literature/formal |
 
-### 标题/艺术（display）
+### Display / Artistic (标题/艺术)
 
-| 展示名 | 注册名（family） | 风格与特点 | 适合场景 |
+| Display name | Registered name (family) | Style & character | Best for |
 |---|---|---|---|
-| 站酷小薇LOGO体 | `xiaowei` | LOGO 艺术字，个性张扬 | 标题/品牌标识 |
-| 站酷庆科黄油体 | `zcoolqingkehuangyouti` | 圆润厚实黄油体 | 标题/食品/轻松品牌 |
-| Jersey15 | `Jersey 15` | 运动队服风格（仅英数） | 运动/科技展示 |
+| 站酷小薇LOGO体 | `xiaowei` | Logo art type, bold personality | Titles/brand marks |
+| 站酷庆科黄油体 | `zcoolqingkehuangyouti` | Rounded, thick butter-body | Titles/food/light brands |
+| Jersey15 | `Jersey 15` | Sports jersey style (Latin only) | Sports/tech display |
 
-### 像素（pixel）
+### Pixel (像素)
 
-| 展示名 | 注册名（family） | 风格与特点 | 适合场景 |
+| Display name | Registered name (family) | Style & character | Best for |
 |---|---|---|---|
-| 精品点阵体 | `BoutiqueBitmap9x9 1.9` | 9×9 点阵像素风 | 游戏/科技/复古电子 |
-| 寒蝉点阵体 | `寒蝉点阵体` | 16px 点阵像素风 | 游戏/复古/像素 |
-| Jersey20Charted | `Jersey 20 Charted` | 网格阴影运动数字（仅英数） | 运动/机械/装饰 |
+| 精品点阵体 | `BoutiqueBitmap9x9 1.9` | 9×9 dot-matrix pixel style | Games/tech/retro electronics |
+| 寒蝉点阵体 | `寒蝉点阵体` | 16px dot-matrix pixel style | Games/retro/pixel |
+| Jersey20Charted | `Jersey 20 Charted` | Grid-shadow sports numerals (Latin only) | Sports/mechanical/decorative |
 
-> 全表、大小、许可、回源 URL 见 `assets/fonts/registry.json`（机器可读，CLI/编辑器共用）。
+> Full table, sizes, licenses, and source URLs: `assets/fonts/registry.json` (machine-readable, shared by CLI and editor).
 
-## 系统字体（仅声明不嵌入，依赖打开方系统已装）
+## System Fonts (declared only, not embedded — depend on the opening system)
 
-以下为常用系统字体参考清单（**无字体字节、不嵌入、不下载**）：页面 `fontFamily` 直接写注册名即可，PPTX 里仅作声明。观感取决于打开方系统是否已装该字体——**未装则静默回退**，跨平台/跨设备一致性与嵌入字体不可比。注册名以 Windows 字体 name 表为准；`platform` 列标注覆盖范围，macOS 专有字体（苹方等）在 Windows 上会回退。
+Reference list of common system fonts (**no font bytes, no embedding, no download**): write the registered name directly in page `fontFamily`; the PPTX only declares it. Appearance depends on whether the opening system has the font — **silently falls back if missing**; cross-platform consistency cannot match embedded fonts. Registered names follow the Windows font name table; the `Platform` column shows coverage — macOS-only fonts (e.g. PingFang) fall back on Windows.
 
-### Windows 自带中文
+### Chinese (built into Windows)
 
-| 展示名 | 注册名（family） | 平台 | 风格与特点 | 适合场景 |
+| Display name | Registered name (family) | Platform | Style & character | Best for |
 |---|---|---|---|---|
-| 微软雅黑 | `Microsoft YaHei` | Windows 7+ | 现代黑体，屏幕阅读首选（**默认字体**） | 正文/通用 |
-| 宋体 | `SimSun` | Windows 全系 | 老牌宋体，公文/打印惯用 | 正文/正式文档 |
-| 仿宋 | `FangSong` | Windows 全系 | 仿宋，公文标准字体 | 公文/正式文档 |
-| 楷体 | `KaiTi` | Windows 全系 | 楷体，手写书卷感 | 题词/引用 |
-| 黑体 | `SimHei` | Windows 全系 | 老牌黑体，方正硬朗 | 标题/正文 |
-| 幼圆 | `YouYuan` | Windows 全系 | 圆体，圆润亲和 | 标题/轻松场景 |
-| 隶书 | `LiSu` | Windows 全系 | 隶书，古风 | 标题/装饰 |
-| 等线 | `DengXian` | Windows 10+ / Office | Office 默认中文，清秀 | 正文/通用 |
+| 微软雅黑 | `Microsoft YaHei` | Windows 7+ | Modern sans, first choice for on-screen reading (**default font**) | Body text/general |
+| 宋体 | `SimSun` | All Windows | Classic Song-style serif, standard for official documents/printing | Body text/formal documents |
+| 仿宋 | `FangSong` | All Windows | Fang-song style, standard for official documents | Official documents/formal |
+| 楷体 | `KaiTi` | All Windows | Regular script, handwritten scholarly feel | Inscriptions/quotes |
+| 黑体 | `SimHei` | All Windows | Classic heavy sans, square and sturdy | Titles/body text |
+| 幼圆 | `YouYuan` | All Windows | Round style, soft and friendly | Titles/light scenarios |
+| 隶书 | `LiSu` | All Windows | Clerical script, archaic | Titles/decorative |
+| 等线 | `DengXian` | Windows 10+ / Office | Office default Chinese font, refined | Body text/general |
 
-### 西文基础（Windows / Office 必带）
+### Latin (bundled with Windows / Office)
 
-| 展示名 | 注册名（family） | 平台 | 风格与特点 | 适合场景 |
+| Display name | Registered name (family) | Platform | Style & character | Best for |
 |---|---|---|---|---|
-| Times New Roman | `Times New Roman` | 全平台 | 经典衬线 | 西文正文/学术 |
-| Arial | `Arial` | 全平台 | 经典无衬线 | 西文正文 |
-| Calibri | `Calibri` | Office | Office 默认西文，圆润 | 西文正文 |
+| Times New Roman | `Times New Roman` | All platforms | Classic serif | Latin body text/academic |
+| Arial | `Arial` | All platforms | Classic sans-serif | Latin body text |
+| Calibri | `Calibri` | Office | Office default Latin font, rounded | Latin body text |
 
-### macOS 中文（Windows 无，跨平台会回退）
+### macOS Chinese (absent on Windows — falls back cross-platform)
 
-| 展示名 | 注册名（family） | 平台 | 风格与特点 | 适合场景 |
+| Display name | Registered name (family) | Platform | Style & character | Best for |
 |---|---|---|---|---|
-| 苹方 | `PingFang SC` | macOS | macOS 默认黑体 | 正文/通用（macOS） |
+| 苹方 | `PingFang SC` | macOS | macOS default sans | Body text/general (macOS) |
 
-> 系统字体由 `registry.json` 的 `systemFonts` 维护（CLI `fonts list` / `fonts check` 与编辑器字体面板共用同一份）。
+> System fonts are maintained in `registry.json` under `systemFonts` (shared by `fonts list` / `fonts check` and the editor font panel).
 
-## 新环境初始化（clone 仓库后）
+## First-Time Setup (after cloning the repo)
 
-字体文件本体（约 155MB）不入 git（仅 `registry.json` 元数据入库），首次使用前二选一：
+Font file binaries (~155 MB) are not committed to git (only `registry.json` metadata is); choose one of two options before first use:
 
 ```bash
-# 方案 A：一次全量下载（一劳永逸，约 155MB，离线可用）
+# Option A: one-time full download (one and done, ~155 MB, works offline)
 node bin/open-pptd.js fonts download all
 
-# 方案 B：按需下载（用到哪个下哪个，导出前跑）
+# Option B: on-demand download (download what you use, run before export)
 node bin/open-pptd.js fonts download 得意黑
-node bin/open-pptd.js fonts check <deck.pptd>   # 体检后按 ✗ 补下载
+node bin/open-pptd.js fonts check <deck.pptd>   # health check, then download what ✗ marks
 ```
 
-未下载字体不影响导出：导出时自动跳过嵌入并告警，PPTX 照常生成（字体名保留，打开时回退系统字体）。
+Missing fonts do not block export: they are skipped with a warning, the PPTX is still generated (family name kept, falls back to system fonts when opened).
 
-## PPTX 字体嵌入方法
+## PPTX Font Embedding
 
-导出默认嵌入 `deck.fonts` 资源表中**命中内置字体库或带 url 的字体**（`--no-embed-fonts` 关闭）。嵌入后 PPTX 自带字体，任何机器打开不缺字。
+By default, export embeds fonts in the `deck.fonts` resource table that **hit the built-in library or carry a `url`** (disable with `--no-embed-fonts`). The embedded PPTX carries its fonts, so any machine opens without missing glyphs.
 
-### 1. deck.fonts 声明语法
+### 1. deck.fonts declaration syntax
 
 ```yaml
 fonts:
-  得意黑: { family: "Smiley Sans" }          # 注册表引用：导出自动从内置库取字 → 子集化 → 嵌入
-  title-font: { family: "Alimama DaoLiTi", subset: false }   # 显式关闭子集化（默认 true）
-  web-font:  { family: "SomeFont", url: https://cdn.example.com/somefont.ttf }  # 网络字体（需 CORS）
-  body: MiSans                              # 组件槽字符串：仅引用，不产生嵌入
+  得意黑: { family: "Smiley Sans" }          # registry reference: export takes font from built-in library → subsets → embeds
+  title-font: { family: "Alimama DaoLiTi", subset: false }   # explicitly disable subsetting (default true)
+  web-font:  { family: "SomeFont", url: https://cdn.example.com/somefont.ttf }  # web font (needs CORS)
+  body: MiSans                              # slot string: reference only, no embedding
 ```
 
-- `family` 是**嵌入注册名**：必须与上表注册名完全一致（含大小写/空格）；**未命中注册表且无 url 的 family 视为系统字体，仅声明不嵌入**
-- `subset: true`（默认）只嵌入文档用到的字符（TTF 子集化，中文可小 100 倍以上）
-- 嵌入注册名 = 字体 name 表 ID16（typographic family）优先、ID1 回退——上表注册名已全部实测，**直接抄，不要写展示名**
+- `family` is the **embedding registered name**: must exactly match the tables above (including case and spaces); **a family that misses the registry and has no `url` is treated as a system font — declared only, not embedded**
+- The `fonts` map key is an arbitrary slot name; using the display name as the key keeps the deck readable
+- `subset: true` (default) embeds only the characters used in the document (TTF subsetting; Chinese can shrink by 100× or more)
+- The embedding registered name = font name-table ID16 (typographic family) first, ID1 fallback — all names above are tested, **copy them directly; never write display names**
 
-### 2. 项目不需要 fonts 目录
+### 2. No fonts directory needed in a project
 
-字体字节全部在技能内置库 `assets/fonts/`，deck 项目目录保持 `deck.pptd + pages/ + media/` 干净。
+Font bytes all live in the skill's built-in library `assets/fonts/`; a deck project stays clean with `deck.pptd + pages/ + media/`.
 
-### 3. CLI 字体管理
+### 3. CLI font management
 
 ```bash
-node bin/open-pptd.js fonts list                  # 全表 + 下载状态 ✓/✗
-node bin/open-pptd.js fonts download <名称|all>   # 按需 / 全量补下载到字体库
-node bin/open-pptd.js fonts check <deck.pptd>     # 体检：哪些嵌入 / 仅声明 / 缺失
+node bin/open-pptd.js fonts list                  # full table + download status ✓/✗
+node bin/open-pptd.js fonts download <name|all>   # on-demand / full download into the library (display name or registered name)
+node bin/open-pptd.js fonts check <deck.pptd>     # health check: embedded / declared-only / missing
 ```
 
-### 4. 编辑器（serve 模式）
+### 4. Editor (serve mode)
 
-工具栏「字体」→ 字体管理对话框：内置字体库分区浏览（黑体/宋衬线/手写书法/标题艺术/像素），点「使用」一键加入并写入 deck.fonts（注册名自动带对）；预览与导出共用同一字体字节（`/assets/fonts/` 静态服务 + FontFace）。
+Toolbar "Fonts" → font management dialog: browse the built-in library by category (Sans / Serif / Handwriting / Display / Pixel), click "Use" to add and write into `deck.fonts` (registered name auto-corrected). Preview and export share the same font bytes (`/assets/fonts/` static service + FontFace).
 
-### 5. 注意事项
+### 5. Notes
 
-- **使用即嵌入**：注册表引用的字体一律嵌入（不管本机是否已装），保证任何机器打开一致；体积靠子集化控制
-- **theme 默认字体不要用嵌入字体**（PowerPoint 会把主题字体也当"使用中"强制嵌入，导致文件膨胀）
-- **必须有 run 实际使用**：只声明 fonts 而页面/主题样式没有引用该 family → PowerPoint 打开时丢弃嵌入声明。deck.fonts 声明后，记得在 theme.textStyles 或元素 fontFamily 中使用
-- **许可**：内置库 29 种全部免费商用（OFL / IPA / 阿里妈妈 / 站酷授权），可嵌入再分发；微软雅黑等 Windows 商业字体不可再分发嵌入
-- **受限字体**：fsType = Restricted（0x0002）的字体导出时跳过并告警（内置库无此类）
-- 嵌入实现细节见 `docs/font-embedding.md`（开发文档，排障时查阅）
+- **Use = embed**: fonts referenced via the registry are always embedded (whether or not installed locally), guaranteeing consistency on any machine; size is controlled by subsetting
+- **Do not use embedded fonts as the theme default font** (PowerPoint treats theme fonts as "in use" and forces embedding, bloating the file)
+- **A run must actually use the font**: declaring fonts while no page/theme style references the family → PowerPoint drops the embedded declaration. After declaring in `deck.fonts`, remember to use it in `theme.textStyles` or element `fontFamily`
+- **Licensing**: all 29 built-in fonts are free for commercial use (OFL / IPA / Alimama / ZCOOL licenses), embeddable and redistributable; Windows commercial fonts such as Microsoft YaHei cannot be redistributed/embedded
+- **Restricted fonts**: fonts with fsType = Restricted (0x0002) are skipped with a warning at export (none in the built-in library)
+- Embedding implementation details: `docs/font-embedding.md` (developer doc, consult when troubleshooting)

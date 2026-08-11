@@ -1,69 +1,88 @@
 # open-pptd — 本地 PPTD 演示文稿技能
 
-一套"内容 → 可编辑项目 → 实时预览 → PPTX"的演示文稿生成闭环，全部在本地运行，**零依赖、无需联网、无需 npm install**。
+> 🌏 English version: [README.en.md](README.en.md)
+
+一套「内容 → 可编辑项目 → 实时预览 → PPTX」的演示文稿生成闭环，全部在本地运行，**零依赖、无需联网、无需 npm install**。
 
 ## 这是什么
 
 - **PPTD** 是人类可读的 YAML 演示格式：一个 manifest（`deck.pptd`）+ 每页一个 `pages/*.page` + `media/` 图片
 - 浏览器网页编辑器实时预览/共同修改（改文件刷新即生效），最终导出标准 `.pptx`
-- 预览（浏览器）= 导出（PowerPoint），单一定义、双消费者（writer / renderer 同源）
-- 能力覆盖：13 种图表（bar/line/area/scatter/bubble/pie/radar/waterfall/treemap/sunburst/candlestick 等）、187 种预置形状 + 自定义路径、LaTeX 公式混排、字体嵌入、淡入淡出转场
+- **预览（浏览器）= 导出（PowerPoint）**：单一定义、双消费者（writer / renderer 同源）
+- 能力覆盖：13 种图表、187 种预置形状 + 自定义路径、LaTeX 公式混排、字体嵌入、淡入淡出转场
 
-本项目采用 **PPTD**（YAML 演示中间格式）作为内容定义格式。
-
-但本项目的**实现完全独立、全部自研**：网页编辑器、PPTX writer（OOXML 生成）、图标库、图表与 LaTeX 渲染、CLI 导出链路均为本项目自行构建，**未使用 Kimi 的任何代码、图标、编辑器或资源**，也不依赖任何逆向/破解实现。
+> 本项目实现完全独立、全部自研（网页编辑器、PPTX writer、图标库、图表与 LaTeX 渲染、CLI 导出链路），未使用任何第三方编辑器代码或逆向实现。
 
 ## 前置条件
 
 - **Node.js v18+**（唯一依赖，无需安装任何 npm 包）
-- 浏览器推荐 Chrome / Edge（"打开文件夹"保存功能需要）
+- 浏览器推荐 Chrome / Edge（「打开文件夹」保存功能需要）
 
-## 安装
+## 安装（3 步）
 
-### git clone（推荐）
-
-把仓库直接 clone 到任意 AI 工具的 **skills 文件夹**即可使用，无需任何额外配置：
+把仓库 clone 到你的 AI 工具的 **skills 文件夹** 即可使用：
 
 ```bash
-# 方式一：克隆到指定 skills 文件夹
- git clone https://github.com/Shingwha/open-pptd <你的 skills 文件夹>/open-pptd
+# 方式一：指定目录克隆（推荐）
+git clone https://github.com/Shingwha/open-pptd <你的 skills 文件夹>/open-pptd
 
 # 方式二：先进入 skills 文件夹再克隆（目录名自动为 open-pptd）
 cd <你的 skills 文件夹>
 git clone https://github.com/Shingwha/open-pptd
 ```
 
-skills 文件夹的位置因 AI 工具而异（Claude Code 的 `~/.claude/skills`、pi 的 `~/.pi/agent/skills`、其他自定义目录等），找到你所用工具存放 skill 的目录、把 `open-pptd` clone 进去即可。本技能内所有路径都是相对 skill 目录的，装到哪里都能直接工作。
+skills 文件夹的位置因工具而异：
 
-> 前置条件仅 Node.js v18+（无需 npm install、无需联网）。
+| AI 工具 | skills 文件夹 |
+|---|---|
+| Claude Code | `~/.claude/skills` |
+| pi | `~/.pi/agent/skills` |
+| 其他自定义目录 | 按你的工具配置 |
+
+> 技能内所有路径均相对 skill 目录，装到哪里都能直接工作。前置条件仅 Node.js v18+（无需 npm install、无需联网）。
+
+### 首次使用：下载字体库（可选但推荐）
+
+字体文件本体（约 155MB）不入 git，首次使用前二选一：
+
+```bash
+# 方案 A：一次全量下载（一劳永逸，约 155MB，离线可用）
+node bin/open-pptd.js fonts download all
+
+# 方案 B：按需下载（用到哪个下哪个，导出前跑）
+node bin/open-pptd.js fonts download 得意黑
+```
+
+> 未下载字体不影响导出：导出时自动跳过嵌入并告警，PPTX 照常生成（打开时回退系统字体）。
 
 ## 快速开始
 
 ```bash
-# 1. 创建你的项目目录
-mkdir -p /path/to/你的项目目录/pages /path/to/你的项目目录/media
+# 1. 创建项目目录
+mkdir -p /path/to/项目目录/pages /path/to/项目目录/media
 
 # 2. 用 AI 助手生成 deck.pptd + pages/*.page（格式规范见 references/pptd.md）
 
 # 3. 命令行导出 PPTX / 项目包
-node bin/open-pptd.js export /path/to/你的项目目录/deck.pptd -o out.pptx
-node bin/open-pptd.js export-project /path/to/你的项目目录/deck.pptd -o project.zip
+node bin/open-pptd.js export /path/to/项目目录/deck.pptd -o out.pptx
+node bin/open-pptd.js export-project /path/to/项目目录/deck.pptd -o project.zip
 
 # 4.（可选）启动网页编辑器实时预览
-node bin/open-pptd.js serve --project /path/to/你的项目目录 --port 55173
+node bin/open-pptd.js serve --project /path/to/项目目录 --port 55173
 # 浏览器打开启动时打印的链接
 ```
 
-格式规范按需查阅 `references/`：`pptd.md`（PPTD v2 完整规范，字段表/约束/示例，**一切格式决策的唯一依据**）、`shapes.md`（187 种预置形状）、`fonts.md`（字体清单）、`icons.md`（图标清单）、`slides_categories.md`（各场景排版方案）、`general-poster.md`（海报/信息图单页设计）。
+格式规范按需查阅 `references/`：`pptd.md`（PPTD v2 完整规范，**一切格式决策的唯一依据**）、`shapes.md`（187 种预置形状）、`fonts.md`（字体清单）、`icons.md`（图标清单）、`slides_categories.md`（各场景排版方案）、`general-poster.md`（海报/信息图单页设计）。
 
 ## 目录结构
 
 ```
 open-pptd/
 ├── SKILL.md                  # 给 AI 助手的完整工作流说明
-├── README.md                 # 本文档（给人看）
+├── README.md                 # 本文档（给人看，中文）
+├── README.en.md              # 英文版本文档
 ├── index.html                # 编辑器入口（重定向到 editor/）
-├── bin/open-pptd.js          # CLI（serve / export / export-project）
+├── bin/open-pptd.js          # CLI（serve / export / export-project / fonts）
 ├── lib/                      # 本地服务器（静态 + SSE 实时刷新 + 保存写回）+ 导出逻辑
 ├── editor/                   # 网页编辑器（纯前端，无后端依赖）
 │   ├── core/                 #   数据模型 / 富文本 / 主题 / 几何 / 图标库
@@ -71,7 +90,7 @@ open-pptd/
 │   ├── renderer/             #   预览渲染（与 writer 同源）
 │   ├── types/                #   元素类型注册表（text/shape/line/image/icon/table/chart）
 │   └── app/                  #   编辑器装配（状态/视图/IO/工具栏）
-├── assets/                    # 内置资源（icons/ 图标源；fonts/ 字体库 29 种免费商用字体，本地资源不上传 GitHub）
+├── assets/                   # 内置资源（icons/ 图标源；fonts/ 字体库 29 种免费商用字体，本地资源不上传 GitHub）
 ├── references/               # 按需读取的参考文档（pptd.md / shapes.md / fonts.md / icons.md / …）
 ├── scripts/                  # 构建脚本（图标库 / 预置几何 / 参考文件生成）
 ├── tests/                    # 测试（见 tests/README.md：组件项目 + 一键回归 + E2E）

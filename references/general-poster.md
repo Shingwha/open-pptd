@@ -128,7 +128,7 @@ The following complete samples are used to expand the design moves, primary visu
 - Primary visual focus: choose only one of three as the protagonist — a high-contrast object image, an object silhouette, or giant type.
 - Reading order and composition: use a rigorous grid with a clear dense-versus-sparse counterpoint; the title, exhibit item, and micro captions form three scales, but not every poster is required to have a route or timeline.
 - Color: Editorial White `#F7F6F2` and Deep Black `#0B0B0B` carry the main relationship; silver-gray is used only for secondary information; choose at most one small-area accent from Signal Red `#F20505`, Fluoro Lime `#D6FF00`, or Acid Orange `#FF4A1C`.
-- Fonts: the main title uses 得意黑/阿里妈妈数黑体 with HedvigLettersSans; the body uses MiSans/Liter; at most three font families, and the numbering font does not carry body text.
+- Fonts: the main title uses 得意黑/阿里妈妈数黑体 with HedvigLettersSans; the body uses 霞鹜新晰黑/Liter; at most three font families, and the numbering font does not carry body text.
 - Image treatment: prefer images with strong contours, close-ups, and room for bold cropping; they may be converted to black and white or desaturated, but keep the object's recognition points.
 - Graphic language: use hairlines, short labels, and small nodes only when content relationships need them; maps must have a spatial base, and data charts must have real data.
 - Information density: keep one clear visual breathing area; archival details may be dense, but body text and captions must be readable at the actual output size.

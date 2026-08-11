@@ -1,9 +1,11 @@
 // ============================================================================
-// scripts/gen-icons-doc.mjs — 从图标库生成 references/icons.md（AUTO-GENERATED）
+// scripts/gen-icons-doc.mjs — Generates references/icons.md (AUTO-GENERATED)
 // ----------------------------------------------------------------------------
-// 用途：让生成模型知道本地图标库有哪些图标（bs: 直引）与 FA 语义映射
-//       （fas:/far:/fab: 近似图标），避免写出库外图标导致导出跳过。
-// 运行：node scripts/gen-icons-doc.mjs
+// Purpose: lets the generating model know which icons exist in the local
+//          library (bs: direct references) and the FA semantic mappings
+//          (fas:/far:/fab: approximate icons), avoiding out-of-library icons
+//          that would be skipped during export.
+// Run: node scripts/gen-icons-doc.mjs
 // ============================================================================
 
 import { writeFileSync } from "node:fs";
@@ -12,82 +14,81 @@ import { FA_TO_BS } from "../editor/core/icon-name.js";
 
 const CAT_ORDER = ["方向", "状态", "概念", "文档", "图表", "财务", "工具", "设备", "沟通", "时间", "位置", "安全", "人员"];
 const CAT_LABEL = {
-  方向: "方向/箭头", 状态: "状态/提示", 概念: "概念/象征", 文档: "文档/文件", 图表: "图表/数据",
-  财务: "财务/商业", 工具: "工具/操作", 设备: "设备/硬件", 沟通: "沟通/媒体", 时间: "时间/日程",
-  位置: "位置/地图", 安全: "安全/隐私", 人员: "人员/用户",
+  方向: "Direction / Arrow", 状态: "Status / Alert", 概念: "Concept / Symbol", 文档: "Document / File", 图表: "Chart / Data",
+  财务: "Finance / Business", 工具: "Tool / Action", 设备: "Device / Hardware", 沟通: "Communication / Media", 时间: "Time / Schedule",
+  位置: "Location / Map", 安全: "Security / Privacy", 人员: "People / User",
 };
 
-// 按分类收集
+// Group by category
 const byCat = new Map();
 for (const [name, info] of Object.entries(ICONS)) {
   if (!byCat.has(info.cat)) byCat.set(info.cat, []);
-  byCat.get(info.cat).push({ name, label: info.label });
+  byCat.get(info.cat).push({ name });
 }
 for (const arr of byCat.values()) arr.sort((a, b) => a.name.localeCompare(b.name));
 
-// FA 映射表按目标图标分组（fas: 常用）
+// FA mapping table grouped by target icon (fas: common)
 const faRows = Object.entries(FA_TO_BS)
   .map(([fa, bs]) => ({ fa, bs }))
   .sort((a, b) => a.fa.localeCompare(b.fa));
 
-// 一致性硬校验：FA 映射目标必须存在于本地库，否则中止（防止文档/库再次脱节）
+// Hard consistency check: every FA mapping target must exist in the local library
 const badTargets = faRows.filter(({ bs }) => !(bs in ICONS));
 if (badTargets.length) {
-  console.error(`✗ FA_TO_BS 有 ${badTargets.length} 条映射指向库外图标，已中止：`);
+  console.error(`✗ FA_TO_BS has ${badTargets.length} mappings pointing outside the library; aborted:`);
   for (const { fa, bs } of badTargets.slice(0, 20)) console.error(`  - ${fa} → ${bs}`);
-  console.error(`  修复：清理 editor/core/icon-name.js 中无效条目，或先在 assets/icons/ 补齐图标。`);
+  console.error(`  Fix: remove invalid entries from editor/core/icon-name.js, or add the icons to assets/icons/.`);
   process.exit(1);
 }
 
 const lines = [];
-lines.push(`# Icon Library（本地图标库）`);
+lines.push(`# Icon Library`);
 lines.push(``);
-lines.push(`> AUTO-GENERATED（scripts/gen-icons-doc.mjs）——修改图标库后重新生成。`);
+lines.push(`> AUTO-GENERATED (scripts/gen-icons-doc.mjs) — regenerate after modifying the icon library.`);
 lines.push(``);
-lines.push(`## 用法`);
+lines.push(`## Usage`);
 lines.push(``);
-lines.push(`\`iconName\` 格式为 \`style:name\`：`);
+lines.push(`\`iconName\` format is \`style:name\`:`);
 lines.push(``);
-lines.push(`| 前缀 | 语义 | 说明 |`);
+lines.push(`| Prefix | Meaning | Notes |`);
 lines.push(`|---|---|---|`);
-lines.push(`| \`bs:\` | 本地库直引 | 下方清单中的任意 name，如 \`bs:rocket\` |`);
-lines.push(`| \`fas:\` | Font Awesome Solid | 按 FA 语义名映射到本地近似图标，如 \`fas:house\`；仅下表覆盖的 FA 名可用 |`);
-lines.push(`| \`far:\` | Font Awesome Regular | 同 \`fas:\` 映射表（Regular 语义无区分） |`);
-lines.push(`| \`fab:\` | Font Awesome Brands | **不支持**——本地库无品牌 logo（版权）；品牌标识请用图片元素 |`);
+lines.push(`| \`bs:\` | Local library direct reference | Any name from the lists below, e.g. \`bs:rocket\` |`);
+lines.push(`| \`fas:\` | Font Awesome Solid | Mapped by FA semantic name to a local approximate icon, e.g. \`fas:house\`; only FA names covered by the table below are available |`);
+lines.push(`| \`far:\` | Font Awesome Regular | Same mapping table as \`fas:\` (Regular semantics are not distinguished) |`);
+lines.push(`| \`fab:\` | Font Awesome Brands | **Not supported** — the local library has no brand logos (copyright); use an image element for brand marks |`);
 lines.push(``);
-lines.push(`> 生成时优先用 \`bs:\` 直引（一定存在）；用 \`fas:\` 时先查下方映射表确认存在，否则导出会跳过该图标。`);
+lines.push(`> Prefer \`bs:\` direct references when generating (they always exist); when using \`fas:\`, check the mapping table below first — otherwise the icon is skipped during export.`);
 lines.push(``);
-lines.push(`## 本地图标库（${Object.keys(ICONS).length} 个，按分类）`);
+lines.push(`## Local Icon Library (${Object.keys(ICONS).length} icons, by category)`);
 lines.push(``);
 for (const cat of CAT_ORDER) {
   const items = byCat.get(cat);
   if (!items || !items.length) continue;
-  lines.push(`### ${CAT_LABEL[cat] || cat}（${items.length}）`);
+  lines.push(`### ${CAT_LABEL[cat] || cat} (${items.length})`);
   lines.push(``);
-  lines.push(`| name | 中文 |`);
-  lines.push(`|---|---|`);
-  for (const { name, label } of items) lines.push(`| \`bs:${name}\` | ${label}${ICONS[name]?.src === "fa" ? " *" : ""} |`);
+  lines.push(`| name |`);
+  lines.push(`|---|`);
+  for (const { name } of items) lines.push(`| \`bs:${name}\`${ICONS[name]?.src === "fa" ? " *" : ""} |`);
   lines.push(``);
 }
-// 未列出的分类
+// Categories not listed above
 for (const [cat, items] of byCat) {
   if (CAT_ORDER.includes(cat)) continue;
-  lines.push(`### ${cat}（${items.length}）`);
+  lines.push(`### ${cat} (${items.length})`);
   lines.push(``);
-  lines.push(`| name | 中文 |`);
-  lines.push(`|---|---|`);
-  for (const { name, label } of items) lines.push(`| \`bs:${name}\` | ${label}${ICONS[name]?.src === "fa" ? " *" : ""} |`);
+  lines.push(`| name |`);
+  lines.push(`|---|`);
+  for (const { name } of items) lines.push(`| \`bs:${name}\`${ICONS[name]?.src === "fa" ? " *" : ""} |`);
   lines.push(``);
 }
-lines.push(`## Font Awesome → 本地映射（${faRows.length} 条，全部命中本地库）`);
+lines.push(`## Font Awesome → Local Mapping (${faRows.length} entries, all resolve to the local library)`);
 lines.push(``);
-lines.push(`| FA 名 | 用法 | 本地图标 |`);
+lines.push(`| FA name | Usage | Local icon |`);
 lines.push(`|---|---|---|`);
 for (const { fa, bs } of faRows) {
-  const label = ICONS[bs]?.label || "";
-  lines.push(`| ${fa} | \`fas:${fa}\` / \`far:${fa}\` | \`bs:${bs}\`（${label}） |`);
+  lines.push(`| ${fa} | \`fas:${fa}\` / \`far:${fa}\` | \`bs:${bs}\` |`);
 }
 lines.push(``);
 
 writeFileSync("references/icons.md", lines.join("\n"), "utf8");
-console.log(`✓ references/icons.md 已生成（${Object.keys(ICONS).length} 图标 + ${faRows.length} FA 映射）`);
+console.log(`✓ references/icons.md regenerated (${Object.keys(ICONS).length} icons + ${faRows.length} FA mappings)`);

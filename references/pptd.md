@@ -651,7 +651,7 @@ Styles apply only to the text inside that `<span>`.
 | --- | --- | --- | --- |
 | `color` | Text color | [Color](#color) (HEX6 / HEX8 / theme reference) | `<span style="color:$primary">…</span>` |
 | `font-size` | Font size | px string (e.g. `24px`) | `<span style="font-size:24px">…</span>` |
-| `font-family` | Font family | Font name (e.g. `Arial`, `"Arial, 微软雅黑"`) | `<span style="font-family:Arial">…</span>` |
+| `font-family` | Font family | Font name (e.g. `Arial`, `"Arial, Microsoft YaHei"`) | `<span style="font-family:Arial">…</span>` |
 | `background-color` | Text background color | [Color](#color) (HEX6 / HEX8 / theme reference) | `<span style="background-color:$accent">…</span>` |
 
 
