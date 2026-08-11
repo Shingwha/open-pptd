@@ -41,6 +41,11 @@ export function createEditorApi({ state, page, selected, ops }) {
       ops.deleteSelected();
       view.render();
     },
+    duplicateSelected: () => {
+      ops.beginChange();
+      ops.duplicateSelected();
+      view.render();
+    },
     moveLayer: (dir) => {
       ops.moveLayer(dir);
       view.render();

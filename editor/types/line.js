@@ -37,22 +37,27 @@ registerType({
   toXml: lineXml,
 
   props(el, h) {
-    const g = h.group("线条");
-    const grid = document.createElement("div");
-    grid.className = "prop-grid";
-    grid.appendChild(h.field("颜色", h.colorField(el.border?.color || "#000000", (v) => ((el.border ||= {}).color = v))));
-    grid.appendChild(h.field("宽度", h.numInput(el.border?.width || 1, (v) => ((el.border ||= {}).width = v), { min: 0 })));
-    grid.appendChild(h.field("线型", h.selectInput([["solid", "实线"], ["dash", "虚线"], ["dot", "点线"]], el.border?.style || "solid", (v) => ((el.border ||= {}).style = v))));
-    grid.appendChild(h.field("曲线", h.selectInput([["sharp", "直线段"], ["round", "圆角连接"], ["smooth", "贝塞尔"]] , el.curve || "round", (v) => (el.curve = v))));
-    const checks = document.createElement("div");
-    checks.className = "prop-checks";
-    checks.append(
-      h.checkbox("终点箭头", !!el.arrow?.[1], (v) => { el.arrow = [el.arrow?.[0] || null, v ? "arrow" : null]; }),
-      h.checkbox("起点箭头", !!el.arrow?.[0], (v) => { el.arrow = [v ? "arrow" : null, el.arrow?.[1] || null]; })
-    );
-    grid.appendChild(checks);
-    g.appendChild(grid);
-    return [g];
+    return [{
+      title: "线条",
+      fields: [
+        { kind: "num", label: "宽度", min: 0,
+          get: () => el.border?.width || 1,
+          set: (v) => ((el.border ||= {}).width = v) },
+        { kind: "select", label: "线型", options: [["solid", "实线"], ["dash", "虚线"], ["dot", "点线"]],
+          get: () => el.border?.style || "solid",
+          set: (v) => ((el.border ||= {}).style = v) },
+        { kind: "select", label: "曲线", options: [["sharp", "直线段"], ["round", "圆角连接"], ["smooth", "贝塞尔"]],
+          get: () => el.curve || "round",
+          set: (v) => (el.curve = v) },
+        { kind: "color", label: "颜色",
+          get: () => el.border?.color || "#000000",
+          set: (v) => ((el.border ||= {}).color = v) },
+        { kind: "checks", items: [
+          { label: "终点箭头", get: () => !!el.arrow?.[1], set: (v) => { el.arrow = [el.arrow?.[0] || null, v ? "arrow" : null]; } },
+          { label: "起点箭头", get: () => !!el.arrow?.[0], set: (v) => { el.arrow = [v ? "arrow" : null, el.arrow?.[1] || null]; } },
+        ] },
+      ],
+    }];
   },
 
   quickbar(el, h) {

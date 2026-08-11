@@ -6,6 +6,7 @@
 // ============================================================================
 
 import { createHistory } from "../interaction/history.js";
+import { nextElementId } from "../core/model.js";
 
 export function createEditorState() {
   const state = {
@@ -39,6 +40,17 @@ export function createEditorState() {
       if (idx < 0) return;
       list.splice(idx, 1);
       state.selectedId = null;
+    },
+    duplicateSelected() {
+      const list = page().elements;
+      const idx = list.findIndex((e) => e.elementId === state.selectedId);
+      if (idx < 0) return;
+      const src = list[idx];
+      const copy = JSON.parse(JSON.stringify(src));
+      copy.elementId = nextElementId(src.elementType);
+      copy.bounds = [src.bounds[0] + 24, src.bounds[1] + 24, src.bounds[2], src.bounds[3]];
+      list.splice(idx + 1, 0, copy);
+      state.selectedId = copy.elementId;
     },
     moveLayer(dir) {
       const list = page().elements;

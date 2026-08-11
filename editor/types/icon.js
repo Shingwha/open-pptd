@@ -62,41 +62,21 @@ registerType({
   toXml: iconXml,
 
   props(el, h) {
-    const g = h.group("图标");
     const key = resolveIconName(el.iconName);
     const def = key ? ICONS[key] : null;
-    const row = document.createElement("div");
-    row.className = "icon-prop-row";
-    const thumb = document.createElement("span");
-    thumb.className = "icon-prop-thumb";
-    thumb.innerHTML = key ? iconThumb(key, { size: 28 }) : "?";
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "btn btn-sm";
-    btn.textContent = "更换图标…";
-    btn.onclick = () => {
-      h.beginChange();
-      h.openEditor(el);
-      h.endChange();
-    };
-    row.append(thumb, btn);
-    g.appendChild(row);
+    const fields = [
+      { kind: "button", label: "更换图标…",
+        onClick: () => { h.beginChange(); h.openEditor(el); h.endChange(); } },
+      { kind: "color", label: "颜色",
+        get: () => el.fill?.color || "$text",
+        set: (v) => (el.fill = { type: "solid", color: v }) },
+    ];
     if (def) {
-      const hint = document.createElement("div");
-      hint.className = "prop-hint";
-      hint.textContent = `${def.label} · ${def.cat} · 点击搜索框可快速筛选`;
-      g.appendChild(hint);
+      fields.push({ kind: "hint", text: `${def.label} · ${def.cat} · 点击搜索框可快速筛选` });
     } else {
-      const hint = document.createElement("div");
-      hint.className = "prop-hint";
-      hint.textContent = `未知图标 ${el.iconName}（官方 fas: 格式仅映射常见图标）`;
-      g.appendChild(hint);
+      fields.push({ kind: "hint", text: `未知图标 ${el.iconName}（官方 fas: 格式仅映射常见图标）` });
     }
-    const grid = document.createElement("div");
-    grid.className = "prop-grid";
-    grid.appendChild(h.field("颜色", h.colorField(el.fill?.color || "$text", (v) => (el.fill = { type: "solid", color: v }))));
-    g.appendChild(grid);
-    return [g];
+    return [{ title: "图标", fields }];
   },
 
   quickbar(el, h) {

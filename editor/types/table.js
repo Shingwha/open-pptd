@@ -42,13 +42,14 @@ registerType({
   toXml: tableXml,
 
   props(el, h) {
-    const g = h.group("表格");
-    g.appendChild(h.button("编辑表格内容…", () => { h.beginChange(); h.openEditor(el); h.endChange(); }));
-    const hint = document.createElement("div");
-    hint.className = "prop-hint";
-    hint.textContent = "表格高度随内容自适应；也可在画布上双击进入编辑。";
-    g.appendChild(hint);
-    return [g];
+    return [{
+      title: "表格",
+      fields: [
+        { kind: "button", label: "编辑表格内容…",
+          onClick: () => { h.beginChange(); h.openEditor(el); h.endChange(); } },
+        { kind: "hint", text: "表格高度随内容自适应；也可在画布上双击进入编辑。" },
+      ],
+    }];
   },
 
   quickbar(el, h) {

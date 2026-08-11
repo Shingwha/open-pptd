@@ -90,62 +90,91 @@ registerType({
   toXml: shapeXml,
 
   props(el, h) {
-    const g = h.group("形状");
     const options = Object.entries(SUPPORTED_SHAPES).map(([k, v]) => [k, v.label]);
     options.push(["custom", "自定义路径"]);
-    g.appendChild(h.field("类型", h.selectInput(options, el.shapeName, (v) => { el.shapeName = v; })));
-    const grid = document.createElement("div");
-    grid.className = "prop-grid";
-    grid.appendChild(h.field("类型", h.selectInput([["solid", "纯色"], ["gradient", "渐变"]], el.fill?.type === "gradient" ? "gradient" : "solid", (v) => {
-      if (v === "gradient") {
-        el.fill = {
-          type: "gradient",
-          gradientType: "linear",
-          angle: el.fill?.angle ?? 90,
-          stops: [
-            { position: 0, color: fillHex(el.fill) || "$primary" },
-            { position: 1, color: "#ffffff" },
-          ],
-        };
-      } else {
-        const cur = el.fill;
-        el.fill = { type: "solid", color: cur?.type === "gradient" ? cur.stops?.[0]?.color || "$primary" : fillHex(cur) };
-      }
-    })));
+    const fields = [
+      { kind: "select", label: "类型", options,
+        get: () => el.shapeName,
+        set: (v) => { el.shapeName = v; } },
+      { kind: "select", label: "填充", options: [["solid", "纯色"], ["gradient", "渐变"]],
+        get: () => (el.fill?.type === "gradient" ? "gradient" : "solid"),
+        set: (v) => {
+          if (v === "gradient") {
+            el.fill = {
+              type: "gradient",
+              gradientType: "linear",
+              angle: el.fill?.angle ?? 90,
+              stops: [
+                { position: 0, color: fillHex(el.fill) || "$primary" },
+                { position: 1, color: "#ffffff" },
+              ],
+            };
+          } else {
+            const cur = el.fill;
+            el.fill = { type: "solid", color: cur?.type === "gradient" ? cur.stops?.[0]?.color || "$primary" : fillHex(cur) };
+          }
+        } },
+    ];
     if (el.fill?.type === "gradient") {
-      grid.appendChild(h.field("起始色", h.colorField(el.fill.stops?.[0]?.color || "$primary", (v) => { el.fill.stops[0].color = v; })));
-      grid.appendChild(h.field("结束色", h.colorField(el.fill.stops?.[1]?.color || "#ffffff", (v) => { el.fill.stops[1].color = v; })));
-      grid.appendChild(h.field("角度", h.numInput(el.fill.angle ?? 90, (v) => (el.fill.angle = v), { min: 0, max: 360, step: 15 })));
+      fields.push(
+        { kind: "color", label: "起始色",
+          get: () => el.fill.stops?.[0]?.color || "$primary",
+          set: (v) => { el.fill.stops[0].color = v; } },
+        { kind: "color", label: "结束色",
+          get: () => el.fill.stops?.[1]?.color || "#ffffff",
+          set: (v) => { el.fill.stops[1].color = v; } },
+        { kind: "num", label: "角度", min: 0, max: 360, step: 15,
+          get: () => el.fill.angle ?? 90,
+          set: (v) => (el.fill.angle = v) }
+      );
     } else {
-      grid.appendChild(h.field("填充色", h.colorField(fillHex(el.fill), (v) => (el.fill = { type: "solid", color: v }))));
+      fields.push(
+        { kind: "color", label: "填充色",
+          get: () => fillHex(el.fill),
+          set: (v) => (el.fill = { type: "solid", color: v }) }
+      );
     }
-    grid.appendChild(h.field("边框", h.colorField(el.border?.color || "$line", (v) => ((el.border ||= {}).color = v))));
-    grid.appendChild(h.field("边宽", h.numInput(el.border?.width || 0, (v) => ((el.border ||= {}).width = v), { min: 0 })));
-    grid.appendChild(h.field("线型", h.selectInput([["solid", "实线"], ["dash", "虚线"], ["dot", "点线"]], el.border?.style || "solid", (v) => ((el.border ||= {}).style = v))));
-    // 自定义路径：viewBox + path（text input 直改）
+    fields.push(
+      { kind: "color", label: "边框",
+        get: () => el.border?.color || "$line",
+        set: (v) => ((el.border ||= {}).color = v) },
+      { kind: "num", label: "边宽", min: 0,
+        get: () => el.border?.width || 0,
+        set: (v) => ((el.border ||= {}).width = v) },
+      { kind: "select", label: "线型", options: [["solid", "实线"], ["dash", "虚线"], ["dot", "点线"]],
+        get: () => el.border?.style || "solid",
+        set: (v) => ((el.border ||= {}).style = v) }
+    );
+    // 自定义路径：viewBox + path；预置形状：调整值（圆角/缺口/星形比例等）
     if (el.shapeName === "custom") {
-      grid.appendChild(h.field("viewBox", h.textInput((el.viewBox || []).join(","), (v) => {
-        const parts = v.split(",").map(Number);
-        if (parts.length === 2 && parts.every(Number.isFinite)) el.viewBox = parts;
-      })));
-      grid.appendChild(h.field("路径", h.textInput(el.path || "", (v) => (el.path = v))));
+      fields.push(
+        { kind: "text", label: "viewBox",
+          get: () => (el.viewBox || []).join(","),
+          set: (v) => {
+            const parts = v.split(",").map(Number);
+            if (parts.length === 2 && parts.every(Number.isFinite)) el.viewBox = parts;
+          } },
+        { kind: "text", label: "路径",
+          get: () => el.path || "",
+          set: (v) => (el.path = v) }
+      );
     } else {
-      // 调整值（圆角/缺口/星形比例等）：按规范 adjNames
       const names = adjNamesFor(el.shapeName, el.adjustments);
       const values = el.adjustments || SUPPORTED_SHAPES[el.shapeName]?.adjustments || [];
       names.forEach((name, i) => {
         const label = ADJ_LABELS[name] || name;
-        grid.appendChild(
-          h.field(label, h.numInput(values[i] ?? 0, (v) => {
+        fields.push({
+          kind: "num", label, min: 0, step: 500,
+          get: () => values[i] ?? 0,
+          set: (v) => {
             const next = [...values];
             next[i] = v;
             el.adjustments = next;
-          }, { min: 0, step: 500 }))
-        );
+          },
+        });
       });
     }
-    g.appendChild(grid);
-    return [g];
+    return [{ title: "形状", fields }];
   },
 
   quickbar(el, h) {

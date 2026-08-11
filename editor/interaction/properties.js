@@ -1,40 +1,42 @@
 // ============================================================================
-// interaction/properties.js — 属性面板（元素属性 + 页面设置）
+// interaction/properties.js — 属性面板（声明式字段渲染器）
 // ----------------------------------------------------------------------------
-// 结构（平面分区，无卡片嵌套）：
-//   [元素选中时] 元素头（类型徽标 + id + 删除）→ 位置与尺寸 → 类型专属分组
+// 布局模板（统一规则，根治各类型各自为政的杂乱）：
+//   [元素选中时] 元素头（徽标 + id + 复制 + 删除）
+//                → 位置与尺寸（X/Y/宽/高 + 对齐工具行 + 层序）
+//                → 变换（旋转/透明度 + 翻转）
+//                → 类型分组（types/*.js 的 props 返回 groups 声明）
 //   [未选中时]   演示文稿 → 页面设置 → 提示
-// 元素专属分组由类型注册表分派（types/*.js 的 props，返回分组节点数组）。
-// 交互模式：控件 focus → beginChange（快照）；input → update；blur → endChange。
+//
+// 字段声明（types 只描述，布局由本渲染器统一决定）：
+//   num      双列紧凑格（label 上置），两两成行     {kind:"num", label, get, set, min?, max?, step?}
+//   text     整行文本框                            {kind:"text", label, get, set, placeholder?}
+//   textarea 整行多行文本                          {kind:"textarea", label, get, set, placeholder?}
+//   select   整行下拉                              {kind:"select", label, options, get, set}
+//   color    整行颜色（色块弹层 + 取色器 + hex）    {kind:"color", label, get, set}
+//   checks   整行复选框组                          {kind:"checks", items:[{label, get, set}]}
+//   button   整行按钮                              {kind:"button", label, onClick, className?}
+//   hint     整行提示                              {kind:"hint", text}
+//
+// 事务模式：控件 focus → beginChange（快照）；input → update；blur → endChange。
 // 颜色控件：令牌（$primary 等）经 resolveColor 解析回填，展示当前真实颜色。
 // ============================================================================
 
 import { getType } from "../types/index.js";
-import { PAGE_TYPES } from "../core/model.js";
+import { PAGE_TYPES, PAGE_WIDTH, PAGE_HEIGHT } from "../core/model.js";
 import { resolveColor } from "../core/theme.js";
 import * as ui from "../ui.js";
 
 export function bindProperties(panel, api) {
-  const { state, page, getSelectedElement, beginChange, endChange, deleteSelected, moveLayer } = api;
+  const { state, page, getSelectedElement, beginChange, endChange, deleteSelected, duplicateSelected, moveLayer } = api;
 
   /** 注册表 props 用控件（focus/blur 事务 + 提交后即时刷新画布，面板不重建保焦点）。 */
   function helpers() {
     // 提交包装：改模型 → 立即只刷新画布（blur 时 endChange 再全量对齐面板）
     const commit = (fn) => (v) => { fn(v); api.refreshPreview(); };
     return {
-      field: ui.field,
-      group: ui.group,
       textInput: (v, c, o = {}) => ui.textInput(v, commit(c), { onFocus: beginChange, onBlur: endChange, ...o }),
       numInput: (v, c, o = {}) => ui.numInput(v, commit(c), { onFocus: beginChange, onBlur: endChange, ...o }),
-      colorInput: (v, c, o = {}) =>
-        ui.colorInput(v, commit(c), {
-          title: typeof v === "string" ? v : "颜色",
-          resolve: (val) => resolveColor(state.theme, val),
-          onFocus: beginChange,
-          onBlur: endChange,
-          ...o,
-        }),
-      /** 三合一颜色控件（主题色 swatch + 取色器 + hex 文本），推荐颜色字段使用。 */
       colorField: (v, c, o = {}) =>
         ui.colorField(v, commit(c), {
           resolve: (val) => resolveColor(state.theme, val),
@@ -56,7 +58,7 @@ export function bindProperties(panel, api) {
   /** 主题语义色 swatch 数据（解析为 hex，点击回填 $key 令牌）。 */
   function themeSwatches() {
     const c = state.theme.colors || {};
-    const keys = ["primary", "accent", "text", "muted", "line", "success", "warning", "danger", "primaryDeep"];
+    const keys = ["primary", "accent", "text", "muted", "line", "success", "warning", "danger", "primaryDeep", "primarySoft", "primaryTint", "accent3"];
     return keys.map((k) => ({ key: `$${k}`, value: resolveColor(state.theme, c[k]) || "#cccccc" }));
   }
 
@@ -71,12 +73,12 @@ export function bindProperties(panel, api) {
     renderCommon(el);
     const def = getType(el.elementType);
     if (def?.props) {
-      const nodes = def.props(el, helpers());
-      (Array.isArray(nodes) ? nodes : [nodes]).forEach((n) => n && panel.appendChild(n));
+      const groups = def.props(el, helpers());
+      (Array.isArray(groups) ? groups : []).forEach((g) => g && panel.appendChild(renderGroup(g, helpers())));
     }
   }
 
-  /** 元素头：类型徽标 + elementId + 删除。 */
+  /** 元素头：类型徽标 + elementId + 复制 + 删除。 */
   function itemHead(el) {
     const head = document.createElement("div");
     head.className = "inspector-item";
@@ -87,50 +89,147 @@ export function bindProperties(panel, api) {
     const id = document.createElement("code");
     id.className = "inspector-elid";
     id.textContent = el.elementId;
+    const dup = ui.button("复制", () => { beginChange(); duplicateSelected(); endChange(); }, { className: "btn btn-sm", title: "复制元素（Ctrl+D）" });
     const del = ui.button("删除", () => { beginChange(); deleteSelected(); endChange(); }, { className: "btn btn-sm btn-danger" });
-    head.append(badge, id, del);
+    head.append(badge, id, dup, del);
     return head;
   }
 
-  /** 通用区：位置与尺寸 + 层序操作。 */
+  // --------------------------------------------------------------------------
+  // 通用组：位置与尺寸 + 变换（所有组件一致）
+  // --------------------------------------------------------------------------
   function renderCommon(el) {
+    const h = helpers();
+
+    // —— 位置与尺寸 ——
     const g = ui.group("位置与尺寸");
     const grid = document.createElement("div");
     grid.className = "prop-grid";
-    const [x, y, w, h] = el.bounds;
-    grid.appendChild(ui.field("X", ui.numInput(x, (v) => (el.bounds[0] = v), { onFocus: beginChange, onBlur: endChange })));
-    grid.appendChild(ui.field("Y", ui.numInput(y, (v) => (el.bounds[1] = v), { onFocus: beginChange, onBlur: endChange })));
-    grid.appendChild(ui.field("宽", ui.numInput(w, (v) => (el.bounds[2] = Math.max(4, v)), { min: 4, onFocus: beginChange, onBlur: endChange })));
-    grid.appendChild(ui.field("高", ui.numInput(h, (v) => (el.bounds[3] = Math.max(4, v)), { min: 4, onFocus: beginChange, onBlur: endChange })));
+    const [x, y, w, hh] = el.bounds;
+    grid.appendChild(ui.cell("X", h.numInput(x, (v) => (el.bounds[0] = v))));
+    grid.appendChild(ui.cell("Y", h.numInput(y, (v) => (el.bounds[1] = v))));
+    grid.appendChild(ui.cell("宽", h.numInput(w, (v) => (el.bounds[2] = Math.max(4, v)), { min: 4 })));
+    grid.appendChild(ui.cell("高", h.numInput(hh, (v) => (el.bounds[3] = Math.max(4, v)), { min: 4 })));
     g.appendChild(grid);
+
+    // 对齐工具行（相对页面）
+    const ALIGN = [
+      ["al", "←", "左对齐"], ["ac", "↔", "水平居中"], ["ar", "→", "右对齐"],
+      ["at", "↑", "顶对齐"], ["am", "↕", "垂直居中"], ["ab", "↓", "底对齐"],
+    ];
+    const alignRow = document.createElement("div");
+    alignRow.className = "prop-icon-row";
+    for (const [mode, glyph, title] of ALIGN) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "prop-icon-btn";
+      b.textContent = glyph;
+      b.title = title;
+      b.addEventListener("click", () => { beginChange(); alignElement(el, mode); endChange(); });
+      alignRow.appendChild(b);
+    }
+    g.appendChild(alignRow);
 
     const layer = document.createElement("div");
     layer.className = "prop-actions";
     layer.append(
-      ui.button("上移一层", () => { beginChange(); moveLayer(-1); endChange(); }, { className: "btn btn-sm" }),
-      ui.button("下移一层", () => { beginChange(); moveLayer(1); endChange(); }, { className: "btn btn-sm" })
+      h.button("上移一层", () => { beginChange(); moveLayer(-1); endChange(); }),
+      h.button("下移一层", () => { beginChange(); moveLayer(1); endChange(); })
     );
     g.appendChild(layer);
     panel.appendChild(g);
 
-    // 变换（v2 ElementBase：rotation/opacity/flip；渲染与导出已支持）
+    // —— 变换 ——
     const g2 = ui.group("变换");
     const grid2 = document.createElement("div");
     grid2.className = "prop-grid";
-    grid2.appendChild(ui.field("旋转", ui.numInput(el.rotation ?? 0, (v) => (el.rotation = v), { min: -360, max: 360, onFocus: beginChange, onBlur: endChange })));
-    grid2.appendChild(ui.field("透明度", ui.numInput(el.opacity ?? 1, (v) => (el.opacity = Math.min(1, Math.max(0, v))), { min: 0, max: 1, step: 0.05, onFocus: beginChange, onBlur: endChange })));
+    grid2.appendChild(ui.cell("旋转", h.numInput(el.rotation ?? 0, (v) => (el.rotation = v), { min: -360, max: 360 })));
+    grid2.appendChild(ui.cell("透明度", h.numInput(el.opacity ?? 1, (v) => (el.opacity = Math.min(1, Math.max(0, v))), { min: 0, max: 1, step: 0.05 })));
+    g2.appendChild(grid2);
     const checks = document.createElement("div");
     checks.className = "prop-checks";
     checks.append(
-      ui.checkbox("水平翻转", !!el.flip?.[0], (v) => (el.flip = [v, !!el.flip?.[1]]), { onFocus: beginChange, onBlur: endChange }),
-      ui.checkbox("垂直翻转", !!el.flip?.[1], (v) => (el.flip = [!!el.flip?.[0], v]), { onFocus: beginChange, onBlur: endChange })
+      h.checkbox("水平翻转", !!el.flip?.[0], (v) => (el.flip = [v, !!el.flip?.[1]])),
+      h.checkbox("垂直翻转", !!el.flip?.[1], (v) => (el.flip = [!!el.flip?.[0], v]))
     );
-    grid2.appendChild(checks);
-    g2.appendChild(grid2);
+    g2.appendChild(checks);
     panel.appendChild(g2);
   }
 
-  /** 页面设置（未选中元素时）。 */
+  /** 元素对齐到页面（mode: left/hcenter/right/top/vcenter/bottom）。 */
+  function alignElement(el, mode) {
+    const [bx, by, bw, bh] = el.bounds;
+    if (mode === "left") el.bounds[0] = 0;
+    else if (mode === "hcenter") el.bounds[0] = Math.round((PAGE_WIDTH - bw) / 2);
+    else if (mode === "right") el.bounds[0] = PAGE_WIDTH - bw;
+    else if (mode === "top") el.bounds[1] = 0;
+    else if (mode === "vcenter") el.bounds[1] = Math.round((PAGE_HEIGHT - bh) / 2);
+    else if (mode === "bottom") el.bounds[1] = PAGE_HEIGHT - bh;
+  }
+
+  // --------------------------------------------------------------------------
+  // 声明式分组渲染
+  // --------------------------------------------------------------------------
+  function renderGroup(group, h) {
+    const g = ui.group(group.title || "");
+    let grid = null;
+    const ensureGrid = () => {
+      if (!grid) {
+        grid = document.createElement("div");
+        grid.className = "prop-grid";
+        g.appendChild(grid);
+      }
+      return grid;
+    };
+
+    for (const f of group.fields || []) {
+      if (f.kind === "num") {
+        ensureGrid().appendChild(ui.cell(f.label, h.numInput(f.get(), f.set, f)));
+        if (grid.children.length === 2) grid = null; // 两两成行
+      } else {
+        grid = null;
+        const node = renderFullField(f, h);
+        if (node) g.appendChild(node);
+      }
+    }
+    return g;
+  }
+
+  /** 整行字段分派。 */
+  function renderFullField(f, h) {
+    switch (f.kind) {
+      case "text":
+        return ui.field(f.label, h.textInput(f.get(), f.set, { placeholder: f.placeholder || "" }));
+      case "textarea":
+        return ui.field(f.label, h.textInput(f.get(), f.set, { rows: f.rows || 3, placeholder: f.placeholder || "" }));
+      case "select":
+        return ui.field(f.label, h.selectInput(f.options, f.get(), f.set));
+      case "color":
+        return ui.field(f.label, h.colorField(f.get(), f.set));
+      case "checks": {
+        const wrap = document.createElement("div");
+        wrap.className = "prop-checks";
+        for (const item of f.items) {
+          wrap.appendChild(h.checkbox(item.label, item.get(), item.set));
+        }
+        return wrap;
+      }
+      case "button":
+        return h.button(f.label, f.onClick, f.className ? { className: f.className } : {});
+      case "hint": {
+        const div = document.createElement("div");
+        div.className = "prop-hint";
+        div.textContent = f.text;
+        return div;
+      }
+      default:
+        return null;
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // 页面设置（未选中元素时）
+  // --------------------------------------------------------------------------
   function renderPageProps() {
     const deck = state.deck;
     const pg = page();
