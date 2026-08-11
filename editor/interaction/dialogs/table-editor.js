@@ -17,12 +17,12 @@
 // （cellFinal/tdCss/estimateTableLayout）——所见即所得。
 // ============================================================================
 
-import { showDialog, buildCellInput, button, select } from "./base.js";
+import { showDialog, buildCellInput, button } from "./base.js";
 import { tableGrid, tryMerge, trySplit, normalizeCells, validateDims, estimateTableLayout } from "../../core/table.js";
 import { resolveColor, resolveTableStyle } from "../../core/theme.js";
 import * as ui from "../../ui.js";
 import { cellFinal, tdCss } from "../../renderer/table.js";
-import { renderGroup, themeSwatches } from "../fields.js";
+import { renderGroup, fieldHandlers } from "../fields.js";
 
 const H_ALIGNS = [["left", "左"], ["center", "居中"], ["right", "右"], ["justify", "两端"]];
 const V_ALIGNS = [["top", "上"], ["middle", "中"], ["bottom", "下"]];
@@ -473,20 +473,8 @@ export function openTableEditor(el, { onChange }) {
     if (!cell) return panel;
 
     const set = (fn) => { fn(cell); commit(); render(); };
-    // 控件工厂：直接提交（表格面板无需 focus/blur 事务）
-    const h = {
-      textInput: (v, c, o) => ui.textInput(v, c, o),
-      numInput: (v, c, o) => ui.numInput(v, c, o),
-      colorField: (v, c, o) =>
-        ui.colorField(v, c, {
-          resolve: (val) => resolveColor(editorTheme(), val),
-          swatches: themeSwatches(editorTheme()),
-          ...o,
-        }),
-      selectInput: (options, value, onCommit, o) => ui.selectInput(options, value, onCommit, o),
-      checkbox: (l, ch, c, o) => ui.checkbox(l, ch, c, o),
-      button: (label, onClick, o) => ui.button(label, onClick, o),
-    };
+    // 控件工厂：直接提交（表格面板无需 focus/blur 事务），共用 fields.js 实现
+    const h = fieldHandlers({ theme: () => editorTheme() });
     const tsKeys = Object.keys(editorTheme()?.textStyles || {});
     const groups = [
       {

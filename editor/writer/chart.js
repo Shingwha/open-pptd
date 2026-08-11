@@ -20,7 +20,7 @@
 // ============================================================================
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "./xml.js";
-import { resolveChartSeries, chartDataTable, isNumericColumn, resolveDataLabels, toAxisArray, inferAxisType, resolveChartDirection, seriesAxisIndex, seriesChannels, darkenByLightness, hierarchyColor } from "../core/chart.js";
+import { resolveChartSeries, chartDataTable, isNumericColumn, resolveDataLabels, toAxisArray, resolveChartDirection, seriesAxisIndex, seriesChannels, hierarchyColor } from "../core/chart.js";
 import { resolveColor, resolveFont, themeChartPalette } from "../core/theme.js";
 import { buildFill, buildLn, buildShadow } from "./drawing.js";
 import { ZipWriter } from "./zip.js";

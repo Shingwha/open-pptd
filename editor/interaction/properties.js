@@ -26,7 +26,7 @@ import { getType } from "../types/index.js";
 import { PAGE_TYPES, PAGE_WIDTH, PAGE_HEIGHT } from "../core/model.js";
 import { resolveColor } from "../core/theme.js";
 import * as ui from "../ui.js";
-import { renderGroup } from "./fields.js";
+import { renderGroup, fieldHandlers, themeSwatches } from "./fields.js";
 
 export function bindProperties(panel, api) {
   const { state, page, getSelectedElement, beginChange, endChange, deleteSelected, duplicateSelected, moveLayer } = api;
@@ -35,32 +35,18 @@ export function bindProperties(panel, api) {
   function helpers() {
     // 提交包装：改模型 → 立即只刷新画布（blur 时 endChange 再全量对齐面板）
     const commit = (fn) => (v) => { fn(v); api.refreshPreview(); };
-    return {
-      textInput: (v, c, o = {}) => ui.textInput(v, commit(c), { onFocus: beginChange, onBlur: endChange, ...o }),
-      numInput: (v, c, o = {}) => ui.numInput(v, commit(c), { onFocus: beginChange, onBlur: endChange, ...o }),
-      colorField: (v, c, o = {}) =>
-        ui.colorField(v, commit(c), {
-          resolve: (val) => resolveColor(state.theme, val),
-          swatches: themeSwatches(),
-          onFocus: beginChange,
-          onBlur: endChange,
-          ...o,
-        }),
-      selectInput: (options, value, onCommit, o = {}) => ui.selectInput(options, value, commit(onCommit), { onFocus: beginChange, onBlur: endChange, ...o }),
-      checkbox: (l, ch, c, o = {}) => ui.checkbox(l, ch, commit(c), { onFocus: beginChange, onBlur: endChange, ...o }),
-      button: (label, onClick, opts) => ui.button(label, onClick, { className: "btn btn-sm", ...opts }),
-      fontOptions: () => api.fontOptions?.() || [["", "默认"]],
-      beginChange,
-      endChange,
-      openEditor: api.openEditor,
-    };
-  }
-
-  /** 主题语义色 swatch 数据（解析为 hex，点击回填 $key 令牌）。 */
-  function themeSwatches() {
-    const c = state.theme.colors || {};
-    const keys = ["primary", "accent", "text", "muted", "line", "success", "warning", "danger", "primaryDeep", "primarySoft", "primaryTint", "accent3"];
-    return keys.map((k) => ({ key: `$${k}`, value: resolveColor(state.theme, c[k]) || "#cccccc" }));
+    return fieldHandlers({
+      theme: () => state.theme,
+      wrap: commit,
+      onFocus: beginChange,
+      onBlur: endChange,
+      extra: {
+        fontOptions: () => api.fontOptions?.() || [["", "默认"]],
+        beginChange,
+        endChange,
+        openEditor: api.openEditor,
+      },
+    });
   }
 
   function refresh() {
@@ -215,14 +201,14 @@ export function bindProperties(panel, api) {
     );
     if (pg.background?.type === "solid") {
       g2.appendChild(
-        ui.field("颜色", ui.colorField(pg.background.color, (v) => commit(() => { pg.background.color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches() }))
+        ui.field("颜色", ui.colorField(pg.background.color, (v) => commit(() => { pg.background.color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches(state.theme) }))
       );
     } else if (pg.background?.type === "gradient") {
       g2.appendChild(
-        ui.field("起始色", ui.colorField(pg.background.stops?.[0]?.color, (v) => commit(() => { pg.background.stops[0].color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches() }))
+        ui.field("起始色", ui.colorField(pg.background.stops?.[0]?.color, (v) => commit(() => { pg.background.stops[0].color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches(state.theme) }))
       );
       g2.appendChild(
-        ui.field("结束色", ui.colorField(pg.background.stops?.[1]?.color, (v) => commit(() => { pg.background.stops[1].color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches() }))
+        ui.field("结束色", ui.colorField(pg.background.stops?.[1]?.color, (v) => commit(() => { pg.background.stops[1].color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches(state.theme) }))
       );
       g2.appendChild(
         ui.field("角度", ui.numInput(pg.background.angle ?? 0, (v) => commit(() => { pg.background.angle = v; }), { min: 0, max: 360, step: 15 }))

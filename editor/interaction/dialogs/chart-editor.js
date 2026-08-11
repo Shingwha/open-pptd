@@ -12,7 +12,7 @@
 import { CHART_META, CHART_TYPE_ORDER, validateChartSeries, remapEncode } from "../../core/chart.js";
 import { resolveColor, themeChartPalette } from "../../core/theme.js";
 import { showDialog, buildCellInput, button } from "./base.js";
-import { renderGroup, themeSwatches } from "../fields.js";
+import { renderGroup, themeSwatches, fieldHandlers } from "../fields.js";
 import * as ui from "../../ui.js";
 
 const LEGEND_POS = [["bottom", "底部"], ["top", "顶部"], ["right", "右侧"], ["left", "左侧"]];
@@ -500,19 +500,7 @@ export function openChartEditor(el, { theme, onChange }) {
   // --------------------------------------------------------------------------
   // 样式面板（声明式分组，fields.js 渲染器；随类型与选中系列联动）
   // --------------------------------------------------------------------------
-  const h = {
-    textInput: (v, c, o) => ui.textInput(v, c, o),
-    numInput: (v, c, o) => ui.numInput(v, c, o),
-    colorField: (v, c, o) =>
-      ui.colorField(v, c, {
-        resolve: (val) => resolveColor(editorTheme(), val),
-        swatches: themeSwatches(editorTheme()),
-        ...o,
-      }),
-    selectInput: (options, value, onCommit, o) => ui.selectInput(options, value, onCommit, o),
-    checkbox: (l, ch, c, o) => ui.checkbox(l, ch, c, o),
-    button: (label, onClick, o) => ui.button(label, onClick, o),
-  };
+  const h = fieldHandlers({ theme: () => editorTheme() });
 
   /** 数值轴对象安全获取（xAxis/yAxis/spokeAxis 共享）。 */
   const axisObj = (el, key) => {

@@ -44,7 +44,7 @@ export function showDialog(title, buildBody, actions) {
 // ----------------------------------------------------------------------------
 // 单元格交互（Enter 向下跳格 + 聚焦全选）
 // ----------------------------------------------------------------------------
-export function wireCellNav(input) {
+function wireCellNav(input) {
   input.addEventListener("focus", () => input.select());
   input.addEventListener("keydown", (e) => {
     if (e.key !== "Enter") return;
@@ -74,31 +74,6 @@ export function buildCellInput(value, placeholder, onCommit) {
   wireCellNav(input);
   input.addEventListener("change", onCommit);
   return input;
-}
-
-/** 表单行（label + 控件）。 */
-export function row(label, control) {
-  const wrap = document.createElement("label");
-  wrap.className = "prop-field";
-  const span = document.createElement("span");
-  span.className = "prop-label";
-  span.textContent = label;
-  wrap.append(span, control);
-  return wrap;
-}
-
-/** 下拉选择。options = [[value, label], ...]。 */
-export function select(options, value, onCommit) {
-  const sel = document.createElement("select");
-  for (const [v, label] of options) {
-    const opt = document.createElement("option");
-    opt.value = v;
-    opt.textContent = label;
-    sel.appendChild(opt);
-  }
-  sel.value = value;
-  sel.addEventListener("change", () => onCommit(sel.value));
-  return sel;
 }
 
 /** 小按钮。 */
