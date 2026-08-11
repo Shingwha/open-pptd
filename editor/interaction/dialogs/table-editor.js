@@ -36,7 +36,8 @@ export function openTableEditor(el, { onChange }) {
   const container = document.createElement("div");
   container.className = "table-editor";
   // 选中状态：单格 {r, c} 或区域 {r1, c1, r2, c2}
-  let sel = null;
+  // Excel 式：打开即选中 A1（活动单元格），方向插入/删除始终基于当前位置
+  let sel = { r: 0, c: 0 };
   let dragSel = null; // { mode: "cell"|"row"|"col", anchor: {r,c}, cur: {r,c} }
 
   function colCount() {
@@ -137,38 +138,36 @@ export function openTableEditor(el, { onChange }) {
     const insUp = mkBtn("↑ 插行", () => {
       const [r1, r2] = selRows();
       insertRows(r1, r2 - r1 + 1);
-    }, { disabled: !sel, title: "在选区上方插入行" });
+    }, { title: "在选区上方插入行" });
     const insDown = mkBtn("↓ 插行", () => {
-      if (!sel) { insertRows(rows.length, 1); return; } // 无选区：追加到末尾
       const [r1, r2] = selRows();
       insertRows(r2 + 1, r2 - r1 + 1);
-    }, { title: "在选区下方插入行（无选区时追加到末尾）" });
+    }, { title: "在选区下方插入行" });
     const insLeft = mkBtn("← 插列", () => {
       const [c1, c2] = selCols();
       insertCols(c1, c2 - c1 + 1);
-    }, { disabled: !sel, title: "在选区左侧插入列" });
+    }, { title: "在选区左侧插入列" });
     const insRight = mkBtn("→ 插列", () => {
-      if (!sel) { insertCols(cols, 1); return; } // 无选区：追加到末尾
       const [c1, c2] = selCols();
       insertCols(c2 + 1, c2 - c1 + 1);
-    }, { title: "在选区右侧插入列（无选区时追加到末尾）" });
+    }, { title: "在选区右侧插入列" });
 
     const delRowBtn = mkBtn("删除行", () => {
       const [r1, r2] = selRows();
       if (rowCount <= 1) return;
       if (mergeGuard(rows, cols, r1, r2, "row")) return;
       rows.splice(r1, r2 - r1 + 1);
-      sel = null;
+      sel = { r: Math.min(r1, rows.length - 1), c: 0 }; // 删除后落回相邻行
       syncDims(el); render(); commit();
-    }, { disabled: !sel, title: "删除选中行（选区覆盖的所有行）" });
+    }, { title: "删除选中行（选区覆盖的所有行）" });
     const delColBtn = mkBtn("删除列", () => {
       const [c1, c2] = selCols();
       if (cols <= 1) return;
       if (mergeGuard(rows, cols, c1, c2, "col")) return;
       for (const row of rows) row.splice(c1, c2 - c1 + 1);
-      sel = null;
+      sel = { r: 0, c: Math.min(c1, colCount() - 1) }; // 删除后落回相邻列
       syncDims(el); render(); commit();
-    }, { disabled: !sel, title: "删除选中列（选区覆盖的所有列）" });
+    }, { title: "删除选中列（选区覆盖的所有列）" });
     const mergeBtn = mkBtn("合并", () => {
       if (!isRegion() || (regionRows() === 1 && regionCols() === 1)) return;
       const err = tryMerge(rows, sel.r1, sel.c1, sel.r2, sel.c2, cols);
