@@ -7,7 +7,7 @@
 // ============================================================================
 
 import { resolveColor } from "../core/theme.js";
-import { parsePoints } from "../core/geometry.js";
+import { parsePoints, smoothSegments } from "../core/geometry.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -38,18 +38,15 @@ export function renderLine(theme, el) {
   if (rel.length > 2) {
     shape = document.createElementNS(SVG_NS, "path");
     if (curve === "smooth") {
-      // 贝塞尔：首尾为经过点，中间为控制点（2 点直线 / 3 点二次 / 4 点三次 / 更多按 4 点一段连续）
+      // 贝塞尔：首尾为经过点，中间为控制点（分段与 writer 共用 smoothSegments，末锚点必达）
       let d = `M ${x1} ${y1}`;
-      let i = 1;
-      while (i < rel.length - 1) {
-        const rest = rel.length - 1 - i; // 剩余点数（含最后锚点）
-        if (rest === 1) {
-          // 剩余一个控制点 + 末锚点 → 二次贝塞尔
-          d += ` Q ${rel[i][0]} ${rel[i][1]} ${x2} ${y2}`;
-          i += 2;
+      for (const s of smoothSegments(rel)) {
+        if (s.cmd === "Q") {
+          d += ` Q ${s.pts[0][0]} ${s.pts[0][1]} ${s.pts[1][0]} ${s.pts[1][1]}`;
+        } else if (s.cmd === "C") {
+          d += ` C ${s.pts[0][0]} ${s.pts[0][1]} ${s.pts[1][0]} ${s.pts[1][1]} ${s.pts[2][0]} ${s.pts[2][1]}`;
         } else {
-          d += ` C ${rel[i][0]} ${rel[i][1]} ${rel[i + 1][0]} ${rel[i + 1][1]} ${rel[i + 2][0]} ${rel[i + 2][1]}`;
-          i += 3;
+          d += ` L ${s.pts[0][0]} ${s.pts[0][1]}`;
         }
       }
       shape.setAttribute("d", d);

@@ -8,8 +8,8 @@
 // ============================================================================
 
 import { el, escAttr, angleToOOXML } from "./xml.js";
-import { buildFill } from "./drawing.js";
-import { parsePoints } from "../core/geometry.js";
+import { buildFill, buildXfrm } from "./drawing.js";
+import { parsePoints, smoothSegments } from "../core/geometry.js";
 import { svgPathToOoxml } from "./custgeom.js";
 
 /** 线条元素 → p:cxnSp XML。 */
@@ -20,61 +20,66 @@ export function lineXml(theme, element, ctx) {
   // 相对 bounds 原点（custGeom 坐标系 = viewBox，随 bounds 拉伸）
   const rel = pts.map(([px, py]) => [px - b[0], py - b[1]]);
   const curve = element.curve || "round";
+  const [vw, vh] = element.viewBox || [1, 1];
+  // 曲线路径点换算到 viewBox 坐标系（xfrm ext = bounds 尺寸，viewBox 空间拉伸到 bounds）
+  const toVb = ([px, py]) => [(px / b[2]) * vw, (py / b[3]) * vh];
 
   let geom;
   if (rel.length > 2) {
     // 曲线：custGeom（viewBox 坐标系，随 bounds 拉伸）
     // smooth = 贝塞尔（首尾锚点 + 中间控制点）；sharp/round = 经过全部点的折线
+    const relVb = rel.map(toVb);
     let d;
     if (curve === "smooth") {
-      d = `M ${rel[0][0]},${rel[0][1]}`;
-      let i = 1;
-      while (i < rel.length - 1) {
-        const rest = rel.length - 1 - i;
-        if (rest === 1) {
-          d += ` Q ${rel[i][0]},${rel[i][1]} ${rel[rel.length - 1][0]},${rel[rel.length - 1][1]}`;
-          i += 2;
+      d = `M ${relVb[0][0]},${relVb[0][1]}`;
+      for (const s of smoothSegments(relVb)) {
+        if (s.cmd === "Q") {
+          d += ` Q ${s.pts[0][0]},${s.pts[0][1]} ${s.pts[1][0]},${s.pts[1][1]}`;
+        } else if (s.cmd === "C") {
+          d += ` C ${s.pts[0][0]},${s.pts[0][1]} ${s.pts[1][0]},${s.pts[1][1]} ${s.pts[2][0]},${s.pts[2][1]}`;
         } else {
-          d += ` C ${rel[i][0]},${rel[i][1]} ${rel[i + 1][0]},${rel[i + 1][1]} ${rel[i + 2][0]},${rel[i + 2][1]}`;
-          i += 3;
+          d += ` L ${s.pts[0][0]},${s.pts[0][1]}`;
         }
       }
     } else {
-      d = `M ${rel[0][0]},${rel[0][1]} L ${rel.slice(1).map(([px, py]) => `${px},${py}`).join(" L ")}`;
+      d = `M ${relVb[0][0]},${relVb[0][1]} L ${relVb.slice(1).map(([px, py]) => `${px},${py}`).join(" L ")}`;
     }
-    geom = el("a:custGeom", {}, [
-      "<a:avLst/>",
-      "<a:gdLst/>",
-      "<a:ahLst/>",
-      "<a:cxnLst/>",
-      el("a:rect", { l: 0, t: 0, r: Math.round(element.viewBox[0]), b: Math.round(element.viewBox[1]) }),
-      svgPathToOoxml(element.viewBox, d),
-    ].join(""));
+    geom = [
+      // 多点线条必须有 xfrm（off/ext = bounds），否则 PowerPoint 视为 0×0 不可见
+      buildXfrm(element.bounds, element.rotation),
+      el("a:custGeom", {}, [
+        "<a:avLst/>",
+        "<a:gdLst/>",
+        "<a:ahLst/>",
+        "<a:cxnLst/>",
+        el("a:rect", { l: 0, t: 0, r: Math.round(vw), b: Math.round(vh) }),
+        svgPathToOoxml(element.viewBox, d),
+      ].join("")),
+    ].join("");
   } else {
     // 直线：straightConnector1 + 旋转（起点→终点）
+    // off 用绝对坐标反推：旋转中心 = off + (len/2, 0)，线段端点必须精确落在 P0/P1。
+    // 旋转中心 c = (off.x + len/2, off.y)，端点 = c ± (len/2·cosθ, len/2·sinθ)（顺时针，y 向下）
+    // → off = (P0.x − len/2·(1−cosθ), P0.y + len/2·sinθ)
     const [x1, y1] = rel[0];
     const [x2, y2] = rel[1];
     const dx = x2 - x1;
     const dy = y2 - y1;
     const len = Math.hypot(dx, dy) || 1;
-    const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
-    let rot;
-    let flipH = false;
-    if (angleDeg > 90) {
-      rot = 180 - angleDeg;
-      flipH = true;
-    } else if (angleDeg < -90) {
-      rot = -180 - angleDeg;
-      flipH = true;
-    } else {
-      rot = angleDeg;
-    }
-    const xfrmAttrs = { rot: angleToOOXML(rot) };
-    if (flipH) xfrmAttrs.flipH = "1";
-    const off = el("a:off", { x: Math.round(x1 * 12700), y: Math.round(y1 * 12700) });
+    let angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+    if (angleDeg < 0) angleDeg += 360; // ST_Angle 有效域 [0, 360)
+    const rad = (angleDeg * Math.PI) / 180;
+    const cosA = Math.cos(rad);
+    const sinA = Math.sin(rad);
+    const p0x = x1 + b[0]; // P0 页面绝对坐标
+    const p0y = y1 + b[1];
+    const off = el("a:off", {
+      x: Math.round((p0x - (len / 2) * (1 - cosA)) * 12700),
+      y: Math.round((p0y + (len / 2) * sinA) * 12700),
+    });
     const ext = el("a:ext", { cx: Math.round(len * 12700), cy: 0 });
     geom = [
-      el("a:xfrm", xfrmAttrs, off + ext),
+      el("a:xfrm", { rot: angleToOOXML(angleDeg) }, off + ext),
       el("a:prstGeom", { prst: "straightConnector1" }),
     ].join("");
   }

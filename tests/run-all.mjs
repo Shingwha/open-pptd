@@ -56,6 +56,7 @@ const suites = [
   ["预置形状全量", "node tests/preset-shapes.mjs"],
   ["公式转换", "node tests/formula/test-formula.mjs"],
   ["图标导出", "node tests/icon/test-icon.mjs"],
+  ["线条导出", "node tests/line/test-line.mjs"],
 ];
 for (const [name, cmd] of suites) {
   const { code, stdout } = await run(cmd);

@@ -96,7 +96,7 @@ elements:
     elementType: line
     bounds: [60, 450, 420, 80]
     viewBox: [420, 80]
-    points: "0,70 90,10 180,60 270,15 360,50 420,30"
+    points: "0,70 100,10 200,60 320,15 420,40"
     curve: smooth
     border: {style: solid, width: 3, color: "#0EA5E9"}
   # ---- HEX8 半透明 ----
