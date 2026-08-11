@@ -45,3 +45,37 @@
 | 精品点阵体 | Pixel font | Jingpin Dianzhen; 9×9 dot-matrix pixel style with an extremely retro electronic feel | Games, tech, pixel art | Yes |
 | LXGW Bright | Serif (fangsong/kaiti) | LXGW WenKai family; combines fangsong and kaiti characteristics; gentle and clear letterforms | Literature, education, humanities | No |
 | ZCOOL KuaiLe | Handwriting (rounded) | ZCOOL KuaiLe; lively, cute, playful and cartoonish; youthful energy | Anime, children, entertainment | No |
+
+## PPTX 字体嵌入方法
+
+导出默认嵌入 `deck.fonts` 资源表中带 `file`/`url` 的字体（`--no-embed-fonts` 关闭）。嵌入后 PPTX 自带字体，任何机器打开不缺字。
+
+### 1. 字体文件放哪里
+
+- **本地文件**：放在 **deck 项目目录内**（如 `deck/fonts/xxx.ttf`），manifest 中写相对路径——导出器按 `deck.pptd` 所在目录解析
+- **网络字体**：写 `url`（CDN，需 CORS；如 jsDelivr 的 npm 字体包，可直接拿 TTF/OTF 原版）
+
+### 2. deck.fonts 声明语法
+
+```yaml
+fonts:
+  得意黑:   { family: "Smiley Sans", file: fonts/SmileySans-Oblique.ttf, subset: true }
+  思源宋体: { family: "Source Han Serif SC", url: https://cdn.jsdelivr.net/.../SourceHanSerifSC-Regular.otf }
+  title: 得意黑      # 组件槽引用资源表 key（不产生嵌入）
+  body: MiSans       # 系统字体字符串：只声明不嵌入
+```
+
+- `family` 必须与字体 name 表完全一致（含大小写/空格），否则 PowerPoint 不认
+- `subset: true` 时只嵌入文档用到的字符（TTF 支持，中文可小 100 倍以上）；**不写 = 全量嵌入**；CFF/OTF（OTTO 魔数）不支持子集化，自动回退全量嵌入
+- 只写 `family` 字符串的槽位（系统字体 / 资源 key）不会触发嵌入
+
+### 3. 预览（编辑器 serve 模式）
+
+- `url` 字体自动 fetch 注册 FontFace 预览；`file` 字体浏览器无法读本地任意路径，需在编辑器「字体管理」中手动选择一次（导出不受影响，Node 端直接按相对路径读文件）
+
+### 4. 注意事项
+
+- **许可**：OFL 字体（思源/霞鹜/Noto/得意黑等）可嵌入再分发；微软雅黑等 Windows 商业字体不可再分发嵌入
+- **受限字体**：fsType = Restricted（0x0002）的字体导出时跳过并告警
+- **主题字体**：theme 的默认字体不要用嵌入字体（PowerPoint 会把主题字体也当"使用中"强制嵌入，导致文件膨胀）
+- 嵌入实现细节见 `docs/font-embedding.md`（开发文档，排障时查阅）

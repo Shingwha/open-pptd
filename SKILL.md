@@ -16,7 +16,7 @@ The .pptd format is a simplified abstraction layer over OOXML that follows basic
 
 ## 实现能力范围（重要约束）
 
-0. **文件读取边界**：整个工作流只需读取 `references/` 下的文档（pptd.md / slides_categories.md 及各场景文档 / shapes.md / icons.md / fonts.md / font-embedding.md / general-poster.md），在线浏览与 PPTX 导出通过直接运行 `node bin/open-pptd.js serve|export` 和 `node tests/package-integrity.mjs` 完成。**默认不要查看任何源代码**（`editor/`、`lib/`、`bin/`、`scripts/`、`assets/`、`tests/` 下的实现与用例）——除非遇到无法解决的问题（格式疑难、导出异常、编辑器异常等），才允许查阅相关源码定位根因，修复后即止。
+0. **文件读取边界**：整个工作流只需读取 `references/` 下的文档（pptd.md / slides_categories.md 及各场景文档 / shapes.md / icons.md / fonts.md / general-poster.md），在线浏览与 PPTX 导出通过直接运行 `node bin/open-pptd.js serve|export` 和 `node tests/package-integrity.mjs` 完成。**默认不要查看任何源代码**（`editor/`、`lib/`、`bin/`、`scripts/`、`assets/`、`tests/` 下的实现与用例；`docs/` 为开发实现文档，同样默认不读）——除非遇到无法解决的问题（格式疑难、导出异常、编辑器异常等），才允许查阅相关源码定位根因，修复后即止。
 
 1. **格式基线**：严格按 `references/pptd.md` 规范实现（该规范定义了 PPTD v2 的全部格式）；导出目标为 PowerPoint 可无修复打开、渲染与编辑器预览一致的 PPTX。
 2. **导出链路**：使用本项目本地导出器 `node bin/open-pptd.js export <deck.pptd> [-o <out.pptx>]`（自研 writer，无浏览器依赖）。
@@ -152,7 +152,7 @@ When generating a PPT, adopt different production approaches for different user 
 5. Default PPTX options:
    - page transition: `fade` (淡入淡出), written to every slide by the local writer;
    - font embedding: enabled by default; may be disabled with `--no-embed-fonts`;
-   - embedded fonts require the font files to be resolvable locally (see `references/font-embedding.md`).
+   - embedded fonts require the font files to be resolvable locally (see `references/fonts.md` → PPTX 字体嵌入方法).
 6. After export, verify that the output exists and report the generated path. Confirm that every slide has exactly one root-level fade transition in valid CT_Slide order (`cSld`, optional `clrMapOvr`, `transition`, optional `timing/extLst`) and that the PPTX ZIP passes integrity checks. A byte-string search for `<p:fade>` is insufficient because Office ignores transitions nested inside `cSld`. Run the integrity check:
 
    ```bash
