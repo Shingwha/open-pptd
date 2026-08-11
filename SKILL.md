@@ -16,6 +16,8 @@ The .pptd format is a simplified abstraction layer over OOXML that follows basic
 
 ## 实现能力范围（重要约束）
 
+0. **文件读取边界**：整个工作流只需读取 `references/` 下的文档（pptd.md / slides_categories.md 及各场景文档 / shapes.md / icons.md / fonts.md / font-embedding.md / general-poster.md），在线浏览与 PPTX 导出通过直接运行 `node bin/open-pptd.js serve|export` 和 `node tests/package-integrity.mjs` 完成。**默认不要查看任何源代码**（`editor/`、`lib/`、`bin/`、`scripts/`、`assets/`、`tests/` 下的实现与用例）——除非遇到无法解决的问题（格式疑难、导出异常、编辑器异常等），才允许查阅相关源码定位根因，修复后即止。
+
 1. **格式基线**：严格按 `references/pptd.md` 规范实现（该规范定义了 PPTD v2 的全部格式）；导出目标为 PowerPoint 可无修复打开、渲染与编辑器预览一致的 PPTX。
 2. **导出链路**：使用本项目本地导出器 `node bin/open-pptd.js export <deck.pptd> [-o <out.pptx>]`（自研 writer，无浏览器依赖）。
 3. **在线浏览/编辑**：`node bin/open-pptd.js serve --project <项目目录>` → 浏览器打开本地编辑器（自研），可预览/编辑/导出。
