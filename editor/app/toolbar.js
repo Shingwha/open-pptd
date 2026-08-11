@@ -9,7 +9,7 @@ import { createPage } from "../core/model.js";
 import { bindAddMenu } from "../interaction/add-menu.js";
 import { bindThemePanel } from "../interaction/theme-panel.js";
 
-export function bindToolbar({ state, page, api, view, io }) {
+export function bindToolbar({ state, page, api, view, io, present }) {
   const $ = (id) => document.getElementById(id);
 
   /** 添加元素到当前页并选中；图表/表格直接进数据编辑（图标刚选完，不再弹选择器）。 */
@@ -50,6 +50,8 @@ export function bindToolbar({ state, page, api, view, io }) {
     $("btn-export").onclick = io.exportPptx;
     $("btn-save").onclick = io.saveProject;
     $("btn-fonts").onclick = () => io.fontManager.openManagerDialog();
+    // 放映：从当前页开始全屏演示（present 内部处理全屏/降级）
+    $("btn-present").onclick = () => present.start();
 
     // 配色浮层（预设色卡 + 语义色编辑）
     bindThemePanel({ state, api, io, anchor: $("btn-theme") });

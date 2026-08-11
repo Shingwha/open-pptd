@@ -17,6 +17,7 @@ import { createView } from "./app/view.js";
 import { createIo } from "./app/io.js";
 import { bindToolbar } from "./app/toolbar.js";
 import { bindKeyboard } from "./app/keyboard.js";
+import { createPresent } from "./app/present.js";
 import { showToast } from "./app/toast.js";
 import { createCanvasController } from "./interaction/canvas.js";
 import { bindProperties } from "./interaction/properties.js";
@@ -72,9 +73,16 @@ function initEditor(deckUrl) {
 
   io = createIo({ state, view }); // 模块级 io：二次进入时复用（loadDeck）
   api.fontOptions = () => io.fontManager.fontOptions(); // 元素字体下拉选项（延迟绑定，运行时取）
-  view.afterRender = io.renderStatusBar; // 状态栏（dirty 圆点等）随每次渲染刷新
-  bindToolbar({ state, page, api, view, io });
-  bindKeyboard({ state, api, io });
+
+  // 放映模式（顶栏「放映」按钮 + F5 进入；present 暴露在 api 上供测试）
+  const present = createPresent({ state, view });
+  api.present = present;
+  view.afterRender = () => {
+    io.renderStatusBar(); // 状态栏（dirty 圆点等）随每次渲染刷新
+    present.sync(); // 放映中：实时刷新/窗口缩放时同步当前放映页
+  };
+  bindToolbar({ state, page, api, view, io, present });
+  bindKeyboard({ state, api, io, present });
 
   // 实时刷新（统一项目模式）：本地挂载时订阅 server 推送；部署模式自动不启用
   io.connectLiveReload();
