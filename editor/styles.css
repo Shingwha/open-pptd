@@ -1472,8 +1472,15 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
  * ========================================================================== */
 .data-table td.grid-cell { position: relative; }
 .data-table td.grid-cell input { width: 100%; box-sizing: border-box; border: none; outline: none; background: transparent; font: inherit; }
-.data-table td.grid-cell.cell-selected { outline: 2px solid #2563eb; outline-offset: -2px; background: #eff6ff; }
-.data-table td.grid-cell.cell-region { background: #dbeafe; }
+.data-table td.grid-cell.cell-selected {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+  /* 内阴影叠加在 td 内联背景之上（内联样式优先级高于类，不能用 background） */
+  box-shadow: inset 0 0 0 999px rgba(239, 246, 255, 0.85);
+}
+.data-table td.grid-cell.cell-region {
+  box-shadow: inset 0 0 0 999px rgba(219, 234, 254, 0.6);
+}
 .data-table td.grid-cell.cell-covered { background: repeating-linear-gradient(45deg, #f3f4f6, #f3f4f6 6px, #e5e7eb 6px, #e5e7eb 12px); cursor: not-allowed; }
 
 /* ----------------------------------------------------------------------------
