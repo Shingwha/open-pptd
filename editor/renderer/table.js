@@ -61,9 +61,10 @@ export function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) 
 
 export function renderTable(theme, el) {
   const [x, y, w] = el.bounds;
-  const { rowHeights, totalH, columnWidths } = estimateTableLayout(el);
+  const { rowHeights, columnWidths } = estimateTableLayout(el);
   const box = document.createElement("div");
-  box.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${totalH}px;overflow:hidden;`;
+  // 高度不预设：由内容决定（含边框线），避免底部边框被 overflow:hidden 裁剪
+  box.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;overflow:hidden;`;
   box.dataset.elementId = el.elementId;
   box.dataset.elementType = "table";
   if (el.opacity != null) box.style.opacity = el.opacity;

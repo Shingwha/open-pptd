@@ -7,7 +7,6 @@
 // ============================================================================
 
 import { PAGE_WIDTH, PAGE_HEIGHT } from "../core/model.js";
-import { estimateTableLayout } from "../core/table.js";
 import { renderPage, disposeChartInstances } from "../renderer/page.js";
 import { resolveColor } from "../core/theme.js";
 import { getType } from "../types/index.js";
@@ -112,12 +111,14 @@ export function createView({ state, page, selected, api, controller, props }) {
     applyScale();
     // transform-origin 为 center：flex 居中 + 中心锚点缩放，视觉左右/上下对称，无需 margin 补偿
     const pg = page();
-    // 表格内容高度自适应同步（布局修正，不进撤销栈）
-    for (const el of pg.elements || []) {
-      if (el.elementType === "table") el.bounds[3] = estimateTableLayout(el).totalH;
-    }
     renderPage(canvas, pg, state.deck, state.theme, { imageMap: state.imageMap });
     autoGrowTexts(pg, canvas);
+    // 表格实际渲染高度（含边框线）写回模型：预览与选中框/导出高度一致
+    for (const el of pg.elements || []) {
+      if (el.elementType !== "table") continue;
+      const node = canvas.querySelector(`[data-element-id="${CSS.escape(el.elementId)}"]`);
+      if (node && node.offsetHeight > 0) el.bounds[3] = node.offsetHeight;
+    }
     controller.refreshSelection();
   }
 
