@@ -16,6 +16,14 @@
 // ============================================================================
 
 import * as ui from "../ui.js";
+import { resolveColor } from "../core/theme.js";
+
+/** 主题语义色色板（供 colorField swatches 使用，属性面板/表格/图表共用）。 */
+export function themeSwatches(theme) {
+  const c = theme?.colors || {};
+  const keys = ["primary", "accent", "text", "muted", "line", "success", "warning", "danger", "primaryDeep"];
+  return keys.map((k) => ({ key: `$${k}`, value: resolveColor(theme, c[k]) || "#cccccc" }));
+}
 
 /** 渲染一个分组（group 标题可折叠）。 */
 export function renderGroup(group, h) {

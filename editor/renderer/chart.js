@@ -278,6 +278,7 @@ export function buildChartOption(theme, el) {
     const s = series[0];
     const inner = s.innerRadius || 0;
     const fills = Array.isArray(s.fill) ? s.fill : null;
+    const pal = themeChartPalette(theme);
     return {
       ...common,
       tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
@@ -292,7 +293,8 @@ export function buildChartOption(theme, el) {
         data: cats.map((c, i) => ({
           name: c,
           value: s._values.value?.[i] ?? 0,
-          itemStyle: { color: fills ? resolveColor(theme, fills[i % fills.length]) || themeChartPalette(theme)[i % 6] : themeChartPalette(theme)[i % 6] },
+          // 官方 fill：数组按点循环；单色 = 所有点同色；缺省 = 主题色循环
+          itemStyle: { color: fills ? resolveColor(theme, fills[i % fills.length]) || pal[i % 6] : s.color || pal[i % 6] },
         })),
       }],
     };

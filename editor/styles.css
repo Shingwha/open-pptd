@@ -1520,3 +1520,75 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 @media (max-width: 480px) {
   .theme-panel { width: min(320px, calc(100vw - 16px)); }
 }
+
+/* —— 图表编辑器（chart-editor.js）：Excel 式数据表 + 声明式样式面板 —— */
+.chart-editor { display: flex; flex-direction: column; gap: 10px; min-width: 640px; }
+.chart-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.chart-top .prop-label { font-size: 12px; color: var(--ink); font-weight: 600; }
+.chart-top select { max-width: 200px; }
+.chart-warn {
+  flex-basis: 100%;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.chart-body { display: flex; gap: 10px; align-items: stretch; }
+.chart-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.chart-grid-box {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  overflow: hidden;
+}
+.chart-grid-scroll { overflow: auto; max-height: min(38vh, 340px); }
+.chart-grid-scroll .data-table { min-width: 100%; }
+/* 列头：字母小标 + 列名输入（两行） */
+.chart-grid-scroll th.col-head { padding: 3px 4px; line-height: 1.35; }
+.chart-grid-scroll .col-letter { font-size: 10px; color: #8a94a6; text-align: center; }
+.chart-grid-scroll th.col-head input {
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  text-align: center;
+  padding: 1px 2px;
+  border-radius: 4px;
+}
+.chart-grid-scroll th.col-head input:focus { background: var(--primary-soft); }
+/* 系列列表 */
+.series-box {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px;
+  background: var(--bg);
+}
+.series-title { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+.series-list { display: flex; flex-direction: column; gap: 4px; max-height: 148px; overflow-y: auto; }
+.series-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.series-item:hover { background: var(--primary-soft); }
+.series-item.series-active { background: var(--primary-soft); outline: 1px solid var(--primary); }
+.series-item .color-field { gap: 4px; }
+.series-item .color-swatch-btn { width: 20px; height: 20px; border-radius: 5px; }
+.series-item .color-field input[type="color"] { width: 24px; height: 20px; border-radius: 5px; }
+.series-item .color-hex { width: 52px; flex: none; padding: 2px 4px; font-size: 11px; }
+.series-item input[type="text"] { flex: 1; min-width: 60px; }
+.series-item select { max-width: 120px; }
+.series-item .btn-ghost { flex: none; }

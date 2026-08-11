@@ -537,8 +537,14 @@ function upDownBarsXml(theme, s) {
 
 function pieSerXml(theme, s, sheetRange, idx, labels, palette) {
   const fills = Array.isArray(s.fill) ? s.fill : null;
+  // 官方 fill：数组按点循环；单色字符串 = 所有点同色；缺省 = color 或主题色循环
+  const ptFill = (r) => {
+    if (typeof s.fill === "string") return s.fill;
+    if (fills) return fills[r % fills.length];
+    return s.color || palette[r % palette.length];
+  };
   const pts = (s._values.value || []).map((_, r) => {
-    const spPrKids = [fillXml(theme, fills ? fills[r % fills.length] : palette[r % palette.length])];
+    const spPrKids = [fillXml(theme, ptFill(r))];
     if (s.border && s.border.color) {
       const w = Math.round((s.border.width ?? 1) * 12700);
       spPrKids.push(el("a:ln", { w, cap: "flat", cmpd: "sng", algn: "ctr" }, fillXml(theme, s.border.color)));

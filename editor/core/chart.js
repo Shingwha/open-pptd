@@ -37,6 +37,30 @@ export const CHART_META = {
 
 export const CHART_TYPE_ORDER = Object.keys(CHART_META);
 
+/** encode 语义键别名表（类型切换时保留已有列引用，自动对齐默认列名）。 */
+const SEMANTIC_KEYS = {
+  x: ["x", "category", "date"],
+  y: ["y", "value"],
+  category: ["category", "x"],
+  value: ["value", "y"],
+  size: ["size"], high: ["high"], low: ["low"], close: ["close"], open: ["open"],
+  isTotal: ["isTotal"], parent: ["parent"], source: ["source"], target: ["target"], flow: ["flow"],
+};
+
+/**
+ * 按目标类型元数据重映射 encode（图表编辑器/属性面板共用）：
+ * 旧列的语义别名命中则保留引用，否则回退目标类型默认列名。
+ */
+export function remapEncode(oldEncode, meta) {
+  const out = {};
+  for (const key of Object.keys(meta.encode)) {
+    const cand = SEMANTIC_KEYS[key] || [key];
+    const hit = cand.map((k) => oldEncode[k]).find((v) => v != null);
+    out[key] = hit ?? meta.encode[key];
+  }
+  return out;
+}
+
 /** 单系列独占类型（系列数组只能有 1 个元素）。 */
 const SOLO_TYPES = new Set(["pie", "waterfall", "heatmap", "treemap", "sunburst", "sankey", "radar"]);
 
@@ -165,16 +189,17 @@ export function resolveChartSeries(theme, el) {
       _values[ch] = _values[ch].map(toNum);
     }
 
-    // 默认取色（§5.2）：每类型的色字段
+    // 默认取色（§5.2）：每类型的色字段。编辑器 UI 写 s.color（通用字段），
+    // 官方 fill/lineColor 优先（含 seriesDefaults 合并值），color 兜底。
     let color = null;
     if (type === "line" || type === "area" || type === "radar") {
-      color = merged.lineColor || palette[i % palette.length];
+      color = merged.lineColor || merged.color || palette[i % palette.length];
     } else if (type === "bar" || type === "scatter" || type === "bubble") {
-      color = merged.fill || palette[i % palette.length];
+      color = merged.fill || merged.color || palette[i % palette.length];
     } else if (type === "pie") {
-      color = merged.fill || palette[0]; // 数组由渲染/导出按点循环
+      color = merged.fill || merged.color || palette[0]; // 数组由渲染/导出按点循环
     } else {
-      color = merged.fill || null; // candlestick/waterfall/heatmap/treemap/sunburst/sankey 不适用
+      color = merged.fill || merged.color || null; // candlestick/waterfall/heatmap/treemap/sunburst/sankey 不适用
     }
     let areaColor = merged.areaColor || null;
     if ((type === "area" || type === "radar") && !areaColor && color) {

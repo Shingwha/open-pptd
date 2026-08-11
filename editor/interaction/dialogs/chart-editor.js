@@ -1,278 +1,55 @@
 // ============================================================================
-// editor/dialogs/chart-editor.js — 图表数据编辑器
+// editor/interaction/dialogs/chart-editor.js — 图表编辑器
 // ----------------------------------------------------------------------------
-// 类 Excel 数据表：列名/数据行编辑、系列管理、类型切换（encode 语义重映射）。
-// 共用控件来自 ./base.js（showDialog / buildCellInput / row / select / button）。
+// 与表格编辑器同构（Excel 式 + 声明式样式面板）：
+//   - 布局：顶部类型行 / 主区（数据工具条 + 数据表 + 系列列表）/ 右侧样式面板
+//   - 数据表：Excel 式行列头（数字/字母）、点击选行/列、拖拽选区、方向插入行列
+//   - 系列列表：点击选中 → 右侧"系列"组联动
+//   - 样式面板：fields.js 声明式分组——图表 / 数据标签 / 坐标轴 / 系列（随类型）
+//   - 类型切换：语义键重映射（remapEncode）+ 共存约束警告（validateChartSeries）
 // ============================================================================
 
-import { CHART_META, CHART_TYPE_ORDER } from "../../core/chart.js";
-import { themeChartPalette } from "../../core/theme.js";
-import { showDialog, buildCellInput, row, select, button } from "./base.js";
+import { CHART_META, CHART_TYPE_ORDER, validateChartSeries, remapEncode } from "../../core/chart.js";
+import { resolveColor, themeChartPalette } from "../../core/theme.js";
+import { showDialog, buildCellInput, button } from "./base.js";
+import { renderGroup, themeSwatches } from "../fields.js";
+import * as ui from "../../ui.js";
 
-const SEMANTIC_KEYS = {
-  x: ["x", "category", "date"],
-  y: ["y", "value"],
-  category: ["category", "x"],
-  value: ["value", "y"],
-  size: ["size"],
-  high: ["high"],
-  low: ["low"],
-  close: ["close"],
-  open: ["open"],
-  isTotal: ["isTotal"],
-  parent: ["parent"],
-  source: ["source"],
-  target: ["target"],
-  flow: ["flow"],
+const LEGEND_POS = [["bottom", "底部"], ["top", "顶部"], ["right", "右侧"], ["left", "左侧"]];
+const LABEL_CONTENT = [["value", "数值"], ["percentage", "百分比"], ["category", "分类名"]];
+const NUMBER_FMTS = [
+  ["", "无"], ["0", "整数"], ["0.0", "一位小数"], ["0%", "百分比"],
+  ["0.0%", "一位百分比"], ["#,##0", "千分位"], ["0.0E+00", "科学计数"],
+];
+const LINE_STYLES = [["solid", "实线"], ["dash", "虚线"], ["dot", "点线"]];
+const STACK_OPTS = [["", "无"], ["normal", "普通堆叠"], ["percent", "百分比堆叠"]];
+const MARKER_SHAPES = [["circle", "圆点"], ["rect", "方块"], ["diamond", "菱形"], ["triangle", "三角"]];
+const SIZE_SCALES = [["sqrt", "平方根"], ["linear", "线性"], ["log", "对数"]];
+const NODE_ALIGNS = [["justify", "两端对齐"], ["left", "左对齐"], ["right", "右对齐"]];
+/** 各类型数据标签可用内容（与 core/chart.js resolveDataLabels 的 ALLOWED 一致）。 */
+const VALID_CONTENT = {
+  bar: ["value"], line: ["value"], area: ["value"], scatter: ["value"], bubble: ["value"],
+  radar: ["value"], heatmap: ["value"], candlestick: ["value"],
+  pie: ["value", "percentage", "category"], waterfall: ["value", "category"],
+  treemap: ["value", "category"], sunburst: ["value", "category"], sankey: ["value", "category"],
 };
 
-/** 按目标类型元数据重映射 encode（保留已有列引用，自动对齐默认列名）。 */
-function remapEncode(oldEncode, meta) {
-  const out = {};
-  for (const key of Object.keys(meta.encode)) {
-    const cand = SEMANTIC_KEYS[key] || [key];
-    const hit = cand.map((k) => oldEncode[k]).find((v) => v != null);
-    out[key] = hit ?? meta.encode[key];
+/** 类型切换语义重映射（保留已有列引用，自动对齐默认列名）。 */
+// （remapEncode 已移至 core/chart.js 共用——属性面板与图表编辑器行为一致）
+
+/** 列字母（Excel 式：A B … Z AA AB）。 */
+function colLetter(i) {
+  let s = "";
+  i += 1;
+  while (i > 0) {
+    const m = (i - 1) % 26;
+    s = String.fromCharCode(65 + m) + s;
+    i = Math.floor((i - 1) / 26);
   }
-  return out;
+  return s;
 }
 
-
-
-// ----------------------------------------------------------------------------
-// 图表编辑器
-// ----------------------------------------------------------------------------
-export function openChartEditor(el, { theme, onChange }) {
-  const container = document.createElement("div");
-  container.className = "chart-editor";
-
-  // 类型（切换时同步系列 encode，保证数据列映射不丢失）
-  const curType = el.series?.[0]?.type || "bar";
-  const typeRow = row(
-    "图表类型",
-    select(CHART_TYPE_ORDER.map((t) => [t, CHART_META[t].label]), curType, (v) => {
-      const meta = CHART_META[v];
-      for (const s of el.series || []) {
-        s.type = v;
-        s.encode = remapEncode(s.encode || {}, meta);
-      }
-      renderSeries();
-      onChange();
-    })
-  );
-  container.appendChild(typeRow);
-
-  // 数据标签开关
-  const labelRow = document.createElement("div");
-  labelRow.className = "editor-check";
-  const labelChk = document.createElement("input");
-  labelChk.type = "checkbox";
-  labelChk.checked = el.dataLabels !== false;
-  labelChk.addEventListener("change", () => {
-    el.dataLabels = labelChk.checked;
-    onChange();
-  });
-  const labelTxt = document.createElement("span");
-  labelTxt.textContent = "显示数据标签（官方默认关）";
-  labelRow.appendChild(labelChk);
-  labelRow.appendChild(labelTxt);
-  container.appendChild(labelRow);
-
-  // 数据表
-  const dataBox = document.createElement("div");
-  dataBox.className = "editor-section";
-  const dataTitle = document.createElement("div");
-  dataTitle.className = "editor-section-title";
-  dataTitle.textContent = "数据";
-  dataBox.appendChild(dataTitle);
-  const grid = document.createElement("div");
-  grid.className = "table-wrap";
-  dataBox.appendChild(grid);
-  container.appendChild(dataBox);
-
-  // 系列
-  const seriesBox = document.createElement("div");
-  seriesBox.className = "editor-section";
-  const seriesTitle = document.createElement("div");
-  seriesTitle.className = "editor-section-title";
-  seriesTitle.textContent = "系列";
-  seriesBox.appendChild(seriesTitle);
-  const seriesList = document.createElement("div");
-  seriesList.className = "series-list";
-  seriesBox.appendChild(seriesList);
-  container.appendChild(seriesBox);
-
-  const addSeriesBtn = button("＋ 添加系列", () => {
-    el.series ||= [];
-    const type = el.series[0]?.type || "bar";
-    const meta = CHART_META[type];
-    const valCol = findUnusedValCol(el);
-    const valKey = Object.keys(meta.encode).find((k) => !["x", "category", "date", "source", "target"].includes(k)) || "y";
-    el.series.push({
-      type,
-      encode: { ...meta.encode, [valKey]: valCol },
-      name: `系列${el.series.length + 1}`,
-    });
-    if (el.data && valCol && !el.data.cols.includes(valCol)) {
-      el.data.cols.push(valCol);
-      for (const row of el.data.rows || []) row.push(null);
-    }
-    renderAll();
-    onChange();
-  });
-  container.appendChild(addSeriesBtn);
-
-  function renderDataGrid() {
-    grid.innerHTML = "";
-    const data = (el.data ||= { cols: [], rows: [] });
-    if (!data.cols.length) data.cols = ["x", "y"];
-    if (!data.rows.length) data.rows = [["", ""]];
-
-    const table = document.createElement("table");
-    table.className = "data-table";
-
-    // 表头行（列名 + 删列）
-    const thead = document.createElement("thead");
-    const headTr = document.createElement("tr");
-    const corner = document.createElement("th");
-    corner.className = "corner";
-    headTr.appendChild(corner);
-    data.cols.forEach((colName, c) => {
-      const th = document.createElement("th");
-      const wrap = document.createElement("div");
-      wrap.className = "cell-edit";
-      wrap.appendChild(
-        buildCellInput(colName, `列 ${c + 1}`, () => {
-          renameColumn(el, c, wrap.querySelector("input").value);
-          renderAll();
-          onChange();
-        })
-      );
-      if (data.cols.length > 2) {
-        const del = document.createElement("button");
-        del.type = "button";
-        del.className = "col-del";
-        del.textContent = "✕";
-        del.title = "删除列";
-        del.onclick = () => {
-          removeColumn(el, c);
-          renderAll();
-          onChange();
-        };
-        wrap.appendChild(del);
-      }
-      th.appendChild(wrap);
-      headTr.appendChild(th);
-    });
-    thead.appendChild(headTr);
-    table.appendChild(thead);
-
-    // 数据行（行首删除 + 单元格）
-    const tbody = document.createElement("tbody");
-    data.rows.forEach((row, r) => {
-      const tr = document.createElement("tr");
-      const td0 = document.createElement("td");
-      td0.className = "row-del";
-      const delBtn = document.createElement("button");
-      delBtn.type = "button";
-      delBtn.className = "row-del-btn";
-      delBtn.textContent = "✕";
-      delBtn.title = "删除行";
-      delBtn.onclick = () => {
-        data.rows.splice(r, 1);
-        renderAll();
-        onChange();
-      };
-      td0.appendChild(delBtn);
-      tr.appendChild(td0);
-      data.cols.forEach((_, c) => {
-        const td = document.createElement("td");
-        td.appendChild(
-          buildCellInput(row[c], r === 0 ? "数值" : "", () => {
-            row[c] = td.querySelector("input").value;
-            onChange();
-          })
-        );
-        tr.appendChild(td);
-      });
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    grid.appendChild(table);
-
-    const ops = document.createElement("div");
-    ops.className = "grid-ops";
-    ops.append(
-      button("＋ 加行", () => {
-        data.rows.push(data.cols.map(() => null));
-        renderAll();
-        onChange();
-      }),
-      button("＋ 加列", () => {
-        data.cols.push(`列${data.cols.length + 1}`);
-        for (const row of data.rows) row.push(null);
-        renderAll();
-        onChange();
-      })
-    );
-    grid.appendChild(ops);
-  }
-
-  function renderSeries() {
-    seriesList.innerHTML = "";
-    const palette = themeChartPalette(theme);
-    (el.series || []).forEach((s, i) => {
-      const wrap = document.createElement("div");
-      wrap.className = "series-item";
-      const nameInput = document.createElement("input");
-      nameInput.value = s.name || "";
-      nameInput.placeholder = `系列 ${i + 1}`;
-      nameInput.addEventListener("change", () => { s.name = nameInput.value; onChange(); });
-      const colorInput = document.createElement("input");
-      colorInput.type = "color";
-      const hex = String(s.color || palette[i % palette.length] || "#2563eb").replace("#", "");
-      colorInput.value = /^[0-9a-f]{6}$/i.test(hex) ? `#${hex}` : "#2563eb";
-      colorInput.addEventListener("change", () => { s.color = colorInput.value; onChange(); });
-      const valKey = Object.keys(CHART_META[s.type]?.encode || {}).find((k) => !["x", "category", "date", "source", "target"].includes(k)) || "y";
-      const valSel = select(
-        (el.data?.cols || []).map((c, idx) => [String(idx), c]),
-        String(Math.max(0, el.data?.cols.indexOf(s.encode?.[valKey] ?? ""))),
-        (v) => {
-          const col = el.data?.cols[Number(v)];
-          if (col) { s.encode ||= {}; s.encode[valKey] = col; }
-          onChange();
-        }
-      );
-      const del = document.createElement("button");
-      del.type = "button";
-      del.className = "btn btn-sm btn-ghost";
-      del.textContent = "✕";
-      del.title = "删除系列";
-      del.onclick = () => {
-        el.series.splice(i, 1);
-        renderAll();
-        onChange();
-      };
-      wrap.append(nameInput, colorInput, valSel, del);
-      seriesList.appendChild(wrap);
-    });
-    if (!el.series || !el.series.length) {
-      const hint = document.createElement("div");
-      hint.className = "prop-hint";
-      hint.textContent = "暂无系列";
-      seriesList.appendChild(hint);
-    }
-  }
-
-  function renderAll() {
-    renderDataGrid();
-    renderSeries();
-  }
-  renderAll();
-
-  showDialog("图表数据编辑", container);
-}
-
+/** 找未占用的数值列名（y2/y3…）。 */
 function findUnusedValCol(el) {
   const data = el.data || { cols: [] };
   const used = new Set((el.series || []).map((s) => s.encode?.y || s.encode?.value));
@@ -281,34 +58,745 @@ function findUnusedValCol(el) {
   return `y${n}`;
 }
 
-function renameColumn(el, idx, newName) {
-  const data = el.data;
-  if (!data || !data.cols[idx]) return;
-  const old = data.cols[idx];
-  if (old === newName || !newName) return;
-  data.cols[idx] = newName;
-  for (const s of el.series || []) {
-    for (const key of Object.keys(SEMANTIC_KEYS)) {
-      if (s.encode?.[key] === old) s.encode[key] = newName;
+// ----------------------------------------------------------------------------
+// 图表编辑器
+// ----------------------------------------------------------------------------
+export function openChartEditor(el, { theme, onChange }) {
+  const container = document.createElement("div");
+  container.className = "chart-editor";
+
+  const editorTheme = () => window.__pptdEditor?.state?.theme || theme;
+  const palette = () => themeChartPalette(editorTheme());
+  const commit = () => onChange?.();
+  const curType = () => el.series?.[0]?.type || "bar";
+  const metaOf = (t) => CHART_META[t] || CHART_META.bar;
+  /** 值通道键（系列列表的"值列"下拉与添加系列的默认列）。 */
+  const valKeyOf = (t) =>
+    Object.keys(metaOf(t).encode).find((k) => !["x", "category", "date", "source", "target"].includes(k)) || "y";
+
+  // 数据（宽容空表）
+  const data = (el.data ||= { cols: [], rows: [] });
+  if (!data.cols.length) data.cols = ["x", "y"];
+  if (!data.rows.length) data.rows = [["", ""]];
+  const colCount = () => data.cols.length;
+  const rowCount = () => data.rows.length;
+
+  // 状态：Excel 式活动单元格（A1）+ 选中系列
+  let sel = { r1: 0, c1: 0, r2: 0, c2: 0 };
+  let curSeries = 0;
+  let dragSel = null;
+
+  // —— 布局骨架 ——
+  const topRow = document.createElement("div");
+  topRow.className = "chart-top";
+  const warnBox = document.createElement("div");
+  warnBox.className = "chart-warn";
+  warnBox.hidden = true;
+
+  const bodyRow = document.createElement("div");
+  bodyRow.className = "chart-body";
+  const main = document.createElement("div");
+  main.className = "chart-main";
+  const panel = document.createElement("div");
+  panel.className = "style-panel";
+  bodyRow.append(main, panel);
+  container.append(topRow, bodyRow);
+
+  // 每次变更：提交 + 全量重渲（数据格 input 的 change 只提交，避免丢焦点）
+  const setAndRefresh = () => { commit(); renderAll(); };
+
+  // --------------------------------------------------------------------------
+  // 顶部：类型切换 + 添加系列 + 共存警告
+  // --------------------------------------------------------------------------
+  function renderTop() {
+    topRow.innerHTML = "";
+    const typeLabel = document.createElement("span");
+    typeLabel.className = "prop-label";
+    typeLabel.textContent = "图表类型";
+    const typeSel = ui.selectInput(
+      CHART_TYPE_ORDER.map((t) => [t, CHART_META[t].label]),
+      curType(),
+      (v) => {
+        const meta = metaOf(v);
+        for (const s of el.series || []) {
+          s.type = v;
+          s.encode = remapEncode(s.encode || {}, meta);
+          if (v !== "pie" && s.innerRadius != null) delete s.innerRadius;
+        }
+        curSeries = Math.min(curSeries, Math.max(0, (el.series?.length || 1) - 1));
+        setAndRefresh();
+      }
+    );
+    const addBtn = button("＋ 添加系列", () => {
+      el.series ||= [];
+      const type = curType();
+      const meta = metaOf(type);
+      const valCol = findUnusedValCol(el);
+      const valKey = valKeyOf(type);
+      el.series.push({ type, encode: { ...meta.encode, [valKey]: valCol }, name: `系列${el.series.length + 1}` });
+      if (!data.cols.includes(valCol)) {
+        data.cols.push(valCol);
+        for (const r of data.rows) r.push(null);
+      }
+      curSeries = el.series.length - 1;
+      setAndRefresh();
+    });
+    addBtn.title = "添加一个系列（自动新增数据列）";
+    topRow.append(typeLabel, typeSel, addBtn);
+
+    // 类型共存/结构警告（官方 §5.4）
+    const warns = validateChartSeries(el);
+    warnBox.hidden = warns.length === 0;
+    warnBox.innerHTML = "";
+    for (const w of warns) {
+      const div = document.createElement("div");
+      div.textContent = w.replace("[chart] ", "");
+      warnBox.appendChild(div);
     }
   }
-}
 
-function removeColumn(el, idx) {
-  const data = el.data;
-  if (!data) return;
-  const removed = data.cols[idx];
-  data.cols.splice(idx, 1);
-  for (const row of data.rows || []) row.splice(idx, 1);
-  for (const s of el.series || []) {
-    for (const key of Object.keys(SEMANTIC_KEYS)) {
-      if (s.encode?.[key] === removed) {
-        const first = data.cols[0];
-        s.encode[key] = first;
+  // --------------------------------------------------------------------------
+  // 数据表（Excel 式：数字行头 / 字母列头 / 拖拽选区 / 方向插入）
+  // --------------------------------------------------------------------------
+  const gridBox = document.createElement("div");
+  gridBox.className = "chart-grid-box";
+  const gridScroll = document.createElement("div");
+  gridScroll.className = "chart-grid-scroll";
+  main.appendChild(gridBox);
+
+  function renderGrid() {
+    gridBox.innerHTML = "";
+    const toolbar = document.createElement("div");
+    toolbar.className = "table-toolbar";
+    const sep = () => {
+      const d = document.createElement("span");
+      d.className = "toolbar-sep";
+      return d;
+    };
+    const mkBtn = (label, fn, title) => {
+      const b = button(label, fn);
+      if (title) b.title = title;
+      return b;
+    };
+    const selRows = () => [sel.r1, sel.r2];
+    const selCols = () => [sel.c1, sel.c2];
+    const insertRows = (at, n) => {
+      data.rows.splice(at, 0, ...Array.from({ length: n }, () => data.cols.map(() => null)));
+      sel = { r1: at, c1: 0, r2: at + n - 1, c2: colCount() - 1 };
+      setAndRefresh();
+    };
+    const insertCols = (at, n) => {
+      for (const r of data.rows) r.splice(at, 0, ...Array.from({ length: n }, () => null));
+      sel = { r1: 0, c1: at, r2: rowCount() - 1, c2: at + n - 1 };
+      setAndRefresh();
+    };
+    toolbar.append(
+      mkBtn("↑ 插行", () => { const [r1] = selRows(); insertRows(r1, sel.r2 - sel.r1 + 1); }, "在选区上方插入行"),
+      mkBtn("↓ 插行", () => { const [, r2] = selRows(); insertRows(r2 + 1, sel.r2 - sel.r1 + 1); }, "在选区下方插入行"),
+      mkBtn("← 插列", () => { const [c1] = selCols(); insertCols(c1, sel.c2 - sel.c1 + 1); }, "在选区左侧插入列"),
+      mkBtn("→ 插列", () => { const [, c2] = selCols(); insertCols(c2 + 1, sel.c2 - sel.c1 + 1); }, "在选区右侧插入列"),
+      sep(),
+      mkBtn("删除行", () => {
+        if (rowCount() <= 1) return;
+        const [r1, r2] = selRows();
+        data.rows.splice(r1, r2 - r1 + 1);
+        sel = { r1: Math.min(r1, rowCount() - 1), c1: sel.c1, r2: Math.min(r1, rowCount() - 1), c2: sel.c2 };
+        setAndRefresh();
+      }, "删除选区覆盖的所有行"),
+      mkBtn("删除列", () => {
+        if (colCount() <= 1) return;
+        const [c1, c2] = selCols();
+        const removed = data.cols.slice(c1, c2 + 1);
+        for (const r of data.rows) r.splice(c1, c2 - c1 + 1);
+        data.cols.splice(c1, c2 - c1 + 1);
+        // 系列 encode 引用被删列 → 重置到首列（不悬空）
+        for (const s of el.series || []) {
+          for (const k of Object.keys(s.encode || {})) {
+            if (removed.includes(s.encode[k])) s.encode[k] = data.cols[0];
+          }
+        }
+        sel = { r1: sel.r1, c1: Math.min(c1, colCount() - 1), r2: sel.r2, c2: Math.min(c1, colCount() - 1) };
+        setAndRefresh();
+      }, "删除选区覆盖的所有列")
+    );
+    gridBox.appendChild(toolbar);
+
+    const table = document.createElement("table");
+    table.className = "data-table chart-table";
+    table.style.tableLayout = "fixed";
+    // colgroup：首位 18px 行头列固定（否则行头被数据列撑宽、末列被挤出）
+    const colg = document.createElement("colgroup");
+    const headCol = document.createElement("col");
+    headCol.style.width = "18px";
+    colg.appendChild(headCol);
+    for (let c = 0; c < colCount(); c++) {
+      const col = document.createElement("col");
+      col.style.width = `calc((100% - 18px) / ${colCount()})`;
+      colg.appendChild(col);
+    }
+    table.appendChild(colg);
+
+    const thead = document.createElement("thead");
+    const headTr = document.createElement("tr");
+    const corner = document.createElement("th");
+    corner.className = "head-corner";
+    headTr.appendChild(corner);
+    data.cols.forEach((colName, c) => {
+      const th = document.createElement("th");
+      th.className = "col-head";
+      th.dataset.cc = c;
+      if (c >= sel.c1 && c <= sel.c2) th.classList.add("head-active");
+      const letter = document.createElement("div");
+      letter.className = "col-letter";
+      letter.textContent = colLetter(c);
+      const nameInput = buildCellInput(colName, "列名", () => {
+        renameColumn(c, nameInput.value);
+        setAndRefresh();
+      });
+      th.append(letter, nameInput);
+      headTr.appendChild(th);
+    });
+    thead.appendChild(headTr);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    data.rows.forEach((row, r) => {
+      const tr = document.createElement("tr");
+      const td0 = document.createElement("td");
+      td0.className = "row-head" + (r >= sel.r1 && r <= sel.r2 ? " head-active" : "");
+      td0.dataset.rr = r;
+      td0.textContent = r + 1;
+      tr.appendChild(td0);
+      data.cols.forEach((_, c) => {
+        const td = document.createElement("td");
+        td.className = "grid-cell" + (r >= sel.r1 && r <= sel.r2 && c >= sel.c1 && c <= sel.c2 ? " cell-selected" : "");
+        td.dataset.tr = r;
+        td.dataset.tc = c;
+        const input = buildCellInput(String(row[c] ?? ""), "", () => {
+          row[c] = input.value;
+          commit();
+        });
+        td.appendChild(input);
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    gridScroll.innerHTML = "";
+    gridScroll.appendChild(table);
+    gridBox.appendChild(gridScroll);
+    bindDragSelect(gridScroll);
+  }
+
+  /** 列重命名：同步更新各系列 encode 引用。 */
+  function renameColumn(c, newName) {
+    const old = data.cols[c];
+    if (!old || old === newName || !newName) return;
+    data.cols[c] = newName;
+    for (const s of el.series || []) {
+      for (const key of Object.keys(s.encode || {})) {
+        if (s.encode[key] === old) s.encode[key] = newName;
       }
     }
   }
-}
 
-// ----------------------------------------------------------------------------
-// 表格编辑器
+  /** 选区高亮（不重建 DOM，只切 class——拖拽中调用）。 */
+  function renderSelection() {
+    const table = gridScroll.querySelector("table");
+    if (!table) return;
+    for (const td of table.querySelectorAll("td.grid-cell")) {
+      const r = Number(td.dataset.tr);
+      const c = Number(td.dataset.tc);
+      td.classList.toggle("cell-selected", r >= sel.r1 && r <= sel.r2 && c >= sel.c1 && c <= sel.c2);
+    }
+    for (const td of table.querySelectorAll("td.row-head")) {
+      const r = Number(td.dataset.rr);
+      td.classList.toggle("head-active", r >= sel.r1 && r <= sel.r2);
+    }
+    for (const th of table.querySelectorAll("th.col-head")) {
+      const c = Number(th.dataset.cc);
+      th.classList.toggle("head-active", c >= sel.c1 && c <= sel.c2);
+    }
+  }
+
+  /** 拖拽选区（单元格区域 / 行头整行 / 列头整列），与表格编辑器同款交互。 */
+  function bindDragSelect(gridWrap) {
+    gridWrap.addEventListener("pointerdown", (e) => {
+      const th = e.target.closest("th.col-head");
+      if (th) {
+        e.preventDefault();
+        const c = Number(th.dataset.cc);
+        dragSel = { mode: "col", anchor: { r: 0, c }, cur: { r: 0, c } };
+        sel = { r1: 0, c1: c, r2: 0, c2: c };
+        renderSelection();
+        return;
+      }
+      const th0 = e.target.closest("td.row-head");
+      if (th0) {
+        e.preventDefault();
+        const r = Number(th0.dataset.rr);
+        dragSel = { mode: "row", anchor: { r, c: 0 }, cur: { r, c: 0 } };
+        sel = { r1: r, c1: 0, r2: r, c2: colCount() - 1 };
+        renderSelection();
+        return;
+      }
+      const td = e.target.closest("td.grid-cell");
+      if (!td) return;
+      const inp = td.querySelector("input");
+      if (inp && document.activeElement === inp) return; // 编辑态：允许 input 内文本操作
+      e.preventDefault();
+      const r = Number(td.dataset.tr);
+      const c = Number(td.dataset.tc);
+      dragSel = { mode: "cell", anchor: { r, c }, cur: { r, c } };
+      sel = { r1: r, c1: c, r2: r, c2: c };
+      renderSelection();
+    });
+
+    gridWrap.addEventListener("pointermove", (e) => {
+      if (!dragSel) return;
+      const elAt = document.elementFromPoint(e.clientX, e.clientY);
+      if (dragSel.mode === "col") {
+        const th = elAt?.closest?.("th.col-head");
+        if (!th) return;
+        const c = Math.min(colCount() - 1, Math.max(0, Number(th.dataset.cc)));
+        if (c === dragSel.cur.c) return;
+        dragSel.cur.c = c;
+        sel = { r1: 0, c1: Math.min(dragSel.anchor.c, c), r2: rowCount() - 1, c2: Math.max(dragSel.anchor.c, c) };
+      } else if (dragSel.mode === "row") {
+        const th0 = elAt?.closest?.("td.row-head");
+        if (!th0) return;
+        const r = Math.min(rowCount() - 1, Math.max(0, Number(th0.dataset.rr)));
+        if (r === dragSel.cur.r) return;
+        dragSel.cur.r = r;
+        sel = { r1: Math.min(dragSel.anchor.r, r), c1: 0, r2: Math.max(dragSel.anchor.r, r), c2: colCount() - 1 };
+      } else {
+        const td = elAt?.closest?.("td.grid-cell");
+        if (!td) return;
+        const r = Number(td.dataset.tr);
+        const c = Number(td.dataset.tc);
+        if (r === dragSel.cur.r && c === dragSel.cur.c) return;
+        dragSel.cur = { r, c };
+        sel = {
+          r1: Math.min(dragSel.anchor.r, r), c1: Math.min(dragSel.anchor.c, c),
+          r2: Math.max(dragSel.anchor.r, r), c2: Math.max(dragSel.anchor.c, c),
+        };
+      }
+      renderSelection();
+    });
+
+    const endDrag = () => {
+      if (!dragSel) return;
+      dragSel = null;
+      renderSelection();
+    };
+    gridWrap.addEventListener("pointerup", endDrag);
+    gridWrap.addEventListener("pointercancel", endDrag);
+    window.addEventListener("blur", endDrag);
+
+    // 双击进入编辑（pointerdown 已阻止单击聚焦）
+    gridWrap.addEventListener("dblclick", (e) => {
+      const td = e.target.closest("td.grid-cell");
+      const inp = td?.querySelector("input");
+      if (inp) inp.focus();
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // 系列列表（点击选中 → 右侧样式面板联动）
+  // --------------------------------------------------------------------------
+  const seriesBox = document.createElement("div");
+  seriesBox.className = "series-box";
+  main.appendChild(seriesBox);
+
+  function renderSeries() {
+    seriesBox.innerHTML = "";
+    const title = document.createElement("div");
+    title.className = "series-title";
+    title.textContent = "系列";
+    seriesBox.appendChild(title);
+    const list = document.createElement("div");
+    list.className = "series-list";
+
+    (el.series || []).forEach((s, i) => {
+      const wrap = document.createElement("div");
+      wrap.className = "series-item" + (i === curSeries ? " series-active" : "");
+      wrap.title = "点击选中此系列，右侧面板编辑其样式";
+      const t = s.type || curType();
+      // 主色字段：bar/scatter/bubble/pie → color；line/area/radar → lineColor
+      const hasMainColor = ["bar", "scatter", "bubble", "pie", "line", "area", "radar"].includes(t);
+      if (hasMainColor) {
+        const colorKey = ["line", "area", "radar"].includes(t) ? "lineColor" : "color";
+        const cf = ui.colorField(
+          s[colorKey] || palette()[i % palette().length],
+          (v) => {
+            if (v) s[colorKey] = v;
+            else delete s[colorKey];
+            setAndRefresh();
+          },
+          { resolve: (val) => resolveColor(editorTheme(), val), swatches: themeSwatches(editorTheme()) }
+        );
+        cf.title = "系列颜色（留空=主题色板自动）";
+        wrap.appendChild(cf);
+      }
+      const nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.value = s.name || "";
+      nameInput.placeholder = `系列 ${i + 1}`;
+      nameInput.title = "系列名称";
+      nameInput.addEventListener("change", () => {
+        s.name = nameInput.value;
+        commit();
+      });
+      wrap.appendChild(nameInput);
+
+      const valSel = ui.selectInput(
+        data.cols.map((c, idx) => [String(idx), c]),
+        String(Math.max(0, data.cols.indexOf(s.encode?.[valKeyOf(t)] ?? ""))),
+        (v) => {
+          const col = data.cols[Number(v)];
+          if (col) {
+            s.encode ||= {};
+            s.encode[valKeyOf(t)] = col;
+          }
+          setAndRefresh();
+        },
+        { title: `值列（${valKeyOf(t)}）` }
+      );
+      wrap.appendChild(valSel);
+
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "btn btn-sm btn-ghost";
+      del.textContent = "✕";
+      del.title = "删除系列";
+      del.addEventListener("click", (e) => {
+        e.stopPropagation();
+        el.series.splice(i, 1);
+        curSeries = Math.min(curSeries, Math.max(0, (el.series.length || 1) - 1));
+        setAndRefresh();
+      });
+      wrap.appendChild(del);
+
+      wrap.addEventListener("click", (e) => {
+        // 控件（色块/输入/下拉/删除）内的点击不触发选中重建
+        if (e.target.closest("input,select,button,.color-pop")) return;
+        if (curSeries !== i) {
+          curSeries = i;
+          renderAll();
+        }
+      });
+      list.appendChild(wrap);
+    });
+
+    if (!el.series || !el.series.length) {
+      const hint = document.createElement("div");
+      hint.className = "prop-hint";
+      hint.textContent = "暂无系列——点击上方「＋ 添加系列」";
+      list.appendChild(hint);
+    }
+    seriesBox.appendChild(list);
+  }
+
+  // --------------------------------------------------------------------------
+  // 样式面板（声明式分组，fields.js 渲染器；随类型与选中系列联动）
+  // --------------------------------------------------------------------------
+  const h = {
+    textInput: (v, c, o) => ui.textInput(v, c, o),
+    numInput: (v, c, o) => ui.numInput(v, c, o),
+    colorField: (v, c, o) =>
+      ui.colorField(v, c, {
+        resolve: (val) => resolveColor(editorTheme(), val),
+        swatches: themeSwatches(editorTheme()),
+        ...o,
+      }),
+    selectInput: (options, value, onCommit, o) => ui.selectInput(options, value, onCommit, o),
+    checkbox: (l, ch, c, o) => ui.checkbox(l, ch, c, o),
+    button: (label, onClick, o) => ui.button(label, onClick, o),
+  };
+
+  /** 数值轴对象安全获取（xAxis/yAxis/spokeAxis 共享）。 */
+  const axisObj = (el, key) => {
+    if (el[key] === false || el[key] == null || typeof el[key] !== "object") el[key] = {};
+    return el[key];
+  };
+
+  function chartGroup() {
+    const t = curType();
+    const fields = [
+      { kind: "checks", items: [
+        { label: "显示图例", get: () => el.legend !== false,
+          set: (v) => { if (v) { if (el.legend === false) el.legend = {}; } else el.legend = false; setAndRefresh(); } },
+      ] },
+      { kind: "select", label: "图例位置", options: LEGEND_POS,
+        get: () => (typeof el.legend === "object" ? el.legend.position : "") || "bottom",
+        set: (v) => { const o = axisObj(el, "legend"); o.position = v; setAndRefresh(); } },
+      { kind: "num", label: "图例字号", min: 8, max: 24,
+        get: () => (typeof el.legend === "object" ? el.legend.fontSize : "") || 11,
+        set: (v) => { axisObj(el, "legend").fontSize = Number(v); setAndRefresh(); } },
+      { kind: "color", label: "图例颜色",
+        get: () => (typeof el.legend === "object" ? el.legend.color : "") || "",
+        set: (v) => { const o = axisObj(el, "legend"); v ? (o.color = v) : delete o.color; setAndRefresh(); } },
+    ];
+    if (t === "bar") {
+      fields.push(
+        { kind: "num", label: "柱宽", min: 0.1, max: 1, step: 0.05,
+          get: () => el.barWidth ?? 0.6, set: (v) => { el.barWidth = Number(v); setAndRefresh(); } },
+        { kind: "num", label: "柱间距", min: 0, max: 1, step: 0.05,
+          get: () => el.barGap ?? 0, set: (v) => { el.barGap = Number(v); setAndRefresh(); } },
+        { kind: "num", label: "分类间距", min: 0, max: 1, step: 0.05,
+          get: () => el.categoryGap ?? 0.2, set: (v) => { el.categoryGap = Number(v); setAndRefresh(); } }
+      );
+    }
+    return { title: "图表", fields };
+  }
+
+  function labelGroup() {
+    const t = curType();
+    const o = () => (typeof el.dataLabels === "object" ? el.dataLabels : (el.dataLabels = {}));
+    return {
+      title: "数据标签",
+      fields: [
+        { kind: "checks", items: [
+          { label: "显示", get: () => el.dataLabels !== false,
+            set: (v) => { if (v) { if (el.dataLabels === false || el.dataLabels == null) el.dataLabels = {}; } else el.dataLabels = false; setAndRefresh(); } },
+        ] },
+        { kind: "select", label: "内容", options: LABEL_CONTENT.filter(([k]) => (VALID_CONTENT[t] || ["value"]).includes(k)),
+          get: () => o().content || "value",
+          set: (v) => { o().content = v; setAndRefresh(); } },
+        { kind: "select", label: "数字格式", options: NUMBER_FMTS,
+          get: () => o().numberFormat || "",
+          set: (v) => { v ? (o().numberFormat = v) : delete o().numberFormat; setAndRefresh(); } },
+        { kind: "num", label: "字号", min: 8, max: 24,
+          get: () => o().fontSize || 10,
+          set: (v) => { o().fontSize = Number(v); setAndRefresh(); } },
+        { kind: "color", label: "颜色",
+          get: () => o().color || "",
+          set: (v) => { v ? (o().color = v) : delete o().color; setAndRefresh(); } },
+      ],
+    };
+  }
+
+  function axisGroup(key, title, { minMax = false } = {}) {
+    const cfg = () => (el[key] === false ? null : el[key]);
+    const obj = () => (el[key] === false || el[key] == null || typeof el[key] !== "object" ? (el[key] = {}) : el[key]);
+    const fields = [
+      { kind: "checks", items: [
+        { label: "显示", get: () => el[key] !== false,
+          set: (v) => { if (v) { if (el[key] === false) el[key] = {}; } else el[key] = false; setAndRefresh(); } },
+      ] },
+      { kind: "text", label: "标题",
+        get: () => {
+          const t2 = cfg()?.title;
+          return typeof t2 === "string" ? t2 : (t2 && t2.text) || "";
+        },
+        set: (v) => { const o = obj(); v ? (o.title = v) : delete o.title; setAndRefresh(); } },
+      { kind: "num", label: "标签字号", min: 8, max: 20,
+        get: () => cfg()?.label?.fontSize || 11,
+        set: (v) => { const o = obj(); o.label ||= {}; o.label.fontSize = Number(v); setAndRefresh(); } },
+      { kind: "color", label: "标签颜色",
+        get: () => cfg()?.label?.color || "",
+        set: (v) => { const o = obj(); o.label ||= {}; v ? (o.label.color = v) : delete o.label.color; setAndRefresh(); } },
+    ];
+    if (minMax) {
+      fields.push(
+        { kind: "num", label: "最小值",
+          get: () => (cfg()?.min != null ? cfg().min : ""),
+          set: (v) => { const o = obj(); v === "" ? delete o.min : (o.min = Number(v)); setAndRefresh(); } },
+        { kind: "num", label: "最大值",
+          get: () => (cfg()?.max != null ? cfg().max : ""),
+          set: (v) => { const o = obj(); v === "" ? delete o.max : (o.max = Number(v)); setAndRefresh(); } }
+      );
+    }
+    fields.push(
+      { kind: "checks", items: [
+        { label: "网格线", get: () => !(cfg() && cfg().gridLine === false),
+          set: (v) => { const o = obj(); v ? delete o.gridLine : (o.gridLine = false); setAndRefresh(); } },
+      ] },
+      { kind: "select", label: "网格样式", options: LINE_STYLES,
+        get: () => (cfg()?.gridLine && typeof cfg().gridLine === "object" && cfg().gridLine.style) || "solid",
+        set: (v) => { const o = obj(); if (o.gridLine === false) delete o.gridLine; o.gridLine ||= {}; v && v !== "solid" ? (o.gridLine.style = v) : delete o.gridLine.style; setAndRefresh(); } }
+    );
+    return { title, fields };
+  }
+
+  function spokeGroup() {
+    const cfg = () => (el.spokeAxis && typeof el.spokeAxis === "object" ? el.spokeAxis : null);
+    const obj = () => (el.spokeAxis && typeof el.spokeAxis === "object" ? el.spokeAxis : (el.spokeAxis = {}));
+    return {
+      title: "蛛网轴",
+      fields: [
+        { kind: "checks", items: [
+          { label: "轴线", get: () => !(cfg() && cfg().axisLine === false),
+            set: (v) => { const o = obj(); v ? delete o.axisLine : (o.axisLine = false); setAndRefresh(); } },
+          { label: "网格线", get: () => !(cfg() && cfg().gridLine === false),
+            set: (v) => { const o = obj(); v ? delete o.gridLine : (o.gridLine = false); setAndRefresh(); } },
+        ] },
+        { kind: "color", label: "网格颜色",
+          get: () => (cfg()?.gridLine && typeof cfg().gridLine === "object" ? cfg().gridLine.color : "") || "",
+          set: (v) => { const o = obj(); if (o.gridLine === false) delete o.gridLine; o.gridLine ||= {}; v ? (o.gridLine.color = v) : delete o.gridLine.color; setAndRefresh(); } },
+        { kind: "num", label: "最大刻度",
+          get: () => (cfg()?.max != null ? cfg().max : ""),
+          set: (v) => { const o = obj(); v === "" ? delete o.max : (o.max = Number(v)); setAndRefresh(); } },
+      ],
+    };
+  }
+
+  function seriesGroup() {
+    const t = curType();
+    const s = el.series?.[curSeries];
+    if (!s) return null;
+    const setS = (fn) => { fn(s); setAndRefresh(); };
+    const colorFieldF = (key, label) => {
+      const getV = (x) => key.split(".").reduce((o, k) => (o == null ? undefined : o[k]), x);
+      const setV = (x, v) => {
+        const parts = key.split(".");
+        let o = x;
+        for (let i = 0; i < parts.length - 1; i++) { o[parts[i]] ||= {}; o = o[parts[i]]; }
+        v ? (o[parts[parts.length - 1]] = v) : delete o[parts[parts.length - 1]];
+      };
+      return {
+        kind: "color", label,
+        get: () => getV(s) || "",
+        set: (v) => setS((x) => setV(x, v)),
+      };
+    };
+    const borderFields = [
+      { kind: "color", label: "边框",
+        get: () => s.border?.color || "",
+        set: (v) => setS((x) => { x.border ||= {}; v ? (x.border.color = v) : delete x.border.color; }) },
+      { kind: "num", label: "边框宽", min: 0, max: 8,
+        get: () => s.border?.width ?? 0,
+        set: (v) => setS((x) => { x.border ||= {}; x.border.width = Number(v); }) },
+    ];
+    const markerFields = [
+      { kind: "checks", items: [
+        { label: "显示标记", get: () => s.marker !== false,
+          set: (v) => setS((x) => { if (v) { if (x.marker === false) x.marker = {}; } else x.marker = false; }) },
+      ] },
+      { kind: "select", label: "标记形状", options: MARKER_SHAPES,
+        get: () => (typeof s.marker === "object" && s.marker.shape) || "circle",
+        set: (v) => setS((x) => { if (x.marker === false || x.marker == null) x.marker = {}; x.marker.shape = v; }) },
+      { kind: "num", label: "标记尺寸", min: 2, max: 16,
+        get: () => (typeof s.marker === "object" && s.marker.size) || 8,
+        set: (v) => setS((x) => { if (x.marker === false || x.marker == null) x.marker = {}; x.marker.size = Number(v); }) },
+    ];
+    const lineFields = [
+      colorFieldF("lineColor", "线色"),
+      { kind: "num", label: "线宽", min: 1, max: 10,
+        get: () => s.width ?? 2, set: (v) => setS((x) => { x.width = Number(v); }) },
+      { kind: "select", label: "线型", options: LINE_STYLES,
+        get: () => s.lineStyle || "solid",
+        set: (v) => setS((x) => { v && v !== "solid" ? (x.lineStyle = v) : delete x.lineStyle; }) },
+      { kind: "checks", items: [
+        { label: "平滑", get: () => !!s.smooth, set: (v) => setS((x) => { v ? (x.smooth = true) : delete x.smooth; }) },
+      ] },
+      ...markerFields,
+    ];
+    const stackField = {
+      kind: "select", label: "堆叠", options: STACK_OPTS,
+      get: () => (s.stack === "percent" ? "percent" : s.stack === "normal" ? "normal" : ""),
+      set: (v) => setS((x) => { v ? (x.stack = v) : delete x.stack; }),
+    };
+
+    let fields;
+    if (t === "line" || t === "area" || t === "radar") {
+      fields = [...lineFields];
+      if (t === "area") fields.push(colorFieldF("areaColor", "面积色"));
+      if (t !== "radar") fields.push(stackField);
+    } else if (t === "bar" || t === "scatter" || t === "bubble") {
+      fields = [colorFieldF("color", "填充"), ...borderFields];
+      if (t === "bar") fields.push(stackField);
+      if (t === "bubble") {
+        fields.push(
+          { kind: "select", label: "尺寸缩放", options: SIZE_SCALES,
+            get: () => s.sizeScale || "sqrt",
+            set: (v) => setS((x) => { v && v !== "sqrt" ? (x.sizeScale = v) : delete x.sizeScale; }) },
+          { kind: "num", label: "最小半径", min: 2, max: 60,
+            get: () => s.sizeRange?.[0] ?? 6,
+            set: (v) => setS((x) => { x.sizeRange = [Number(v), x.sizeRange?.[1] ?? 48]; }) },
+          { kind: "num", label: "最大半径", min: 2, max: 120,
+            get: () => s.sizeRange?.[1] ?? 48,
+            set: (v) => setS((x) => { x.sizeRange = [x.sizeRange?.[0] ?? 6, Number(v)]; }) }
+        );
+      }
+    } else if (t === "pie") {
+      fields = [
+        colorFieldF("color", "填充"),
+        { kind: "num", label: "内径比例", min: 0, max: 0.9, step: 0.05,
+          get: () => s.innerRadius || 0,
+          set: (v) => setS((x) => { v > 0 ? (x.innerRadius = Number(v)) : delete x.innerRadius; }) },
+        { kind: "num", label: "起始角度", min: 0, max: 360,
+          get: () => s.startAngle || 0,
+          set: (v) => setS((x) => { v ? (x.startAngle = Number(v)) : delete x.startAngle; }) },
+        ...borderFields,
+      ];
+    } else if (t === "candlestick") {
+      fields = [
+        colorFieldF("upBars.fill", "上涨色"),
+        colorFieldF("downBars.fill", "下跌色"),
+      ];
+    } else if (t === "waterfall") {
+      fields = [
+        colorFieldF("totalBars.fill", "总计色"),
+        colorFieldF("increaseBars.fill", "上升色"),
+        colorFieldF("decreaseBars.fill", "下降色"),
+      ];
+    } else if (t === "heatmap") {
+      fields = [
+        { kind: "color", label: "浅端色",
+          get: () => (Array.isArray(s.colorScheme) ? s.colorScheme[0] : "") || "",
+          set: (v) => setS((x) => { const arr = Array.isArray(x.colorScheme) ? [...x.colorScheme] : ["", ""]; v ? (arr[0] = v) : (arr[0] = ""); arr[0] || arr[1] ? (x.colorScheme = arr) : delete x.colorScheme; }) },
+        { kind: "color", label: "深端色",
+          get: () => (Array.isArray(s.colorScheme) ? s.colorScheme[1] : "") || "",
+          set: (v) => setS((x) => { const arr = Array.isArray(x.colorScheme) ? [...x.colorScheme] : ["", ""]; v ? (arr[1] = v) : (arr[1] = ""); arr[0] || arr[1] ? (x.colorScheme = arr) : delete x.colorScheme; }) },
+        { kind: "checks", items: [
+          { label: "颜色条", get: () => s.colorbar !== false,
+            set: (v) => setS((x) => { if (v) { if (x.colorbar === false) x.colorbar = {}; } else x.colorbar = false; }) },
+        ] },
+      ];
+    } else if (t === "treemap" || t === "sunburst") {
+      fields = [
+        { kind: "num", label: "层级深度", min: 1, max: 20,
+          get: () => s.levels ?? "",
+          set: (v) => setS((x) => { v ? (x.levels = Number(v)) : delete x.levels; }) },
+      ];
+    } else if (t === "sankey") {
+      fields = [
+        { kind: "select", label: "节点对齐", options: NODE_ALIGNS,
+          get: () => s.nodeAlign || "justify",
+          set: (v) => setS((x) => { v && v !== "justify" ? (x.nodeAlign = v) : delete x.nodeAlign; }) },
+        colorFieldF("fill", "节点色"),
+      ];
+    } else {
+      fields = [];
+    }
+    return { title: `系列${curSeries + 1}`, fields };
+  }
+
+  function renderStylePanel() {
+    panel.innerHTML = "";
+    const t = curType();
+    const meta = metaOf(t);
+    const groups = [chartGroup(), labelGroup()];
+    if (meta.axes === "cartesian") {
+      groups.push(axisGroup("xAxis", "X 轴"), axisGroup("yAxis", "Y 轴", { minMax: true }));
+    }
+    if (t === "radar") groups.push(spokeGroup());
+    const sg = seriesGroup();
+    if (sg) groups.push(sg);
+    for (const g of groups) panel.appendChild(renderGroup(g, h));
+  }
+
+  function renderAll() {
+    renderTop();
+    renderGrid();
+    renderSeries();
+    renderStylePanel();
+  }
+  renderAll();
+
+  showDialog("图表编辑", container);
+  // 加宽对话框（数据表 + 系列 + 右侧样式面板）
+  const dlg = container.closest(".dialog");
+  if (dlg) dlg.style.width = "min(960px, 96vw)";
+}
