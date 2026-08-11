@@ -105,7 +105,13 @@ export function openTableEditor(el, { onChange }) {
     },
     onInsertCols: (at, n) => {
       for (const row of rows) row.splice(at, 0, ...Array.from({ length: n }, () => ({ text: "" })));
-      ({ grid: gd } = tableGrid(rows, cols));
+      // 列数变更：columnWidths 同步插入（取相邻列宽），否则 colCount 被旧长度卡死、新列被顶替
+      const cw = Array.isArray(el.columnWidths) ? [...el.columnWidths] : Array.from({ length: cols }, () => 1 / cols);
+      const w = cw[Math.min(at, cw.length - 1)] ?? 1 / (cw.length + n);
+      el.columnWidths = [...cw.slice(0, at), ...Array.from({ length: n }, () => w), ...cw.slice(at)];
+      const total = el.columnWidths.reduce((a, b) => a + b, 0) || 1;
+      el.columnWidths = el.columnWidths.map((x) => x / total); // 归一保持和 = 1（官方约束）
+      ({ grid: gd } = tableGrid(rows, colCount()));
       syncDims(el);
       commit();
     },
@@ -117,7 +123,12 @@ export function openTableEditor(el, { onChange }) {
     },
     onDeleteCols: (c1, c2) => {
       for (const row of rows) row.splice(c1, c2 - c1 + 1);
-      ({ grid: gd } = tableGrid(rows, cols));
+      if (Array.isArray(el.columnWidths)) {
+        el.columnWidths.splice(c1, c2 - c1 + 1);
+        const total = el.columnWidths.reduce((a, b) => a + b, 0) || 1;
+        el.columnWidths = el.columnWidths.map((x) => x / total);
+      }
+      ({ grid: gd } = tableGrid(rows, colCount()));
       syncDims(el);
       commit();
     },
