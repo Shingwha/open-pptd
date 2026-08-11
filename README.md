@@ -9,6 +9,10 @@
 - 预览（浏览器）= 导出（PowerPoint），单一定义、双消费者（writer / renderer 同源）
 - 能力覆盖：13 种图表（bar/line/area/scatter/bubble/pie/radar/waterfall/treemap/sunburst/candlestick 等）、187 种预置形状 + 自定义路径、LaTeX 公式混排、字体嵌入、淡入淡出转场
 
+本项目采用 **PPTD**（YAML 演示中间格式）作为内容定义格式。
+
+但本项目的**实现完全独立、全部自研**：网页编辑器、PPTX writer（OOXML 生成）、图标库、图表与 LaTeX 渲染、CLI 导出链路均为本项目自行构建，**未使用 Kimi 的任何代码、图标、编辑器或资源**，也不依赖任何逆向/破解实现。
+
 ## 前置条件
 
 - **Node.js v18+**（唯一依赖，无需安装任何 npm 包）
@@ -58,7 +62,6 @@ node bin/open-pptd.js serve --project /path/to/你的项目目录 --port 55173
 open-pptd/
 ├── SKILL.md                  # 给 AI 助手的完整工作流说明
 ├── README.md                 # 本文档（给人看）
-├── HANDOFF.md                # 交接文档：当前状态 / 测试流程 / 下一步任务
 ├── index.html                # 编辑器入口（重定向到 editor/）
 ├── bin/open-pptd.js          # CLI（serve / export / export-project）
 ├── lib/                      # 本地服务器（静态 + SSE 实时刷新 + 保存写回）+ 导出逻辑

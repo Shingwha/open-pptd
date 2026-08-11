@@ -3,3 +3,5 @@ dist/
 *.log
 .DS_Store
 tests/projects/*/out/
+# 公式测试的 KaTeX 中间产物（npm run test:fixtures 重新生成）
+tests/formula/fixtures/mml/

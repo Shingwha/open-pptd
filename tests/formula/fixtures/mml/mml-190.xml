@@ -1,1 +1,0 @@
-<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msqrt><mrow><mn>1</mn><mo>+</mo><msqrt><mrow><mn>1</mn><mo>+</mo><msqrt><mrow><mn>1</mn><mo>+</mo><mi>x</mi></mrow></msqrt></mrow></msqrt></mrow></msqrt></mrow><annotation encoding="application/x-tex">\sqrt{1 + \sqrt{1 + \sqrt{1 + x}}}</annotation></semantics></math></span>

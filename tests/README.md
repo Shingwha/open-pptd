@@ -20,6 +20,7 @@ tests/
     test-shapes-all.pptx  python-pptx 全量基准（scripts/gen-reference-shapes.py 生成）
   fixtures/
     formula/           公式转换回归语料（204 个 LaTeX 用例 + 微软官方 XSLT 参考输出）
+                       其中 mml/（KaTeX 中间产物）不入库，clone 后先 npm run test:fixtures 生成
   e2e/                 真实浏览器（Chrome/Edge CDP）测试：渐进加载 / 实时刷新
   run-all.mjs          一键回归（导出全部项目 + 包一致性 + 颜色 + 形状 + 公式 + 图标）
   isolate.mjs          逐组件逐页隔离导出（定位 PowerPoint 弹「修复」）
@@ -35,7 +36,8 @@ tests/
 ## 一键回归
 
 ```bash
-node tests/run-all.mjs
+npm run test:fixtures   # 首次：生成公式语料的 KaTeX 中间产物（tests/formula/fixtures/mml/，不入库）
+npm test                # 一键回归（导出全部项目 + 包一致性 + 颜色 + 形状 + 公式 + 图标）
 ```
 
 覆盖：全部组件项目导出（产物到 `tests/projects/<项目>/out/check-<项目>.pptx`）→ 包内引用一致性 → 颜色两端一致性 → 预置形状全量 → 公式 204 用例 → 图标导出。

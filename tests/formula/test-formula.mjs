@@ -17,7 +17,7 @@
 // 已知差异用例（见 KNOWN-DIFFS.md）：语料保留，输出不一致时仅警告不阻断。
 // ============================================================================
 
-import { readFileSync, readdirSync } from "fs";
+import { readFileSync, readdirSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { mathmlToOmml } from "../../editor/core/mathml2omml.js";
@@ -26,6 +26,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const FIXTURES = join(__dirname, "fixtures");
 const MML_DIR = join(FIXTURES, "mml");
 const REF_DIR = join(FIXTURES, "omml-ai");
+if (!existsSync(MML_DIR)) {
+  console.error("✗ 缺少 tests/formula/fixtures/mml/（KaTeX 中间产物，不入库）。先运行：npm run test:fixtures");
+  process.exit(1);
+}
 const verbose = process.argv.includes("--verbose");
 
 // 已知差异（见 KNOWN-DIFFS.md）：已全部修复（204/204），列表保留为空哨兵，
