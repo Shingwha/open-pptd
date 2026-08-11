@@ -26,8 +26,10 @@ function colLetter(i) {
   return s;
 }
 
-/** 数据列最小宽度（px）：列多时表格超宽 → 容器横向滚动（Excel 式），而不是无限挤压。 */
-const MIN_COL_W = 80;
+/** 数据列最小宽度（px）：Excel 式固定列宽——列多时表格超宽出现横向滚动，不挤压。 */
+const MIN_COL_W = 96;
+/** 列宽逻辑基准（px）：columnWidths 比例 × 基准 = 实际列宽（预览导出同比例）。 */
+const COL_BASE_W = 560;
 
 /**
  * @param {object} opts
@@ -153,6 +155,8 @@ export function createExcelGrid(opts) {
     table.className = "data-table";
     // fixed 布局：列宽完全由 colgroup 决定（行头恒 18px，列头 input 等内容不撑宽）
     table.style.tableLayout = "fixed";
+    // 表格宽度 = 内容宽（不拉伸容器）：列少时右侧留白，列多时超宽 → 横向滚动（Excel 式）
+    table.style.width = "max-content";
     const colgroup = document.createElement("colgroup");
     // 行头列（固定窄列，必须占 colgroup 首位，否则数据列百分比错位挤爆行头）
     const headCol = document.createElement("col");
@@ -161,8 +165,10 @@ export function createExcelGrid(opts) {
     const widths = colWidths ? colWidths() : null;
     for (let c = 0; c < cols; c++) {
       const col = document.createElement("col");
-      col.style.width = widths ? `${(widths[c] * 100).toFixed(3)}%` : `calc((100% - 18px) / ${cols})`;
-      col.style.minWidth = `${MIN_COL_W}px`; // 列多时不再挤压：超出容器宽度后出现横向滚动
+      // Excel 式固定列宽（px）：比例 × 逻辑基准，最小 96px——列多时超宽滚动而不是均分挤压
+      const w = widths ? Math.max(MIN_COL_W, widths[c] * COL_BASE_W) : MIN_COL_W;
+      col.style.width = `${w.toFixed(0)}px`;
+      col.style.minWidth = `${MIN_COL_W}px`;
       colgroup.appendChild(col);
     }
     table.appendChild(colgroup);

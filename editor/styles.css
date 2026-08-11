@@ -1556,7 +1556,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   border-radius: 4px;
 }
 .excel-grid .chart-col-head input:focus { background: var(--primary-soft); }
-.excel-grid .data-table { min-width: 100%; }
+/* 表格宽度 = 内容宽（max-content 由组件设置）：列少不满宽、列多横向滚动 */
 /* 系列列表 */
 .series-box {
   border: 1px solid var(--line);
