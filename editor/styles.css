@@ -1596,7 +1596,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 }
 .excel-grid .table-toolbar { border: none; border-bottom: 1px solid var(--line); border-radius: 0; }
 .excel-grid-scroll {
-  flex: 1;
+  flex: 1 1 auto; /* flex-basis auto：高度取 height，不被 flex-basis:0 塌缩 */
   min-width: 0;
   height: min(52vh, 480px); /* 固定高度：内容滚动，面板不随选中状态跳动 */
   overflow: auto;
