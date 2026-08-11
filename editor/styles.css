@@ -120,7 +120,7 @@ select, input, textarea { font-family: inherit; }
 /* ----------------------------------------------------------------------------
    触控优化（全局统一，不限断点）：禁双击缩放干扰、去点按灰色高亮
    ---------------------------------------------------------------------------- */
-button, select, a.btn, .thumb, .add-item, .icon-cell, .theme-card {
+button, select, a.btn, .thumb, .add-thumb, .icon-cell, .theme-card {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
@@ -265,47 +265,192 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   bottom: 22px;
   z-index: 79;
   display: none;
-  width: 340px;
-  max-height: min(540px, 70vh);
-  overflow-y: auto;
-  padding: 12px;
+  width: 560px;
+  max-height: min(600px, 76vh);
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: var(--shadow-lg);
+  flex-direction: column;
+  overflow: hidden;
 }
-.add-menu.open { display: block; }
+.add-menu.open { display: flex; }
 
-.add-group-title {
+/* —— Tab 栏 —— */
+.add-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 8px 12px 0;
+  border-bottom: 1px solid var(--line);
+  flex: none;
+}
+.add-tab {
+  padding: 7px 16px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: var(--sub);
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  position: relative;
+}
+.add-tab:hover { color: var(--ink); background: var(--primary-soft); }
+.add-tab.active { color: var(--primary); font-weight: 700; }
+.add-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--primary);
+}
+
+/* —— 内容区 —— */
+.add-body {
+  min-height: 320px;
+  max-height: calc(76vh - 46px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.add-body.catalog { overflow: hidden; }
+
+/* —— 搜索框 —— */
+.add-search {
+  flex: none;
+  margin: 10px 12px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  outline: none;
+  background: var(--bg);
+  color: var(--ink);
+}
+.add-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+
+/* —— 分类侧栏 + 网格区 —— */
+.add-catalog { display: flex; flex: 1; min-height: 0; }
+.add-cats {
+  width: 116px;
+  flex: none;
+  overflow-y: auto;
+  padding: 10px 6px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-right: 1px solid var(--line);
+}
+.add-cat {
+  text-align: left;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: var(--sub);
+  border: none;
+  background: none;
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.add-cat:hover { background: var(--primary-soft); color: var(--ink); }
+.add-cat.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
+.add-grid-wrap { flex: 1; overflow-y: auto; padding: 10px 12px 14px; min-width: 0; }
+
+.add-sub-title {
   font-size: 11px;
   font-weight: 700;
   color: var(--faint);
-  margin: 9px 2px 7px;
+  margin: 10px 2px 6px;
 }
-.add-group-title:first-child { margin-top: 0; }
+.add-sub-title:first-child { margin-top: 0; }
 
-.add-grid {
+/* 紧凑缩略格（小图标，仿 PPT 形状库） */
+.add-thumb-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
   gap: 6px;
 }
-.add-item {
+.add-thumb {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  cursor: pointer;
+  padding: 0;
+  color: var(--sub);
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+.add-thumb:hover { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+.add-thumb svg { width: 20px; height: 20px; }
+
+.add-empty { padding: 36px 0; text-align: center; color: var(--faint); font-size: 12px; }
+
+/* —— 基础 Tab：大卡片 + 最近使用 —— */
+.add-basic-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+}
+.add-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 9px 4px 7px;
+  padding: 16px 8px 12px;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 10px;
   background: var(--panel);
   cursor: pointer;
   transition: border-color 0.12s, background 0.12s;
 }
-.add-item:hover { border-color: var(--primary); background: var(--primary-soft); }
-.add-item svg { width: 24px; height: 24px; color: var(--sub); }
-.add-item:hover svg { color: var(--primary); }
-.add-item .add-item-name { font-size: 12px; font-weight: 600; color: var(--ink); }
-.add-item .add-item-desc { font-size: 10px; color: var(--faint); margin-top: -2px; }
+.add-card:hover { border-color: var(--primary); background: var(--primary-soft); }
+.add-card svg { width: 28px; height: 28px; color: var(--sub); }
+.add-card:hover svg { color: var(--primary); }
+.add-card-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+.add-card-desc { font-size: 10px; color: var(--faint); }
+
+.add-sec {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--faint);
+  margin: 6px 14px 8px;
+}
+.add-basic-grid + .add-sec { margin-top: 4px; }
+.add-sec + .add-thumb-grid { padding: 0 12px 14px; }
+
+/* —— 图表 Tab —— */
+.add-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+  padding: 12px;
+}
+.add-chart-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--ink);
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+.add-chart-item:hover { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+.add-chart-item svg { width: 26px; height: 26px; color: var(--sub); }
+.add-chart-item:hover svg { color: var(--primary); }
 
 /* ----------------------------------------------------------------------------
    画布区
@@ -1265,8 +1410,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   .topbar-actions { gap: 4px; }
   .icon-btn { width: 30px; height: 30px; }
   .topbar-divider { margin: 0; }
-  .add-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .add-menu { max-height: 62vh; }
+  .add-menu { max-height: 66vh; }
   .fab-stack { right: 10px; bottom: 12px; }
   .stage-status { max-width: 62vw; }
 }

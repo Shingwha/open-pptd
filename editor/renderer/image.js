@@ -16,7 +16,12 @@ export function renderImage(theme, el, ctx = {}) {
   box.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;overflow:hidden;`;
   box.dataset.elementId = el.elementId;
   box.dataset.elementType = "image";
-  if (el.rotation) box.style.transform = `rotate(${el.rotation}deg)`;
+  if (el.rotation || el.flip?.[0] || el.flip?.[1]) {
+    const t = [];
+    if (el.rotation) t.push(`rotate(${el.rotation}deg)`);
+    if (el.flip?.[0] || el.flip?.[1]) t.push(`scale(${el.flip[0] ? -1 : 1}, ${el.flip[1] ? -1 : 1})`);
+    box.style.transform = t.join(" ");
+  }
   if (el.opacity != null) box.style.opacity = el.opacity;
 
   const img = document.createElement("img");

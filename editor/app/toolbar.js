@@ -6,7 +6,7 @@
 // ============================================================================
 
 import { createPage } from "../core/model.js";
-import { buildAddItems, buildAddMenu } from "../types/index.js";
+import { bindAddMenu } from "../interaction/add-menu.js";
 import { bindThemePanel } from "../interaction/theme-panel.js";
 
 export function bindToolbar({ state, page, api, view, io }) {
@@ -22,52 +22,13 @@ export function bindToolbar({ state, page, api, view, io }) {
   }
 
   // --------------------------------------------------------------------------
-  // 添加菜单（右下角 ＋）
+  // 添加面板（interaction/add-menu.js：Tab + 分类 + 搜索 + 最近使用）
   // --------------------------------------------------------------------------
-  function bindAddMenu() {
-    const fab = $("btn-add");
-    const menu = $("add-menu");
-    const addItems = buildAddItems();
-    const addApi = { addElement, rebuildImageMap: io.rebuildImageMap };
-
-    menu.innerHTML = "";
-    for (const { group, ids } of buildAddMenu()) {
-      const title = document.createElement("div");
-      title.className = "add-group-title";
-      title.textContent = group;
-      menu.appendChild(title);
-      const grid = document.createElement("div");
-      grid.className = "add-grid";
-      for (const id of ids) {
-        const item = addItems[id];
-        if (!item) continue;
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "add-item";
-        btn.innerHTML =
-          `${item.icon}<span class="add-item-name">${item.label}</span>` +
-          (item.desc ? `<span class="add-item-desc">${item.desc}</span>` : "");
-        btn.onclick = () => {
-          menu.classList.remove("open");
-          fab.classList.remove("active");
-          if (item.onClick) item.onClick(addApi);
-          else if (item.create) addApi.addElement(item.create());
-        };
-        grid.appendChild(btn);
-      }
-      menu.appendChild(grid);
-    }
-
-    fab.onclick = (e) => {
-      e.stopPropagation();
-      const open = menu.classList.toggle("open");
-      fab.classList.toggle("active", open);
-    };
-    document.addEventListener("click", (e) => {
-      if (!menu.contains(e.target) && e.target !== fab) {
-        menu.classList.remove("open");
-        fab.classList.remove("active");
-      }
+  function bindAddMenuUI() {
+    bindAddMenu({
+      fab: $("btn-add"),
+      menu: $("add-menu"),
+      addApi: { addElement, rebuildImageMap: io.rebuildImageMap },
     });
   }
 
@@ -119,6 +80,6 @@ export function bindToolbar({ state, page, api, view, io }) {
     $("btn-zoom-reset").onclick = () => view.zoomReset();
   }
 
-  bindAddMenu();
+  bindAddMenuUI();
   bindTopbar();
 }

@@ -63,8 +63,8 @@ export function evalFormula(op, args, g) {
     case "+/": return (x + y) / z;
     case "?:": return x > 0 ? y : z;
     case "abs": return Math.abs(x);
-    case "at2": return Math.atan2(x, y) * (180 / Math.PI) * DEG; // at2 a b = 角度 atan2(b, a)（OOXML 参数序 x,y）
-    case "atan2": return Math.atan2(x, y) * (180 / Math.PI) * DEG; // 别名
+    case "at2": return Math.atan2(y, x) * (180 / Math.PI) * DEG; // at2 a b = 角度 atan2(b, a)（OOXML 参数序 x,y；ECMA-376 定义 at2(x,y)=atan2(y,x)）
+    case "atan2": return Math.atan2(y, x) * (180 / Math.PI) * DEG; // 别名
     case "cat2": return x * Math.cos(Math.atan2(z, y)); // cat2 x y z = x·cos(atan2(z,y))
     case "cos": return x * Math.cos(rad(y));
     case "max": return Math.max(x, y);

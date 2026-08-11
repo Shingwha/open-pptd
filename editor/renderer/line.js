@@ -20,6 +20,12 @@ export function renderLine(theme, el) {
   svg.dataset.elementId = el.elementId;
   svg.dataset.elementType = "line";
   if (el.opacity != null) svg.style.opacity = el.opacity;
+  if (el.rotation || el.flip?.[0] || el.flip?.[1]) {
+    const t = [];
+    if (el.rotation) t.push(`rotate(${el.rotation}deg)`);
+    if (el.flip?.[0] || el.flip?.[1]) t.push(`scale(${el.flip[0] ? -1 : 1}, ${el.flip[1] ? -1 : 1})`);
+    svg.style.transform = t.join(" ");
+  }
 
   const pts = parsePoints(el.points, el.viewBox || [1, 1], el.bounds);
   if (!pts || pts.length < 2) return svg;

@@ -47,7 +47,7 @@ export function lineXml(theme, element, ctx) {
     }
     geom = [
       // 多点线条必须有 xfrm（off/ext = bounds），否则 PowerPoint 视为 0×0 不可见
-      buildXfrm(element.bounds, element.rotation),
+      buildXfrm(element.bounds, element.rotation, element.flip),
       el("a:custGeom", {}, [
         "<a:avLst/>",
         "<a:gdLst/>",
