@@ -37,6 +37,30 @@ export const CHART_META = {
 
 export const CHART_TYPE_ORDER = Object.keys(CHART_META);
 
+/** encode 语义键别名表（类型切换时保留已有列引用，自动对齐默认列名）。 */
+const SEMANTIC_KEYS = {
+  x: ["x", "category", "date"],
+  y: ["y", "value"],
+  category: ["category", "x"],
+  value: ["value", "y"],
+  size: ["size"], high: ["high"], low: ["low"], close: ["close"], open: ["open"],
+  isTotal: ["isTotal"], parent: ["parent"], source: ["source"], target: ["target"], flow: ["flow"],
+};
+
+/**
+ * 按目标类型元数据重映射 encode（图表编辑器/属性面板共用）：
+ * 旧列的语义别名命中则保留引用，否则回退目标类型默认列名。
+ */
+export function remapEncode(oldEncode, meta) {
+  const out = {};
+  for (const key of Object.keys(meta.encode)) {
+    const cand = SEMANTIC_KEYS[key] || [key];
+    const hit = cand.map((k) => oldEncode[k]).find((v) => v != null);
+    out[key] = hit ?? meta.encode[key];
+  }
+  return out;
+}
+
 /** 单系列独占类型（系列数组只能有 1 个元素）。 */
 const SOLO_TYPES = new Set(["pie", "waterfall", "heatmap", "treemap", "sunburst", "sankey", "radar"]);
 

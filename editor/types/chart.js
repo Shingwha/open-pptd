@@ -8,6 +8,7 @@
 import { registerType } from "./registry.js";
 import { nextElementId } from "../core/model.js";
 import { CHART_META } from "../core/chart.js";
+import { remapEncode } from "../core/chart.js";
 import { renderChart } from "../renderer/chart.js";
 import { chartXml } from "../writer/chart.js";
 import { svgIcon } from "../ui.js";
@@ -96,7 +97,7 @@ registerType({
           set: (v) => {
             const s = el.series[0];
             s.type = v;
-            s.encode = defaultEncode(v, el.data.cols);
+            s.encode = remapEncode(s.encode || {}, CHART_META[v]); // 语义重映射，保留列引用
             if (v !== "pie" && s.innerRadius != null) delete s.innerRadius;
           } },
         { kind: "checks", items: [
@@ -115,7 +116,7 @@ registerType({
       h.change(() => {
         const s = el.series[0];
         s.type = v;
-        s.encode = defaultEncode(v, el.data.cols);
+        s.encode = remapEncode(s.encode || {}, CHART_META[v]);
         if (v !== "pie" && s.innerRadius != null) delete s.innerRadius;
       })
     );

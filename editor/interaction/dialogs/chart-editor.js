@@ -9,7 +9,7 @@
 //   - 类型切换：语义键重映射（remapEncode）+ 共存约束警告（validateChartSeries）
 // ============================================================================
 
-import { CHART_META, CHART_TYPE_ORDER, validateChartSeries } from "../../core/chart.js";
+import { CHART_META, CHART_TYPE_ORDER, validateChartSeries, remapEncode } from "../../core/chart.js";
 import { resolveColor, themeChartPalette } from "../../core/theme.js";
 import { showDialog, buildCellInput, button } from "./base.js";
 import { renderGroup, themeSwatches } from "../fields.js";
@@ -35,23 +35,7 @@ const VALID_CONTENT = {
 };
 
 /** 类型切换语义重映射（保留已有列引用，自动对齐默认列名）。 */
-function remapEncode(oldEncode, meta) {
-  const SEMANTIC_KEYS = {
-    x: ["x", "category", "date"],
-    y: ["y", "value"],
-    category: ["category", "x"],
-    value: ["value", "y"],
-    size: ["size"], high: ["high"], low: ["low"], close: ["close"], open: ["open"],
-    isTotal: ["isTotal"], parent: ["parent"], source: ["source"], target: ["target"], flow: ["flow"],
-  };
-  const out = {};
-  for (const key of Object.keys(meta.encode)) {
-    const cand = SEMANTIC_KEYS[key] || [key];
-    const hit = cand.map((k) => oldEncode[k]).find((v) => v != null);
-    out[key] = hit ?? meta.encode[key];
-  }
-  return out;
-}
+// （remapEncode 已移至 core/chart.js 共用——属性面板与图表编辑器行为一致）
 
 /** 列字母（Excel 式：A B … Z AA AB）。 */
 function colLetter(i) {
