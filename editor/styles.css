@@ -597,6 +597,8 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 4px;
 }
+/* hidden 属性优先于 display:grid（否则所有弹层常显） */
+.color-pop[hidden] { display: none; }
 .color-pop-item {
   display: flex;
   align-items: center;
