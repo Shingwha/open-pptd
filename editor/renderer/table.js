@@ -38,7 +38,7 @@ function sideCss(theme, v) {
 }
 
 /** 展开网格 → 单元格最终样式（与 writer 同源；covered 位返回 {covered:true}）。 */
-function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) {
+export function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) {
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
   const ref = resolveTextStyle(theme, cell?.textStyle);
   const fill = cell?.fill ?? s.fill ?? tableFill ?? null;
@@ -61,9 +61,10 @@ function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) {
 
 export function renderTable(theme, el) {
   const [x, y, w] = el.bounds;
-  const { rowHeights, totalH, columnWidths } = estimateTableLayout(el);
+  const { rowHeights, columnWidths } = estimateTableLayout(el);
   const box = document.createElement("div");
-  box.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${totalH}px;overflow:hidden;`;
+  // 高度不预设：由内容决定（含边框线），避免底部边框被 overflow:hidden 裁剪
+  box.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;overflow:hidden;`;
   box.dataset.elementId = el.elementId;
   box.dataset.elementType = "table";
   if (el.opacity != null) box.style.opacity = el.opacity;
@@ -104,7 +105,10 @@ export function renderTable(theme, el) {
       }
       const f = cellFinal(theme, ts, r, c, rowCount, colCount, cell, el.fill);
       const td = document.createElement("td");
-      td.innerHTML = richTextToHtml(theme, cell?.text ?? "");
+      // 文字高亮（官方 CellStyle.backgroundColor，a:highlight 语义）：包 span 渲染在文字上
+      const html = richTextToHtml(theme, cell?.text ?? "");
+      const hl = resolveColor(theme, f.backgroundColor);
+      td.innerHTML = hl ? `<span style="background:${hl}">${html}</span>` : html;
       td.style.cssText = tdCss(theme, f, false);
       if (cell?.rowSpan > 1) td.rowSpan = cell.rowSpan;
       if (cell?.colSpan > 1) td.colSpan = cell.colSpan;
@@ -118,7 +122,7 @@ export function renderTable(theme, el) {
 }
 
 /** td 内联样式（预览；covered 位无文字不显示背景文字样式）。 */
-function tdCss(theme, f, covered) {
+export function tdCss(theme, f, covered) {
   // 严格官方形态：fill 字符串色或 {type: "solid", color}（与 writer 同源）
   const fillColor = f.fill
     ? typeof f.fill === "string"
@@ -146,7 +150,6 @@ function tdCss(theme, f, covered) {
       `color:${resolveColor(theme, f.color) || "#000000"}`,
       `font-size:${f.fontSize}px`,
       f.fontFamily ? `font-family:"${f.fontFamily}",sans-serif` : "",
-      f.backgroundColor ? `background-color:${resolveColor(theme, f.backgroundColor)}` : "",
       `line-height:${f.lineHeight}`,
       f.letterSpacing ? `letter-spacing:${f.letterSpacing}px` : "",
       f.marginTop ? `padding-top:${TABLE_CELL_PAD + f.marginTop}px` : "",

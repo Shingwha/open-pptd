@@ -26,6 +26,7 @@ import { getType } from "../types/index.js";
 import { PAGE_TYPES, PAGE_WIDTH, PAGE_HEIGHT } from "../core/model.js";
 import { resolveColor } from "../core/theme.js";
 import * as ui from "../ui.js";
+import { renderGroup } from "./fields.js";
 
 export function bindProperties(panel, api) {
   const { state, page, getSelectedElement, beginChange, endChange, deleteSelected, duplicateSelected, moveLayer } = api;
@@ -170,64 +171,8 @@ export function bindProperties(panel, api) {
   }
 
   // --------------------------------------------------------------------------
-  // 声明式分组渲染
+  // 声明式分组渲染（渲染器在 fields.js，与表格样式面板共用同一套布局）
   // --------------------------------------------------------------------------
-  function renderGroup(group, h) {
-    const g = ui.group(group.title || "");
-    let grid = null;
-    const ensureGrid = () => {
-      if (!grid) {
-        grid = document.createElement("div");
-        grid.className = "prop-grid";
-        g.appendChild(grid);
-      }
-      return grid;
-    };
-
-    for (const f of group.fields || []) {
-      if (f.kind === "num") {
-        ensureGrid().appendChild(ui.cell(f.label, h.numInput(f.get(), f.set, f)));
-        if (grid.children.length === 2) grid = null; // 两两成行
-      } else {
-        grid = null;
-        const node = renderFullField(f, h);
-        if (node) g.appendChild(node);
-      }
-    }
-    return g;
-  }
-
-  /** 整行字段分派。 */
-  function renderFullField(f, h) {
-    switch (f.kind) {
-      case "text":
-        return ui.field(f.label, h.textInput(f.get(), f.set, { placeholder: f.placeholder || "" }));
-      case "textarea":
-        return ui.field(f.label, h.textInput(f.get(), f.set, { rows: f.rows || 3, placeholder: f.placeholder || "" }));
-      case "select":
-        return ui.field(f.label, h.selectInput(f.options, f.get(), f.set));
-      case "color":
-        return ui.field(f.label, h.colorField(f.get(), f.set));
-      case "checks": {
-        const wrap = document.createElement("div");
-        wrap.className = "prop-checks";
-        for (const item of f.items) {
-          wrap.appendChild(h.checkbox(item.label, item.get(), item.set));
-        }
-        return wrap;
-      }
-      case "button":
-        return h.button(f.label, f.onClick, f.className ? { className: f.className } : {});
-      case "hint": {
-        const div = document.createElement("div");
-        div.className = "prop-hint";
-        div.textContent = f.text;
-        return div;
-      }
-      default:
-        return null;
-    }
-  }
 
   // --------------------------------------------------------------------------
   // 页面设置（未选中元素时）

@@ -151,10 +151,21 @@ export function colorField(value, onCommit, { resolve, swatches = [], onFocus, o
     }
   });
 
-  // 主题色弹层：色块网格，点击回填 $key
+  // 主题色弹层：fixed 定位（不依赖父容器 overflow，永不裁剪），打开时按按钮位置计算
   const pop = document.createElement("div");
   pop.className = "color-pop";
   pop.hidden = true;
+  const positionPop = () => {
+    const r = swatchBtn.getBoundingClientRect();
+    const popH = pop.offsetHeight || 220;
+    const W = 224;
+    pop.style.left = `${Math.max(8, Math.min(r.left, window.innerWidth - W - 8))}px`;
+    if (window.innerHeight - r.bottom - 8 < popH && r.top > popH + 8) {
+      pop.style.top = `${Math.max(8, r.top - popH - 6)}px`; // 下方空间不足 → 向上弹出
+    } else {
+      pop.style.top = `${r.bottom + 6}px`;
+    }
+  };
   for (const s of swatches) {
     const dot = document.createElement("button");
     dot.type = "button";
@@ -181,7 +192,9 @@ export function colorField(value, onCommit, { resolve, swatches = [], onFocus, o
     swatchBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       pop.hidden = !pop.hidden;
+      if (!pop.hidden) positionPop(); // 显示后测量并定位（fixed，脱离父容器裁剪）
     });
+    window.addEventListener("resize", () => { if (!pop.hidden) positionPop(); });
     document.addEventListener("click", (e) => {
       if (!pop.hidden && !pop.contains(e.target)) pop.hidden = true;
     });

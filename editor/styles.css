@@ -726,12 +726,10 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   background: var(--bg); color: var(--ink); outline: none; font-family: ui-monospace, monospace;
 }
 .color-hex:focus { border-color: var(--primary); }
-/* 主题色弹层：点击色块按钮展开 */
+/* 主题色弹层：点击色块按钮展开（fixed 定位由 JS 按按钮位置计算，不受父容器裁剪） */
 .color-pop {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 120;
+  position: fixed;
+  z-index: 1200; /* 高于对话框遮罩（1000），弹层可覆盖在任何容器之上 */
   width: 216px;
   padding: 8px;
   background: var(--panel);
@@ -1207,9 +1205,24 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .icon-empty { padding: 30px 0; text-align: center; color: var(--faint); font-size: 13px; }
 
 /* —— 类 Excel 数据表 —— */
-.table-wrap {
-  max-height: 280px;
-  overflow-y: auto;
+.table-editor { display: flex; flex-direction: column; gap: 10px; }
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+.table-toolbar .btn { flex: 0 0 auto; }
+.toolbar-sep { width: 1px; height: 18px; background: var(--line-strong); margin: 0 4px; }
+.table-body { display: flex; gap: 10px; align-items: stretch; }
+.table-grid {
+  flex: 1;
+  min-width: 0;
+  height: min(52vh, 480px); /* 固定高度：内容滚动，面板不随选中状态跳动 */
+  overflow: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
@@ -1240,33 +1253,55 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   border: 0;
   outline: none;
   background: transparent;
-  padding: 5px 6px;
-  font-size: 12px;
-  color: var(--ink);
+  padding: 4px 6px;
+  font: inherit; /* 继承 td 完整样式链（字号/粗细/斜体） */
+  color: inherit; /* 继承 td 文字颜色（表头白字/主题色等，所见即所得） */
+  text-align: inherit; /* 继承单元格对齐 */
 }
 .data-table thead input { font-weight: 600; color: var(--primary); }
 .data-table input:focus { background: var(--primary-soft); }
 
-.data-table .corner { width: 26px; border: none; background: transparent; }
-.data-table td.row-del { width: 26px; text-align: center; padding: 0; }
-
-.row-del-btn, .col-del {
+/* —— Excel 式行头/列头（纯编号，点击选整行/列，拖拽多行/列） —— */
+.data-table td.row-head, .data-table th.col-head {
   width: 18px;
-  height: 18px;
-  border: 0;
-  background: none;
+  min-width: 18px;
+  text-align: center;
+  padding: 0;
+  background: var(--bg);
   color: var(--faint);
-  cursor: pointer;
   font-size: 10px;
-  line-height: 1;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  user-select: none;
+  position: relative;
+  cursor: pointer;
 }
-.row-del-btn:hover, .col-del:hover { background: var(--danger-soft); color: var(--danger); }
+.data-table th.col-head { border-bottom: 1px solid var(--line-strong); }
+.data-table td.row-head { border-right: 1px solid var(--line-strong); }
+.data-table .head-corner {
+  width: 18px;
+  min-width: 18px;
+  border-right: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--bg);
+  padding: 0;
+}
+.data-table td.row-head.head-active, .data-table th.col-head.head-active {
+  background: #dbeafe;
+  color: #2563eb;
+  font-weight: 700;
+}
+.data-table td.row-head:hover, .data-table th.col-head:hover { background: var(--primary-soft); }
 
-.grid-ops { display: flex; gap: 6px; margin-top: 8px; }
+/* —— 右侧样式面板（声明式字段，与属性面板同构：prop-group/prop-field/prop-cell） —— */
+.style-panel {
+  width: 244px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  overflow-y: auto;
+}
+.style-panel .prop-group:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+.style-panel .prop-hint { margin: 10px; }
 
 .series-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
 .series-item {
@@ -1416,22 +1451,20 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 }
 
 /* ============================================================================
- * 表格编辑器（table-editor.js）：选中态 / 覆盖位 / 样式工具条
+ * 表格编辑器（table-editor.js）：选中态 / 覆盖位 / 样式面板
  * ========================================================================== */
 .data-table td.grid-cell { position: relative; }
 .data-table td.grid-cell input { width: 100%; box-sizing: border-box; border: none; outline: none; background: transparent; font: inherit; }
-.data-table td.grid-cell.cell-selected { outline: 2px solid #2563eb; outline-offset: -2px; background: #eff6ff; }
-.data-table td.grid-cell.cell-region { background: #dbeafe; }
-.data-table td.grid-cell.cell-covered { background: repeating-linear-gradient(45deg, #f3f4f6, #f3f4f6 6px, #e5e7eb 6px, #e5e7eb 12px); cursor: not-allowed; }
-.cell-style-bar {
-  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
-  padding: 8px 10px; margin-top: 10px; border: 1px solid #e5e7eb; border-radius: 8px;
-  background: #fafafa; font-size: 12px;
+.data-table td.grid-cell.cell-selected {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+  /* 内阴影叠加在 td 内联背景之上（内联样式优先级高于类，不能用 background） */
+  box-shadow: inset 0 0 0 999px rgba(239, 246, 255, 0.85);
 }
-.cell-style-bar .style-item { display: flex; align-items: center; gap: 4px; }
-.cell-style-bar .style-item label { color: #6b7280; }
-.cell-style-bar .style-item select, .cell-style-bar .style-item input { font-size: 12px; padding: 2px 4px; }
-.cell-style-bar .style-active { background: #2563eb; color: #fff; border-color: #2563eb; }
+.data-table td.grid-cell.cell-region {
+  box-shadow: inset 0 0 0 999px rgba(219, 234, 254, 0.6);
+}
+.data-table td.grid-cell.cell-covered { background: repeating-linear-gradient(45deg, #f3f4f6, #f3f4f6 6px, #e5e7eb 6px, #e5e7eb 12px); cursor: not-allowed; }
 
 /* ----------------------------------------------------------------------------
    配色浮层（theme-panel.js）：预设色卡 + 语义色编辑
