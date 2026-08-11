@@ -548,7 +548,40 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   font-weight: 700;
   color: var(--faint);
   margin-bottom: 10px;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
+.prop-group-title::before {
+  content: "▾";
+  font-size: 9px;
+  color: var(--faint);
+  transition: transform 0.12s;
+}
+.prop-group.collapsed > :not(.prop-group-title) { display: none; }
+.prop-group.collapsed .prop-group-title::before { transform: rotate(-90deg); }
+
+/* —— 三合一颜色控件（colorField）：swatch 行 + 取色器 + hex 文本 —— */
+.color-field { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.color-swatches { display: flex; gap: 3px; overflow: hidden; }
+.color-swatch {
+  width: 15px; height: 15px; border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  padding: 0; cursor: pointer; flex: none;
+}
+.color-swatch:hover { transform: scale(1.15); }
+.color-field input[type="color"] {
+  width: 28px; height: 22px; padding: 0; border: 1px solid var(--line);
+  border-radius: 4px; background: none; cursor: pointer; flex: none;
+}
+.color-hex {
+  flex: 1; min-width: 0; font-size: 11px; padding: 2px 6px;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--ink); outline: none; font-family: ui-monospace, monospace;
+}
+.color-hex:focus { border-color: var(--primary); }
 
 /* —— 字段行 —— */
 .prop-field {

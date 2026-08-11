@@ -22,13 +22,15 @@ export function field(label, control) {
   return wrap;
 }
 
-/** 属性分组容器。 */
+/** 属性分组容器（标题可点击折叠，默认展开；折叠态由 CSS 隐藏非标题子节点）。 */
 export function group(title) {
   const g = document.createElement("div");
   g.className = "prop-group";
   const t = document.createElement("div");
   t.className = "prop-group-title";
   t.textContent = title;
+  t.title = "点击折叠/展开";
+  t.addEventListener("click", () => g.classList.toggle("collapsed"));
   g.appendChild(t);
   return g;
 }
@@ -92,6 +94,53 @@ export function colorInput(value, onCommit, { className = "", title = "", resolv
   input.addEventListener("change", () => onCommit(input.value));
   if (onBlur) input.addEventListener("blur", onBlur);
   return input;
+}
+
+/**
+ * 三合一颜色控件：主题色 swatch 行 + 取色器 + hex 文本（支持 #RRGGBBAA）。
+ * swatches = [{key, value}]（value 为解析后的 hex，点击回填 $key 令牌）。
+ * 返回容器 div（field() 的 control 位置直接使用）。
+ */
+export function colorField(value, onCommit, { resolve, swatches = [], onFocus, onBlur } = {}) {
+  const wrap = document.createElement("div");
+  wrap.className = "color-field";
+
+  const picker = colorInput(value, onCommit, { resolve, onFocus, onBlur });
+  const hex = document.createElement("input");
+  hex.type = "text";
+  hex.className = "color-hex";
+  hex.value = value || "";
+  hex.placeholder = "#RRGGBB";
+  hex.title = "支持 #RRGGBB 与 #RRGGBBAA";
+  hex.addEventListener("change", () => {
+    const v = hex.value.trim();
+    if (/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(v)) {
+      onCommit(v);
+      const hex6 = resolve ? resolve(v) : v;
+      if (/^#[0-9a-fA-F]{6}$/.test(hex6 || "")) picker.value = hex6;
+    } else {
+      hex.value = value || ""; // 非法输入回填
+    }
+  });
+
+  const sw = document.createElement("div");
+  sw.className = "color-swatches";
+  for (const s of swatches) {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = "color-swatch";
+    dot.title = s.key;
+    dot.style.background = s.value || "#ccc";
+    dot.addEventListener("click", () => {
+      onCommit(s.key); // 写 $key 令牌（主题联动）
+      hex.value = s.key;
+      if (/^#[0-9a-fA-F]{6}$/.test(s.value || "")) picker.value = s.value;
+    });
+    sw.appendChild(dot);
+  }
+
+  wrap.append(sw, picker, hex);
+  return wrap;
 }
 
 /** 下拉选择。options = [[value, label], ...]。 */

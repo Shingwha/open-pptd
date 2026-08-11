@@ -96,9 +96,32 @@ registerType({
     g.appendChild(h.field("类型", h.selectInput(options, el.shapeName, (v) => { el.shapeName = v; })));
     const grid = document.createElement("div");
     grid.className = "prop-grid";
-    grid.appendChild(h.field("填充", h.colorInput(fillHex(el.fill), (v) => (el.fill = { type: "solid", color: v }))));
-    grid.appendChild(h.field("边框", h.colorInput(el.border?.color || "$line", (v) => ((el.border ||= {}).color = v))));
+    grid.appendChild(h.field("类型", h.selectInput([["solid", "纯色"], ["gradient", "渐变"]], el.fill?.type === "gradient" ? "gradient" : "solid", (v) => {
+      if (v === "gradient") {
+        el.fill = {
+          type: "gradient",
+          gradientType: "linear",
+          angle: el.fill?.angle ?? 90,
+          stops: [
+            { position: 0, color: fillHex(el.fill) || "$primary" },
+            { position: 1, color: "#ffffff" },
+          ],
+        };
+      } else {
+        const cur = el.fill;
+        el.fill = { type: "solid", color: cur?.type === "gradient" ? cur.stops?.[0]?.color || "$primary" : fillHex(cur) };
+      }
+    })));
+    if (el.fill?.type === "gradient") {
+      grid.appendChild(h.field("起始色", h.colorField(el.fill.stops?.[0]?.color || "$primary", (v) => { el.fill.stops[0].color = v; })));
+      grid.appendChild(h.field("结束色", h.colorField(el.fill.stops?.[1]?.color || "#ffffff", (v) => { el.fill.stops[1].color = v; })));
+      grid.appendChild(h.field("角度", h.numInput(el.fill.angle ?? 90, (v) => (el.fill.angle = v), { min: 0, max: 360, step: 15 })));
+    } else {
+      grid.appendChild(h.field("填充色", h.colorField(fillHex(el.fill), (v) => (el.fill = { type: "solid", color: v }))));
+    }
+    grid.appendChild(h.field("边框", h.colorField(el.border?.color || "$line", (v) => ((el.border ||= {}).color = v))));
     grid.appendChild(h.field("边宽", h.numInput(el.border?.width || 0, (v) => ((el.border ||= {}).width = v), { min: 0 })));
+    grid.appendChild(h.field("线型", h.selectInput([["solid", "实线"], ["dash", "虚线"], ["dot", "点线"]], el.border?.style || "solid", (v) => ((el.border ||= {}).style = v))));
     // 自定义路径：viewBox + path（text input 直改）
     if (el.shapeName === "custom") {
       grid.appendChild(h.field("viewBox", h.textInput((el.viewBox || []).join(","), (v) => {

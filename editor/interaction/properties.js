@@ -34,6 +34,15 @@ export function bindProperties(panel, api) {
           onBlur: endChange,
           ...o,
         }),
+      /** 三合一颜色控件（主题色 swatch + 取色器 + hex 文本），推荐颜色字段使用。 */
+      colorField: (v, c, o = {}) =>
+        ui.colorField(v, commit(c), {
+          resolve: (val) => resolveColor(state.theme, val),
+          swatches: themeSwatches(),
+          onFocus: beginChange,
+          onBlur: endChange,
+          ...o,
+        }),
       selectInput: (options, value, onCommit, o = {}) => ui.selectInput(options, value, commit(onCommit), { onFocus: beginChange, onBlur: endChange, ...o }),
       checkbox: (l, ch, c, o = {}) => ui.checkbox(l, ch, commit(c), { onFocus: beginChange, onBlur: endChange, ...o }),
       button: (label, onClick, opts) => ui.button(label, onClick, { className: "btn btn-sm", ...opts }),
@@ -42,6 +51,13 @@ export function bindProperties(panel, api) {
       endChange,
       openEditor: api.openEditor,
     };
+  }
+
+  /** 主题语义色 swatch 数据（解析为 hex，点击回填 $key 令牌）。 */
+  function themeSwatches() {
+    const c = state.theme.colors || {};
+    const keys = ["primary", "accent", "text", "muted", "line", "success", "warning", "danger", "primaryDeep"];
+    return keys.map((k) => ({ key: `$${k}`, value: resolveColor(state.theme, c[k]) || "#cccccc" }));
   }
 
   function refresh() {
@@ -96,6 +112,22 @@ export function bindProperties(panel, api) {
     );
     g.appendChild(layer);
     panel.appendChild(g);
+
+    // 变换（v2 ElementBase：rotation/opacity/flip；渲染与导出已支持）
+    const g2 = ui.group("变换");
+    const grid2 = document.createElement("div");
+    grid2.className = "prop-grid";
+    grid2.appendChild(ui.field("旋转", ui.numInput(el.rotation ?? 0, (v) => (el.rotation = v), { min: -360, max: 360, onFocus: beginChange, onBlur: endChange })));
+    grid2.appendChild(ui.field("透明度", ui.numInput(el.opacity ?? 1, (v) => (el.opacity = Math.min(1, Math.max(0, v))), { min: 0, max: 1, step: 0.05, onFocus: beginChange, onBlur: endChange })));
+    const checks = document.createElement("div");
+    checks.className = "prop-checks";
+    checks.append(
+      ui.checkbox("水平翻转", !!el.flip?.[0], (v) => (el.flip = [v, !!el.flip?.[1]]), { onFocus: beginChange, onBlur: endChange }),
+      ui.checkbox("垂直翻转", !!el.flip?.[1], (v) => (el.flip = [!!el.flip?.[0], v]), { onFocus: beginChange, onBlur: endChange })
+    );
+    grid2.appendChild(checks);
+    g2.appendChild(grid2);
+    panel.appendChild(g2);
   }
 
   /** 页面设置（未选中元素时）。 */
@@ -137,14 +169,17 @@ export function bindProperties(panel, api) {
     );
     if (pg.background?.type === "solid") {
       g2.appendChild(
-        ui.field("颜色", ui.colorInput(pg.background.color, (v) => commit(() => { pg.background.color = v; }), { resolve: (val) => resolveColor(state.theme, val) }))
+        ui.field("颜色", ui.colorField(pg.background.color, (v) => commit(() => { pg.background.color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches() }))
       );
     } else if (pg.background?.type === "gradient") {
       g2.appendChild(
-        ui.field("起始色", ui.colorInput(pg.background.stops?.[0]?.color, (v) => commit(() => { pg.background.stops[0].color = v; }), { resolve: (val) => resolveColor(state.theme, val) }))
+        ui.field("起始色", ui.colorField(pg.background.stops?.[0]?.color, (v) => commit(() => { pg.background.stops[0].color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches() }))
       );
       g2.appendChild(
-        ui.field("结束色", ui.colorInput(pg.background.stops?.[1]?.color, (v) => commit(() => { pg.background.stops[1].color = v; }), { resolve: (val) => resolveColor(state.theme, val) }))
+        ui.field("结束色", ui.colorField(pg.background.stops?.[1]?.color, (v) => commit(() => { pg.background.stops[1].color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches() }))
+      );
+      g2.appendChild(
+        ui.field("角度", ui.numInput(pg.background.angle ?? 0, (v) => commit(() => { pg.background.angle = v; }), { min: 0, max: 360, step: 15 }))
       );
     }
     panel.appendChild(g2);

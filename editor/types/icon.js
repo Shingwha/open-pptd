@@ -94,7 +94,7 @@ registerType({
     }
     const grid = document.createElement("div");
     grid.className = "prop-grid";
-    grid.appendChild(h.field("颜色", h.colorInput(el.fill?.color || "$text", (v) => (el.fill = { type: "solid", color: v }))));
+    grid.appendChild(h.field("颜色", h.colorField(el.fill?.color || "$text", (v) => (el.fill = { type: "solid", color: v }))));
     g.appendChild(grid);
     return [g];
   },
