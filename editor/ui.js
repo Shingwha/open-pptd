@@ -130,7 +130,6 @@ export function colorField(value, onCommit, { resolve, swatches = [], onFocus, o
     const v = raw || hex.value.trim() || picker.value;
     swatchBtn.style.background = hexOf(v) || "#ffffff";
   };
-  paint();
 
   const picker = colorInput(value, onCommit, { resolve, onFocus, onBlur });
   picker.addEventListener("input", () => paint(picker.value)); // 拖动取色器时同步色块
@@ -191,6 +190,7 @@ export function colorField(value, onCommit, { resolve, swatches = [], onFocus, o
   }
 
   wrap.append(swatchBtn, picker, hex, pop);
+  paint(); // 初始渲染色块（此时 picker/hex 已就绪）
   return wrap;
 }
 
