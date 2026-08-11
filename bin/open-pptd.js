@@ -2,7 +2,8 @@
 // ============================================================================
 // bin/open-pptd.js — CLI
 //   serve [--port <port>] [--project <dir>]        启动本地网页编辑器
-//   export <deck.pptd> [-o out.pptx] [--theme <key>]  命令行导出 PPTX
+//   export <deck.pptd> [-o out.pptx] [--theme <key>]  命令行导出 PPTX（<key> = 配色预设：
+//                         consult/tech/orange/green/red/purple/mono/brown/morandi/sakura）
 //                        [--no-embed-fonts]         不嵌入字体（默认嵌入）
 // ============================================================================
 

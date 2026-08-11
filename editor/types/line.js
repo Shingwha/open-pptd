@@ -40,7 +40,7 @@ registerType({
     const g = h.group("线条");
     const grid = document.createElement("div");
     grid.className = "prop-grid";
-    grid.appendChild(h.field("颜色", h.colorInput(el.border?.color || "#000000", (v) => ((el.border ||= {}).color = v))));
+    grid.appendChild(h.field("颜色", h.colorField(el.border?.color || "#000000", (v) => ((el.border ||= {}).color = v))));
     grid.appendChild(h.field("宽度", h.numInput(el.border?.width || 1, (v) => ((el.border ||= {}).width = v), { min: 0 })));
     grid.appendChild(h.field("线型", h.selectInput([["solid", "实线"], ["dash", "虚线"], ["dot", "点线"]], el.border?.style || "solid", (v) => ((el.border ||= {}).style = v))));
     grid.appendChild(h.field("曲线", h.selectInput([["sharp", "直线段"], ["round", "圆角连接"], ["smooth", "贝塞尔"]] , el.curve || "round", (v) => (el.curve = v))));

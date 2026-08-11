@@ -13,7 +13,7 @@
 // ============================================================================
 
 import { DEFAULT_THEME } from "./theme-presets.js";
-export { DEFAULT_THEME } from "./theme-presets.js";
+export { DEFAULT_THEME, THEME_PALETTES } from "./theme-presets.js";
 
 const HEX_RE = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
@@ -104,6 +104,26 @@ export function resolveFont(theme, font) {
 
 /** 官方默认字体（Style Priority 默认值：fontFamily = "MiSans"）。 */
 export const DEFAULT_FONT = "MiSans";
+
+/**
+ * 图表系列色循环（官方 §3.1 "Theme.colors theme color cycle"）：
+ * 与 PPTX 主题槽位（writer/parts.js themeColorSlots）同一语义——
+ * accent1/2 固定 = primary/accent，accent3-6 走相同回退链。
+ * 返回 6 色 hex 数组，按系列出现顺序循环取用。
+ */
+export function themeChartPalette(theme) {
+  const c = theme?.colors || {};
+  const get = (key, fb) => (c[key] != null ? c[key] : fb);
+  const vals = [
+    get("primary", DEFAULT_THEME.colors.primary),
+    get("accent", DEFAULT_THEME.colors.accent),
+    get("accent3", c.success || DEFAULT_THEME.colors.primary),
+    get("accent4", c.warning || DEFAULT_THEME.colors.accent),
+    get("accent5", c.danger || DEFAULT_THEME.colors.primary),
+    get("accent6", c.primaryDeep || DEFAULT_THEME.colors.accent),
+  ];
+  return vals.map((v) => resolveColor(theme, v) || v); // 解析失败保留原值（消费端宽容）
+}
 
 /**
  * deck 级字体声明（扩展字段）挂到主题：只解析字体资源表（fontResources）。

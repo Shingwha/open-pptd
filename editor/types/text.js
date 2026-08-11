@@ -9,7 +9,10 @@ import { textXml } from "../writer/text.js";
 import { svgIcon } from "../ui.js";
 
 const FONT_SIZE_OPTIONS = ["", 12, 14, 16, 18, 20, 24, 28, 32, 40, 48];
-const ALIGN_OPTIONS = [["left", "左对齐"], ["center", "居中"], ["right", "右对齐"]];
+const ALIGN_OPTIONS = [
+  ["left", "左对齐"], ["center", "居中"], ["right", "右对齐"],
+  ["justify", "两端对齐"], ["distributed", "分散对齐"],
+];
 const VALIGN_OPTIONS = [["top", "顶部"], ["middle", "居中"], ["bottom", "底部"]];
 const STYLE_OPTIONS = [
   ["", "默认"],
@@ -63,7 +66,12 @@ registerType({
     const grid = document.createElement("div");
     grid.className = "prop-grid";
     grid.appendChild(h.field("字号", h.numInput(el.content?.fontSize || 18, (v) => ((el.content ||= {}).fontSize = v), { min: 6 })));
-    grid.appendChild(h.field("颜色", h.colorInput(el.content?.color || "$text", (v) => ((el.content ||= {}).color = v))));
+    grid.appendChild(h.field("颜色", h.colorField(el.content?.color || "$text", (v) => ((el.content ||= {}).color = v))));
+    grid.appendChild(h.field("高亮", h.colorField(el.content?.backgroundColor || "", (v) => {
+      if (!el.content) el.content = {};
+      if (v) el.content.backgroundColor = v;
+      else delete el.content.backgroundColor;
+    })));
     grid.appendChild(h.field("字体", h.selectInput(h.fontOptions(), el.content?.fontFamily || "", (v) => {
       if (!el.content) el.content = {};
       if (v) el.content.fontFamily = v;
@@ -75,6 +83,11 @@ registerType({
       if (v) el.content.letterSpacing = v;
       else delete el.content.letterSpacing;
     }, { step: 0.5 })));
+    grid.appendChild(h.field("段前距", h.numInput(el.content?.marginTop ?? 0, (v) => {
+      if (!el.content) el.content = {};
+      if (v) el.content.marginTop = v;
+      else delete el.content.marginTop;
+    }, { min: 0, step: 2 })));
     grid.appendChild(h.field("对齐", h.selectInput(ALIGN_OPTIONS, Array.isArray(el.content?.align) ? el.content.align[0] : "left", (v) => {
       (el.content ||= {}).align = [v, Array.isArray(el.content.align) ? el.content.align[1] : "top"];
     })));

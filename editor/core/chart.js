@@ -8,18 +8,12 @@
 //   - seriesDefaults 合并（§3.4）：标量覆盖/对象浅合并/数组整替；type/encode 不在内
 //   - dataLabels（§3.3）：series[i].dataLabels > Chart.dataLabels > 不显示（默认关）
 //   - 数值通道字符串解析为数字（ChartData 约束）
-//   - 取色（§5.2）：默认 DEFAULT_CHART_PALETTE 按系列出现顺序循环；
-//     treemap 子节点沿 HSL.L 每级减 10；heatmap 回退主题 primarySoft→primaryDeep；
+//   - 取色（§5.2）：默认 themeChartPalette（主题 accent1-6 色循环，官方 §3.1 "theme color cycle"）
+//     按系列出现顺序循环；treemap 子节点沿 HSL.L 每级减 10；heatmap 回退主题 primarySoft→primaryDeep；
 //     waterfall 三分类不参与色循环
 // ============================================================================
 
-import { resolveColor } from "./theme.js";
-
-/** 图表默认系列色板（官方色循环；主题 colors 不再承载系列色）。 */
-export const DEFAULT_CHART_PALETTE = [
-  "#002E5D", "#3A6EA5", "#7FB2D9", "#C9A227",
-  "#B5503C", "#5C8A6A", "#7B6BA8", "#8A8F98",
-];
+import { resolveColor, themeChartPalette } from "./theme.js";
 
 /**
  * 13 类型注册表（官方字段集 + 约束）。
@@ -120,7 +114,7 @@ function toNum(v) {
 export function resolveChartSeries(theme, el) {
   const data = el.data || { cols: [], rows: [] };
   const seriesDefaults = el.seriesDefaults || {};
-  const palette = DEFAULT_CHART_PALETTE;
+  const palette = themeChartPalette(theme); // 官方 §3.1：主题色循环（accent1-6 槽位）
   const warn = validateChartSeries(el);
   const series = [];
 

@@ -117,27 +117,6 @@ select, input, textarea { font-family: inherit; }
   margin-left: auto;
 }
 
-.theme-pick {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: var(--sub);
-}
-.theme-pick select {
-  height: 28px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  padding: 0 6px;
-  background: var(--panel);
-  color: var(--ink);
-  outline: none;
-  cursor: pointer;
-  font-size: 12px;
-}
-.theme-pick select:hover { border-color: var(--line-strong); }
-.theme-pick select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
-
 /* ----------------------------------------------------------------------------
    触控优化（全局统一，不限断点）：禁双击缩放干扰、去点按灰色高亮
    ---------------------------------------------------------------------------- */
@@ -569,7 +548,40 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   font-weight: 700;
   color: var(--faint);
   margin-bottom: 10px;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
+.prop-group-title::before {
+  content: "▾";
+  font-size: 9px;
+  color: var(--faint);
+  transition: transform 0.12s;
+}
+.prop-group.collapsed > :not(.prop-group-title) { display: none; }
+.prop-group.collapsed .prop-group-title::before { transform: rotate(-90deg); }
+
+/* —— 三合一颜色控件（colorField）：swatch 行 + 取色器 + hex 文本 —— */
+.color-field { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.color-swatches { display: flex; gap: 3px; overflow: hidden; }
+.color-swatch {
+  width: 15px; height: 15px; border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  padding: 0; cursor: pointer; flex: none;
+}
+.color-swatch:hover { transform: scale(1.15); }
+.color-field input[type="color"] {
+  width: 28px; height: 22px; padding: 0; border: 1px solid var(--line);
+  border-radius: 4px; background: none; cursor: pointer; flex: none;
+}
+.color-hex {
+  flex: 1; min-width: 0; font-size: 11px; padding: 2px 6px;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--ink); outline: none; font-family: ui-monospace, monospace;
+}
+.color-hex:focus { border-color: var(--primary); }
 
 /* —— 字段行 —— */
 .prop-field {
@@ -1102,8 +1114,6 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   .btn-label { display: none; }   /* 文字按钮图标化 */
   .btn { width: 30px; padding: 0; }
   .topbar-divider { margin: 0 1px; }
-  .theme-pick span { display: none; }
-  .theme-pick select { max-width: 84px; padding: 0 5px; }
   .icon-btn { width: 32px; height: 32px; }
 
   /* —— 工作区：单列；属性抽屉窄屏改为底部弹起 sheet（55vh，半屏） —— */
@@ -1204,7 +1214,6 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   .topbar-actions { gap: 4px; }
   .icon-btn { width: 30px; height: 30px; }
   .topbar-divider { margin: 0; }
-  .theme-pick select { max-width: 68px; }
   .add-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .add-menu { max-height: 62vh; }
   .fab-stack { right: 10px; bottom: 12px; }
@@ -1228,3 +1237,58 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .cell-style-bar .style-item label { color: #6b7280; }
 .cell-style-bar .style-item select, .cell-style-bar .style-item input { font-size: 12px; padding: 2px 4px; }
 .cell-style-bar .style-active { background: #2563eb; color: #fff; border-color: #2563eb; }
+
+/* ----------------------------------------------------------------------------
+   配色浮层（theme-panel.js）：预设色卡 + 语义色编辑
+---------------------------------------------------------------------------- */
+.theme-panel {
+  position: fixed;
+  z-index: 95;
+  width: 320px;
+  max-height: min(560px, 78vh);
+  overflow-y: auto;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  display: none;
+}
+.theme-panel.open { display: block; }
+.theme-panel-title { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+.theme-sec { font-size: 11px; font-weight: 600; color: var(--faint); margin: 10px 0 6px; }
+
+.theme-presets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.theme-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  background: var(--bg);
+  text-align: left;
+}
+.theme-card:hover { border-color: var(--primary); }
+.theme-card.active { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+.theme-card-swatches { display: flex; gap: 3px; margin-bottom: 5px; }
+.theme-card-swatch { flex: 1; height: 14px; border-radius: 3px; }
+.theme-card-name { font-size: 11px; color: var(--ink); }
+
+.theme-editor { display: flex; flex-direction: column; gap: 2px; }
+.theme-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
+.theme-row-swatch { width: 18px; height: 18px; border-radius: 5px; border: 1px solid var(--line); flex: none; }
+.theme-row-name { width: 68px; font-size: 11px; color: var(--ink); flex: none; }
+.theme-row input[type="color"] {
+  width: 30px; height: 22px; padding: 0; border: 1px solid var(--line);
+  border-radius: 4px; background: none; flex: none; cursor: pointer;
+}
+.theme-row input[type="text"] {
+  flex: 1; min-width: 0; font-size: 11px; padding: 2px 6px;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--ink); outline: none;
+}
+.theme-row input[type="text"]:focus { border-color: var(--primary); }
+.theme-panel-foot { margin-top: 12px; display: flex; justify-content: flex-end; }
+
+@media (max-width: 480px) {
+  .theme-panel { width: min(320px, calc(100vw - 16px)); }
+}

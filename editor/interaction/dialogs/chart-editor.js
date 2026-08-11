@@ -5,7 +5,8 @@
 // 共用控件来自 ./base.js（showDialog / buildCellInput / row / select / button）。
 // ============================================================================
 
-import { CHART_META, CHART_TYPE_ORDER, DEFAULT_CHART_PALETTE } from "../../core/chart.js";
+import { CHART_META, CHART_TYPE_ORDER } from "../../core/chart.js";
+import { themeChartPalette } from "../../core/theme.js";
 import { showDialog, buildCellInput, row, select, button } from "./base.js";
 
 const SEMANTIC_KEYS = {
@@ -219,7 +220,7 @@ export function openChartEditor(el, { theme, onChange }) {
 
   function renderSeries() {
     seriesList.innerHTML = "";
-    const palette = DEFAULT_CHART_PALETTE;
+    const palette = themeChartPalette(theme);
     (el.series || []).forEach((s, i) => {
       const wrap = document.createElement("div");
       wrap.className = "series-item";
