@@ -1266,7 +1266,17 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 }
 .row-del-btn:hover, .col-del:hover { background: var(--danger-soft); color: var(--danger); }
 
-.grid-ops { display: flex; gap: 6px; margin-top: 8px; }
+.grid-toolbar {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.grid-toolbar .btn { flex: 0 0 auto; }
 
 .series-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
 .series-item {
@@ -1432,6 +1442,14 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .cell-style-bar .style-item label { color: #6b7280; }
 .cell-style-bar .style-item select, .cell-style-bar .style-item input { font-size: 12px; padding: 2px 4px; }
 .cell-style-bar .style-active { background: #2563eb; color: #fff; border-color: #2563eb; }
+.cell-style-bar .style-hint { color: #8a94a6; font-size: 12px; }
+.cell-style-bar .style-ts { width: 110px; }
+/* 样式条里的三合一颜色控件（复用属性面板样式，微调尺寸） */
+.cell-style-bar .color-field { gap: 4px; }
+.cell-style-bar .color-swatch-btn { width: 22px; height: 22px; border-radius: 5px; }
+.cell-style-bar .color-field input[type="color"] { width: 26px; height: 22px; border-radius: 5px; }
+.cell-style-bar .color-hex { width: 64px; flex: none; padding: 2px 5px; }
+.cell-style-bar .color-pop { top: calc(100% + 4px); }
 
 /* ----------------------------------------------------------------------------
    配色浮层（theme-panel.js）：预设色卡 + 语义色编辑
