@@ -2,7 +2,7 @@
 // ============================================================================
 // bin/open-pptd.js — CLI
 //   serve [--port <port>] [--project <dir>]        启动本地网页编辑器
-//   export <deck.pptd> [-o out.pptx] [--theme <key>]  命令行导出 PPTX
+//   export <deck.pptd> [-o out.pptx]                 命令行导出 PPTX
 //                        [--no-embed-fonts]         不嵌入字体（默认嵌入）
 // ============================================================================
 
@@ -80,11 +80,9 @@ async function main() {
     }
     const outIdx = args.indexOf("-o") >= 0 ? args.indexOf("-o") : args.indexOf("--out");
     const outPath = outIdx >= 0 ? args[outIdx + 1] : null;
-    const themeIdx = args.indexOf("--theme");
-    const theme = themeIdx >= 0 ? args[themeIdx + 1] : null;
     const embedFonts = !args.includes("--no-embed-fonts");
     try {
-      const { outPath: finalPath } = await exportDeck({ manifest, outPath, theme, embedFonts });
+      const { outPath: finalPath } = await exportDeck({ manifest, outPath, embedFonts });
       console.log(`✓ 已导出 → ${finalPath}`);
     } catch (err) {
       console.error(`✗ 导出失败: ${err.message}`);

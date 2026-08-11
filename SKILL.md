@@ -30,7 +30,7 @@ The .pptd format is a simplified abstraction layer over OOXML that follows basic
    - `fab:` 品牌图标**不支持**（本地库无品牌 logo，用图片元素代替）；
    - 未知图标导出时跳过，生成时必须先查表确认。
 8. **形状**：`references/shapes.md` 为完整清单（177 种预置形状 + 参数/默认值），全部支持；`shapeName: "custom"` 可用 viewBox+path 自定义。
-9. **主题**：无预设主题库；每次生成时根据 PPT 场景特色直接写 `deck.theme`（colors/textStyles/tableStyles）+ 页面 `$key` 引用（主题 = 生成时一次性设计决策）。
+9. **主题**：内置 10 套配色预设（编辑器顶栏「配色」面板一键应用，仅替换 `theme.colors`；图表系列色走主题 accent1-6 色循环）。生成时仍按 PPT 场景特色直接写 `deck.theme`（colors/textStyles/tableStyles）+ 页面 `$key` 引用（主题 = 生成时一次性设计决策）。
 10. **字体**：默认 `MiSans`，支持 `references/fonts.md` 所列字体；导出默认嵌入字体（`--no-embed-fonts` 关闭）。
 
 ## PPT production workflow
