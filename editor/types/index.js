@@ -14,4 +14,4 @@ import "./table.js";
 import "./chart.js";
 
 export { registerType, getType, allTypes } from "./registry.js";
-export { buildAddItems, buildAddMenu } from "./menu.js";
+export { buildAddItems } from "./menu.js";
