@@ -18,6 +18,10 @@ export function bindKeyboard({ state, api, io }) {
     } else if ((e.ctrlKey || e.metaKey) && key === "s") {
       e.preventDefault();
       io.saveProject();
+    } else if ((e.ctrlKey || e.metaKey) && key === "d") {
+      // 复制选中元素（需有选中元素；api 内部处理）
+      e.preventDefault();
+      if (state.selectedId) api.duplicateSelected();
     }
   });
 }

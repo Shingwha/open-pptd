@@ -563,25 +563,56 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .prop-group.collapsed > :not(.prop-group-title) { display: none; }
 .prop-group.collapsed .prop-group-title::before { transform: rotate(-90deg); }
 
-/* —— 三合一颜色控件（colorField）：swatch 行 + 取色器 + hex 文本 —— */
-.color-field { display: flex; align-items: center; gap: 5px; min-width: 0; }
-.color-swatches { display: flex; gap: 3px; overflow: hidden; }
-.color-swatch {
-  width: 15px; height: 15px; border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  padding: 0; cursor: pointer; flex: none;
+/* —— 三合一颜色控件（colorField）：色块按钮 + 取色器 + hex + 主题色弹层 —— */
+.color-field { display: flex; align-items: center; gap: 6px; min-width: 0; position: relative; }
+.color-swatch-btn {
+  width: 26px; height: 26px; border-radius: 7px; padding: 0; cursor: pointer; flex: none;
+  border: 1px solid var(--line-strong);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
 }
-.color-swatch:hover { transform: scale(1.15); }
+.color-swatch-btn:hover { border-color: var(--primary); }
 .color-field input[type="color"] {
-  width: 28px; height: 22px; padding: 0; border: 1px solid var(--line);
-  border-radius: 4px; background: none; cursor: pointer; flex: none;
+  width: 30px; height: 26px; padding: 0; border: 1px solid var(--line);
+  border-radius: 6px; background: none; cursor: pointer; flex: none;
 }
 .color-hex {
-  flex: 1; min-width: 0; font-size: 11px; padding: 2px 6px;
+  flex: 1; min-width: 0; font-size: 11px; padding: 3px 7px;
   border: 1px solid var(--line); border-radius: var(--radius-sm);
   background: var(--bg); color: var(--ink); outline: none; font-family: ui-monospace, monospace;
 }
 .color-hex:focus { border-color: var(--primary); }
+/* 主题色弹层：点击色块按钮展开 */
+.color-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 120;
+  width: 216px;
+  padding: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+/* hidden 属性优先于 display:grid（否则所有弹层常显） */
+.color-pop[hidden] { display: none; }
+.color-pop-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 7px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+.color-pop-item:hover { background: var(--primary-soft); border-color: var(--primary-tint); }
+.color-pop-chip { width: 18px; height: 18px; border-radius: 5px; border: 1px solid rgba(0, 0, 0, 0.12); flex: none; }
+.color-pop-name { font-size: 11px; color: var(--ink); }
 
 /* —— 字段行 —— */
 .prop-field {
@@ -592,7 +623,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   margin-bottom: 8px;
 }
 .prop-field:last-child { margin-bottom: 0; }
-.prop-label { flex: 0 0 44px; color: var(--sub); }
+.prop-label { flex: 0 0 56px; color: var(--sub); }
 
 .prop-field input[type="number"],
 .prop-field input[type="text"],
@@ -635,20 +666,54 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   line-height: 1.6;
 }
 
+/* —— 双列紧凑格（数值类）：label 上置 —— */
 .prop-grid {
   display: grid;
-  /* minmax(0,1fr)：允许列收缩到内容最小宽度以下，防止 input 固有宽度把列撑出面板 */
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px 10px;
 }
-.prop-grid .prop-field { margin-bottom: 0; }
-.prop-grid .prop-label { flex-basis: 30px; }
+.prop-cell { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.prop-cell-label { font-size: 11px; color: var(--faint); }
+.prop-cell input[type="number"],
+.prop-cell input[type="text"],
+.prop-cell select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 4px 7px;
+  font-size: 12.5px;
+  color: var(--ink);
+  background: var(--panel);
+  outline: none;
+  height: 28px;
+}
+.prop-cell input:focus,
+.prop-cell select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+
+/* —— 图标工具行（对齐等） —— */
+.prop-icon-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 10px;
+}
+.prop-icon-btn {
+  flex: 1;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--sub);
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1;
+}
+.prop-icon-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
 
 .prop-checks {
   display: flex;
   gap: 14px;
   padding-top: 2px;
-  grid-column: 1 / -1;
 }
 .prop-check {
   display: inline-flex;
@@ -995,20 +1060,6 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .icon-cell.active { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
 .icon-cell svg { width: 20px; height: 20px; }
 .icon-empty { padding: 30px 0; text-align: center; color: var(--faint); font-size: 13px; }
-
-/* 图标属性行（缩略图 + 更换按钮） */
-.icon-prop-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.icon-prop-thumb {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  color: var(--ink);
-}
-.icon-prop-thumb svg { width: 24px; height: 24px; }
 
 /* —— 类 Excel 数据表 —— */
 .table-wrap {

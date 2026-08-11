@@ -55,6 +55,18 @@ export function createCanvasController(canvas, opts) {
       `position:absolute;right:-7px;bottom:-7px;width:16px;height:16px;` +
       `background:#2563eb;border:1.5px solid #fff;pointer-events:auto;cursor:nwse-resize;touch-action:none;`;
     overlay.append(move, resize);
+    // 旋转把手（顶部中间；chart/table 官方不支持整体旋转，不显示）
+    if (!["chart", "table"].includes(el.elementType)) {
+      const rotate = document.createElement("div");
+      rotate.dataset.rotateHandle = "1";
+      rotate.style.cssText =
+        `position:absolute;left:50%;top:-26px;width:14px;height:14px;transform:translateX(-50%);` +
+        `background:#fff;border:1.5px solid #2563eb;border-radius:50%;` +
+        `pointer-events:auto;cursor:grab;touch-action:none;` +
+        `display:flex;align-items:center;justify-content:center;`;
+      rotate.innerHTML = `<svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round"><path d="M4 12a8 8 0 0 1 14-5l2 2M20 12a8 8 0 0 1-14 5l-2-2"/></svg>`;
+      overlay.appendChild(rotate);
+    }
     canvas.appendChild(overlay);
     updateSelectionBox();
   }
@@ -91,6 +103,15 @@ export function createCanvasController(canvas, opts) {
       origW: el.bounds[2],
       origH: el.bounds[3],
     };
+    if (mode === "rotate") {
+      // 旋转：以元素中心为基准，记录起始角度差
+      const cx = el.bounds[0] + el.bounds[2] / 2;
+      const cy = el.bounds[1] + el.bounds[3] / 2;
+      start.cx = cx;
+      start.cy = cy;
+      start.startRot = el.rotation || 0;
+      start.startAngle = Math.atan2(e.clientY - rect.top - cy * s, e.clientX - rect.left - cx * s);
+    }
     drag = start;
     try {
       e.target.setPointerCapture?.(e.pointerId);
@@ -109,8 +130,19 @@ export function createCanvasController(canvas, opts) {
     const s = scale();
     const el = findElement(drag.id);
     if (!el) return;
+    const rect = canvas.getBoundingClientRect();
     const dx = (e.clientX - drag.clientX) / s;
     const dy = (e.clientY - drag.clientY) / s;
+    if (drag.mode === "rotate") {
+      // 旋转角度 = 起始角度差（元素中心为原点），取整避免抖动
+      const a = Math.atan2(e.clientY - rect.top - drag.cy * s, e.clientX - rect.left - drag.cx * s);
+      let deg = drag.startRot + Math.round(((a - drag.startAngle) * 180) / Math.PI);
+      deg = ((deg % 360) + 360) % 360; // 归一化到 [0, 360)
+      el.rotation = deg;
+      const node = nodeBy(drag.id);
+      if (node) node.style.transform = `rotate(${deg}deg)`;
+      return;
+    }
     if (drag.mode === "move") {
       el.bounds[0] = Math.round(drag.origX + dx);
       el.bounds[1] = Math.round(drag.origY + dy);
@@ -234,6 +266,16 @@ export function createCanvasController(canvas, opts) {
         if (id) {
           e.preventDefault();
           startDrag(e, "resize", id);
+        }
+        return;
+      }
+      // 1.5) 旋转把手
+      const rotateHandle = e.target.closest("[data-rotate-handle]");
+      if (rotateHandle) {
+        const id = getSelected();
+        if (id) {
+          e.preventDefault();
+          startDrag(e, "rotate", id);
         }
         return;
       }

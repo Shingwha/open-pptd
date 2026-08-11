@@ -49,70 +49,55 @@ registerType({
   toXml: textXml,
 
   props(el, h) {
-    const g = h.group("文字");
-    // 内容：富文本 DSL 源码编辑（保留 <p>/<span> 标签与 \(...\) 公式，精确往返）
-    const ta = h.textInput(el.content?.text || "", (v) => {
-      if (!el.content) el.content = {};
-      el.content.text = v;
-    }, { rows: 3, placeholder: "文本内容… 支持 <p>/<strong>/<u> 标签与 \(LaTeX\) 公式" });
-    g.appendChild(h.field("内容", ta));
-
-    g.appendChild(h.field("样式", h.selectInput(STYLE_OPTIONS, el.content?.style || "", (v) => {
-      if (!el.content) el.content = {};
-      if (v) el.content.style = v;
-      else delete el.content.style;
-    })));
-
-    const grid = document.createElement("div");
-    grid.className = "prop-grid";
-    grid.appendChild(h.field("字号", h.numInput(el.content?.fontSize || 18, (v) => ((el.content ||= {}).fontSize = v), { min: 6 })));
-    grid.appendChild(h.field("颜色", h.colorField(el.content?.color || "$text", (v) => ((el.content ||= {}).color = v))));
-    grid.appendChild(h.field("高亮", h.colorField(el.content?.backgroundColor || "", (v) => {
-      if (!el.content) el.content = {};
-      if (v) el.content.backgroundColor = v;
-      else delete el.content.backgroundColor;
-    })));
-    grid.appendChild(h.field("字体", h.selectInput(h.fontOptions(), el.content?.fontFamily || "", (v) => {
-      if (!el.content) el.content = {};
-      if (v) el.content.fontFamily = v;
-      else delete el.content.fontFamily;
-    })));
-    grid.appendChild(h.field("行距", h.numInput(el.content?.lineHeight || 1, (v) => ((el.content ||= {}).lineHeight = v), { min: 0.5, step: 0.05 })));
-    grid.appendChild(h.field("字距", h.numInput(el.content?.letterSpacing ?? 0, (v) => {
-      if (!el.content) el.content = {};
-      if (v) el.content.letterSpacing = v;
-      else delete el.content.letterSpacing;
-    }, { step: 0.5 })));
-    grid.appendChild(h.field("段前距", h.numInput(el.content?.marginTop ?? 0, (v) => {
-      if (!el.content) el.content = {};
-      if (v) el.content.marginTop = v;
-      else delete el.content.marginTop;
-    }, { min: 0, step: 2 })));
-    grid.appendChild(h.field("对齐", h.selectInput(ALIGN_OPTIONS, Array.isArray(el.content?.align) ? el.content.align[0] : "left", (v) => {
-      (el.content ||= {}).align = [v, Array.isArray(el.content.align) ? el.content.align[1] : "top"];
-    })));
-    grid.appendChild(h.field("垂直", h.selectInput(VALIGN_OPTIONS, Array.isArray(el.content?.align) ? el.content.align[1] : "top", (v) => {
-      (el.content ||= {}).align = [Array.isArray(el.content.align) ? el.content.align[0] : "left", v];
-    })));
-    grid.appendChild(h.field("方向", h.selectInput([["horizontal", "横排"], ["vertical", "竖排"]], el.content?.textDirection || "horizontal", (v) => {
-      if (!el.content) el.content = {};
-      if (v === "vertical") el.content.textDirection = v;
-      else delete el.content.textDirection;
-    })));
-    const checks = document.createElement("div");
-    checks.className = "prop-checks";
-    checks.append(
-      h.checkbox("粗体", !!el.content?.bold, (v) => ((el.content ||= {}).bold = v)),
-      h.checkbox("斜体", !!el.content?.italic, (v) => ((el.content ||= {}).italic = v)),
-      h.checkbox("自动换行", el.content?.wrap !== false, (v) => {
-        if (!el.content) el.content = {};
-        if (!v) el.content.wrap = false;
-        else delete el.content.wrap;
-      })
-    );
-    grid.appendChild(checks);
-    g.appendChild(grid);
-    return [g];
+    return [{
+      title: "文字",
+      fields: [
+        // 内容：富文本 DSL 源码编辑（保留 <p>/<span> 标签与 \(...\) 公式，精确往返）
+        { kind: "textarea", label: "内容", rows: 4,
+          get: () => el.content?.text || "",
+          set: (v) => { if (!el.content) el.content = {}; el.content.text = v; },
+          placeholder: "文本内容… 支持 <p>/<strong>/<u> 标签与 \\(LaTeX\\) 公式" },
+        { kind: "select", label: "样式", options: STYLE_OPTIONS,
+          get: () => el.content?.style || "",
+          set: (v) => { if (!el.content) el.content = {}; if (v) el.content.style = v; else delete el.content.style; } },
+        { kind: "select", label: "字体", options: h.fontOptions(),
+          get: () => el.content?.fontFamily || "",
+          set: (v) => { if (!el.content) el.content = {}; if (v) el.content.fontFamily = v; else delete el.content.fontFamily; } },
+        { kind: "num", label: "字号", min: 6,
+          get: () => el.content?.fontSize || 18,
+          set: (v) => ((el.content ||= {}).fontSize = v) },
+        { kind: "num", label: "行距", min: 0.5, step: 0.05,
+          get: () => el.content?.lineHeight || 1,
+          set: (v) => ((el.content ||= {}).lineHeight = v) },
+        { kind: "num", label: "字距", step: 0.5,
+          get: () => el.content?.letterSpacing ?? 0,
+          set: (v) => { if (!el.content) el.content = {}; if (v) el.content.letterSpacing = v; else delete el.content.letterSpacing; } },
+        { kind: "num", label: "段前距", min: 0, step: 2,
+          get: () => el.content?.marginTop ?? 0,
+          set: (v) => { if (!el.content) el.content = {}; if (v) el.content.marginTop = v; else delete el.content.marginTop; } },
+        { kind: "color", label: "颜色",
+          get: () => el.content?.color || "$text",
+          set: (v) => ((el.content ||= {}).color = v) },
+        { kind: "color", label: "高亮",
+          get: () => el.content?.backgroundColor || "",
+          set: (v) => { if (!el.content) el.content = {}; if (v) el.content.backgroundColor = v; else delete el.content.backgroundColor; } },
+        { kind: "select", label: "对齐", options: ALIGN_OPTIONS,
+          get: () => (Array.isArray(el.content?.align) ? el.content.align[0] : "left"),
+          set: (v) => { (el.content ||= {}).align = [v, Array.isArray(el.content.align) ? el.content.align[1] : "top"]; } },
+        { kind: "select", label: "垂直", options: VALIGN_OPTIONS,
+          get: () => (Array.isArray(el.content?.align) ? el.content.align[1] : "top"),
+          set: (v) => { (el.content ||= {}).align = [Array.isArray(el.content.align) ? el.content.align[0] : "left", v]; } },
+        { kind: "select", label: "方向", options: [["horizontal", "横排"], ["vertical", "竖排"]],
+          get: () => el.content?.textDirection || "horizontal",
+          set: (v) => { if (!el.content) el.content = {}; if (v === "vertical") el.content.textDirection = v; else delete el.content.textDirection; } },
+        { kind: "checks", items: [
+          { label: "粗体", get: () => !!el.content?.bold, set: (v) => ((el.content ||= {}).bold = v) },
+          { label: "斜体", get: () => !!el.content?.italic, set: (v) => ((el.content ||= {}).italic = v) },
+          { label: "自动换行", get: () => el.content?.wrap !== false,
+            set: (v) => { if (!el.content) el.content = {}; if (!v) el.content.wrap = false; else delete el.content.wrap; } },
+        ] },
+      ],
+    }];
   },
 
   quickbar(el, h) {
@@ -136,6 +121,7 @@ registerType({
     h.label("对齐");
     h.select(ALIGN_OPTIONS, Array.isArray(c.align) ? c.align[0] : "left", (v) =>
       h.change(() => {
+        if (!el.content) el.content = {};
         // 垂直对齐缺省与官方一致（top），避免快速条调水平对齐时把垂直悄悄写成 middle
         el.content.align = [v, c.align?.[1] || "top"];
       })

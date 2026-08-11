@@ -88,20 +88,25 @@ registerType({
   render: renderChart,
 
   props(el, h) {
-    const g = h.group("图表");
-    g.appendChild(h.field("类型", h.selectInput(CHART_TYPES, el.series?.[0]?.type || "bar", (v) => {
-      const s = el.series[0];
-      s.type = v;
-      s.encode = defaultEncode(v, el.data.cols);
-      if (v !== "pie" && s.innerRadius != null) delete s.innerRadius;
-    })));
-    g.appendChild(h.checkbox("显示数据标签", el.dataLabels !== false, (v) => { el.dataLabels = v; }));
-    g.appendChild(h.button("编辑图表数据…", () => { h.beginChange(); h.openEditor(el); h.endChange(); }));
-    const hint = document.createElement("div");
-    hint.className = "prop-hint";
-    hint.textContent = "系列颜色自动取主题色板；换主题全页联动。";
-    g.appendChild(hint);
-    return [g];
+    return [{
+      title: "图表",
+      fields: [
+        { kind: "select", label: "类型", options: CHART_TYPES,
+          get: () => el.series?.[0]?.type || "bar",
+          set: (v) => {
+            const s = el.series[0];
+            s.type = v;
+            s.encode = defaultEncode(v, el.data.cols);
+            if (v !== "pie" && s.innerRadius != null) delete s.innerRadius;
+          } },
+        { kind: "checks", items: [
+          { label: "显示数据标签", get: () => el.dataLabels !== false, set: (v) => { el.dataLabels = v; } },
+        ] },
+        { kind: "button", label: "编辑图表数据…",
+          onClick: () => { h.beginChange(); h.openEditor(el); h.endChange(); } },
+        { kind: "hint", text: "系列颜色自动取主题色板；换配色全页联动。" },
+      ],
+    }];
   },
 
   quickbar(el, h) {

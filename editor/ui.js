@@ -97,15 +97,42 @@ export function colorInput(value, onCommit, { className = "", title = "", resolv
 }
 
 /**
- * 三合一颜色控件：主题色 swatch 行 + 取色器 + hex 文本（支持 #RRGGBBAA）。
+ * 双列紧凑格（label 上置 + 控件），用于数值类小字段。
+ */
+export function cell(label, control) {
+  const wrap = document.createElement("div");
+  wrap.className = "prop-cell";
+  const span = document.createElement("span");
+  span.className = "prop-cell-label";
+  span.textContent = label;
+  wrap.append(span, control);
+  return wrap;
+}
+
+/**
+ * 三合一颜色控件：色块按钮（弹主题色面板）+ 取色器 + hex 文本（支持 #RRGGBBAA）。
  * swatches = [{key, value}]（value 为解析后的 hex，点击回填 $key 令牌）。
- * 返回容器 div（field() 的 control 位置直接使用）。
+ * 弹层由色块按钮开关，点击外部关闭；行内只占一排，不挤压布局。
  */
 export function colorField(value, onCommit, { resolve, swatches = [], onFocus, onBlur } = {}) {
   const wrap = document.createElement("div");
   wrap.className = "color-field";
 
+  const hexOf = (v) => { const h = resolve ? resolve(v) : v; return /^#[0-9a-fA-F]{6}$/.test(h || "") ? h : null; };
+
+  // 色块按钮：展示当前解析色，点击开关主题色弹层
+  const swatchBtn = document.createElement("button");
+  swatchBtn.type = "button";
+  swatchBtn.className = "color-swatch-btn";
+  swatchBtn.title = "主题色";
+  // 展示当前解析色：显式传入优先（取色器拖动），否则 hex 输入框（可能是 $key）
+  const paint = (raw) => {
+    const v = raw || hex.value.trim() || picker.value;
+    swatchBtn.style.background = hexOf(v) || "#ffffff";
+  };
+
   const picker = colorInput(value, onCommit, { resolve, onFocus, onBlur });
+  picker.addEventListener("input", () => paint(picker.value)); // 拖动取色器时同步色块
   const hex = document.createElement("input");
   hex.type = "text";
   hex.className = "color-hex";
@@ -116,30 +143,54 @@ export function colorField(value, onCommit, { resolve, swatches = [], onFocus, o
     const v = hex.value.trim();
     if (/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(v)) {
       onCommit(v);
-      const hex6 = resolve ? resolve(v) : v;
-      if (/^#[0-9a-fA-F]{6}$/.test(hex6 || "")) picker.value = hex6;
+      const h6 = hexOf(v);
+      if (h6) picker.value = h6;
+      paint();
     } else {
-      hex.value = value || ""; // 非法输入回填
+      hex.value = value || "";
     }
   });
 
-  const sw = document.createElement("div");
-  sw.className = "color-swatches";
+  // 主题色弹层：色块网格，点击回填 $key
+  const pop = document.createElement("div");
+  pop.className = "color-pop";
+  pop.hidden = true;
   for (const s of swatches) {
     const dot = document.createElement("button");
     dot.type = "button";
-    dot.className = "color-swatch";
+    dot.className = "color-pop-item";
     dot.title = s.key;
-    dot.style.background = s.value || "#ccc";
+    const chip = document.createElement("span");
+    chip.className = "color-pop-chip";
+    chip.style.background = s.value || "#ccc";
+    const name = document.createElement("span");
+    name.className = "color-pop-name";
+    name.textContent = s.key.replace("$", "");
+    dot.append(chip, name);
     dot.addEventListener("click", () => {
-      onCommit(s.key); // 写 $key 令牌（主题联动）
+      onCommit(s.key);
       hex.value = s.key;
-      if (/^#[0-9a-fA-F]{6}$/.test(s.value || "")) picker.value = s.value;
+      const h6 = hexOf(s.key);
+      if (h6) picker.value = h6;
+      paint();
+      pop.hidden = true;
     });
-    sw.appendChild(dot);
+    pop.appendChild(dot);
+  }
+  if (swatches.length) {
+    swatchBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      pop.hidden = !pop.hidden;
+    });
+    document.addEventListener("click", (e) => {
+      if (!pop.hidden && !pop.contains(e.target)) pop.hidden = true;
+    });
+  } else {
+    swatchBtn.hidden = true; // 无主题色数据时不显示色块按钮
   }
 
-  wrap.append(sw, picker, hex);
+  wrap.append(swatchBtn, picker, hex, pop);
+  paint(); // 初始渲染色块（此时 picker/hex 已就绪）
   return wrap;
 }
 
