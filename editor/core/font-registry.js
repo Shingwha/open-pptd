@@ -4,6 +4,8 @@
 // 数据源：assets/fonts/registry.json（技能资源文件夹，不上传 GitHub）。
 // 每个字体：key（展示名）/ family（嵌入注册名，ID16 优先）/ file（库内文件名）/
 //           url（回源下载）/ 许可 / 子集化建议。
+// registry.systemFonts：系统字体参考清单（无 file/url，仅声明不嵌入，
+//           依赖打开方系统已装；仅供查表对齐注册名 + CLI check 识别）。
 //
 // 用途：
 //   - writer/font.js：deck.fonts 资源项写 {family: X}（无 file/url）时，按
@@ -62,4 +64,16 @@ export function findFont(registry, ref) {
 /** 库内文件 URL（浏览器端）。 */
 export function fontFileUrl(file) {
   return `/assets/fonts/${encodeURIComponent(file)}`;
+}
+
+/**
+ * 按 family（注册名，精确匹配）或 key（展示名，精确匹配）查系统字体清单。
+ * 系统字体无字节：命中仅表示“注册名正确、仅声明不嵌入”，不产生嵌入。
+ * @param {object} registry loadFontRegistry 的返回值
+ * @param {string} ref
+ * @returns {object|undefined}
+ */
+export function findSystemFont(registry, ref) {
+  if (!registry?.systemFonts?.length) return undefined;
+  return registry.systemFonts.find((f) => f.family === ref || f.key === ref);
 }

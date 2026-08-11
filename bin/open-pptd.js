@@ -13,7 +13,7 @@ import { startServer } from "../lib/editor-server.js";
 import { exportDeck, exportProject, FONT_LIB_DIR } from "../lib/pptd-export.js";
 import * as yaml from "../editor/vendor/js-yaml.mjs";
 import { parseFontResources } from "../editor/core/theme.js";
-import { findFont } from "../editor/core/font-registry.js";
+import { findFont, findSystemFont } from "../editor/core/font-registry.js";
 
 function usage() {
   console.log(
@@ -59,11 +59,26 @@ async function fontsList() {
     }
     console.log();
   }
+  if (reg.systemFonts?.length) {
+    console.log(`系统字体 ${reg.systemFonts.length} 种（仅声明不嵌入，依赖打开方系统已装）\n`);
+    for (const f of reg.systemFonts) {
+      console.log(`  ○ ${f.key.padEnd(12)} ${f.family.padEnd(24)} ${f.platform.padEnd(18)} ${f.style}`);
+    }
+    console.log();
+  }
   console.log("用法：deck.fonts 资源项写 {family: <注册名>} 即自动嵌入；fonts download <名称|all> 可补下载。");
 }
 
 async function fontsDownload(name) {
   const reg = loadRegistry();
+  // 系统字体无需下载：单独提示，不参与下载流程
+  const sysHit = (reg.systemFonts || []).filter(
+    (f) => f.key === name || f.family === name || f.key.includes(name) || f.family.toLowerCase().includes(name.toLowerCase())
+  );
+  if (sysHit.length) {
+    console.log(`○ ${sysHit.map((f) => `${f.key}（${f.family}）`).join("、")} 是系统字体：仅声明不嵌入，无需下载。`);
+    return;
+  }
   const targets =
     name === "all" ? reg.fonts : reg.fonts.filter((f) => f.key === name || f.family === name || f.key.includes(name) || f.family.toLowerCase().includes(name.toLowerCase()));
   if (!targets.length) {
@@ -120,7 +135,12 @@ async function fontsCheck(manifest) {
       const fileOk = fontStatus(hit) === "✓";
       console.log(`  ${fileOk ? "✓" : "✗"} ${key.padEnd(12)} → 注册表命中: ${hit.family}（${hit.file}${fileOk ? "" : " 缺失,需 fonts download"}）→ 将嵌入${hit.subset ? "(子集化)" : ""}`);
     } else {
-      console.log(`  ○ ${key.padEnd(12)} → 未命中注册表: ${family}（仅声明，不嵌入；需系统已装该字体）`);
+      const sys = findSystemFont(reg, family);
+      if (sys) {
+        console.log(`  ○ ${key.padEnd(12)} → 系统字体: ${sys.family}（${sys.platform}；仅声明不嵌入，需打开方系统已装）`);
+      } else {
+        console.log(`  ○ ${key.padEnd(12)} → 未命中注册表: ${family}（仅声明，不嵌入；需系统已装该字体）`);
+      }
     }
   }
   console.log("\n提示：注册表引用写法 fonts: {title: {family: <注册名>}}；未命中注册表的 family 视为系统字体。");

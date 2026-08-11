@@ -242,6 +242,40 @@ export function createFontManager(state) {
           }
           libList.appendChild(group);
         }
+        // —— 系统字体分区（无字节、仅声明不嵌入：点击复制注册名，粘贴到元素 fontFamily）——
+        if (registry.systemFonts?.length) {
+          const group = document.createElement("div");
+          group.className = "font-lib-group";
+          const gTitle = document.createElement("div");
+          gTitle.className = "font-lib-group-title";
+          gTitle.textContent = `系统字体（${registry.systemFonts.length}，仅声明不嵌入）`;
+          group.appendChild(gTitle);
+          for (const f of registry.systemFonts) {
+            const row = document.createElement("div");
+            row.className = "font-lib-row";
+            const name = document.createElement("span");
+            name.className = "font-lib-name";
+            name.textContent = f.key;
+            name.title = `注册名: ${f.family}\n平台: ${f.platform}\n仅声明不嵌入，需打开方系统已装`;
+            const family = document.createElement("span");
+            family.className = "font-lib-family";
+            family.textContent = f.family;
+            const copyBtn = document.createElement("button");
+            copyBtn.className = "btn btn-sm";
+            copyBtn.textContent = "复制";
+            copyBtn.addEventListener("click", async () => {
+              try {
+                await navigator.clipboard.writeText(f.family);
+                showToast(`已复制注册名: ${f.family}（粘贴到元素 fontFamily）`, "success");
+              } catch {
+                showToast("复制失败，请手动抄写注册名", "danger");
+              }
+            });
+            row.append(name, family, copyBtn);
+            group.appendChild(row);
+          }
+          libList.appendChild(group);
+        }
       };
       loadFontRegistry().then(renderLib).catch(() => renderLib(null));
 
