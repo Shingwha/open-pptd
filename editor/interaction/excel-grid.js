@@ -148,6 +148,8 @@ export function createExcelGrid(opts) {
     gridWrap.className = "excel-grid-scroll";
     const table = document.createElement("table");
     table.className = "data-table";
+    // fixed 布局：列宽完全由 colgroup 决定（行头恒 18px，列头 input 等内容不撑宽）
+    table.style.tableLayout = "fixed";
     const colgroup = document.createElement("colgroup");
     // 行头列（固定窄列，必须占 colgroup 首位，否则数据列百分比错位挤爆行头）
     const headCol = document.createElement("col");

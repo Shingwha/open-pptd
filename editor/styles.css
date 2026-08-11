@@ -1292,6 +1292,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   border-radius: var(--radius);
   background: var(--bg);
   overflow-y: auto;
+  max-height: min(52vh, 480px); /* 与网格等高：内容（hint/字段）变化不驱动对话框跳动 */
 }
 .style-panel .prop-group:first-child { border-radius: var(--radius) var(--radius) 0 0; }
 .style-panel .prop-hint { margin: 10px; }
@@ -1532,8 +1533,13 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .chart-body { display: flex; gap: 10px; align-items: stretch; }
 .chart-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 }
-/* 列头（图表：字母小标 + 列名输入两行；组件 .excel-grid 内） */
-.excel-grid th.col-head { padding: 3px 4px; line-height: 1.35; }
+/* 列头（图表：字母小标 + 列名输入两行；padding 限定在内容 wrap 内，不影响表格列头） */
+.excel-grid .chart-col-head {
+  padding: 3px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
 .excel-grid .col-letter { font-size: 10px; color: #8a94a6; text-align: center; }
 .excel-grid .chart-col-head input {
   width: 100%;
