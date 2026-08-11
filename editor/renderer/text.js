@@ -98,11 +98,17 @@ function formulaSpan(theme, run, base) {
   return node;
 }
 
+/** 水平对齐 → CSS 值：distributed 无原生 CSS 等价，映射为 justify + 末行拉伸。 */
+function textAlignCss(v) {
+  if (v === "distributed") return "justify;text-align-last:justify";
+  return v; // left / center / right / justify
+}
+
 /** 段落层：只写段落显式样式（text-align / line-height / margin…）。 */
 function applyParaStyle(el, para) {
   const s = para.style || {};
   const css = [];
-  if (s.textAlign) css.push(`text-align:${s.textAlign}`);
+  if (s.textAlign) css.push(`text-align:${textAlignCss(s.textAlign)}`);
   if (s.lineHeightPx) css.push(`line-height:${s.lineHeightPx}px`);
   else if (s.lineHeight) css.push(`line-height:${s.lineHeight}`);
   if (s.marginTop) css.push(`margin-top:${s.marginTop}px`);
@@ -140,7 +146,7 @@ export function renderTextContent(theme, content) {
     const bg = resolveColor(theme, base.backgroundColor);
     if (bg) css.push(`background:${bg}`);
   }
-  if (base.textAlign) css.push(`text-align:${base.textAlign}`);
+  if (base.textAlign) css.push(`text-align:${textAlignCss(base.textAlign)}`);
   // 文字渐变：作用于文字本身（background-clip: text），与 color 互斥
   const grad = gradientCss(theme, base.gradient);
   if (grad) {

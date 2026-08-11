@@ -121,6 +121,7 @@ registerType({
     h.label("对齐");
     h.select(ALIGN_OPTIONS, Array.isArray(c.align) ? c.align[0] : "left", (v) =>
       h.change(() => {
+        if (!el.content) el.content = {};
         // 垂直对齐缺省与官方一致（top），避免快速条调水平对齐时把垂直悄悄写成 middle
         el.content.align = [v, c.align?.[1] || "top"];
       })

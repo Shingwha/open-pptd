@@ -114,8 +114,8 @@ export function bindProperties(panel, api) {
 
     // 对齐工具行（相对页面）
     const ALIGN = [
-      ["al", "←", "左对齐"], ["ac", "↔", "水平居中"], ["ar", "→", "右对齐"],
-      ["at", "↑", "顶对齐"], ["am", "↕", "垂直居中"], ["ab", "↓", "底对齐"],
+      ["left", "←", "左对齐"], ["hcenter", "↔", "水平居中"], ["right", "→", "右对齐"],
+      ["top", "↑", "顶对齐"], ["vcenter", "↕", "垂直居中"], ["bottom", "↓", "底对齐"],
     ];
     const alignRow = document.createElement("div");
     alignRow.className = "prop-icon-row";
