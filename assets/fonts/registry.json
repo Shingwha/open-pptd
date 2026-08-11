@@ -447,39 +447,11 @@
       "usage": "正文/通用（默认字体）"
     },
     {
-      "key": "微软雅黑 UI",
-      "family": "Microsoft YaHei UI",
-      "platform": "Windows 8+",
-      "style": "雅黑 UI 变体，界面向",
-      "usage": "界面/正文"
-    },
-    {
-      "key": "等线",
-      "family": "DengXian",
-      "platform": "Windows 10+ / Office",
-      "style": "Office 默认中文，清秀",
-      "usage": "正文/通用"
-    },
-    {
-      "key": "黑体",
-      "family": "SimHei",
-      "platform": "Windows 全系",
-      "style": "老牌黑体，方正硬朗",
-      "usage": "标题/正文"
-    },
-    {
       "key": "宋体",
       "family": "SimSun",
       "platform": "Windows 全系",
       "style": "老牌宋体，公文/打印惯用",
       "usage": "正文/正式文档"
-    },
-    {
-      "key": "新宋体",
-      "family": "NSimSun",
-      "platform": "Windows 全系",
-      "style": "宋体等宽变体",
-      "usage": "正文"
     },
     {
       "key": "仿宋",
@@ -496,11 +468,11 @@
       "usage": "题词/引用"
     },
     {
-      "key": "隶书",
-      "family": "LiSu",
+      "key": "黑体",
+      "family": "SimHei",
       "platform": "Windows 全系",
-      "style": "隶书，古风",
-      "usage": "标题/装饰"
+      "style": "老牌黑体，方正硬朗",
+      "usage": "标题/正文"
     },
     {
       "key": "幼圆",
@@ -510,95 +482,18 @@
       "usage": "标题/轻松场景"
     },
     {
-      "key": "华文黑体",
-      "family": "STHeiti",
-      "platform": "Office / macOS",
-      "style": "华文黑体，简洁",
+      "key": "隶书",
+      "family": "LiSu",
+      "platform": "Windows 全系",
+      "style": "隶书，古风",
+      "usage": "标题/装饰"
+    },
+    {
+      "key": "等线",
+      "family": "DengXian",
+      "platform": "Windows 10+ / Office",
+      "style": "Office 默认中文，清秀",
       "usage": "正文/通用"
-    },
-    {
-      "key": "华文宋体",
-      "family": "STSong",
-      "platform": "Office / macOS",
-      "style": "华文宋体，端庄",
-      "usage": "正文/正式文档"
-    },
-    {
-      "key": "华文仿宋",
-      "family": "STFangsong",
-      "platform": "Office / macOS",
-      "style": "华文仿宋，清秀",
-      "usage": "公文/正式文档"
-    },
-    {
-      "key": "华文楷体",
-      "family": "STKaiti",
-      "platform": "Office / macOS",
-      "style": "华文楷体，书卷气",
-      "usage": "引用/题词"
-    },
-    {
-      "key": "华文中宋",
-      "family": "STZhongsong",
-      "platform": "Office / macOS",
-      "style": "中宋，庄重",
-      "usage": "标题/正文"
-    },
-    {
-      "key": "华文细黑",
-      "family": "STXihei",
-      "platform": "Office / macOS",
-      "style": "细黑，纤细现代",
-      "usage": "标题/正文"
-    },
-    {
-      "key": "华文行楷",
-      "family": "STXingkai",
-      "platform": "Office / macOS",
-      "style": "行楷，行云流水",
-      "usage": "标题/题词"
-    },
-    {
-      "key": "华文新魏",
-      "family": "STXinwei",
-      "platform": "Office / macOS",
-      "style": "新魏碑，刚劲",
-      "usage": "标题"
-    },
-    {
-      "key": "华文琥珀",
-      "family": "STHupo",
-      "platform": "Office / macOS",
-      "style": "琥珀，厚重醒目",
-      "usage": "标题/装饰"
-    },
-    {
-      "key": "华文彩云",
-      "family": "STCaiyun",
-      "platform": "Office / macOS",
-      "style": "彩云，描边空灵",
-      "usage": "装饰"
-    },
-    {
-      "key": "华文隶书",
-      "family": "STLiti",
-      "platform": "Office / macOS",
-      "style": "华文隶书，古风",
-      "usage": "标题/装饰"
-    },
-    {
-      "key": "Arial",
-      "family": "Arial",
-      "platform": "全平台",
-      "style": "经典无衬线",
-      "usage": "西文正文"
-    },
-    {
-      "key": "Arial Black",
-      "family": "Arial Black",
-      "platform": "全平台",
-      "style": "极粗无衬线",
-      "usage": "西文标题"
     },
     {
       "key": "Times New Roman",
@@ -608,6 +503,13 @@
       "usage": "西文正文/学术"
     },
     {
+      "key": "Arial",
+      "family": "Arial",
+      "platform": "全平台",
+      "style": "经典无衬线",
+      "usage": "西文正文"
+    },
+    {
       "key": "Calibri",
       "family": "Calibri",
       "platform": "Office",
@@ -615,95 +517,11 @@
       "usage": "西文正文"
     },
     {
-      "key": "Cambria",
-      "family": "Cambria",
-      "platform": "Office",
-      "style": "衬线，学术感",
-      "usage": "西文正文/学术"
-    },
-    {
-      "key": "Georgia",
-      "family": "Georgia",
-      "platform": "全平台",
-      "style": "衬线，屏幕友好",
-      "usage": "西文正文"
-    },
-    {
-      "key": "Verdana",
-      "family": "Verdana",
-      "platform": "全平台",
-      "style": "宽体无衬线，小字号清晰",
-      "usage": "西文正文"
-    },
-    {
-      "key": "Tahoma",
-      "family": "Tahoma",
-      "platform": "全平台",
-      "style": "紧凑无衬线",
-      "usage": "西文正文/界面"
-    },
-    {
-      "key": "Trebuchet MS",
-      "family": "Trebuchet MS",
-      "platform": "全平台",
-      "style": "人文无衬线",
-      "usage": "西文正文"
-    },
-    {
-      "key": "Impact",
-      "family": "Impact",
-      "platform": "全平台",
-      "style": "极宽粗体，冲击力",
-      "usage": "西文标题"
-    },
-    {
-      "key": "Consolas",
-      "family": "Consolas",
-      "platform": "Windows / Office",
-      "style": "等宽代码字体",
-      "usage": "代码/数据"
-    },
-    {
-      "key": "Courier New",
-      "family": "Courier New",
-      "platform": "全平台",
-      "style": "经典等宽",
-      "usage": "代码/数据"
-    },
-    {
-      "key": "Segoe UI",
-      "family": "Segoe UI",
-      "platform": "Windows",
-      "style": "Windows 界面字体",
-      "usage": "西文正文/界面"
-    },
-    {
       "key": "苹方",
       "family": "PingFang SC",
       "platform": "macOS",
       "style": "苹方，macOS 默认黑体",
       "usage": "正文/通用（macOS）"
-    },
-    {
-      "key": "宋体-简",
-      "family": "Songti SC",
-      "platform": "macOS",
-      "style": "macOS 宋体",
-      "usage": "正文/正式文档（macOS）"
-    },
-    {
-      "key": "楷体-简",
-      "family": "Kaiti SC",
-      "platform": "macOS",
-      "style": "macOS 楷体",
-      "usage": "引用/题词（macOS）"
-    },
-    {
-      "key": "黑体-简",
-      "family": "Heiti SC",
-      "platform": "macOS",
-      "style": "macOS 黑体",
-      "usage": "标题/正文（macOS）"
     }
   ]
 }

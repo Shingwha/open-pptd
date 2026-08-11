@@ -81,58 +81,27 @@
 | 展示名 | 注册名（family） | 平台 | 风格与特点 | 适合场景 |
 |---|---|---|---|---|
 | 微软雅黑 | `Microsoft YaHei` | Windows 7+ | 现代黑体，屏幕阅读首选（**默认字体**） | 正文/通用 |
-| 微软雅黑 UI | `Microsoft YaHei UI` | Windows 8+ | 雅黑 UI 变体，界面向 | 界面/正文 |
-| 等线 | `DengXian` | Windows 10+ / Office | Office 默认中文，清秀 | 正文/通用 |
-| 黑体 | `SimHei` | Windows 全系 | 老牌黑体，方正硬朗 | 标题/正文 |
 | 宋体 | `SimSun` | Windows 全系 | 老牌宋体，公文/打印惯用 | 正文/正式文档 |
-| 新宋体 | `NSimSun` | Windows 全系 | 宋体等宽变体 | 正文 |
 | 仿宋 | `FangSong` | Windows 全系 | 仿宋，公文标准字体 | 公文/正式文档 |
 | 楷体 | `KaiTi` | Windows 全系 | 楷体，手写书卷感 | 题词/引用 |
-| 隶书 | `LiSu` | Windows 全系 | 隶书，古风 | 标题/装饰 |
+| 黑体 | `SimHei` | Windows 全系 | 老牌黑体，方正硬朗 | 标题/正文 |
 | 幼圆 | `YouYuan` | Windows 全系 | 圆体，圆润亲和 | 标题/轻松场景 |
-
-### 华文系列（Office 安装携带 / macOS 自带）
-
-| 展示名 | 注册名（family） | 平台 | 风格与特点 | 适合场景 |
-|---|---|---|---|---|
-| 华文黑体 | `STHeiti` | Office / macOS | 简洁黑体 | 正文/通用 |
-| 华文宋体 | `STSong` | Office / macOS | 端庄宋体 | 正文/正式文档 |
-| 华文仿宋 | `STFangsong` | Office / macOS | 清秀仿宋 | 公文/正式文档 |
-| 华文楷体 | `STKaiti` | Office / macOS | 书卷气楷体 | 引用/题词 |
-| 华文中宋 | `STZhongsong` | Office / macOS | 庄重中宋 | 标题/正文 |
-| 华文细黑 | `STXihei` | Office / macOS | 纤细现代 | 标题/正文 |
-| 华文行楷 | `STXingkai` | Office / macOS | 行云流水 | 标题/题词 |
-| 华文新魏 | `STXinwei` | Office / macOS | 刚劲新魏碑 | 标题 |
-| 华文琥珀 | `STHupo` | Office / macOS | 厚重醒目 | 标题/装饰 |
-| 华文彩云 | `STCaiyun` | Office / macOS | 描边空灵 | 装饰 |
-| 华文隶书 | `STLiti` | Office / macOS | 古风隶书 | 标题/装饰 |
+| 隶书 | `LiSu` | Windows 全系 | 隶书，古风 | 标题/装饰 |
+| 等线 | `DengXian` | Windows 10+ / Office | Office 默认中文，清秀 | 正文/通用 |
 
 ### 西文基础（Windows / Office 必带）
 
 | 展示名 | 注册名（family） | 平台 | 风格与特点 | 适合场景 |
 |---|---|---|---|---|
-| Arial | `Arial` | 全平台 | 经典无衬线 | 西文正文 |
-| Arial Black | `Arial Black` | 全平台 | 极粗无衬线 | 西文标题 |
 | Times New Roman | `Times New Roman` | 全平台 | 经典衬线 | 西文正文/学术 |
+| Arial | `Arial` | 全平台 | 经典无衬线 | 西文正文 |
 | Calibri | `Calibri` | Office | Office 默认西文，圆润 | 西文正文 |
-| Cambria | `Cambria` | Office | 衬线，学术感 | 西文正文/学术 |
-| Georgia | `Georgia` | 全平台 | 衬线，屏幕友好 | 西文正文 |
-| Verdana | `Verdana` | 全平台 | 宽体无衬线，小字号清晰 | 西文正文 |
-| Tahoma | `Tahoma` | 全平台 | 紧凑无衬线 | 西文正文/界面 |
-| Trebuchet MS | `Trebuchet MS` | 全平台 | 人文无衬线 | 西文正文 |
-| Impact | `Impact` | 全平台 | 极宽粗体，冲击力 | 西文标题 |
-| Consolas | `Consolas` | Windows / Office | 等宽代码字体 | 代码/数据 |
-| Courier New | `Courier New` | 全平台 | 经典等宽 | 代码/数据 |
-| Segoe UI | `Segoe UI` | Windows | Windows 界面字体 | 西文正文/界面 |
 
 ### macOS 中文（Windows 无，跨平台会回退）
 
 | 展示名 | 注册名（family） | 平台 | 风格与特点 | 适合场景 |
 |---|---|---|---|---|
 | 苹方 | `PingFang SC` | macOS | macOS 默认黑体 | 正文/通用（macOS） |
-| 宋体-简 | `Songti SC` | macOS | macOS 宋体 | 正文/正式文档（macOS） |
-| 楷体-简 | `Kaiti SC` | macOS | macOS 楷体 | 引用/题词（macOS） |
-| 黑体-简 | `Heiti SC` | macOS | macOS 黑体 | 标题/正文（macOS） |
 
 > 系统字体由 `registry.json` 的 `systemFonts` 维护（CLI `fonts list` / `fonts check` 与编辑器字体面板共用同一份）。
 
