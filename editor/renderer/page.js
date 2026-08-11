@@ -7,7 +7,7 @@
 
 import { getType } from "../types/index.js";
 import { pageBackground } from "./background.js";
-import { renderChart, disposeChartInstances } from "./chart.js";
+import { disposeChartInstances } from "./chart.js";
 
 /** 元素 → DOM（经注册表分派；未注册类型回退占位）。
  * @param {object} ctx 渲染上下文（{ imageMap: { [src]: dataUrl } }）

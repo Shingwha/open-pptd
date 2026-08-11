@@ -21,8 +21,36 @@ import { resolveColor } from "../core/theme.js";
 /** 主题语义色色板（供 colorField swatches 使用，属性面板/表格/图表共用）。 */
 export function themeSwatches(theme) {
   const c = theme?.colors || {};
-  const keys = ["primary", "accent", "text", "muted", "line", "success", "warning", "danger", "primaryDeep"];
+  const keys = ["primary", "accent", "text", "muted", "line", "success", "warning", "danger", "primaryDeep", "primarySoft", "primaryTint", "accent3"];
   return keys.map((k) => ({ key: `$${k}`, value: resolveColor(theme, c[k]) || "#cccccc" }));
+}
+
+/**
+ * 声明式字段控件工厂（属性面板 / 表格样式面板 / 图表样式面板共用）。
+ * @param {object} opts
+ *  - theme: 主题对象或取主题函数（colorField 的 resolve/swatches 数据源）
+ *  - wrap(fn): 可选提交包装——属性面板用它包事务+即时刷新，对话框直接传 fn
+ *  - onFocus/onBlur: 可选事务钩子（属性面板的 beginChange/endChange）
+ *  - extra: 附加助手（属性面板的 fontOptions/openEditor 等）
+ */
+export function fieldHandlers({ theme, wrap = (f) => f, onFocus, onBlur, extra = {} } = {}) {
+  const themeOf = typeof theme === "function" ? theme : () => theme;
+  return {
+    textInput: (v, c, o = {}) => ui.textInput(v, wrap(c), { onFocus, onBlur, ...o }),
+    numInput: (v, c, o = {}) => ui.numInput(v, wrap(c), { onFocus, onBlur, ...o }),
+    colorField: (v, c, o = {}) =>
+      ui.colorField(v, wrap(c), {
+        resolve: (val) => resolveColor(themeOf(), val),
+        swatches: themeSwatches(themeOf()),
+        onFocus,
+        onBlur,
+        ...o,
+      }),
+    selectInput: (options, value, onCommit, o = {}) => ui.selectInput(options, value, wrap(onCommit), { onFocus, onBlur, ...o }),
+    checkbox: (l, ch, c, o = {}) => ui.checkbox(l, ch, wrap(c), { onFocus, onBlur, ...o }),
+    button: (label, onClick, o) => ui.button(label, onClick, { className: "btn btn-sm", ...o }),
+    ...extra,
+  };
 }
 
 /** 渲染一个分组（group 标题可折叠）。 */

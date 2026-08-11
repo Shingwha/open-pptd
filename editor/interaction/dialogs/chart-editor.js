@@ -9,10 +9,11 @@
 //   - 类型切换：语义键重映射（remapEncode）+ 共存约束警告（validateChartSeries）
 // ============================================================================
 
-import { CHART_META, CHART_TYPE_ORDER, validateChartSeries, remapEncode } from "../../core/chart.js";
+import { CHART_META, CHART_TYPE_ORDER, validateChartSeries, remapEncode, DATA_LABEL_CONTENTS } from "../../core/chart.js";
 import { resolveColor, themeChartPalette } from "../../core/theme.js";
 import { showDialog, buildCellInput, button } from "./base.js";
-import { renderGroup, themeSwatches } from "../fields.js";
+import { renderGroup, themeSwatches, fieldHandlers } from "../fields.js";
+import { createExcelGrid } from "../excel-grid.js";
 import * as ui from "../../ui.js";
 
 const LEGEND_POS = [["bottom", "底部"], ["top", "顶部"], ["right", "右侧"], ["left", "左侧"]];
@@ -26,16 +27,6 @@ const STACK_OPTS = [["", "无"], ["normal", "普通堆叠"], ["percent", "百分
 const MARKER_SHAPES = [["circle", "圆点"], ["rect", "方块"], ["diamond", "菱形"], ["triangle", "三角"]];
 const SIZE_SCALES = [["sqrt", "平方根"], ["linear", "线性"], ["log", "对数"]];
 const NODE_ALIGNS = [["justify", "两端对齐"], ["left", "左对齐"], ["right", "右对齐"]];
-/** 各类型数据标签可用内容（与 core/chart.js resolveDataLabels 的 ALLOWED 一致）。 */
-const VALID_CONTENT = {
-  bar: ["value"], line: ["value"], area: ["value"], scatter: ["value"], bubble: ["value"],
-  radar: ["value"], heatmap: ["value"], candlestick: ["value"],
-  pie: ["value", "percentage", "category"], waterfall: ["value", "category"],
-  treemap: ["value", "category"], sunburst: ["value", "category"], sankey: ["value", "category"],
-};
-
-/** 类型切换语义重映射（保留已有列引用，自动对齐默认列名）。 */
-// （remapEncode 已移至 core/chart.js 共用——属性面板与图表编辑器行为一致）
 
 /** 列字母（Excel 式：A B … Z AA AB）。 */
 function colLetter(i) {
@@ -81,10 +72,59 @@ export function openChartEditor(el, { theme, onChange }) {
   const colCount = () => data.cols.length;
   const rowCount = () => data.rows.length;
 
-  // 状态：Excel 式活动单元格（A1）+ 选中系列
-  let sel = { r1: 0, c1: 0, r2: 0, c2: 0 };
   let curSeries = 0;
-  let dragSel = null;
+
+  // —— Excel 式数据网格（共用 interaction/excel-grid.js，与表格编辑器同一实现）——
+  const grid = createExcelGrid({
+    getRows: rowCount,
+    getCols: colCount,
+    cellValue: (r, c) => String(data.rows[r]?.[c] ?? ""),
+    onCellChange: (r, c, v) => {
+      data.rows[r][c] = v;
+      commit();
+    },
+    colHeadContent: (c) => {
+      const wrap = document.createElement("div");
+      wrap.className = "chart-col-head";
+      const letter = document.createElement("div");
+      letter.className = "col-letter";
+      letter.textContent = colLetter(c);
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = data.cols[c] ?? "";
+      input.placeholder = "列名";
+      input.addEventListener("change", () => {
+        renameColumn(c, input.value);
+        setAndRefresh();
+      });
+      wrap.append(letter, input);
+      return wrap;
+    },
+    onInsertRows: (at, n) => {
+      data.rows.splice(at, 0, ...Array.from({ length: n }, () => data.cols.map(() => null)));
+      commit();
+    },
+    onInsertCols: (at, n) => {
+      for (const r of data.rows) r.splice(at, 0, ...Array.from({ length: n }, () => null));
+      commit();
+    },
+    onDeleteRows: (r1, r2) => {
+      data.rows.splice(r1, r2 - r1 + 1);
+      commit();
+    },
+    onDeleteCols: (c1, c2) => {
+      const removed = data.cols.slice(c1, c2 + 1);
+      for (const r of data.rows) r.splice(c1, c2 - c1 + 1);
+      data.cols.splice(c1, c2 - c1 + 1);
+      // 系列 encode 引用被删列 → 重置到首列（不悬空）
+      for (const s of el.series || []) {
+        for (const k of Object.keys(s.encode || {})) {
+          if (removed.includes(s.encode[k])) s.encode[k] = data.cols[0];
+        }
+      }
+      commit();
+    },
+  });
 
   // —— 布局骨架 ——
   const topRow = document.createElement("div");
@@ -156,138 +196,10 @@ export function openChartEditor(el, { theme, onChange }) {
   }
 
   // --------------------------------------------------------------------------
-  // 数据表（Excel 式：数字行头 / 字母列头 / 拖拽选区 / 方向插入）
+  // 数据表（Excel 式：数字行头 / 字母列头 / 拖拽选区 / 方向插入）——组件实现
   // --------------------------------------------------------------------------
-  const gridBox = document.createElement("div");
-  gridBox.className = "chart-grid-box";
-  const gridScroll = document.createElement("div");
-  gridScroll.className = "chart-grid-scroll";
+  const gridBox = grid.root;
   main.appendChild(gridBox);
-
-  function renderGrid() {
-    gridBox.innerHTML = "";
-    const toolbar = document.createElement("div");
-    toolbar.className = "table-toolbar";
-    const sep = () => {
-      const d = document.createElement("span");
-      d.className = "toolbar-sep";
-      return d;
-    };
-    const mkBtn = (label, fn, title) => {
-      const b = button(label, fn);
-      if (title) b.title = title;
-      return b;
-    };
-    const selRows = () => [sel.r1, sel.r2];
-    const selCols = () => [sel.c1, sel.c2];
-    const insertRows = (at, n) => {
-      data.rows.splice(at, 0, ...Array.from({ length: n }, () => data.cols.map(() => null)));
-      sel = { r1: at, c1: 0, r2: at + n - 1, c2: colCount() - 1 };
-      setAndRefresh();
-    };
-    const insertCols = (at, n) => {
-      for (const r of data.rows) r.splice(at, 0, ...Array.from({ length: n }, () => null));
-      sel = { r1: 0, c1: at, r2: rowCount() - 1, c2: at + n - 1 };
-      setAndRefresh();
-    };
-    toolbar.append(
-      mkBtn("↑ 插行", () => { const [r1] = selRows(); insertRows(r1, sel.r2 - sel.r1 + 1); }, "在选区上方插入行"),
-      mkBtn("↓ 插行", () => { const [, r2] = selRows(); insertRows(r2 + 1, sel.r2 - sel.r1 + 1); }, "在选区下方插入行"),
-      mkBtn("← 插列", () => { const [c1] = selCols(); insertCols(c1, sel.c2 - sel.c1 + 1); }, "在选区左侧插入列"),
-      mkBtn("→ 插列", () => { const [, c2] = selCols(); insertCols(c2 + 1, sel.c2 - sel.c1 + 1); }, "在选区右侧插入列"),
-      sep(),
-      mkBtn("删除行", () => {
-        if (rowCount() <= 1) return;
-        const [r1, r2] = selRows();
-        data.rows.splice(r1, r2 - r1 + 1);
-        sel = { r1: Math.min(r1, rowCount() - 1), c1: sel.c1, r2: Math.min(r1, rowCount() - 1), c2: sel.c2 };
-        setAndRefresh();
-      }, "删除选区覆盖的所有行"),
-      mkBtn("删除列", () => {
-        if (colCount() <= 1) return;
-        const [c1, c2] = selCols();
-        const removed = data.cols.slice(c1, c2 + 1);
-        for (const r of data.rows) r.splice(c1, c2 - c1 + 1);
-        data.cols.splice(c1, c2 - c1 + 1);
-        // 系列 encode 引用被删列 → 重置到首列（不悬空）
-        for (const s of el.series || []) {
-          for (const k of Object.keys(s.encode || {})) {
-            if (removed.includes(s.encode[k])) s.encode[k] = data.cols[0];
-          }
-        }
-        sel = { r1: sel.r1, c1: Math.min(c1, colCount() - 1), r2: sel.r2, c2: Math.min(c1, colCount() - 1) };
-        setAndRefresh();
-      }, "删除选区覆盖的所有列")
-    );
-    gridBox.appendChild(toolbar);
-
-    const table = document.createElement("table");
-    table.className = "data-table chart-table";
-    table.style.tableLayout = "fixed";
-    // colgroup：首位 18px 行头列固定（否则行头被数据列撑宽、末列被挤出）
-    const colg = document.createElement("colgroup");
-    const headCol = document.createElement("col");
-    headCol.style.width = "18px";
-    colg.appendChild(headCol);
-    for (let c = 0; c < colCount(); c++) {
-      const col = document.createElement("col");
-      col.style.width = `calc((100% - 18px) / ${colCount()})`;
-      colg.appendChild(col);
-    }
-    table.appendChild(colg);
-
-    const thead = document.createElement("thead");
-    const headTr = document.createElement("tr");
-    const corner = document.createElement("th");
-    corner.className = "head-corner";
-    headTr.appendChild(corner);
-    data.cols.forEach((colName, c) => {
-      const th = document.createElement("th");
-      th.className = "col-head";
-      th.dataset.cc = c;
-      if (c >= sel.c1 && c <= sel.c2) th.classList.add("head-active");
-      const letter = document.createElement("div");
-      letter.className = "col-letter";
-      letter.textContent = colLetter(c);
-      const nameInput = buildCellInput(colName, "列名", () => {
-        renameColumn(c, nameInput.value);
-        setAndRefresh();
-      });
-      th.append(letter, nameInput);
-      headTr.appendChild(th);
-    });
-    thead.appendChild(headTr);
-    table.appendChild(thead);
-
-    const tbody = document.createElement("tbody");
-    data.rows.forEach((row, r) => {
-      const tr = document.createElement("tr");
-      const td0 = document.createElement("td");
-      td0.className = "row-head" + (r >= sel.r1 && r <= sel.r2 ? " head-active" : "");
-      td0.dataset.rr = r;
-      td0.textContent = r + 1;
-      tr.appendChild(td0);
-      data.cols.forEach((_, c) => {
-        const td = document.createElement("td");
-        td.className = "grid-cell" + (r >= sel.r1 && r <= sel.r2 && c >= sel.c1 && c <= sel.c2 ? " cell-selected" : "");
-        td.dataset.tr = r;
-        td.dataset.tc = c;
-        const input = buildCellInput(String(row[c] ?? ""), "", () => {
-          row[c] = input.value;
-          commit();
-        });
-        td.appendChild(input);
-        tr.appendChild(td);
-      });
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    gridScroll.innerHTML = "";
-    gridScroll.appendChild(table);
-    gridBox.appendChild(gridScroll);
-    bindDragSelect(gridScroll);
-  }
-
   /** 列重命名：同步更新各系列 encode 引用。 */
   function renameColumn(c, newName) {
     const old = data.cols[c];
@@ -298,107 +210,6 @@ export function openChartEditor(el, { theme, onChange }) {
         if (s.encode[key] === old) s.encode[key] = newName;
       }
     }
-  }
-
-  /** 选区高亮（不重建 DOM，只切 class——拖拽中调用）。 */
-  function renderSelection() {
-    const table = gridScroll.querySelector("table");
-    if (!table) return;
-    for (const td of table.querySelectorAll("td.grid-cell")) {
-      const r = Number(td.dataset.tr);
-      const c = Number(td.dataset.tc);
-      td.classList.toggle("cell-selected", r >= sel.r1 && r <= sel.r2 && c >= sel.c1 && c <= sel.c2);
-    }
-    for (const td of table.querySelectorAll("td.row-head")) {
-      const r = Number(td.dataset.rr);
-      td.classList.toggle("head-active", r >= sel.r1 && r <= sel.r2);
-    }
-    for (const th of table.querySelectorAll("th.col-head")) {
-      const c = Number(th.dataset.cc);
-      th.classList.toggle("head-active", c >= sel.c1 && c <= sel.c2);
-    }
-  }
-
-  /** 拖拽选区（单元格区域 / 行头整行 / 列头整列），与表格编辑器同款交互。 */
-  function bindDragSelect(gridWrap) {
-    gridWrap.addEventListener("pointerdown", (e) => {
-      const th = e.target.closest("th.col-head");
-      if (th) {
-        e.preventDefault();
-        const c = Number(th.dataset.cc);
-        dragSel = { mode: "col", anchor: { r: 0, c }, cur: { r: 0, c } };
-        sel = { r1: 0, c1: c, r2: 0, c2: c };
-        renderSelection();
-        return;
-      }
-      const th0 = e.target.closest("td.row-head");
-      if (th0) {
-        e.preventDefault();
-        const r = Number(th0.dataset.rr);
-        dragSel = { mode: "row", anchor: { r, c: 0 }, cur: { r, c: 0 } };
-        sel = { r1: r, c1: 0, r2: r, c2: colCount() - 1 };
-        renderSelection();
-        return;
-      }
-      const td = e.target.closest("td.grid-cell");
-      if (!td) return;
-      const inp = td.querySelector("input");
-      if (inp && document.activeElement === inp) return; // 编辑态：允许 input 内文本操作
-      e.preventDefault();
-      const r = Number(td.dataset.tr);
-      const c = Number(td.dataset.tc);
-      dragSel = { mode: "cell", anchor: { r, c }, cur: { r, c } };
-      sel = { r1: r, c1: c, r2: r, c2: c };
-      renderSelection();
-    });
-
-    gridWrap.addEventListener("pointermove", (e) => {
-      if (!dragSel) return;
-      const elAt = document.elementFromPoint(e.clientX, e.clientY);
-      if (dragSel.mode === "col") {
-        const th = elAt?.closest?.("th.col-head");
-        if (!th) return;
-        const c = Math.min(colCount() - 1, Math.max(0, Number(th.dataset.cc)));
-        if (c === dragSel.cur.c) return;
-        dragSel.cur.c = c;
-        sel = { r1: 0, c1: Math.min(dragSel.anchor.c, c), r2: rowCount() - 1, c2: Math.max(dragSel.anchor.c, c) };
-      } else if (dragSel.mode === "row") {
-        const th0 = elAt?.closest?.("td.row-head");
-        if (!th0) return;
-        const r = Math.min(rowCount() - 1, Math.max(0, Number(th0.dataset.rr)));
-        if (r === dragSel.cur.r) return;
-        dragSel.cur.r = r;
-        sel = { r1: Math.min(dragSel.anchor.r, r), c1: 0, r2: Math.max(dragSel.anchor.r, r), c2: colCount() - 1 };
-      } else {
-        const td = elAt?.closest?.("td.grid-cell");
-        if (!td) return;
-        const r = Number(td.dataset.tr);
-        const c = Number(td.dataset.tc);
-        if (r === dragSel.cur.r && c === dragSel.cur.c) return;
-        dragSel.cur = { r, c };
-        sel = {
-          r1: Math.min(dragSel.anchor.r, r), c1: Math.min(dragSel.anchor.c, c),
-          r2: Math.max(dragSel.anchor.r, r), c2: Math.max(dragSel.anchor.c, c),
-        };
-      }
-      renderSelection();
-    });
-
-    const endDrag = () => {
-      if (!dragSel) return;
-      dragSel = null;
-      renderSelection();
-    };
-    gridWrap.addEventListener("pointerup", endDrag);
-    gridWrap.addEventListener("pointercancel", endDrag);
-    window.addEventListener("blur", endDrag);
-
-    // 双击进入编辑（pointerdown 已阻止单击聚焦）
-    gridWrap.addEventListener("dblclick", (e) => {
-      const td = e.target.closest("td.grid-cell");
-      const inp = td?.querySelector("input");
-      if (inp) inp.focus();
-    });
   }
 
   // --------------------------------------------------------------------------
@@ -500,19 +311,7 @@ export function openChartEditor(el, { theme, onChange }) {
   // --------------------------------------------------------------------------
   // 样式面板（声明式分组，fields.js 渲染器；随类型与选中系列联动）
   // --------------------------------------------------------------------------
-  const h = {
-    textInput: (v, c, o) => ui.textInput(v, c, o),
-    numInput: (v, c, o) => ui.numInput(v, c, o),
-    colorField: (v, c, o) =>
-      ui.colorField(v, c, {
-        resolve: (val) => resolveColor(editorTheme(), val),
-        swatches: themeSwatches(editorTheme()),
-        ...o,
-      }),
-    selectInput: (options, value, onCommit, o) => ui.selectInput(options, value, onCommit, o),
-    checkbox: (l, ch, c, o) => ui.checkbox(l, ch, c, o),
-    button: (label, onClick, o) => ui.button(label, onClick, o),
-  };
+  const h = fieldHandlers({ theme: () => editorTheme() });
 
   /** 数值轴对象安全获取（xAxis/yAxis/spokeAxis 共享）。 */
   const axisObj = (el, key) => {
@@ -560,7 +359,7 @@ export function openChartEditor(el, { theme, onChange }) {
           { label: "显示", get: () => el.dataLabels !== false,
             set: (v) => { if (v) { if (el.dataLabels === false || el.dataLabels == null) el.dataLabels = {}; } else el.dataLabels = false; setAndRefresh(); } },
         ] },
-        { kind: "select", label: "内容", options: LABEL_CONTENT.filter(([k]) => (VALID_CONTENT[t] || ["value"]).includes(k)),
+        { kind: "select", label: "内容", options: LABEL_CONTENT.filter(([k]) => (DATA_LABEL_CONTENTS[t] || ["value"]).includes(k)),
           get: () => o().content || "value",
           set: (v) => { o().content = v; setAndRefresh(); } },
         { kind: "select", label: "数字格式", options: NUMBER_FMTS,
@@ -789,7 +588,7 @@ export function openChartEditor(el, { theme, onChange }) {
 
   function renderAll() {
     renderTop();
-    renderGrid();
+    grid.render();
     renderSeries();
     renderStylePanel();
   }

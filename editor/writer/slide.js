@@ -7,13 +7,8 @@
 
 import { el, esc, escAttr, xmlHeader } from "./xml.js";
 import { encodeUtf8 } from "./zip.js";
-import { textXml } from "./text.js";
-import { shapeXml } from "./shape.js";
-import { lineXml } from "./line.js";
-import { imageXml } from "./image.js";
 import { backgroundXml } from "./background.js";
-import { tableXml } from "./table.js";
-import { buildChartParts, chartXml } from "./chart.js";
+import { buildChartParts } from "./chart.js";
 import { getType } from "../types/index.js";
 
 // ----------------------------------------------------------------------------

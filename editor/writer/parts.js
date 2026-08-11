@@ -8,7 +8,7 @@
 //   - theme1.xml 的 clrScheme 决定"导出后在 PowerPoint 里换主题"的联动范围
 // ============================================================================
 
-import { esc, escAttr, el, xmlHeader, hexToRgbVal } from "./xml.js";
+import { esc, el, xmlHeader, hexToRgbVal } from "./xml.js";
 
 export const NS_P = "http://schemas.openxmlformats.org/presentationml/2006/main";
 export const NS_A = "http://schemas.openxmlformats.org/drawingml/2006/main";
