@@ -50,35 +50,37 @@
 
 文件：`editor/core/theme-presets.js`，导出 `THEME_PALETTES`（键序即展示序），保留 `DEFAULT_THEME`（= 第 1 套「咨询蓝」，同时补 accent3-6 键）。
 
+> 2026-08 配色重设计：每套独立色彩家族（主色+点缀色有性格）；图表系列色 6 槽与家族和谐且彼此可区分；primarySoft/Tint/Deep 严格由主色派生；白字压主色表头对比度达标（≥4.4:1）；中性色带家族色相。
+
 | # | 键 | 名称 | primary | accent | accent3 | accent4 | accent5 | accent6 |
 |---|---|---|---|---|---|---|---|---|
-| 1 | consult | 咨询蓝（默认） | #002E5D | #C9A227 | #3A6EA5 | #7FB2D9 | #B5503C | #5C8A6A |
-| 2 | tech | 科技青 | #0E7490 | #F59E0B | #1E9AB0 | #7CC7DB | #D97706 | #64748B |
-| 3 | orange | 活力橙 | #C2410C | #34495E | #E2703A | #F2A97E | #5D7FA3 | #9BB0C9 |
-| 4 | green | 森林绿 | #1E6B3C | #C9A227 | #3D8B5C | #7FB58F | #B5503C | #6B9B84 |
-| 5 | red | 沉稳红 | #A6192E | #002E5D | #BC3F4A | #E3A0A7 | #4A6FA5 | #8FA8C8 |
-| 6 | purple | 优雅紫 | #5B2D86 | #B98A2E | #7B4FA8 | #A98BC9 | #C9A227 | #9E7FB8 |
-| 7 | mono | 高级灰 | #111827 | #C9A227 | #4B5563 | #9CA3AF | #6B7280 | #3A6EA5 |
-| 8 | brown | 大地棕 | #6B4226 | #D9A05B | #8B5E3C | #C49A76 | #7A8B6F | #B98D4A |
-| 9 | morandi | 莫兰迪 | #7C8B7A | #B5A184 | #9DAE9B | #C5CFC3 | #A9977A | #8E9BA5 |
-| 10 | sakura | 樱花粉 | #C1507C | #8FAE8B | #D980A3 | #EBB3C8 | #7FA07B | #B98AC0 |
+| 1 | consult | 咨询蓝（默认） | #16324F | #C9962E | #3D6B99 | #7FA6CB | #C26B4E | #5D8A72 |
+| 2 | tech | 科技青 | #0B7C8D | #F5A623 | #23A5B8 | #79C7D4 | #8C5BC4 | #5C7D8C |
+| 3 | orange | 活力橙 | #C0531F | #2A6E72 | #E0804A | #F2B48E | #3E8A8F | #8FB5B8 |
+| 4 | green | 森林绿 | #1D6B45 | #D0A437 | #3E8B60 | #7FB593 | #B56A3E | #7C93A5 |
+| 5 | red | 沉稳红 | #B02A3A | #2E4A6E | #C94B57 | #E3A0A6 | #4E6F9E | #9AA9C4 |
+| 6 | purple | 优雅紫 | #5A2E8C | #C99A3A | #7B4FA8 | #AC8CCB | #C26B8A | #5E7FA3 |
+| 7 | mono | 高级灰 | #20272F | #C9993E | #55606E | #A0A9B4 | #3E8A8C | #B05A4A |
+| 8 | brown | 大地棕 | #6D4A2C | #D19A4B | #8D6742 | #C4A57E | #7E8C5A | #A68B4F |
+| 9 | morandi | 莫兰迪 | #64725F | #B7A187 | #8FA08A | #C3CDC0 | #AE8B92 | #8E9BA5 |
+| 10 | sakura | 樱花粉 | #BC4F76 | #7FA87C | #D97FA4 | #EFB8CD | #4E8A62 | #A98AC0 |
 
-每套其余 8 键（bg/text/muted/line/success/warning/danger + primarySoft/Tint/Deep）沿用 v1 对应套的已验证值：
+每套其余 8 键（bg/text/muted/line/success/warning/danger + primarySoft/Tint/Deep）：
 
 | 键 | consult | tech | orange | green | red | purple | mono | brown | morandi | sakura |
 |---|---|---|---|---|---|---|---|---|---|---|
 | bg | FFFFFF | FFFFFF | FFFFFF | FFFFFF | FFFFFF | FFFFFF | FFFFFF | FFFFFF | FFFFFF | FFFFFF |
-| text | 1B2A3A | 1B2B33 | 33261F | 1F2E26 | 33272A | 2A2440 | 1F2937 | 332720 | 33352E | 3E2733 |
-| muted | 5A6B7C | 5C7370 | 7A6A5E | 5A6B60 | 7A6A6E | 6E6680 | 6B7280 | 7A6B5F | 76796F | 8A6E78 |
-| line | E2E8EE | DDEAE8 | EFE7DF | E3E9E4 | F0E2E4 | E9E4F3 | E5E7EB | EDE5DC | E6E5DE | F6E3EA |
-| success | 2E6B4F | 15803D | 2E6B4F | 15803D | 2E6B4F | 2E6B4F | 15803D | 2E6B4F | 2E6B4F | 2E6B4F |
-| warning | A16207 | B45309 | A16207 | A16207 | A16207 | A16207 | B45309 | A16207 | A16207 | A16207 |
-| danger | A63A3A | B91C1C | B91C1C | A63A3A | C0392B | A63A3A | B91C1C | A63A3A | A63A3A | A63A3A |
-| primarySoft | F0F2F5 | F1F7F8 | FBF4F0 | F2F6F3 | FAF1F2 | F5F2F8 | F1F1F2 | F6F4F2 | F7F8F7 | FBF5F7 |
-| primaryTint | E0E6EC | E2EEF2 | F8E8E2 | E4EDE8 | F4E3E6 | EBE6F0 | E2E3E5 | EDE8E5 | EFF1EF | F8EAEF |
-| primaryDeep | 002143 | 0A5468 | 8C2F09 | 164D2B | 781221 | 422060 | 0C111C | 4D301B | 596458 | 8B3A59 |
+| text | 16222E | 142B33 | 2E241E | 172A20 | 2C2022 | 2A2136 | 232A33 | 2E241D | 33352E | 3A2831 |
+| muted | 5C6C7E | 5B7376 | 78685C | 5C6E62 | 75676A | 6E6480 | 66707C | 7A6B5C | 76796F | 8A6E78 |
+| line | E3E8EF | DDEBEC | F0E6DE | E2EAE3 | F0E3E4 | E9E2F2 | E7E9EC | EDE5DA | E6E5DE | F5E4EA |
+| success | 2F7D52 | 2E9E5B | 3D7A4F | 2F8A52 | 3D7A52 | 3D7A52 | 3D8A57 | 4F7A4E | 5E7A60 | 4F8A5C |
+| warning | A86A1F | D98A1F | C07A12 | B07816 | B07A14 | AD7513 | B0781C | B57A1C | A88A4E | C08A2E |
+| danger | C0524E | D64545 | C0503C | C05248 | C64A3E | BF4A56 | C7504A | B55242 | B07A70 | C0504E |
+| primarySoft | EEF2F7 | EFF7F8 | FCF3EC | F0F6F1 | FBF1F2 | F6F2FA | F2F3F5 | F7F4F0 | F4F6F2 | FCF4F7 |
+| primaryTint | DCE4EE | DFEFF2 | F8E6D8 | E0EDE4 | F5E2E4 | ECE4F5 | E3E6EA | EFE8DF | E8ECE4 | F9E9EF |
+| primaryDeep | 0E2236 | 075E6A | 9A3A12 | 124D31 | 831C28 | 3F1E63 | 141A23 | 4E341E | 4A5646 | 8C3A5B |
 
-> 注：v1 的 blue/mckinsey 合并为 consult（沿用现 DEFAULT_THEME 值）；yellow/olive/vermilion/pine/rose/gray/cyan 未入选（10 套上限，色系重复度高者剔除）。
+> 注：v1 的 blue/mckinsey 合并为 consult；yellow/olive/vermilion/pine/rose/gray/cyan 未入选（10 套上限，色系重复度高者剔除）。2026-08 起各套不再共享语义色（success/warning/danger 等按家族色温单独取值），`primarySoft/Tint/Deep` 由主色派生。
 
 ### 1.4 UI：顶栏「配色」按钮 + 配色浮层
 

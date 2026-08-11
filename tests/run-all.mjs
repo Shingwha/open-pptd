@@ -9,6 +9,7 @@
 //   4. 预置形状全量回归（187 prst 名 + custGeom 结构）
 //   5. 公式转换回归（204 用例 vs 微软官方 XSLT）
 //   6. 图标导出回归
+//   7. 主题预设一致性（themes.md/代码/行为）
 // ============================================================================
 
 import { readFileSync, mkdirSync, writeFileSync, existsSync, statSync, readdirSync } from "node:fs";
@@ -53,6 +54,7 @@ for (const name of projects) {
 // 2. 其余回归
 const suites = [
   ["颜色一致性", "node tests/color-consistency.mjs"],
+  ["主题预设一致性", "node tests/theme-presets-consistency.mjs"],
   ["预置形状全量", "node tests/preset-shapes.mjs"],
   ["公式转换", "node tests/formula/test-formula.mjs"],
   ["图标导出", "node tests/icon/test-icon.mjs"],

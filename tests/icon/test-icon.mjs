@@ -16,6 +16,7 @@ import { ICONS } from "../../editor/core/icon-library.js";
 import { iconToSvg, iconSvgBody, normalizeIconFill } from "../../editor/core/icon-svg.js";
 import { buildPptx } from "../../editor/writer/pptx.js";
 import { unzip } from "../util/unzip.js";
+import { DEFAULT_THEME } from "../../editor/core/theme.js";
 
 let pass = 0, fail = 0;
 const ok = (cond, msg) => {
@@ -23,9 +24,8 @@ const ok = (cond, msg) => {
   else { fail++; console.error(`  ✗ ${msg}`); }
 };
 
-const theme = {
-  colors: { primary: "#002E5D", accent: "#C9A227", text: "#1B2A3A", muted: "#5A6B7C", line: "#E2E8EE" },
-};
+// 与导出端相同的默认主题（不写死色值，避免默认配色更新后同源断言失效）
+const theme = { colors: { ...DEFAULT_THEME.colors } };
 
 console.log("== 1. 192 图标 iconToSvg 生成（含弧/fill-rule/多子路径）==");
 const keys = Object.keys(ICONS);
@@ -45,7 +45,7 @@ ok(Object.keys(svgBodies).length === keys.length, `全部 ${keys.length} 个图�
 // 抽样：fill-rule 保留、主题色解析
 const graphUp = svgBodies["graph-up"];
 ok(graphUp.includes('fill-rule="evenodd"'), "graph-up 保留 fill-rule=evenodd");
-ok(graphUp.includes('#002E5D'), "主题令牌 $primary 解析为 #002E5D");
+ok(graphUp.includes(DEFAULT_THEME.colors.primary), "主题令牌 $primary 解析为默认主色 " + DEFAULT_THEME.colors.primary);
 const bullseye = svgBodies["bullseye"];
 ok(bullseye.includes("A7 7") && bullseye.includes("a7 7"), "bullseye 弧命令原样保留（零转换）");
 
@@ -56,7 +56,7 @@ const elements = keys.map((key, i) => ({
   fill: { type: "solid", color: i % 3 === 0 ? "$primary" : i % 3 === 1 ? "$accent" : "$text" },
 }));
 const deck = {
-  version: "v2", title: "图标回归测试", theme: "blue", size: [960, 540],
+  version: "v2", title: "图标回归测试", theme: {}, size: [960, 540],
   pages: [{ pageType: "content", background: { type: "solid", color: "#FFFFFF" }, elements }],
 };
 const bytes = await buildPptx(deck);

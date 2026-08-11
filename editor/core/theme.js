@@ -12,17 +12,26 @@
 //   - TextContent.style / Cell.textStyle / Table.style 均按官方字符串 "$key" 引用
 // ============================================================================
 
-import { DEFAULT_THEME } from "./theme-presets.js";
+import { DEFAULT_THEME, THEME_PALETTES } from "./theme-presets.js";
 export { DEFAULT_THEME, THEME_PALETTES } from "./theme-presets.js";
 
 const HEX_RE = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
 /**
- * 归一化主题：深合并默认主题（官方结构）。官方 theme 永远是对象（v1 字符串 key 兼容已删）。
+ * 归一化主题：深合并默认主题（官方结构）。
+ * 官方 theme 永远是对象（references/pptd.md §Theme）。兼容 v1 遗留字符串键：
+ * 命中内置预设（THEME_PALETTES，如 "tech"）→ 取其 colors + 默认 textStyles/tableStyles；
+ * 未知键 → 告警并回退默认主题（不再静默，避免 "theme: blue" 悄悄变成默认色）。
  */
 export function normalizeTheme(input) {
   const base = JSON.parse(JSON.stringify(DEFAULT_THEME));
   if (!input) return base;
+  if (typeof input === "string") {
+    const preset = THEME_PALETTES[input];
+    if (preset) return { ...base, colors: { ...preset.colors } };
+    console.warn(`[theme] 未知配色预设 "${input}"，已回退默认主题（可用: ${Object.keys(THEME_PALETTES).join(" / ")}）`);
+    return base;
+  }
   return deepMerge(base, input);
 }
 

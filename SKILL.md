@@ -16,7 +16,7 @@ The .pptd format is a simplified abstraction layer over OOXML that follows basic
 
 ## 实现能力范围（重要约束）
 
-0. **文件读取边界**：整个工作流只需读取 `references/` 下的文档（pptd.md / slides_categories.md 及各场景文档 / shapes.md / icons.md / fonts.md / general-poster.md），在线浏览与 PPTX 导出通过直接运行 `node bin/open-pptd.js serve|export` 和 `node tests/package-integrity.mjs` 完成。**默认不要查看任何源代码**（`editor/`、`lib/`、`bin/`、`scripts/`、`assets/`、`tests/` 下的实现与用例；`docs/` 为开发实现文档，同样默认不读）——除非遇到无法解决的问题（格式疑难、导出异常、编辑器异常等），才允许查阅相关源码定位根因，修复后即止。
+0. **文件读取边界**：整个工作流只需读取 `references/` 下的文档（pptd.md / themes.md / slides_categories.md 及各场景文档 / shapes.md / icons.md / fonts.md / general-poster.md），在线浏览与 PPTX 导出通过直接运行 `node bin/open-pptd.js serve|export` 和 `node tests/package-integrity.mjs` 完成。**默认不要查看任何源代码**（`editor/`、`lib/`、`bin/`、`scripts/`、`assets/`、`tests/` 下的实现与用例；`docs/` 为开发实现文档，同样默认不读）——除非遇到无法解决的问题（格式疑难、导出异常、编辑器异常等），才允许查阅相关源码定位根因，修复后即止。
 
 1. **格式基线**：严格按 `references/pptd.md` 规范实现（该规范定义了 PPTD v2 的全部格式）；导出目标为 PowerPoint 可无修复打开、渲染与编辑器预览一致的 PPTX。
 2. **导出链路**：使用本项目本地导出器 `node bin/open-pptd.js export <deck.pptd> [-o <out.pptx>]`（自研 writer，无浏览器依赖）。
@@ -30,7 +30,7 @@ The .pptd format is a simplified abstraction layer over OOXML that follows basic
    - `fab:` 品牌图标**不支持**（本地库无品牌 logo，用图片元素代替）；
    - 未知图标导出时跳过，生成时必须先查表确认。
 8. **形状**：`references/shapes.md` 为完整清单（177 种预置形状 + 参数/默认值），全部支持；`shapeName: "custom"` 可用 viewBox+path 自定义。
-9. **主题**：内置 10 套配色预设（编辑器顶栏「配色」面板一键应用，仅替换 `theme.colors`；图表系列色走主题 accent1-6 色循环）。生成时仍按 PPT 场景特色直接写 `deck.theme`（colors/textStyles/tableStyles）+ 页面 `$key` 引用（主题 = 生成时一次性设计决策）。
+9. **主题**：内置 10 套配色预设（完整色值见 `references/themes.md`；编辑器顶栏「配色」面板与 CLI `--theme <key>` 可一键应用/换皮，仅替换 `theme.colors`；图表系列色走主题 accent1-6 色循环）。**默认按内容自定义配色**（每套 PPT 独立设计，避免同质化；须满足 themes.md「自定义配色准则」）；**仅当用户明确要求或与用户讨论后决定采用预设时**，才从 themes.md 选择预设。无论自定义还是预设，都把**完整 17 键色值**写入 `deck.theme.colors`（textStyles/tableStyles 沿用 themes.md 默认模板）+ 页面 `$key` 引用；**禁止用字符串形式引用预设**（如 `theme: "tech"`，非官方格式），deck 必须自包含（主题 = 生成时一次性设计决策）。
 10. **字体**：默认 `MiSans`，支持 `references/fonts.md` 所列字体；导出默认嵌入字体（`--no-embed-fonts` 关闭）。
 
 ## PPT production workflow
@@ -66,7 +66,10 @@ Understand the user's requirements based on the context:
 
 Before generating, first read `references/pptd.md` to understand the pptd format definition and constraints.
 
-**主题决策（每次生成必做）**：根据场景特色（行业/受众/用途）确定配色与字体 → 写入 `deck.pptd` 的 `theme`（colors/textStyles/tableStyles）+ 页面元素用 `$key` 引用；不要引用不存在的 `$key`。
+**主题决策（每次生成必做）**：
+1. **默认自定义配色**：根据场景特色（行业/受众/用途/内容调性）设计一套专属配色，设计准则见 `references/themes.md`「自定义配色准则」；写入 `deck.pptd` 的 `theme`（colors/textStyles/tableStyles）+ 页面元素用 `$key` 引用；不要引用不存在的 `$key`，不要用字符串形式引用预设（`theme: "键名"`）。
+2. **预设仅作备选**：用户明确要求使用内置主题色、或与用户讨论后决定采用预设时，才从 `references/themes.md` 的 10 套预设中选择（场景映射见总览表），将该套完整 17 键色值写入 `theme.colors`。
+3. **交付时给出配色建议**：说明本套配色的设计思路（主色/点缀色/图表系列色的选择逻辑），并主动给出可替换的备选预设（如「若想要更沉稳的商务感，可换 consult 咨询蓝」）——用户后续可用编辑器「配色」面板或 CLI `--theme <key>` 一键换皮。
 
 #### Replicating a PPT
 - Analyze the images to estimate element positions, fonts and sizes, etc., and **replicate 1:1 as closely as possible**.
