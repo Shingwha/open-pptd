@@ -236,6 +236,9 @@ export function openTableEditor(el, { onChange }) {
           g.cell.text = input.value;
           commit();
         });
+        // 文字高亮（backgroundColor）：input 背景显示，所见即所得
+        const hl = resolveColor(theme, f.backgroundColor);
+        if (hl) input.style.background = hl;
         td.appendChild(input);
         tr.appendChild(td);
       });

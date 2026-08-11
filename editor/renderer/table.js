@@ -104,7 +104,10 @@ export function renderTable(theme, el) {
       }
       const f = cellFinal(theme, ts, r, c, rowCount, colCount, cell, el.fill);
       const td = document.createElement("td");
-      td.innerHTML = richTextToHtml(theme, cell?.text ?? "");
+      // 文字高亮（官方 CellStyle.backgroundColor，a:highlight 语义）：包 span 渲染在文字上
+      const html = richTextToHtml(theme, cell?.text ?? "");
+      const hl = resolveColor(theme, f.backgroundColor);
+      td.innerHTML = hl ? `<span style="background:${hl}">${html}</span>` : html;
       td.style.cssText = tdCss(theme, f, false);
       if (cell?.rowSpan > 1) td.rowSpan = cell.rowSpan;
       if (cell?.colSpan > 1) td.colSpan = cell.colSpan;
@@ -146,7 +149,6 @@ export function tdCss(theme, f, covered) {
       `color:${resolveColor(theme, f.color) || "#000000"}`,
       `font-size:${f.fontSize}px`,
       f.fontFamily ? `font-family:"${f.fontFamily}",sans-serif` : "",
-      f.backgroundColor ? `background-color:${resolveColor(theme, f.backgroundColor)}` : "",
       `line-height:${f.lineHeight}`,
       f.letterSpacing ? `letter-spacing:${f.letterSpacing}px` : "",
       f.marginTop ? `padding-top:${TABLE_CELL_PAD + f.marginTop}px` : "",
