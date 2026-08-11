@@ -121,14 +121,38 @@ export function openTableEditor(el, { onChange }) {
     const selRows = () => (isRegion() ? [sel.r1, sel.r2] : [sel.r, sel.r]);
     const selCols = () => (isRegion() ? [sel.c1, sel.c2] : [sel.c, sel.c]);
 
-    const addRowBtn = mkBtn("＋ 行", () => {
-      rows.push(Array.from({ length: cols }, () => ({ text: "" })));
+    // 方向插入（Excel 式）：at = 插入位置，n = 插入数量（= 选区跨度）
+    const insertRows = (at, n) => {
+      if (insertGuard(rows, cols, at, "row")) return;
+      rows.splice(at, 0, ...Array.from({ length: n }, () => Array.from({ length: cols }, () => ({ text: "" }))));
+      sel = { r1: at, c1: 0, r2: at + n - 1, c2: cols - 1 }; // 选中新插入的行
       syncDims(el); render(); commit();
-    });
-    const addColBtn = mkBtn("＋ 列", () => {
-      for (const row of rows) row.push({ text: "" });
+    };
+    const insertCols = (at, n) => {
+      if (insertGuard(rows, cols, at, "col")) return;
+      for (const row of rows) row.splice(at, 0, ...Array.from({ length: n }, () => ({ text: "" })));
+      sel = { r1: 0, c1: at, r2: rows.length - 1, c2: at + n - 1 }; // 选中新插入的列
       syncDims(el); render(); commit();
-    });
+    };
+    const insUp = mkBtn("↑ 插行", () => {
+      const [r1, r2] = selRows();
+      insertRows(r1, r2 - r1 + 1);
+    }, { disabled: !sel, title: "在选区上方插入行" });
+    const insDown = mkBtn("↓ 插行", () => {
+      if (!sel) { insertRows(rows.length, 1); return; } // 无选区：追加到末尾
+      const [r1, r2] = selRows();
+      insertRows(r2 + 1, r2 - r1 + 1);
+    }, { title: "在选区下方插入行（无选区时追加到末尾）" });
+    const insLeft = mkBtn("← 插列", () => {
+      const [c1, c2] = selCols();
+      insertCols(c1, c2 - c1 + 1);
+    }, { disabled: !sel, title: "在选区左侧插入列" });
+    const insRight = mkBtn("→ 插列", () => {
+      if (!sel) { insertCols(cols, 1); return; } // 无选区：追加到末尾
+      const [c1, c2] = selCols();
+      insertCols(c2 + 1, c2 - c1 + 1);
+    }, { title: "在选区右侧插入列（无选区时追加到末尾）" });
+
     const delRowBtn = mkBtn("删除行", () => {
       const [r1, r2] = selRows();
       if (rowCount <= 1) return;
@@ -165,7 +189,7 @@ export function openTableEditor(el, { onChange }) {
     splitBtn.title = isMerged ? "" : "选中合并单元格后可拆分";
     const dimBtn = mkBtn("行高/列宽…", () => editDims(el, commit, render));
 
-    toolbar.append(addRowBtn, addColBtn, delRowBtn, delColBtn, sep(), mergeBtn, splitBtn, sep(), dimBtn);
+    toolbar.append(insUp, insDown, insLeft, insRight, sep(), delRowBtn, delColBtn, sep(), mergeBtn, splitBtn, sep(), dimBtn);
     container.appendChild(toolbar);
 
     // ---- 主体：网格 + 样式面板 ----
@@ -270,6 +294,26 @@ export function openTableEditor(el, { onChange }) {
         // 主格在区间内但覆盖出区间，或主格在区间外但覆盖进区间 → 禁止
         if ((s >= a1 && s <= a2 && e > a2) || (s < a1 && e >= a1)) {
           alert(axis === "row" ? "选区涉及跨行合并单元格，请先拆分再删除行" : "选区涉及跨列合并单元格，请先拆分再删除列");
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /** 插入保护：插入位置 at 与合并格冲突检查（axis: row 查 rowSpan / col 查 colSpan）。
+   * 主格覆盖区间跨过插入位置 → 插入后覆盖错位，禁止。 */
+  function insertGuard(rows, cols, at, axis) {
+    const { grid: gd } = tableGrid(rows, cols);
+    for (let r = 0; r < gd.length; r++) {
+      for (let c = 0; c < cols; c++) {
+        const g = gd[r][c];
+        if (!g || g.covered) continue;
+        const span = axis === "row" ? g.cell?.rowSpan || 1 : g.cell?.colSpan || 1;
+        if (span <= 1) continue;
+        const s = axis === "row" ? r : c;
+        if (s < at && at <= s + span - 1) {
+          alert(axis === "row" ? "插入位置与跨行合并单元格冲突，请先拆分" : "插入位置与跨列合并单元格冲突，请先拆分");
           return true;
         }
       }
