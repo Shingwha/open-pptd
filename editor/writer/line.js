@@ -1,9 +1,10 @@
 // ============================================================================
-// writer/line.js — 线条元素导出（p:cxnSp）
+// writer/line.js — 线条元素导出
 // ----------------------------------------------------------------------------
-// 直线（2 点）：prstGeom straightConnector1 + xfrm 旋转（已验证零修复）；
-// 曲线（多点）：a:custGeom（viewBox 坐标系，moveTo + lnTo/cubicBezTo），
-//   与 PowerPoint 存储曲线连接符的结构一致（cxnSp + custGeom）。
+// 直线（2 点）：p:cxnSp + prstGeom straightConnector1 + xfrm 旋转（已验证零修复）；
+// 曲线（多点）：p:sp + a:custGeom（viewBox 坐标系，moveTo + lnTo/cubicBezTo）。
+//   ⚠ 不能用 cxnSp + custGeom：PowerPoint 直接判定文件损坏拒开（实测 0x80070570）；
+//   PowerPoint 自身的自由曲线/曲线连接符也是 p:sp + custGeom。
 // curve: sharp/round = 折线（lnTo 全部点），smooth = 贝塞尔（首尾锚点 + 中间控制点）。
 // ============================================================================
 
@@ -12,7 +13,7 @@ import { buildFill, buildXfrm } from "./drawing.js";
 import { parsePoints, smoothSegments } from "../core/geometry.js";
 import { svgPathToOoxml } from "./custgeom.js";
 
-/** 线条元素 → p:cxnSp XML。 */
+/** 线条元素 → XML（多点曲线为 p:sp+custGeom，2 点直线为 p:cxnSp）。 */
 export function lineXml(theme, element, ctx) {
   const b = element.bounds;
   const pts = parsePoints(element.points, element.viewBox || [1, 1], b);
@@ -55,6 +56,8 @@ export function lineXml(theme, element, ctx) {
         el("a:rect", { l: 0, t: 0, r: Math.round(vw), b: Math.round(vh) }),
         svgPathToOoxml(element.viewBox, d),
       ].join("")),
+      // 曲线形状无填充（PowerPoint 自由曲线默认无线条色外填充）
+      "<a:noFill/>",
     ].join("");
   } else {
     // 直线：straightConnector1 + 旋转（起点→终点）
@@ -93,6 +96,20 @@ export function lineXml(theme, element, ctx) {
     if (start) lnKids.push(headEnd(start));
     if (end) lnKids.push(tailEnd(end));
   }
+  const ln = el("a:ln", { w: Math.round((border.width ?? 1) * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, lnKids.join(""));
+  if (rel.length > 2) {
+    // 多点曲线 → p:sp + custGeom（cxnSp + custGeom 会被 PowerPoint 判定为损坏拒开）
+    return el("p:sp", {}, [
+      el("p:nvSpPr", {}, [
+        el("p:cNvPr", { id: ctx.nextId(), name: escAttr(element.elementId) }),
+        el("p:cNvSpPr"),
+        el("p:nvPr"),
+      ]),
+      el("p:spPr", {}, [geom, ln].join("")),
+      // 空正文（与 PowerPoint 自由曲线一致；p:sp 需要 txBody）
+      el("p:txBody", {}, '<a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="ctr"/></a:p>'),
+    ].join(""));
+  }
   return (
     el("p:cxnSp", {}, [
       el("p:nvCxnSpPr", {}, [
@@ -100,10 +117,7 @@ export function lineXml(theme, element, ctx) {
         el("p:cNvCxnSpPr"),
         el("p:nvPr"),
       ]),
-      el("p:spPr", {}, [
-        geom,
-        el("a:ln", { w: Math.round((border.width ?? 1) * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, lnKids.join("")),
-      ]),
+      el("p:spPr", {}, [geom, ln].join("")),
     ].join(""))
   );
 }
