@@ -726,12 +726,10 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   background: var(--bg); color: var(--ink); outline: none; font-family: ui-monospace, monospace;
 }
 .color-hex:focus { border-color: var(--primary); }
-/* 主题色弹层：点击色块按钮展开 */
+/* 主题色弹层：点击色块按钮展开（fixed 定位由 JS 按按钮位置计算，不受父容器裁剪） */
 .color-pop {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 120;
+  position: fixed;
+  z-index: 300;
   width: 216px;
   padding: 8px;
   background: var(--panel);
