@@ -1293,32 +1293,17 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 }
 .data-table td.row-head:hover, .data-table th.col-head:hover { background: var(--primary-soft); }
 
-/* —— 右侧样式面板 —— */
+/* —— 右侧样式面板（声明式字段，与属性面板同构：prop-group/prop-field/prop-cell） —— */
 .style-panel {
-  width: 232px;
+  width: 244px;
   flex: none;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--bg);
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
   overflow-y: auto;
 }
-.style-panel-title { font-size: 12px; font-weight: 700; color: var(--ink); }
-.style-panel-hint { font-size: 11px; color: #8a94a6; line-height: 1.6; }
-.style-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.style-row label { font-size: 11px; color: #6b7280; flex: none; }
-.style-row select { max-width: 130px; }
-.style-bi { display: flex; gap: 4px; }
-.style-bi .btn { flex: 1; }
-.style-active { background: #2563eb; color: #fff; border-color: #2563eb; }
-.style-row .color-field { gap: 4px; }
-.style-row .color-swatch-btn { width: 22px; height: 22px; border-radius: 5px; }
-.style-row .color-field input[type="color"] { width: 26px; height: 22px; border-radius: 5px; }
-.style-row .color-hex { width: 64px; flex: none; padding: 2px 5px; }
-.style-row .color-pop { top: calc(100% + 4px); }
+.style-panel .prop-group:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+.style-panel .prop-hint { margin: 10px; }
 
 .series-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
 .series-item {

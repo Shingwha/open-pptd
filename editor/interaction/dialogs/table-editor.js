@@ -20,12 +20,12 @@
 import { showDialog, buildCellInput, button, select } from "./base.js";
 import { tableGrid, tryMerge, trySplit, normalizeCells, validateDims, estimateTableLayout } from "../../core/table.js";
 import { resolveColor, resolveTableStyle } from "../../core/theme.js";
-import { colorField } from "../../ui.js";
+import * as ui from "../../ui.js";
 import { cellFinal, tdCss } from "../../renderer/table.js";
+import { renderGroup } from "../fields.js";
 
 const H_ALIGNS = [["left", "左"], ["center", "居中"], ["right", "右"], ["justify", "两端"]];
 const V_ALIGNS = [["top", "上"], ["middle", "中"], ["bottom", "下"]];
-const FONT_SIZES = [10, 12, 13, 14, 16, 18, 20, 24, 28, 32];
 
 /** 当前编辑器主题（对话框内预览与画布同源）。 */
 function editorTheme() {
@@ -423,14 +423,10 @@ export function openTableEditor(el, { onChange }) {
   function renderStylePanel() {
     const panel = document.createElement("div");
     panel.className = "style-panel";
-    const title = document.createElement("div");
-    title.className = "style-panel-title";
-    title.textContent = "单元格样式";
-    panel.appendChild(title);
 
     if (!sel || sel.r1 != null) {
       const hint = document.createElement("div");
-      hint.className = "style-panel-hint";
+      hint.className = "prop-hint";
       hint.textContent = "单击选中单元格后可编辑样式；拖拽选择区域后可合并/删除。";
       panel.appendChild(hint);
       return panel;
@@ -439,49 +435,69 @@ export function openTableEditor(el, { onChange }) {
     if (!cell) return panel;
 
     const set = (fn) => { fn(cell); commit(); render(); };
-    const F = (label, control) => {
-      const w = document.createElement("div");
-      w.className = "style-row";
-      const l = document.createElement("label");
-      l.textContent = label;
-      w.append(l, control);
-      return w;
+    // 控件工厂：直接提交（表格面板无需 focus/blur 事务）
+    const h = {
+      textInput: (v, c, o) => ui.textInput(v, c, o),
+      numInput: (v, c, o) => ui.numInput(v, c, o),
+      colorField: (v, c, o) =>
+        ui.colorField(v, c, {
+          resolve: (val) => resolveColor(editorTheme(), val),
+          swatches: themeSwatches(),
+          ...o,
+        }),
+      selectInput: (options, value, onCommit, o) => ui.selectInput(options, value, onCommit, o),
+      checkbox: (l, ch, c, o) => ui.checkbox(l, ch, c, o),
+      button: (label, onClick, o) => ui.button(label, onClick, o),
     };
-
-    // 文字样式
-    const bBtn = button(cell.bold ? "B ✓" : "B", () => set((c) => { c.bold = !c.bold; }));
-    bBtn.className += cell.bold ? " style-active" : "";
-    const iBtn = button(cell.italic ? "I ✓" : "I", () => set((c) => { c.italic = !c.italic; }));
-    iBtn.className += cell.italic ? " style-active" : "";
-    const biWrap = document.createElement("div");
-    biWrap.className = "style-bi";
-    biWrap.append(bBtn, iBtn);
-    panel.appendChild(F("文字", biWrap));
-
-    const sizeSel = select(FONT_SIZES.map((n) => [String(n), `${n}pt`]), String(cell.fontSize || 13), (v) => set((c) => { c.fontSize = Number(v); }));
-    panel.appendChild(F("字号", sizeSel));
-
-    const colorCtl = colorField(cell.color || "$text", (v) => set((c) => { v ? (c.color = v) : delete c.color; }), {
-      resolve: (val) => resolveColor(editorTheme(), val),
-      swatches: themeSwatches(),
-    });
-    panel.appendChild(F("字色", colorCtl));
-
-    const fillCtl = colorField(cell.fill?.color || "", (v) => set((c) => { v ? (c.fill = { type: "solid", color: v }) : delete c.fill; }), {
-      resolve: (val) => resolveColor(editorTheme(), val),
-      swatches: themeSwatches(),
-    });
-    panel.appendChild(F("填充", fillCtl));
-
-    const hSel = select(H_ALIGNS, cell.align?.[0] || "", (v) => set((c) => { c.align = [v || "left", c.align?.[1] || "middle"]; }));
-    panel.appendChild(F("水平", hSel));
-    const vSel = select(V_ALIGNS, cell.align?.[1] || "", (v) => set((c) => { c.align = [c.align?.[0] || "left", v || "middle"]; }));
-    panel.appendChild(F("垂直", vSel));
-
     const tsKeys = Object.keys(editorTheme()?.textStyles || {});
-    const tsSel = select([["", "（无）"], ...tsKeys.map((k) => [k, `$${k}`])], cell.textStyle || "", (v) => set((c) => { v ? (c.textStyle = v) : delete c.textStyle; }));
-    panel.appendChild(F("textStyle", tsSel));
-
+    const groups = [
+      {
+        title: "文字",
+        fields: [
+          { kind: "checks", items: [
+            { label: "粗体", get: () => !!cell.bold, set: (v) => set((c) => { c.bold = v; }) },
+            { label: "斜体", get: () => !!cell.italic, set: (v) => set((c) => { c.italic = v; }) },
+          ] },
+          { kind: "num", label: "字号", min: 6, max: 72,
+            get: () => cell.fontSize || 13,
+            set: (v) => set((c) => { c.fontSize = Number(v); }) },
+          { kind: "color", label: "字色",
+            get: () => cell.color || "$text",
+            set: (v) => set((c) => { v ? (c.color = v) : delete c.color; }) },
+          { kind: "color", label: "高亮",
+            get: () => cell.backgroundColor || "",
+            set: (v) => set((c) => { v ? (c.backgroundColor = v) : delete c.backgroundColor; }) },
+        ],
+      },
+      {
+        title: "外观",
+        fields: [
+          { kind: "color", label: "填充",
+            get: () => cell.fill?.color || "",
+            set: (v) => set((c) => { v ? (c.fill = { type: "solid", color: v }) : delete c.fill; }) },
+        ],
+      },
+      {
+        title: "对齐",
+        fields: [
+          { kind: "select", label: "水平", options: H_ALIGNS,
+            get: () => cell.align?.[0] || "left",
+            set: (v) => set((c) => { c.align = [v || "left", c.align?.[1] || "middle"]; }) },
+          { kind: "select", label: "垂直", options: V_ALIGNS,
+            get: () => cell.align?.[1] || "middle",
+            set: (v) => set((c) => { c.align = [c.align?.[0] || "left", v || "middle"]; }) },
+        ],
+      },
+      {
+        title: "引用",
+        fields: [
+          { kind: "select", label: "textStyle", options: [["", "（无）"], ...tsKeys.map((k) => [k, `$${k}`])],
+            get: () => cell.textStyle || "",
+            set: (v) => set((c) => { v ? (c.textStyle = v) : delete c.textStyle; }) },
+        ],
+      },
+    ];
+    groups.forEach((g) => panel.appendChild(renderGroup(g, h)));
     return panel;
   }
 
