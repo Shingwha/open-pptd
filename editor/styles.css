@@ -729,7 +729,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 /* 主题色弹层：点击色块按钮展开（fixed 定位由 JS 按按钮位置计算，不受父容器裁剪） */
 .color-pop {
   position: fixed;
-  z-index: 300;
+  z-index: 1200; /* 高于对话框遮罩（1000），弹层可覆盖在任何容器之上 */
   width: 216px;
   padding: 8px;
   background: var(--panel);
