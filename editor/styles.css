@@ -1249,23 +1249,47 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .data-table input:focus { background: var(--primary-soft); }
 
 .data-table .corner { width: 26px; border: none; background: transparent; }
-.data-table td.row-del { width: 26px; text-align: center; padding: 0; }
-
-.row-del-btn, .col-del {
-  width: 18px;
-  height: 18px;
+/* —— Excel 式行头/列头（行号/列字母，悬停显示 ✕ 删除） —— */
+.data-table td.row-head, .data-table th.col-head {
+  width: 24px;
+  min-width: 24px;
+  text-align: center;
+  padding: 0;
+  background: var(--bg);
+  color: var(--faint);
+  font-size: 10px;
+  user-select: none;
+  position: relative;
+}
+.data-table th.col-head { border-bottom: 1px solid var(--line-strong); }
+.data-table td.row-head { border-right: 1px solid var(--line-strong); }
+.data-table .head-corner {
+  width: 24px;
+  min-width: 24px;
+  border-right: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--bg);
+  padding: 0;
+}
+.head-num, .head-letter { display: inline; }
+.head-del {
+  display: none;
+  width: 16px;
+  height: 16px;
   border: 0;
   background: none;
-  color: var(--faint);
+  color: var(--danger);
   cursor: pointer;
   font-size: 10px;
   line-height: 1;
   border-radius: 4px;
-  display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
 }
-.row-del-btn:hover, .col-del:hover { background: var(--danger-soft); color: var(--danger); }
+.row-head:hover .head-num, .col-head:hover .head-letter { display: none; }
+.row-head:hover .head-del, .col-head:hover .head-del { display: inline-flex; }
+.head-del:hover { background: var(--danger-soft); }
 
 .grid-toolbar {
   display: flex;

@@ -132,26 +132,53 @@ export function openTableEditor(el, { onChange }) {
       colgroup.appendChild(col);
     });
     table.appendChild(colgroup);
+    // 列头行（Excel 式：A/B/C…，悬停显示 ✕ 删除列）
+    const thead = document.createElement("thead");
+    const headTr = document.createElement("tr");
+    const corner = document.createElement("th");
+    corner.className = "head-corner";
+    headTr.appendChild(corner);
+    for (let c = 0; c < cols; c++) {
+      const th = document.createElement("th");
+      th.className = "col-head";
+      const letter = document.createElement("span");
+      letter.className = "head-letter";
+      letter.textContent = String.fromCharCode(65 + c);
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "head-del";
+      del.textContent = "✕";
+      del.title = "删除列";
+      del.addEventListener("click", () => deleteColumn(c));
+      th.append(letter, del);
+      headTr.appendChild(th);
+    }
+    thead.appendChild(headTr);
+    table.appendChild(thead);
     const tbody = document.createElement("tbody");
     gd.forEach((gRow, r) => {
       const tr = document.createElement("tr");
       tr.style.height = `${rowHeights[r] ?? 26}px`;
-      // 行删除按钮列（跨行合并的主格所在行才显示）
+      // 行头（Excel 式：行号，悬停显示 ✕ 删除行；跨行合并主格行不提供删除）
       const td0 = document.createElement("td");
-      td0.className = "row-del";
+      td0.className = "row-head";
+      const num = document.createElement("span");
+      num.className = "head-num";
+      num.textContent = String(r + 1);
       const hasRowSpan = gRow.some((g) => !g.covered && (g.cell?.rowSpan || 1) > 1);
+      td0.appendChild(num);
       if (!hasRowSpan) {
         const delBtn = document.createElement("button");
         delBtn.type = "button";
-        delBtn.className = "row-del-btn";
+        delBtn.className = "head-del";
         delBtn.textContent = "✕";
         delBtn.title = "删除行";
-        delBtn.onclick = () => {
+        delBtn.addEventListener("click", () => {
           rows.splice(r, 1);
           syncDims(el);
           renderGrid();
           commit();
-        };
+        });
         td0.appendChild(delBtn);
       }
       tr.appendChild(td0);
@@ -189,7 +216,7 @@ export function openTableEditor(el, { onChange }) {
     bindDragSelect(table);
 
     // ---- 样式条（选中单格时显示） ----
-    grid.appendChild(renderStyleBar());
+    refreshStyleBar();
 
     // 合并/拆分按钮动态态
     if (isRegion()) {
@@ -206,6 +233,32 @@ export function openTableEditor(el, { onChange }) {
     splitBtn.title = isMerged ? "" : "选中合并单元格后可拆分";
 
     renderSelection();
+  }
+
+  /** 删除列（含合并保护：该列存在跨行/跨列合并相关格时禁止）。 */
+  function deleteColumn(c) {
+    const rows2 = el.rows;
+    const gd2 = tableGrid(rows2, colCount()).grid;
+    for (const gRow of gd2) {
+      const g = gRow[c];
+      if (!g) continue;
+      if (g.covered || (g.cell?.rowSpan || 1) > 1 || (g.cell?.colSpan || 1) > 1) {
+        alert("该列包含合并单元格，请先拆分再删除列");
+        return;
+      }
+    }
+    for (const row of rows2) row.splice(c, 1);
+    syncDims(el);
+    renderGrid();
+    commit();
+  }
+
+  /** 样式条（选中单格显示样式控件，区域/未选中显示提示）。 */
+  let styleBar = null;
+  function refreshStyleBar() {
+    if (styleBar) styleBar.remove();
+    styleBar = renderStyleBar();
+    grid.appendChild(styleBar);
   }
 
   /**
@@ -228,6 +281,7 @@ export function openTableEditor(el, { onChange }) {
       dragSel = { anchor: { r, c }, cur: { r, c } };
       sel = { r, c };
       renderSelection();
+      refreshStyleBar(); // 单击选中：立即显示单元格样式
     });
 
     table.addEventListener("pointermove", (e) => {
@@ -245,7 +299,12 @@ export function openTableEditor(el, { onChange }) {
       renderSelection();
     });
 
-    const endDrag = () => { dragSel = null; };
+    const endDrag = () => {
+      if (!dragSel) return;
+      dragSel = null;
+      // 松手：区域选区完成 → 重建（合并按钮显示 N×M、样式条切提示态）
+      if (isRegion()) renderGrid();
+    };
     table.addEventListener("pointerup", endDrag);
     table.addEventListener("pointercancel", endDrag);
     window.addEventListener("blur", endDrag);
