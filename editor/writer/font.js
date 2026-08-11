@@ -128,6 +128,13 @@ export async function buildEmbeddedFonts(deck, options = {}) {
       console.warn(`[font] 跳过「${spec.family}」: ${check.reason}`);
       continue;
     }
+    if (spec.family !== result.info.family) {
+      // 声明族名与字体注册名（name 表 ID16 优先/ID1 回退）不一致时，页面按声明名引用会失配
+      console.warn(
+        `[font] 声明族名「${spec.family}」与字体注册名「${result.info.family}」不一致：` +
+        `页面 fontFamily 请引用注册名「${result.info.family}」，否则 PowerPoint 不认嵌入字体`
+      );
+    }
     const n = parts.length + 1;
     const slot = result.info.weight >= 700 ? "bold" : result.info.italic ? "italic" : "regular"; // weight→bold / italic→italic / 否则 regular
     parts.push({ path: `ppt/fonts/font${n}.fntdata`, bytes: result.bytes });
