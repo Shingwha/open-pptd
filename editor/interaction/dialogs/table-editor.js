@@ -111,7 +111,8 @@ export function openTableEditor(el, { onChange }) {
       el.columnWidths = [...cw.slice(0, at), ...Array.from({ length: n }, () => w), ...cw.slice(at)];
       const total = el.columnWidths.reduce((a, b) => a + b, 0) || 1;
       el.columnWidths = el.columnWidths.map((x) => x / total); // 归一保持和 = 1（官方约束）
-      ({ grid: gd } = tableGrid(rows, colCount()));
+      cols = colCount(); // 更新闭包列数快照（组件 getCols 读取），否则重建仍用旧列数
+      ({ grid: gd } = tableGrid(rows, cols));
       syncDims(el);
       commit();
     },
@@ -128,7 +129,8 @@ export function openTableEditor(el, { onChange }) {
         const total = el.columnWidths.reduce((a, b) => a + b, 0) || 1;
         el.columnWidths = el.columnWidths.map((x) => x / total);
       }
-      ({ grid: gd } = tableGrid(rows, colCount()));
+      cols = colCount(); // 更新闭包列数快照（组件 getCols 读取）
+      ({ grid: gd } = tableGrid(rows, cols));
       syncDims(el);
       commit();
     },
