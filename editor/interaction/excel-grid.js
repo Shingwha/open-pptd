@@ -64,7 +64,6 @@ export function createExcelGrid(opts) {
     cellCss = () => "", inputCss = () => "",
     rowHeight = () => null, colWidths = null,
     colHeadContent = null, cellTitle = () => "", cellPlaceholder = () => "",
-    onColResize = null,
     canInsertRows = null, canInsertCols = null,
     canDeleteRows = null, canDeleteCols = null,
     onInsertRows, onInsertCols, onDeleteRows, onDeleteCols,
@@ -155,19 +154,16 @@ export function createExcelGrid(opts) {
     // fixed 布局：列宽完全由 colgroup 决定（行头恒 18px，列头 input 等内容不撑宽）
     table.style.tableLayout = "fixed";
     const colgroup = document.createElement("colgroup");
-    const colEls = [];
     // 行头列（固定窄列，必须占 colgroup 首位，否则数据列百分比错位挤爆行头）
     const headCol = document.createElement("col");
     headCol.style.width = "18px";
     colgroup.appendChild(headCol);
-    colEls.push(headCol);
     const widths = colWidths ? colWidths() : null;
     for (let c = 0; c < cols; c++) {
       const col = document.createElement("col");
       col.style.width = widths ? `${(widths[c] * 100).toFixed(3)}%` : `calc((100% - 18px) / ${cols})`;
       col.style.minWidth = `${MIN_COL_W}px`; // 列多时不再挤压：超出容器宽度后出现横向滚动
       colgroup.appendChild(col);
-      colEls.push(col);
     }
     table.appendChild(colgroup);
 
@@ -183,45 +179,6 @@ export function createExcelGrid(opts) {
       th.dataset.cc = String(c);
       const content = colHeadContent ? colHeadContent(c) : null;
       th.append(content ?? colLetter(c));
-      // 列宽拖拽手柄（Excel 式：拖列头右边缘调列宽；仅消费方启用时添加）
-      if (onColResize) {
-        const handle = document.createElement("div");
-        handle.className = "col-resize-handle";
-        handle.title = "拖拽调整列宽";
-        handle.addEventListener("pointerdown", (e) => {
-          e.stopPropagation(); // 不触发列选择
-          e.preventDefault();
-          const startX = e.clientX;
-          const startRatio = widths ? widths[c] : 1 / cols;
-          const tableW = table.getBoundingClientRect().width || 1;
-          const colEl = colEls[c + 1];
-          let lastX = startX;
-          const move = (ev) => {
-            lastX = ev.clientX;
-            const nr = Math.min(0.8, Math.max(0.05, startRatio + (lastX - startX) / tableW));
-            colEl.style.width = `${(nr * 100).toFixed(3)}%`; // 拖拽中即时反馈
-          };
-          const up = () => {
-            handle.removeEventListener("pointermove", move);
-            handle.removeEventListener("pointerup", up);
-            handle.removeEventListener("pointercancel", up);
-            const nr = Math.min(0.8, Math.max(0.05, startRatio + (lastX - startX) / tableW));
-            // 其余列按比例缩放，保持和 = 1（官方约束）
-            const others = (widths ? [...widths] : Array.from({ length: cols }, () => 1 / cols));
-            others.splice(c, 1);
-            const rest = others.reduce((a, b) => a + b, 0) || 1;
-            const scale = rest > 0 ? (1 - nr) / rest : 1;
-            const ratios = others.map((w) => w * scale);
-            ratios.splice(c, 0, nr);
-            onColResize(ratios);
-          };
-          handle.setPointerCapture(e.pointerId);
-          handle.addEventListener("pointermove", move);
-          handle.addEventListener("pointerup", up);
-          handle.addEventListener("pointercancel", up);
-        });
-        th.appendChild(handle);
-      }
       headTr.appendChild(th);
     }
     thead.appendChild(headTr);
