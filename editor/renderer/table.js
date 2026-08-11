@@ -5,8 +5,10 @@
 //   Cell 内联字段 > Cell.textStyle 引用 > 位置分类 > bodyStyles > cellStyle > 默认
 // ============================================================================
 
-import { resolveColor, resolveTableStyle, resolveTableCellStyle, resolveTextStyle } from "../core/theme.js";
+import { resolveColor, resolveFont, resolveTableStyle, resolveTableCellStyle, resolveTextStyle } from "../core/theme.js";
 import { estimateTableLayout, tableGrid, TABLE_FONT_SIZE, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../core/table.js";
+import { parseRichText } from "../core/richtext.js";
+import { runSpan, applyParaStyle } from "./text.js";
 
 const H_ALIGN = { left: "left", center: "center", right: "right", justify: "justify", distributed: "justify" };
 
@@ -105,10 +107,8 @@ export function renderTable(theme, el) {
       }
       const f = cellFinal(theme, ts, r, c, rowCount, colCount, cell, el.fill);
       const td = document.createElement("td");
-      // 文字高亮（官方 CellStyle.backgroundColor，a:highlight 语义）：包 span 渲染在文字上
-      const html = richTextToHtml(theme, cell?.text ?? "");
-      const hl = resolveColor(theme, f.backgroundColor);
-      td.innerHTML = hl ? `<span style="background:${hl}">${html}</span>` : html;
+      // 富文本 + 公式：parseRichText + runSpan 与文本框同管线（\(...\) → KaTeX MathML）
+      td.appendChild(renderCellContent(theme, cell?.text ?? "", f));
       td.style.cssText = tdCss(theme, f, false);
       if (cell?.rowSpan > 1) td.rowSpan = cell.rowSpan;
       if (cell?.colSpan > 1) td.colSpan = cell.colSpan;
@@ -161,8 +161,52 @@ export function tdCss(theme, f, covered) {
   parts.push(`background:${fillColor || "transparent"}`);
   return parts.filter(Boolean).join(";");
 }
-export function richTextToHtml(theme, text) {
-  if (!text) return "";
-  const src = String(text);
-  return src.replace(/\$([a-zA-Z][\w-]*)/g, (_, key) => resolveColor(theme, `$${key}`) || "#000000");
+/**
+ * 单元格富文本 → DOM（与 renderer/text.js 同管线：parseRichText + runSpan）。
+ * 公式 \(...\) 由 runSpan → formulaSpan 走 KaTeX MathML 原生渲染；此前
+ * richTextToHtml 只做 $key 替换，公式源码会原样显示。
+ * 文字高亮（官方 CellStyle.backgroundColor，a:highlight 语义）：每段包
+ * inline span 渲染在文字上，背景紧贴文字行。
+ */
+function renderCellContent(theme, text, f) {
+  const tree = parseRichText(text || "");
+  const base = {
+    color: f.color,
+    fontSize: f.fontSize,
+    bold: f.bold,
+    italic: f.italic,
+    gradient: null,
+  };
+  const root = document.createElement("div");
+  // 高度不预设：由内容决定，td 的 vertical-align（f.align[1]）负责垂直居中；
+  // 若设 height:100% 会撑满单元格使 td 的 vertical-align 失效
+  const css = ["width:100%;box-sizing:border-box;overflow:hidden"];
+  css.push(`font-size:${f.fontSize}px`);
+  const color = resolveColor(theme, f.color);
+  if (color) css.push(`color:${color}`);
+  if (f.bold) css.push("font-weight:bold");
+  if (f.italic) css.push("font-style:italic");
+  css.push(`line-height:${f.lineHeight ?? 1}`);
+  if (f.letterSpacing != null) css.push(`letter-spacing:${f.letterSpacing}px`);
+  const font = resolveFont(theme, f.fontFamily);
+  css.push(`font-family:"${font.latin}","${font.ea}",sans-serif`);
+  const hAlign = H_ALIGN[Array.isArray(f.align) ? f.align[0] : null] || "center";
+  css.push(`text-align:${hAlign}`);
+  root.style.cssText = css.join(";");
+
+  const hl = resolveColor(theme, f.backgroundColor);
+  for (const para of tree.paragraphs) {
+    const p = document.createElement("div");
+    applyParaStyle(p, para);
+    if (hl) {
+      const inner = document.createElement("span");
+      inner.style.background = hl;
+      for (const run of para.runs) inner.appendChild(runSpan(theme, run, base));
+      p.appendChild(inner);
+    } else {
+      for (const run of para.runs) p.appendChild(runSpan(theme, run, base));
+    }
+    root.appendChild(p);
+  }
+  return root;
 }

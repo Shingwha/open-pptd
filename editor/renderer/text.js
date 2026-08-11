@@ -36,7 +36,7 @@ function shadowCss(theme, shadow) {
 }
 
 /** run 层：只写 run 显式设置的样式（相对 base 的差异）。公式 run → KaTeX MathML。 */
-function runSpan(theme, run, base) {
+export function runSpan(theme, run, base) {
   if (run.formula) return formulaSpan(theme, run, base);
   const s = run.style || {};
   const node = run.href ? document.createElement("a") : document.createElement("span");
@@ -105,7 +105,7 @@ function textAlignCss(v) {
 }
 
 /** 段落层：只写段落显式样式（text-align / line-height / margin…）。 */
-function applyParaStyle(el, para) {
+export function applyParaStyle(el, para) {
   const s = para.style || {};
   const css = [];
   if (s.textAlign) css.push(`text-align:${textAlignCss(s.textAlign)}`);
