@@ -178,6 +178,10 @@ export function openTableEditor(el, { onChange }) {
     const table = document.createElement("table");
     table.className = "data-table";
     const colgroup = document.createElement("colgroup");
+    // 行头列（固定窄列，必须占 colgroup 首位，否则数据列百分比错位挤爆行头）
+    const headCol = document.createElement("col");
+    headCol.style.width = "18px";
+    colgroup.appendChild(headCol);
     columnWidths.forEach((cw) => {
       const col = document.createElement("col");
       col.style.width = `${(cw * 100).toFixed(3)}%`;
@@ -274,6 +278,64 @@ export function openTableEditor(el, { onChange }) {
   // 拖拽选区（单元格区域 / 行头整行 / 列头整列）
   // --------------------------------------------------------------------------
   function bindDragSelect(gridWrap) {
+    let dragScrollRaf = 0;
+
+    /** 按当前坐标更新选区（三种模式共用）。 */
+    const updateDragSel = (clientX, clientY) => {
+      if (!dragSel) return;
+      const elAt = document.elementFromPoint(clientX, clientY);
+      const rows = el.rows.length;
+      const cols = colCount();
+      if (dragSel.mode === "col") {
+        const th = elAt?.closest?.("th.col-head");
+        if (!th) return;
+        const c = Math.min(cols - 1, Math.max(0, Number(th.dataset.cc)));
+        if (c === dragSel.cur.c) return;
+        dragSel.cur.c = c;
+        sel = { r1: 0, c1: Math.min(dragSel.anchor.c, c), r2: rows - 1, c2: Math.max(dragSel.anchor.c, c) };
+      } else if (dragSel.mode === "row") {
+        const th0 = elAt?.closest?.("td.row-head");
+        if (!th0) return;
+        const r = Math.min(rows - 1, Math.max(0, Number(th0.dataset.rr)));
+        if (r === dragSel.cur.r) return;
+        dragSel.cur.r = r;
+        sel = { r1: Math.min(dragSel.anchor.r, r), c1: 0, r2: Math.max(dragSel.anchor.r, r), c2: cols - 1 };
+      } else {
+        const td = elAt?.closest?.("td.grid-cell:not(.cell-covered)");
+        if (!td) return;
+        const r = Number(td.dataset.tr);
+        const c = Number(td.dataset.tc);
+        if (r === dragSel.cur.r && c === dragSel.cur.c) return;
+        dragSel.cur = { r, c };
+        sel = {
+          r1: Math.min(dragSel.anchor.r, r), c1: Math.min(dragSel.anchor.c, c),
+          r2: Math.max(dragSel.anchor.r, r), c2: Math.max(dragSel.anchor.c, c),
+        };
+      }
+      renderSelection();
+    };
+
+    /** 边缘自动滚动（Excel 式）：鼠标贴容器边缘时持续滚动并扩展选区。 */
+    const dragScrollTick = () => {
+      if (!dragSel) { dragScrollRaf = 0; return; }
+      const rect = gridWrap.getBoundingClientRect();
+      const M = 26;
+      let dx = 0;
+      let dy = 0;
+      if (dragSel.my < rect.top + M) dy = -14;
+      else if (dragSel.my > rect.bottom - M) dy = 14;
+      if (dragSel.mx < rect.left + M) dx = -14;
+      else if (dragSel.mx > rect.right - M) dx = 14;
+      if (dx || dy) {
+        gridWrap.scrollTop += dy;
+        gridWrap.scrollLeft += dx;
+        updateDragSel(dragSel.mx, dragSel.my);
+        dragScrollRaf = requestAnimationFrame(dragScrollTick);
+      } else {
+        dragScrollRaf = 0;
+      }
+    };
+
     gridWrap.addEventListener("pointerdown", (e) => {
       // 列头 → 整列模式
       const th = e.target.closest("th.col-head");
@@ -313,39 +375,25 @@ export function openTableEditor(el, { onChange }) {
 
     gridWrap.addEventListener("pointermove", (e) => {
       if (!dragSel) return;
-      const elAt = document.elementFromPoint(e.clientX, e.clientY);
-      const rows = el.rows.length;
-      const cols = colCount();
-      if (dragSel.mode === "col") {
-        const th = elAt?.closest?.("th.col-head");
-        if (!th) return;
-        const c = Math.min(cols - 1, Math.max(0, Number(th.dataset.cc)));
-        if (c === dragSel.cur.c) return;
-        dragSel.cur.c = c;
-        sel = { r1: 0, c1: Math.min(dragSel.anchor.c, c), r2: rows - 1, c2: Math.max(dragSel.anchor.c, c) };
-      } else if (dragSel.mode === "row") {
-        const th0 = elAt?.closest?.("td.row-head");
-        if (!th0) return;
-        const r = Math.min(rows - 1, Math.max(0, Number(th0.dataset.rr)));
-        if (r === dragSel.cur.r) return;
-        dragSel.cur.r = r;
-        sel = { r1: Math.min(dragSel.anchor.r, r), c1: 0, r2: Math.max(dragSel.anchor.r, r), c2: cols - 1 };
-      } else {
-        const td = elAt?.closest?.("td.grid-cell:not(.cell-covered)");
-        if (!td) return;
-        const r = Number(td.dataset.tr);
-        const c = Number(td.dataset.tc);
-        if (r === dragSel.cur.r && c === dragSel.cur.c) return;
-        dragSel.cur = { r, c };
-        sel = {
-          r1: Math.min(dragSel.anchor.r, r), c1: Math.min(dragSel.anchor.c, c),
-          r2: Math.max(dragSel.anchor.r, r), c2: Math.max(dragSel.anchor.c, c),
-        };
+      dragSel.mx = e.clientX;
+      dragSel.my = e.clientY;
+      updateDragSel(e.clientX, e.clientY);
+      // 边缘自动滚动开关
+      const rect = gridWrap.getBoundingClientRect();
+      const M = 26;
+      const inEdge =
+        e.clientY < rect.top + M || e.clientY > rect.bottom - M ||
+        e.clientX < rect.left + M || e.clientX > rect.right - M;
+      if (inEdge) {
+        if (!dragScrollRaf) dragScrollRaf = requestAnimationFrame(dragScrollTick);
+      } else if (dragScrollRaf) {
+        cancelAnimationFrame(dragScrollRaf);
+        dragScrollRaf = 0;
       }
-      renderSelection();
     });
 
     const endDrag = () => {
+      if (dragScrollRaf) { cancelAnimationFrame(dragScrollRaf); dragScrollRaf = 0; }
       if (!dragSel) return;
       dragSel = null;
       if (isRegion()) render(); // 区域完成：重建（按钮态「合并 N×M」/删除行列启用）
