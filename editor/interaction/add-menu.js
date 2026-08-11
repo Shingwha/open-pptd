@@ -242,8 +242,9 @@ export function bindAddMenu({ fab, menu, addApi }) {
         return;
       }
       if (activeCat === "全部" && !q.trim()) {
-        // 全部模式：按分类分组展示（带小标题）
+        // 全部模式：按分类分组展示（每组一个矩阵网格 + 小标题）
         let lastCat = null;
+        let grid = null;
         for (const e of list) {
           if (e.cat !== lastCat) {
             lastCat = e.cat;
@@ -251,8 +252,11 @@ export function bindAddMenu({ fab, menu, addApi }) {
             t.className = "add-sub-title";
             t.textContent = e.cat;
             wrap.appendChild(t);
+            grid = document.createElement("div");
+            grid.className = "add-thumb-grid";
+            wrap.appendChild(grid);
           }
-          wrap.appendChild(nodeFn(e));
+          grid.appendChild(nodeFn(e));
         }
       } else {
         const grid = document.createElement("div");
