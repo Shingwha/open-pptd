@@ -90,7 +90,7 @@ export function parseFontResources(fonts) {
 }
 
 /**
- * 解析字体：字符串或 {latin, ea} → {latin, ea}（未指定侧回退默认 "MiSans"）。
+ * 解析字体：字符串或 {latin, ea} → {latin, ea}（未指定侧回退默认 "Microsoft YaHei"）。
  * 字符串形式（如 "KaiTi"）= 中西文统一用该字体：latin+ea 双槽同写——
  * OOXML 中文字符走 ea 槽，只写 latin 会导致中文回退默认字体。
  * 字符串先查主题字体资源表（资源 key → family）。
@@ -111,8 +111,8 @@ export function resolveFont(theme, font) {
   return { latin: DEFAULT_FONT, ea: DEFAULT_FONT };
 }
 
-/** 官方默认字体（Style Priority 默认值：fontFamily = "MiSans"）。 */
-export const DEFAULT_FONT = "MiSans";
+/** 官方默认字体（Style Priority 默认值：fontFamily = "Microsoft YaHei"，系统自带、仅声明不嵌入）。 */
+export const DEFAULT_FONT = "Microsoft YaHei";
 
 /**
  * 图表系列色循环（官方 §3.1 "Theme.colors theme color cycle"）：

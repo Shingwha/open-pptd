@@ -44,7 +44,7 @@ For property values that conflict, the first source with a value is found by sea
 | color | `#000000` |
 | backgroundColor | Not applied |
 | fontSize | `18` |
-| fontFamily | `"MiSans"` |
+| fontFamily | `"Microsoft YaHei"` |
 | bold | `false` |
 | italic | `false` |
 | lineHeight | `1` |
@@ -73,7 +73,7 @@ For property values that conflict, the first source with a value is found by sea
 | color | `#000000` |
 | backgroundColor | Not applied |
 | fontSize | Auto-adapts based on cell height |
-| fontFamily | `"MiSans"` |
+| fontFamily | `"Microsoft YaHei"` |
 | bold | `false` |
 | italic | `false` |
 | lineHeight | `1` |
@@ -174,8 +174,8 @@ type FontFamily = string | { latin: string; ea: string };
 ```
 | Form | Example | Description |
 |------|------|------|
-| String | `"MiSans"` | Chinese and English use the same font uniformly |
-| Object | `{latin: "Arial", ea: "MiSans"}` | Explicitly specify Latin (latin) and East Asian (ea) fonts separately |
+| String | `"Microsoft YaHei"` | Chinese and English use the same font uniformly |
+| Object | `{latin: "Arial", ea: "Microsoft YaHei"}` | Explicitly specify Latin (latin) and East Asian (ea) fonts separately |
 
 See [fonts.md](./fonts.md) for the list of available fonts
 

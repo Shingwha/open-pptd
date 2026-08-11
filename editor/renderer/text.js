@@ -4,7 +4,7 @@
 // 继承链：content 基础样式 → 容器层（root）→ 段落（显式差异）→ run（显式差异）
 // 关键：基础样式只写一次（容器层继承），span/段落内联样式只保留"显式差异"。
 //
-// 官方默认值（TextContent）：color #000000 / fontSize 18 / fontFamily MiSans /
+// 官方默认值（TextContent）：color #000000 / fontSize 18 / fontFamily Microsoft YaHei /
 // lineHeight 1 / align [left, top]。渲染端补齐浏览器 CSS 与 PPT 默认的差异。
 // 公式（\(...\)）：只继承 color / font-size（官方规范），KaTeX → MathML 原生渲染。
 // ============================================================================

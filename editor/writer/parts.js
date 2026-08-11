@@ -16,8 +16,8 @@ export const NS_R = "http://schemas.openxmlformats.org/officeDocument/2006/relat
 export const NS_REL = "http://schemas.openxmlformats.org/package/2006/relationships";
 export const NS_CONTENT_TYPES = "http://schemas.openxmlformats.org/package/2006/content-types";
 
-// 默认字体（官方 Style Priority 默认值：fontFamily = "MiSans"）。
-const FONT_DEFAULT = "MiSans";
+// 默认字体（官方 Style Priority 默认值：fontFamily = "Microsoft YaHei"，系统自带、仅声明不嵌入）。
+const FONT_DEFAULT = "Microsoft YaHei";
 // 取字体：OOXML 三槽位统一用 latin，中文符号由 ea 槽承载。
 const F = (fonts) => fonts?.latin || FONT_DEFAULT;
 

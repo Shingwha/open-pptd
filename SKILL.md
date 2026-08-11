@@ -31,7 +31,7 @@ The .pptd format is a simplified abstraction layer over OOXML that follows basic
    - 未知图标导出时跳过，生成时必须先查表确认。
 8. **形状**：`references/shapes.md` 为完整清单（177 种预置形状 + 参数/默认值），全部支持；`shapeName: "custom"` 可用 viewBox+path 自定义。
 9. **主题**：内置 10 套配色预设（完整色值见 `references/themes.md`；编辑器顶栏「配色」面板与 CLI `--theme <key>` 可一键应用/换皮，仅替换 `theme.colors`；图表系列色走主题 accent1-6 色循环）。**默认按内容自定义配色**（每套 PPT 独立设计，避免同质化；须满足 themes.md「自定义配色准则」）；**仅当用户明确要求或与用户讨论后决定采用预设时**，才从 themes.md 选择预设。无论自定义还是预设，都把**完整 17 键色值**写入 `deck.theme.colors`（textStyles/tableStyles 沿用 themes.md 默认模板）+ 页面 `$key` 引用；**禁止用字符串形式引用预设**（如 `theme: "tech"`，非官方格式），deck 必须自包含（主题 = 生成时一次性设计决策）。
-10. **字体**：默认 `MiSans`。内置字体库 29 种免费商用字体（见 `references/fonts.md`，注册名全部实测、默认子集化嵌入）。deck.fonts 写 `{family: <注册名>}` 即自动嵌入，**项目无需 fonts/ 目录**（字体字节在技能 `assets/fonts/`）；未命中注册表且无 url 的 family 仅声明不嵌入（系统字体）。生成时先用 `node bin/open-pptd.js fonts list` 查表确认注册名；导出默认嵌入字体（`--no-embed-fonts` 关闭）。
+10. **字体**：默认 `Microsoft YaHei`（微软雅黑，Windows 系统自带、仅声明不嵌入——任何 Windows 机器打开一致；微软版权不可分发，故不在内置库）。内置字体库 29 种免费商用字体（见 `references/fonts.md`，注册名全部实测、默认子集化嵌入）。deck.fonts 写 `{family: <注册名>}` 即自动嵌入，**项目无需 fonts/ 目录**（字体字节在技能 `assets/fonts/`）；未命中注册表且无 url 的 family 仅声明不嵌入（系统字体）。生成时先用 `node bin/open-pptd.js fonts list` 查表确认注册名；导出默认嵌入字体（`--no-embed-fonts` 关闭）。
 
 ## PPT production workflow
 

@@ -4,7 +4,8 @@
 
 - **内置字体库**：`assets/fonts/`（技能资源文件夹，不上传 GitHub），共 **29 种免费商用字体**，全部实测过 name 表注册名、fsType 可嵌入、支持子集化。
 - **使用方式**：deck.fonts 资源项写 `{family: <注册名>}` 即自动嵌入（默认子集化），模型无需下载/放置任何字体文件。
-- **系统字体**：未命中注册表的 fontFamily（如 `MiSans` 未声明、或 `Noto Sans SC`/`Microsoft YaHei` 等）仅声明不嵌入，依赖打开方系统已装。
+- **默认字体**：`Microsoft YaHei`（微软雅黑，Windows 系统自带）。它不在内置字体库（微软版权，不可分发/嵌入），属系统字体——仅声明不嵌入，任何 Windows 机器打开都一致显示。如需跨机器一致的品牌字体（如 MiSans），在 deck.fonts 声明并让页面显式引用即可。
+- **系统字体**：未命中注册表的 fontFamily（如默认的 `Microsoft YaHei`、`Noto Sans SC` 等）仅声明不嵌入，依赖打开方系统已装。
 
 ## Selection principles
 
@@ -19,7 +20,7 @@
 
 | 展示名 | 注册名（family） | 风格与特点 | 适合场景 |
 |---|---|---|---|
-| MiSans | `MiSans` | 小米系统黑体，现代清晰，多字重（默认字体） | 科技/企业/产品 |
+| MiSans | `MiSans` | 小米系统黑体，现代清晰，多字重 | 科技/企业/产品 |
 | 得意黑 | `Smiley Sans` | 窄身斜体黑体，人文与几何平衡（斜体字形） | 创意科技/品牌展示/标题 |
 | 思源真黑 | `Gen Shin Gothic` | 方正硬朗，工业感 | 工业/机械/标题 |
 | 思源柔黑 | `Gen Jyuu GothicL` | 圆润柔和，亲和 | 生活/轻松/正文 |
