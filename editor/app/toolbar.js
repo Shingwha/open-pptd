@@ -7,6 +7,7 @@
 
 import { createPage } from "../core/model.js";
 import { buildAddItems, buildAddMenu } from "../types/index.js";
+import { bindThemePanel } from "../interaction/theme-panel.js";
 
 export function bindToolbar({ state, page, api, view, io }) {
   const $ = (id) => document.getElementById(id);
@@ -88,6 +89,9 @@ export function bindToolbar({ state, page, api, view, io }) {
     $("btn-export").onclick = io.exportPptx;
     $("btn-save").onclick = io.saveProject;
     $("btn-fonts").onclick = () => io.fontManager.openManagerDialog();
+
+    // 配色浮层（预设色卡 + 语义色编辑）
+    bindThemePanel({ state, api, io, anchor: $("btn-theme") });
 
     // 属性抽屉收起 / 展开（双端统一逻辑，行为随断点不同）：
     //   桌面（>900px）：右侧常驻面板，收起 = body.inspector-collapsed
