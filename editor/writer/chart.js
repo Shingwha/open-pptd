@@ -20,8 +20,8 @@
 // ============================================================================
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "./xml.js";
-import { resolveChartSeries, chartDataTable, isNumericColumn, resolveDataLabels, DEFAULT_CHART_PALETTE, toAxisArray, inferAxisType, resolveChartDirection, seriesAxisIndex, seriesChannels, darkenByLightness, hierarchyColor } from "../core/chart.js";
-import { resolveColor, resolveFont } from "../core/theme.js";
+import { resolveChartSeries, chartDataTable, isNumericColumn, resolveDataLabels, toAxisArray, inferAxisType, resolveChartDirection, seriesAxisIndex, seriesChannels, darkenByLightness, hierarchyColor } from "../core/chart.js";
+import { resolveColor, resolveFont, themeChartPalette } from "../core/theme.js";
 import { buildFill, buildLn, buildShadow } from "./drawing.js";
 import { ZipWriter } from "./zip.js";
 import { buildChartStyleXml, buildChartColorStyleXml } from "./chartex-style.js";
@@ -885,7 +885,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
       const innerRadius = s.innerRadius || 0;
       const isDonut = innerRadius > 0;
       const kids = [el("c:varyColors", { val: "1" })];
-      kids.push(pieSerXml(theme, s, sheetRange, serCounter++, labelsOf(s, "pie"), DEFAULT_CHART_PALETTE));
+      kids.push(pieSerXml(theme, s, sheetRange, serCounter++, labelsOf(s, "pie"), themeChartPalette(theme)));
       if (s.startAngle) kids.push(el("c:firstSliceAng", { val: Math.round(s.startAngle) }));
       if (isDonut) kids.push(el("c:holeSize", { val: Math.max(1, Math.min(90, Math.round(innerRadius * 100))) }));
       chartElems.push(el(`c:${isDonut ? "doughnutChart" : "pieChart"}`, {}, kids.join("")));

@@ -9,10 +9,10 @@
 
 import * as echarts from "../vendor/echarts.mjs";
 import {
-  resolveChartSeries, CHART_META, resolveDataLabels, DEFAULT_CHART_PALETTE, hexA,
+  resolveChartSeries, CHART_META, resolveDataLabels, hexA,
   darkenByLightness, toAxisArray, resolveChartDirection, seriesAxisIndex, hierarchyColor, seriesChannels,
 } from "../core/chart.js";
-import { resolveColor, resolveFont } from "../core/theme.js";
+import { resolveColor, resolveFont, themeChartPalette } from "../core/theme.js";
 
 const AXIS_TEXT = { color: "#6b7280", fontSize: 11 };
 
@@ -292,7 +292,7 @@ export function buildChartOption(theme, el) {
         data: cats.map((c, i) => ({
           name: c,
           value: s._values.value?.[i] ?? 0,
-          itemStyle: { color: fills ? resolveColor(theme, fills[i % fills.length]) || DEFAULT_CHART_PALETTE[i % DEFAULT_CHART_PALETTE.length] : DEFAULT_CHART_PALETTE[i % DEFAULT_CHART_PALETTE.length] },
+          itemStyle: { color: fills ? resolveColor(theme, fills[i % fills.length]) || themeChartPalette(theme)[i % 6] : themeChartPalette(theme)[i % 6] },
         })),
       }],
     };
@@ -346,10 +346,11 @@ export function buildChartOption(theme, el) {
       base = isTotal ? y : base + y;
       return { start, end: start + y, y, isTotal };
     });
+    const palette = themeChartPalette(theme);
     const colorOf = (d) => {
       const cfg = d.isTotal ? totCfg : d.y >= 0 ? incCfg : decCfg;
-      if (cfg && cfg.fill) return resolveColor(theme, cfg.fill) || DEFAULT_CHART_PALETTE[0];
-      return d.isTotal ? DEFAULT_CHART_PALETTE[0] : d.y >= 0 ? DEFAULT_CHART_PALETTE[1] : DEFAULT_CHART_PALETTE[2];
+      if (cfg && cfg.fill) return resolveColor(theme, cfg.fill) || palette[0];
+      return d.isTotal ? palette[0] : d.y >= 0 ? palette[1] : palette[2];
     };
     const label = echartsLabel(theme, el, s, { position: "top" });
     const barWidth = el.barWidth != null ? `${el.barWidth * 100}%` : undefined;
