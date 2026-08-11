@@ -259,14 +259,20 @@ export function createIo({ state, view }) {
   function doExport(embedFonts) {
     (async () => {
       try {
+        const skipped = [];
         const bytes = await buildPptx(state.deck, {
           imageMap: state.imageMap,
           fontFiles: embedFonts ? fontManager.exportFontFiles() : null,
           embedFonts,
+          onFontSkipped: (list) => skipped.push(...list),
         });
         const name = (state.deck.title || "deck").replace(/[\\/:*?"<>|]/g, "_") + ".pptx";
         downloadPptx(bytes, name);
         showToast(`已导出 ${name}（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
+        if (skipped.length) {
+          console.warn(`[export] ${skipped.length} 个字体未嵌入:`, skipped);
+          showToast(`⚠ ${skipped.length} 个字体未嵌入（${skipped.map((s) => s.family).join(", ")}），打开时可能回退系统字体`, "danger", 6000);
+        }
       } catch (err) {
         showToast(`导出失败: ${err.message}`, "danger");
         console.error(err);

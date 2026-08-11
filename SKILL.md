@@ -31,7 +31,7 @@ The .pptd format is a simplified abstraction layer over OOXML that follows basic
    - 未知图标导出时跳过，生成时必须先查表确认。
 8. **形状**：`references/shapes.md` 为完整清单（177 种预置形状 + 参数/默认值），全部支持；`shapeName: "custom"` 可用 viewBox+path 自定义。
 9. **主题**：内置 10 套配色预设（完整色值见 `references/themes.md`；编辑器顶栏「配色」面板与 CLI `--theme <key>` 可一键应用/换皮，仅替换 `theme.colors`；图表系列色走主题 accent1-6 色循环）。**默认按内容自定义配色**（每套 PPT 独立设计，避免同质化；须满足 themes.md「自定义配色准则」）；**仅当用户明确要求或与用户讨论后决定采用预设时**，才从 themes.md 选择预设。无论自定义还是预设，都把**完整 17 键色值**写入 `deck.theme.colors`（textStyles/tableStyles 沿用 themes.md 默认模板）+ 页面 `$key` 引用；**禁止用字符串形式引用预设**（如 `theme: "tech"`，非官方格式），deck 必须自包含（主题 = 生成时一次性设计决策）。
-10. **字体**：默认 `MiSans`，支持 `references/fonts.md` 所列字体；导出默认嵌入字体（`--no-embed-fonts` 关闭）。
+10. **字体**：默认 `MiSans`。内置字体库 29 种免费商用字体（见 `references/fonts.md`，注册名全部实测、默认子集化嵌入）。deck.fonts 写 `{family: <注册名>}` 即自动嵌入，**项目无需 fonts/ 目录**（字体字节在技能 `assets/fonts/`）；未命中注册表且无 url 的 family 仅声明不嵌入（系统字体）。生成时先用 `node bin/open-pptd.js fonts list` 查表确认注册名；导出默认嵌入字体（`--no-embed-fonts` 关闭）。
 
 ## PPT production workflow
 
@@ -155,7 +155,7 @@ When generating a PPT, adopt different production approaches for different user 
 5. Default PPTX options:
    - page transition: `fade` (淡入淡出), written to every slide by the local writer;
    - font embedding: enabled by default; may be disabled with `--no-embed-fonts`;
-   - embedded fonts require the font files to be resolvable locally (see `references/fonts.md` → PPTX 字体嵌入方法). **嵌入注册名规则**：页面 `fontFamily` 必须与字体 name 表 ID16（无则取 ID1）完全一致，否则 PowerPoint 不认嵌入字体（含大小写/空格，见 fonts.md）
+   - embedded fonts are resolved automatically: deck.fonts `{family: <注册名>}` hits the built-in font library (`assets/fonts/`) or a `url`; others are declared only. **注册名规则**：页面 `fontFamily` 必须与 `references/fonts.md` 的注册名完全一致（含大小写/空格），否则 PowerPoint 不认嵌入字体。
 6. After export, verify that the output exists and report the generated path. Confirm that every slide has exactly one root-level fade transition in valid CT_Slide order (`cSld`, optional `clrMapOvr`, `transition`, optional `timing/extLst`) and that the PPTX ZIP passes integrity checks. A byte-string search for `<p:fade>` is insufficient because Office ignores transitions nested inside `cSld`. Run the integrity check:
 
    ```bash

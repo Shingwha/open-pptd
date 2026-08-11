@@ -5,3 +5,7 @@ dist/
 tests/projects/*/out/
 # 公式测试的 KaTeX 中间产物（npm run test:fixtures 重新生成）
 tests/formula/fixtures/mml/
+
+# 内置字体库：字体文件本体不入库（155MB），registry.json 元数据必须入库
+assets/fonts/*
+!assets/fonts/registry.json

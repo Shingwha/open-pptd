@@ -83,7 +83,7 @@ export function parseFontResources(fonts) {
       family,
       file: typeof v.file === "string" ? v.file : null,
       url: typeof v.url === "string" ? v.url : null,
-      subset: !!v.subset,
+      subset: v.subset == null ? null : !!v.subset, // null = 未显式指定（导出时取注册表建议）
     };
   }
   return out;

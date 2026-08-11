@@ -71,6 +71,9 @@ export async function buildPptx(deck, options = {}) {
 
   // 嵌入字体：声明 → 子集化/EOT → fntdata 部件 + XML 注册片段
   const embeddedFonts = await buildEmbeddedFonts(deck, options);
+  if (embeddedFonts.skipped?.length && typeof options.onFontSkipped === "function") {
+    options.onFontSkipped(embeddedFonts.skipped);
+  }
 
   // 图表全局编号：每页前缀和（slideN 内 registerChart 从 chartBase 继续）
   const chartPrefix = [];

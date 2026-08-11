@@ -71,7 +71,7 @@ open-pptd/
 │   ├── renderer/             #   预览渲染（与 writer 同源）
 │   ├── types/                #   元素类型注册表（text/shape/line/image/icon/table/chart）
 │   └── app/                  #   编辑器装配（状态/视图/IO/工具栏）
-├── assets/icons/             # Bootstrap Icons 源（192 个 SVG，scripts/gen-icons.mjs 生成内置库）
+├── assets/                    # 内置资源（icons/ 图标源；fonts/ 字体库 29 种免费商用字体，本地资源不上传 GitHub）
 ├── references/               # 按需读取的参考文档（pptd.md / shapes.md / fonts.md / icons.md / …）
 ├── scripts/                  # 构建脚本（图标库 / 预置几何 / 参考文件生成）
 ├── tests/                    # 测试（见 tests/README.md：组件项目 + 一键回归 + E2E）
