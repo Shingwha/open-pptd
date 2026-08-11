@@ -1207,9 +1207,24 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .icon-empty { padding: 30px 0; text-align: center; color: var(--faint); font-size: 13px; }
 
 /* —— 类 Excel 数据表 —— */
-.table-wrap {
-  max-height: 280px;
-  overflow-y: auto;
+.table-editor { display: flex; flex-direction: column; gap: 10px; }
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+.table-toolbar .btn { flex: 0 0 auto; }
+.toolbar-sep { width: 1px; height: 18px; background: var(--line-strong); margin: 0 4px; }
+.table-body { display: flex; gap: 10px; align-items: stretch; }
+.table-grid {
+  flex: 1;
+  min-width: 0;
+  height: min(52vh, 480px); /* 固定高度：内容滚动，面板不随选中状态跳动 */
+  overflow: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
@@ -1248,11 +1263,10 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .data-table thead input { font-weight: 600; color: var(--primary); }
 .data-table input:focus { background: var(--primary-soft); }
 
-.data-table .corner { width: 26px; border: none; background: transparent; }
-/* —— Excel 式行头/列头（行号/列字母，悬停显示 ✕ 删除） —— */
+/* —— Excel 式行头/列头（纯编号，点击选整行/列，拖拽多行/列） —— */
 .data-table td.row-head, .data-table th.col-head {
-  width: 24px;
-  min-width: 24px;
+  width: 18px;
+  min-width: 18px;
   text-align: center;
   padding: 0;
   background: var(--bg);
@@ -1260,48 +1274,51 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   font-size: 10px;
   user-select: none;
   position: relative;
+  cursor: pointer;
 }
 .data-table th.col-head { border-bottom: 1px solid var(--line-strong); }
 .data-table td.row-head { border-right: 1px solid var(--line-strong); }
 .data-table .head-corner {
-  width: 24px;
-  min-width: 24px;
+  width: 18px;
+  min-width: 18px;
   border-right: 1px solid var(--line-strong);
   border-bottom: 1px solid var(--line-strong);
   background: var(--bg);
   padding: 0;
 }
-.head-num, .head-letter { display: inline; }
-.head-del {
-  display: none;
-  width: 16px;
-  height: 16px;
-  border: 0;
-  background: none;
-  color: var(--danger);
-  cursor: pointer;
-  font-size: 10px;
-  line-height: 1;
-  border-radius: 4px;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
+.data-table td.row-head.head-active, .data-table th.col-head.head-active {
+  background: #dbeafe;
+  color: #2563eb;
+  font-weight: 700;
 }
-.row-head:hover .head-num, .col-head:hover .head-letter { display: none; }
-.row-head:hover .head-del, .col-head:hover .head-del { display: inline-flex; }
-.head-del:hover { background: var(--danger-soft); }
+.data-table td.row-head:hover, .data-table th.col-head:hover { background: var(--primary-soft); }
 
-.grid-toolbar {
-  display: flex;
-  gap: 6px;
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--line);
+/* —— 右侧样式面板 —— */
+.style-panel {
+  width: 232px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   background: var(--bg);
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
 }
-.grid-toolbar .btn { flex: 0 0 auto; }
+.style-panel-title { font-size: 12px; font-weight: 700; color: var(--ink); }
+.style-panel-hint { font-size: 11px; color: #8a94a6; line-height: 1.6; }
+.style-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.style-row label { font-size: 11px; color: #6b7280; flex: none; }
+.style-row select { max-width: 130px; }
+.style-bi { display: flex; gap: 4px; }
+.style-bi .btn { flex: 1; }
+.style-active { background: #2563eb; color: #fff; border-color: #2563eb; }
+.style-row .color-field { gap: 4px; }
+.style-row .color-swatch-btn { width: 22px; height: 22px; border-radius: 5px; }
+.style-row .color-field input[type="color"] { width: 26px; height: 22px; border-radius: 5px; }
+.style-row .color-hex { width: 64px; flex: none; padding: 2px 5px; }
+.style-row .color-pop { top: calc(100% + 4px); }
 
 .series-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
 .series-item {
@@ -1451,30 +1468,13 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 }
 
 /* ============================================================================
- * 表格编辑器（table-editor.js）：选中态 / 覆盖位 / 样式工具条
+ * 表格编辑器（table-editor.js）：选中态 / 覆盖位 / 样式面板
  * ========================================================================== */
 .data-table td.grid-cell { position: relative; }
 .data-table td.grid-cell input { width: 100%; box-sizing: border-box; border: none; outline: none; background: transparent; font: inherit; }
 .data-table td.grid-cell.cell-selected { outline: 2px solid #2563eb; outline-offset: -2px; background: #eff6ff; }
 .data-table td.grid-cell.cell-region { background: #dbeafe; }
 .data-table td.grid-cell.cell-covered { background: repeating-linear-gradient(45deg, #f3f4f6, #f3f4f6 6px, #e5e7eb 6px, #e5e7eb 12px); cursor: not-allowed; }
-.cell-style-bar {
-  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
-  padding: 8px 10px; margin-top: 10px; border: 1px solid #e5e7eb; border-radius: 8px;
-  background: #fafafa; font-size: 12px;
-}
-.cell-style-bar .style-item { display: flex; align-items: center; gap: 4px; }
-.cell-style-bar .style-item label { color: #6b7280; }
-.cell-style-bar .style-item select, .cell-style-bar .style-item input { font-size: 12px; padding: 2px 4px; }
-.cell-style-bar .style-active { background: #2563eb; color: #fff; border-color: #2563eb; }
-.cell-style-bar .style-hint { color: #8a94a6; font-size: 12px; }
-.cell-style-bar .style-ts { width: 110px; }
-/* 样式条里的三合一颜色控件（复用属性面板样式，微调尺寸） */
-.cell-style-bar .color-field { gap: 4px; }
-.cell-style-bar .color-swatch-btn { width: 22px; height: 22px; border-radius: 5px; }
-.cell-style-bar .color-field input[type="color"] { width: 26px; height: 22px; border-radius: 5px; }
-.cell-style-bar .color-hex { width: 64px; flex: none; padding: 2px 5px; }
-.cell-style-bar .color-pop { top: calc(100% + 4px); }
 
 /* ----------------------------------------------------------------------------
    配色浮层（theme-panel.js）：预设色卡 + 语义色编辑

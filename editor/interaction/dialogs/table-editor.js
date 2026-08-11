@@ -1,15 +1,20 @@
 // ============================================================================
-// editor/dialogs/table-editor.js — 表格网格编辑器（官方 Cell 模型）
+// editor/dialogs/table-editor.js — 表格网格编辑器（Excel 式整体设计）
 // ----------------------------------------------------------------------------
-// 能力：
-//   - 网格编辑（合并格 rowSpan/colSpan 展开渲染，被覆盖位灰显不可编辑）
-//   - 选区：Excel 式拖拽（pointerdown 阻止文本选择 → 拖动实时高亮）；
-//     单击选中单格，双击进入文字编辑
-//   - 合并（选中区域后点「合并 N×M」）/ 拆分
-//   - 单元格样式：B/I/字色/字号/填充（三合一颜色控件）/水平垂直对齐/textStyle
-//   - 行高/列宽比例编辑（官方约束：各项和 = 1）
-// 数据模型：官方 Cell 对象（{text, color, bold, fill, align, rowSpan, colSpan…}），
-// 裸值（string/number）在读取时规范化为 {text}。
+// 布局：
+//   ┌ 工具条（常驻）：[＋行][＋列][删除行][删除列] | [合并][拆分] | [行高列宽…] ┐
+//   ├ 表格区（可滚动占满）───────────────┬ 样式面板（右侧固定，选中单格显示）┤
+//   │ 列头 A B C D（点击选整列/拖拽多列） │   B/I · 字号 · 字色 · 填充        │
+//   │ 行头 1 2 3（点击选整行/拖拽多行）   │   水平/垂直对齐 · textStyle       │
+//   │ 单元格网格（单击/拖拽选区域）       │                                   │
+//   └────────────────────────────────────┴───────────────────────────────────┘
+// 交互模型（统一选区 → 工具条操作）：
+//   - 单元格：单击选中 / 拖拽区域（pointerdown 阻止文本选择，双击进入编辑）
+//   - 行头/列头：点击选中整行/整列，拖拽扩展多行/多列
+//   - 删除行/列：按当前选区覆盖区间删除（含合并保护，需先拆分）
+//   - 合并：区域 >1×1 时启用（按钮显示「合并 N×M」）；拆分：选中合并格时启用
+// 样式 = 右侧固定面板（不浮动不换行）；网格复用 renderer/table.js 完整样式链
+// （cellFinal/tdCss/estimateTableLayout）——所见即所得。
 // ============================================================================
 
 import { showDialog, buildCellInput, button, select } from "./base.js";
@@ -30,13 +35,9 @@ function editorTheme() {
 export function openTableEditor(el, { onChange }) {
   const container = document.createElement("div");
   container.className = "table-editor";
-  const grid = document.createElement("div");
-  grid.className = "table-wrap";
-  container.appendChild(grid);
-
   // 选中状态：单格 {r, c} 或区域 {r1, c1, r2, c2}
   let sel = null;
-  let dragSel = null; // 拖拽选区 {anchor:{r,c}, cur:{r,c}}
+  let dragSel = null; // { mode: "cell"|"row"|"col", anchor: {r,c}, cur: {r,c} }
 
   function colCount() {
     const cols = el.columnWidths?.length;
@@ -47,6 +48,10 @@ export function openTableEditor(el, { onChange }) {
     onChange();
   }
 
+  const isRegion = () => sel && sel.r1 != null;
+  const regionRows = () => (isRegion() ? sel.r2 - sel.r1 + 1 : 1);
+  const regionCols = () => (isRegion() ? sel.c2 - sel.c1 + 1 : 1);
+
   /** 主题语义色 swatch（与属性面板 colorField 同源）。 */
   function themeSwatches() {
     const theme = editorTheme();
@@ -55,14 +60,13 @@ export function openTableEditor(el, { onChange }) {
     return keys.map((k) => ({ key: `$${k}`, value: resolveColor(theme, c[k]) || "#cccccc" }));
   }
 
-  const isRegion = () => sel && sel.r1 != null;
-  const regionSize = () => (isRegion() ? `${sel.r2 - sel.r1 + 1}×${sel.c2 - sel.c1 + 1}` : "");
-
   // --------------------------------------------------------------------------
   // 选区高亮（不重建 DOM，只切 class）
   // --------------------------------------------------------------------------
   function renderSelection() {
-    for (const td of grid.querySelectorAll("td.grid-cell")) {
+    const gridWrap = container.querySelector(".table-grid");
+    if (!gridWrap) return;
+    for (const td of gridWrap.querySelectorAll("td.grid-cell")) {
       const r = Number(td.dataset.tr);
       const c = Number(td.dataset.tc);
       if (Number.isNaN(r) || Number.isNaN(c)) continue;
@@ -72,59 +76,107 @@ export function openTableEditor(el, { onChange }) {
       td.classList.toggle("cell-selected", isSel);
       td.classList.toggle("cell-region", inRegion);
     }
+    // 行头/列头联动高亮
+    for (const th of gridWrap.querySelectorAll("th.col-head")) {
+      const c = Number(th.dataset.cc);
+      th.classList.toggle("head-active", isRegion() && c >= sel.c1 && c <= sel.c2);
+    }
+    for (const td of gridWrap.querySelectorAll("td.row-head")) {
+      const r = Number(td.dataset.rr);
+      td.classList.toggle("head-active", isRegion() && r >= sel.r1 && r <= sel.r2);
+    }
   }
 
-  /** 渲染网格 + 工具条 + 样式条。 */
-  function renderGrid() {
-    grid.innerHTML = "";
+  // --------------------------------------------------------------------------
+  // 主渲染：工具条 + 网格 + 样式面板
+  // --------------------------------------------------------------------------
+  function render() {
     const rows = (el.rows = normalizeCells(el.rows));
     if (!rows.length) rows.push([{ text: "" }]);
     syncDims(el);
     const cols = colCount();
     const { grid: gd } = tableGrid(rows, cols);
-
-    // ---- 结构工具条（常驻） ----
-    const toolbar = document.createElement("div");
-    toolbar.className = "grid-toolbar";
-    const mergeBtn = button("合并", () => {
-      if (!isRegion()) return;
-      const err = tryMerge(rows, sel.r1, sel.c1, sel.r2, sel.c2, cols);
-      if (err) { alert(err); return; }
-      sel = { r: sel.r1, c: sel.c1 };
-      renderGrid();
-      commit();
-    });
-    const splitBtn = button("拆分", () => {
-      if (!sel || sel.r1 != null) { alert("请先单击选中一个合并单元格"); return; }
-      const err = trySplit(rows, sel.r, sel.c, cols);
-      if (err) { alert(err); return; }
-      renderGrid();
-      commit();
-    });
-    const dimBtn = button("行高/列宽…", () => editDims(el, commit, renderGrid));
-    toolbar.append(
-      button("＋ 行", () => {
-        rows.push(Array.from({ length: cols }, () => ({ text: "" })));
-        syncDims(el); renderGrid(); commit();
-      }),
-      button("＋ 列", () => {
-        for (const row of rows) row.push({ text: "" });
-        syncDims(el); renderGrid(); commit();
-      }),
-      mergeBtn,
-      splitBtn,
-      dimBtn
-    );
-    grid.appendChild(toolbar);
-
-    // ---- 网格（所见即所得：与 renderer/table.js 同源样式链） ----
     const theme = editorTheme();
     const ts = resolveTableStyle(theme, el.style);
     const { rowHeights, columnWidths } = estimateTableLayout(el);
     const rowCount = gd.length;
+
+    container.innerHTML = "";
+
+    // ---- 工具条（常驻） ----
+    const toolbar = document.createElement("div");
+    toolbar.className = "table-toolbar";
+    const sep = () => {
+      const s = document.createElement("span");
+      s.className = "toolbar-sep";
+      return s;
+    };
+    const mkBtn = (label, onClick, opts = {}) => {
+      const b = button(label, onClick);
+      if (opts.disabled) b.disabled = true;
+      if (opts.title) b.title = opts.title;
+      return b;
+    };
+    // 选区区间（单格 → 该行/该列）
+    const selRows = () => (isRegion() ? [sel.r1, sel.r2] : [sel.r, sel.r]);
+    const selCols = () => (isRegion() ? [sel.c1, sel.c2] : [sel.c, sel.c]);
+
+    const addRowBtn = mkBtn("＋ 行", () => {
+      rows.push(Array.from({ length: cols }, () => ({ text: "" })));
+      syncDims(el); render(); commit();
+    });
+    const addColBtn = mkBtn("＋ 列", () => {
+      for (const row of rows) row.push({ text: "" });
+      syncDims(el); render(); commit();
+    });
+    const delRowBtn = mkBtn("删除行", () => {
+      const [r1, r2] = selRows();
+      if (rowCount <= 1) return;
+      if (mergeGuard(rows, cols, r1, r2, "row")) return;
+      rows.splice(r1, r2 - r1 + 1);
+      sel = null;
+      syncDims(el); render(); commit();
+    }, { disabled: !sel, title: "删除选中行（选区覆盖的所有行）" });
+    const delColBtn = mkBtn("删除列", () => {
+      const [c1, c2] = selCols();
+      if (cols <= 1) return;
+      if (mergeGuard(rows, cols, c1, c2, "col")) return;
+      for (const row of rows) row.splice(c1, c2 - c1 + 1);
+      sel = null;
+      syncDims(el); render(); commit();
+    }, { disabled: !sel, title: "删除选中列（选区覆盖的所有列）" });
+    const mergeBtn = mkBtn("合并", () => {
+      if (!isRegion() || (regionRows() === 1 && regionCols() === 1)) return;
+      const err = tryMerge(rows, sel.r1, sel.c1, sel.r2, sel.c2, cols);
+      if (err) { alert(err); return; }
+      sel = { r: sel.r1, c: sel.c1 };
+      render(); commit();
+    }, { disabled: !isRegion() || (regionRows() === 1 && regionCols() === 1) });
+    if (isRegion()) mergeBtn.textContent = `合并 ${regionRows()}×${regionCols()}`;
+    const splitBtn = mkBtn("拆分", () => {
+      if (!sel || sel.r1 != null) return;
+      const err = trySplit(rows, sel.r, sel.c, cols);
+      if (err) { alert(err); return; }
+      render(); commit();
+    }, { disabled: true });
+    const cellAt = sel && !isRegion() ? gd[sel.r]?.[sel.c]?.cell : null;
+    const isMerged = cellAt && ((cellAt.rowSpan || 1) > 1 || (cellAt.colSpan || 1) > 1);
+    splitBtn.disabled = !isMerged;
+    splitBtn.title = isMerged ? "" : "选中合并单元格后可拆分";
+    const dimBtn = mkBtn("行高/列宽…", () => editDims(el, commit, render));
+
+    toolbar.append(addRowBtn, addColBtn, delRowBtn, delColBtn, sep(), mergeBtn, splitBtn, sep(), dimBtn);
+    container.appendChild(toolbar);
+
+    // ---- 主体：网格 + 样式面板 ----
+    const body = document.createElement("div");
+    body.className = "table-body";
+
+    // 网格区（可滚动）
+    const gridWrap = document.createElement("div");
+    gridWrap.className = "table-grid";
     const table = document.createElement("table");
     table.className = "data-table";
-    // 列宽比例（与预览同源）
     const colgroup = document.createElement("colgroup");
     columnWidths.forEach((cw) => {
       const col = document.createElement("col");
@@ -132,7 +184,8 @@ export function openTableEditor(el, { onChange }) {
       colgroup.appendChild(col);
     });
     table.appendChild(colgroup);
-    // 列头行（Excel 式：A/B/C…，悬停显示 ✕ 删除列）
+
+    // 列头（Excel 式：A/B/C…，点击/拖拽选列）
     const thead = document.createElement("thead");
     const headTr = document.createElement("tr");
     const corner = document.createElement("th");
@@ -141,54 +194,29 @@ export function openTableEditor(el, { onChange }) {
     for (let c = 0; c < cols; c++) {
       const th = document.createElement("th");
       th.className = "col-head";
-      const letter = document.createElement("span");
-      letter.className = "head-letter";
-      letter.textContent = String.fromCharCode(65 + c);
-      const del = document.createElement("button");
-      del.type = "button";
-      del.className = "head-del";
-      del.textContent = "✕";
-      del.title = "删除列";
-      del.addEventListener("click", () => deleteColumn(c));
-      th.append(letter, del);
+      th.dataset.cc = String(c);
+      th.textContent = String.fromCharCode(65 + c);
       headTr.appendChild(th);
     }
     thead.appendChild(headTr);
     table.appendChild(thead);
+
+    // 行体（行头 + 单元格）
     const tbody = document.createElement("tbody");
     gd.forEach((gRow, r) => {
       const tr = document.createElement("tr");
       tr.style.height = `${rowHeights[r] ?? 26}px`;
-      // 行头（Excel 式：行号，悬停显示 ✕ 删除行；跨行合并主格行不提供删除）
-      const td0 = document.createElement("td");
-      td0.className = "row-head";
-      const num = document.createElement("span");
-      num.className = "head-num";
-      num.textContent = String(r + 1);
-      const hasRowSpan = gRow.some((g) => !g.covered && (g.cell?.rowSpan || 1) > 1);
-      td0.appendChild(num);
-      if (!hasRowSpan) {
-        const delBtn = document.createElement("button");
-        delBtn.type = "button";
-        delBtn.className = "head-del";
-        delBtn.textContent = "✕";
-        delBtn.title = "删除行";
-        delBtn.addEventListener("click", () => {
-          rows.splice(r, 1);
-          syncDims(el);
-          renderGrid();
-          commit();
-        });
-        td0.appendChild(delBtn);
-      }
-      tr.appendChild(td0);
+      const th0 = document.createElement("td");
+      th0.className = "row-head";
+      th0.dataset.rr = String(r);
+      th0.textContent = String(r + 1);
+      tr.appendChild(th0);
 
       gRow.forEach((g, c) => {
         const td = document.createElement("td");
         td.className = "grid-cell";
         td.dataset.tr = String(r);
         td.dataset.tc = String(c);
-        // 完整样式链（覆盖格用 null 单元格，预览同源）
         const f = cellFinal(theme, ts, r, c, rowCount, cols, g.covered ? null : g.cell, el.fill);
         td.style.cssText = tdCss(theme, f, g.covered);
         if (g.covered) {
@@ -210,107 +238,124 @@ export function openTableEditor(el, { onChange }) {
       tbody.appendChild(tr);
     });
     table.appendChild(tbody);
-    grid.appendChild(table);
+    gridWrap.appendChild(table);
+    body.appendChild(gridWrap);
 
-    // ---- 拖拽选区（Excel 式） ----
-    bindDragSelect(table);
+    // 样式面板（右侧固定）
+    container.appendChild(body);
 
-    // ---- 样式条（选中单格时显示） ----
-    refreshStyleBar();
-
-    // 合并/拆分按钮动态态
-    if (isRegion()) {
-      mergeBtn.textContent = `合并 ${regionSize()}`;
-      mergeBtn.disabled = false;
-    } else {
-      mergeBtn.textContent = "合并";
-      mergeBtn.disabled = true;
-      mergeBtn.title = "拖拽选择单元格区域后合并";
-    }
-    const cellAt = sel && !isRegion() ? tableGrid(rows, cols).grid[sel.r]?.[sel.c]?.cell : null;
-    const isMerged = cellAt && ((cellAt.rowSpan || 1) > 1 || (cellAt.colSpan || 1) > 1);
-    splitBtn.disabled = !isMerged;
-    splitBtn.title = isMerged ? "" : "选中合并单元格后可拆分";
-
+    bindDragSelect(gridWrap);
     renderSelection();
+    refreshStylePanel();
   }
 
-  /** 删除列（含合并保护：该列存在跨行/跨列合并相关格时禁止）。 */
-  function deleteColumn(c) {
-    const rows2 = el.rows;
-    const gd2 = tableGrid(rows2, colCount()).grid;
-    for (const gRow of gd2) {
-      const g = gRow[c];
-      if (!g) continue;
-      if (g.covered || (g.cell?.rowSpan || 1) > 1 || (g.cell?.colSpan || 1) > 1) {
-        alert("该列包含合并单元格，请先拆分再删除列");
-        return;
+  /** 合并保护：删除区间 [a1,a2] 与合并格冲突检查（axis: row 查 rowSpan / col 查 colSpan）。 */
+  function mergeGuard(rows, cols, a1, a2, axis) {
+    const { grid: gd } = tableGrid(rows, cols);
+    for (let r = 0; r < gd.length; r++) {
+      for (let c = 0; c < cols; c++) {
+        const g = gd[r][c];
+        if (!g || g.covered) continue;
+        const span = axis === "row" ? g.cell?.rowSpan || 1 : g.cell?.colSpan || 1;
+        if (span <= 1) continue;
+        const s = axis === "row" ? r : c;
+        const e = s + span - 1;
+        // 主格在区间内但覆盖出区间，或主格在区间外但覆盖进区间 → 禁止
+        if ((s >= a1 && s <= a2 && e > a2) || (s < a1 && e >= a1)) {
+          alert(axis === "row" ? "选区涉及跨行合并单元格，请先拆分再删除行" : "选区涉及跨列合并单元格，请先拆分再删除列");
+          return true;
+        }
       }
     }
-    for (const row of rows2) row.splice(c, 1);
-    syncDims(el);
-    renderGrid();
-    commit();
+    return false;
   }
 
-  /** 样式条（选中单格显示样式控件，区域/未选中显示提示）。 */
-  let styleBar = null;
-  function refreshStyleBar() {
-    if (styleBar) styleBar.remove();
-    styleBar = renderStyleBar();
-    grid.appendChild(styleBar);
-  }
-
-  /**
-   * Excel 式拖拽选区：
-   *  - pointerdown 阻止默认（防 input 聚焦/文本选择），记录锚点
-   *  - pointermove 实时更新选区（elementFromPoint 定位格子）
-   *  - pointerup / cancel / blur 结束
-   *  - 双击进入文字编辑
-   */
-  function bindDragSelect(table) {
-    table.addEventListener("pointerdown", (e) => {
+  // --------------------------------------------------------------------------
+  // 拖拽选区（单元格区域 / 行头整行 / 列头整列）
+  // --------------------------------------------------------------------------
+  function bindDragSelect(gridWrap) {
+    gridWrap.addEventListener("pointerdown", (e) => {
+      // 列头 → 整列模式
+      const th = e.target.closest("th.col-head");
+      if (th) {
+        e.preventDefault();
+        const c = Number(th.dataset.cc);
+        dragSel = { mode: "col", anchor: { r: 0, c }, cur: { r: 0, c } };
+        sel = { r1: 0, c1: c, r2: 0, c2: c }; // 行区间后续按行数扩展
+        renderSelection();
+        refreshStylePanel();
+        return;
+      }
+      // 行头 → 整行模式
+      const th0 = e.target.closest("td.row-head");
+      if (th0) {
+        e.preventDefault();
+        const r = Number(th0.dataset.rr);
+        dragSel = { mode: "row", anchor: { r, c: 0 }, cur: { r, c: 0 } };
+        sel = { r1: r, c1: 0, r2: r, c2: colCount() - 1 };
+        renderSelection();
+        refreshStylePanel();
+        return;
+      }
+      // 单元格 → 区域模式
       const td = e.target.closest("td.grid-cell:not(.cell-covered)");
       if (!td) return;
       const inp = td.querySelector("input");
-      // 编辑态（已聚焦）：不拦截，允许 input 内选择/操作文字
-      if (inp && document.activeElement === inp) return;
-      e.preventDefault(); // 阻止文本选择与 input 聚焦（拖拽选区的前提）
+      if (inp && document.activeElement === inp) return; // 编辑态：允许 input 内文本操作
+      e.preventDefault();
       const r = Number(td.dataset.tr);
       const c = Number(td.dataset.tc);
-      dragSel = { anchor: { r, c }, cur: { r, c } };
+      dragSel = { mode: "cell", anchor: { r, c }, cur: { r, c } };
       sel = { r, c };
       renderSelection();
-      refreshStyleBar(); // 单击选中：立即显示单元格样式
+      refreshStylePanel();
     });
 
-    table.addEventListener("pointermove", (e) => {
+    gridWrap.addEventListener("pointermove", (e) => {
       if (!dragSel) return;
-      const td = document.elementFromPoint(e.clientX, e.clientY)?.closest?.("td.grid-cell:not(.cell-covered)");
-      if (!td) return;
-      const r = Number(td.dataset.tr);
-      const c = Number(td.dataset.tc);
-      if (r === dragSel.cur.r && c === dragSel.cur.c) return;
-      dragSel.cur = { r, c };
-      sel = {
-        r1: Math.min(dragSel.anchor.r, r), c1: Math.min(dragSel.anchor.c, c),
-        r2: Math.max(dragSel.anchor.r, r), c2: Math.max(dragSel.anchor.c, c),
-      };
+      const elAt = document.elementFromPoint(e.clientX, e.clientY);
+      const rows = el.rows.length;
+      const cols = colCount();
+      if (dragSel.mode === "col") {
+        const th = elAt?.closest?.("th.col-head");
+        if (!th) return;
+        const c = Math.min(cols - 1, Math.max(0, Number(th.dataset.cc)));
+        if (c === dragSel.cur.c) return;
+        dragSel.cur.c = c;
+        sel = { r1: 0, c1: Math.min(dragSel.anchor.c, c), r2: rows - 1, c2: Math.max(dragSel.anchor.c, c) };
+      } else if (dragSel.mode === "row") {
+        const th0 = elAt?.closest?.("td.row-head");
+        if (!th0) return;
+        const r = Math.min(rows - 1, Math.max(0, Number(th0.dataset.rr)));
+        if (r === dragSel.cur.r) return;
+        dragSel.cur.r = r;
+        sel = { r1: Math.min(dragSel.anchor.r, r), c1: 0, r2: Math.max(dragSel.anchor.r, r), c2: cols - 1 };
+      } else {
+        const td = elAt?.closest?.("td.grid-cell:not(.cell-covered)");
+        if (!td) return;
+        const r = Number(td.dataset.tr);
+        const c = Number(td.dataset.tc);
+        if (r === dragSel.cur.r && c === dragSel.cur.c) return;
+        dragSel.cur = { r, c };
+        sel = {
+          r1: Math.min(dragSel.anchor.r, r), c1: Math.min(dragSel.anchor.c, c),
+          r2: Math.max(dragSel.anchor.r, r), c2: Math.max(dragSel.anchor.c, c),
+        };
+      }
       renderSelection();
     });
 
     const endDrag = () => {
       if (!dragSel) return;
       dragSel = null;
-      // 松手：区域选区完成 → 重建（合并按钮显示 N×M、样式条切提示态）
-      if (isRegion()) renderGrid();
+      if (isRegion()) render(); // 区域完成：重建（按钮态「合并 N×M」/删除行列启用）
     };
-    table.addEventListener("pointerup", endDrag);
-    table.addEventListener("pointercancel", endDrag);
+    gridWrap.addEventListener("pointerup", endDrag);
+    gridWrap.addEventListener("pointercancel", endDrag);
     window.addEventListener("blur", endDrag);
 
     // 双击进入编辑（pointerdown 已阻止单击聚焦）
-    table.addEventListener("dblclick", (e) => {
+    gridWrap.addEventListener("dblclick", (e) => {
       const td = e.target.closest("td.grid-cell:not(.cell-covered)");
       const inp = td?.querySelector("input");
       if (inp) inp.focus();
@@ -318,64 +363,78 @@ export function openTableEditor(el, { onChange }) {
   }
 
   // --------------------------------------------------------------------------
-  // 单元格样式工具条（选中单格时显示）
+  // 样式面板（右侧固定；选中单格时显示样式控件，其余显示提示）
   // --------------------------------------------------------------------------
-  function renderStyleBar() {
-    const bar = document.createElement("div");
-    bar.className = "cell-style-bar";
+  let stylePanel = null;
+  function refreshStylePanel() {
+    if (stylePanel) stylePanel.remove();
+    stylePanel = renderStylePanel();
+    container.querySelector(".table-body")?.appendChild(stylePanel);
+  }
+
+  function renderStylePanel() {
+    const panel = document.createElement("div");
+    panel.className = "style-panel";
+    const title = document.createElement("div");
+    title.className = "style-panel-title";
+    title.textContent = "单元格样式";
+    panel.appendChild(title);
+
     if (!sel || sel.r1 != null) {
-      const hint = document.createElement("span");
-      hint.className = "style-hint";
-      hint.textContent = "拖拽选择区域后点「合并」；单击选中单元格可编辑样式，双击编辑文字。";
-      bar.appendChild(hint);
-      return bar;
+      const hint = document.createElement("div");
+      hint.className = "style-panel-hint";
+      hint.textContent = "单击选中单元格后可编辑样式；拖拽选择区域后可合并/删除。";
+      panel.appendChild(hint);
+      return panel;
     }
     const cell = tableGrid(el.rows, colCount()).grid[sel.r]?.[sel.c]?.cell;
-    if (!cell) return bar;
+    if (!cell) return panel;
 
-    const set = (fn) => { fn(cell); commit(); renderGrid(); };
-    const T = (label, control) => {
-      const w = document.createElement("span");
-      w.className = "style-item";
+    const set = (fn) => { fn(cell); commit(); render(); };
+    const F = (label, control) => {
+      const w = document.createElement("div");
+      w.className = "style-row";
       const l = document.createElement("label");
       l.textContent = label;
       w.append(l, control);
       return w;
     };
 
-    // B / I
+    // 文字样式
     const bBtn = button(cell.bold ? "B ✓" : "B", () => set((c) => { c.bold = !c.bold; }));
     bBtn.className += cell.bold ? " style-active" : "";
     const iBtn = button(cell.italic ? "I ✓" : "I", () => set((c) => { c.italic = !c.italic; }));
     iBtn.className += cell.italic ? " style-active" : "";
-    // 字色 / 填充：三合一颜色控件（色块弹层 + 取色器 + hex）
+    const biWrap = document.createElement("div");
+    biWrap.className = "style-bi";
+    biWrap.append(bBtn, iBtn);
+    panel.appendChild(F("文字", biWrap));
+
+    const sizeSel = select(FONT_SIZES.map((n) => [String(n), `${n}pt`]), String(cell.fontSize || 13), (v) => set((c) => { c.fontSize = Number(v); }));
+    panel.appendChild(F("字号", sizeSel));
+
     const colorCtl = colorField(cell.color || "$text", (v) => set((c) => { v ? (c.color = v) : delete c.color; }), {
       resolve: (val) => resolveColor(editorTheme(), val),
       swatches: themeSwatches(),
     });
+    panel.appendChild(F("字色", colorCtl));
+
     const fillCtl = colorField(cell.fill?.color || "", (v) => set((c) => { v ? (c.fill = { type: "solid", color: v }) : delete c.fill; }), {
       resolve: (val) => resolveColor(editorTheme(), val),
       swatches: themeSwatches(),
     });
-    // 字号（预设 + 数字）
-    const sizeSel = select(FONT_SIZES.map((n) => [String(n), `${n}`]), String(cell.fontSize || 13), (v) => set((c) => { c.fontSize = Number(v); }));
-    // 对齐
+    panel.appendChild(F("填充", fillCtl));
+
     const hSel = select(H_ALIGNS, cell.align?.[0] || "", (v) => set((c) => { c.align = [v || "left", c.align?.[1] || "middle"]; }));
+    panel.appendChild(F("水平", hSel));
     const vSel = select(V_ALIGNS, cell.align?.[1] || "", (v) => set((c) => { c.align = [c.align?.[0] || "left", v || "middle"]; }));
-    // textStyle 引用（主题 textStyles 键下拉）
+    panel.appendChild(F("垂直", vSel));
+
     const tsKeys = Object.keys(editorTheme()?.textStyles || {});
     const tsSel = select([["", "（无）"], ...tsKeys.map((k) => [k, `$${k}`])], cell.textStyle || "", (v) => set((c) => { v ? (c.textStyle = v) : delete c.textStyle; }));
+    panel.appendChild(F("textStyle", tsSel));
 
-    bar.append(
-      T("样式", [bBtn, iBtn]),
-      T("字色", colorCtl),
-      T("字号", sizeSel),
-      T("填充", fillCtl),
-      T("水平", hSel),
-      T("垂直", vSel),
-      T("textStyle", tsSel)
-    );
-    return bar;
+    return panel;
   }
 
   function syncDims(el) {
@@ -389,11 +448,12 @@ export function openTableEditor(el, { onChange }) {
     }
   }
 
-  renderGrid();
+  render();
   showDialog("表格编辑", container);
+  // 加宽对话框（表格 + 右侧样式面板）
+  const dlg = container.closest(".dialog");
+  if (dlg) dlg.style.width = "min(880px, 96vw)";
 }
-
-/** 行高/列宽比例编辑对话框（滑块 + 数字；拖动一项按比例缩放其余项，保持和 = 1）。 */
 
 /** 行高/列宽比例编辑对话框（滑块 + 数字；拖动一项按比例缩放其余项，保持和 = 1）。 */
 function editDims(el, commit, rerender) {
