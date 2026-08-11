@@ -23,7 +23,12 @@ export function renderIcon(theme, el) {
   svg.style.cssText = `position:absolute;left:${x}px;top:${y}px;overflow:visible;`;
   svg.dataset.elementId = el.elementId;
   svg.dataset.elementType = "icon";
-  if (el.rotation) svg.style.transform = `rotate(${el.rotation}deg)`;
+  if (el.rotation || el.flip?.[0] || el.flip?.[1]) {
+    const t = [];
+    if (el.rotation) t.push(`rotate(${el.rotation}deg)`);
+    if (el.flip?.[0] || el.flip?.[1]) t.push(`scale(${el.flip[0] ? -1 : 1}, ${el.flip[1] ? -1 : 1})`);
+    svg.style.transform = t.join(" ");
+  }
   if (el.opacity != null) svg.style.opacity = el.opacity;
 
   if (!def) {

@@ -140,6 +140,8 @@ export function bindProperties(panel, api) {
     panel.appendChild(g);
 
     // —— 变换 ——
+    // 官方限制：table/chart 不支持整体旋转/翻转/透明度（pptd.md §Table/§Chart limitation），不显示
+    if (["table", "chart"].includes(el.elementType)) return;
     const g2 = ui.group("变换");
     const grid2 = document.createElement("div");
     grid2.className = "prop-grid";

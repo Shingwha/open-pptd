@@ -51,7 +51,7 @@ export function iconXml(theme, element, ctx) {
   ].join(""));
 
   const spPr = el("p:spPr", {}, [
-    buildXfrm(element.bounds, element.rotation),
+    buildXfrm(element.bounds, element.rotation, element.flip),
     el("a:prstGeom", { prst: "rect" }),
   ].join(""));
 
