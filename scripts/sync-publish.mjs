@@ -29,6 +29,7 @@ const WHITELIST = [
   "assets/fonts/registry.json",
   "tests/package-integrity.mjs",
   "tests/util",
+  "scripts/sync-publish.mjs",
 ];
 
 const run = (cmd) =>
