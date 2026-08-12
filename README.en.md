@@ -13,6 +13,40 @@ A "content → editable project → live preview → PPTX" presentation pipeline
 
 > This project is fully self-developed (web editor, PPTX writer, icon library, chart & LaTeX rendering, CLI export pipeline) — no third-party editor code or reverse-engineered implementations.
 
+## Try It Online
+
+No installation needed — open the live gallery (GitHub Pages):
+
+**https://shingwha.github.io/open-pptd/**
+
+- The gallery showcases curated PPTD example decks with live-rendered covers; click a card to open it in the editor
+- Online mode lets you freely edit examples, export PPTX, or click **Save** to download the project bundle (zip) for local editing
+
+## Example Gallery
+
+The repo ships with curated examples in `examples/` (also shown in the online gallery):
+
+| Example | Scenario | Highlights |
+|---|---|---|
+| [Coffee Monthly Report](examples/coffee-monthly-report/) | Management review · 5 slides | Native charts (bar/line/pie/radar/waterfall/treemap) + KPI cards + table |
+| [EV Range Prediction](examples/ev-range/) | Academic defense · 17 slides | LaTeX formulas, image layout, chapter structure |
+| [Shanmingji Brand Launch](examples/shanmingji-2026-launch/) | New-Chinese brand · 7 slides | Tables, images, Chinese-style layout, 3-font mixing |
+
+<p align="center">
+  <img src="docs/images/coffee-monthly.png" width="45%" alt="Coffee Monthly Report"/>
+  <img src="docs/images/ev-range.png" width="45%" alt="EV Range Prediction"/>
+</p>
+
+<p align="center">
+  <img src="docs/images/shanmingji.png" width="45%" alt="Shanmingji Brand Launch"/>
+</p>
+
+### Adding Your Own Deck to the Gallery
+
+1. Drop a finished PPTD project folder (`deck.pptd` + `pages/` + `media/`) into `examples/<name>/`
+2. The local gallery picks it up immediately (`serve` scans automatically); optional `meta.yaml` adds title/description/tags
+3. Run `node bin/open-pptd.js gallery scan` to rebuild the index, then commit & push — the online gallery (GitHub Pages) updates via CI
+
 ## Prerequisites
 
 - **Node.js v18+** (the only dependency; no npm packages to install; render command recommended on Node 21+)
@@ -91,7 +125,8 @@ open-pptd/
 ├── SKILL.md                  # Full workflow guide for AI assistants
 ├── README.md                 # This project's docs (Chinese)
 ├── README.en.md              # English version of the docs
-├── index.html                # Editor entry (redirects to editor/)
+├── index.html                # Example gallery entry (GitHub Pages site root)
+├── examples/                 # Gallery example projects (deck.pptd + pages/ + media/ + optional meta.yaml)
 ├── bin/open-pptd.js          # CLI (serve / export / export-project / render / fonts)
 ├── lib/                      # Local server (static + SSE live reload + save-back) + export logic
 ├── editor/                   # Web editor (pure frontend, no backend dependency)
@@ -121,8 +156,8 @@ See `tests/README.md` for details (the publish repo does not include tests; test
 
 This project has two repositories:
 
-- **Publish repo [open-pptd-publish](https://github.com/Shingwha/open-pptd-publish) (use by default)**: a runtime-only snapshot of the skill for direct installation. No tests, icon sources, or generation scripts. If you are not developing the code, clone this one (see Installation above).
-- **Dev repo [open-pptd](https://github.com/Shingwha/open-pptd) (for contributors)**: full source including all tests, icon sources, and generation scripts.
+- **Dev repo [open-pptd](https://github.com/Shingwha/open-pptd) (use by default)**: full source, all tests, and the example gallery (`examples/`). **The GitHub Pages site (online gallery) is deployed from this repo**: https://shingwha.github.io/open-pptd/ — pushed commits are automatically built by GitHub Actions (regression tests → gallery index rebuild → deploy).
+- **Publish repo [open-pptd-publish](https://github.com/Shingwha/open-pptd-publish)**: a runtime-only snapshot of the skill for direct installation. No tests, icon sources, generation scripts, or example gallery (`examples/` is excluded from sync). If you are not developing the code, clone this one (see Installation above).
 
 The publish repo is kept in sync from the dev repo via `npm run sync:publish -- --push` (a whitelist snapshot, see `scripts/sync-publish.mjs` in the dev repo); its content always tracks the `main` branch of the dev repo.
 

@@ -13,6 +13,41 @@
 
 > 本项目实现完全独立、全部自研（网页编辑器、PPTX writer、图标库、图表与 LaTeX 渲染、CLI 导出链路），未使用任何第三方编辑器代码或逆向实现。
 
+## 在线体验
+
+无需安装，直接在浏览器打开线上画廊（GitHub Pages）：
+
+**https://shingwha.github.io/open-pptd/**
+
+- 画廊展示精选 PPTD 示例作品，封面实时渲染，点击卡片进入编辑器
+- 线上模式可自由编辑示例，导出 PPTX，或点击「保存」下载项目包（zip）带回本地继续编辑
+- 更多能力请往下看，或直接克隆仓库本地运行（见下）
+
+## 示例画廊
+
+仓库自带 `examples/` 精选示例（同时展示于线上画廊）：
+
+| 示例 | 场景 | 亮点 |
+|---|---|---|
+| [屿间咖啡经营月报](examples/coffee-monthly-report/) | 管理汇报 · 5 页 | 原生图表（柱/折线/饼/雷达/瀑布/树图）+ KPI 卡片 + 表格 |
+| [电动汽车续驶里程预测](examples/ev-range/) | 学术答辩 · 17 页 | LaTeX 公式混排、图片排版、章节结构 |
+| [山茗集品牌发布会](examples/shanmingji-2026-launch/) | 新中式品牌 · 7 页 | 表格、图片、中式装饰版式、三字体混排 |
+
+<p align="center">
+  <img src="docs/images/coffee-monthly.png" width="45%" alt="屿间咖啡经营月报"/>
+  <img src="docs/images/ev-range.png" width="45%" alt="电动汽车续驶里程预测"/>
+</p>
+
+<p align="center">
+  <img src="docs/images/shanmingji.png" width="45%" alt="山茗集品牌发布会"/>
+</p>
+
+### 添加自己的作品到画廊
+
+1. 把做好的 PPTD 项目文件夹（`deck.pptd` + `pages/` + `media/`）放进 `examples/<名称>/`
+2. 本地画廊立即显示（`serve` 自动扫描）；可选 `meta.yaml` 补充标题/描述/标签
+3. 运行 `node bin/open-pptd.js gallery scan` 重建索引，提交推送后线上画廊（GitHub Pages）同步更新
+
 ## 前置条件
 
 - **Node.js v18+**（唯一依赖，无需安装任何 npm 包）
@@ -88,8 +123,9 @@ open-pptd/
 ├── SKILL.md                  # 给 AI 助手的完整工作流说明
 ├── README.md                 # 本文档（给人看，中文）
 ├── README.en.md              # 英文版本文档
-├── index.html                # 编辑器入口（重定向到 editor/）
-├── bin/open-pptd.js          # CLI（serve / export / export-project / render / fonts）
+├── index.html                # 作品画廊入口（GitHub Pages 站点根）
+├── examples/                 # 画廊示例项目（deck.pptd + pages/ + media/ + 可选 meta.yaml）
+├── bin/open-pptd.js          # CLI（serve / export / export-project / render / fonts / gallery）
 ├── lib/                      # 本地服务器（静态 + SSE 实时刷新 + 保存写回）+ 导出/渲染逻辑
 ├── editor/                   # 网页编辑器（纯前端，无后端依赖）
 │   ├── core/                 #   数据模型 / 富文本 / 主题 / 几何 / 图标库
@@ -99,8 +135,9 @@ open-pptd/
 │   └── app/                  #   编辑器装配（状态/视图/IO/工具栏）
 ├── assets/                   # 内置资源（icons/ 图标源；fonts/ 字体库 29 种免费商用字体，本地资源不上传 GitHub）
 ├── references/               # 按需读取的参考文档（pptd.md / shapes.md / fonts.md / icons.md / …）
-├── scripts/                  # 构建脚本（图标库 / 预置几何 / 参考文件生成）
+├── scripts/                  # 构建脚本（图标库 / 预置几何 / 参考文件生成 / publish 同步）
 ├── tests/                    # 测试（见 tests/README.md：组件项目 + 一键回归 + E2E）
+├── docs/                     # 开发文档 + README 配图
 └── package.json
 ```
 
@@ -118,8 +155,8 @@ npm run test:incremental      # 渐进加载 E2E（写入中的项目逐页显�
 
 本项目分两个仓库：
 
-- **发布仓库 [open-pptd-publish](https://github.com/Shingwha/open-pptd-publish)（默认使用）**：skill 运行时精简版，仅供直接安装使用，不含测试、图标源与生成脚本。不参与代码开发的用户 clone 这个即可（见上方安装）。
-- **开发仓库 [open-pptd](https://github.com/Shingwha/open-pptd)（参与开发时用）**：完整源码，含全部测试、图标源文件与生成脚本。
+- **开发仓库 [open-pptd](https://github.com/Shingwha/open-pptd)（默认使用）**：完整源码 + 全部测试 + 示例画廊（`examples/`）。**GitHub Pages 站点（在线画廊）由此仓库部署**：https://shingwha.github.io/open-pptd/ ，提交后由 GitHub Actions 自动「回归测试 → 重建画廊索引 → 部署」。
+- **发布仓库 [open-pptd-publish](https://github.com/Shingwha/open-pptd-publish)**：skill 运行时精简版，仅供直接安装使用，不含测试、图标源、生成脚本与示例画廊（`examples/` 不参与同步）。不参与代码开发的用户 clone 这个即可（见上方安装）。
 
 发布仓库由开发仓库经 `npm run sync:publish -- --push` 自动同步（白名单快照，见开发仓库 `scripts/sync-publish.mjs`），其内容以开发仓库 `main` 分支为准。
 
