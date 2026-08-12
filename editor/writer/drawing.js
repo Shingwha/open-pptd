@@ -119,22 +119,23 @@ export function shadowElement(theme, shadow) {
  *  - { type:"solid", color }
  *  - { type:"gradient", gradientType, stops, angle }
  *  - { type:"image", src, fit, crop, opacity }（媒体由调用方注册）
+ * @param {number} [opacity] 元素级透明度（0~1）：solid/gradient 颜色内注入 a:alpha
  */
-export function buildFill(theme, fill, mediaRef = null) {
+export function buildFill(theme, fill, mediaRef = null, opacity = null) {
   if (!fill) return "";
   if (typeof fill === "string") {
-    return el("a:solidFill", {}, colorElement(theme, fill));
+    return el("a:solidFill", {}, colorElement(theme, fill, opacity));
   }
   if (typeof fill !== "object") return "";
   if (fill.type === "solid") {
     // 官方 SolidFill（{type: "solid", color}）——此前依赖旧 fill.color 兼容分支，
     // 清理后一度丢失（表格填充/页面背景全空，2026-08-10 回归）
-    return el("a:solidFill", {}, colorElement(theme, fill.color));
+    return el("a:solidFill", {}, colorElement(theme, fill.color, opacity));
   }
   if (fill.type === "gradient") {
     // a:gs pos 单位 = 千分之一百分比（100% = 100000），与 PowerPoint 官方输出一致
     const stops = (fill.stops || []).map((s) =>
-      el("a:gs", { pos: Math.round((s.position ?? 0) * 100000) }, colorElement(theme, s.color))
+      el("a:gs", { pos: Math.round((s.position ?? 0) * 100000) }, colorElement(theme, s.color, opacity))
     ).join("");
     const inner = el("a:gsLst", {}, stops);
     if (fill.gradientType === "radial") {
@@ -204,10 +205,10 @@ export function coverSrcRect(imgW, imgH, boxW, boxH) {
 }
 
 /** 边框 → a:ln。 */
-export function buildLn(theme, border) {
+export function buildLn(theme, border, opacity = null) {
   if (!border) return "";
   const w = Math.round((border.width ?? 1) * 12700);
-  const kids = [solidFillElement(theme, border.color ?? "#000000")];
+  const kids = [solidFillElement(theme, border.color ?? "#000000", opacity)];
   if (border.style === "dash") kids.push(el("a:prstDash", { val: "dash" }));
   else if (border.style === "dot") kids.push(el("a:prstDash", { val: "dot" }));
   return el("a:ln", { w, cap: "flat", cmpd: "sng", algn: "ctr" }, kids.join(""));
@@ -216,7 +217,7 @@ export function buildLn(theme, border) {
 /** 阴影 → a:effectLst。shadow: {blur, color, offset:[x,y]}。
  * CT_OuterShadowEffect 子元素 = 颜色元素本身（包 solidFill 会判损修复）；
  * dir 为顺时针角度（向下 = 5400000），offset [x,y] 向下为正。 */
-export function buildShadow(theme, shadow) {
+export function buildShadow(theme, shadow, opacity = null) {
   if (!shadow) return "";
   const [dx = 0, dy = 0] = shadow.offset || [0, 0];
   // algn="tl" 与 PowerPoint 官方输出一致（缺省 algn="b" 阴影方向不对）
@@ -226,5 +227,5 @@ export function buildShadow(theme, shadow) {
     attrs.dist = Math.round(Math.hypot(dx, dy) * 12700);
     attrs.dir = Math.round((Math.atan2(dy, dx) * 180) / Math.PI * 60000);
   }
-  return el("a:effectLst", {}, el("a:outerShdw", attrs, colorElement(theme, shadow.color || "#000000")));
+  return el("a:effectLst", {}, el("a:outerShdw", attrs, colorElement(theme, shadow.color || "#000000", opacity)));
 }

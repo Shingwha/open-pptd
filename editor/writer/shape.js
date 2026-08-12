@@ -44,13 +44,13 @@ export function shapeXml(theme, element, ctx) {
     kids.push(buildPresetGeom(element.shapeName, element.adjustments));
   }
 
-  const fill = buildFill(theme, element.fill);
+  const fill = buildFill(theme, element.fill, null, element.opacity);
   if (fill) kids.push(fill);
   // 无 border（含显式 null）→ 写 <a:ln><a:noFill/></a:ln>：否则 spPr 缺 a:ln 时
   // PowerPoint 回退 p:style lnRef（主题线条 idx1 = 2pt accent1），所有形状都带描边
-  const ln = buildLn(theme, element.border) || '<a:ln><a:noFill/></a:ln>';
+  const ln = buildLn(theme, element.border, element.opacity) || '<a:ln><a:noFill/></a:ln>';
   kids.push(ln);
-  const sh = buildShadow(theme, element.shadow);
+  const sh = buildShadow(theme, element.shadow, element.opacity);
   if (sh) kids.push(sh);
   return (
     el("p:sp", {}, [
