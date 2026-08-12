@@ -23,12 +23,12 @@
 把仓库 clone 到你的 AI 工具的 **skills 文件夹** 即可使用：
 
 ```bash
-# 方式一：指定目录克隆（推荐）
-git clone https://github.com/Shingwha/open-pptd <你的 skills 文件夹>/open-pptd
+# 方式一：指定目录克隆（推荐，目录名保持 open-pptd）
+git clone https://github.com/Shingwha/open-pptd-publish <你的 skills 文件夹>/open-pptd
 
-# 方式二：先进入 skills 文件夹再克隆（目录名自动为 open-pptd）
+# 方式二：先进入 skills 文件夹再克隆
 cd <你的 skills 文件夹>
-git clone https://github.com/Shingwha/open-pptd
+git clone https://github.com/Shingwha/open-pptd-publish open-pptd
 ```
 
 skills 文件夹的位置因工具而异：
@@ -105,7 +105,16 @@ npm run test:live             # 项目模式 E2E（SSE 实时刷新 + 保存写�
 npm run test:incremental      # 渐进加载 E2E（写入中的项目逐页显示，需 Chrome）
 ```
 
-详见 `tests/README.md`。
+详见 `tests/README.md`（发布仓库不含测试，测试与开发资源见开发仓库）。
+
+## 仓库说明
+
+本项目分两个仓库：
+
+- **发布仓库 [open-pptd-publish](https://github.com/Shingwha/open-pptd-publish)（默认使用）**：skill 运行时精简版，仅供直接安装使用，不含测试、图标源与生成脚本。不参与代码开发的用户 clone 这个即可（见上方安装）。
+- **开发仓库 [open-pptd](https://github.com/Shingwha/open-pptd)（参与开发时用）**：完整源码，含全部测试、图标源文件与生成脚本。
+
+发布仓库由开发仓库经 `npm run sync:publish -- --push` 自动同步（白名单快照，见开发仓库 `scripts/sync-publish.mjs`），其内容以开发仓库 `main` 分支为准。
 
 ## 作为 AI 技能使用
 

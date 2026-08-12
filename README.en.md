@@ -105,7 +105,16 @@ npm run test:live             # project-mode E2E (SSE live reload + save-back to
 npm run test:incremental      # incremental-load E2E (pages show up as a project is being written, needs Chrome)
 ```
 
-See `tests/README.md` for details.
+See `tests/README.md` for details (the publish repo does not include tests; testing and dev resources live in the dev repo).
+
+## Repository Notes
+
+This project has two repositories:
+
+- **Publish repo [open-pptd-publish](https://github.com/Shingwha/open-pptd-publish) (use by default)**: a runtime-only snapshot of the skill for direct installation. No tests, icon sources, or generation scripts. If you are not developing the code, clone this one (see Installation above).
+- **Dev repo [open-pptd](https://github.com/Shingwha/open-pptd) (for contributors)**: full source including all tests, icon sources, and generation scripts.
+
+The publish repo is kept in sync from the dev repo via `npm run sync:publish -- --push` (a whitelist snapshot, see `scripts/sync-publish.mjs` in the dev repo); its content always tracks the `main` branch of the dev repo.
 
 ## Using as an AI Skill
 
