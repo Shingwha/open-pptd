@@ -1,0 +1,100 @@
+pageType: final
+background:
+  type: solid
+  color: "$primaryDeep"
+notes: 结束页：品牌宣言收尾，邀请来宾共饮一盏，发布会结束。
+elements:
+  - elementId: ring-echo
+    elementType: shape
+    bounds: [688, 158, 224, 224]
+    shapeName: donut
+    adjustments: [800]
+    fill: {type: solid, color: "$accent"}
+    opacity: 0.35
+
+  - elementId: lattice-inscribed
+    elementType: shape
+    bounds: [742, 212, 116, 116]
+    shapeName: custom
+    viewBox: [200, 200]
+    path: "M0,0 H200 V200 H0 Z M12,12 V188 H188 V12 Z M64,12 H72 V188 H64 Z M128,12 H136 V188 H128 Z M12,64 H188 V72 H12 Z M12,128 H188 V136 H12 Z"
+    fill: {type: solid, color: "$accent"}
+    opacity: 0.5
+
+  - elementId: brand-mark
+    elementType: shape
+    bounds: [48, 44, 14, 14]
+    shapeName: custom
+    viewBox: [100, 100]
+    path: "M0,0 H100 V100 H0 Z M10,10 V90 H90 V10 Z M46,10 H54 V90 H46 Z M10,46 H90 V54 H10 Z"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: brand-meta
+    elementType: text
+    bounds: [72, 40, 420, 22]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 12
+      color: "#B9C4B0"
+      letterSpacing: 4
+      text: "山茗集 · SHANMING COLLECTION"
+
+  - elementId: manifesto
+    elementType: text
+    bounds: [48, 186, 600, 130]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 42
+      color: "$bg"
+      lineHeight: 1.5
+      text: |
+        <p>把一盏山河，</p>
+        <p>递给懂茶的人。</p>
+
+  - elementId: manifesto-rule
+    elementType: shape
+    bounds: [48, 336, 150, 1.5]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: closing-sub
+    elementType: text
+    bounds: [48, 354, 520, 28]
+    content:
+      fontFamily: "zcoolwenyiti"
+      fontSize: 16
+      color: "$accent"
+      letterSpacing: 2
+      text: "山茗集 2026 年度品牌发布会 · 一盏山河"
+
+  - elementId: vertical-slogan
+    elementType: text
+    bounds: [920, 150, 24, 300]
+    content:
+      fontFamily: "zcoolwenyiti"
+      fontSize: 14
+      color: "#8A9A85"
+      letterSpacing: 6
+      textDirection: vertical
+      align: [center, top]
+      text: "以茶为礼 · 敬山河"
+
+  - elementId: closing-thanks
+    elementType: text
+    bounds: [48, 470, 420, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 12
+      color: "#9FAF9B"
+      letterSpacing: 2
+      text: "谢谢聆听 · 期待与您共饮一盏"
+
+  - elementId: closing-pagenum
+    elementType: text
+    bounds: [872, 470, 40, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "#8A9A85"
+      align: [right, top]
+      text: "07 / 07"

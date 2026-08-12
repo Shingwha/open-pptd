@@ -1,0 +1,205 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: 门店与经营数据：27 家门店覆盖 12 城，2025 年度零售额 3.2 亿元，岩茶为第一大品类。
+elements:
+  - elementId: header-mark
+    elementType: shape
+    bounds: [48, 38, 14, 14]
+    shapeName: custom
+    viewBox: [100, 100]
+    path: "M0,0 H100 V100 H0 Z M10,10 V90 H90 V10 Z M46,10 H54 V90 H46 Z M10,46 H90 V54 H10 Z"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: header-label
+    elementType: text
+    bounds: [70, 34, 300, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      color: "$muted"
+      letterSpacing: 3
+      text: "肆 · 门店与经营数据"
+
+  - elementId: header-tag
+    elementType: text
+    bounds: [612, 34, 300, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      letterSpacing: 2
+      align: [right, top]
+      text: "一盏山河 · 年度发布会"
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [48, 62, 864, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: page-title
+    elementType: text
+    bounds: [48, 82, 480, 44]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 28
+      color: "$primary"
+      text: "把茶山，开进城市中心"
+
+  - elementId: page-sub
+    elementType: text
+    bounds: [48, 126, 420, 18]
+    content:
+      style: "$caption"
+      text: "截至 2026 年 6 月 · 全国在营门店"
+
+  - elementId: grid-v
+    elementType: shape
+    bounds: [278, 158, 1, 262]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: grid-h
+    elementType: shape
+    bounds: [48, 288, 462, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: kpi1-num
+    elementType: text
+    bounds: [48, 166, 210, 56]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 42
+      color: "$primary"
+      text: "27 家"
+
+  - elementId: kpi1-label
+    elementType: text
+    bounds: [48, 228, 210, 36]
+    content:
+      style: "$caption"
+      fontSize: 11
+      text: "在营门店 · 覆盖 12 座城市"
+
+  - elementId: kpi2-num
+    elementType: text
+    bounds: [299, 166, 210, 56]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 42
+      color: "$primary"
+      text: "48 万"
+
+  - elementId: kpi2-label
+    elementType: text
+    bounds: [299, 228, 210, 36]
+    content:
+      style: "$caption"
+      fontSize: 11
+      text: "注册会员 · 年度净增 9.2 万"
+
+  - elementId: kpi3-num
+    elementType: text
+    bounds: [48, 306, 210, 56]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 42
+      color: "$accent"
+      text: "3.2 亿"
+
+  - elementId: kpi3-label
+    elementType: text
+    bounds: [48, 368, 210, 36]
+    content:
+      style: "$caption"
+      fontSize: 11
+      text: |
+        <p>2025 年度零售额 · <span style="color:$success;">同比 +41%</span></p>
+
+  - elementId: kpi4-num
+    elementType: text
+    bounds: [299, 306, 210, 56]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 42
+      color: "$primary"
+      text: "92%"
+
+  - elementId: kpi4-label
+    elementType: text
+    bounds: [299, 368, 210, 36]
+    content:
+      style: "$caption"
+      fontSize: 11
+      text: "会员年度复购率"
+
+  - elementId: chart-title
+    elementType: text
+    bounds: [556, 112, 356, 22]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      bold: true
+      color: "$text"
+      text: "2025 年销售结构（按品类 GMV 占比）"
+
+  - elementId: sales-mix-chart
+    elementType: chart
+    bounds: [556, 140, 356, 296]
+    fontFamily: "LXGW Neo XiHei"
+    fill: "$bg"
+    data:
+      cols: [品类, 占比]
+      rows:
+        - [岩茶系列, 38]
+        - [龙井系列, 27]
+        - [滇红系列, 19]
+        - [茶饮·周边, 16]
+    legend:
+      show: true
+      position: bottom
+      fontSize: 11
+      color: "$text"
+    series:
+      - type: pie
+        encode: {category: 品类, value: 占比}
+        innerRadius: 0.58
+        fill: ["$primary", "$accent", "$accent4", "$accent3"]
+        border: {style: solid, width: 2, color: "$bg"}
+        dataLabels: {show: true, content: percentage, fontSize: 11}
+
+  - elementId: donut-center
+    elementType: text
+    bounds: [674, 254, 120, 40]
+    content:
+      align: [center, middle]
+      text: |
+        <p><span style="font-family:'LXGW Neo XiHei'; font-size:10px; color:$muted;">年度 GMV</span></p>
+        <p><span style="font-family:'Alimama DongFangDaKai'; font-size:15px; color:$primary;">¥3.2 亿</span></p>
+
+  - elementId: chart-footnote
+    elementType: text
+    bounds: [48, 474, 700, 18]
+    content:
+      style: "$caption"
+      text: "* 数据来源：山茗集《2025 年度经营简报》（演示用模拟数据，非真实经营数据）。"
+
+  - elementId: footer-left
+    elementType: text
+    bounds: [48, 506, 300, 18]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      text: "山茗集 · 2026 年度品牌发布会"
+
+  - elementId: footer-page
+    elementType: text
+    bounds: [872, 506, 40, 18]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      align: [right, top]
+      text: "05 / 07"

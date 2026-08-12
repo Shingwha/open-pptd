@@ -1,0 +1,123 @@
+pageType: cover
+background:
+  type: solid
+  color: "$primaryDeep"
+notes: 开场页：欢迎大家来到山茗集 2026 年度品牌发布会，今年的主题是「一盏山河」。
+elements:
+  - elementId: deco-lattice
+    elementType: shape
+    bounds: [-70, 330, 280, 280]
+    shapeName: custom
+    viewBox: [200, 200]
+    path: "M0,0 H200 V200 H0 Z M12,12 V188 H188 V12 Z M64,12 H72 V188 H64 Z M128,12 H136 V188 H128 Z M12,64 H188 V72 H12 Z M12,128 H188 V136 H12 Z"
+    fill: {type: solid, color: "$bg"}
+    opacity: 0.05
+
+  - elementId: ring-outer
+    elementType: shape
+    bounds: [488, 46, 448, 448]
+    shapeName: donut
+    adjustments: [700]
+    fill: {type: solid, color: "$accent"}
+    opacity: 0.4
+
+  - elementId: ring-main
+    elementType: shape
+    bounds: [500, 58, 424, 424]
+    shapeName: donut
+    adjustments: [2000]
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: cover-image
+    elementType: image
+    bounds: [512, 70, 400, 400]
+    src: "media/cover-tea.png"
+    cropShape: {shapeName: ellipse}
+    fit: {mode: cover}
+
+  - elementId: brand-mark
+    elementType: shape
+    bounds: [48, 44, 14, 14]
+    shapeName: custom
+    viewBox: [100, 100]
+    path: "M0,0 H100 V100 H0 Z M10,10 V90 H90 V10 Z M46,10 H54 V90 H46 Z M10,46 H90 V54 H10 Z"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: brand-meta
+    elementType: text
+    bounds: [72, 40, 420, 22]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 12
+      color: "#B9C4B0"
+      letterSpacing: 4
+      text: "山茗集 · SHANMING COLLECTION"
+
+  - elementId: cover-title
+    elementType: text
+    bounds: [44, 148, 430, 100]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 76
+      color: "$bg"
+      letterSpacing: 4
+      align: [left, middle]
+      text: "一盏山河"
+
+  - elementId: cover-subtitle
+    elementType: text
+    bounds: [48, 262, 430, 36]
+    content:
+      fontFamily: "zcoolwenyiti"
+      fontSize: 22
+      color: "$accent"
+      letterSpacing: 2
+      text: "茶文化品牌 2026 年度发布会"
+
+  - elementId: cover-rule
+    elementType: shape
+    bounds: [48, 322, 150, 1.5]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: cover-info
+    elementType: text
+    bounds: [48, 338, 430, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "#9FAF9B"
+      letterSpacing: 2
+      text: "2026.09.12 · 杭州 · 西子湖畔"
+
+  - elementId: vertical-slogan
+    elementType: text
+    bounds: [450, 140, 30, 320]
+    content:
+      fontFamily: "zcoolwenyiti"
+      fontSize: 15
+      color: "#B9C4B0"
+      letterSpacing: 6
+      textDirection: vertical
+      align: [center, top]
+      text: "以茶为礼 · 敬山河"
+
+  - elementId: cover-agenda
+    elementType: text
+    bounds: [48, 490, 400, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "#8A9A85"
+      letterSpacing: 2
+      text: "品牌故事 · 产品线 · 门店数据 · 新系列发布"
+
+  - elementId: cover-pagenum
+    elementType: text
+    bounds: [872, 490, 40, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "#8A9A85"
+      align: [right, top]
+      text: "01 / 07"

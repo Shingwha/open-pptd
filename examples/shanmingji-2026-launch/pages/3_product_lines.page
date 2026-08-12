@@ -1,0 +1,241 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: 产品线：岩骨（武夷岩茶）、青明（西湖龙井）、云岭（古树滇红）三大系列。
+elements:
+  - elementId: header-mark
+    elementType: shape
+    bounds: [48, 38, 14, 14]
+    shapeName: custom
+    viewBox: [100, 100]
+    path: "M0,0 H100 V100 H0 Z M10,10 V90 H90 V10 Z M46,10 H54 V90 H46 Z M10,46 H90 V54 H10 Z"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: header-label
+    elementType: text
+    bounds: [70, 34, 240, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      color: "$muted"
+      letterSpacing: 3
+      text: "贰 · 产品线"
+
+  - elementId: header-tag
+    elementType: text
+    bounds: [612, 34, 300, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      letterSpacing: 2
+      align: [right, top]
+      text: "一盏山河 · 年度发布会"
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [48, 62, 864, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: page-title
+    elementType: text
+    bounds: [48, 84, 500, 46]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 30
+      color: "$primary"
+      text: "三大系列 · 一脉山河"
+
+  - elementId: page-sub
+    elementType: text
+    bounds: [48, 130, 540, 24]
+    content:
+      fontFamily: "zcoolwenyiti"
+      fontSize: 14
+      color: "$muted"
+      text: "两座地理标志产区，一条北纬 24° 红茶带"
+
+  - elementId: row1-mark
+    elementType: shape
+    bounds: [48, 158, 12, 12]
+    shapeName: custom
+    viewBox: [100, 100]
+    path: "M0,0 H100 V100 H0 Z M10,10 V90 H90 V10 Z M46,10 H54 V90 H46 Z M10,46 H90 V54 H10 Z"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: row1-origin
+    elementType: text
+    bounds: [68, 155, 300, 18]
+    content:
+      style: "$caption"
+      letterSpacing: 2
+      text: "武夷山 · 三坑两涧"
+
+  - elementId: row1-name
+    elementType: text
+    bounds: [48, 176, 320, 32]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 21
+      color: "$text"
+      text: "岩骨 · 武夷岩茶"
+
+  - elementId: row1-desc
+    elementType: text
+    bounds: [48, 212, 480, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11.5
+      color: "$muted"
+      text: "大红袍 / 肉桂 / 老枞水仙 · 正岩核心区，传统炭焙，岩韵悠长"
+
+  - elementId: row1-num
+    elementType: text
+    bounds: [496, 160, 64, 54]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 40
+      color: "$primaryTint"
+      align: [right, top]
+      text: "壹"
+
+  - elementId: rule-1
+    elementType: shape
+    bounds: [48, 254, 512, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: row2-mark
+    elementType: shape
+    bounds: [48, 272, 12, 12]
+    shapeName: custom
+    viewBox: [100, 100]
+    path: "M0,0 H100 V100 H0 Z M10,10 V90 H90 V10 Z M46,10 H54 V90 H46 Z M10,46 H90 V54 H10 Z"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: row2-origin
+    elementType: text
+    bounds: [68, 269, 300, 18]
+    content:
+      style: "$caption"
+      letterSpacing: 2
+      text: "西湖 · 狮峰山 / 梅家坞"
+
+  - elementId: row2-name
+    elementType: text
+    bounds: [48, 290, 320, 32]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 21
+      color: "$text"
+      text: "青明 · 西湖龙井"
+
+  - elementId: row2-desc
+    elementType: text
+    bounds: [48, 326, 480, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11.5
+      color: "$muted"
+      text: "明前头采，狮峰山一级产区，手工辉锅，豆花香清长"
+
+  - elementId: row2-num
+    elementType: text
+    bounds: [496, 274, 64, 54]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 40
+      color: "$primaryTint"
+      align: [right, top]
+      text: "贰"
+
+  - elementId: rule-2
+    elementType: shape
+    bounds: [48, 368, 512, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: row3-mark
+    elementType: shape
+    bounds: [48, 386, 12, 12]
+    shapeName: custom
+    viewBox: [100, 100]
+    path: "M0,0 H100 V100 H0 Z M10,10 V90 H90 V10 Z M46,10 H54 V90 H46 Z M10,46 H90 V54 H10 Z"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: row3-origin
+    elementType: text
+    bounds: [68, 383, 300, 18]
+    content:
+      style: "$caption"
+      letterSpacing: 2
+      text: "云南凤庆 · 澜沧江畔"
+
+  - elementId: row3-name
+    elementType: text
+    bounds: [48, 404, 320, 32]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 21
+      color: "$text"
+      text: "云岭 · 古树滇红"
+
+  - elementId: row3-desc
+    elementType: text
+    bounds: [48, 440, 480, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11.5
+      color: "$muted"
+      text: "1938 年老树种群，传统工夫工艺，金芽蜜香，暖润回甘"
+
+  - elementId: row3-num
+    elementType: text
+    bounds: [496, 388, 64, 54]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 40
+      color: "$primaryTint"
+      align: [right, top]
+      text: "叁"
+
+  - elementId: garden-image
+    elementType: image
+    bounds: [620, 88, 292, 365]
+    src: "media/longjing-tea-garden.png"
+    fit: {mode: cover}
+
+  - elementId: garden-lattice
+    elementType: shape
+    bounds: [632, 409, 32, 32]
+    shapeName: custom
+    viewBox: [100, 100]
+    path: "M0,0 H100 V100 H0 Z M10,10 V90 H90 V10 Z M46,10 H54 V90 H46 Z M10,46 H90 V54 H10 Z"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: garden-caption
+    elementType: text
+    bounds: [620, 462, 292, 18]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: "浙江 · 杭州 西湖龙井一级产区"
+
+  - elementId: footer-left
+    elementType: text
+    bounds: [48, 506, 300, 18]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      text: "山茗集 · 2026 年度品牌发布会"
+
+  - elementId: footer-page
+    elementType: text
+    bounds: [872, 506, 40, 18]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      align: [right, top]
+      text: "03 / 07"

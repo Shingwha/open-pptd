@@ -1,0 +1,82 @@
+version: v2
+title: 山茗集 · 2026 年度品牌发布会「一盏山河」
+size: [960, 540]
+
+theme:
+  colors:
+    primary: "#24503C"      # 深松绿：茶山主色，强调/表头/深色块
+    accent: "#B98F3E"       # 赭金：窗棂装饰/关键数字/高亮
+    bg: "#F5F7F0"           # 近白微绿：页面底色
+    text: "#262B22"         # 墨绿黑：正文
+    muted: "#6B7265"        # 苔灰绿：次要文字
+    line: "#DCE2D4"         # 绿灰线：分隔细线
+    success: "#4F7A52"
+    warning: "#B0781C"
+    danger: "#B55242"
+    primarySoft: "#ECF1E2"  # 极浅松绿：表格斑马纹
+    primaryTint: "#E0E8D6"
+    primaryDeep: "#132A1F"  # 深松：封面/尾页暗底
+    accent3: "#7C9B66"      # 茶青
+    accent4: "#B06A3E"      # 赭丹
+    accent5: "#62798C"      # 黛青
+    accent6: "#8A5A44"      # 焦茶
+  textStyles:
+    title:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 32
+      color: "$primary"
+      lineHeight: 1.3
+    display:
+      fontFamily: "zcoolwenyiti"
+      fontSize: 18
+      color: "$text"
+      lineHeight: 1.4
+    body:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "$text"
+      lineHeight: 1.75
+    caption:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      lineHeight: 1.5
+    quote:
+      fontFamily: "zcoolwenyiti"
+      fontSize: 16
+      color: "$primary"
+      lineHeight: 1.6
+  tableStyles:
+    default:
+      cellStyle:
+        fontSize: 12
+        fontFamily: "LXGW Neo XiHei"
+        color: "$text"
+        fill: { type: solid, color: "#FFFFFF" }
+        border: { style: solid, width: 1, color: "$line" }
+        align: [left, middle]
+      firstRowStyle:
+        fill: { type: solid, color: "$primary" }
+        color: "$bg"
+        bold: true
+        fontFamily: "Alimama DongFangDaKai"
+        fontSize: 13
+        align: [center, middle]
+      bodyStyles:
+        - { fill: { type: solid, color: "#FFFFFF" } }
+        - { fill: { type: solid, color: "$primarySoft" } }
+      rowOverColumn: true
+
+fonts:
+  阿里妈妈东方大楷: { family: "Alimama DongFangDaKai" }
+  站酷文艺体: { family: "zcoolwenyiti" }
+  霞鹜新晰黑: { family: "LXGW Neo XiHei" }
+
+pages:
+  - pages/1_cover.page
+  - pages/2_story.page
+  - pages/3_product_lines.page
+  - pages/4_price_table.page
+  - pages/5_store_data.page
+  - pages/6_new_series.page
+  - pages/7_final.page

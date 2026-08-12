@@ -1,0 +1,195 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: 品牌故事：2016 年创立于武夷山天心村，十年坚持山场直采、大师监制、当季上市。
+elements:
+  - elementId: header-mark
+    elementType: shape
+    bounds: [48, 38, 14, 14]
+    shapeName: custom
+    viewBox: [100, 100]
+    path: "M0,0 H100 V100 H0 Z M10,10 V90 H90 V10 Z M46,10 H54 V90 H46 Z M10,46 H90 V54 H10 Z"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: header-label
+    elementType: text
+    bounds: [70, 34, 240, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      color: "$muted"
+      letterSpacing: 3
+      text: "壹 · 品牌故事"
+
+  - elementId: header-tag
+    elementType: text
+    bounds: [612, 34, 300, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      letterSpacing: 2
+      align: [right, top]
+      text: "一盏山河 · 年度发布会"
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [48, 62, 864, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: page-title
+    elementType: text
+    bounds: [48, 88, 480, 50]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 34
+      color: "$primary"
+      text: "以山为师，以茶为信"
+
+  - elementId: page-sub
+    elementType: text
+    bounds: [48, 142, 480, 26]
+    content:
+      fontFamily: "zcoolwenyiti"
+      fontSize: 15
+      color: "$muted"
+      text: "从武夷山一间茶室，到二十七家城市门店"
+
+  - elementId: story-body
+    elementType: text
+    bounds: [48, 186, 470, 140]
+    content:
+      style: "$body"
+      fontSize: 12.5
+      text: |
+        <p>2016 年，山茗集在武夷山天心村创立。第一年只做一件事：跟着老师傅走遍三坑两涧，把「正岩山场」的标准立起来。</p>
+        <p style="margin-top:8px">十年间，从武夷岩茶到西湖龙井，再到云南凤庆的古树滇红。我们坚持山场直采、大师监制、当季上市，把每一座茶山的本味，原封不动地端上城市茶桌。</p>
+
+  - elementId: quote-bar
+    elementType: shape
+    bounds: [48, 340, 3, 46]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: quote-text
+    elementType: text
+    bounds: [62, 338, 320, 26]
+    content:
+      fontFamily: "zcoolwenyiti"
+      fontSize: 17
+      color: "$primary"
+      text: "茶者，人在草木间。"
+
+  - elementId: quote-src
+    elementType: text
+    bounds: [62, 366, 320, 18]
+    content:
+      style: "$caption"
+      text: "—— 山茗集创立手记 · 2016"
+
+  - elementId: garden-image
+    elementType: image
+    bounds: [540, 88, 372, 248]
+    src: "media/wuyi-tea-garden.png"
+    fit: {mode: cover}
+
+  - elementId: garden-lattice
+    elementType: shape
+    bounds: [552, 292, 32, 32]
+    shapeName: custom
+    viewBox: [100, 100]
+    path: "M0,0 H100 V100 H0 Z M10,10 V90 H90 V10 Z M46,10 H54 V90 H46 Z M10,46 H90 V54 H10 Z"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: garden-caption
+    elementType: text
+    bounds: [540, 344, 372, 18]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: "福建 · 武夷山 三坑两涧 正岩核心产区"
+
+  - elementId: timeline-line
+    elementType: shape
+    bounds: [48, 451, 858, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: tl-node-1
+    elementType: shape
+    bounds: [48, 449, 6, 6]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: tl-node-2
+    elementType: shape
+    bounds: [336, 449, 6, 6]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: tl-node-3
+    elementType: shape
+    bounds: [624, 449, 6, 6]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: tl-node-4
+    elementType: shape
+    bounds: [906, 449, 6, 6]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: tl-item-1
+    elementType: text
+    bounds: [48, 408, 220, 36]
+    content:
+      align: [left, top]
+      text: |
+        <p><span style="font-family:'Alimama DongFangDaKai'; font-size:15px; color:$primary;">2016</span></p>
+        <p><span style="font-family:'LXGW Neo XiHei'; font-size:10px; color:$muted;">创立于武夷山天心村</span></p>
+
+  - elementId: tl-item-2
+    elementType: text
+    bounds: [336, 408, 220, 36]
+    content:
+      align: [left, top]
+      text: |
+        <p><span style="font-family:'Alimama DongFangDaKai'; font-size:15px; color:$primary;">2019</span></p>
+        <p><span style="font-family:'LXGW Neo XiHei'; font-size:10px; color:$muted;">西湖龙井产区基地落成</span></p>
+
+  - elementId: tl-item-3
+    elementType: text
+    bounds: [624, 408, 220, 36]
+    content:
+      align: [left, top]
+      text: |
+        <p><span style="font-family:'Alimama DongFangDaKai'; font-size:15px; color:$primary;">2023</span></p>
+        <p><span style="font-family:'LXGW Neo XiHei'; font-size:10px; color:$muted;">全国门店突破 20 家</span></p>
+
+  - elementId: tl-item-4
+    elementType: text
+    bounds: [706, 408, 206, 36]
+    content:
+      align: [right, top]
+      text: |
+        <p><span style="font-family:'Alimama DongFangDaKai'; font-size:15px; color:$primary;">2026</span></p>
+        <p><span style="font-family:'LXGW Neo XiHei'; font-size:10px; color:$muted;">年度焕新 · 一盏山河</span></p>
+
+  - elementId: footer-left
+    elementType: text
+    bounds: [48, 506, 300, 18]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      text: "山茗集 · 2026 年度品牌发布会"
+
+  - elementId: footer-page
+    elementType: text
+    bounds: [872, 506, 40, 18]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      align: [right, top]
+      text: "02 / 07"

@@ -1,0 +1,160 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: 核心产品价格表：三大系列六款年度核心产品，发布会指导零售价。
+elements:
+  - elementId: header-mark
+    elementType: shape
+    bounds: [48, 38, 14, 14]
+    shapeName: custom
+    viewBox: [100, 100]
+    path: "M0,0 H100 V100 H0 Z M10,10 V90 H90 V10 Z M46,10 H54 V90 H46 Z M10,46 H90 V54 H10 Z"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: header-label
+    elementType: text
+    bounds: [70, 34, 300, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      color: "$muted"
+      letterSpacing: 3
+      text: "叁 · 核心产品 · 零售价格"
+
+  - elementId: header-tag
+    elementType: text
+    bounds: [612, 34, 300, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      letterSpacing: 2
+      align: [right, top]
+      text: "一盏山河 · 年度发布会"
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [48, 62, 864, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: page-title
+    elementType: text
+    bounds: [48, 82, 520, 44]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 28
+      color: "$primary"
+      text: "2026 年度核心产品价目"
+
+  - elementId: price-note
+    elementType: text
+    bounds: [552, 100, 360, 20]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: "单位：元 · 全国建议零售价"
+
+  - elementId: price-table
+    elementType: table
+    bounds: [48, 132, 864, 330]
+    columnWidths: [0.23, 0.13, 0.30, 0.16, 0.18]
+    rowHeights: [0.13, 0.145, 0.145, 0.145, 0.145, 0.145, 0.145]
+    style: "$default"
+    rows:
+      - - text: "产品"
+        - text: "系列"
+        - text: "产区与等级"
+        - text: "规格"
+        - text: "零售价"
+      - - text: "牛栏坑肉桂"
+          bold: true
+        - text: "岩骨"
+          color: "$muted"
+          align: [center, middle]
+        - text: "武夷山正岩 · 特级"
+        - text: "12.5g×10 泡"
+        - text: "¥ 1,280"
+          bold: true
+          color: "$primary"
+          align: [right, middle]
+      - - text: "慧苑老枞水仙"
+          bold: true
+        - text: "岩骨"
+          color: "$muted"
+          align: [center, middle]
+        - text: "武夷山正岩 · 一级"
+        - text: "12.5g×10 泡"
+        - text: "¥ 880"
+          bold: true
+          color: "$primary"
+          align: [right, middle]
+      - - text: "狮峰龙井 · 明前头采"
+          bold: true
+        - text: "青明"
+          color: "$muted"
+          align: [center, middle]
+        - text: "西湖狮峰山 · 特级"
+        - text: "250g / 罐"
+        - text: "¥ 1,680"
+          bold: true
+          color: "$primary"
+          align: [right, middle]
+      - - text: "梅家坞龙井 · 雨前"
+          bold: true
+        - text: "青明"
+          color: "$muted"
+          align: [center, middle]
+        - text: "西湖梅家坞 · 二级"
+        - text: "250g / 罐"
+        - text: "¥ 520"
+          bold: true
+          color: "$primary"
+          align: [right, middle]
+      - - text: "金芽滇红"
+          bold: true
+        - text: "云岭"
+          color: "$muted"
+          align: [center, middle]
+        - text: "云南凤庆 · 特级"
+        - text: "200g / 罐"
+        - text: "¥ 460"
+          bold: true
+          color: "$primary"
+          align: [right, middle]
+      - - text: "古树晒红 · 饼"
+          bold: true
+        - text: "云岭"
+          color: "$muted"
+          align: [center, middle]
+        - text: "云南凤庆 · 古树级"
+        - text: "357g / 饼"
+        - text: "¥ 398"
+          bold: true
+          color: "$primary"
+          align: [right, middle]
+
+  - elementId: table-footnote
+    elementType: text
+    bounds: [48, 474, 700, 18]
+    content:
+      style: "$caption"
+      text: "* 价格为发布会指导价，实际售价以门店为准；本演示中品牌与数据均为虚构。"
+
+  - elementId: footer-left
+    elementType: text
+    bounds: [48, 506, 300, 18]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      text: "山茗集 · 2026 年度品牌发布会"
+
+  - elementId: footer-page
+    elementType: text
+    bounds: [872, 506, 40, 18]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      align: [right, top]
+      text: "04 / 07"

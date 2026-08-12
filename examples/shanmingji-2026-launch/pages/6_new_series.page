@@ -1,0 +1,234 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: 新系列发布：「松风听雨」秋冬系列三款冬茶，9 月 12 日发布会首发，10 月 1 日门店快闪。
+elements:
+  - elementId: header-mark
+    elementType: shape
+    bounds: [48, 38, 14, 14]
+    shapeName: custom
+    viewBox: [100, 100]
+    path: "M0,0 H100 V100 H0 Z M10,10 V90 H90 V10 Z M46,10 H54 V90 H46 Z M10,46 H90 V54 H10 Z"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: header-label
+    elementType: text
+    bounds: [70, 34, 300, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      color: "$muted"
+      letterSpacing: 3
+      text: "伍 · 新系列发布"
+
+  - elementId: header-tag
+    elementType: text
+    bounds: [612, 34, 300, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      letterSpacing: 2
+      align: [right, top]
+      text: "一盏山河 · 年度发布会"
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [48, 62, 864, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: page-title
+    elementType: text
+    bounds: [48, 82, 320, 52]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 38
+      color: "$primary"
+      text: "松风听雨"
+
+  - elementId: page-sub
+    elementType: text
+    bounds: [238, 100, 380, 26]
+    content:
+      fontFamily: "zcoolwenyiti"
+      fontSize: 15
+      color: "#8F6B1D"
+      text: "2026 秋冬新系列 · 10 月 1 日全国上市"
+
+  - elementId: series-image
+    elementType: image
+    bounds: [48, 150, 310, 310]
+    src: "media/new-series.png"
+    fit: {mode: cover}
+
+  - elementId: image-lattice
+    elementType: shape
+    bounds: [60, 416, 32, 32]
+    shapeName: custom
+    viewBox: [100, 100]
+    path: "M0,0 H100 V100 H0 Z M10,10 V90 H90 V10 Z M46,10 H54 V90 H46 Z M10,46 H90 V54 H10 Z"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: image-caption
+    elementType: text
+    bounds: [88, 466, 280, 16]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      text: "「松风听雨」系列礼盒 · 冬茶三款"
+
+  - elementId: concept-body
+    elementType: text
+    bounds: [400, 138, 512, 68]
+    content:
+      style: "$body"
+      text: |
+        <p>以武夷冬日山场为灵感：松烟香、桂圆汤、陈皮暖。三款冬茶，对应围炉的三种温度，也对应一年将尽时，最想递给身边人的那份心意。</p>
+
+  - elementId: item1-icon
+    elementType: icon
+    bounds: [400, 226, 20, 20]
+    iconName: "bs:fire"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: item1-name
+    elementType: text
+    bounds: [432, 222, 300, 24]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 16
+      color: "$text"
+      text: "老枞水仙 · 冬片"
+
+  - elementId: item1-desc
+    elementType: text
+    bounds: [432, 248, 480, 18]
+    content:
+      style: "$caption"
+      text: "百年老枞，松烟木质香 · 限量 3,000 份"
+
+  - elementId: item-rule-1
+    elementType: shape
+    bounds: [400, 282, 512, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: item2-icon
+    elementType: icon
+    bounds: [400, 296, 20, 20]
+    iconName: "bs:heart"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: item2-name
+    elementType: text
+    bounds: [432, 292, 300, 24]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 16
+      color: "$text"
+      text: "陈皮熟普 · 七年"
+
+  - elementId: item2-desc
+    elementType: text
+    bounds: [432, 318, 480, 18]
+    content:
+      style: "$caption"
+      text: "新会陈皮 × 勐海宫廷熟普，一壶煮到晚"
+
+  - elementId: item-rule-2
+    elementType: shape
+    bounds: [400, 352, 512, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: item3-icon
+    elementType: icon
+    bounds: [400, 366, 20, 20]
+    iconName: "bs:sun"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: item3-name
+    elementType: text
+    bounds: [432, 362, 300, 24]
+    content:
+      fontFamily: "Alimama DongFangDaKai"
+      fontSize: 16
+      color: "$text"
+      text: "姜桂红茶 · 暖冬"
+
+  - elementId: item3-desc
+    elementType: text
+    bounds: [432, 388, 480, 18]
+    content:
+      style: "$caption"
+      text: "凤庆金芽 × 小黄姜 × 桂花，晨起一杯"
+
+  - elementId: timeline-line
+    elementType: shape
+    bounds: [400, 460, 512, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: tl-node-1
+    elementType: shape
+    bounds: [476, 456, 8, 8]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: tl-node-2
+    elementType: shape
+    bounds: [652, 456, 8, 8]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: tl-node-3
+    elementType: shape
+    bounds: [828, 456, 8, 8]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: tl-item-1
+    elementType: text
+    bounds: [400, 418, 160, 34]
+    content:
+      align: [center, top]
+      text: |
+        <p><span style="font-family:'Alimama DongFangDaKai'; font-size:15px; color:$primary;">09.12 首发</span></p>
+        <p><span style="font-family:'LXGW Neo XiHei'; font-size:9.5px; color:$muted;">发布会现场限量发售</span></p>
+
+  - elementId: tl-item-2
+    elementType: text
+    bounds: [576, 418, 160, 34]
+    content:
+      align: [center, top]
+      text: |
+        <p><span style="font-family:'Alimama DongFangDaKai'; font-size:15px; color:$primary;">09.20 预售</span></p>
+        <p><span style="font-family:'LXGW Neo XiHei'; font-size:9.5px; color:$muted;">商城·小程序同步</span></p>
+
+  - elementId: tl-item-3
+    elementType: text
+    bounds: [752, 418, 160, 34]
+    content:
+      align: [center, top]
+      text: |
+        <p><span style="font-family:'Alimama DongFangDaKai'; font-size:15px; color:$primary;">10.01 快闪</span></p>
+        <p><span style="font-family:'LXGW Neo XiHei'; font-size:9.5px; color:$muted;">「松风茶席」12 城</span></p>
+
+  - elementId: footer-left
+    elementType: text
+    bounds: [48, 506, 300, 18]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      text: "山茗集 · 2026 年度品牌发布会"
+
+  - elementId: footer-page
+    elementType: text
+    bounds: [872, 506, 40, 18]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      align: [right, top]
+      text: "06 / 07"
