@@ -1,19 +1,23 @@
 // ============================================================================
-// core/table.js — 表格模型（网格展开 / 合并拆分 / 尺寸校验 / 内容高度自适应）
+// core/table.js — 表格模型（网格展开 / 合并拆分 / 尺寸校验 / 布局计算）
 // ----------------------------------------------------------------------------
 // 官方 Cell 规则（pptd.md Table/Cell）：
 //   - rows 为 2-D Cell 数组；合并用 rowSpan/colSpan 声明，被覆盖位置直接省略
 //     （无 null 占位），所以展开网格需要逐行消费单元格
 //   - columnWidths/rowHeights 每项 ∈ [0,1] 且各项和 = 1
+// 行高语义（与 PowerPoint a:tr min-height 行为一致）：
+//   - 行高 = 最小行高：未指定 rowHeights → 可读性底线（表头 30 / 行 26）；
+//     指定 rowHeights → 比例 × bounds 高度（不低于底线）
+//   - 内容排版超出最小行高时，行自动增高（预览 tr / PowerPoint 均为 min-height）
+//   - 不做内容估算：公式/多行文本高度由各自排版引擎给出（两端同 Cambria Math 度量）
 // 预览（renderer）与导出（writer）共享本模块。
 // ============================================================================
-
-import { richTextPlainText } from "./richtext.js";
 
 export const TABLE_FONT_SIZE = 13; // pt/px
 export const TABLE_CELL_PAD = 5; // 垂直内边距（pt/px）
 export const TABLE_CELL_PAD_X = 9; // 水平内边距
-export const TABLE_MIN_ROW = 26; // 最小行高（pt/px）
+export const TABLE_MIN_ROW = 26; // 行高可读性底线（pt/px）
+export const TABLE_MIN_HEADER = 30; // 表头行高底线（pt/px）
 
 // ----------------------------------------------------------------------------
 // 网格展开与合并
@@ -185,32 +189,20 @@ export function validateDims(dims, name) {
 }
 
 // ----------------------------------------------------------------------------
-// 内容高度自适应布局
+// 布局计算：列宽比例 + 最小行高（不做内容估算，行随内容自动增高）
 // ----------------------------------------------------------------------------
 
-/** 估算一段富文本在指定列宽（pt）下的行数（中文字符≈fontSize，半角≈0.55×fontSize）。 */
-export function estimateLines(text, colWidthPt, fontSize = TABLE_FONT_SIZE) {
-  const plain = richTextPlainText(text);
-  if (!plain) return 1;
-  let lines = 1;
-  let w = 0;
-  for (const ch of plain) {
-    const cw = ch.charCodeAt(0) > 255 ? fontSize : fontSize * 0.55;
-    if (w + cw > colWidthPt) {
-      lines += 1;
-      w = cw;
-    } else {
-      w += cw;
-    }
-  }
-  return lines;
-}
-
 /**
- * 计算表格内容布局。
- * @param {object} el 表格元素（bounds/rows/columnWidths）
- * @returns {{ rowHeights: number[], totalH: number, columnWidths: number[] }}
- *  rowHeights / columnWidths 单位为 pt/px。
+ * 表格布局：列宽比例（相对 bounds 宽度）；行高 = 最小行高（见下），内容排版超出时
+ * 由排版引擎自动增高（预览 tr / PowerPoint a:tr 均为 min-height 语义）。
+ * 最小行高取值：
+ *   - 指定 rowHeights → max(比例 × bounds 高度, 可读性底线)
+ *   - 未指定 → 可读性底线（表头 30 / 普通行 26，避免小字号下行高贴字）
+ * 不做内容估算：公式/多行文本的实际高度由各自排版引擎（浏览器 MathML 与 PowerPoint
+ * OMML，同为 Cambria Math 度量）给出，两端行为一致。
+ * @param {object} el 表格元素（bounds/rows/columnWidths/rowHeights）
+ * @returns {{ rowHeights: number[], columnWidths: number[] }}
+ *  rowHeights 单位为 pt/px。
  */
 export function estimateTableLayout(el) {
   const rows = Array.isArray(el.rows) ? el.rows : [];
@@ -219,23 +211,19 @@ export function estimateTableLayout(el) {
     ? el.columnWidths.length
     : (rows[0]?.length || 1);
   const boundsW = Array.isArray(el.bounds) ? el.bounds[2] : 400;
+  const boundsH = Array.isArray(el.bounds) ? el.bounds[3] : 400;
   const colWs =
     Array.isArray(el.columnWidths) && el.columnWidths.length === cols
       ? el.columnWidths
       : Array.from({ length: cols }, () => 1 / cols);
 
-  const rowHeights = rows.map((row, r) => {
-    let maxH = TABLE_MIN_ROW;
-    const isHeader = r === 0;
-    row.forEach((cell, c) => {
-      const colW = Math.max(40, boundsW * colWs[c]) - TABLE_CELL_PAD_X * 2;
-      const lines = estimateLines(cell?.text || "", colW);
-      const h = TABLE_CELL_PAD * 2 + lines * TABLE_FONT_SIZE * 1.25;
-      maxH = Math.max(maxH, Math.round(isHeader ? Math.max(h, 30) : h));
-    });
-    return maxH;
+  const ratios =
+    Array.isArray(el.rowHeights) && el.rowHeights.length === rows.length
+      ? el.rowHeights
+      : null;
+  const rowHeights = rows.map((_, r) => {
+    const minH = r === 0 ? TABLE_MIN_HEADER : TABLE_MIN_ROW;
+    return ratios ? Math.max(boundsH * (ratios[r] ?? 1 / Math.max(1, rows.length)), minH) : minH;
   });
-
-  const totalH = rowHeights.reduce((a, b) => a + b, 0);
-  return { rowHeights, totalH, columnWidths: colWs };
+  return { rowHeights, columnWidths: colWs };
 }

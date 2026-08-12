@@ -54,7 +54,7 @@ export function tableXml(theme, tableEl, ctx) {
   const [x, y, w] = tableEl.bounds;
   const ts = resolveTableStyle(theme, tableEl.style);
   const rows = Array.isArray(tableEl.rows) ? tableEl.rows : [];
-  const { rowHeights, totalH, columnWidths } = estimateTableLayout(tableEl);
+  const { rowHeights, columnWidths } = estimateTableLayout(tableEl);
   const colWs = columnWidths;
   const rowCount = rows.length;
   const colCount = colWs.length;
@@ -66,11 +66,14 @@ export function tableXml(theme, tableEl, ctx) {
     .join("");
   const trs = grid
     .map((gRow, r) => {
+      // 行高：min-height 语义（最小行高 = rowHeights 比例×bounds 或可读性底线），
+      // 内容排版超出时由 PowerPoint 按内容自动增高（与预览端 tr 行为一致）
       const rh = rowHeights[r] != null ? rowHeights[r] : 26;
+      const trAttrs = { h: Math.round(Math.max(0.01, rh) * 12700) };
       const tcs = gRow
         .map((g, c) => (g.covered ? mergePlaceholderTc(theme, g, r, c, ts, rowCount, colCount) : tcXml(theme, g.cell, r, c, ts, rowCount, colCount, tableEl.fill)))
         .join("");
-      return el("a:tr", { h: Math.round(Math.max(0.01, rh) * 12700) }, tcs);
+      return el("a:tr", trAttrs, tcs);
     })
     .join("");
 
@@ -95,7 +98,8 @@ export function tableXml(theme, tableEl, ctx) {
       ]),
       el("p:xfrm", {}, [
         el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) }),
-        el("a:ext", { cx: Math.round(w * 12700), cy: Math.round(totalH * 12700) }),
+        // 图形框高度 = bounds 高度（建议框）；表格实际显示高度由各行排版高度决定
+        el("a:ext", { cx: Math.round(w * 12700), cy: Math.round((tableEl.bounds[3] ?? 0) * 12700) }),
       ]),
       el("a:graphic", {}, el("a:graphicData", { uri: "http://schemas.openxmlformats.org/drawingml/2006/table" }, tbl)),
     ].join(""))

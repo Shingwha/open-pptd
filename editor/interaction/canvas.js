@@ -71,16 +71,21 @@ export function createCanvasController(canvas, opts) {
     updateSelectionBox();
   }
 
-  /** 仅更新选中框几何（拖动中不重建 DOM）。 */
+  /** 仅更新选中框几何（拖动中不重建 DOM）。表格用实测显示高度（内容自适应）。 */
   function updateSelectionBox() {
     if (!overlay) return;
     const el = findElement(getSelected());
     if (!el) return;
     const [x, y, w, h] = el.bounds;
+    let dispH = h;
+    if (el.elementType === "table") {
+      const mh = Number(nodeBy(el.elementId)?.dataset?.measuredH);
+      if (Number.isFinite(mh) && mh > 0) dispH = mh;
+    }
     overlay.style.left = `${x}px`;
     overlay.style.top = `${y}px`;
     overlay.style.width = `${w}px`;
-    overlay.style.height = `${h}px`;
+    overlay.style.height = `${dispH}px`;
   }
 
   // --------------------------------------------------------------------------
@@ -119,6 +124,11 @@ export function createCanvasController(canvas, opts) {
       /* 部分元素（SVG/ECharts）不支持时忽略 */
     }
     beginChange();
+    // 自动行高的表格（无 rowHeights）拖缩放 → 写入均分行高比例，转为受控最小行高
+    if (mode === "resize" && el.elementType === "table" && !Array.isArray(el.rowHeights)) {
+      const n = Math.max(1, Array.isArray(el.rows) ? el.rows.length : 1);
+      el.rowHeights = Array.from({ length: n }, () => 1 / n);
+    }
     window.addEventListener("pointermove", onDragMove);
     window.addEventListener("pointerup", onDragEnd);
     window.addEventListener("pointercancel", onDragEnd);

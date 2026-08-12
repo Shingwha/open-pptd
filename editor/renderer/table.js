@@ -94,7 +94,10 @@ export function renderTable(theme, el) {
 
   grid.forEach((gRow, r) => {
     const tr = document.createElement("tr");
-    tr.style.height = `${rowHeights[r] ?? 26}px`;
+    // 行高：min-height 语义（最小行高 = rowHeights 比例×bounds 或可读性底线），
+    // 内容排版超出时行自动增高（与 PowerPoint a:tr 行为一致）
+    const rh = rowHeights[r] != null ? rowHeights[r] : 26;
+    if (rh != null) tr.style.height = `${rh}px`;
     gRow.forEach((g, c) => {
       const cell = g.cell;
       // 被合并覆盖位：输出空 td（保留行列结构，样式按分类链计算）
@@ -118,6 +121,14 @@ export function renderTable(theme, el) {
   });
 
   box.appendChild(table);
+
+  // 实测显示高度（内容自适应/撑行后的真实高度）→ 供选中框等 UI 使用，不写入文件
+  if (typeof ResizeObserver !== "undefined") {
+    const ro = new ResizeObserver(() => {
+      box.dataset.measuredH = String(box.scrollHeight);
+    });
+    ro.observe(box);
+  }
   return box;
 }
 

@@ -82,7 +82,7 @@ export function openTableEditor(el, { onChange }) {
       const hl = resolveColor(theme, cellFinal(theme, ts, r, c, rows.length, cols, g.cell, el.fill).backgroundColor);
       return hl ? `background:${hl}` : "";
     },
-    rowHeight: (r) => rowHeights[r] ?? null,
+    rowHeight: (r) => rowHeights?.[r] ?? null,
     colWidths: () => columnWidths,
     colHeadContent: (c) => String.fromCharCode(65 + c),
     cellTitle: (r, c) => {
@@ -316,9 +316,8 @@ export function openTableEditor(el, { onChange }) {
     if (!Array.isArray(el.columnWidths) || el.columnWidths.length !== cols) {
       el.columnWidths = Array.from({ length: cols }, () => 1 / cols);
     }
-    if (!Array.isArray(el.rowHeights) || el.rowHeights.length !== rows.length) {
-      el.rowHeights = Array.from({ length: rows.length }, () => 1 / rows.length);
-    }
+    // rowHeights 不自动补全：缺省 = 行高 auto（由排版引擎按内容计算）；
+    // 仅在用户通过「行高比例」对话框显式设置时写入
   }
 
   render();
@@ -330,6 +329,11 @@ export function openTableEditor(el, { onChange }) {
 
 /** 行高/列宽比例编辑对话框（滑块 + 数字；拖动一项按比例缩放其余项，保持和 = 1）。 */
 function editDims(el, commit, rerender) {
+  // 用户显式设置行高：缺省时初始化为均分（写入 el.rowHeights，转为受控最小行高）
+  if (!Array.isArray(el.rowHeights)) {
+    const n = Math.max(1, Array.isArray(el.rows) ? el.rows.length : 1);
+    el.rowHeights = Array.from({ length: n }, () => 1 / n);
+  }
   const body = document.createElement("div");
   body.style.cssText = "display:flex;flex-direction:column;gap:12px;min-width:340px;";
   const mk = (label, dims, onSet) => {
