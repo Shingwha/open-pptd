@@ -1,497 +1,605 @@
 {
-  "version": 2,
-  "note": "open-pptd 内置字体库(全部免费商用、全部支持子集化嵌入)。family 为嵌入注册名(ID16 优先/ID1 回退);页面 fontFamily 必须与 family 完全一致。deck.fonts 资源项写 {family: <注册名>} 即可,导出自动从库中取字嵌入;未命中注册表的 family 仅声明不嵌入。systemFonts 为系统字体参考清单(无字节、仅声明不嵌入,依赖打开方系统已装)。",
-  "fonts": [
-    {
-      "key": "得意黑",
-      "family": "Smiley Sans",
-      "file": "SmileySans-Oblique.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/其他字体/得意黑.ttf",
-      "category": "sans",
-      "style": "窄身斜体黑体,人文与几何平衡",
-      "usage": "创意科技/品牌展示/标题",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": true,
-      "fsType": 8,
-      "size": 2629764
-    },
-    {
-      "key": "MiSans",
-      "family": "MiSans",
-      "file": "MiSans-Regular.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/小米/小米MiSans-Regular.ttf",
-      "category": "sans",
-      "style": "小米系统黑体,现代清晰,多字重",
-      "usage": "科技/企业/产品(默认字体)",
-      "license": "小米官方 免费商用",
-      "subset": true,
-      "weight": 330,
-      "italic": false,
-      "fsType": 8,
-      "size": 8073152
-    },
-    {
-      "key": "思源宋体",
-      "family": "Source Han Serif CN",
-      "file": "SourceHanSerifCN.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/思源字体系列/思源宋体/思源宋体-Regular.ttf",
-      "category": "serif",
-      "style": "思源宋体,笔画对比鲜明,优雅",
-      "usage": "文学/设计/正式演示",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 14495132
-    },
-    {
-      "key": "飞波正点体",
-      "family": "Feibo Zheng Dots",
-      "file": "FeiboZhengDots.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/其他字体/飞波正点体.ttf",
-      "category": "handwriting",
-      "style": "毛笔书法,笔画厚重有力",
-      "usage": "电影海报/电商/品牌展示",
-      "license": "免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 15987736
-    },
-    {
-      "key": "阿里妈妈刀隶体",
-      "family": "Alimama DaoLiTi",
-      "file": "AlimamaDaoLiTi.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/阿里巴巴/阿里妈妈刀隶体.ttf",
-      "category": "handwriting",
-      "style": "隶书风格,刀削笔画,古拙有力",
-      "usage": "国潮/文化/艺术展示",
-      "license": "阿里妈妈 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 8,
-      "size": 5131392
-    },
-    {
-      "key": "阿里妈妈东方大楷",
-      "family": "Alimama DongFangDaKai",
-      "file": "AlimamaDongFangDaKai.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/阿里巴巴/阿里妈妈东方大楷.ttf",
-      "category": "handwriting",
-      "style": "颜体大楷,丰腴厚重",
-      "usage": "文化/品牌发布/国风主题",
-      "license": "阿里妈妈 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 8,
-      "size": 5223260
-    },
-    {
-      "key": "阿里妈妈数黑体",
-      "family": "Alimama ShuHeiTi",
-      "file": "AlimamaShuHeiTi-Bold.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/阿里巴巴/阿里妈妈数黑体-Bold.ttf",
-      "category": "sans",
-      "style": "几何黑体,规整商业感(粗体)",
-      "usage": "商业/科技/电商",
-      "license": "阿里妈妈 免费商用",
-      "subset": true,
-      "weight": 700,
-      "italic": false,
-      "fsType": 8,
-      "size": 1360708
-    },
-    {
-      "key": "站酷文艺体",
-      "family": "zcoolwenyiti",
-      "file": "zcoolwenyiti.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/站酷字体系列/站酷文艺体.ttf",
-      "category": "handwriting",
-      "style": "清新手写感,文艺气息",
-      "usage": "轻设计/生活方式",
-      "license": "站酷 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 8,
-      "size": 3973176
-    },
-    {
-      "key": "ZCOOL KuaiLe",
-      "family": "HappyZcool-2016",
-      "file": "HappyZcool2016.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/站酷字体系列/站酷快乐体.ttf",
-      "category": "handwriting",
-      "style": "活泼可爱手写圆体",
-      "usage": "动漫/儿童/娱乐",
-      "license": "站酷 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 1669784
-    },
-    {
-      "key": "站酷小薇LOGO体",
-      "family": "xiaowei",
-      "file": "zcoolxiaoweiLOGO.otf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/站酷字体系列/站酷小薇LOGO体.otf",
-      "category": "display",
-      "style": "LOGO艺术字,个性张扬",
-      "usage": "标题/品牌标识",
-      "license": "站酷 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 8,
-      "size": 4062520
-    },
-    {
-      "key": "站酷庆科黄油体",
-      "family": "zcoolqingkehuangyouti",
-      "file": "zcoolqingkehuangyou.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/站酷字体系列/站酷庆科黄油体.ttf",
-      "category": "display",
-      "style": "黄油体,圆润厚实",
-      "usage": "标题/食品/轻松品牌",
-      "license": "站酷 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 8,
-      "size": 9745240
-    },
-    {
-      "key": "精品点阵体",
-      "family": "BoutiqueBitmap9x9 1.9",
-      "file": "BoutiqueBitmap9x9.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/精品点阵体/精品点阵体.ttf",
-      "category": "pixel",
-      "style": "9×9点阵像素风",
-      "usage": "游戏/科技/复古电子",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 2132504
-    },
-    {
-      "key": "LXGW Bright",
-      "family": "LXGW WenKai",
-      "file": "LXGWWenKai-Regular.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/霞鹜/文楷/霞鹜文楷-Regular.ttf",
-      "category": "serif",
-      "style": "霞鹜文楷,楷书与仿宋融合,温润清秀",
-      "usage": "文学/教育/人文",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 24745052
-    },
-    {
-      "key": "霞鹜緻宋",
-      "family": "LXGW ZhiSong MN",
-      "file": "LXGWZhiSongMN.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/霞鹜/宋体/霞鶩緻宋-现代.ttf",
-      "category": "serif",
-      "style": "緻宋,现代感宋体",
-      "usage": "文学/古典/印刷风",
-      "license": "IPA 1.0 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 6631176
-    },
-    {
-      "key": "霞鹜铭心宋",
-      "family": "LXGW Heart Serif MN",
-      "file": "LXGWMingXinSong.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/霞鹜/宋体/霞鹜铭心宋-现代.ttf",
-      "category": "serif",
-      "style": "铭心宋,笔画清秀",
-      "usage": "文学/古典/标题",
-      "license": "IPA 1.0 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 9158656
-    },
-    {
-      "key": "霞鹜新晰黑",
-      "family": "LXGW Neo XiHei",
-      "file": "LXGWXinXiHei.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/霞鹜/黑体/霞鹜新晰黑.ttf",
-      "category": "sans",
-      "style": "新晰黑,清晰现代",
-      "usage": "科技/正文/通用",
-      "license": "IPA 1.0 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 5635356
-    },
-    {
-      "key": "霞鹜臻楷",
-      "family": "LXGW ZhenKai",
-      "file": "LXGWZhenKai.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/霞鹜臻楷/霞鹜臻楷.ttf",
-      "category": "handwriting",
-      "style": "臻楷,楷书韵味",
-      "usage": "国风/文学/正式",
-      "license": "IPA 1.0 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 10847768
-    },
-    {
-      "key": "寒蝉点阵体",
-      "family": "寒蝉点阵体",
-      "file": "HanchanDianzhen16.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/寒蝉字型/寒蝉点阵体_16px.ttf",
-      "category": "pixel",
-      "style": "16px点阵像素风",
-      "usage": "游戏/复古/像素",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 12636508
-    },
-    {
-      "key": "Liter",
-      "family": "Liter",
-      "file": "Liter-Regular.ttf",
-      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/liter/Liter-Regular.ttf",
-      "category": "sans",
-      "style": "现代无衬线,理性干净",
-      "usage": "科技/产品",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 77008
-    },
-    {
-      "key": "HedvigLettersSans",
-      "family": "Hedvig Letters Sans",
-      "file": "HedvigLettersSans-Regular.ttf",
-      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/hedvigletterssans/HedvigLettersSans-Regular.ttf",
-      "category": "sans",
-      "style": "非设计师视角,个性辨识度",
-      "usage": "创意设计/品牌",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 80700
-    },
-    {
-      "key": "Oranienbaum",
-      "family": "Oranienbaum",
-      "file": "Oranienbaum-Regular.ttf",
-      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/oranienbaum/Oranienbaum-Regular.ttf",
-      "category": "serif",
-      "style": "高对比几何衬线,古典优雅",
-      "usage": "文化/艺术/时尚",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 141220
-    },
-    {
-      "key": "QuattrocentoSans",
-      "family": "Quattrocento Sans",
-      "file": "QuattrocentoSans-Regular.ttf",
-      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/quattrocentosans/QuattrocentoSans-Regular.ttf",
-      "category": "sans",
-      "style": "经典优雅无衬线,小字号清晰",
-      "usage": "学术/企业/教育",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 98340
-    },
-    {
-      "key": "SortsMillGoudy",
-      "family": "Sorts Mill Goudy",
-      "file": "SortsMillGoudy-Regular.ttf",
-      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/sortsmillgoudy/SortsMillGoudy-Regular.ttf",
-      "category": "serif",
-      "style": "古典衬线,柔和易读",
-      "usage": "文学/人文",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 121372
-    },
-    {
-      "key": "Unna",
-      "family": "Unna",
-      "file": "Unna-Regular.ttf",
-      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/unna/Unna-Regular.ttf",
-      "category": "serif",
-      "style": "新古典衬线,垂直韵律",
-      "usage": "文学/出版/学术",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 71164
-    },
-    {
-      "key": "Coda",
-      "family": "Coda",
-      "file": "Coda-Regular.ttf",
-      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/coda/Coda-Regular.ttf",
-      "category": "sans",
-      "style": "圆润友好,开放曲线",
-      "usage": "商务/亲和品牌",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 87060
-    },
-    {
-      "key": "Jersey15",
-      "family": "Jersey 15",
-      "file": "Jersey15-Regular.ttf",
-      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/jersey15/Jersey15-Regular.ttf",
-      "category": "display",
-      "style": "运动队服风格,方格感(仅英数)",
-      "usage": "运动/科技展示",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 104236
-    },
-    {
-      "key": "Jersey20Charted",
-      "family": "Jersey 20 Charted",
-      "file": "Jersey20Charted-Regular.ttf",
-      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/jersey20charted/Jersey20Charted-Regular.ttf",
-      "category": "pixel",
-      "style": "网格阴影运动数字(仅英数)",
-      "usage": "运动/机械/装饰",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 0,
-      "size": 1353084
-    }
-  ],
-  "systemFonts": [
-    {
-      "key": "微软雅黑",
-      "family": "Microsoft YaHei",
-      "platform": "Windows 7+",
-      "style": "现代黑体，屏幕阅读首选",
-      "usage": "正文/通用（默认字体）"
-    },
-    {
-      "key": "宋体",
-      "family": "SimSun",
-      "platform": "Windows 全系",
-      "style": "老牌宋体，公文/打印惯用",
-      "usage": "正文/正式文档"
-    },
-    {
-      "key": "仿宋",
-      "family": "FangSong",
-      "platform": "Windows 全系",
-      "style": "仿宋，公文标准字体",
-      "usage": "公文/正式文档"
-    },
-    {
-      "key": "楷体",
-      "family": "KaiTi",
-      "platform": "Windows 全系",
-      "style": "楷体，手写书卷感",
-      "usage": "题词/引用"
-    },
-    {
-      "key": "黑体",
-      "family": "SimHei",
-      "platform": "Windows 全系",
-      "style": "老牌黑体，方正硬朗",
-      "usage": "标题/正文"
-    },
-    {
-      "key": "幼圆",
-      "family": "YouYuan",
-      "platform": "Windows 全系",
-      "style": "圆体，圆润亲和",
-      "usage": "标题/轻松场景"
-    },
-    {
-      "key": "隶书",
-      "family": "LiSu",
-      "platform": "Windows 全系",
-      "style": "隶书，古风",
-      "usage": "标题/装饰"
-    },
-    {
-      "key": "等线",
-      "family": "DengXian",
-      "platform": "Windows 10+ / Office",
-      "style": "Office 默认中文，清秀",
-      "usage": "正文/通用"
-    },
-    {
-      "key": "Times New Roman",
-      "family": "Times New Roman",
-      "platform": "全平台",
-      "style": "经典衬线",
-      "usage": "西文正文/学术"
-    },
-    {
-      "key": "Arial",
-      "family": "Arial",
-      "platform": "全平台",
-      "style": "经典无衬线",
-      "usage": "西文正文"
-    },
-    {
-      "key": "Calibri",
-      "family": "Calibri",
-      "platform": "Office",
-      "style": "Office 默认西文，圆润",
-      "usage": "西文正文"
-    },
-    {
-      "key": "苹方",
-      "family": "PingFang SC",
-      "platform": "macOS",
-      "style": "苹方，macOS 默认黑体",
-      "usage": "正文/通用（macOS）"
-    }
-  ]
+ "version": 2,
+ "note": "open-pptd 内置字体库(全部免费商用、全部支持子集化嵌入)。family 为嵌入注册名(ID16 优先/ID1 回退);页面 fontFamily 必须与 family 完全一致。deck.fonts 资源项写 {family: <注册名>} 即可,导出自动从库中取字嵌入;未命中注册表的 family 仅声明不嵌入。systemFonts 为系统字体参考清单(无字节、仅声明不嵌入,依赖打开方系统已装)。",
+ "fonts": [
+  {
+   "key": "得意黑",
+   "family": "Smiley Sans",
+   "file": "SmileySans-Oblique.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/其他字体/得意黑.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/其他字体/得意黑.ttf"],
+   "category": "sans",
+   "style": "窄身斜体黑体,人文与几何平衡",
+   "usage": "创意科技/品牌展示/标题",
+   "license": "SIL OFL 1.1 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": true,
+   "fsType": 8,
+   "size": 2629764,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/其他字体/得意黑.ttf"
+   ]
+  },
+  {
+   "key": "MiSans",
+   "family": "MiSans",
+   "file": "MiSans-Regular.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/小米/小米MiSans-Regular.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/小米/小米MiSans-Regular.ttf"],
+   "category": "sans",
+   "style": "小米系统黑体,现代清晰,多字重",
+   "usage": "科技/企业/产品(默认字体)",
+   "license": "小米官方 免费商用",
+   "subset": true,
+   "weight": 330,
+   "italic": false,
+   "fsType": 8,
+   "size": 8073152,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/小米/小米MiSans-Regular.ttf"
+   ]
+  },
+  {
+   "key": "思源宋体",
+   "family": "Source Han Serif CN",
+   "file": "SourceHanSerifCN.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/思源字体系列/思源宋体/思源宋体-Regular.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/思源字体系列/思源宋体/思源宋体-Regular.ttf"],
+   "category": "serif",
+   "style": "思源宋体,笔画对比鲜明,优雅",
+   "usage": "文学/设计/正式演示",
+   "license": "SIL OFL 1.1 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 14495132,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/思源字体系列/思源宋体/思源宋体-Regular.ttf"
+   ]
+  },
+  {
+   "key": "飞波正点体",
+   "family": "Feibo Zheng Dots",
+   "file": "FeiboZhengDots.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/其他字体/飞波正点体.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/其他字体/飞波正点体.ttf"],
+   "category": "handwriting",
+   "style": "毛笔书法,笔画厚重有力",
+   "usage": "电影海报/电商/品牌展示",
+   "license": "免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 15987736,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/其他字体/飞波正点体.ttf"
+   ]
+  },
+  {
+   "key": "阿里妈妈刀隶体",
+   "family": "Alimama DaoLiTi",
+   "file": "AlimamaDaoLiTi.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/阿里巴巴/阿里妈妈刀隶体.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/阿里巴巴/阿里妈妈刀隶体.ttf"],
+   "category": "handwriting",
+   "style": "隶书风格,刀削笔画,古拙有力",
+   "usage": "国潮/文化/艺术展示",
+   "license": "阿里妈妈 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 8,
+   "size": 5131392,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/阿里巴巴/阿里妈妈刀隶体.ttf"
+   ]
+  },
+  {
+   "key": "阿里妈妈东方大楷",
+   "family": "Alimama DongFangDaKai",
+   "file": "AlimamaDongFangDaKai.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/阿里巴巴/阿里妈妈东方大楷.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/阿里巴巴/阿里妈妈东方大楷.ttf"],
+   "category": "handwriting",
+   "style": "颜体大楷,丰腴厚重",
+   "usage": "文化/品牌发布/国风主题",
+   "license": "阿里妈妈 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 8,
+   "size": 5223260,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/阿里巴巴/阿里妈妈东方大楷.ttf"
+   ]
+  },
+  {
+   "key": "阿里妈妈数黑体",
+   "family": "Alimama ShuHeiTi",
+   "file": "AlimamaShuHeiTi-Bold.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/阿里巴巴/阿里妈妈数黑体-Bold.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/阿里巴巴/阿里妈妈数黑体-Bold.ttf"],
+   "category": "sans",
+   "style": "几何黑体,规整商业感(粗体)",
+   "usage": "商业/科技/电商",
+   "license": "阿里妈妈 免费商用",
+   "subset": true,
+   "weight": 700,
+   "italic": false,
+   "fsType": 8,
+   "size": 1360708,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/阿里巴巴/阿里妈妈数黑体-Bold.ttf"
+   ]
+  },
+  {
+   "key": "站酷文艺体",
+   "family": "zcoolwenyiti",
+   "file": "zcoolwenyiti.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/站酷字体系列/站酷文艺体.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/站酷字体系列/站酷文艺体.ttf"],
+   "category": "handwriting",
+   "style": "清新手写感,文艺气息",
+   "usage": "轻设计/生活方式",
+   "license": "站酷 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 8,
+   "size": 3973176,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/站酷字体系列/站酷文艺体.ttf"
+   ]
+  },
+  {
+   "key": "ZCOOL KuaiLe",
+   "family": "HappyZcool-2016",
+   "file": "HappyZcool2016.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/站酷字体系列/站酷快乐体.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/站酷字体系列/站酷快乐体.ttf"],
+   "category": "handwriting",
+   "style": "活泼可爱手写圆体",
+   "usage": "动漫/儿童/娱乐",
+   "license": "站酷 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 1669784,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/站酷字体系列/站酷快乐体.ttf"
+   ]
+  },
+  {
+   "key": "站酷小薇LOGO体",
+   "family": "xiaowei",
+   "file": "zcoolxiaoweiLOGO.otf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/站酷字体系列/站酷小薇LOGO体.otf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/站酷字体系列/站酷小薇LOGO体.otf"],
+   "category": "display",
+   "style": "LOGO艺术字,个性张扬",
+   "usage": "标题/品牌标识",
+   "license": "站酷 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 8,
+   "size": 4062520,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/站酷字体系列/站酷小薇LOGO体.otf"
+   ]
+  },
+  {
+   "key": "站酷庆科黄油体",
+   "family": "zcoolqingkehuangyouti",
+   "file": "zcoolqingkehuangyou.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/站酷字体系列/站酷庆科黄油体.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/站酷字体系列/站酷庆科黄油体.ttf"],
+   "category": "display",
+   "style": "黄油体,圆润厚实",
+   "usage": "标题/食品/轻松品牌",
+   "license": "站酷 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 8,
+   "size": 9745240,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/站酷字体系列/站酷庆科黄油体.ttf"
+   ]
+  },
+  {
+   "key": "精品点阵体",
+   "family": "BoutiqueBitmap9x9 1.9",
+   "file": "BoutiqueBitmap9x9.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/精品点阵体/精品点阵体.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/精品点阵体/精品点阵体.ttf"],
+   "category": "pixel",
+   "style": "9×9点阵像素风",
+   "usage": "游戏/科技/复古电子",
+   "license": "SIL OFL 1.1 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 2132504,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/精品点阵体/精品点阵体.ttf"
+   ]
+  },
+  {
+   "key": "LXGW Bright",
+   "family": "LXGW WenKai",
+   "file": "LXGWWenKai-Regular.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/霞鹜/文楷/霞鹜文楷-Regular.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/霞鹜/文楷/霞鹜文楷-Regular.ttf"],
+   "category": "serif",
+   "style": "霞鹜文楷,楷书与仿宋融合,温润清秀",
+   "usage": "文学/教育/人文",
+   "license": "SIL OFL 1.1 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 24745052,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/霞鹜/文楷/霞鹜文楷-Regular.ttf"
+   ]
+  },
+  {
+   "key": "霞鹜緻宋",
+   "family": "LXGW ZhiSong MN",
+   "file": "LXGWZhiSongMN.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/霞鹜/宋体/霞鶩緻宋-现代.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/霞鹜/宋体/霞鶩緻宋-现代.ttf"],
+   "category": "serif",
+   "style": "緻宋,现代感宋体",
+   "usage": "文学/古典/印刷风",
+   "license": "IPA 1.0 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 6631176,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/霞鹜/宋体/霞鶩緻宋-现代.ttf"
+   ]
+  },
+  {
+   "key": "霞鹜铭心宋",
+   "family": "LXGW Heart Serif MN",
+   "file": "LXGWMingXinSong.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/霞鹜/宋体/霞鹜铭心宋-现代.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/霞鹜/宋体/霞鹜铭心宋-现代.ttf"],
+   "category": "serif",
+   "style": "铭心宋,笔画清秀",
+   "usage": "文学/古典/标题",
+   "license": "IPA 1.0 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 9158656,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/霞鹜/宋体/霞鹜铭心宋-现代.ttf"
+   ]
+  },
+  {
+   "key": "霞鹜新晰黑",
+   "family": "LXGW Neo XiHei",
+   "file": "LXGWXinXiHei.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/霞鹜/黑体/霞鹜新晰黑.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/霞鹜/黑体/霞鹜新晰黑.ttf"],
+   "category": "sans",
+   "style": "新晰黑,清晰现代",
+   "usage": "科技/正文/通用",
+   "license": "IPA 1.0 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 5635356,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/霞鹜/黑体/霞鹜新晰黑.ttf"
+   ]
+  },
+  {
+   "key": "霞鹜臻楷",
+   "family": "LXGW ZhenKai",
+   "file": "LXGWZhenKai.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/霞鹜臻楷/霞鹜臻楷.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/霞鹜臻楷/霞鹜臻楷.ttf"],
+   "category": "handwriting",
+   "style": "臻楷,楷书韵味",
+   "usage": "国风/文学/正式",
+   "license": "IPA 1.0 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 10847768,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/霞鹜臻楷/霞鹜臻楷.ttf"
+   ]
+  },
+  {
+   "key": "寒蝉点阵体",
+   "family": "寒蝉点阵体",
+   "file": "HanchanDianzhen16.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/寒蝉字型/寒蝉点阵体_16px.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/寒蝉字型/寒蝉点阵体_16px.ttf"],
+   "category": "pixel",
+   "style": "16px点阵像素风",
+   "usage": "游戏/复古/像素",
+   "license": "SIL OFL 1.1 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 12636508,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/寒蝉字型/寒蝉点阵体_16px.ttf"
+   ]
+  },
+  {
+   "key": "Liter",
+   "family": "Liter",
+   "file": "Liter-Regular.ttf",
+   "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/liter/Liter-Regular.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/liter/Liter-Regular.ttf"],
+   "category": "sans",
+   "style": "现代无衬线,理性干净",
+   "usage": "科技/产品",
+   "license": "SIL OFL 1.1 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 77008,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/liter/Liter-Regular.ttf"
+   ]
+  },
+  {
+   "key": "HedvigLettersSans",
+   "family": "Hedvig Letters Sans",
+   "file": "HedvigLettersSans-Regular.ttf",
+   "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/hedvigletterssans/HedvigLettersSans-Regular.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/hedvigletterssans/HedvigLettersSans-Regular.ttf"],
+   "category": "sans",
+   "style": "非设计师视角,个性辨识度",
+   "usage": "创意设计/品牌",
+   "license": "SIL OFL 1.1 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 80700,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/hedvigletterssans/HedvigLettersSans-Regular.ttf"
+   ]
+  },
+  {
+   "key": "Oranienbaum",
+   "family": "Oranienbaum",
+   "file": "Oranienbaum-Regular.ttf",
+   "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/oranienbaum/Oranienbaum-Regular.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/oranienbaum/Oranienbaum-Regular.ttf"],
+   "category": "serif",
+   "style": "高对比几何衬线,古典优雅",
+   "usage": "文化/艺术/时尚",
+   "license": "SIL OFL 1.1 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 141220,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/oranienbaum/Oranienbaum-Regular.ttf"
+   ]
+  },
+  {
+   "key": "QuattrocentoSans",
+   "family": "Quattrocento Sans",
+   "file": "QuattrocentoSans-Regular.ttf",
+   "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/quattrocentosans/QuattrocentoSans-Regular.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/quattrocentosans/QuattrocentoSans-Regular.ttf"],
+   "category": "sans",
+   "style": "经典优雅无衬线,小字号清晰",
+   "usage": "学术/企业/教育",
+   "license": "SIL OFL 1.1 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 98340,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/quattrocentosans/QuattrocentoSans-Regular.ttf"
+   ]
+  },
+  {
+   "key": "SortsMillGoudy",
+   "family": "Sorts Mill Goudy",
+   "file": "SortsMillGoudy-Regular.ttf",
+   "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/sortsmillgoudy/SortsMillGoudy-Regular.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/sortsmillgoudy/SortsMillGoudy-Regular.ttf"],
+   "category": "serif",
+   "style": "古典衬线,柔和易读",
+   "usage": "文学/人文",
+   "license": "SIL OFL 1.1 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 121372,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/sortsmillgoudy/SortsMillGoudy-Regular.ttf"
+   ]
+  },
+  {
+   "key": "Unna",
+   "family": "Unna",
+   "file": "Unna-Regular.ttf",
+   "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/unna/Unna-Regular.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/unna/Unna-Regular.ttf"],
+   "category": "serif",
+   "style": "新古典衬线,垂直韵律",
+   "usage": "文学/出版/学术",
+   "license": "SIL OFL 1.1 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 71164,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/unna/Unna-Regular.ttf"
+   ]
+  },
+  {
+   "key": "Coda",
+   "family": "Coda",
+   "file": "Coda-Regular.ttf",
+   "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/coda/Coda-Regular.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/coda/Coda-Regular.ttf"],
+   "category": "sans",
+   "style": "圆润友好,开放曲线",
+   "usage": "商务/亲和品牌",
+   "license": "SIL OFL 1.1 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 87060,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/coda/Coda-Regular.ttf"
+   ]
+  },
+  {
+   "key": "Jersey15",
+   "family": "Jersey 15",
+   "file": "Jersey15-Regular.ttf",
+   "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/jersey15/Jersey15-Regular.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/jersey15/Jersey15-Regular.ttf"],
+   "category": "display",
+   "style": "运动队服风格,方格感(仅英数)",
+   "usage": "运动/科技展示",
+   "license": "SIL OFL 1.1 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 104236,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/jersey15/Jersey15-Regular.ttf"
+   ]
+  },
+  {
+   "key": "Jersey20Charted",
+   "family": "Jersey 20 Charted",
+   "file": "Jersey20Charted-Regular.ttf",
+   "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/jersey20charted/Jersey20Charted-Regular.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/jersey20charted/Jersey20Charted-Regular.ttf"],
+   "category": "pixel",
+   "style": "网格阴影运动数字(仅英数)",
+   "usage": "运动/机械/装饰",
+   "license": "SIL OFL 1.1 免费商用",
+   "subset": true,
+   "weight": 400,
+   "italic": false,
+   "fsType": 0,
+   "size": 1353084,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/jersey20charted/Jersey20Charted-Regular.ttf"
+   ]
+  }
+ ],
+ "systemFonts": [
+  {
+   "key": "微软雅黑",
+   "family": "Microsoft YaHei",
+   "platform": "Windows 7+",
+   "style": "现代黑体，屏幕阅读首选",
+   "usage": "正文/通用（默认字体）"
+  },
+  {
+   "key": "宋体",
+   "family": "SimSun",
+   "platform": "Windows 全系",
+   "style": "老牌宋体，公文/打印惯用",
+   "usage": "正文/正式文档"
+  },
+  {
+   "key": "仿宋",
+   "family": "FangSong",
+   "platform": "Windows 全系",
+   "style": "仿宋，公文标准字体",
+   "usage": "公文/正式文档"
+  },
+  {
+   "key": "楷体",
+   "family": "KaiTi",
+   "platform": "Windows 全系",
+   "style": "楷体，手写书卷感",
+   "usage": "题词/引用"
+  },
+  {
+   "key": "黑体",
+   "family": "SimHei",
+   "platform": "Windows 全系",
+   "style": "老牌黑体，方正硬朗",
+   "usage": "标题/正文"
+  },
+  {
+   "key": "幼圆",
+   "family": "YouYuan",
+   "platform": "Windows 全系",
+   "style": "圆体，圆润亲和",
+   "usage": "标题/轻松场景"
+  },
+  {
+   "key": "隶书",
+   "family": "LiSu",
+   "platform": "Windows 全系",
+   "style": "隶书，古风",
+   "usage": "标题/装饰"
+  },
+  {
+   "key": "等线",
+   "family": "DengXian",
+   "platform": "Windows 10+ / Office",
+   "style": "Office 默认中文，清秀",
+   "usage": "正文/通用"
+  },
+  {
+   "key": "Times New Roman",
+   "family": "Times New Roman",
+   "platform": "全平台",
+   "style": "经典衬线",
+   "usage": "西文正文/学术"
+  },
+  {
+   "key": "Arial",
+   "family": "Arial",
+   "platform": "全平台",
+   "style": "经典无衬线",
+   "usage": "西文正文"
+  },
+  {
+   "key": "Calibri",
+   "family": "Calibri",
+   "platform": "Office",
+   "style": "Office 默认西文，圆润",
+   "usage": "西文正文"
+  },
+  {
+   "key": "苹方",
+   "family": "PingFang SC",
+   "platform": "macOS",
+   "style": "苹方，macOS 默认黑体",
+   "usage": "正文/通用（macOS）"
+  }
+ ]
 }

@@ -69,6 +69,12 @@ async function fontsList() {
   console.log("用法：deck.fonts 资源项写 {family: <注册名>} 即自动嵌入；fonts download <名称|all> 可补下载。");
 }
 
+// 下载超时策略（两段式）：
+//  - 连接阶段短超时（headers 到达前）：国内直连 GitHub 黑洞时快速放弃、回退镜像；
+//  - body 读取阶段长超时：大字体在慢速网络下需要更久，避免误杀正常下载。
+const FONT_CONNECT_TIMEOUT_MS = 10000;
+const FONT_BODY_TIMEOUT_MS = 60000;
+
 async function fontsDownload(name) {
   const reg = loadRegistry();
   // 系统字体无需下载：单独提示，不参与下载流程
@@ -96,19 +102,46 @@ async function fontsDownload(name) {
         continue;
       }
     }
-    process.stdout.write(`  ↓ ${f.key} ← ${f.url} ... `);
-    try {
-      const res = await fetch(f.url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const buf = Buffer.from(await res.arrayBuffer());
-      if (buf.length < 1000 || !(buf.subarray(0, 4).equals(Buffer.from([0, 1, 0, 0])) || buf.subarray(0, 4).toString("latin1") === "OTTO")) {
-        throw new Error("响应不是有效字体文件");
+    // 回退链：主源 url（GitHub raw）→ mirrors 镜像（jsDelivr 等），逐个尝试直到成功
+    const sources = [f.url, ...(f.mirrors || [])].filter(Boolean);
+    let downloaded = false;
+    for (const src of sources) {
+      process.stdout.write(`  ↓ ${f.key} ← ${src} ... `);
+      try {
+        // 连接阶段：短超时，超时即放弃该源
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), FONT_CONNECT_TIMEOUT_MS);
+        let res;
+        try {
+          res = await fetch(src, { signal: ctrl.signal });
+        } finally {
+          clearTimeout(timer);
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        // body 读取阶段：长超时（超时后放弃该源，但连接已建立，下个源重新下载）
+        let bodyTimer;
+        const buf = Buffer.from(
+          await Promise.race([
+            res.arrayBuffer(),
+            new Promise((_, reject) => {
+              bodyTimer = setTimeout(() => reject(new Error("读取超时")), FONT_BODY_TIMEOUT_MS);
+            }),
+          ]).finally(() => clearTimeout(bodyTimer))
+        );
+        if (buf.length < 1000 || !(buf.subarray(0, 4).equals(Buffer.from([0, 1, 0, 0])) || buf.subarray(0, 4).toString("latin1") === "OTTO")) {
+          throw new Error("响应不是有效字体文件");
+        }
+        writeFileSync(out, buf);
+        console.log(`✓ ${(buf.length / 1024 / 1024).toFixed(1)}MB`);
+        ok += 1;
+        downloaded = true;
+        break;
+      } catch (e) {
+        console.log(`✗ ${e.message}`);
       }
-      writeFileSync(out, buf);
-      console.log(`✓ ${(buf.length / 1024 / 1024).toFixed(1)}MB`);
-      ok += 1;
-    } catch (e) {
-      console.log(`✗ ${e.message}`);
+    }
+    if (!downloaded) {
+      console.log(`  ✗ ${f.key}：所有下载源均失败`);
     }
   }
   console.log(`\n完成：${ok}/${targets.length}`);
