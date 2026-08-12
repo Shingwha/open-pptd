@@ -55,6 +55,42 @@ for (let i = 1; i <= slideCount; i++) {
   }
 }
 
+// 1.5 notesSlide 回指校验：slideN → notesSlideX 必须存在，且 notesSlideX 的 rels 必须指回 slideN
+// （同时抓住「引用缺失」与「备注错位挂到错误页」两类问题）
+for (const f of files.filter((f) => f.startsWith("ppt/slides/_rels/") && f.endsWith(".rels"))) {
+  const i = f.match(/slide(\d+)\.xml\.rels$/)?.[1];
+  if (!i) continue;
+  const rels = read(f);
+  const m = rels.match(/notesSlide(\d+)\.xml/);
+  if (!m) continue; // 该页无备注
+  const x = m[1];
+  const notesFile = `ppt/notesSlides/notesSlide${x}.xml`;
+  if (!files.includes(notesFile)) {
+    console.log(`✗ slide${i} 备注引用缺失: ${notesFile}`);
+    fail++;
+    continue;
+  }
+  const notesRels = read(`ppt/notesSlides/_rels/notesSlide${x}.xml.rels`);
+  if (!new RegExp(`Target="\\.\\./slides/slide${i}\\.xml"`).test(notesRels)) {
+    console.log(`✗ slide${i} → notesSlide${x} 回指不符（notesSlide${x}.rels 未指向 slide${i}.xml，备注可能错位）`);
+    fail++;
+  }
+}
+
+// 1.6 图表子元素顺序（ECMA-376 CT_BarChart：gapWidth 必须先于 overlap）
+for (const f of files.filter((f) => /^ppt\/charts\/chart\d+\.xml$/.test(f))) {
+  const xml = read(f);
+  for (const m of xml.matchAll(/<c:barChart>([\s\S]*?)<\/c:barChart>/g)) {
+    const inner = m[1];
+    const gi = inner.indexOf("<c:gapWidth");
+    const oi = inner.indexOf("<c:overlap");
+    if (gi !== -1 && oi !== -1 && gi > oi) {
+      console.log(`✗ ${f} barChart 子元素顺序错误：overlap 在 gapWidth 之前（ECMA-376 要求 gapWidth → overlap）`);
+      fail++;
+    }
+  }
+}
+
 // 2. presentation.xml.rels 引用的 slide/主题等部件存在（Target 相对 ppt/ 目录）
 const prez = read("ppt/_rels/presentation.xml.rels");
 for (const m of prez.matchAll(/Target="([^"]+)"/g)) {

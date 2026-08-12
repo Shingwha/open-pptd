@@ -1,0 +1,21 @@
+version: v2
+title: 备注与柱状图回归（非连续备注页 + barGap/barWidth 柱状图）
+size: [960, 540]
+theme:
+  colors:
+    primary: "#2563EB"
+    accent: "#F59E0B"
+    text: "#1F2937"
+    muted: "#6B7280"
+    bg: "#FFFFFF"
+  textStyles:
+    title:
+      fontSize: 22
+      color: "$primary"
+      bold: true
+pages:
+  - pages/01-text.page
+  - pages/02-notes.page
+  - pages/03-text.page
+  - pages/04-notes.page
+  - pages/05-bargap-notes.page

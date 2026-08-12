@@ -1,0 +1,28 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+notes: 第5页备注：barGap 双系列柱状图 + 备注
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 60, 400, 40]
+    content:
+      style: "$title"
+      text: barGap/barWidth 柱状图
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 140, 800, 340]
+    barGap: 0.2
+    barWidth: 0.6
+    data:
+      cols: [模型, A, B]
+      rows:
+        - [M1, 1.2, 2.1]
+        - [M2, 0.9, 1.8]
+        - [M3, 1.5, 2.4]
+    series:
+      - type: bar
+        encode: {x: 模型, y: A}
+        name: 模型A
+      - type: bar
+        encode: {x: 模型, y: B}
+        name: 模型B

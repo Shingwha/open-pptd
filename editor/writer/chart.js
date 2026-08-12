@@ -817,9 +817,11 @@ export function buildChartParts(theme, chartEl, chartIndex) {
           return ss.join("");
         })(),
       ];
+      // ECMA-376 CT_BarChart 顺序：… ser* → dLbls? → gapWidth? → overlap? → serLines? → axId×2
+      // gapWidth 必须先于 overlap（PowerPoint 严格按 schema 解析，顺序颠倒会弹「修复」）
+      if (hasBarWidth) kids.push(el("c:gapWidth", { val: gapWidthVal }));
       if (isStacked || isPercent) kids.push(el("c:overlap", { val: "100" }));
       else if (chartEl.barGap != null) kids.push(el("c:overlap", { val: -Math.round(chartEl.barGap * 100) }));
-      if (hasBarWidth) kids.push(el("c:gapWidth", { val: gapWidthVal }));
       kids.push(el("c:axId", { val: catId }), el("c:axId", { val: valId }));
       chartElems.push(el("c:barChart", {}, kids.join("")));
     } else if (type === "line" || type === "area") {

@@ -24,7 +24,7 @@ const F = (fonts) => fonts?.latin || FONT_DEFAULT;
 // ----------------------------------------------------------------------------
 // [Content_Types].xml
 // ----------------------------------------------------------------------------
-export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0, chartExIds = [], notesSlideCount = 0) {
+export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0, chartExIds = [], notesSlides = []) {
   const defaults = [
     el("Default", { Extension: "rels", ContentType: "application/vnd.openxmlformats-package.relationships+xml" }),
     el("Default", { Extension: "xml", ContentType: "application/xml" }),
@@ -66,7 +66,7 @@ export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0, cha
       el("Override", { PartName: `/ppt/charts/colors${id}.xml`, ContentType: "application/vnd.ms-office.chartcolorstyle+xml" })
     );
   }
-  if (notesSlideCount > 0) {
+  if (notesSlides.length > 0) {
     overrides.push(
       el("Override", { PartName: "/ppt/notesMasters/notesMaster1.xml", ContentType: "application/vnd.openxmlformats-officedocument.presentationml.notesMaster+xml" })
     );
@@ -74,9 +74,10 @@ export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0, cha
     overrides.push(
       el("Override", { PartName: "/ppt/theme/theme2.xml", ContentType: "application/vnd.openxmlformats-officedocument.theme+xml" })
     );
-    for (let i = 1; i <= notesSlideCount; i++) {
+    // 按实际带备注的页号声明（notesSlideN.xml ↔ slideN.xml，与文件命名一致）
+    for (const n of notesSlides) {
       overrides.push(
-        el("Override", { PartName: `/ppt/notesSlides/notesSlide${i}.xml`, ContentType: "application/vnd.openxmlformats-officedocument.presentationml.notesSlide+xml" })
+        el("Override", { PartName: `/ppt/notesSlides/notesSlide${n}.xml`, ContentType: "application/vnd.openxmlformats-officedocument.presentationml.notesSlide+xml" })
       );
     }
   }

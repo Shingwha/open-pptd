@@ -1,0 +1,10 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+notes: 第4页备注：非连续分布
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 60, 400, 40]
+    content:
+      style: "$title"
+      text: 第4页（带备注）
