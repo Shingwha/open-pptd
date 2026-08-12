@@ -84,6 +84,45 @@ record(
   singleFiles.join(",")
 );
 
+// ---- 2.5 scale>1：视口恒为画布尺寸，仅放大输出分辨率（防内容缩左上角+白边回归）----
+rmSync(OUT, { recursive: true, force: true });
+const scaled = await renderDeck({
+  manifest: MANIFEST,
+  outPath: OUT,
+  page: 1,
+  scale: 2,
+  timeoutMs: 30000,
+  quiet: true,
+});
+const scaledFile = join(OUT, "deck-01.png");
+const sb = readFileSync(scaledFile);
+const sw = sb.readUInt32BE(16);
+const sh = sb.readUInt32BE(20);
+record("scale=2 输出 1920×1080", sw === 1920 && sh === 1080, `${sw}x${sh}`);
+// 右下 1/4 区域不应全白（内容铺满，非左上角缩图）
+const rightBottom = await import("node:zlib").then(async ({ inflateSync }) => {
+  let pos = 8;
+  const idat = [];
+  while (pos < sb.length) {
+    const len = sb.readUInt32BE(pos);
+    const type = sb.toString("ascii", pos + 4, pos + 8);
+    if (type === "IDAT") idat.push(sb.subarray(pos + 8, pos + 8 + len));
+    pos += 12 + len;
+  }
+  const raw = inflateSync(Buffer.concat(idat));
+  const stride = sw * 4 + 1;
+  const colors = new Set();
+  for (let y = sh / 2; y < sh; y += 40) {
+    for (let x = 1 + (sw / 2) * 4; x < stride; x += 40) {
+      const i = y * stride + x;
+      colors.add((raw[i] >> 4) << 8 | (raw[i + 1] >> 4) << 4 | (raw[i + 2] >> 4));
+    }
+  }
+  return colors.size;
+});
+record("scale=2 右下角区域有内容（无白边）", rightBottom > 5, `colors=${rightBottom}`);
+rmSync(OUT, { recursive: true, force: true });
+
 // ---- 3. 进程可自然退出：检查残留定时器（renderDeck 返回 500ms 后）----
 await new Promise((r) => setTimeout(r, 500));
 // Node 内部 API：统计活跃定时器数量（0 = 无泄漏）
