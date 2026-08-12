@@ -18,11 +18,10 @@ const A14_NS = "http://schemas.microsoft.com/office/drawing/2010/main";
 const MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 
 // 数学区域字体（PowerPoint 原生公式存储结构：每个 m:r 的 a:rPr 显式声明
-// Cambria Math；缺失时 PowerPoint 回退到段落/单元格字体——表格内公式下标
-// 变微软雅黑的问题根因。写法与 PowerPoint 重存文件逐字节一致）
-const MATH_FONT =
-  '<a:latin typeface="Cambria Math" panose="02040503050406030204" pitchFamily="18" charset="0"/>' +
-  '<a:ea typeface="Cambria Math" panose="02040503050406030204" pitchFamily="18" charset="0"/>';
+// Cambria Math——缺失时 PowerPoint 回退到段落/单元格字体，表格内公式下标
+// 变微软雅黑的问题根因。仅声明 typeface（渲染只依赖 typeface，panose 等
+// 字体元数据为 PowerPoint 自写信息，不写更通用））
+const MATH_FONT = '<a:latin typeface="Cambria Math"/><a:ea typeface="Cambria Math"/>';
 
 const H_ALIGN = { left: "l", center: "ctr", right: "r", justify: "just", distributed: "dist" };
 
@@ -182,14 +181,23 @@ function injectRunStyle(omml, { color, fontSize, opacity } = {}, theme) {
   if (!fill && opacity != null && opacity < 1) {
     fill = `<a:solidFill><a:schemeClr val="tx1"><a:alpha val="${Math.round(opacity * 100000)}"/></a:schemeClr></a:solidFill>`;
   }
-  if (!fill && !szAttr) return omml;
-  // m:r 内：rPr（若有）之后、m:t 之前插入 a:rPr；无 rPr 则插在 <m:r> 后
-  let out = omml.replace(/<m:r>(?:(<m:rPr>[\s\S]*?<\/m:rPr>))?(?=<m:t)/g, (_m, rpr) => {
+  // m:r 内：rPr（若有）之后、m:t 之前插入 a:rPr；无 rPr 则插在 <m:r> 后。
+  // 注意：无 fill/sz 时不提前返回——Cambria Math 字体声明必须无条件注入，
+  // 否则公式 run 缺失 typeface 时 PowerPoint 回退段落字体（微软雅黑复现）
+  let out = omml.replace(/<m:r>(?:(<m:rPr>[\s\S]*?<\/m:rPr>))?(?=<m:t>([^<]*)<\/m:t>)/g, (_m, rpr, text) => {
     // 显式斜体/正体声明（PowerPoint 原生存储结构，重存/编辑公式时总会写全）：
-    //   - 无 m:rPr（数学默认斜体，如变量 P、下标 a）→ i="1"
+    //   - 无 m:rPr 且纯字母（数学变量，如 P/a/x）→ i="1"
     //   - m:nor（\text{} 普通文本）→ i="0"
-    //   - m:sty/m:scr（\mathrm/\mathbf 等）→ 不写 i，字形由样式属性决定
-    const italic = !rpr ? ' i="1"' : rpr.includes("<m:nor/>") ? ' i="0"' : "";
+    //   - 其余（数字/运算符混合 run、\mathrm 等样式 run）→ 不写 i，
+    //     由 PowerPoint 数学引擎按字符类型逐字符处理（与重存行为一致，
+    //     避免 Q= / i=1 这类合并 run 被整体斜体化）
+    const italic = !rpr
+      ? /^[A-Za-z]+$/.test(text)
+        ? ' i="1"'
+        : ""
+      : rpr.includes("<m:nor/>")
+        ? ' i="0"'
+        : "";
     const rPr = `<a:rPr${szAttr}${italic}>${fill}${MATH_FONT}</a:rPr>`;
     return rpr ? `<m:r>${rpr}${rPr}` : `<m:r>${rPr}`;
   });
