@@ -1,0 +1,239 @@
+#!/usr/bin/env node
+// ============================================================================
+// bin/open-pptd.js — CLI
+//   serve [--port <port>] [--project <dir>]        启动本地网页编辑器
+//   export <deck.pptd> [-o out.pptx] [--theme <key>]  命令行导出 PPTX（<key> = 配色预设：
+//                         consult/tech/orange/green/red/purple/mono/brown/morandi/sakura）
+//                        [--no-embed-fonts]         不嵌入字体（默认嵌入）
+// ============================================================================
+
+import { existsSync, readFileSync, writeFileSync } from "fs";
+import { join, basename } from "path";
+import { startServer } from "../lib/editor-server.js";
+import { exportDeck, exportProject, FONT_LIB_DIR } from "../lib/pptd-export.js";
+import * as yaml from "../editor/vendor/js-yaml.mjs";
+import { parseFontResources } from "../editor/core/theme.js";
+import { findFont, findSystemFont } from "../editor/core/font-registry.js";
+
+function usage() {
+  console.log(
+    "open-pptd CLI\n\n" +
+      "用法:\n" +
+      "  open-pptd serve [--port <port>] [--project <目录>]  启动本地网页编辑器\n" +
+      "      --project: 挂载任意项目目录到浏览器（?deck=project/deck.pptd），端口占用自动顺延\n" +
+      "  open-pptd export <deck.pptd> [-o <out.pptx>]  命令行导出 PPTX\n" +
+      "                           [--no-embed-fonts]   不嵌入字体（默认嵌入）\n" +
+      "  open-pptd export-project <deck.pptd> [-o <out.zip>]  导出项目包（pptd+pages+media，原样打包）\n" +
+      "\n" +
+      "  字体库（assets/fonts/，全部免费商用，默认子集化嵌入）：\n" +
+      "  open-pptd fonts list                         查看内置字体库（状态 ✓/✗）\n" +
+      "  open-pptd fonts download <名称|all>          按需/全量下载字体文件到字体库\n" +
+      "  open-pptd fonts check <deck.pptd>            体检 deck 字体声明（嵌入/仅声明/缺失）\n"
+  );
+}
+
+// ----------------------------------------------------------------------------
+// fonts 子命令：内置字体库管理（assets/fonts/，全部免费商用、全部支持子集化嵌入）
+// ----------------------------------------------------------------------------
+
+function loadRegistry() {
+  const p = join(FONT_LIB_DIR, "registry.json");
+  return JSON.parse(readFileSync(p, "utf8"));
+}
+
+function fontStatus(f) {
+  return existsSync(join(FONT_LIB_DIR, f.file)) ? "✓" : "✗";
+}
+
+const CAT_LABEL = { sans: "黑体", serif: "宋/衬线", handwriting: "手写/书法", display: "标题/艺术", pixel: "像素" };
+
+async function fontsList() {
+  const reg = loadRegistry();
+  const byCat = {};
+  for (const f of reg.fonts) (byCat[f.category] ||= []).push(f);
+  console.log(`内置字体库 ${reg.fonts.length} 种（全部免费商用，默认子集化嵌入）\n`);
+  for (const [cat, list] of Object.entries(byCat)) {
+    console.log(`【${CAT_LABEL[cat] || cat}】`);
+    for (const f of list) {
+      console.log(`  ${fontStatus(f)} ${f.key.padEnd(14)} ${f.family.padEnd(28)} ${(f.size / 1024 / 1024).toFixed(1)}MB  ${f.license}`);
+    }
+    console.log();
+  }
+  if (reg.systemFonts?.length) {
+    console.log(`系统字体 ${reg.systemFonts.length} 种（仅声明不嵌入，依赖打开方系统已装）\n`);
+    for (const f of reg.systemFonts) {
+      console.log(`  ○ ${f.key.padEnd(12)} ${f.family.padEnd(24)} ${f.platform.padEnd(18)} ${f.style}`);
+    }
+    console.log();
+  }
+  console.log("用法：deck.fonts 资源项写 {family: <注册名>} 即自动嵌入；fonts download <名称|all> 可补下载。");
+}
+
+async function fontsDownload(name) {
+  const reg = loadRegistry();
+  // 系统字体无需下载：单独提示，不参与下载流程
+  const sysHit = (reg.systemFonts || []).filter(
+    (f) => f.key === name || f.family === name || f.key.includes(name) || f.family.toLowerCase().includes(name.toLowerCase())
+  );
+  if (sysHit.length) {
+    console.log(`○ ${sysHit.map((f) => `${f.key}（${f.family}）`).join("、")} 是系统字体：仅声明不嵌入，无需下载。`);
+    return;
+  }
+  const targets =
+    name === "all" ? reg.fonts : reg.fonts.filter((f) => f.key === name || f.family === name || f.key.includes(name) || f.family.toLowerCase().includes(name.toLowerCase()));
+  if (!targets.length) {
+    console.error(`✗ 未找到匹配“${name}”的字体（用 fonts list 查看全表）`);
+    process.exit(1);
+  }
+  let ok = 0;
+  for (const f of targets) {
+    const out = join(FONT_LIB_DIR, f.file);
+    if (existsSync(out)) {
+      const magic = readFileSync(out).subarray(0, 4);
+      if (magic.toString("latin1") === "OTTO" || magic.equals(Buffer.from([0, 1, 0, 0]))) {
+        console.log(`  = ${f.key} 已存在（${f.file}），跳过`);
+        ok += 1;
+        continue;
+      }
+    }
+    process.stdout.write(`  ↓ ${f.key} ← ${f.url} ... `);
+    try {
+      const res = await fetch(f.url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const buf = Buffer.from(await res.arrayBuffer());
+      if (buf.length < 1000 || !(buf.subarray(0, 4).equals(Buffer.from([0, 1, 0, 0])) || buf.subarray(0, 4).toString("latin1") === "OTTO")) {
+        throw new Error("响应不是有效字体文件");
+      }
+      writeFileSync(out, buf);
+      console.log(`✓ ${(buf.length / 1024 / 1024).toFixed(1)}MB`);
+      ok += 1;
+    } catch (e) {
+      console.log(`✗ ${e.message}`);
+    }
+  }
+  console.log(`\n完成：${ok}/${targets.length}`);
+}
+
+async function fontsCheck(manifest) {
+  if (!existsSync(manifest)) {
+    console.error(`✗ 文件不存在: ${manifest}`);
+    process.exit(1);
+  }
+  const deck = yaml.load(readFileSync(manifest, "utf8"));
+  const reg = loadRegistry();
+  const resources = parseFontResources(deck?.fonts);
+  const entries = Object.entries(resources);
+  if (!entries.length) {
+    console.log("deck 未声明字体资源（deck.fonts 为空），不会嵌入任何字体。");
+    return;
+  }
+  console.log(`检查 ${manifest} 的字体声明（${entries.length} 项）:\n`);
+  for (const [key, res] of entries) {
+    const family = res.family || res.name || key;
+    const hit = findFont(reg, family);
+    if (hit) {
+      const fileOk = fontStatus(hit) === "✓";
+      console.log(`  ${fileOk ? "✓" : "✗"} ${key.padEnd(12)} → 注册表命中: ${hit.family}（${hit.file}${fileOk ? "" : " 缺失,需 fonts download"}）→ 将嵌入${hit.subset ? "(子集化)" : ""}`);
+    } else {
+      const sys = findSystemFont(reg, family);
+      if (sys) {
+        console.log(`  ○ ${key.padEnd(12)} → 系统字体: ${sys.family}（${sys.platform}；仅声明不嵌入，需打开方系统已装）`);
+      } else {
+        console.log(`  ○ ${key.padEnd(12)} → 未命中注册表: ${family}（仅声明，不嵌入；需系统已装该字体）`);
+      }
+    }
+  }
+  console.log("\n提示：注册表引用写法 fonts: {title: {family: <注册名>}}；未命中注册表的 family 视为系统字体。");
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+  const command = args[0];
+  if (!command || command === "--help" || command === "-h") {
+    usage();
+    return;
+  }
+  if (command === "fonts") {
+    const sub = args[1] || "list";
+    if (sub === "list") {
+      await fontsList();
+    } else if (sub === "download") {
+      await fontsDownload(args[2] || "all");
+    } else if (sub === "check") {
+      await fontsCheck(args[2]);
+    } else {
+      usage();
+      process.exit(1);
+    }
+    return;
+  }
+  if (command === "serve") {
+    const portIdx = args.indexOf("--port");
+    const port = portIdx >= 0 ? Number(args[portIdx + 1]) : 55173;
+    const projIdx = args.indexOf("--project");
+    const projectRoot = projIdx >= 0 ? args[projIdx + 1] : null;
+    try {
+      if (projectRoot) {
+        if (!existsSync(projectRoot)) {
+          console.error(`✗ 项目目录不存在: ${projectRoot}`);
+          process.exit(1);
+        }
+        if (!existsSync(join(projectRoot, "deck.pptd"))) {
+          console.warn(`⚠ ${projectRoot} 下未找到 deck.pptd（期望项目 manifest 名）`);
+        }
+      }
+      await startServer({ port, projectRoot, deckUrl: projectRoot ? "project/deck.pptd" : null });
+    } catch (err) {
+      if (err?.code === "EADDRINUSE") {
+        console.error(`端口 ${port}~${port + 9} 均被占用，可用 --port 指定其他端口`);
+        process.exit(1);
+      }
+      throw err;
+    }
+    return;
+  }
+  if (command === "export-project") {
+    const manifest = args[1];
+    if (!manifest) {
+      usage();
+      process.exit(1);
+    }
+    const outIdx = args.indexOf("-o") >= 0 ? args.indexOf("-o") : args.indexOf("--out");
+    const outPath = outIdx >= 0 ? args[outIdx + 1] : null;
+    try {
+      const { outPath: finalPath } = await exportProject({ manifest, outPath });
+      console.log(`✓ 项目包已导出 → ${finalPath}`);
+    } catch (err) {
+      console.error(`✗ 导出失败: ${err.message}`);
+      process.exit(1);
+    }
+    return;
+  }
+  if (command === "export") {
+    const manifest = args[1];
+    if (!manifest) {
+      usage();
+      process.exit(1);
+    }
+    const outIdx = args.indexOf("-o") >= 0 ? args.indexOf("-o") : args.indexOf("--out");
+    const outPath = outIdx >= 0 ? args[outIdx + 1] : null;
+    const themeIdx = args.indexOf("--theme");
+    const theme = themeIdx >= 0 ? args[themeIdx + 1] : null;
+    const embedFonts = !args.includes("--no-embed-fonts");
+    try {
+      const { outPath: finalPath } = await exportDeck({ manifest, outPath, theme, embedFonts });
+      console.log(`✓ 已导出 → ${finalPath}`);
+    } catch (err) {
+      console.error(`✗ 导出失败: ${err.message}`);
+      process.exit(1);
+    }
+    return;
+  }
+  usage();
+  process.exit(1);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
