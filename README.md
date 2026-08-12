@@ -61,7 +61,10 @@ node bin/open-pptd.js fonts download 得意黑
 # 1. 创建项目目录
 mkdir -p /path/to/项目目录/pages /path/to/项目目录/media
 
-# 2. 用 AI 助手生成 deck.pptd + pages/*.page（格式规范见 references/pptd.md）
+# 2. AI 助手流程：先写 deck.pptd（完整 pages 清单 + 主题 + 字体声明），
+#    随即后台启动实时预览（生成页面时用户即可实时看到逐页出现）：
+nohup node bin/open-pptd.js serve --project /path/to/项目目录 > /tmp/open-pptd-serve.log 2>&1 &
+#    浏览器打开日志中打印的链接，再生成全部 pages/*.page——每落盘一页自动刷新出现
 
 # 3. 命令行导出 PPTX / 项目包 / 页面图片
 node bin/open-pptd.js export /path/to/项目目录/deck.pptd -o out.pptx
@@ -69,8 +72,9 @@ node bin/open-pptd.js export-project /path/to/项目目录/deck.pptd -o project.
 node bin/open-pptd.js render /path/to/项目目录/deck.pptd -o 图片目录
 #   render：逐页渲染为 PNG（960×540，无头浏览器静默工作，与编辑器预览同一条渲染管线）
 #   可选参数：--page 3（单页） --scale 2（放大） --browser <路径> --timeout <毫秒>
+#   注意：render 仅在需要图片级视觉检查时使用（用户要求 agent 自行检查布局且模型支持读图）
 
-# 4.（可选）启动网页编辑器实时预览
+# 4. 人工使用：前台启动网页编辑器实时预览/编辑/导出
 node bin/open-pptd.js serve --project /path/to/项目目录 --port 55173
 # 浏览器打开启动时打印的链接
 ```
@@ -124,9 +128,9 @@ npm run test:incremental      # 渐进加载 E2E（写入中的项目逐页显�
 把整个目录作为 skill 安装（SKILL.md 是入口）。AI 会按以下流程工作：
 
 1. 与用户确认内容/场景 → 确定主题（配色/字体/表格样式，生成时一次性设计决策写入 `deck.theme`；编辑器内置 10 套配色预设可一键替换 `theme.colors`，CLI 导出支持 `--theme <key>`）
-2. 从零创建项目（`deck.pptd` + `pages/*.page`），默认交付 PPTD 项目 + 本地导出的 `.pptx` 双产物
-3. 按需启动 `serve --project` 让用户浏览器实时预览/编辑/导出
-4. 视觉审查通过后导出 `.pptx` 交付（默认嵌入字体 + 淡入淡出转场）
+2. 先写 `deck.pptd`（完整 pages 清单 + theme + fonts），**随即后台启动 `serve --project` 实时预览**（nohup，URL 交给用户），再一次性生成全部 `pages/*.page` —— 用户全程实时看到页面逐个出现，可随时打断提意见
+3. 结构性校验始终执行；**页面图片渲染（`render`）严格按需**：仅当用户明确要求 agent 自行检查/调整视觉效果，且模型支持读图、本机有浏览器时才执行
+4. 导出 `.pptx` 交付（默认嵌入字体 + 淡入淡出转场），交付时附预览服务状态
 
 ## License
 

@@ -61,7 +61,12 @@ node bin/open-pptd.js fonts download Smiley Sans
 # 1. Create the project directory
 mkdir -p /path/to/project/pages /path/to/project/media
 
-# 2. Have the AI assistant generate deck.pptd + pages/*.page (spec: references/pptd.md)
+# 2. AI-assistant flow: write deck.pptd first (full page list + theme + font declarations),
+#    then immediately start the live preview in the background (the user sees each page
+#    appear in real time while the pages are being generated):
+nohup node bin/open-pptd.js serve --project /path/to/project > /tmp/open-pptd-serve.log 2>&1 &
+#    Open the URL printed in the log, then generate all pages/*.page — each file landing
+#    on disk auto-refreshes the editor
 
 # 3. Export PPTX / project package / page images from the CLI
 node bin/open-pptd.js export /path/to/project/deck.pptd -o out.pptx
@@ -69,8 +74,10 @@ node bin/open-pptd.js export-project /path/to/project/deck.pptd -o project.zip
 node bin/open-pptd.js render /path/to/project/deck.pptd -o out-dir
 #   render: export every page as PNG (960×540, headless browser, same renderer as the editor preview)
 #   options: --page 3 (single page) --scale 2 (upscale) --browser <path> --timeout <ms>
+#   note: render is only for on-demand image-level visual checks (user asks the agent to
+#   check layout itself AND the model can read images)
 
-# 4. (Optional) Start the web editor for live preview
+# 4. Manual use: start the web editor in the foreground for live preview/editing/export
 node bin/open-pptd.js serve --project /path/to/project --port 55173
 # Open the printed local URL in a browser
 ```
@@ -124,9 +131,9 @@ The publish repo is kept in sync from the dev repo via `npm run sync:publish -- 
 Install the whole directory as a skill (SKILL.md is the entry point). The AI works as follows:
 
 1. Confirms content/scenario with the user → decides the theme (colors/fonts/table styles, a one-time design decision written into `deck.theme` at generation; the editor's 10 built-in palette presets can replace `theme.colors` in one click, and CLI export supports `--theme <key>`)
-2. Creates the project from scratch (`deck.pptd` + `pages/*.page`), delivering both the PPTD project and a locally exported `.pptx` by default
-3. Optionally starts `serve --project` for live preview/editing/export in the user's browser
-4. After visual review passes, exports and delivers the `.pptx` (fonts embedded + fade transitions by default)
+2. Writes `deck.pptd` first (full page list + theme + fonts), **then immediately starts `serve --project` in the background** (nohup; hands the URL to the user), then generates all `pages/*.page` in one pass — the user watches pages appear one by one in real time and can interrupt with feedback at any moment
+3. Structural validation always runs; **page-image rendering (`render`) is strictly on demand** — only when the user explicitly asks the agent to check/adjust the visuals itself, AND the model can read images, AND a browser is available
+4. Exports and delivers the `.pptx` (fonts embedded + fade transitions by default), reporting the preview server status in the delivery
 
 ## License
 

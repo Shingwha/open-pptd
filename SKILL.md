@@ -27,19 +27,19 @@ The .pptd format is a simplified abstraction layer over OOXML that follows basic
 
 1. **Format baseline**: strictly implement per `references/pptd.md` (the complete PPTD v2 spec); the export target is a PPTX that opens in PowerPoint without repair and renders identically to the editor preview.
 2. **Export pipeline**: use the local exporter `node bin/open-pptd.js export <deck.pptd> [-o <out.pptx>]` (self-developed writer, no browser dependency).
-3. **Online preview/editing**: `node bin/open-pptd.js serve --project <project dir>` → open the local editor in a browser (self-developed) to preview/edit/export.
-4. **Page images**: `node bin/open-pptd.js render <deck.pptd> [-o <dir>]` exports every page to PNG via the local headless browser (no window, same renderer as the editor preview; `--page <n>` single page, `--scale <1|2|3>`). Used for visual self-review when the user asks the agent to check layout, or when the model supports image input. Falls back to a structural review when no browser is available (see step4).
-4. **No pptx → pptd conversion**: this implementation cannot import an existing .pptx into a .pptd project. Edit/replicate tasks can only start from a .pptd project (user-provided or newly created). For a user-uploaded .pptx: unpack and inspect it as reference (colors/layout/copy), then rebuild in a .pptd project; element-by-element restoration is not guaranteed.
-5. **Chart limits**: of the 13 types, **heatmap / sankey are not exported** (PowerPoint has no native types; the element is skipped, the page left blank, with a warning at export) — avoid these two types when generating; the other 11 (bar/line/area/scatter/bubble/candlestick/pie/radar/waterfall/treemap/sunburst) export fully.
-6. **Formulas**: rich text supports LaTeX formulas `\(...\)` (inline / standalone paragraph / full frame), exported as native editable PowerPoint formulas (mc:AlternateContent + a14:m).
-7. **Icons**: `iconName` format `style:name`. Full list in `references/icons.md` (AUTO-GENERATED):
+3. **Online preview/editing**: `node bin/open-pptd.js serve --project <project dir>` → open the local editor in a browser (self-developed) to preview/edit/export. In the agent flow, start it **as soon as the manifest is written** (before generating the page files) so the user watches pages appear in real time — the editor live-reloads on every file change (SSE). Run it in the background so the session is not blocked; see step3 for the exact pattern.
+4. **Page images (strictly on demand)**: `node bin/open-pptd.js render <deck.pptd> [-o <dir>]` exports every page to PNG via the local headless browser (no window, same renderer as the editor preview; `--page <n>` single page, `--scale <1|2|3>`). Run it **only** when the user explicitly asks the agent to visually check/adjust the result itself (or visual fidelity is core to the task), AND the current model can actually read images, AND a browser is available — exact trigger rules in step4. Never render for models that cannot see images (the PNGs would be useless): rely on the structural review + the user's live preview feedback instead.
+5. **No pptx → pptd conversion**: this implementation cannot import an existing .pptx into a .pptd project. Edit/replicate tasks can only start from a .pptd project (user-provided or newly created). For a user-uploaded .pptx: unpack and inspect it as reference (colors/layout/copy), then rebuild in a .pptd project; element-by-element restoration is not guaranteed.
+6. **Chart limits**: of the 13 types, **heatmap / sankey are not exported** (PowerPoint has no native types; the element is skipped, the page left blank, with a warning at export) — avoid these two types when generating; the other 11 (bar/line/area/scatter/bubble/candlestick/pie/radar/waterfall/treemap/sunburst) export fully.
+7. **Formulas**: rich text supports LaTeX formulas `\(...\)` (inline / standalone paragraph / full frame), exported as native editable PowerPoint formulas (mc:AlternateContent + a14:m).
+8. **Icons**: `iconName` format `style:name`. Full list in `references/icons.md` (AUTO-GENERATED):
    - `bs:<name>` direct local library reference, 192 icons (prefer these; guaranteed to exist);
    - `fas:`/`far:<fa-name>` mapped by Font Awesome semantics to local approximate icons (only FA names covered by the mapping table are usable, ~1100 entries);
    - `fab:` brand icons **not supported** (no brand logos in the local library; use image elements instead);
    - unknown icons are skipped at export — always check the table before generating.
-8. **Shapes**: `references/shapes.md` is the full list (177 preset shapes + parameters/defaults), all supported; `shapeName: "custom"` allows viewBox+path customization.
-9. **Theme**: 10 built-in color presets (full values in `references/themes.md`; the editor top-bar "Palette" panel and CLI `--theme <key>` apply/re-skin in one click, replacing only `theme.colors`; chart series colors cycle accent1-6). **Custom colors by default** (design each deck independently per content to avoid homogenization; must satisfy the "Custom Palette Guidelines" in themes.md); **use a preset only when the user explicitly asks or after discussing with the user**. Whether custom or preset, write the **full 17-key color set** into `deck.theme.colors` (textStyles/tableStyles follow the default templates in themes.md) and reference via `$key` on pages; **never reference a preset by string** (e.g. `theme: "tech"`, non-official format); the deck must be self-contained (theme = a one-time design decision at generation).
-10. **Fonts**: default `Microsoft YaHei` (built into Windows, declared only — not embedded; consistent on any Windows machine; Microsoft copyright prevents redistribution, so it is not in the built-in library). The built-in library has 27 free-for-commercial-use fonts (see `references/fonts.md`; registered names all verified, embedded subsetted by default). `deck.fonts` with `{family: <registered-name>}` embeds automatically — **no `fonts/` directory needed in a project** (font bytes live in the skill's `assets/fonts/`); a family that misses the registry and has no url is declared only (system font). Before generating, run `node bin/open-pptd.js fonts list` to confirm registered names; export embeds fonts by default (`--no-embed-fonts` disables). **Talk to the user in display names (e.g. 得意黑), write registered names (e.g. `Smiley Sans`) into the deck.**
+9. **Shapes**: `references/shapes.md` is the full list (177 preset shapes + parameters/defaults), all supported; `shapeName: "custom"` allows viewBox+path customization.
+10. **Theme**: 10 built-in color presets (full values in `references/themes.md`; the editor top-bar "Palette" panel and CLI `--theme <key>` apply/re-skin in one click, replacing only `theme.colors`; chart series colors cycle accent1-6). **Custom colors by default** (design each deck independently per content to avoid homogenization; must satisfy the "Custom Palette Guidelines" in themes.md); **use a preset only when the user explicitly asks or after discussing with the user**. Whether custom or preset, write the **full 17-key color set** into `deck.theme.colors` (textStyles/tableStyles follow the default templates in themes.md) and reference via `$key` on pages; **never reference a preset by string** (e.g. `theme: "tech"`, non-official format); the deck must be self-contained (theme = a one-time design decision at generation).
+11. **Fonts**: default `Microsoft YaHei` (built into Windows, declared only — not embedded; consistent on any Windows machine; Microsoft copyright prevents redistribution, so it is not in the built-in library). The built-in library has 27 free-for-commercial-use fonts (see `references/fonts.md`; registered names all verified, embedded subsetted by default). `deck.fonts` with `{family: <registered-name>}` embeds automatically — **no `fonts/` directory needed in a project** (font bytes live in the skill's `assets/fonts/`); a family that misses the registry and has no url is declared only (system font). Before generating, run `node bin/open-pptd.js fonts list` to confirm registered names; export embeds fonts by default (`--no-embed-fonts` disables). **Talk to the user in display names (e.g. 得意黑), write registered names (e.g. `Smiley Sans`) into the deck.**
 
 ## PPT Production Workflow
 
@@ -84,6 +84,19 @@ Rules:
 
 Before generating, first read `references/pptd.md` to understand the pptd format definition and constraints.
 
+**Generation order — manifest first, live preview throughout**:
+1. Create the project directory (`pages/`, `media/`).
+2. Write `deck.pptd` with the complete page list + theme + fonts declarations. (Missing page files are fine — the editor skips them and they appear automatically as they land on disk.)
+3. **Start the live preview immediately** (background, do not block the session):
+   ```bash
+   nohup node bin/open-pptd.js serve --project /abs/path/project > /tmp/open-pptd-serve.log 2>&1 &
+   # URL is printed in the log (default http://127.0.0.1:55173/editor/?deck=project/deck.pptd; port auto-increments when busy)
+   # stop: find the PID listening on the port and kill it (Windows: netstat -ano | findstr 55173 → taskkill /PID <pid>)
+   ```
+   Hand the URL to the user and tell them the pages are generated next and will appear in real time — they can interrupt with feedback at any moment.
+4. Then generate all `pages/*.page` (and `media/`) in one pass per the modes below — no placeholder/skeleton batching, no forced checkpoints. Each file landing on disk triggers an editor auto-reload, so the user watches the pages appear one by one.
+5. When **editing** an existing project: ensure `serve` is running before you start changing pages (start it if not), so every edit is visible to the user immediately.
+
 **Theme decision (mandatory for every generation)**:
 1. **Custom palette by default**: design a dedicated palette per the scenario (industry/audience/purpose/content tone); guidelines in `references/themes.md` "Custom Palette Guidelines"; write into `deck.pptd` `theme` (colors/textStyles/tableStyles) + reference via `$key` on page elements; do not reference non-existent `$key`s, and do not reference presets by string (`theme: "key"`).
 2. **Presets only as backup**: use one of the 10 presets in `references/themes.md` (scenario mapping in the overview table) only when the user explicitly asks or after discussion; write that preset's full 17 keys into `theme.colors`.
@@ -127,12 +140,12 @@ Adopt different production approaches for different user [design directions].
 
 ### step4. PPT validation
 1. **Structural review — always**: validate the generated pptd against the format definition in `references/pptd.md` (required fields, types, bounds, theme tokens, resource paths, contrast, overflow-prone long text, hierarchy, layout density) and repair issues over multiple rounds.
-2. **User preview — default**: start the local editor and hand the URL to the user:
-   ```bash
-   node bin/open-pptd.js serve --project /abs/path/project
-   ```
-   The user previews in their own browser and reports issues; fix them in the corresponding `.page` files (the editor live-reloads on file changes).
-3. **Visual self-review — on demand**: when the user asks the agent to check/fix layout issues itself, or when the model supports image input and a visual pass is wanted, render every page to PNG and review each page against this list:
+2. **Real-time preview — already running (started in step3)**: the preview is the primary QA channel. The user watches pages appear in real time and reports issues; fix them in the corresponding `.page` files (the editor live-reloads on file changes). If the preview is not running for any reason, start it now in the background (nohup pattern in step3) and hand the URL to the user.
+3. **Visual self-review — strictly on demand**: run the render command **only when all three conditions hold**:
+   a. the user explicitly asks the agent to check/fix the visuals itself (e.g. "你自己检查调整一下布局"), or the task's core is visual fidelity (1:1 image/PDF replication, style transfer) and the user wants the agent to verify;
+   b. the current model can actually read images (if unsure, render one page first and try to read the PNG — if you cannot see it, stop and skip);
+   c. a local browser is available (Chrome/Edge).
+   Then render every page to PNG and review each page against this list:
    ```bash
    node bin/open-pptd.js render /abs/path/project/deck.pptd -o /abs/path/project/render-out
    ```
@@ -144,8 +157,8 @@ Adopt different production approaches for different user [design directions].
    6. Text not likely to overflow its text box (overlong text, cramped line height, oversized fonts)
    7. Content not occluded by upper-layer elements
    - For any suspicious page, review its source `.page` file to confirm the problem before editing.
-   - Fix issues in the corresponding `.page` files, limited to gross layout defects (e.g. font misplacement or wrong font fallback, out-of-bounds, overflow, occlusion, distortion, contrast); do not chase pixel-level details. Re-render, re-review once, then confirm with the user — the visual pass ends when the user is satisfied.
-4. When the model cannot read images **or the host provides no browser/screenshot capability**, skip the visual pass: fall back to the structural review (step 1) and state in the delivery that image-based visual QA was skipped and why.
+   - Fix issues in the corresponding `.page` files, limited to gross layout defects (e.g. font misplacement or wrong font fallback, out-of-bounds, overflow, occlusion, distortion, contrast); do not chase pixel-level details. Re-render **only the affected pages** (`--page <n>`), re-review once, then confirm with the user — the visual pass ends when the user is satisfied.
+4. **Skip rule**: when condition (b) or (c) fails — many models cannot read images — do **not** run render at all (the PNGs would be useless): rely on the structural review (step 1) + the user's live preview feedback, and state in the delivery that image-based visual QA was skipped and why.
 
 ### step5. PPT output and delivery
 1. Always produce a self-contained project directory. Keep the `.pptd` manifest and every referenced dependency together; never deliver a standalone manifest without its referenced files. Use this layout unless an existing project already has a valid equivalent structure:
@@ -185,4 +198,4 @@ Adopt different production approaches for different user [design directions].
 
    Do not claim PowerPoint/WPS/Keynote playback compatibility solely because ZIP validation succeeds.
 7. When the user wants to open, edit, save, or export a PPTD project manually, start the local browser editor with `node bin/open-pptd.js serve --project <project dir>` and ask the user to open the printed local URL in a browser. The editor supports preview, editing, saving back to the project, and one-click PPTX export.
-8. After completing and delivering any presentation, always end the final response with a concise optional next step telling the user that they can run `node bin/open-pptd.js serve --project <project dir>` to view or edit the PPTD project, configure slide transition animations, and export PPTX manually (or `node bin/open-pptd.js render <deck.pptd> -o <dir>` to export page images for a visual pass). Keep this reminder in addition to, not instead of, the required project and file links.
+8. Always end the final response with the **preview status** and a concise next step: if the preview server started in step3 is still running, give the URL and how to stop it (or offer to keep it running for further editing); if it was stopped, give the restart command (`node bin/open-pptd.js serve --project <project dir>`). Mention the editor supports preview, editing, slide transitions, and manual PPTX export (or `node bin/open-pptd.js render <deck.pptd> -o <dir>` to export page images for a visual pass). Keep this reminder in addition to, not instead of, the required project and file links.
