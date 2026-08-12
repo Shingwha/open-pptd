@@ -30,17 +30,21 @@ jobs:
         with:
           node-version: 20
 
-      # ① 回归测试：导出全部组件项目 + 包一致性 + 颜色 + 形状 + 公式 + 图标
+      # ① 生成公式中间产物（tests/formula/fixtures/mml/ 不入库，KaTeX 本地生成）
+      - name: 生成公式中间产物
+        run: npm run test:fixtures
+
+      # ② 回归测试：导出全部组件项目 + 包一致性 + 颜色 + 形状 + 公式 + 图标
       - name: 回归测试
         run: npm test
 
-      # ② 重建静态画廊索引（examples/manifest.json），保证与 examples/ 一致
+      # ③ 重建静态画廊索引（examples/manifest.json），保证与 examples/ 一致
       - name: 重建画廊索引
         run: node bin/open-pptd.js gallery scan
 
-      # ③ 部署产物瘦身：去掉 .git（artifact 只需站点文件）
+      # ④ 部署产物瘦身：站点只需 index.html + editor/ + assets/ + examples/
       - name: 清理产物
-        run: rm -rf .git
+        run: rm -rf .git tests scripts docs references lib bin
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
