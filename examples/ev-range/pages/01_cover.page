@@ -1,0 +1,149 @@
+pageType: cover
+background:
+  type: solid
+  color: "$primaryDeep"
+notes: |
+  封面：论文题目、作者与机构信息。说明论文发表于《中国科学：技术科学》，
+  研究聚焦"用量化因子代替聚类标签刻画驾驶行为，提升电动汽车剩余续驶里程预测精度"。
+elements:
+  - elementId: spine
+    elementType: shape
+    bounds: [0, 0, 10, 540]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: deco-frame
+    elementType: shape
+    bounds: [772, 92, 128, 128]
+    shapeName: rect
+    border: { style: solid, width: 1, color: "#FFFFFF21" }
+  - elementId: deco-circle
+    elementType: shape
+    bounds: [772, 92, 128, 128]
+    shapeName: ellipse
+    border: { style: solid, width: 1, color: "#FFFFFF21" }
+  - elementId: deco-dot
+    elementType: shape
+    bounds: [831, 87, 10, 10]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: deco-tick1
+    elementType: shape
+    bounds: [843, 478, 1, 10]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF40" }
+  - elementId: deco-tick2
+    elementType: shape
+    bounds: [857, 478, 1, 10]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF40" }
+  - elementId: deco-tick3
+    elementType: shape
+    bounds: [871, 478, 1, 10]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF40" }
+  - elementId: deco-tick4
+    elementType: shape
+    bounds: [885, 478, 1, 10]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF40" }
+  - elementId: deco-tick5
+    elementType: shape
+    bounds: [899, 478, 1, 10]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF40" }
+  - elementId: journal
+    elementType: text
+    bounds: [60, 44, 840, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "#FFFFFF66"
+      letterSpacing: 1
+      wrap: false
+      text: |
+        《中国科学：技术科学》 · 网络版发表 2024-05-10 · DOI: 10.1360/SST-2023-0239
+  - elementId: title
+    elementType: text
+    bounds: [60, 148, 840, 110]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 34
+      color: "#FFFFFF"
+      lineHeight: 1.3
+      text: |
+        <p>基于驾驶行为量化因子的</p>
+        <p>电动汽车剩余续驶里程预测</p>
+  - elementId: title-bar
+    elementType: shape
+    bounds: [60, 284, 54, 4]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: title-en
+    elementType: text
+    bounds: [60, 302, 780, 40]
+    content:
+      fontFamily: "Times New Roman"
+      fontSize: 11
+      color: "#FFFFFF80"
+      italic: true
+      lineHeight: 1.45
+      text: |
+        Prediction of the remaining mileage of electric vehicles based on the quantitative factors of driving behavior
+  - elementId: authors
+    elementType: text
+    bounds: [60, 362, 840, 22]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "#FFFFFFEE"
+      wrap: false
+      text: |
+        <p>李骏<sup>1</sup>　孙亚诚<sup>1</sup>　李继秋<sup>1</sup>　单丰武<sup>2,3</sup>　刘俊宇<sup>2,3</sup>　曾建邦<sup>1,3*</sup></p>
+  - elementId: affiliation
+    elementType: text
+    bounds: [60, 390, 840, 36]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "#FFFFFF99"
+      lineHeight: 1.6
+      text: |
+        <p>1. 华东交通大学机电与车辆工程学院，南昌 330013　2. 同济大学汽车学院，上海 201804</p>
+        <p>3. 江西江铃集团新能源汽车有限公司，南昌 330013　* 通讯作者：jbzeng68@sina.com</p>
+  - elementId: funding
+    elementType: text
+    bounds: [60, 452, 560, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "#FFFFFF73"
+      wrap: false
+      text: |
+        国家自然科学基金（51806066）· 江西省重点研发计划（20223BBE51016）
+  - elementId: keywords
+    elementType: text
+    bounds: [560, 452, 340, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "#FFFFFF73"
+      align: [right, top]
+      wrap: false
+      text: |
+        电动汽车 · 剩余续驶里程 · 驾驶行为 · 量化因子 · LSTM
+  - elementId: bottom-band
+    elementType: shape
+    bounds: [0, 504, 960, 36]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: bottom-band-text
+    elementType: text
+    bounds: [60, 514, 840, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      color: "$primaryDeep"
+      letterSpacing: 3
+      wrap: false
+      text: |
+        数据驱动 · 特征工程 · 长短期记忆网络 · 实车验证

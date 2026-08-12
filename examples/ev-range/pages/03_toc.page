@@ -1,0 +1,173 @@
+pageType: table_of_contents
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  目录页：四个部分——数据采集与处理、特征工程（驾驶行为量化因子）、LSTM 预测模型、实车验证与结论。
+elements:
+  - elementId: chrome-kicker
+    elementType: text
+    bounds: [60, 28, 600, 14]
+    content:
+      style: "$kicker"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">目录</span><span style="color:$muted;"> / CONTENTS</span></p>
+  - elementId: chrome-title
+    elementType: text
+    bounds: [60, 46, 780, 32]
+    content:
+      style: "$title"
+      wrap: false
+      text: 目录
+  - elementId: chrome-rule
+    elementType: shape
+    bounds: [60, 87, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-rule-accent
+    elementType: shape
+    bounds: [60, 85, 44, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: toc-num1
+    elementType: text
+    bounds: [60, 124, 80, 30]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      color: "$accent"
+      wrap: false
+      text: "01"
+  - elementId: toc-title1
+    elementType: text
+    bounds: [150, 124, 500, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 16
+      color: "$text"
+      wrap: false
+      text: 数据采集与处理
+  - elementId: toc-desc1
+    elementType: text
+    bounds: [150, 152, 700, 16]
+    content:
+      style: "$caption"
+      fontSize: 10
+      wrap: false
+      text: 车辆云端报文数据的获取、清洗与驾驶片段划分
+  - elementId: toc-rule1
+    elementType: shape
+    bounds: [60, 196, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: toc-num2
+    elementType: text
+    bounds: [60, 216, 80, 30]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      color: "$accent"
+      wrap: false
+      text: "02"
+  - elementId: toc-title2
+    elementType: text
+    bounds: [150, 216, 560, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 16
+      color: "$text"
+      wrap: false
+      text: 特征工程：驾驶行为量化因子
+  - elementId: toc-desc2
+    elementType: text
+    bounds: [150, 244, 700, 16]
+    content:
+      style: "$caption"
+      fontSize: 10
+      wrap: false
+      text: 七项评价指标选取、随机森林客观赋权与因子 Q 计算
+  - elementId: toc-rule2
+    elementType: shape
+    bounds: [60, 288, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: toc-num3
+    elementType: text
+    bounds: [60, 308, 80, 30]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      color: "$accent"
+      wrap: false
+      text: "03"
+  - elementId: toc-title3
+    elementType: text
+    bounds: [150, 308, 560, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 16
+      color: "$text"
+      wrap: false
+      text: LSTM 剩余续驶里程预测模型
+  - elementId: toc-desc3
+    elementType: text
+    bounds: [150, 336, 700, 16]
+    content:
+      style: "$caption"
+      fontSize: 10
+      wrap: false
+      text: 模型输入输出定义、门控结构、训练设置与算法对比
+  - elementId: toc-rule3
+    elementType: shape
+    bounds: [60, 380, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: toc-num4
+    elementType: text
+    bounds: [60, 400, 80, 30]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      color: "$accent"
+      wrap: false
+      text: "04"
+  - elementId: toc-title4
+    elementType: text
+    bounds: [150, 400, 560, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 16
+      color: "$text"
+      wrap: false
+      text: 实车验证与结论
+  - elementId: toc-desc4
+    elementType: text
+    bounds: [150, 428, 700, 16]
+    content:
+      style: "$caption"
+      fontSize: 10
+      wrap: false
+      text: 单驾驶事件验证、准确度确定系数评价与研究成果展望
+  - elementId: chrome-foot-rule
+    elementType: shape
+    bounds: [60, 508, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-foot-text
+    elementType: text
+    bounds: [60, 514, 700, 16]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测 · 《中国科学：技术科学》
+  - elementId: chrome-page
+    elementType: text
+    bounds: [856, 512, 44, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      color: "$text"
+      align: [right, top]
+      wrap: false
+      text: "03"

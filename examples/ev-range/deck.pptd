@@ -1,0 +1,114 @@
+version: v2
+title: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测
+size: [960, 540]
+fonts:
+  阿里妈妈数黑体: { family: "Alimama ShuHeiTi" }
+  霞鹜新晰黑: { family: "LXGW Neo XiHei" }
+theme:
+  colors:
+    primary: "#20282E"
+    accent: "#DE5618"
+    bg: "#E7E8E5"
+    text: "#23282C"
+    muted: "#6B7176"
+    line: "#CFD2CE"
+    success: "#3D8A57"
+    warning: "#B0781C"
+    danger: "#C0503C"
+    primarySoft: "#F0F1EE"
+    primaryTint: "#DCDFDA"
+    primaryDeep: "#12181D"
+    accent3: "#5B7A8C"
+    accent4: "#C8A23F"
+    accent5: "#6E8B74"
+    accent6: "#A65A4A"
+  textStyles:
+    title:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 24
+      color: "$text"
+      lineHeight: 1.25
+    subtitle:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "$muted"
+      lineHeight: 1.5
+    body:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "$text"
+      lineHeight: 1.5
+    caption:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      lineHeight: 1.35
+    kicker:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 10
+      color: "$accent"
+      letterSpacing: 2
+      lineHeight: 1.2
+    quote:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "$muted"
+      italic: true
+      lineHeight: 1.5
+  tableStyles:
+    threeline:
+      cellStyle:
+        fontSize: 12
+        fontFamily: "LXGW Neo XiHei"
+        color: "$text"
+        align: [center, middle]
+        fill: { type: solid, color: "#FFFFFF" }
+        border: null
+        lineHeight: 1.3
+      firstRowStyle:
+        bold: true
+        border:
+          - { style: solid, width: 2, color: "$text" }
+          - null
+          - { style: solid, width: 1, color: "$text" }
+          - null
+      lastRowStyle:
+        border:
+          - null
+          - null
+          - { style: solid, width: 2, color: "$text" }
+          - null
+      rowOverColumn: true
+    default:
+      cellStyle:
+        fontSize: 11
+        color: "$text"
+        fill: { type: solid, color: "#FFFFFF" }
+        border: { style: solid, width: 1, color: "$line" }
+        align: [center, middle]
+      firstRowStyle:
+        fill: { type: solid, color: "$primary" }
+        color: "#FFFFFF"
+        bold: true
+      bodyStyles:
+        - { fill: { type: solid, color: "$primarySoft" } }
+        - { fill: { type: solid, color: "#FFFFFF" } }
+      rowOverColumn: true
+pages:
+  - pages/01_cover.page
+  - pages/02_overview.page
+  - pages/03_toc.page
+  - pages/04_divider1.page
+  - pages/05_data.page
+  - pages/06_divider2.page
+  - pages/07_indicators.page
+  - pages/08_thresholds.page
+  - pages/09_rf.page
+  - pages/10_factor.page
+  - pages/11_divider3.page
+  - pages/12_lstm.page
+  - pages/13_training.page
+  - pages/14_divider4.page
+  - pages/15_validation.page
+  - pages/16_conclusion.page
+  - pages/17_end.page

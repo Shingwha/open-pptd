@@ -8,13 +8,18 @@
 // ============================================================================
 
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { join, basename } from "path";
+import { join, basename, dirname } from "path";
+import { fileURLToPath } from "url";
 import { startServer } from "../lib/editor-server.js";
 import { exportDeck, exportProject, FONT_LIB_DIR } from "../lib/pptd-export.js";
 import { renderDeck } from "../lib/pptd-render.js";
+import { buildManifest } from "../lib/gallery.js";
 import * as yaml from "../editor/vendor/js-yaml.mjs";
 import { parseFontResources } from "../editor/core/theme.js";
 import { findFont, findSystemFont } from "../editor/core/font-registry.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const EXAMPLES_DIR = join(__dirname, "..", "examples");
 
 function usage() {
   console.log(
@@ -28,6 +33,9 @@ function usage() {
       "  open-pptd render <deck.pptd> [-o <目录>] [--page <n|all>] [--scale <1|2|3>]\n" +
       "                           [--browser <路径>] [--timeout <毫秒>]\n" +
       "                        逐页渲染为 PNG（无头浏览器，与编辑器预览同管线）\n" +
+      "  open-pptd gallery scan                      扫描 examples/ 生成静态画廊索引\n" +
+      "                        （examples/manifest.json，仅提交给 GitHub Pages 用；本地 serve 自动扫描）\n" +
+      "  open-pptd gallery list                      列出画廊条目\n" +
       "\n" +
       "  字体库（assets/fonts/，全部免费商用，默认子集化嵌入）：\n" +
       "  open-pptd fonts list                         查看内置字体库（状态 ✓/✗）\n" +
@@ -220,6 +228,31 @@ async function main() {
       await fontsDownload(args[2] || "all");
     } else if (sub === "check") {
       await fontsCheck(args[2]);
+    } else {
+      usage();
+      process.exit(1);
+    }
+    return;
+  }
+  if (command === "gallery") {
+    const sub = args[1] || "list";
+    if (sub === "scan") {
+      const manifest = buildManifest(EXAMPLES_DIR);
+      const out = join(EXAMPLES_DIR, "manifest.json");
+      writeFileSync(out, JSON.stringify(manifest, null, 2) + "\n", "utf8");
+      console.log(`✓ 已生成 ${out}（${manifest.entries.length} 套）`);
+      for (const e of manifest.entries) {
+        console.log(`  · ${e.id}  ${e.title}（${e.pages} 页${e.tags.length ? " · " + e.tags.join("/") : ""}）`);
+      }
+    } else if (sub === "list") {
+      const manifest = buildManifest(EXAMPLES_DIR);
+      if (!manifest.entries.length) {
+        console.log("examples/ 下暂无画廊项目（放入 deck.pptd+pages/+media/ 文件夹即可）");
+        return;
+      }
+      for (const e of manifest.entries) {
+        console.log(`· ${e.id}  ${e.title}（${e.pages} 页）  ${e.deck}`);
+      }
     } else {
       usage();
       process.exit(1);

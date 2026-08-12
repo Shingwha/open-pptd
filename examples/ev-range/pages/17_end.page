@@ -1,0 +1,121 @@
+pageType: final
+background:
+  type: solid
+  color: "$primaryDeep"
+notes: 致谢页：感谢聆听，恳请批评指正；附通讯作者与基金信息。
+elements:
+  - elementId: spine
+    elementType: shape
+    bounds: [0, 0, 10, 540]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: deco-frame
+    elementType: shape
+    bounds: [772, 92, 128, 128]
+    shapeName: rect
+    border: { style: solid, width: 1, color: "#FFFFFF21" }
+  - elementId: deco-circle
+    elementType: shape
+    bounds: [772, 92, 128, 128]
+    shapeName: ellipse
+    border: { style: solid, width: 1, color: "#FFFFFF21" }
+  - elementId: deco-dot
+    elementType: shape
+    bounds: [831, 87, 10, 10]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: deco-tick1
+    elementType: shape
+    bounds: [843, 478, 1, 10]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF40" }
+  - elementId: deco-tick2
+    elementType: shape
+    bounds: [857, 478, 1, 10]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF40" }
+  - elementId: deco-tick3
+    elementType: shape
+    bounds: [871, 478, 1, 10]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF40" }
+  - elementId: deco-tick4
+    elementType: shape
+    bounds: [885, 478, 1, 10]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF40" }
+  - elementId: deco-tick5
+    elementType: shape
+    bounds: [899, 478, 1, 10]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF40" }
+  - elementId: kicker
+    elementType: text
+    bounds: [60, 60, 700, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "#FFFFFF59"
+      letterSpacing: 3
+      wrap: false
+      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测
+  - elementId: thanks
+    elementType: text
+    bounds: [60, 180, 700, 60]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 44
+      color: "#FFFFFF"
+      wrap: false
+      text: 谢谢聆听
+  - elementId: subtitle
+    elementType: text
+    bounds: [60, 252, 700, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 16
+      color: "#FFFFFFB3"
+      wrap: false
+      text: 恳请各位专家批评指正
+  - elementId: rule
+    elementType: shape
+    bounds: [60, 312, 300, 1]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF33" }
+  - elementId: contact
+    elementType: text
+    bounds: [60, 332, 700, 40]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      color: "#FFFFFFCC"
+      lineHeight: 1.7
+      text: |
+        <p>通讯作者：曾建邦 · 华东交通大学机电与车辆工程学院</p>
+        <p>E-mail: jbzeng68@sina.com</p>
+  - elementId: funding
+    elementType: text
+    bounds: [60, 432, 840, 30]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "#FFFFFF73"
+      lineHeight: 1.6
+      text: |
+        <p>国家自然科学基金（51806066）· 江西省重点研发计划（20223BBE51016）</p>
+        <p>《中国科学：技术科学》 · DOI: 10.1360/SST-2023-0239</p>
+  - elementId: bottom-band
+    elementType: shape
+    bounds: [0, 504, 960, 36]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: bottom-band-text
+    elementType: text
+    bounds: [60, 514, 840, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      color: "$primaryDeep"
+      letterSpacing: 3
+      wrap: false
+      text: 数据驱动 · 特征工程 · 长短期记忆网络 · 实车验证

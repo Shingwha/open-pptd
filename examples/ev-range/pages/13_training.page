@@ -1,0 +1,175 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  训练设置（归一化、7:3/8:2/9:1 划分、序列长度 20、批 256、节点 128、Adam）；
+  表7（9:1）显示含 Q 的 LSTM 误差最低；三点发现：数据越多误差越小、含 Q 更优、LSTM 最好。
+elements:
+  - elementId: chrome-kicker
+    elementType: text
+    bounds: [60, 28, 600, 14]
+    content:
+      style: "$kicker"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">03</span><span style="color:$muted;"> / LSTM 剩余续驶里程预测模型</span></p>
+  - elementId: chrome-title
+    elementType: text
+    bounds: [60, 46, 780, 32]
+    content:
+      style: "$title"
+      wrap: false
+      text: 训练设置与算法对比
+  - elementId: chrome-rule
+    elementType: shape
+    bounds: [60, 87, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-rule-accent
+    elementType: shape
+    bounds: [60, 85, 44, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: setup-label
+    elementType: text
+    bounds: [60, 106, 320, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 训练设置
+  - elementId: setup-text
+    elementType: text
+    bounds: [60, 126, 320, 92]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>四辆车输入因素全部归一化；训练/测试按 7:3、8:2、9:1 三种比例划分（不随机抽样）；序列长度 20、批处理大小 256、网络节点 128、迭代 100 次、Adam 优化器。</p>
+  - elementId: sep1
+    elementType: shape
+    bounds: [60, 228, 320, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: cmp-label
+    elementType: text
+    bounds: [60, 240, 320, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 对比方案与评价指标
+  - elementId: cmp-text
+    elementType: text
+    bounds: [60, 260, 320, 56]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>对比 SVR、BP 神经网络、RNN 与 LSTM 四种算法，输入含 / 不含驾驶行为量化因子 Q；以 RMSE 与 MAE 评价预测效果。</p>
+  - elementId: sep2
+    elementType: shape
+    bounds: [60, 326, 320, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: find-label
+    elementType: text
+    bounds: [60, 338, 320, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 三点发现
+  - elementId: find-text
+    elementType: text
+    bounds: [60, 358, 320, 120]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">①</span> 训练集比例增大，RMSE / MAE 整体降低，9:1 划分时最优；</p>
+        <p style="margin-top:4px"><span style="color:$accent;font-weight:bold;">②</span> 输入含 Q 的模型误差总体小于不含 Q；</p>
+        <p style="margin-top:4px"><span style="color:$accent;font-weight:bold;">③</span> LSTM 预测效果在四种算法中最好。</p>
+  - elementId: table7-caption
+    elementType: text
+    bounds: [420, 100, 480, 14]
+    content:
+      style: "$caption"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">表 7（摘）</span>　9:1 划分下 LSTM 含 / 不含 Q 的误差对比</p>
+  - elementId: table7
+    elementType: table
+    bounds: [420, 120, 480, 280]
+    columnWidths: [0.16, 0.21, 0.21, 0.21, 0.21]
+    rowHeights: [0.18, 0.205, 0.205, 0.205, 0.205]
+    style: "$threeline"
+    rows:
+      - - text: 车辆
+        - text: RMSE 不含Q
+        - text: RMSE 含Q
+        - text: MAE 不含Q
+        - text: MAE 含Q
+      - - text: 1号
+        - text: "0.024"
+        - text: |
+            <p><span style="color:$accent;font-weight:bold;">0.017</span></p>
+        - text: "0.021"
+        - text: |
+            <p><span style="color:$accent;font-weight:bold;">0.013</span></p>
+      - - text: 2号
+        - text: "0.017"
+        - text: |
+            <p><span style="color:$accent;font-weight:bold;">0.005</span></p>
+        - text: "0.016"
+        - text: |
+            <p><span style="color:$accent;font-weight:bold;">0.007</span></p>
+      - - text: 3号
+        - text: "0.014"
+        - text: |
+            <p><span style="color:$accent;font-weight:bold;">0.011</span></p>
+        - text: "0.010"
+        - text: |
+            <p><span style="color:$accent;font-weight:bold;">0.008</span></p>
+      - - text: 4号
+        - text: "0.017"
+        - text: |
+            <p><span style="color:$accent;font-weight:bold;">0.014</span></p>
+        - text: "0.014"
+        - text: |
+            <p><span style="color:$accent;font-weight:bold;">0.012</span></p>
+  - elementId: table7-note
+    elementType: text
+    bounds: [420, 412, 480, 72]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      lineHeight: 1.5
+      text: |
+        <p>数值为归一化后的误差。含 Q 的 LSTM 在四辆车上 RMSE、MAE 均为最低，2号车 RMSE 由 0.017 降至 0.005。完整对比（SVR / BP / RNN）见原文表 5–7。</p>
+  - elementId: chrome-foot-rule
+    elementType: shape
+    bounds: [60, 508, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-foot-text
+    elementType: text
+    bounds: [60, 514, 700, 16]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测 · 《中国科学：技术科学》
+  - elementId: chrome-page
+    elementType: text
+    bounds: [856, 512, 44, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      color: "$text"
+      align: [right, top]
+      wrap: false
+      text: "13"

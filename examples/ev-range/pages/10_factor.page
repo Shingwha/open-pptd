@@ -1,0 +1,172 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  驾驶行为量化因子计算：趋势反向化（P_r）→ 归一化（消除量纲）→ 加权求和得到 Q；
+  图12 表明 Q 越大、速度工况越高，驱动电机能耗均值越大。
+elements:
+  - elementId: chrome-kicker
+    elementType: text
+    bounds: [60, 28, 600, 14]
+    content:
+      style: "$kicker"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">02</span><span style="color:$muted;"> / 特征工程：驾驶行为量化因子</span></p>
+  - elementId: chrome-title
+    elementType: text
+    bounds: [60, 46, 780, 32]
+    content:
+      style: "$title"
+      wrap: false
+      text: 驾驶行为量化因子 Q
+  - elementId: chrome-rule
+    elementType: shape
+    bounds: [60, 87, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-rule-accent
+    elementType: shape
+    bounds: [60, 85, 44, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: step1-num
+    elementType: text
+    bounds: [60, 108, 40, 20]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 14
+      color: "$accent"
+      wrap: false
+      text: "01"
+  - elementId: step1-title
+    elementType: text
+    bounds: [104, 108, 280, 20]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 13
+      color: "$text"
+      wrap: false
+      text: 趋势反向化
+  - elementId: step1-text
+    elementType: text
+    bounds: [104, 130, 300, 54]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>P<sub>r</sub> 与能耗正相关、其余六项负相关，对 P<sub>r</sub> 取 \(i' = 1 - i\) 反向化，使各指标与能耗同向。</p>
+  - elementId: step2-num
+    elementType: text
+    bounds: [60, 194, 40, 20]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 14
+      color: "$accent"
+      wrap: false
+      text: "02"
+  - elementId: step2-title
+    elementType: text
+    bounds: [104, 194, 280, 20]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 13
+      color: "$text"
+      wrap: false
+      text: 归一化处理
+  - elementId: step2-text
+    elementType: text
+    bounds: [104, 216, 300, 54]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>P<sub>a</sub>、P<sub>h</sub>、P<sub>r</sub> 本身为占比无需处理，仅对 V<sub>m</sub>、V<sub>std</sub>、a<sub>m</sub>、a<sub>std</sub> 归一化，消除量纲差异。</p>
+  - elementId: step3-num
+    elementType: text
+    bounds: [60, 280, 40, 20]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 14
+      color: "$accent"
+      wrap: false
+      text: "03"
+  - elementId: step3-title
+    elementType: text
+    bounds: [104, 280, 280, 20]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 13
+      color: "$text"
+      wrap: false
+      text: 加权求和
+  - elementId: step3-formula
+    elementType: text
+    bounds: [104, 306, 300, 36]
+    content:
+      fontSize: 18
+      color: "$text"
+      text: |
+        <p>\(Q = \sum_{i=1}^{n} f(i) \cdot w_i\)</p>
+  - elementId: step3-text
+    elementType: text
+    bounds: [104, 346, 300, 72]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>f(i) 为归一化后的评价指标，w<sub>i</sub> 为随机森林权重系数，n = 7。每个短行驶片段由此得到唯一的连续数值标签。</p>
+  - elementId: fig12-plate
+    elementType: shape
+    bounds: [460, 108, 400, 328]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: fig12
+    elementType: image
+    bounds: [462, 110, 396, 324]
+    src: media/fig12_consumption.jpg
+    fit: { mode: contain }
+  - elementId: fig12-caption
+    elementType: text
+    bounds: [460, 440, 400, 14]
+    content:
+      style: "$caption"
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">图 12</span>　不同速度工况下驾驶行为量化因子与驱动电机能耗均值</p>
+  - elementId: concl-bar
+    elementType: shape
+    bounds: [60, 466, 3, 28]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: concl-text
+    elementType: text
+    bounds: [74, 464, 826, 36]
+    content:
+      style: "$body"
+      fontSize: 12
+      text: |
+        <p>随 Q 增大，驱动电机能耗均值上升；同一 Q 下速度工况区间越高、能耗越大——<strong>驾驶越激烈，能耗越高，剩余续驶里程越短</strong>。</p>
+  - elementId: chrome-foot-rule
+    elementType: shape
+    bounds: [60, 508, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-foot-text
+    elementType: text
+    bounds: [60, 514, 700, 16]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测 · 《中国科学：技术科学》
+  - elementId: chrome-page
+    elementType: text
+    bounds: [856, 512, 44, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      color: "$text"
+      align: [right, top]
+      wrap: false
+      text: "10"

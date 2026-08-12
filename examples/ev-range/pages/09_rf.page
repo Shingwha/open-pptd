@@ -1,0 +1,185 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  随机森林客观赋权：避免主观赋权干扰；OOB 打乱置换衡量指标重要性；
+  权重排序：高速时长占比 > 车速均值 > 急加速时长 > 能量回收占比 > 加速度均值 > 车速标准差 > 加速度标准差。
+elements:
+  - elementId: chrome-kicker
+    elementType: text
+    bounds: [60, 28, 600, 14]
+    content:
+      style: "$kicker"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">02</span><span style="color:$muted;"> / 特征工程：驾驶行为量化因子</span></p>
+  - elementId: chrome-title
+    elementType: text
+    bounds: [60, 46, 780, 32]
+    content:
+      style: "$title"
+      wrap: false
+      text: 随机森林客观赋权
+  - elementId: chrome-rule
+    elementType: shape
+    bounds: [60, 87, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-rule-accent
+    elementType: shape
+    bounds: [60, 85, 44, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: why-label
+    elementType: text
+    bounds: [60, 106, 300, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 为什么客观赋权
+  - elementId: why-text
+    elementType: text
+    bounds: [60, 126, 300, 72]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>为避免主观赋权引入人为干扰，采用随机森林算法评估指标重要性。其集成决策树、泛化性强、计算复杂度低，可处理较高维数据并输出特征重要性。</p>
+  - elementId: sep1
+    elementType: shape
+    bounds: [60, 208, 300, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: oob-label
+    elementType: text
+    bounds: [60, 220, 300, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 重要性度量（OOB 置换）
+  - elementId: oob-text
+    elementType: text
+    bounds: [60, 240, 300, 72]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>用每棵树的袋外数据预测得 MSE；仅打乱指标 X<sub>p</sub> 的取值序列重新预测，MSE 增量越大、指标越重要；对全部 I 棵树取平均：</p>
+  - elementId: vim-formula
+    elementType: text
+    bounds: [60, 316, 300, 30]
+    content:
+      fontSize: 15
+      color: "$text"
+      align: [center, middle]
+      text: |
+        <p>\(VIM_p = \frac{1}{I}\sum_{i=1}^{I} mse_i^p\)</p>
+  - elementId: sep2
+    elementType: shape
+    bounds: [60, 358, 300, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: split-label
+    elementType: text
+    bounds: [60, 370, 300, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 数据准备
+  - elementId: split-text
+    elementType: text
+    bounds: [60, 390, 300, 56]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>有效数据按 7:3 划分训练集与测试集，训练后得到各指标对驱动电机能耗的权重系数 w<sub>i</sub>。</p>
+  - elementId: fig9-plate
+    elementType: shape
+    bounds: [400, 106, 500, 261]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: fig9
+    elementType: image
+    bounds: [402, 108, 496, 257]
+    src: media/fig09_rf.jpg
+    fit: { mode: contain }
+  - elementId: fig9-caption
+    elementType: text
+    bounds: [400, 371, 500, 14]
+    content:
+      style: "$caption"
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">图 9</span>　随机森林算法框架：训练集随机采样建立 i 棵决策树，测试集结果取均值输出能耗预测</p>
+  - elementId: fig10-plate
+    elementType: shape
+    bounds: [400, 394, 140, 104]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: fig10
+    elementType: image
+    bounds: [402, 396, 136, 100]
+    src: media/fig10_weights.jpg
+    fit: { mode: contain }
+  - elementId: fig10-caption
+    elementType: text
+    bounds: [400, 497, 140, 10]
+    content:
+      style: "$caption"
+      fontSize: 7.5
+      wrap: false
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">图 10</span>　评价指标权重系数</p>
+  - elementId: rank-title
+    elementType: text
+    bounds: [566, 392, 334, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      color: "$text"
+      wrap: false
+      text: 权重排序（对驱动电机能耗的重要性）
+  - elementId: rank-list
+    elementType: text
+    bounds: [566, 412, 334, 92]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$text"
+      lineHeight: 1.5
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">1</span> 高速时长占比　<span style="color:$accent;font-weight:bold;">2</span> 车速均值　<span style="color:$accent;font-weight:bold;">3</span> 急加速时长</p>
+        <p><span style="color:$accent;font-weight:bold;">4</span> 能量回收占比　<span style="color:$accent;font-weight:bold;">5</span> 加速度均值</p>
+        <p><span style="color:$accent;font-weight:bold;">6</span> 车速标准差　<span style="color:$accent;font-weight:bold;">7</span> 加速度标准差</p>
+        <p style="margin-top:4px"><span style="color:$muted;">权重越高，指标对能耗影响越大——车辆处于高速状态时电耗较高。</span></p>
+  - elementId: chrome-foot-rule
+    elementType: shape
+    bounds: [60, 508, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-foot-text
+    elementType: text
+    bounds: [60, 514, 700, 16]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测 · 《中国科学：技术科学》
+  - elementId: chrome-page
+    elementType: text
+    bounds: [856, 512, 44, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      color: "$text"
+      align: [right, top]
+      wrap: false
+      text: "09"

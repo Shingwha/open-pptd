@@ -1,0 +1,199 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  研究概览页：让评审一分钟内抓住研究价值。问题（现有预测偏差大、聚类标签粒度粗）、
+  方法（七指标赋权得到量化因子 Q，LSTM 预测）、结论（误差更小、LSTM 最优、实车 R² 达 0.9953）。
+elements:
+  - elementId: chrome-kicker
+    elementType: text
+    bounds: [60, 28, 600, 14]
+    content:
+      style: "$kicker"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">研究概览</span><span style="color:$muted;"> / OVERVIEW</span></p>
+  - elementId: chrome-title
+    elementType: text
+    bounds: [60, 46, 780, 32]
+    content:
+      style: "$title"
+      wrap: false
+      text: 研究概览
+  - elementId: chrome-rule
+    elementType: shape
+    bounds: [60, 87, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-rule-accent
+    elementType: shape
+    bounds: [60, 85, 44, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: prob-label
+    elementType: text
+    bounds: [60, 108, 400, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 13
+      color: "$accent"
+      wrap: false
+      text: 问题
+  - elementId: prob-text
+    elementType: text
+    bounds: [60, 130, 400, 72]
+    content:
+      style: "$body"
+      fontSize: 12
+      text: |
+        <p>现有车型预测剩余续驶里程时仅考虑 SOC、平均能耗等因素，预测结果与实际偏差较大；基于聚类的驾驶行为描述使一个簇内所有样本仅共享单一标签，难以刻画每个样本点对能耗的影响。</p>
+  - elementId: sep1
+    elementType: shape
+    bounds: [60, 212, 400, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: method-label
+    elementType: text
+    bounds: [60, 226, 400, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 13
+      color: "$accent"
+      wrap: false
+      text: 方法
+  - elementId: method-text
+    elementType: text
+    bounds: [60, 248, 400, 72]
+    content:
+      style: "$body"
+      fontSize: 12
+      text: |
+        <p>从车速、加速度维度选取 7 项驾驶行为评价指标，随机森林算法客观赋权，归一化加权和构成<strong>驾驶行为量化因子 Q</strong>；将 SOC、Q、环境温度、电器负荷率与工况信息输入 LSTM 预测剩余续驶里程。</p>
+  - elementId: sep2
+    elementType: shape
+    bounds: [60, 330, 400, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: result-label
+    elementType: text
+    bounds: [60, 344, 400, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 13
+      color: "$accent"
+      wrap: false
+      text: 结论
+  - elementId: result-text
+    elementType: text
+    bounds: [60, 366, 400, 90]
+    content:
+      style: "$body"
+      fontSize: 12
+      text: |
+        <p>含量化因子的模型 RMSE 与 MAE 均小于不含因子时；LSTM 在 SVR、BP、RNN、LSTM 四种算法中预测效果最好；实车单驾驶事件验证中，确定系数 R<sup>2</sup> 最高达 <strong>0.9953</strong>。</p>
+  - elementId: stat1-num
+    elementType: text
+    bounds: [520, 116, 380, 34]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 28
+      color: "$text"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">688.7</span> 万辆</p>
+  - elementId: stat1-label
+    elementType: text
+    bounds: [520, 154, 380, 14]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 2022 年我国新能源汽车销量，其中电动汽车占比 78.9%
+  - elementId: stat1-rule
+    elementType: shape
+    bounds: [520, 178, 380, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: stat2-num
+    elementType: text
+    bounds: [520, 196, 380, 34]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 28
+      color: "$text"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">20,300,600</span> 条</p>
+  - elementId: stat2-label
+    elementType: text
+    bounds: [520, 234, 380, 14]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 4 辆实车原始报文数据（GB/T32960，1 Hz，2022.10–2023.04）
+  - elementId: stat2-rule
+    elementType: shape
+    bounds: [520, 258, 380, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: stat3-num
+    elementType: text
+    bounds: [520, 276, 380, 34]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 28
+      color: "$text"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">3,622</span> 个</p>
+  - elementId: stat3-label
+    elementType: text
+    bounds: [520, 314, 380, 14]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 清洗与片段划分后得到的驾驶事件，有效数据 6,845,881 条
+  - elementId: stat3-rule
+    elementType: shape
+    bounds: [520, 338, 380, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: stat4-num
+    elementType: text
+    bounds: [520, 356, 380, 34]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 28
+      color: "$text"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">0.9953</span></p>
+  - elementId: stat4-label
+    elementType: text
+    bounds: [520, 394, 380, 14]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 实车验证最高准确度确定系数 R²（LSTM 含驾驶行为量化因子）
+  - elementId: chrome-foot-rule
+    elementType: shape
+    bounds: [60, 508, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-foot-text
+    elementType: text
+    bounds: [60, 514, 700, 16]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测 · 《中国科学：技术科学》
+  - elementId: chrome-page
+    elementType: text
+    bounds: [856, 512, 44, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      color: "$text"
+      align: [right, top]
+      wrap: false
+      text: "02"

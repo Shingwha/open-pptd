@@ -1,0 +1,185 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  实车验证：每辆车取一个较长驾驶事件作预测数据。图14 为四辆车不同模型预测对比；
+  确定系数 R² 按 T/CSAE 172-2021 评价，含 Q 的 LSTM 四车 R² 均提升（最高 0.9953）。
+elements:
+  - elementId: chrome-kicker
+    elementType: text
+    bounds: [60, 28, 600, 14]
+    content:
+      style: "$kicker"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">04</span><span style="color:$muted;"> / 实车验证与结论</span></p>
+  - elementId: chrome-title
+    elementType: text
+    bounds: [60, 46, 780, 32]
+    content:
+      style: "$title"
+      wrap: false
+      text: 实车验证：单驾驶事件预测对比
+  - elementId: chrome-rule
+    elementType: shape
+    bounds: [60, 87, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-rule-accent
+    elementType: shape
+    bounds: [60, 85, 44, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: fig14a-plate
+    elementType: shape
+    bounds: [60, 106, 200, 154]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: fig14a
+    elementType: image
+    bounds: [62, 108, 196, 150]
+    src: media/fig14a.jpg
+    fit: { mode: contain }
+  - elementId: fig14b-plate
+    elementType: shape
+    bounds: [272, 106, 200, 154]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: fig14b
+    elementType: image
+    bounds: [274, 108, 196, 150]
+    src: media/fig14b.jpg
+    fit: { mode: contain }
+  - elementId: fig14c-plate
+    elementType: shape
+    bounds: [60, 272, 200, 154]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: fig14c
+    elementType: image
+    bounds: [62, 274, 196, 150]
+    src: media/fig14c.jpg
+    fit: { mode: contain }
+  - elementId: fig14d-plate
+    elementType: shape
+    bounds: [272, 272, 200, 154]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: fig14d
+    elementType: image
+    bounds: [274, 274, 196, 150]
+    src: media/fig14d.jpg
+    fit: { mode: contain }
+  - elementId: fig14-caption
+    elementType: text
+    bounds: [60, 434, 412, 28]
+    content:
+      style: "$caption"
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">图 14</span>　四辆车不同模型剩余续驶里程预测结果，(a)–(d) 对应 1–4 号车；图例 LSTM 含 Q 为含驾驶行为量化因子的模型。</p>
+  - elementId: fig14-note
+    elementType: text
+    bounds: [60, 464, 412, 28]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      text: |
+        <p>含 Q 的 LSTM 预测值与真实值误差更小、线性拟合度更高，优于不含 Q 模型与原车仪表预测。</p>
+  - elementId: r2-label
+    elementType: text
+    bounds: [520, 106, 380, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 准确度确定系数 R² 评价
+  - elementId: r2-formula
+    elementType: text
+    bounds: [520, 128, 380, 34]
+    content:
+      fontSize: 14
+      color: "$text"
+      text: |
+        <p>\(R^2 = 1 - \frac{\sum (y_i - \hat{y}_i)^2}{\sum (y_i - \bar{y})^2}\)</p>
+  - elementId: r2-note
+    elementType: text
+    bounds: [520, 166, 380, 28]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      text: |
+        <p>参照 T/CSAE 172-2021 确定系数法：R² 越接近 1，预测偏差越小、准确度越高。</p>
+  - elementId: table8
+    elementType: table
+    bounds: [520, 206, 380, 200]
+    columnWidths: [0.25, 0.375, 0.375]
+    rowHeights: [0.2, 0.2, 0.2, 0.2, 0.2]
+    style: "$threeline"
+    rows:
+      - - text: 车辆
+        - text: LSTM 不含Q
+        - text: LSTM 含Q
+      - - text: 1号
+        - text: "0.9514"
+        - text: |
+            <p><span style="color:$accent;font-weight:bold;">0.9756</span></p>
+      - - text: 2号
+        - text: "0.9644"
+        - text: |
+            <p><span style="color:$accent;font-weight:bold;">0.9946</span></p>
+      - - text: 3号
+        - text: "0.9814"
+        - text: |
+            <p><span style="color:$accent;font-weight:bold;">0.9953</span></p>
+      - - text: 4号
+        - text: "0.9531"
+        - text: |
+            <p><span style="color:$accent;font-weight:bold;">0.9680</span></p>
+  - elementId: table8-caption
+    elementType: text
+    bounds: [520, 414, 380, 14]
+    content:
+      style: "$caption"
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">表 8（摘）</span>　单驾驶事件预测的确定系数</p>
+  - elementId: concl-bar
+    elementType: shape
+    bounds: [520, 442, 3, 44]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: concl-text
+    elementType: text
+    bounds: [534, 440, 366, 56]
+    content:
+      style: "$body"
+      fontSize: 11
+      text: |
+        <p>四辆车 R² 全部提升，最高 0.9514→0.9953；原车仪表仅按 SOC 近似线性映射，驾驶行为与环境变化时偏差较大。</p>
+  - elementId: chrome-foot-rule
+    elementType: shape
+    bounds: [60, 508, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-foot-text
+    elementType: text
+    bounds: [60, 514, 700, 16]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测 · 《中国科学：技术科学》
+  - elementId: chrome-page
+    elementType: text
+    bounds: [856, 512, 44, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      color: "$text"
+      align: [right, top]
+      wrap: false
+      text: "15"

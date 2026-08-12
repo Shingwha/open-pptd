@@ -1,0 +1,176 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  七项驾驶行为评价指标：选取逻辑（驾驶行为→车速/加速度→驱动电机能耗），
+  表格给出符号与计算公式；P_r 与能耗正相关，其余六项负相关。
+elements:
+  - elementId: chrome-kicker
+    elementType: text
+    bounds: [60, 28, 600, 14]
+    content:
+      style: "$kicker"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">02</span><span style="color:$muted;"> / 特征工程：驾驶行为量化因子</span></p>
+  - elementId: chrome-title
+    elementType: text
+    bounds: [60, 46, 780, 32]
+    content:
+      style: "$title"
+      wrap: false
+      text: 七项驾驶行为评价指标
+  - elementId: chrome-rule
+    elementType: shape
+    bounds: [60, 87, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-rule-accent
+    elementType: shape
+    bounds: [60, 85, 44, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: logic-label
+    elementType: text
+    bounds: [60, 106, 290, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 指标选取逻辑
+  - elementId: logic-text
+    elementType: text
+    bounds: [60, 126, 290, 96]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>驾驶行为变化引起车速与加速度变化，进而改变驱动电机能耗。以短行驶片段内的均值、占比与标准差刻画变化特征，兼顾指标的可获取性与可操作性。</p>
+  - elementId: sep1
+    elementType: shape
+    bounds: [60, 232, 290, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: corr-label
+    elementType: text
+    bounds: [60, 244, 290, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 与能耗的相关性
+  - elementId: corr-text
+    elementType: text
+    bounds: [60, 264, 290, 96]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>P<sub>a</sub>、P<sub>h</sub>、V<sub>m</sub>、V<sub>std</sub>、a<sub>m</sub>、a<sub>std</sub> 六项与能耗<strong>负相关</strong>；能量回收占比 P<sub>r</sub> 与能耗<strong>正相关</strong>，计算因子前先作趋势反向化。</p>
+  - elementId: sep2
+    elementType: shape
+    bounds: [60, 372, 290, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: role-label
+    elementType: text
+    bounds: [60, 384, 290, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 指标用途
+  - elementId: role-text
+    elementType: text
+    bounds: [60, 404, 290, 80]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>7 项指标经客观赋权后加权求和，使每个短行驶片段获得唯一的连续数值标签——驾驶行为量化因子 Q。</p>
+  - elementId: table3
+    elementType: table
+    bounds: [380, 108, 520, 336]
+    columnWidths: [0.09, 0.18, 0.27, 0.46]
+    rowHeights: [0.118, 0.126, 0.126, 0.126, 0.126, 0.126, 0.126, 0.126]
+    style: "$threeline"
+    rows:
+      - - text: 序号
+        - text: 符号
+        - text: 评价指标
+        - text: 计算公式
+      - - text: "1"
+        - text: |
+            <p>\(P_{\mathrm{a}}\)</p>
+        - text: 急加速时长占比
+        - text: |
+            <p>\(P_{\mathrm{a}} = \frac{t_{\mathrm{a}}}{T}\)</p>
+      - - text: "2"
+        - text: |
+            <p>\(P_{\mathrm{h}}\)</p>
+        - text: 高速时长占比
+        - text: |
+            <p>\(P_{\mathrm{h}} = \frac{t_{\mathrm{h}}}{T}\)</p>
+      - - text: "3"
+        - text: |
+            <p>\(P_{\mathrm{r}}\)</p>
+        - text: 能量回收占比
+        - text: |
+            <p>\(P_{\mathrm{r}} = \frac{E_{\mathrm{r}}}{E}\)</p>
+      - - text: "4"
+        - text: |
+            <p>\(V_{\mathrm{m}}\)</p>
+        - text: 车速均值
+        - text: |
+            <p>\(V_{\mathrm{m}} = \frac{\sum_{i=1}^{n} v_i}{n}\)</p>
+      - - text: "5"
+        - text: |
+            <p>\(V_{\mathrm{std}}\)</p>
+        - text: 车速标准差
+        - text: |
+            <p>\(V_{\mathrm{std}} = \sqrt{\frac{\sum_{i=1}^{n} (v_i - V_{\mathrm{m}})^2}{n}}\)</p>
+      - - text: "6"
+        - text: |
+            <p>\(a_{\mathrm{m}}\)</p>
+        - text: 加速度均值
+        - text: |
+            <p>\(a_{\mathrm{m}} = \frac{\sum_{i=1}^{n} a_i}{n}\)</p>
+      - - text: "7"
+        - text: |
+            <p>\(a_{\mathrm{std}}\)</p>
+        - text: 加速度标准差
+        - text: |
+            <p>\(a_{\mathrm{std}} = \sqrt{\frac{\sum_{i=1}^{n} (a_i - a_{\mathrm{m}})^2}{n}}\)</p>
+  - elementId: table3-note
+    elementType: text
+    bounds: [380, 452, 520, 40]
+    content:
+      style: "$caption"
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">表 3</span>　T 为短行驶片段总时长；t<sub>a</sub>、t<sub>h</sub> 为片段内急加速、高速累计时长；E<sub>r</sub>、E 为能量回收能耗与片段总能耗；v<sub>i</sub>、a<sub>i</sub> 为采样点车速与加速度。</p>
+  - elementId: chrome-foot-rule
+    elementType: shape
+    bounds: [60, 508, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-foot-text
+    elementType: text
+    bounds: [60, 514, 700, 16]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测 · 《中国科学：技术科学》
+  - elementId: chrome-page
+    elementType: text
+    bounds: [856, 512, 44, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      color: "$text"
+      align: [right, top]
+      wrap: false
+      text: "07"

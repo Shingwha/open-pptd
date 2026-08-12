@@ -1,0 +1,153 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  关键指标的阈值确定：急加速采用分段区间 90% 百分位线；K-means（K=3）划分低/中/高速，
+  高速阈值 60.68 km/h；能量回收占比：3号车 8.715%、4号车 7.041%。
+elements:
+  - elementId: chrome-kicker
+    elementType: text
+    bounds: [60, 28, 600, 14]
+    content:
+      style: "$kicker"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">02</span><span style="color:$muted;"> / 特征工程：驾驶行为量化因子</span></p>
+  - elementId: chrome-title
+    elementType: text
+    bounds: [60, 46, 820, 32]
+    content:
+      style: "$title"
+      wrap: false
+      text: 急加速事件判定与速度区间划分
+  - elementId: chrome-rule
+    elementType: shape
+    bounds: [60, 87, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-rule-accent
+    elementType: shape
+    bounds: [60, 85, 44, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: fig4-plate
+    elementType: shape
+    bounds: [60, 108, 330, 250]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: fig4
+    elementType: image
+    bounds: [62, 110, 326, 246]
+    src: media/fig04_percentile.jpg
+    fit: { mode: contain }
+  - elementId: fig4-caption
+    elementType: text
+    bounds: [60, 362, 330, 14]
+    content:
+      style: "$caption"
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">图 4</span>　分段区间 90% 百分位线判断方法</p>
+  - elementId: fig4-text
+    elementType: text
+    bounds: [60, 384, 330, 108]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>以 10 km/h 为一个速度区间独立统计，取各区间加速度 90% 分位值作为该区间的急加速阈值线，相邻时间连续触发合并为一次急加速事件。</p>
+  - elementId: speed-label
+    elementType: text
+    bounds: [440, 106, 460, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 速度区间聚类（K-means）
+  - elementId: speed-text
+    elementType: text
+    bounds: [440, 126, 460, 54]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>对车速均值与驱动电机能耗聚类：轮廓系数在 K=3 时均值最大，手肘法同样指向 3 类——聚类效果最佳，速度区间划分为低速、中速、高速。</p>
+  - elementId: table4
+    elementType: table
+    bounds: [440, 192, 320, 96]
+    columnWidths: [0.5, 0.5]
+    rowHeights: [0.25, 0.25, 0.25, 0.25]
+    style: "$threeline"
+    rows:
+      - - text: 聚类结果
+        - text: 聚类中心 / km·h⁻¹
+      - - text: 低速状态
+        - text: "11.07"
+      - - text: 中速状态
+        - text: "33.98"
+      - - text: 高速状态
+        - text: |
+            <p><span style="color:$accent;font-weight:bold;">60.68</span></p>
+  - elementId: table4-caption
+    elementType: text
+    bounds: [770, 192, 130, 96]
+    content:
+      style: "$caption"
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">表 4</span></p>
+        <p style="margin-top:4px">高速事件阈值取高速聚类中心 60.68 km/h，用于统计高速时长占比 P<sub>h</sub>。</p>
+  - elementId: sep1
+    elementType: shape
+    bounds: [440, 312, 460, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: recover-label
+    elementType: text
+    bounds: [440, 326, 460, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 能量回收占比
+  - elementId: recover-text
+    elementType: text
+    bounds: [440, 346, 460, 72]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>1号、2号车未开启能量回收；3号、4号车开启，回收能耗占比分别为 <strong>8.715%</strong> 与 <strong>7.041%</strong>。受驾驶习惯与环境影响，不同驾驶员能量回收效率差异明显。</p>
+  - elementId: why-note
+    elementType: text
+    bounds: [440, 430, 460, 60]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      lineHeight: 1.5
+      text: |
+        <p>对比已有方法：固定阈值（1.11–1.2 m/s²）在高速区间漏检急加速；全局百分位线无法区分速度区间——分段百分位线兼顾两者。</p>
+  - elementId: chrome-foot-rule
+    elementType: shape
+    bounds: [60, 508, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-foot-text
+    elementType: text
+    bounds: [60, 514, 700, 16]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测 · 《中国科学：技术科学》
+  - elementId: chrome-page
+    elementType: text
+    bounds: [856, 512, 44, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      color: "$text"
+      align: [right, top]
+      wrap: false
+      text: "08"

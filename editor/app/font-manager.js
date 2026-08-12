@@ -17,7 +17,7 @@
 
 import { parseFontInfo } from "../core/font.js";
 import { parseFontResources } from "../core/theme.js";
-import { loadFontRegistry, findFont, fontFileUrl } from "../core/font-registry.js";
+import { loadFontRegistry, findFont, fontFileUrl, fetchFontBytes } from "../core/font-registry.js";
 import { showDialog } from "../interaction/dialogs/base.js";
 import { showToast } from "./toast.js";
 
@@ -64,9 +64,8 @@ export function createFontManager(state) {
     const hit = findFont(registry, keyOrFamily);
     if (!hit) throw new Error(`注册表未找到: ${keyOrFamily}`);
     if (state.fontLibrary[hit.family]) return hit.family; // 已加载
-    const res = await fetch(fontFileUrl(hit.file));
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const bytes = new Uint8Array(await res.arrayBuffer());
+    const bytes = await fetchFontBytes(hit);
+    if (!bytes) throw new Error(`字体文件不可用: ${hit.family}（本地缺失且线上源不可达）`);
     const info = parseFontInfo(bytes);
     await registerFace(info.family, bytes);
     state.fontLibrary[info.family] = {
@@ -156,10 +155,11 @@ export function createFontManager(state) {
           showToast(`网络字体加载失败: ${family}`, "danger");
         }
       } else if (registry && findFont(registry, family)) {
-        // 注册表引用（{family: <注册名>}）：从内置字体库自动加载预览
+        // 注册表引用（{family: <注册名>}）：从内置字体库自动加载预览（本地缺失时线上回退）
         try {
           const hit = findFont(registry, family);
-          const bytes = new Uint8Array(await (await fetch(fontFileUrl(hit.file))).arrayBuffer());
+          const bytes = await fetchFontBytes(hit);
+          if (!bytes) throw new Error("字体字节不可用");
           await registerFace(family, bytes);
           entry.bytes = bytes;
           entry.source = "registry";

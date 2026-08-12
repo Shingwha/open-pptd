@@ -1,0 +1,139 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  LSTM 模型：图13 内部节点结构；输入 x_t = {SOC, Q, T_e, P_l, C}，输出剩余续驶里程；
+  三门结构（遗忘门/输入门/输出门）选择性保留序列信息，缓解长序列梯度消失与爆炸。
+elements:
+  - elementId: chrome-kicker
+    elementType: text
+    bounds: [60, 28, 600, 14]
+    content:
+      style: "$kicker"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">03</span><span style="color:$muted;"> / LSTM 剩余续驶里程预测模型</span></p>
+  - elementId: chrome-title
+    elementType: text
+    bounds: [60, 46, 780, 32]
+    content:
+      style: "$title"
+      wrap: false
+      text: LSTM 结构与模型输入输出
+  - elementId: chrome-rule
+    elementType: shape
+    bounds: [60, 87, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-rule-accent
+    elementType: shape
+    bounds: [60, 85, 44, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: fig13-plate
+    elementType: shape
+    bounds: [60, 102, 840, 261]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: fig13
+    elementType: image
+    bounds: [62, 104, 836, 257]
+    src: media/fig13_lstm.jpg
+    fit: { mode: contain }
+  - elementId: fig13-caption
+    elementType: text
+    bounds: [60, 367, 840, 14]
+    content:
+      style: "$caption"
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">图 13</span>　LSTM 神经网络内部节点结构：遗忘门、输入门、输出门与细胞状态的时序传递</p>
+  - elementId: input-label
+    elementType: text
+    bounds: [60, 390, 400, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: t 时刻模型输入
+  - elementId: input-formula
+    elementType: text
+    bounds: [60, 410, 400, 26]
+    content:
+      fontSize: 14
+      color: "$text"
+      text: |
+        <p>\(x_t = \{\mathrm{SOC},\ Q,\ T_e,\ P_l,\ C\}\)</p>
+  - elementId: input-note
+    elementType: text
+    bounds: [60, 438, 400, 28]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      text: |
+        <p>依次为电池荷电状态、驾驶行为量化因子、环境温度、电器用电负荷率、速度工况</p>
+  - elementId: input-why
+    elementType: text
+    bounds: [60, 468, 400, 36]
+    content:
+      style: "$caption"
+      fontSize: 9.5
+      text: |
+        <p>三门结构选择性保留序列信息，有效缓解 RNN 长序列训练中的梯度消失与梯度爆炸，适合时序里程预测</p>
+  - elementId: vsep
+    elementType: shape
+    bounds: [480, 394, 1, 104]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: output-label
+    elementType: text
+    bounds: [504, 390, 396, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: t 时刻模型输出与门控
+  - elementId: output-formula
+    elementType: text
+    bounds: [504, 410, 396, 26]
+    content:
+      fontSize: 14
+      color: "$text"
+      text: |
+        <p>\(h_t = \{剩余续驶里程\}\)</p>
+  - elementId: gates
+    elementType: text
+    bounds: [504, 440, 396, 64]
+    content:
+      fontSize: 11.5
+      color: "$text"
+      lineHeight: 1.75
+      text: |
+        <p>遗忘门　\(f_t = \sigma\left(W_f [h_{t-1}, x_t] + b_f\right)\)</p>
+        <p>细胞态　\(C_t = f_t C_{t-1} + i_t g_t\)</p>
+        <p>输出门　\(h_t = o_t \otimes \tanh(C_t)\)</p>
+  - elementId: chrome-foot-rule
+    elementType: shape
+    bounds: [60, 508, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-foot-text
+    elementType: text
+    bounds: [60, 514, 700, 16]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测 · 《中国科学：技术科学》
+  - elementId: chrome-page
+    elementType: text
+    bounds: [856, 512, 44, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      color: "$text"
+      align: [right, top]
+      wrap: false
+      text: "12"

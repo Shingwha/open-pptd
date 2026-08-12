@@ -1,0 +1,98 @@
+pageType: chapter
+background:
+  type: solid
+  color: "$primaryDeep"
+notes: 章节页：进入第二部分——特征工程，驾驶行为量化因子。
+elements:
+  - elementId: spine
+    elementType: shape
+    bounds: [0, 0, 10, 540]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: deco-frame
+    elementType: shape
+    bounds: [660, 110, 240, 240]
+    shapeName: rect
+    border: { style: solid, width: 1, color: "#FFFFFF1F" }
+  - elementId: deco-ring
+    elementType: shape
+    bounds: [660, 110, 240, 240]
+    shapeName: ellipse
+    border: { style: solid, width: 1, color: "#FFFFFF1F" }
+  - elementId: deco-dot
+    elementType: shape
+    bounds: [775, 105, 10, 10]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: kicker
+    elementType: text
+    bounds: [60, 60, 700, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "#FFFFFF59"
+      letterSpacing: 3
+      wrap: false
+      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测
+  - elementId: num
+    elementType: text
+    bounds: [60, 140, 320, 130]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 100
+      color: "$accent"
+      wrap: false
+      text: "02"
+  - elementId: title
+    elementType: text
+    bounds: [60, 292, 800, 46]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 32
+      color: "#FFFFFF"
+      wrap: false
+      text: 特征工程：驾驶行为量化因子
+  - elementId: subtitle
+    elementType: text
+    bounds: [60, 350, 800, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "#FFFFFFB3"
+      wrap: false
+      text: 能否不用聚类标签，而用一个连续数值刻画每一种驾驶行为？
+  - elementId: tick1
+    elementType: shape
+    bounds: [60, 468, 60, 3]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF33" }
+  - elementId: tick2
+    elementType: shape
+    bounds: [132, 468, 60, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: tick3
+    elementType: shape
+    bounds: [204, 468, 60, 3]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF33" }
+  - elementId: tick4
+    elementType: shape
+    bounds: [276, 468, 60, 3]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF33" }
+  - elementId: deco-end-cap
+    elementType: shape
+    bounds: [350, 467, 5, 5]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: tick-label
+    elementType: text
+    bounds: [60, 480, 300, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "#FFFFFF66"
+      letterSpacing: 2
+      wrap: false
+      text: SECTION 02 / 04

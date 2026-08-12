@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "generated": "2026-08-12T12:43:31.260Z",
+  "entries": [
+    {
+      "id": "ev-range",
+      "title": "电动汽车剩余续驶里程预测",
+      "description": "学术答辩实例：驾驶行为量化因子 + 随机森林与 LSTM 双模型预测，覆盖章节页、图表、公式、图片排版",
+      "tags": [
+        "学术答辩",
+        "图表",
+        "公式",
+        "图片排版"
+      ],
+      "pages": 17,
+      "fonts": [
+        "阿里妈妈数黑体",
+        "霞鹜新晰黑"
+      ],
+      "deck": "examples/ev-range/deck.pptd"
+    }
+  ]
+}

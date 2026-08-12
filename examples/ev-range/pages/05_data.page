@@ -1,0 +1,242 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  数据来源与处理流程：GB/T32960 监控平台数据、3δ 清洗、驾驶事件与 20s 短片段划分；
+  右侧为图1（驾驶事件示意）、图2（短片段划分）与表2（四辆车数据分布）。
+elements:
+  - elementId: chrome-kicker
+    elementType: text
+    bounds: [60, 28, 600, 14]
+    content:
+      style: "$kicker"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">01</span><span style="color:$muted;"> / 数据采集与处理</span></p>
+  - elementId: chrome-title
+    elementType: text
+    bounds: [60, 46, 780, 32]
+    content:
+      style: "$title"
+      wrap: false
+      text: 数据采集、清洗与片段划分
+  - elementId: chrome-rule
+    elementType: shape
+    bounds: [60, 87, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-rule-accent
+    elementType: shape
+    bounds: [60, 85, 44, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: src-label
+    elementType: text
+    bounds: [60, 106, 350, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 数据来源
+  - elementId: src-text
+    elementType: text
+    bounds: [60, 126, 350, 84]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>某新能源车企监控平台的电动汽车历史行驶数据，按国标 GB/T32960 采集。随机选取 4 辆车，上传频率提升至 1 Hz，导出 2022.10–2023.04 原始报文共 <strong>20,300,600 条</strong>。车型：NEDC 续航 310 km、三元锂电池 31 kWh、整备质量 1125 kg。</p>
+  - elementId: sep1
+    elementType: shape
+    bounds: [60, 218, 350, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: clean-label
+    elementType: text
+    bounds: [60, 230, 350, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 数据清洗
+  - elementId: clean-text
+    elementType: text
+    bounds: [60, 250, 350, 52]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>异常值：3δ 法则识别并剔除；缺失值：分段线性插值填充；重复值：删除后在原位置插值填充。</p>
+  - elementId: sep2
+    elementType: shape
+    bounds: [60, 310, 350, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: split-label
+    elementType: text
+    bounds: [60, 322, 350, 16]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$accent"
+      wrap: false
+      text: 片段划分
+  - elementId: split-text
+    elementType: text
+    bounds: [60, 342, 350, 52]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>先按"启动—熄火"划分驾驶事件，再切分为 20 s 短行驶片段；事件末尾不足 20 s 的片段忽略（车速与能耗低、驾驶行为变化小）。</p>
+  - elementId: sep3
+    elementType: shape
+    bounds: [60, 402, 350, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: res-num1
+    elementType: text
+    bounds: [60, 416, 200, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 20
+      color: "$text"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">6,845,881</span></p>
+  - elementId: res-label1
+    elementType: text
+    bounds: [60, 444, 200, 12]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 有效数据 / 条
+  - elementId: res-num2
+    elementType: text
+    bounds: [250, 416, 160, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 20
+      color: "$text"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">3,622</span></p>
+  - elementId: res-label2
+    elementType: text
+    bounds: [250, 444, 160, 12]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 驾驶事件 / 个
+  - elementId: res-dist
+    elementType: text
+    bounds: [60, 466, 350, 14]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 四车驾驶事件分布：1号车 1478 · 2号车 884 · 3号车 925 · 4号车 335
+  - elementId: fig1-plate
+    elementType: shape
+    bounds: [450, 108, 215, 166]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: fig1
+    elementType: image
+    bounds: [452, 110, 211, 162]
+    src: media/fig01_event.jpg
+    fit: { mode: contain }
+  - elementId: fig1-caption
+    elementType: text
+    bounds: [450, 278, 215, 14]
+    content:
+      style: "$caption"
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">图 1</span>　单个驾驶事件示意图</p>
+  - elementId: fig2-plate
+    elementType: shape
+    bounds: [685, 108, 215, 166]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: fig2
+    elementType: image
+    bounds: [687, 110, 211, 162]
+    src: media/fig02_segments.jpg
+    fit: { mode: contain }
+  - elementId: fig2-caption
+    elementType: text
+    bounds: [685, 278, 215, 14]
+    content:
+      style: "$caption"
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">图 2</span>　短行驶片段划分示意图</p>
+  - elementId: table2-caption
+    elementType: text
+    bounds: [450, 312, 450, 14]
+    content:
+      style: "$caption"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;font-weight:bold;">表 2</span>　四辆车的数据量分布</p>
+  - elementId: table2
+    elementType: table
+    bounds: [450, 330, 450, 150]
+    columnWidths: [0.22, 0.28, 0.28, 0.22]
+    rowHeights: [0.2, 0.2, 0.2, 0.2, 0.2]
+    style: "$threeline"
+    rows:
+      - - text: 车辆代号
+        - text: 数据量
+        - text: 有效数据量
+        - text: 驾驶事件数
+      - - text: 1号
+        - text: 9,112,639
+        - text: 3,010,923
+        - text: 1,478
+      - - text: 2号
+        - text: 4,002,778
+        - text: 1,452,644
+        - text: 884
+      - - text: 3号
+        - text: 5,562,996
+        - text: 1,995,433
+        - text: 925
+      - - text: 4号
+        - text: 1,622,187
+        - text: 386,881
+        - text: 335
+  - elementId: source-note
+    elementType: text
+    bounds: [450, 486, 450, 12]
+    content:
+      style: "$caption"
+      fontSize: 8
+      align: [right, top]
+      wrap: false
+      text: 数据来源：某车企新能源汽车监控平台（GB/T32960）
+  - elementId: chrome-foot-rule
+    elementType: shape
+    bounds: [60, 508, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-foot-text
+    elementType: text
+    bounds: [60, 514, 700, 16]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测 · 《中国科学：技术科学》
+  - elementId: chrome-page
+    elementType: text
+    bounds: [856, 512, 44, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      color: "$text"
+      align: [right, top]
+      wrap: false
+      text: "05"

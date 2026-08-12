@@ -3,13 +3,56 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>open-pptd · 编辑器</title>
-    <!-- 站点根 = 编辑器入口（serve 时 --project 挂载的项目经 /project/ 访问） -->
-    <script>
-      location.replace("./editor/");
-    </script>
+    <title>open-pptd · 作品画廊</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232563eb'/><path d='M9 16l5 5 9-10' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+    <link rel="stylesheet" href="./editor/styles.css" />
   </head>
   <body>
-    <p>正在打开编辑器… <a href="./editor/">点击进入</a></p>
+    <!-- 画廊端口（站点根）：示例作品封面展示，点击进入编辑器 -->
+    <div id="gallery-view" class="gallery-view">
+      <header class="gallery-top">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <strong>open-pptd</strong>
+          <span class="brand-file">作品画廊</span>
+        </div>
+        <div class="gallery-top-actions">
+          <a class="btn" href="./editor/" title="打开编辑器（空白演示 / 继续编辑）">
+            <span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+            <span class="btn-label">打开编辑器</span>
+          </a>
+          <a class="btn btn-primary" href="./editor/?deck=examples/ev-range/deck.pptd" title="编辑第一个示例作品">
+            <span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+            <span class="btn-label">编辑示例作品</span>
+          </a>
+        </div>
+      </header>
+
+      <div id="gallery-body">
+        <div id="gallery-hero">
+          <h1>作品画廊</h1>
+          <p>精选 PPTD 示例作品，点击卡片在编辑器中打开——可预览、可修改、可导出 PPTX</p>
+          <div id="gallery-mode" class="gallery-mode" hidden></div>
+        </div>
+        <div id="gallery-grid" class="gallery-grid" hidden></div>
+      </div>
+
+      <footer class="gallery-foot">
+        <strong>如何添加自己的作品？</strong>
+        <span>把做好的 PPTD 项目文件夹（<code>deck.pptd</code> + <code>pages/</code> + <code>media/</code>）放进仓库的 <code>examples/</code> 目录——本地画廊立即显示；运行 <code>node bin/open-pptd.js gallery scan</code> 后提交，GitHub Pages 同步更新。</span>
+      </footer>
+    </div>
+
+    <script type="module" src="./editor/gallery.js"></script>
+    <script type="module">
+      import { showGallery } from "./editor/gallery.js";
+      showGallery().catch((err) => {
+        console.error("画廊加载失败:", err);
+        const grid = document.getElementById("gallery-grid");
+        grid.hidden = false;
+        grid.innerHTML =
+          `<div style="text-align:center;color:#5b6572;padding:40px">画廊加载失败：${err.message}</div>`;
+      });
+    </script>
   </body>
 </html>

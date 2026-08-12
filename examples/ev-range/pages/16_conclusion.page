@@ -1,0 +1,180 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  结论与展望：三条主要结论（建模型、数字化驾驶行为+LSTM 最优、准确度与泛化性）；
+  局限：单车型离线数据、南方地区；展望：高寒/高原/高温适应性优化、多车型在线验证。
+elements:
+  - elementId: chrome-kicker
+    elementType: text
+    bounds: [60, 28, 600, 14]
+    content:
+      style: "$kicker"
+      wrap: false
+      text: |
+        <p><span style="color:$accent;">04</span><span style="color:$muted;"> / 实车验证与结论</span></p>
+  - elementId: chrome-title
+    elementType: text
+    bounds: [60, 46, 780, 32]
+    content:
+      style: "$title"
+      wrap: false
+      text: 结论与展望
+  - elementId: chrome-rule
+    elementType: shape
+    bounds: [60, 87, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-rule-accent
+    elementType: shape
+    bounds: [60, 85, 44, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: concl-label
+    elementType: text
+    bounds: [60, 106, 520, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 14
+      color: "$text"
+      wrap: false
+      text: 主要结论
+  - elementId: c1-num
+    elementType: text
+    bounds: [60, 134, 32, 24]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 16
+      color: "$accent"
+      wrap: false
+      text: "1"
+  - elementId: c1-text
+    elementType: text
+    bounds: [96, 134, 480, 56]
+    content:
+      style: "$body"
+      fontSize: 12
+      text: |
+        <p>建立了基于驾驶行为量化因子的电动汽车剩余续驶里程预测模型，打通"数据清洗 → 特征工程 → 模型预测 → 实车验证"全流程。</p>
+  - elementId: c-sep1
+    elementType: shape
+    bounds: [96, 196, 480, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: c2-num
+    elementType: text
+    bounds: [60, 210, 32, 24]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 16
+      color: "$accent"
+      wrap: false
+      text: "2"
+  - elementId: c2-text
+    elementType: text
+    bounds: [96, 210, 480, 76]
+    content:
+      style: "$body"
+      fontSize: 12
+      text: |
+        <p>从车速与加速度维度确定 7 项评价指标，随机森林客观赋权实现驾驶行为数字化；输入含 Q 比不含 Q 预测精度更高，LSTM 优于 SVR、BP、RNN。</p>
+  - elementId: c-sep2
+    elementType: shape
+    bounds: [96, 294, 480, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: c3-num
+    elementType: text
+    bounds: [60, 308, 32, 24]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 16
+      color: "$accent"
+      wrap: false
+      text: "3"
+  - elementId: c3-text
+    elementType: text
+    bounds: [96, 308, 480, 56]
+    content:
+      style: "$body"
+      fontSize: 12
+      text: |
+        <p>模型在实际应用中具有较高的准确度与泛化性，可为电动汽车续驶里程管理、充电规划等提供有力支持。</p>
+  - elementId: v-rule
+    elementType: shape
+    bounds: [600, 110, 3, 380]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: out-label
+    elementType: text
+    bounds: [624, 106, 276, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 14
+      color: "$text"
+      wrap: false
+      text: 局限与展望
+  - elementId: out-done-label
+    elementType: text
+    bounds: [624, 134, 276, 14]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 10
+      color: "$success"
+      letterSpacing: 1
+      wrap: false
+      text: 已验证
+  - elementId: out-done-text
+    elementType: text
+    bounds: [624, 152, 276, 84]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>单款车型离线运行数据；四辆车实车单驾驶事件验证，R² 全部提升、最高 0.9953。</p>
+  - elementId: out-mid-rule
+    elementType: shape
+    bounds: [624, 248, 276, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: out-open-label
+    elementType: text
+    bounds: [624, 262, 276, 14]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 10
+      color: "$warning"
+      letterSpacing: 1
+      wrap: false
+      text: 尚待确定
+  - elementId: out-open-text
+    elementType: text
+    bounds: [624, 280, 276, 120]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: |
+        <p>所选车辆均在南方地区运行，环境温度范围有限。后续将选取高寒、高原、高温等地区的运行车辆开展适应性优化，推广到更多车型进行在线验证。</p>
+  - elementId: chrome-foot-rule
+    elementType: shape
+    bounds: [60, 508, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: chrome-foot-text
+    elementType: text
+    bounds: [60, 514, 700, 16]
+    content:
+      style: "$caption"
+      wrap: false
+      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测 · 《中国科学：技术科学》
+  - elementId: chrome-page
+    elementType: text
+    bounds: [856, 512, 44, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      color: "$text"
+      align: [right, top]
+      wrap: false
+      text: "16"

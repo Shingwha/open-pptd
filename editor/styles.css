@@ -1774,3 +1774,210 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
 .shot-mode #shot-root {
   z-index: 9999;
 }
+
+/* ============================================================================
+   画廊（站点根 index.html）——文档流滚动页，与编辑器共用品牌/按钮样式
+   ============================================================================ */
+.gallery-view {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.gallery-top {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: var(--topbar-h);
+  padding: 0 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+.gallery-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#gallery-body {
+  flex: 1;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 28px 20px 40px;
+}
+
+#gallery-hero h1 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+#gallery-hero p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--sub);
+}
+
+.gallery-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+}
+.gallery-mode .mode-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.gallery-mode.remote {
+  background: #fdf6ec;
+  color: #9a6700;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.gallery-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.gallery-card:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.gallery-card-cover {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--bg);
+}
+.gallery-card-cover.loading {
+  background:
+    linear-gradient(100deg, #f0f2f5 40%, #f7f8fa 50%, #f0f2f5 60%) 0 0 / 200% 100%;
+  animation: gallery-shimmer 1.2s infinite linear;
+}
+@keyframes gallery-shimmer {
+  to { background-position: -200% 0; }
+}
+
+.gallery-page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  pointer-events: none;
+}
+
+.gallery-card-err {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--faint);
+  font-size: 12px;
+}
+
+.gallery-card-info {
+  padding: 12px 14px 13px;
+  border-top: 1px solid var(--line);
+}
+
+.gallery-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.gallery-page-badge {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--sub);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.gallery-card-desc {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--sub);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.gallery-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.gallery-tag {
+  font-size: 11px;
+  color: var(--primary-strong);
+  background: var(--primary-soft);
+  border-radius: 4px;
+  padding: 1px 7px;
+}
+
+.gallery-empty {
+  margin-top: 30px;
+  padding: 40px;
+  text-align: center;
+  color: var(--sub);
+  background: var(--panel);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  line-height: 1.8;
+}
+
+.gallery-foot {
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+  padding: 16px 20px;
+  font-size: 12px;
+  color: var(--sub);
+  text-align: center;
+  line-height: 1.8;
+}
+.gallery-foot strong { color: var(--ink); margin-right: 6px; }
+.gallery-foot code {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 5px;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 11.5px;
+}
