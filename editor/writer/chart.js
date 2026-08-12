@@ -341,7 +341,7 @@ function numRefXml(sheetRef, values, format = "General") {
     el("c:numCache", {}, [
       el("c:formatCode", {}, format),
       el("c:ptCount", { val: values.length }),
-      values.map((v, i) => el("c:pt", { idx: i }, el("c:v", {}, String(v ?? 0)))).join(""),
+      values.map((v, i) => el("c:pt", { idx: i }, el("c:v", {}, v == null ? "" : String(v)))).join(""),
     ].join("")),
   ].join(""));
 }
