@@ -62,6 +62,12 @@ export function renderShape(theme, el) {
   }
   if (el.opacity != null) svg.style.opacity = el.opacity;
 
+  // 填充基色：规格 fill 默认不应用（透明，与 writer 无填充导出一致）；
+  // 渐变因 SVG path 不能直接用 CSS 渐变，暂保留灰底近似（后续改 SVG gradient）；无 fill 为透明
+  const solid = solidFill(theme, el.fill);
+  const grad = gradientCss(theme, el.fill);
+  const base = solid || (grad ? "#cccccc" : null);
+
   // 自定义路径：SVG path 直接画（viewBox 拉伸）
   if (el.shapeName === "custom") {
     if (!el.path) {
@@ -75,8 +81,7 @@ export function renderShape(theme, el) {
       geom.setAttribute("transform", `scale(${w / vw} ${h / vh})`);
       geom.setAttribute("vector-effect", "non-scaling-stroke");
     }
-    const solid = solidFill(theme, el.fill);
-    geom.setAttribute("fill", solid || "#cccccc");
+    geom.setAttribute("fill", base || "none");
     if (el.border) {
       geom.setAttribute("stroke", resolveColor(theme, el.border.color) || "#000000");
       geom.setAttribute("stroke-width", el.border.width || 1);
@@ -88,8 +93,6 @@ export function renderShape(theme, el) {
     return svg;
   }
 
-  const solid = solidFill(theme, el.fill) || "#cccccc";
-  const grad = gradientCss(theme, el.fill);
   const strokeColor = el.border ? resolveColor(theme, el.border.color) || "#000000" : null;
   const strokeWidth = el.border?.width || 1;
   const strokeDash = el.border?.style === "dash" ? "6 4" : el.border?.style === "dot" ? "2 3" : null;
@@ -109,11 +112,15 @@ export function renderShape(theme, el) {
     if (p.fill === "none") {
       geom.setAttribute("fill", "none");
     } else if (p.fill && p.fill !== "null") {
-      // 明暗面：填充色向黑/白混合（预览近似 PowerPoint 明暗效果）
-      geom.setAttribute("fill", grad ? solid : shadeColor(solid, p.fill));
-      geom.setAttribute("opacity", grad ? "0.5" : "1");
+      // 明暗面：填充色向黑/白混合（预览近似 PowerPoint 明暗效果）；无填充时不绘制
+      if (!base) {
+        geom.setAttribute("fill", "none");
+      } else {
+        geom.setAttribute("fill", grad ? base : shadeColor(base, p.fill));
+        geom.setAttribute("opacity", grad ? "0.5" : "1");
+      }
     } else {
-      geom.setAttribute("fill", solid);
+      geom.setAttribute("fill", base || "none");
     }
     const sc = strokeFor(p);
     if (sc) {
@@ -124,7 +131,7 @@ export function renderShape(theme, el) {
     svg.appendChild(geom);
   }
 
-  if (grad && solid) svg.style.background = grad;
+  if (grad && base) svg.style.background = grad;
   applyShadow(svg, theme, el.shadow);
   return svg;
 }
