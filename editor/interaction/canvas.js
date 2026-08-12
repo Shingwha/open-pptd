@@ -71,7 +71,10 @@ export function createCanvasController(canvas, opts) {
     updateSelectionBox();
   }
 
-  /** 仅更新选中框几何（拖动中不重建 DOM）。表格用实测显示高度（内容自适应）。 */
+  /** 仅更新选中框几何（拖动中不重建 DOM）。表格用实测显示高度（内容自适应）。
+   * 直接同步读 offsetHeight（读取即强制同步布局）：渲染后/拖动中任何时刻都准确，
+   * 不依赖 ResizeObserver 的异步回调（重渲染瞬间新节点 dataset 尚未写入，
+   * 回退 bounds[3] 会让选中框比实际渲染高度小一截）。 */
   function updateSelectionBox() {
     if (!overlay) return;
     const el = findElement(getSelected());
@@ -79,8 +82,8 @@ export function createCanvasController(canvas, opts) {
     const [x, y, w, h] = el.bounds;
     let dispH = h;
     if (el.elementType === "table") {
-      const mh = Number(nodeBy(el.elementId)?.dataset?.measuredH);
-      if (Number.isFinite(mh) && mh > 0) dispH = mh;
+      const node = nodeBy(el.elementId);
+      if (node && node.offsetHeight > 0) dispH = node.offsetHeight;
     }
     overlay.style.left = `${x}px`;
     overlay.style.top = `${y}px`;

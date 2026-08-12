@@ -121,14 +121,6 @@ export function renderTable(theme, el) {
   });
 
   box.appendChild(table);
-
-  // 实测显示高度（内容自适应/撑行后的真实高度）→ 供选中框等 UI 使用，不写入文件
-  if (typeof ResizeObserver !== "undefined") {
-    const ro = new ResizeObserver(() => {
-      box.dataset.measuredH = String(box.scrollHeight);
-    });
-    ro.observe(box);
-  }
   return box;
 }
 
