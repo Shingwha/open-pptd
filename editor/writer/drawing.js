@@ -147,6 +147,10 @@ export function buildFill(theme, fill, mediaRef = null) {
   if (fill.type === "image") {
     if (!mediaRef) return "";
     const kids = [el("a:blip", { "r:embed": mediaRef.id })];
+    // 元素级透明度（官方：图片透明度 = a:blip 内 a:alphaModFix）
+    if (fill.opacity != null && fill.opacity < 1) {
+      kids.push(el("a:alphaModFix", { amt: Math.round(fill.opacity * 100000) }));
+    }
     // 调用方已算好的最终 srcRect（元素级 crop+cover 合成）优先，否则按普通 cover 计算
     if (mediaRef.srcRect) {
       kids.push(el("a:srcRect", mediaRef.srcRect));

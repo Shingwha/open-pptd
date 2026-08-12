@@ -38,6 +38,10 @@ export function iconXml(theme, element, ctx) {
 
   const blipFill = el("p:blipFill", {}, [
     el("a:blip", {}, [
+      // 元素级透明度（官方：图片透明度 = a:blip 内 a:alphaModFix，amt 千分比）
+      element.opacity != null && element.opacity < 1
+        ? el("a:alphaModFix", { amt: Math.round(element.opacity * 100000) })
+        : "",
       el("a:extLst", {}, [
         el("a:ext", { uri: SVG_EXT_URI }, [
           el("asvg:svgBlip", {

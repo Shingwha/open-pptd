@@ -109,6 +109,9 @@ export function imageXml(theme, element, ctx) {
     blipFill = toPicBlipFill(
       el("p:blipFill", {}, [
         el("a:blip", { "r:embed": mediaRef.id }),
+        element.opacity != null && element.opacity < 1
+          ? el("a:alphaModFix", { amt: Math.round(element.opacity * 100000) })
+          : "",
         sr ? el("a:srcRect", sr) : "",
         el("a:stretch", {}, el("a:fillRect", {})),
       ].join(""))
@@ -118,7 +121,7 @@ export function imageXml(theme, element, ctx) {
     const sr = cropFitSrcRect(element.crop, fitMode, loaded.size, [bw, bh]);
     mediaRef.srcRect = sr;
     blipFill = toPicBlipFill(
-      buildFill(theme, { type: "image", src, fit: { mode: "fill" } }, mediaRef)
+      buildFill(theme, { type: "image", src, fit: { mode: "fill" }, opacity: element.opacity }, mediaRef)
     );
   }
   const spPr = el("p:spPr", {}, [
