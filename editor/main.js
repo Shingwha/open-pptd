@@ -124,8 +124,19 @@ function boot() {
       return;
     }
   }
-  const deckParam = new URLSearchParams(location.search).get("deck");
+  const params = new URLSearchParams(location.search);
+  const deckParam = params.get("deck");
   const deckUrl = deckParam ? (/^https?:/.test(deckParam) ? deckParam : new URL(deckParam, ROOT).href) : null;
+  if (params.get("shot") === "1") {
+    // 无头截图模式（open-pptd render 使用）：跳过编辑器 UI，只渲染页面
+    import("./app/shot.js")
+      .then((m) => m.initShot(deckUrl))
+      .catch((err) => {
+        console.error("[shot] 初始化失败:", err);
+        document.title = "PPTD_ERROR";
+      });
+    return;
+  }
   initEditor(deckUrl);
 }
 

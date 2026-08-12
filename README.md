@@ -39,7 +39,7 @@ skills 文件夹的位置因工具而异：
 | pi | `~/.pi/agent/skills` |
 | 其他自定义目录 | 按你的工具配置 |
 
-> 技能内所有路径均相对 skill 目录，装到哪里都能直接工作。前置条件仅 Node.js v18+（无需 npm install、无需联网）。
+> 技能内所有路径均相对 skill 目录，装到哪里都能直接工作。前置条件仅 Node.js v18+（无需 npm install、无需联网；render 命令推荐 Node 21+）。
 
 ### 首次使用：下载字体库（可选但推荐）
 
@@ -63,9 +63,12 @@ mkdir -p /path/to/项目目录/pages /path/to/项目目录/media
 
 # 2. 用 AI 助手生成 deck.pptd + pages/*.page（格式规范见 references/pptd.md）
 
-# 3. 命令行导出 PPTX / 项目包
+# 3. 命令行导出 PPTX / 项目包 / 页面图片
 node bin/open-pptd.js export /path/to/项目目录/deck.pptd -o out.pptx
 node bin/open-pptd.js export-project /path/to/项目目录/deck.pptd -o project.zip
+node bin/open-pptd.js render /path/to/项目目录/deck.pptd -o 图片目录
+#   render：逐页渲染为 PNG（960×540，无头浏览器静默工作，与编辑器预览同一条渲染管线）
+#   可选参数：--page 3（单页） --scale 2（放大） --browser <路径> --timeout <毫秒>
 
 # 4.（可选）启动网页编辑器实时预览
 node bin/open-pptd.js serve --project /path/to/项目目录 --port 55173
@@ -82,8 +85,8 @@ open-pptd/
 ├── README.md                 # 本文档（给人看，中文）
 ├── README.en.md              # 英文版本文档
 ├── index.html                # 编辑器入口（重定向到 editor/）
-├── bin/open-pptd.js          # CLI（serve / export / export-project / fonts）
-├── lib/                      # 本地服务器（静态 + SSE 实时刷新 + 保存写回）+ 导出逻辑
+├── bin/open-pptd.js          # CLI（serve / export / export-project / render / fonts）
+├── lib/                      # 本地服务器（静态 + SSE 实时刷新 + 保存写回）+ 导出/渲染逻辑
 ├── editor/                   # 网页编辑器（纯前端，无后端依赖）
 │   ├── core/                 #   数据模型 / 富文本 / 主题 / 几何 / 图标库
 │   ├── writer/               #   PPTX writer（OOXML 生成，与 PowerPoint 结构对齐）

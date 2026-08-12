@@ -28,6 +28,7 @@ The .pptd format is a simplified abstraction layer over OOXML that follows basic
 1. **Format baseline**: strictly implement per `references/pptd.md` (the complete PPTD v2 spec); the export target is a PPTX that opens in PowerPoint without repair and renders identically to the editor preview.
 2. **Export pipeline**: use the local exporter `node bin/open-pptd.js export <deck.pptd> [-o <out.pptx>]` (self-developed writer, no browser dependency).
 3. **Online preview/editing**: `node bin/open-pptd.js serve --project <project dir>` → open the local editor in a browser (self-developed) to preview/edit/export.
+4. **Page images**: `node bin/open-pptd.js render <deck.pptd> [-o <dir>]` exports every page to PNG via the local headless browser (no window, same renderer as the editor preview; `--page <n>` single page, `--scale <1|2|3>`). Used for visual self-review when the user asks the agent to check layout, or when the model supports image input. Falls back to a structural review when no browser is available (see step4).
 4. **No pptx → pptd conversion**: this implementation cannot import an existing .pptx into a .pptd project. Edit/replicate tasks can only start from a .pptd project (user-provided or newly created). For a user-uploaded .pptx: unpack and inspect it as reference (colors/layout/copy), then rebuild in a .pptd project; element-by-element restoration is not guaranteed.
 5. **Chart limits**: of the 13 types, **heatmap / sankey are not exported** (PowerPoint has no native types; the element is skipped, the page left blank, with a warning at export) — avoid these two types when generating; the other 11 (bar/line/area/scatter/bubble/candlestick/pie/radar/waterfall/treemap/sunburst) export fully.
 6. **Formulas**: rich text supports LaTeX formulas `\(...\)` (inline / standalone paragraph / full frame), exported as native editable PowerPoint formulas (mc:AlternateContent + a14:m).
@@ -125,24 +126,26 @@ Adopt different production approaches for different user [design directions].
 2. Produce the presentation using the reference file's style characteristics. You are encouraged to reuse illustrations, fonts, font-size hierarchies, elements, etc. from the original pdf/url.
 
 ### step4. PPT validation
-1. Validate the generated pptd against the format definition in `references/pptd.md` (required fields, types, bounds, theme tokens, resource paths, etc.) and repair issues over multiple rounds.
-2. Visual review with exported page images — **required before PPTX export when the model supports image input (multimodal)**:
-   - Start the local editor and preview every page in the browser:
-     ```bash
-     node bin/open-pptd.js serve --project /abs/path/project
-     ```
-     Then open the local URL in a browser and review each page against this list:
-     1. Images clear and undistorted (no stretching, compression, blur)
-     2. Text not pressing on key visuals (faces, product subjects, logos, etc.)
-     3. Element coordinates not out of page bounds
-     4. Border and palette contrast sufficient (text vs background, adjacent color blocks)
-     5. Layout consistent (alignment, spacing, font-size hierarchy, page margins)
-     6. Text not likely to overflow its text box (overlong text, cramped line height, oversized fonts)
-     7. Content not occluded by upper-layer elements
+1. **Structural review — always**: validate the generated pptd against the format definition in `references/pptd.md` (required fields, types, bounds, theme tokens, resource paths, contrast, overflow-prone long text, hierarchy, layout density) and repair issues over multiple rounds.
+2. **User preview — default**: start the local editor and hand the URL to the user:
+   ```bash
+   node bin/open-pptd.js serve --project /abs/path/project
+   ```
+   The user previews in their own browser and reports issues; fix them in the corresponding `.page` files (the editor live-reloads on file changes).
+3. **Visual self-review — on demand**: when the user asks the agent to check/fix layout issues itself, or when the model supports image input and a visual pass is wanted, render every page to PNG and review each page against this list:
+   ```bash
+   node bin/open-pptd.js render /abs/path/project/deck.pptd -o /abs/path/project/render-out
+   ```
+   1. Images clear and undistorted (no stretching, compression, blur)
+   2. Text not pressing on key visuals (faces, product subjects, logos, etc.)
+   3. Element coordinates not out of page bounds
+   4. Border and palette contrast sufficient (text vs background, adjacent color blocks)
+   5. Layout consistent (alignment, spacing, font-size hierarchy, page margins)
+   6. Text not likely to overflow its text box (overlong text, cramped line height, oversized fonts)
+   7. Content not occluded by upper-layer elements
    - For any suspicious page, review its source `.page` file to confirm the problem before editing.
-   - Fix issues in the corresponding `.page` file, re-render the preview and review again; repeat until every page passes.
-   - Do not export the PPTX until the visual review passes.
-3. When the model cannot read images, fall back to a structural review of the generated pages (bounds, overflow-prone long text, contrast, hierarchy, layout density) over multiple rounds, and state that image-based visual QA was skipped.
+   - Fix issues in the corresponding `.page` files, limited to gross layout defects (e.g. font misplacement or wrong font fallback, out-of-bounds, overflow, occlusion, distortion, contrast); do not chase pixel-level details. Re-render, re-review once, then confirm with the user — the visual pass ends when the user is satisfied.
+4. When the model cannot read images **or the host provides no browser/screenshot capability**, skip the visual pass: fall back to the structural review (step 1) and state in the delivery that image-based visual QA was skipped and why.
 
 ### step5. PPT output and delivery
 1. Always produce a self-contained project directory. Keep the `.pptd` manifest and every referenced dependency together; never deliver a standalone manifest without its referenced files. Use this layout unless an existing project already has a valid equivalent structure:
@@ -182,4 +185,4 @@ Adopt different production approaches for different user [design directions].
 
    Do not claim PowerPoint/WPS/Keynote playback compatibility solely because ZIP validation succeeds.
 7. When the user wants to open, edit, save, or export a PPTD project manually, start the local browser editor with `node bin/open-pptd.js serve --project <project dir>` and ask the user to open the printed local URL in a browser. The editor supports preview, editing, saving back to the project, and one-click PPTX export.
-8. After completing and delivering any presentation, always end the final response with a concise optional next step telling the user that they can run `node bin/open-pptd.js serve --project <project dir>` to view or edit the PPTD project, configure slide transition animations, and export PPTX manually. Keep this reminder in addition to, not instead of, the required project and file links.
+8. After completing and delivering any presentation, always end the final response with a concise optional next step telling the user that they can run `node bin/open-pptd.js serve --project <project dir>` to view or edit the PPTD project, configure slide transition animations, and export PPTX manually (or `node bin/open-pptd.js render <deck.pptd> -o <dir>` to export page images for a visual pass). Keep this reminder in addition to, not instead of, the required project and file links.

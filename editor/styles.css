@@ -1759,3 +1759,18 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   .present-hint { display: none; }
   .present-ui { padding: 20px 12px 10px; }
 }
+
+/* ---------- 无头截图模式（?shot=1，open-pptd render 使用） ---------- */
+.shot-mode,
+.shot-mode body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #fff;
+}
+.shot-mode #editor-app {
+  display: none;
+}
+.shot-mode #shot-root {
+  z-index: 9999;
+}

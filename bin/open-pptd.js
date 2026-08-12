@@ -11,6 +11,7 @@ import { existsSync, readFileSync, writeFileSync } from "fs";
 import { join, basename } from "path";
 import { startServer } from "../lib/editor-server.js";
 import { exportDeck, exportProject, FONT_LIB_DIR } from "../lib/pptd-export.js";
+import { renderDeck } from "../lib/pptd-render.js";
 import * as yaml from "../editor/vendor/js-yaml.mjs";
 import { parseFontResources } from "../editor/core/theme.js";
 import { findFont, findSystemFont } from "../editor/core/font-registry.js";
@@ -24,6 +25,9 @@ function usage() {
       "  open-pptd export <deck.pptd> [-o <out.pptx>]  命令行导出 PPTX\n" +
       "                           [--no-embed-fonts]   不嵌入字体（默认嵌入）\n" +
       "  open-pptd export-project <deck.pptd> [-o <out.zip>]  导出项目包（pptd+pages+media，原样打包）\n" +
+      "  open-pptd render <deck.pptd> [-o <目录>] [--page <n|all>] [--scale <1|2|3>]\n" +
+      "                           [--browser <路径>] [--timeout <毫秒>]\n" +
+      "                        逐页渲染为 PNG（无头浏览器，与编辑器预览同管线）\n" +
       "\n" +
       "  字体库（assets/fonts/，全部免费商用，默认子集化嵌入）：\n" +
       "  open-pptd fonts list                         查看内置字体库（状态 ✓/✗）\n" +
@@ -260,6 +264,39 @@ async function main() {
       console.log(`✓ 项目包已导出 → ${finalPath}`);
     } catch (err) {
       console.error(`✗ 导出失败: ${err.message}`);
+      process.exit(1);
+    }
+    return;
+  }
+  if (command === "render") {
+    const major = Number(process.versions.node.split(".")[0]);
+    if (major < 18) {
+      console.error("✗ render 需要 Node 18+（当前 " + process.version + "）");
+      process.exit(1);
+    }
+    if (major < 21) {
+      console.warn("⚠ 当前 Node " + process.version + " < 21：render 将使用内置最小 WebSocket 客户端（推荐 Node 21+）");
+    }
+    const manifest = args[1];
+    if (!manifest) {
+      usage();
+      process.exit(1);
+    }
+    const outIdx = args.indexOf("-o") >= 0 ? args.indexOf("-o") : args.indexOf("--out");
+    const outPath = outIdx >= 0 ? args[outIdx + 1] : null;
+    const pageIdx = args.indexOf("--page");
+    const page = pageIdx >= 0 ? args[pageIdx + 1] : "all";
+    const scaleIdx = args.indexOf("--scale");
+    const scale = scaleIdx >= 0 ? args[scaleIdx + 1] : 1;
+    const browserIdx = args.indexOf("--browser");
+    const browserPath = browserIdx >= 0 ? args[browserIdx + 1] : null;
+    const timeoutIdx = args.indexOf("--timeout");
+    const timeoutMs = timeoutIdx >= 0 ? Number(args[timeoutIdx + 1]) : 30000;
+    try {
+      const { files } = await renderDeck({ manifest, outPath, page, scale, browserPath, timeoutMs });
+      console.log(`✓ 渲染完成，共 ${files.length} 张图片`);
+    } catch (err) {
+      console.error(`✗ 渲染失败: ${err.message}`);
       process.exit(1);
     }
     return;

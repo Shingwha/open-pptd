@@ -15,7 +15,7 @@ A "content → editable project → live preview → PPTX" presentation pipeline
 
 ## Prerequisites
 
-- **Node.js v18+** (the only dependency; no npm packages to install)
+- **Node.js v18+** (the only dependency; no npm packages to install; render command recommended on Node 21+)
 - Browser: Chrome / Edge recommended (needed for the "Open Folder" save feature)
 
 ## Installation (3 steps)
@@ -39,7 +39,7 @@ Skills folder locations vary by tool:
 | pi | `~/.pi/agent/skills` |
 | Other custom directories | Per your tool's configuration |
 
-> All paths inside the skill are relative to the skill directory, so it works wherever you install it. The only prerequisite is Node.js v18+ (no npm install, no network).
+> All paths inside the skill are relative to the skill directory, so it works wherever you install it. The only prerequisite is Node.js v18+ (no npm install, no network; render recommended on Node 21+).
 
 ### First-time setup: download the font library (optional but recommended)
 
@@ -63,9 +63,12 @@ mkdir -p /path/to/project/pages /path/to/project/media
 
 # 2. Have the AI assistant generate deck.pptd + pages/*.page (spec: references/pptd.md)
 
-# 3. Export PPTX / project package from the CLI
+# 3. Export PPTX / project package / page images from the CLI
 node bin/open-pptd.js export /path/to/project/deck.pptd -o out.pptx
 node bin/open-pptd.js export-project /path/to/project/deck.pptd -o project.zip
+node bin/open-pptd.js render /path/to/project/deck.pptd -o out-dir
+#   render: export every page as PNG (960×540, headless browser, same renderer as the editor preview)
+#   options: --page 3 (single page) --scale 2 (upscale) --browser <path> --timeout <ms>
 
 # 4. (Optional) Start the web editor for live preview
 node bin/open-pptd.js serve --project /path/to/project --port 55173
@@ -82,7 +85,7 @@ open-pptd/
 ├── README.md                 # This project's docs (Chinese)
 ├── README.en.md              # English version of the docs
 ├── index.html                # Editor entry (redirects to editor/)
-├── bin/open-pptd.js          # CLI (serve / export / export-project / fonts)
+├── bin/open-pptd.js          # CLI (serve / export / export-project / render / fonts)
 ├── lib/                      # Local server (static + SSE live reload + save-back) + export logic
 ├── editor/                   # Web editor (pure frontend, no backend dependency)
 │   ├── core/                 #   data model / rich text / theme / geometry / icon library
