@@ -17,6 +17,13 @@ const M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math";
 const A14_NS = "http://schemas.microsoft.com/office/drawing/2010/main";
 const MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 
+// 数学区域字体（PowerPoint 原生公式存储结构：每个 m:r 的 a:rPr 显式声明
+// Cambria Math；缺失时 PowerPoint 回退到段落/单元格字体——表格内公式下标
+// 变微软雅黑的问题根因。写法与 PowerPoint 重存文件逐字节一致）
+const MATH_FONT =
+  '<a:latin typeface="Cambria Math" panose="02040503050406030204" pitchFamily="18" charset="0"/>' +
+  '<a:ea typeface="Cambria Math" panose="02040503050406030204" pitchFamily="18" charset="0"/>';
+
 const H_ALIGN = { left: "l", center: "ctr", right: "r", justify: "just", distributed: "dist" };
 
 function runAttrs(s) {
@@ -148,9 +155,15 @@ export function buildParagraph(theme, para, base, registerLink, options = {}) {
   return `<a:p>${paragraphProps(style)}${runs}</a:p>`;
 }
 
-/** 给 OMML 每个 m:r 注入样式（a:rPr > solidFill / sz，PPT 官方 run 属性风格）。
+/** 给 OMML 每个 m:r 注入样式（a:rPr > solidFill / sz / Cambria Math 字体，PPT 官方 run 属性风格）。
  * 支持主题令牌（$primary 等）与 hex，切主题自动联动。公式只继承 color/font-size；
  * opacity（0~1，可选）= 文字透明度，a:alpha 加在颜色元素内部（PowerPoint 官方结构）。
+ * 同时补齐 PowerPoint 原生公式存储结构（对照 PowerPoint 重存文件）：
+ *   - 每个 m:r 显式声明 Cambria Math（缺失 → PowerPoint 回退段落/单元格字体，
+ *     表格内公式下标变微软雅黑的问题根因）
+ *   - m:nor（\text{} 普通文本 run）补显式非斜体 i="0"
+ *   - 上下标/极限/算子/定界符等结构补 m:ctrlPr（控制属性，重存时 PowerPoint 总会补齐）
+ *   - m:grow "1/0" → "on/off"（PowerPoint 存储值；mathml2omml 与官方 XSLT 字节一致输出 1/0）
  * （原 writer/formula.js injectRunStyle，废弃 elementType formula 后并入此处） */
 function injectRunStyle(omml, { color, fontSize, opacity } = {}, theme) {
   let fill = "";
@@ -171,9 +184,48 @@ function injectRunStyle(omml, { color, fontSize, opacity } = {}, theme) {
   }
   if (!fill && !szAttr) return omml;
   // m:r 内：rPr（若有）之后、m:t 之前插入 a:rPr；无 rPr 则插在 <m:r> 后
-  return omml.replace(/<m:r>(?:(<m:rPr>[\s\S]*?<\/m:rPr>))?(?=<m:t)/g, (_m, rpr) => {
-    return rpr ? `<m:r>${rpr}<a:rPr${szAttr}>${fill}</a:rPr>` : `<m:r><a:rPr${szAttr}>${fill}</a:rPr>`;
+  let out = omml.replace(/<m:r>(?:(<m:rPr>[\s\S]*?<\/m:rPr>))?(?=<m:t)/g, (_m, rpr) => {
+    // 显式斜体/正体声明（PowerPoint 原生存储结构，重存/编辑公式时总会写全）：
+    //   - 无 m:rPr（数学默认斜体，如变量 P、下标 a）→ i="1"
+    //   - m:nor（\text{} 普通文本）→ i="0"
+    //   - m:sty/m:scr（\mathrm/\mathbf 等）→ 不写 i，字形由样式属性决定
+    const italic = !rpr ? ' i="1"' : rpr.includes("<m:nor/>") ? ' i="0"' : "";
+    const rPr = `<a:rPr${szAttr}${italic}>${fill}${MATH_FONT}</a:rPr>`;
+    return rpr ? `<m:r>${rpr}${rPr}` : `<m:r>${rPr}`;
   });
+  // 结构级 ctrlPr（PowerPoint 原生公式存储：m:sSubPr/m:naryPr/... 内含 m:ctrlPr）：
+  // 已有 Pr（naryPr/radPr/accPr/dPr/...）→ 内部末尾追加；无 Pr（sSub/sSup/limLow/...）→ 创建
+  const ctrlPr = `<m:ctrlPr><a:rPr${szAttr}>${fill}${MATH_FONT}</a:rPr></m:ctrlPr>`;
+  const ctrlStructs = [
+    ["m:sSub", "m:sSubPr"],
+    ["m:sSup", "m:sSupPr"],
+    ["m:sSubSup", "m:sSubSupPr"],
+    ["m:limLow", "m:limLowPr"],
+    ["m:limUpp", "m:limUppPr"],
+    ["m:nary", "m:naryPr"],
+    ["m:d", "m:dPr"],
+    ["m:rad", "m:radPr"],
+    ["m:bar", "m:barPr"],
+    ["m:acc", "m:accPr"],
+    ["m:groupChr", "m:groupChrPr"],
+    ["m:borderBox", "m:borderBoxPr"],
+    ["m:eqArr", "m:eqArrPr"],
+    ["m:m", "m:mPr"],
+  ];
+  for (const [tag, prTag] of ctrlStructs) {
+    const prClose = `</${prTag}>`;
+    if (out.includes(prClose)) {
+      out = out.replace(new RegExp(prClose, "g"), `${ctrlPr}${prClose}`);
+    } else {
+      // lookahead 只断言不消费，替换串末尾不能再带 ">"，否则与原文残留的 ">" 叠加成 ">>"
+      out = out.replace(new RegExp(`<${tag}(?=[\\s>])`, "g"), `<${tag}><${prTag}>${ctrlPr}</${prTag}`);
+    }
+  }
+  // m:grow 值规范化（mathml2omml 与官方 XSLT 字节一致输出 1/0；PowerPoint 存储 on/off）
+  out = out
+    .replace(/<m:grow m:val="1"\/>/g, '<m:grow m:val="on"/>')
+    .replace(/<m:grow m:val="0"\/>/g, '<m:grow m:val="off"/>');
+  return out;
 }
 
 /**
@@ -197,7 +249,9 @@ function buildFormulaRun(theme, run, baseStyle, { paraAlone = false, textAlign =
       textAlign === "center" || textAlign === "right"
         ? `<m:oMathParaPr><m:jc m:val="${textAlign}"/></m:oMathParaPr>`
         : "";
-    return `<a14:m xmlns:a14="${A14_NS}"><m:oMathPara xmlns:m="${M_NS}">${jc}${styled}</m:oMathPara></a14:m>`;
+    // 独占公式段落末尾补 endParaRPr（Cambria Math，PowerPoint 重存结构；
+    // 设置段落默认 run 属性，避免在 PowerPoint 中编辑时二次规范化）
+    return `<a14:m xmlns:a14="${A14_NS}"><m:oMathPara xmlns:m="${M_NS}">${jc}${styled}</m:oMathPara></a14:m><a:endParaRPr dirty="0">${MATH_FONT}</a:endParaRPr>`;
   }
   return `<a14:m xmlns:a14="${A14_NS}">${styled}</a14:m>`;
 }
