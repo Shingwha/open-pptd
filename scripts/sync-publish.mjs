@@ -8,11 +8,17 @@
 //
 // 用法:
 //   node scripts/sync-publish.mjs          # 同步到本地 publish 分支（不推送）
-//   node scripts/sync-publish.mjs --push   # 同步并推送到 origin/publish
+//   node scripts/sync-publish.mjs --push   # 同步并推送到发布目标仓库
 // 前置条件: 在 main 分支、工作树干净。
 // ============================================================================
 
 import { execSync } from "node:child_process";
+
+// ---- 推送目标：SkillHub 导入的是这个仓库的默认分支 ----
+// 每个目标: { remote: git remote 名, src: 本地分支, dst: 远端分支 }
+const PUSH_TARGETS = [
+  { remote: "publish-repo", src: "publish", dst: "main" }, // 独立发布仓库 open-pptd-publish
+];
 
 // ---- 白名单：发布分支包含的文件/目录（与 publish 分支创建时一致）----
 const WHITELIST = [
@@ -72,8 +78,15 @@ try {
     run(`git commit -q -m "sync publish from main@${mainSha}"`);
     console.log(`✓ 已提交 ${runq("git rev-parse --short HEAD")}`);
     if (push) {
-      run("git push origin publish");
-      console.log("✓ 已推送 origin/publish");
+      for (const t of PUSH_TARGETS) {
+        const remoteExists = runq(`git remote get-url ${t.remote}`);
+        if (!remoteExists) {
+          console.error(`✗ 未配置 git remote ${t.remote}，跳过（添加: git remote add ${t.remote} <url>）`);
+          continue;
+        }
+        run(`git push ${t.remote} ${t.src}:${t.dst}`);
+        console.log(`✓ 已推送 ${t.remote}/${t.dst}`);
+      }
     } else {
       console.log("ℹ 未推送（加 --push 推送）");
     }
