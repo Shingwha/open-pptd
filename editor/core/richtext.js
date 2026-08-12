@@ -15,7 +15,18 @@ const INLINE_TAGS = new Set(["span", "strong", "em", "u", "s", "sup", "sub", "a"
 // 且只继承 color / font-size 两种样式（官方规定）。
 const FORMULA_RE = /\\\(([\s\S]*?)\\\)/g;
 
-const TOKEN_RE = /<\/?([a-zA-Z][\w-]*)((?:\s+[^<>]*?)?)\/?>|([^<]+)/g;
+// 标签分支：<tag ...> / </tag> / <tag .../>；文本分支：(?:[^<]|<(?![a-zA-Z/]))+
+// 允许孤立 < 作为文本（后跟空格/\数字等非标签起始字符时，如公式里的比较符
+// "<"、普通文本 "a < b"）——否则 < 会被两个分支同时漏掉而静默丢失。
+const TOKEN_RE = /<\/?([a-zA-Z][\w-]*)((?:\s+[^<>]*?)?)\/?>|((?:[^<]|<(?![a-zA-Z\/]))+)/g;
+
+/** HTML 实体解码（编辑器 DOM 回写时 escText 会把 < > & 转义为 &lt; &gt; &amp;）。
+ * 公式里 cases 的 & 列分隔符（非实体名形式）原样保留。 */
+function decodeEntities(s) {
+  return s.replace(/&(amp|lt|gt|quot|#39);/g, (m, name) =>
+    ({ amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'" })[name]
+  );
+}
 
 function extractAttr(attrStr, name) {
   const m = attrStr.match(new RegExp(`${name}\\s*=\\s*"([^"]*)"`, "i"));
@@ -106,7 +117,7 @@ function tokenize(input) {
   TOKEN_RE.lastIndex = 0;
   while ((m = TOKEN_RE.exec(input)) !== null) {
     if (m[3] !== undefined) {
-      tokens.push({ type: "text", text: m[3] });
+      tokens.push({ type: "text", text: decodeEntities(m[3]) });
     } else {
       const name = m[1].toLowerCase();
       const attrs = m[2] || "";
