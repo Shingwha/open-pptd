@@ -74,6 +74,8 @@ async function fontsList() {
 //  - body 读取阶段长超时：大字体在慢速网络下需要更久，避免误杀正常下载。
 const FONT_CONNECT_TIMEOUT_MS = 10000;
 const FONT_BODY_TIMEOUT_MS = 60000;
+// 并发下载数：源降级后所有字体直达镜像，下载阶段并行吃带宽
+const FONT_DOWNLOAD_CONCURRENCY = 6;
 
 async function fontsDownload(name) {
   const reg = loadRegistry();
@@ -91,22 +93,26 @@ async function fontsDownload(name) {
     console.error(`✗ 未找到匹配“${name}”的字体（用 fonts list 查看全表）`);
     process.exit(1);
   }
+  let idx = 0;
   let ok = 0;
-  for (const f of targets) {
+  // 源健康降级：网络类错误（fetch 拒绝/超时）判定该源当前不可达，后续字体直接跳过；
+  // HTTP 状态码错误（404/403 等）是单字体问题，不降级。
+  const unhealthy = new Set();
+  let hintShown = false;
+
+  const downloadOne = async (f) => {
     const out = join(FONT_LIB_DIR, f.file);
     if (existsSync(out)) {
       const magic = readFileSync(out).subarray(0, 4);
       if (magic.toString("latin1") === "OTTO" || magic.equals(Buffer.from([0, 1, 0, 0]))) {
         console.log(`  = ${f.key} 已存在（${f.file}），跳过`);
-        ok += 1;
-        continue;
+        return true;
       }
     }
     // 回退链：主源 url（GitHub raw）→ mirrors 镜像（jsDelivr 等），逐个尝试直到成功
     const sources = [f.url, ...(f.mirrors || [])].filter(Boolean);
-    let downloaded = false;
     for (const src of sources) {
-      process.stdout.write(`  ↓ ${f.key} ← ${src} ... `);
+      if (unhealthy.has(src)) continue; // 已降级源直接跳过
       try {
         // 连接阶段：短超时，超时即放弃该源
         const ctrl = new AbortController();
@@ -132,18 +138,34 @@ async function fontsDownload(name) {
           throw new Error("响应不是有效字体文件");
         }
         writeFileSync(out, buf);
-        console.log(`✓ ${(buf.length / 1024 / 1024).toFixed(1)}MB`);
-        ok += 1;
-        downloaded = true;
-        break;
+        console.log(`  ✓ ${f.key} ← ${src} ${(buf.length / 1024 / 1024).toFixed(1)}MB`);
+        return true;
       } catch (e) {
-        console.log(`✗ ${e.message}`);
+        const detail = `${e.message}${e.cause?.message ? "：" + e.cause.message : ""}`;
+        const networkErr = e.name === "AbortError" || /fetch failed|ECONN|ENOTFOUND|ETIMEDOUT|UND_ERR|network/i.test(detail);
+        if (networkErr) {
+          unhealthy.add(src);
+          if (!hintShown) {
+            hintShown = true;
+            console.log(`  ! ${new URL(src).host} 网络不可达，后续字体直接使用镜像源`);
+          }
+        }
+        console.log(`  ✗ ${f.key} ← ${src} ${detail}`);
       }
     }
-    if (!downloaded) {
-      console.log(`  ✗ ${f.key}：所有下载源均失败`);
+    console.log(`  ✗ ${f.key}：所有下载源均失败`);
+    return false;
+  };
+
+  // 并发池：最多同时下载 N 个字体，完成一个补一个
+  const worker = async () => {
+    while (idx < targets.length) {
+      const f = targets[idx++];
+      if (await downloadOne(f)) ok += 1;
     }
-  }
+  };
+  const poolSize = Math.min(FONT_DOWNLOAD_CONCURRENCY, targets.length);
+  await Promise.all(Array.from({ length: poolSize }, () => worker()));
   console.log(`\n完成：${ok}/${targets.length}`);
 }
 

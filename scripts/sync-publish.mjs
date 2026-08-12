@@ -90,7 +90,7 @@ try {
       console.log(`✓ 已推送 ${t.remote}/${t.dst}`);
     }
   } else {
-    console.log("ℹ 未推送（加 --push 推送）");
+    console.log("! 未推送（加 --push 推送）");
   }
 } finally {
   run("git checkout main -q");
