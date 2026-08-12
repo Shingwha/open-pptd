@@ -189,6 +189,11 @@ button, select, a.btn, .thumb, .add-thumb, .icon-cell, .theme-card {
 }
 .icon-btn:hover:not(:disabled) { background: var(--bg); color: var(--ink); }
 .icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+/* 链接按钮（画廊/编辑器顶栏的 GitHub 仓库跳转） */
+a.icon-btn {
+  text-decoration: none;
+  color: var(--sub);
+}
 .icon-btn svg { width: 16px; height: 16px; }
 
 /* 按钮图标 + 文字双元素（窄屏时文字隐藏，仅剩图标，两端同一套 DOM） */
