@@ -31,7 +31,12 @@ const $ = (id) => document.getElementById(id);
 export async function loadManifest() {
   if (manifestCache) return manifestCache;
   const res = await fetch(new URL("examples/manifest.json", ROOT));
-  if (!res.ok) throw new Error(`画廊清单加载失败: ${res.status}`);
+  if (!res.ok) {
+    // 无 examples/（如发布仓库精简版）：降级为空画廊，不报错
+    console.warn(`[gallery] 画廊清单不可用（${res.status}），按空画廊处理`);
+    manifestCache = [];
+    return manifestCache;
+  }
   const data = await res.json();
   manifestCache = Array.isArray(data) ? data : data.entries || [];
   return manifestCache;
@@ -191,6 +196,9 @@ export async function showGallery() {
 
   const entries = await loadManifest();
   if (!entries.length) {
+    // 隐藏“编辑示例作品”快捷按钮（无示例时不可用）
+    const btn = $("btn-open-example");
+    if (btn) btn.style.display = "none";
     grid.innerHTML =
       `<div class="gallery-empty">examples/ 下暂无作品。<br>` +
       `把做好的 PPTD 项目文件夹（deck.pptd + pages/ + media/）放进 examples/ 即出现在这里。</div>`;
