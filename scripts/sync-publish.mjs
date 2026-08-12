@@ -77,19 +77,20 @@ try {
   } else {
     run(`git commit -q -m "sync publish from main@${mainSha}"`);
     console.log(`✓ 已提交 ${runq("git rev-parse --short HEAD")}`);
-    if (push) {
-      for (const t of PUSH_TARGETS) {
-        const remoteExists = runq(`git remote get-url ${t.remote}`);
-        if (!remoteExists) {
-          console.error(`✗ 未配置 git remote ${t.remote}，跳过（添加: git remote add ${t.remote} <url>）`);
-          continue;
-        }
-        run(`git push ${t.remote} ${t.src}:${t.dst}`);
-        console.log(`✓ 已推送 ${t.remote}/${t.dst}`);
+  }
+  // 推送独立于“是否有新提交”：--push 时即使无变化也执行（保证远端与本地 publish 一致）
+  if (push) {
+    for (const t of PUSH_TARGETS) {
+      const remoteExists = runq(`git remote get-url ${t.remote}`);
+      if (!remoteExists) {
+        console.error(`✗ 未配置 git remote ${t.remote}，跳过（添加: git remote add ${t.remote} <url>）`);
+        continue;
       }
-    } else {
-      console.log("ℹ 未推送（加 --push 推送）");
+      run(`git push ${t.remote} ${t.src}:${t.dst}`);
+      console.log(`✓ 已推送 ${t.remote}/${t.dst}`);
     }
+  } else {
+    console.log("ℹ 未推送（加 --push 推送）");
   }
 } finally {
   run("git checkout main -q");
