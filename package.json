@@ -12,7 +12,8 @@
     "test:isolate": "node tests/isolate.mjs",
     "test:live": "node tests/e2e/live-reload.mjs",
     "test:incremental": "node tests/e2e/incremental-load.mjs",
-    "test:fixtures": "node tests/formula/dump-formula-mml.mjs"
+    "test:fixtures": "node tests/formula/dump-formula-mml.mjs",
+    "sync:publish": "node scripts/sync-publish.mjs"
   },
   "license": "MIT"
 }
