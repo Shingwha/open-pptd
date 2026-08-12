@@ -1,0 +1,109 @@
+pageType: cover
+background:
+  type: gradient
+  gradientType: linear
+  angle: 110
+  stops:
+    - { position: 0, color: "#F9F6FC" }
+    - { position: 1, color: "#EDE6F5" }
+notes: 开场页。一句话带出本期最重要结论：5 月营收 4,392 万元、同比 +12.4%、创近 12 个月新高，让与会者先知道「这期过得怎么样」。
+elements:
+  # —— 装饰：右上单圆环 + 圆点 ——
+  - elementId: ring1
+    elementType: shape
+    bounds: [620, 40, 320, 320]
+    shapeName: ellipse
+    fill: null
+    border: { style: solid, width: 1, color: "#8B5FC73D" }
+  - elementId: ringDot
+    elementType: shape
+    bounds: [884, 60, 8, 8]
+    shapeName: ellipse
+    fill: { type: solid, color: "$accent" }
+  # —— 装饰：底部基线 ——
+  - elementId: bottomLine
+    elementType: shape
+    bounds: [40, 470, 880, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  # —— 品牌标识：圆环 + 屿字 ——
+  - elementId: brandRing
+    elementType: shape
+    bounds: [84, 100, 56, 56]
+    shapeName: ellipse
+    fill: null
+    border: { style: solid, width: 1.5, color: "$accent" }
+  - elementId: brandChar
+    elementType: text
+    bounds: [84, 100, 56, 56]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 24
+      color: "$primary"
+      align: [center, middle]
+      text: 屿
+  # —— 标题区 ——
+  - elementId: kicker
+    elementType: text
+    bounds: [80, 184, 620, 18]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 11
+      color: "$accent"
+      letterSpacing: 3
+      text: ISLAND COFFEE · 月度经营分析会
+  - elementId: title
+    elementType: text
+    bounds: [76, 212, 780, 66]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 48
+      color: "$primary"
+      align: [left, middle]
+      text: 2026 年 5 月经营月报
+  - elementId: titleLine
+    elementType: shape
+    bounds: [80, 300, 200, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.35
+  - elementId: subtitle1
+    elementType: text
+    bounds: [80, 318, 700, 20]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 13
+      color: "$muted"
+      text: 品牌月度经营分析 · 报告期 2026.05.01 — 05.31
+  - elementId: subtitle2
+    elementType: text
+    bounds: [80, 342, 700, 16]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 10
+      color: "$muted"
+      text: 编制：运营管理部 · 数据截至 2026-05-31 · 财务口径（含税）
+  # —— 核心状态条 ——
+  - elementId: statusBar
+    elementType: shape
+    bounds: [80, 388, 4, 52]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: statusText
+    elementType: text
+    bounds: [100, 388, 740, 52]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 17
+      color: "$text"
+      align: [left, middle]
+      text: 5 月营收 <strong>4,392 万元</strong> · 同比 <span style="color:$accent;">+12.4%</span> · 创近 12 个月新高
+  # —— 底部元信息 ——
+  - elementId: meta
+    elementType: text
+    bounds: [80, 444, 640, 14]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 10
+      color: "$muted"
+      text: 内部资料 · 请勿外传

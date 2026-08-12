@@ -1,7 +1,24 @@
 {
   "version": 1,
-  "generated": "2026-08-12T14:06:54.300Z",
+  "generated": "2026-08-12T14:42:36.220Z",
   "entries": [
+    {
+      "id": "coffee-monthly-report",
+      "title": "屿间咖啡 2026 年 5 月经营月报",
+      "description": "连锁咖啡品牌月度经营分析会材料：KPI 卡片、柱状/环形/瀑布/雷达/树图/折线六类图表、三线表、建议卡片与演讲者备注",
+      "tags": [
+        "经营月报",
+        "图表",
+        "管理汇报",
+        "咖啡零售"
+      ],
+      "pages": 5,
+      "fonts": [
+        "阿里妈妈数黑体",
+        "MiSans"
+      ],
+      "deck": "examples/coffee-monthly-report/deck.pptd"
+    },
     {
       "id": "ev-range",
       "title": "电动汽车剩余续驶里程预测",

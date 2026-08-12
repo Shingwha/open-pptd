@@ -1,0 +1,253 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: 汇报要点：营收连续 5 个月环比正增长，5 月同比 +12.4% 为近一年最高；增量主要来自华东 3 家爬坡门店转正与快取店外卖放量。客单价环比 -0.3% 与外卖占比提升有关，需说明口径，避免误读为定价问题。
+elements:
+  # —— 页眉 ——
+  - elementId: kicker
+    elementType: text
+    bounds: [40, 22, 600, 16]
+    content:
+      style: "$kicker"
+      text: 02 / 经营概览
+  - elementId: title
+    elementType: text
+    bounds: [40, 40, 880, 32]
+    content:
+      style: "$title"
+      text: 5 月营收 <strong>4,392 万元</strong>、同比 <span style="color:$accent;">+12.4%</span>，创近 12 个月新高
+  - elementId: subtitle
+    elementType: text
+    bounds: [40, 74, 880, 18]
+    content:
+      style: "$subtitle"
+      text: 在营门店 126 家，客单价与 90 天复购率同步回升 · 数据截至 2026-05-31
+  - elementId: headerLine
+    elementType: shape
+    bounds: [40, 100, 880, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  # —— KPI 卡片 1：月度营收 ——
+  - elementId: kpi1Box
+    elementType: shape
+    bounds: [40, 112, 208, 112]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: kpi1Icon
+    elementType: icon
+    bounds: [56, 128, 22, 22]
+    iconName: "bs:cash-stack"
+    fill: { type: solid, color: "$accent" }
+  - elementId: kpi1Label
+    elementType: text
+    bounds: [56, 154, 176, 14]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 10
+      color: "$muted"
+      text: 月度营收
+  - elementId: kpi1Value
+    elementType: text
+    bounds: [56, 170, 176, 30]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      color: "$primary"
+      text: 4,392 万元
+  - elementId: kpi1Delta
+    elementType: text
+    bounds: [56, 202, 176, 14]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 9
+      text: |
+        <p><span style="color:$success;">同比 +12.4%</span> · <span style="color:$success;">环比 +9.2%</span></p>
+  # —— KPI 卡片 2：在营门店 ——
+  - elementId: kpi2Box
+    elementType: shape
+    bounds: [264, 112, 208, 112]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: kpi2Icon
+    elementType: icon
+    bounds: [280, 128, 22, 22]
+    iconName: "bs:building"
+    fill: { type: solid, color: "$accent" }
+  - elementId: kpi2Label
+    elementType: text
+    bounds: [280, 154, 176, 14]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 10
+      color: "$muted"
+      text: 在营门店
+  - elementId: kpi2Value
+    elementType: text
+    bounds: [280, 170, 176, 30]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      color: "$primary"
+      text: 126 家
+  - elementId: kpi2Delta
+    elementType: text
+    bounds: [280, 202, 176, 14]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 9
+      text: |
+        <p><span style="color:$success;">环比净增 6 家</span>（3 新开 · 0 闭店）</p>
+  # —— KPI 卡片 3：客单价 ——
+  - elementId: kpi3Box
+    elementType: shape
+    bounds: [488, 112, 208, 112]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: kpi3Icon
+    elementType: icon
+    bounds: [504, 128, 22, 22]
+    iconName: "bs:wallet"
+    fill: { type: solid, color: "$accent" }
+  - elementId: kpi3Label
+    elementType: text
+    bounds: [504, 154, 176, 14]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 10
+      color: "$muted"
+      text: 客单价
+  - elementId: kpi3Value
+    elementType: text
+    bounds: [504, 170, 176, 30]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      color: "$primary"
+      text: 33.2 元
+  - elementId: kpi3Delta
+    elementType: text
+    bounds: [504, 202, 176, 14]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 9
+      text: |
+        <p><span style="color:$success;">同比 +1.8%</span> · <span style="color:$danger;">环比 -0.3%</span></p>
+  # —— KPI 卡片 4：90 天复购率 ——
+  - elementId: kpi4Box
+    elementType: shape
+    bounds: [712, 112, 208, 112]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: kpi4Icon
+    elementType: icon
+    bounds: [728, 128, 22, 22]
+    iconName: "bs:arrow-repeat"
+    fill: { type: solid, color: "$accent" }
+  - elementId: kpi4Label
+    elementType: text
+    bounds: [728, 154, 176, 14]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 10
+      color: "$muted"
+      text: 90 天复购率
+  - elementId: kpi4Value
+    elementType: text
+    bounds: [728, 170, 176, 30]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      color: "$primary"
+      text: 41.6%
+  - elementId: kpi4Delta
+    elementType: text
+    bounds: [728, 202, 176, 14]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 9
+      text: |
+        <p><span style="color:$success;">同比 +2.3pp</span> · <span style="color:$success;">环比 +1.1pp</span></p>
+  # —— 柱状图：近 6 个月营收 ——
+  - elementId: chartBlockTitle
+    elementType: text
+    bounds: [46, 230, 400, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 13
+      color: "$text"
+      text: 近 6 个月营收（万元）
+  - elementId: chartBlockCaption
+    elementType: text
+    bounds: [686, 230, 240, 16]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 2025-12 — 2026-05 · 2026-02 受春节影响回落
+  - elementId: revenueChart
+    elementType: chart
+    bounds: [40, 248, 880, 190]
+    data:
+      cols: [月份, 营收]
+      rows:
+        - ["12月", 3410]
+        - ["1月", 3590]
+        - ["2月", 3310]
+        - ["3月", 3780]
+        - ["4月", 4020]
+        - ["5月", 4392]
+    xAxis:
+      axisLine: false
+      label: { fontSize: 10, color: "$muted" }
+    yAxis:
+      axisLine: false
+      gridLine: { color: "$line" }
+      label: { fontSize: 9, color: "$muted", numberFormat: "#,##0" }
+    legend: false
+    barWidth: 0.5
+    series:
+      - type: bar
+        encode: { x: 月份, y: 营收 }
+        name: 月度营收
+        fill: "$primary"
+        dataLabels: { show: true, fontSize: 9, color: "$muted", numberFormat: "#,##0" }
+  # —— 底部结论条 ——
+  - elementId: insightBar
+    elementType: shape
+    bounds: [40, 446, 4, 54]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: insightBox
+    elementType: shape
+    bounds: [40, 446, 880, 54]
+    shapeName: rect
+    fill: { type: solid, color: "$primarySoft" }
+  - elementId: insightText
+    elementType: text
+    bounds: [60, 446, 844, 54]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 12
+      color: "$text"
+      align: [left, middle]
+      lineHeight: 1.5
+      text: |
+        <p><strong>结论：</strong>营收连续 5 个月环比正增长，5 月同比增速为近一年最高；增量主要来自华东 3 家爬坡门店转正与快取店外卖放量（详见 P4）。</p>
+  # —— 页脚 ——
+  - elementId: footerLeft
+    elementType: text
+    bounds: [40, 519, 420, 14]
+    content:
+      style: "$caption"
+      text: 屿间咖啡 · 2026 年 5 月经营月报
+  - elementId: footerRight
+    elementType: text
+    bounds: [520, 519, 400, 14]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 02 / 05 · 数据截至 2026-05-31 · 财务口径

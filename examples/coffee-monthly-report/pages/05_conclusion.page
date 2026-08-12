@@ -1,0 +1,239 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: 收尾页。趋势上营收连续两季加速，Q3 预测首次突破 1.2 亿元；三项行动按 P0/P1/P2 排序，P0 快取店加密 8 月启动。请管理层就快取店加密预算与早餐月卡定价给出意见。
+elements:
+  # —— 页眉 ——
+  - elementId: kicker
+    elementType: text
+    bounds: [40, 22, 600, 16]
+    content:
+      style: "$kicker"
+      text: 05 / 趋势与结论
+  - elementId: title
+    elementType: text
+    bounds: [40, 40, 880, 32]
+    content:
+      style: "$title"
+      text: 营收连续两季加速，<strong>Q3 预测首次突破 1.2 亿元</strong>
+  - elementId: subtitle
+    elementType: text
+    bounds: [40, 74, 880, 18]
+    content:
+      style: "$subtitle"
+      text: 近 8 个季度营收趋势与下半年三项优先行动 · 预测口径见下注
+  - elementId: headerLine
+    elementType: shape
+    bounds: [40, 100, 880, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  # —— 左：折线图（近 8 季度营收 + 预测）——
+  - elementId: trendBlockTitle
+    elementType: text
+    bounds: [40, 110, 320, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 13
+      color: "$text"
+      text: 近 8 个季度营收趋势（万元）
+  - elementId: trendBlockCaption
+    elementType: text
+    bounds: [300, 112, 300, 16]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 实线为实际 · 虚线为预测
+  - elementId: revenueTrend
+    elementType: chart
+    bounds: [40, 136, 560, 240]
+    data:
+      cols: [季度, 实际营收, 预测营收]
+      rows:
+        - ["2024Q4", 8860, null]
+        - ["2025Q1", 9320, null]
+        - ["2025Q2", 10050, null]
+        - ["2025Q3", 10410, null]
+        - ["2025Q4", 10960, null]
+        - ["2026Q1", 11380, 11380]
+        - ["2026Q2F", null, 12150]
+        - ["2026Q3F", null, 12900]
+    xAxis:
+      axisLine: false
+      label: { fontSize: 9.5, color: "$muted" }
+    yAxis:
+      axisLine: false
+      gridLine: { color: "$line" }
+      label: { fontSize: 9, color: "$muted", numberFormat: "#,##0" }
+    legend: { fontSize: 9, position: bottom }
+    series:
+      - type: line
+        encode: { x: 季度, y: 实际营收 }
+        name: 实际
+        lineColor: "$primary"
+        width: 2.5
+        smooth: true
+        marker: { shape: circle, size: 4, fill: "$primary" }
+      - type: line
+        encode: { x: 季度, y: 预测营收 }
+        name: 预测
+        lineColor: "$accent"
+        lineStyle: dash
+        width: 2.5
+        smooth: true
+        marker: { shape: circle, size: 4, fill: "$accent" }
+        dataLabels: { show: true, fontSize: 9, color: "$accent", numberFormat: "#,##0" }
+  - elementId: trendNote
+    elementType: text
+    bounds: [40, 384, 560, 14]
+    content:
+      style: "$caption"
+      text: 预测口径：开店计划 + 外卖占比斜率外推，敏感性 ±5%
+  # —— 右：三项建议卡片 ——
+  - elementId: card1Box
+    elementType: shape
+    bounds: [624, 112, 296, 92]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: card1Icon
+    elementType: icon
+    bounds: [640, 126, 20, 20]
+    iconName: "bs:graph-up-arrow"
+    fill: { type: solid, color: "$accent" }
+  - elementId: card1Title
+    elementType: text
+    bounds: [676, 124, 152, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$text"
+      text: 华东加密：新增 6 家快取店
+  - elementId: card1Tag
+    elementType: text
+    bounds: [832, 126, 76, 14]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 8.5
+      color: "$accent"
+      align: [right, top]
+      text: P0 · 8 月启动
+  - elementId: card1Desc
+    elementType: text
+    bounds: [640, 148, 268, 48]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 10
+      color: "$muted"
+      lineHeight: 1.4
+      text: 外卖占比连续 3 个月提升，快取店 5 月外卖单量占 52%；建议 Q3 在沪杭商圈新增 6 家，预计月增营收约 190 万元。
+  - elementId: card2Box
+    elementType: shape
+    bounds: [624, 218, 296, 92]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: card2Icon
+    elementType: icon
+    bounds: [640, 232, 20, 20]
+    iconName: "bs:arrow-repeat"
+    fill: { type: solid, color: "$accent" }
+  - elementId: card2Title
+    elementType: text
+    bounds: [676, 230, 152, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$text"
+      text: 会员复购：上线早餐月卡
+  - elementId: card2Tag
+    elementType: text
+    bounds: [832, 232, 76, 14]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 8.5
+      color: "$accent"
+      align: [right, top]
+      text: P1 · 9 月上线
+  - elementId: card2Desc
+    elementType: text
+    bounds: [640, 254, 268, 48]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 10
+      color: "$muted"
+      lineHeight: 1.4
+      text: 90 天复购率 41.6%，对标行业头部仍有约 5pp 空间；建议 8 月上线早餐月卡并开通企业团购，目标年内复购率 45%。
+  - elementId: card3Box
+    elementType: shape
+    bounds: [624, 324, 296, 92]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: card3Icon
+    elementType: icon
+    bounds: [640, 338, 20, 20]
+    iconName: "bs:box-seam"
+    fill: { type: solid, color: "$accent" }
+  - elementId: card3Title
+    elementType: text
+    bounds: [676, 336, 152, 18]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 12
+      color: "$text"
+      text: 轻食提效：SKU 精简 20%
+  - elementId: card3Tag
+    elementType: text
+    bounds: [832, 338, 76, 14]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 8.5
+      color: "$accent"
+      align: [right, top]
+      text: P2 · 随季度调品
+  - elementId: card3Desc
+    elementType: text
+    bounds: [640, 360, 268, 48]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 10
+      color: "$muted"
+      lineHeight: 1.4
+      text: 轻食毛利 58% 但损耗率 7.2% 偏高；建议门店日配改隔日配，SKU 从 120 精简至 96，损耗率目标降至 4.5%。
+  # —— 底部结论条 ——
+  - elementId: insightBar
+    elementType: shape
+    bounds: [40, 430, 4, 64]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+  - elementId: insightBox
+    elementType: shape
+    bounds: [40, 430, 880, 64]
+    shapeName: rect
+    fill: { type: solid, color: "$primarySoft" }
+  - elementId: insightText
+    elementType: text
+    bounds: [60, 430, 844, 64]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 12
+      color: "$text"
+      align: [left, middle]
+      lineHeight: 1.5
+      text: |
+        <p><strong>总评：</strong>按当前外卖斜率与开店计划外推，全年营收有望突破 <strong>5.2 亿元（+11% YoY）</strong>；Q2 重点跟踪快取店爬坡与复购率两项指标，三项行动 8 月前完成立项。</p>
+  # —— 页脚 ——
+  - elementId: footerLeft
+    elementType: text
+    bounds: [40, 519, 420, 14]
+    content:
+      style: "$caption"
+      text: 屿间咖啡 · 2026 年 5 月经营月报
+  - elementId: footerRight
+    elementType: text
+    bounds: [520, 519, 400, 14]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 05 / 05 · 数据截至 2026-05-31 · 财务口径
