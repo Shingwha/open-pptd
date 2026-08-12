@@ -1,0 +1,57 @@
+version: v2
+title: "字体嵌入测试"
+size: [960, 540]
+fonts:
+  Coda: { family: "Coda" }
+  HedvigLettersSans: { family: "Hedvig Letters Sans" }
+  Jersey15: { family: "Jersey 15" }
+  Jersey20Charted: { family: "Jersey 20 Charted" }
+  Liter: { family: "Liter" }
+  Oranienbaum: { family: "Oranienbaum" }
+  QuattrocentoSans: { family: "Quattrocento Sans" }
+  SortsMillGoudy: { family: "Sorts Mill Goudy" }
+  Unna: { family: "Unna" }
+  LXGW Bright: { family: "LXGW WenKai" }
+  MiSans: { family: "MiSans" }
+  ZCOOL KuaiLe: { family: "HappyZcool-2016" }
+  寒蝉点阵体: { family: "寒蝉点阵体" }
+  得意黑: { family: "Smiley Sans" }
+  思源宋体: { family: "Source Han Serif CN" }
+  站酷小薇LOGO体: { family: "xiaowei" }
+  站酷庆科黄油体: { family: "zcoolqingkehuangyouti" }
+  站酷文艺体: { family: "zcoolwenyiti" }
+  精品点阵体: { family: "BoutiqueBitmap9x9 1.9" }
+  阿里妈妈东方大楷: { family: "Alimama DongFangDaKai" }
+  阿里妈妈刀隶体: { family: "Alimama DaoLiTi" }
+  阿里妈妈数黑体: { family: "Alimama ShuHeiTi" }
+  霞鹜新晰黑: { family: "LXGW Neo XiHei" }
+  霞鹜緻宋: { family: "LXGW ZhiSong MN" }
+  霞鹜臻楷: { family: "LXGW ZhenKai" }
+  霞鹜铭心宋: { family: "LXGW Heart Serif MN" }
+  飞波正点体: { family: "Feibo Zheng Dots" }
+theme:
+  colors:
+    primary: "#1646B8"
+    accent: "#FF4F87"
+    bg: "#FAF7F0"
+    text: "#171512"
+    muted: "#8A8272"
+    line: "#E2DAC8"
+    success: "#2A7D4F"
+    warning: "#F1A51B"
+    danger: "#C8102E"
+    primarySoft: "#EDE7D8"
+    primaryTint: "#C9D4F0"
+    primaryDeep: "#0D2A6E"
+    accent3: "#F1A51B"
+    accent4: "#4A90D9"
+    accent5: "#7B4FA8"
+    accent6: "#2A6E72"
+pages:
+  - pages/1_test.page
+  - pages/2_test.page
+  - pages/3_test.page
+  - pages/4_test.page
+  - pages/5_test.page
+  - pages/6_test.page
+  - pages/7_test.page

@@ -2,7 +2,7 @@
 
 ## Overview
 
-- **Built-in font library**: `assets/fonts/` (skill resource folder, not uploaded to GitHub) contains **29 free-for-commercial-use fonts**, all verified for name-table family names, embeddable fsType, and subsetting support.
+- **Built-in font library**: `assets/fonts/` (skill resource folder, not uploaded to GitHub) contains **27 free-for-commercial-use fonts**, all verified for name-table family names, embeddable fsType, and subsetting support.
 - **Usage**: declare `{family: <registered-name>}` in `deck.fonts` and the font is embedded automatically (subsetted by default). No need to download or place font files.
 - **Default font**: `Microsoft YaHei` (built into Windows, declared only — not embedded). It is not in the built-in library (Microsoft copyright, cannot be redistributed/embedded), so it is a system font: declared only, consistent on any Windows machine. For a cross-machine brand font, declare it in `deck.fonts` and reference it explicitly on pages.
 - **System fonts**: any `fontFamily` that misses the registry is declared only (not embedded) and depends on the opening system. Common system fonts and their platform coverage are listed under "System Fonts" below (also queryable via `node bin/open-pptd.js fonts list`).
@@ -17,22 +17,20 @@
 
 > The sans table below is ordered by recommendation: **steady, formal, widely applicable fonts first** — pick from the top of the list for a professional look; stylized/creative fonts follow for titles and special pages.
 
-## Built-in Font Library (29 fonts, all free-for-commercial-use + subsettable embedding)
+## Built-in Font Library (27 fonts, all free-for-commercial-use + subsettable embedding)
 
 ### Sans (黑体)
 
 | Display name | Registered name (family) | Style & character | Best for |
 |---|---|---|---|
-| 思源真黑 | `Gen Shin Gothic` | Square, sturdy, industrial feel | Industry/mechanical/titles/formal reports |
 | 阿里妈妈数黑体 | `Alimama ShuHeiTi` | Geometric sans, orderly commercial look (bold weight) | Business/tech/e-commerce |
 | 霞鹜新晰黑 | `LXGW Neo XiHei` | Clear, modern, clean and neat | Tech/body text/general |
-| Liter | `Liter` | Modern sans-serif, rational and clean | Tech/products |
-| Quattrocento Sans | `Quattrocento Sans` | Classic elegant sans-serif, legible at small sizes | Academic/business/education |
+| Liter | `Liter` | Modern sans-serif, rational and clean (Latin only — no Chinese glyphs) | Tech/products (English only) |
+| Quattrocento Sans | `Quattrocento Sans` | Classic elegant sans-serif, legible at small sizes (Latin only — no Chinese glyphs) | Academic/business/education (English only) |
 | MiSans | `MiSans` | Xiaomi system sans, modern and clear, multiple weights | Tech/enterprise/products (backup choice) |
 | 得意黑 | `Smiley Sans` | Narrow slanted sans, balance of humanist and geometric (italic glyphs) | Creative tech/brand display/titles |
-| 思源柔黑 | `Gen Jyuu GothicL` | Rounded and soft, friendly | Lifestyle/light/body text |
-| HedvigLettersSans | `Hedvig Letters Sans` | Non-designer perspective, distinctive personality | Creative design/brand |
-| Coda | `Coda` | Rounded, friendly, open curves | Business/friendly brands |
+| HedvigLettersSans | `Hedvig Letters Sans` | Non-designer perspective, distinctive personality (Latin only — no Chinese glyphs) | Creative design/brand (English only) |
+| Coda | `Coda` | Rounded, friendly, open curves (Latin only — no Chinese glyphs) | Business/friendly brands (English only) |
 
 ### Serif (宋/衬线)
 
@@ -42,9 +40,9 @@
 | 霞鹜文楷 | `LXGW WenKai` | Kai with fangsong fusion, warm and delicate | Literature/education/humanities |
 | 霞鹜緻宋 | `LXGW ZhiSong MN` | Modern serif | Literature/classic/print style |
 | 霞鹜铭心宋 | `LXGW Heart Serif MN` | Delicate strokes | Literature/classic/titles |
-| Oranienbaum | `Oranienbaum` | High-contrast geometric serif, classical elegance | Culture/art/fashion |
-| Sorts Mill Goudy | `Sorts Mill Goudy` | Classical serif, soft and readable | Literature/humanities |
-| Unna | `Unna` | Neo-classical serif, vertical rhythm | Literature/publishing/academic |
+| Oranienbaum | `Oranienbaum` | High-contrast geometric serif, classical elegance (Latin only — no Chinese glyphs) | Culture/art/fashion (English only) |
+| Sorts Mill Goudy | `Sorts Mill Goudy` | Classical serif, soft and readable (Latin only — no Chinese glyphs) | Literature/humanities (English only) |
+| Unna | `Unna` | Neo-classical serif, vertical rhythm (Latin only — no Chinese glyphs) | Literature/publishing/academic (English only) |
 
 ### Handwriting / Calligraphy (手写/书法)
 
@@ -74,6 +72,8 @@
 | Jersey20Charted | `Jersey 20 Charted` | Grid-shadow sports numerals (Latin only) | Sports/mechanical/decorative |
 
 > Full table, sizes, licenses, and source URLs: `assets/fonts/registry.json` (machine-readable, shared by CLI and editor).
+
+> ⚠ Coverage notes (GB2312 level-1 = 3755 most common Chinese chars): the two Japanese-oriented fonts 思源真黑 (`Gen Shin Gothic`) and 思源柔黑 (`Gen Jyuu GothicL`) were **removed from the library** — they lack simplified-Chinese-only glyphs (谁/态/创/对/话/图/视/频 etc.). Latin-only fonts (marked above) have zero Chinese glyphs. Minor punctuation gaps: Alimama DaoLiTi/DongFangDaKai/ShuHeiTi lack full-width 『』％＋＝＜＞＃＆＊＠; Feibo Zheng Dots lacks ＜＞; HappyZcool-2016 lacks full-width （）.
 
 ## System Fonts (declared only, not embedded — depend on the opening system)
 
@@ -163,6 +163,6 @@ Toolbar "Fonts" → font management dialog: browse the built-in library by categ
 - **Use = embed**: fonts referenced via the registry are always embedded (whether or not installed locally), guaranteeing consistency on any machine; size is controlled by subsetting
 - **Do not use embedded fonts as the theme default font** (PowerPoint treats theme fonts as "in use" and forces embedding, bloating the file)
 - **A run must actually use the font**: declaring fonts while no page/theme style references the family → PowerPoint drops the embedded declaration. After declaring in `deck.fonts`, remember to use it in `theme.textStyles` or element `fontFamily`
-- **Licensing**: all 29 built-in fonts are free for commercial use (OFL / IPA / Alimama / ZCOOL licenses), embeddable and redistributable; Windows commercial fonts such as Microsoft YaHei cannot be redistributed/embedded
+- **Licensing**: all 27 built-in fonts are free for commercial use (OFL / IPA / Alimama / ZCOOL licenses), embeddable and redistributable; Windows commercial fonts such as Microsoft YaHei cannot be redistributed/embedded
 - **Restricted fonts**: fonts with fsType = Restricted (0x0002) are skipped with a warning at export (none in the built-in library)
 - Embedding implementation details: `docs/font-embedding.md` (developer doc, consult when troubleshooting)

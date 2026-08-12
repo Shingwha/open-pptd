@@ -1,6 +1,13 @@
 ---
 name: open-pptd
-description: Create, edit, replicate, read, and export presentations. For every PPT task, the default deliverables are BOTH (1) a self-contained PPTD project folder containing the .pptd manifest plus pages/media dependencies and (2) a locally generated .pptx with embedded fonts and fade slide transitions. Use for any presentation, PowerPoint, PPT/PPTX, slide deck, PPTD, infographic, or poster task unless the user explicitly requests another format. Deliver with normal local file/folder links using absolute paths.
+description: Create, edit, replicate, read, and export presentations. For every
+  PPT task, the default deliverables are BOTH (1) a self-contained PPTD project
+  folder containing the .pptd manifest plus pages/media dependencies and (2) a
+  locally generated .pptx with embedded fonts and fade slide transitions. Use
+  for any presentation, PowerPoint, PPT/PPTX, slide deck, PPTD, infographic, or
+  poster task unless the user explicitly requests another format. Deliver with
+  normal local file/folder links using absolute paths.
+disable-model-invocation: false
 ---
 
 # Definition
@@ -31,7 +38,7 @@ The .pptd format is a simplified abstraction layer over OOXML that follows basic
    - unknown icons are skipped at export — always check the table before generating.
 8. **Shapes**: `references/shapes.md` is the full list (177 preset shapes + parameters/defaults), all supported; `shapeName: "custom"` allows viewBox+path customization.
 9. **Theme**: 10 built-in color presets (full values in `references/themes.md`; the editor top-bar "Palette" panel and CLI `--theme <key>` apply/re-skin in one click, replacing only `theme.colors`; chart series colors cycle accent1-6). **Custom colors by default** (design each deck independently per content to avoid homogenization; must satisfy the "Custom Palette Guidelines" in themes.md); **use a preset only when the user explicitly asks or after discussing with the user**. Whether custom or preset, write the **full 17-key color set** into `deck.theme.colors` (textStyles/tableStyles follow the default templates in themes.md) and reference via `$key` on pages; **never reference a preset by string** (e.g. `theme: "tech"`, non-official format); the deck must be self-contained (theme = a one-time design decision at generation).
-10. **Fonts**: default `Microsoft YaHei` (built into Windows, declared only — not embedded; consistent on any Windows machine; Microsoft copyright prevents redistribution, so it is not in the built-in library). The built-in library has 29 free-for-commercial-use fonts (see `references/fonts.md`; registered names all verified, embedded subsetted by default). `deck.fonts` with `{family: <registered-name>}` embeds automatically — **no `fonts/` directory needed in a project** (font bytes live in the skill's `assets/fonts/`); a family that misses the registry and has no url is declared only (system font). Before generating, run `node bin/open-pptd.js fonts list` to confirm registered names; export embeds fonts by default (`--no-embed-fonts` disables). **Talk to the user in display names (e.g. 得意黑), write registered names (e.g. `Smiley Sans`) into the deck.**
+10. **Fonts**: default `Microsoft YaHei` (built into Windows, declared only — not embedded; consistent on any Windows machine; Microsoft copyright prevents redistribution, so it is not in the built-in library). The built-in library has 27 free-for-commercial-use fonts (see `references/fonts.md`; registered names all verified, embedded subsetted by default). `deck.fonts` with `{family: <registered-name>}` embeds automatically — **no `fonts/` directory needed in a project** (font bytes live in the skill's `assets/fonts/`); a family that misses the registry and has no url is declared only (system font). Before generating, run `node bin/open-pptd.js fonts list` to confirm registered names; export embeds fonts by default (`--no-embed-fonts` disables). **Talk to the user in display names (e.g. 得意黑), write registered names (e.g. `Smiley Sans`) into the deck.**
 
 ## PPT Production Workflow
 

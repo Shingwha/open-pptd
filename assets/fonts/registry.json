@@ -258,36 +258,6 @@
       "size": 10847768
     },
     {
-      "key": "思源柔黑",
-      "family": "Gen Jyuu GothicL",
-      "file": "SourceHanRouHei.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/思源字体系列/思源柔黑/思源柔黑-Regular.ttf",
-      "category": "sans",
-      "style": "柔黑,圆润柔和",
-      "usage": "生活/轻松/正文",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 8,
-      "size": 10694700
-    },
-    {
-      "key": "思源真黑",
-      "family": "Gen Shin Gothic",
-      "file": "SourceHanZhenHei.ttf",
-      "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/思源字体系列/思源真黑/思源真黑-Regular.ttf",
-      "category": "sans",
-      "style": "真黑,方正硬朗",
-      "usage": "工业/机械/标题",
-      "license": "SIL OFL 1.1 免费商用",
-      "subset": true,
-      "weight": 400,
-      "italic": false,
-      "fsType": 8,
-      "size": 4971568
-    },
-    {
       "key": "寒蝉点阵体",
       "family": "寒蝉点阵体",
       "file": "HanchanDianzhen16.ttf",

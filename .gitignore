@@ -3,6 +3,8 @@ dist/
 *.log
 .DS_Store
 tests/projects/*/out/
+# 字体嵌入测试项目生成的 pptx（generate.py 一键重建）
+tests/font-embed-test/deck.pptx
 # 公式测试的 KaTeX 中间产物（npm run test:fixtures 重新生成）
 tests/formula/fixtures/mml/
 

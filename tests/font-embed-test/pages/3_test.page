@@ -1,0 +1,183 @@
+pageType: generic
+background:
+  type: solid
+  color: "$bg"
+elements:
+  - elementId: hdr
+    elementType: text
+    bounds: [40, 12, 700, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      bold: true
+      color: "$muted"
+      letterSpacing: 2
+      text: "FONT EMBEDDING TEST  /  字体嵌入测试  /  PAGE 03 / 07"
+  - elementId: card-0
+    elementType: shape
+    bounds: [40, 44, 430, 220]
+    shapeName: rect
+    fill: {type: solid, color: "$primarySoft"}
+    border: {style: solid, width: 1, color: "$line"}
+  - elementId: name-0
+    elementType: text
+    bounds: [56, 56, 400, 26]
+    content:
+      fontFamily: "Unna"
+      fontSize: 15
+      bold: true
+      color: "$text"
+      text: "Unna  /  Unna"
+  - elementId: verdict-0
+    elementType: text
+    bounds: [56, 84, 400, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      bold: true
+      color: "$warning"
+      text: "✗ 西文专用(不支持中文)"
+  - elementId: sample-0
+    elementType: text
+    bounds: [56, 108, 398, 56]
+    content:
+      fontFamily: "Unna"
+      fontSize: 12
+      color: "$text"
+      lineHeight: 1.4
+      text: "中文常用字样本：科技改变生活，创新驱动未来。2024 年我们在人工智能领域取得重大突破！"
+  - elementId: diag-0
+    elementType: text
+    bounds: [56, 172, 398, 80]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "$muted"
+      lineHeight: 1.5
+      text: "缺字(嵌入后回退): 啊阿埃挨哎唉哀皑癌蔼矮艾碍爱隘鞍氨安俺按暗岸胺案肮昂盎凹敖熬翱袄傲奥懊澳芭捌扒叭…"
+  - elementId: card-1
+    elementType: shape
+    bounds: [490, 44, 430, 220]
+    shapeName: rect
+    fill: {type: solid, color: "$primarySoft"}
+    border: {style: solid, width: 1, color: "$line"}
+  - elementId: name-1
+    elementType: text
+    bounds: [506, 56, 400, 26]
+    content:
+      fontFamily: "LXGW WenKai"
+      fontSize: 15
+      bold: true
+      color: "$text"
+      text: "LXGW Bright  /  LXGW WenKai"
+  - elementId: verdict-1
+    elementType: text
+    bounds: [506, 84, 400, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      bold: true
+      color: "$success"
+      text: "一级常用字全覆盖 ✓"
+  - elementId: sample-1
+    elementType: text
+    bounds: [506, 108, 398, 56]
+    content:
+      fontFamily: "LXGW WenKai"
+      fontSize: 12
+      color: "$text"
+      lineHeight: 1.4
+      text: "中文常用字样本：科技改变生活，创新驱动未来。2024 年我们在人工智能领域取得重大突破！"
+  - elementId: diag-1
+    elementType: text
+    bounds: [506, 172, 398, 80]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "$muted"
+      lineHeight: 1.5
+      text: "覆盖: 一级汉字全覆盖"
+  - elementId: card-2
+    elementType: shape
+    bounds: [40, 284, 430, 220]
+    shapeName: rect
+    fill: {type: solid, color: "$primarySoft"}
+    border: {style: solid, width: 1, color: "$line"}
+  - elementId: name-2
+    elementType: text
+    bounds: [56, 296, 400, 26]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 15
+      bold: true
+      color: "$text"
+      text: "MiSans  /  MiSans"
+  - elementId: verdict-2
+    elementType: text
+    bounds: [56, 324, 400, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      bold: true
+      color: "$success"
+      text: "一级常用字全覆盖 ✓"
+  - elementId: sample-2
+    elementType: text
+    bounds: [56, 348, 398, 56]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 12
+      color: "$text"
+      lineHeight: 1.4
+      text: "中文常用字样本：科技改变生活，创新驱动未来。2024 年我们在人工智能领域取得重大突破！"
+  - elementId: diag-2
+    elementType: text
+    bounds: [56, 412, 398, 80]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "$muted"
+      lineHeight: 1.5
+      text: "覆盖: 一级汉字全覆盖"
+  - elementId: card-3
+    elementType: shape
+    bounds: [490, 284, 430, 220]
+    shapeName: rect
+    fill: {type: solid, color: "$primarySoft"}
+    border: {style: solid, width: 1, color: "$line"}
+  - elementId: name-3
+    elementType: text
+    bounds: [506, 296, 400, 26]
+    content:
+      fontFamily: "HappyZcool-2016"
+      fontSize: 15
+      bold: true
+      color: "$text"
+      text: "ZCOOL KuaiLe  /  HappyZcool-2016"
+  - elementId: verdict-3
+    elementType: text
+    bounds: [506, 324, 400, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      bold: true
+      color: "$success"
+      text: "一级常用字全覆盖 ✓"
+  - elementId: sample-3
+    elementType: text
+    bounds: [506, 348, 398, 56]
+    content:
+      fontFamily: "HappyZcool-2016"
+      fontSize: 12
+      color: "$text"
+      lineHeight: 1.4
+      text: "中文常用字样本：科技改变生活，创新驱动未来。2024 年我们在人工智能领域取得重大突破！"
+  - elementId: diag-3
+    elementType: text
+    bounds: [506, 412, 398, 80]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "$muted"
+      lineHeight: 1.5
+      text: "覆盖: 一级汉字全覆盖"
