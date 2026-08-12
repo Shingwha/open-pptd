@@ -1,5 +1,5 @@
 version: v2
-title: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测
+title: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测
 size: [960, 540]
 fonts:
   阿里妈妈数黑体: { family: "Alimama ShuHeiTi" }

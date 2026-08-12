@@ -172,7 +172,7 @@ elements:
     content:
       style: "$caption"
       wrap: false
-      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测 · 《中国科学：技术科学》
+      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
   - elementId: chrome-page
     elementType: text
     bounds: [856, 512, 44, 18]

@@ -33,7 +33,7 @@ elements:
       color: "#FFFFFF59"
       letterSpacing: 3
       wrap: false
-      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测
+      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测
   - elementId: num
     elementType: text
     bounds: [60, 140, 320, 130]

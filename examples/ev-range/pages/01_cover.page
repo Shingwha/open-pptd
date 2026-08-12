@@ -3,7 +3,7 @@ background:
   type: solid
   color: "$primaryDeep"
 notes: |
-  封面：论文题目、作者与机构信息。说明论文发表于《中国科学：技术科学》，
+  封面：论文题目、作者与机构信息。说明论文发表于《新能源车辆工程学报》，
   研究聚焦"用量化因子代替聚类标签刻画驾驶行为，提升电动汽车剩余续驶里程预测精度"。
 elements:
   - elementId: spine
@@ -61,7 +61,7 @@ elements:
       letterSpacing: 1
       wrap: false
       text: |
-        《中国科学：技术科学》 · 网络版发表 2024-05-10 · DOI: 10.1360/SST-2023-0239
+        《新能源车辆工程学报》 · 网络版发表 2024-11-08 · DOI: 10.12345/NEVE-2024-0128
   - elementId: title
     elementType: text
     bounds: [60, 148, 840, 110]
@@ -88,7 +88,7 @@ elements:
       italic: true
       lineHeight: 1.45
       text: |
-        Prediction of the remaining mileage of electric vehicles based on the quantitative factors of driving behavior
+        Prediction of electric vehicle remaining driving range based on quantitative driving behavior characteristics
   - elementId: authors
     elementType: text
     bounds: [60, 362, 840, 22]
@@ -98,7 +98,7 @@ elements:
       color: "#FFFFFFEE"
       wrap: false
       text: |
-        <p>李骏<sup>1</sup>　孙亚诚<sup>1</sup>　李继秋<sup>1</sup>　单丰武<sup>2,3</sup>　刘俊宇<sup>2,3</sup>　曾建邦<sup>1,3*</sup></p>
+        <p>陈默<sup>1</sup>　周远航<sup>1</sup>　林晚晴<sup>1</sup>　郑国栋<sup>2,3</sup>　许诺<sup>2,3</sup>　沈既明<sup>1,3*</sup></p>
   - elementId: affiliation
     elementType: text
     bounds: [60, 390, 840, 36]
@@ -108,8 +108,8 @@ elements:
       color: "#FFFFFF99"
       lineHeight: 1.6
       text: |
-        <p>1. 华东交通大学机电与车辆工程学院，南昌 330013　2. 同济大学汽车学院，上海 201804</p>
-        <p>3. 江西江铃集团新能源汽车有限公司，南昌 330013　* 通讯作者：jbzeng68@sina.com</p>
+        <p>1. 麓山理工大学车辆工程学院，长沙 410082　2. 青川大学汽车学院，成都 610065</p>
+        <p>3. 湘江云驰新能源汽车有限公司，长沙 410082　* 通讯作者：shenjm_2024@163.com</p>
   - elementId: funding
     elementType: text
     bounds: [60, 452, 560, 16]
@@ -119,7 +119,7 @@ elements:
       color: "#FFFFFF73"
       wrap: false
       text: |
-        国家自然科学基金（51806066）· 江西省重点研发计划（20223BBE51016）
+        国家自然科学基金（52275123）· 湖南省重点研发计划（2024GK4021）
   - elementId: keywords
     elementType: text
     bounds: [560, 452, 340, 16]

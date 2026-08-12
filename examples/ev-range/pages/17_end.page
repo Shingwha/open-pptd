@@ -58,7 +58,7 @@ elements:
       color: "#FFFFFF59"
       letterSpacing: 3
       wrap: false
-      text: 基于驾驶行为量化因子的电动汽车剩余续驶里程预测
+      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测
   - elementId: thanks
     elementType: text
     bounds: [60, 180, 700, 60]
@@ -91,8 +91,8 @@ elements:
       color: "#FFFFFFCC"
       lineHeight: 1.7
       text: |
-        <p>通讯作者：曾建邦 · 华东交通大学机电与车辆工程学院</p>
-        <p>E-mail: jbzeng68@sina.com</p>
+        <p>通讯作者：沈既明 · 麓山理工大学车辆工程学院</p>
+        <p>E-mail: shenjm_2024@163.com</p>
   - elementId: funding
     elementType: text
     bounds: [60, 432, 840, 30]
@@ -102,8 +102,8 @@ elements:
       color: "#FFFFFF73"
       lineHeight: 1.6
       text: |
-        <p>国家自然科学基金（51806066）· 江西省重点研发计划（20223BBE51016）</p>
-        <p>《中国科学：技术科学》 · DOI: 10.1360/SST-2023-0239</p>
+        <p>国家自然科学基金（52275123）· 湖南省重点研发计划（2024GK4021）</p>
+        <p>《新能源车辆工程学报》 · DOI: 10.12345/NEVE-2024-0128</p>
   - elementId: bottom-band
     elementType: shape
     bounds: [0, 504, 960, 36]
