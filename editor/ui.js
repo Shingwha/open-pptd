@@ -256,6 +256,9 @@ export function button(label, onClick, { title = "", className = "btn btn-sm", a
 // 快速条专用控件（qb-* 样式）
 // ----------------------------------------------------------------------------
 
+/** 窄屏断点（≤900px）：缩略图缩窄、快速条吸底横滑共用（与 styles.css 响应式块同步）。 */
+export const isNarrow = () => window.matchMedia("(max-width: 900px)").matches;
+
 export function quickbarColor(value, onCommit) {
   return colorInput(value, onCommit, { className: "qb-color", title: "颜色" });
 }
