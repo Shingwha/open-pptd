@@ -1,0 +1,125 @@
+pageType: content
+notes: 视觉识别：色彩以面积比例呈现（85/10/5 非均分色带）、字体双轨、摄影规范配固定 16:10 黑白样张。
+elements:
+  - elementId: v-motif
+    elementType: shape
+    bounds: [48, 48, 4, 36]
+    shapeName: rect
+    fill: { type: solid, color: "#0038B8" }
+  - elementId: v-no
+    elementType: text
+    bounds: [64, 44, 300, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "#6B6A66"
+      letterSpacing: 2
+      text: "03 · 视觉识别"
+
+  - elementId: v-col-t
+    elementType: text
+    bounds: [48, 110, 500, 22]
+    content:
+      style: "$h3"
+      text: 色彩：三个颜色，按面积说话
+
+  - elementId: v-sw1
+    elementType: shape
+    bounds: [48, 144, 584, 56]
+    shapeName: rect
+    fill: { type: solid, color: "#F7F5EF" }
+    border: { style: solid, width: 0.5, color: "#D8D7D2" }
+  - elementId: v-sw1t
+    elementType: text
+    bounds: [64, 162, 400, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "#6B6A66"
+      text: 纸白 #F7F5EF —— 底色与呼吸 · 约 85%
+
+  - elementId: v-sw2
+    elementType: shape
+    bounds: [636, 144, 152, 56]
+    shapeName: rect
+    fill: { type: solid, color: "#101010" }
+  - elementId: v-sw2t
+    elementType: text
+    bounds: [646, 162, 140, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "#F7F5EF"
+      text: 近黑 #101010 · 约 10%
+
+  - elementId: v-sw3
+    elementType: shape
+    bounds: [792, 144, 120, 56]
+    shapeName: rect
+    fill: { type: solid, color: "#0038B8" }
+  - elementId: v-sw3t
+    elementType: text
+    bounds: [802, 162, 104, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "#F7F5EF"
+      text: 克莱因蓝 · ≤5%
+
+  - elementId: v-colnote
+    elementType: text
+    bounds: [48, 210, 864, 20]
+    content:
+      style: "$small"
+      fontSize: 10
+      text: 蓝色是「灯」：只落在编号、强调线与章节块上；任何一页出现第二种彩色即为违规。
+
+  - elementId: v-type-t
+    elementType: text
+    bounds: [48, 250, 500, 22]
+    content:
+      style: "$h3"
+      text: 字体：一支展示，一支正文
+  - elementId: v-type
+    elementType: text
+    bounds: [48, 278, 420, 110]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      color: "#101010"
+      lineHeight: 1.7
+      text: |
+        <p><span style="font-family:'Smiley Sans'; font-size:22px;">屿光得意黑 —— 海报级展示字</span></p>
+        <p>仅用于大标题、巨号数字与宣言句；宁大勿小，最小 32pt。</p>
+        <p style="margin-top:6px;"><span style="font-weight:bold;">霞鹜新晰黑 —— 工作正文</span></p>
+        <p>正文、标注、图注一律霞鹜新晰黑；层级靠字号与字重，不再引入第三字族。</p>
+
+  - elementId: v-photo-t
+    elementType: text
+    bounds: [500, 250, 412, 22]
+    content:
+      style: "$h3"
+      text: 摄影：高对比黑白，蓝只许盖在局部
+  - elementId: v-photo
+    elementType: image
+    bounds: [500, 278, 412, 216]
+    src: "media/books.gray.jpg"
+    fit: { mode: cover }
+  - elementId: v-photocap
+    elementType: text
+    bounds: [500, 500, 412, 30]
+    content:
+      style: "$source"
+      fontSize: 8.5
+      lineHeight: 1.5
+      text: 固定 16:10 槽位 · 样张（黑白处理）：书堆特写——高对比、有颗粒、保留纸的质感；禁止彩色直出。
+
+  - elementId: v-bottom
+    elementType: text
+    bounds: [48, 408, 420, 100]
+    content:
+      style: "$small"
+      fontSize: 10
+      lineHeight: 1.65
+      text: |
+        <p><strong>禁用清单</strong>　圆角、投影、渐变、玻璃拟态、描边图标、第二强调色、居中大标题——出现任何一项，整页重做。</p>

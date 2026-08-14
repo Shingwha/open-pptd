@@ -1,0 +1,67 @@
+pageType: cover
+notes: 克莱因蓝瑞士海报封面：标题占左 65%、右侧整高蓝色块、顶部一行 10pt 元信息。
+elements:
+  - elementId: c-meta
+    elementType: text
+    bounds: [48, 40, 500, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "#6B6A66"
+      letterSpacing: 2
+      text: ISLELIGHT BOOKS · BRAND BOOK VOL.1 · 2026
+
+  - elementId: c-title
+    elementType: text
+    bounds: [48, 150, 500, 260]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 96
+      color: "#101010"
+      lineHeight: 1.02
+      text: |
+        屿光
+        书店
+
+  - elementId: c-sub
+    elementType: text
+    bounds: [48, 420, 480, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "#101010"
+      text: 品牌手册 · 视觉与表达的基本法
+
+  - elementId: c-rule
+    elementType: shape
+    bounds: [48, 462, 72, 4]
+    shapeName: rect
+    fill: { type: solid, color: "#101010" }
+
+  - elementId: c-blue
+    elementType: shape
+    bounds: [620, 0, 340, 540]
+    shapeName: rect
+    fill: { type: solid, color: "#0038B8" }
+
+  - elementId: c-mark
+    elementType: text
+    bounds: [656, 360, 268, 120]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 44
+      color: "#F7F5EF"
+      lineHeight: 1.1
+      text: |
+        一座岛
+        一间书店
+
+  - elementId: c-note
+    elementType: text
+    bounds: [656, 490, 268, 30]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "#9FB4E8"
+      lineHeight: 1.5
+      text: 本手册为「品牌创意」场景风格示例（虚构品牌）；摄影素材来自图片搜索并做黑白处理。

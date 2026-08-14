@@ -1,0 +1,99 @@
+pageType: content
+notes: 数据页语法：110pt 大数字占左三分之一，右侧一张极简折线图（仅蓝+灰），下方三列短注。
+elements:
+  - elementId: n-motif
+    elementType: shape
+    bounds: [48, 48, 4, 36]
+    shapeName: rect
+    fill: { type: solid, color: "#0038B8" }
+  - elementId: n-no
+    elementType: text
+    bounds: [64, 44, 200, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "#6B6A66"
+      letterSpacing: 2
+      text: "02 · 品牌在数字里"
+
+  - elementId: n-big
+    elementType: text
+    bounds: [48, 120, 300, 130]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 92
+      color: "#0038B8"
+      lineHeight: 1.0
+      text: 7.2<span style="font-size:40px;">万册</span>
+  - elementId: n-bigc
+    elementType: text
+    bounds: [48, 260, 280, 60]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      color: "#101010"
+      lineHeight: 1.6
+      text: |
+        在架图书总量——按「一岛一主题」
+        动线陈列，不设畅销榜堆头。
+
+  - elementId: n-rule
+    elementType: shape
+    bounds: [380, 120, 1, 210]
+    shapeName: rect
+    fill: { type: solid, color: "#D8D7D2" }
+
+  - elementId: n-ct
+    elementType: text
+    bounds: [412, 120, 500, 20]
+    content:
+      style: "$h3"
+      fontSize: 13
+      text: 会员数（人）
+  - elementId: n-chart
+    elementType: chart
+    bounds: [412, 146, 500, 184]
+    data:
+      cols: [year, members]
+      rows:
+        - ["2020", 1200]
+        - ["2021", 2600]
+        - ["2022", 4100]
+        - ["2023", 6800]
+        - ["2024", 9600]
+        - ["2025", 13100]
+    fontFamily: "LXGW Neo XiHei"
+    legend: false
+    xAxis:
+      type: category
+      gridLine: false
+      axisLine: { color: "#101010", width: 1 }
+      label: { fontSize: 9.5, color: "#6B6A66" }
+    yAxis:
+      gridLine: false
+      label: { fontSize: 9, color: "#6B6A66", numberFormat: "#,##0" }
+    series:
+      - type: line
+        encode: { x: year, y: members }
+        lineColor: "#0038B8"
+        width: 2.5
+        smooth: false
+        marker: { shape: circle, size: 5, fill: "#0038B8" }
+
+  - elementId: n-notes
+    elementType: text
+    bounds: [48, 356, 864, 90]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      color: "#101010"
+      lineHeight: 1.7
+      text: |
+        <p>七年，从 12 街区的旧店面到今天的 1,400㎡ 岛式空间；会员复购率 68%，客单价 86 元——数字不是目标，是「灯还亮着」的证据。</p>
+        <p style="font-size:9px; color:#6B6A66;">数据为品牌手册示例口径（虚构品牌，示意经营数字）；图表只用克莱因蓝与灰阶，禁止第三色。</p>
+
+  - elementId: n-thick
+    elementType: shape
+    bounds: [48, 470, 864, 4]
+    shapeName: rect
+    fill: { type: solid, color: "#101010" }

@@ -1,0 +1,184 @@
+pageType: content
+notes: 市场页：TAM/SAM/SOM 嵌套矩形（右壁对齐避免居中呆板）+ 三条驱动因子；测算口径全部标注示例。
+elements:
+  - elementId: p5-kicker
+    elementType: text
+    bounds: [64, 34, 400, 16]
+    content:
+      style: "$kicker"
+      text: 市场 MARKET · 空间
+
+  - elementId: p5-title
+    elementType: text
+    bounds: [64, 56, 780, 36]
+    content:
+      style: "$disp"
+      text: 服务业劳动力管理，一张 380 亿的账单
+
+  - elementId: p5-rule
+    elementType: shape
+    bounds: [64, 124, 832, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: p5-tam
+    elementType: shape
+    bounds: [64, 152, 440, 312]
+    shapeName: rect
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: p5-tamt
+    elementType: text
+    bounds: [84, 164, 260, 20]
+    content:
+      style: "$h3"
+      fontSize: 13
+      color: "$muted"
+      text: TAM · 380 亿元（2026E，示例测算）
+  - elementId: p5-tamb
+    elementType: text
+    bounds: [84, 186, 260, 16]
+    content:
+      style: "$small"
+      fontSize: 9.5
+      text: 中国连锁服务业劳动力管理软件与服务
+
+  - elementId: p5-sam
+    elementType: shape
+    bounds: [104, 216, 400, 216]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryTint" }
+  - elementId: p5-samt
+    elementType: text
+    bounds: [124, 228, 260, 20]
+    content:
+      style: "$h3"
+      fontSize: 13
+      color: "$primary"
+      text: SAM · 96 亿元
+  - elementId: p5-samb
+    elementType: text
+    bounds: [124, 250, 260, 16]
+    content:
+      style: "$small"
+      fontSize: 9.5
+      text: 连锁门店排班 + 考勤 + 工时合规 SaaS
+
+  - elementId: p5-som
+    elementType: shape
+    bounds: [144, 284, 360, 128]
+    shapeName: rect
+    fill: { type: solid, color: "#C6F24E" }
+  - elementId: p5-somt
+    elementType: text
+    bounds: [164, 296, 300, 30]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 24
+      color: "#141414"
+      text: SOM · 12 亿元（2028）
+  - elementId: p5-somb
+    elementType: text
+    bounds: [164, 330, 300, 36]
+    content:
+      style: "$small"
+      fontSize: 10
+      color: "#141414"
+      lineHeight: 1.5
+      text: 茶饮/咖啡/零食/便利店四业态可服务市场，对应约 10 万家目标门店。
+
+  - elementId: p5-tamn
+    elementType: text
+    bounds: [64, 470, 440, 16]
+    content:
+      style: "$source"
+      fontSize: 8.5
+      text: 嵌套口径：TAM ⊃ SAM ⊃ SOM；测算=门店数 × 客单价 × 渗透率（示例假设）。
+
+  - elementId: p5-d1
+    elementType: text
+    bounds: [560, 152, 336, 26]
+    content:
+      style: "$h3"
+      text: 为什么是现在
+  - elementId: p5-d1l
+    elementType: shape
+    bounds: [560, 182, 336, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: p5-d1n
+    elementType: text
+    bounds: [560, 192, 40, 26]
+    content:
+      style: "$num"
+      fontSize: 20
+      text: 01
+  - elementId: p5-d1b
+    elementType: text
+    bounds: [608, 194, 288, 40]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: <strong>人力成本刚性上涨</strong>——服务业平均人力成本年增约 8%（示例口径），「省人效」成为店效第一杠杆。
+  - elementId: p5-d1l2
+    elementType: shape
+    bounds: [560, 244, 336, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: p5-d2n
+    elementType: text
+    bounds: [560, 254, 40, 26]
+    content:
+      style: "$num"
+      fontSize: 20
+      text: 02
+  - elementId: p5-d2b
+    elementType: text
+    bounds: [608, 256, 288, 40]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: <strong>连锁化率提升</strong>——茶饮、零食、咖啡门店连锁化率突破 50%，跨店统一排班从「不需要」变成「必须」。
+  - elementId: p5-d1l3
+    elementType: shape
+    bounds: [560, 306, 336, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: p5-d3n
+    elementType: text
+    bounds: [560, 316, 40, 26]
+    content:
+      style: "$num"
+      fontSize: 20
+      text: 03
+  - elementId: p5-d3b
+    elementType: text
+    bounds: [608, 318, 288, 40]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      text: <strong>监管趋严</strong>——工时与社保合规检查常态化，人工排班的合规风险从「成本」升级为「停业风险」。
+
+  - elementId: p5-mani
+    elementType: text
+    bounds: [560, 400, 336, 60]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 15
+      color: "$accent"
+      lineHeight: 1.5
+      text: 每 100 家门店，我们替它<br/>找回 3 个店长的人力。
+
+  - elementId: p5-src
+    elementType: text
+    bounds: [64, 512, 700, 14]
+    content:
+      style: "$source"
+      text: 市场规模为示例测算：基于公开行业报告门店基数 × 假设客单价与渗透率；不构成投资依据。
+  - elementId: p5-page
+    elementType: text
+    bounds: [864, 512, 32, 14]
+    content:
+      style: "$source"
+      align: [right, top]
+      text: 05

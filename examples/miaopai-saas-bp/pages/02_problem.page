@@ -1,0 +1,170 @@
+pageType: content
+notes: 情绪曲线谷底：三个数字 + 因果链，说明排班如何吞噬利润与人力。右侧用箭头因果链（非卡片）。
+elements:
+  - elementId: p2-kicker
+    elementType: text
+    bounds: [64, 34, 400, 16]
+    content:
+      style: "$kicker"
+      text: 痛点 PROBLEM · 不安
+
+  - elementId: p2-title
+    elementType: text
+    bounds: [64, 56, 760, 36]
+    content:
+      style: "$disp"
+      text: 店长的时间，正在被一张排班表吃掉
+
+  - elementId: p2-rule
+    elementType: shape
+    bounds: [64, 124, 832, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: p2-n1
+    elementType: text
+    bounds: [64, 148, 300, 54]
+    content:
+      style: "$num"
+      fontSize: 44
+      text: 6.5 <span style="font-size:16px; color:#6C746D;">小时 / 店·周</span>
+  - elementId: p2-n1c
+    elementType: text
+    bounds: [64, 208, 300, 34]
+    content:
+      style: "$small"
+      fontSize: 10.5
+      text: 店长每周花在「做表+调班+补人」上的时间
+  - elementId: p2-ln1
+    elementType: shape
+    bounds: [64, 250, 300, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: p2-n2
+    elementType: text
+    bounds: [64, 264, 300, 54]
+    content:
+      style: "$num"
+      fontSize: 44
+      text: 8.2<span style="font-size:22px;">%</span>
+  - elementId: p2-n2c
+    elementType: text
+    bounds: [64, 324, 300, 34]
+    content:
+      style: "$small"
+      fontSize: 10.5
+      text: 高峰时段空班率——忙闲错配直接吃掉营业额
+  - elementId: p2-ln2
+    elementType: shape
+    bounds: [64, 366, 300, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: p2-n3
+    elementType: text
+    bounds: [64, 380, 300, 54]
+    content:
+      style: "$num"
+      fontSize: 44
+      text: 42<span style="font-size:22px;">%</span>
+  - elementId: p2-n3c
+    elementType: text
+    bounds: [64, 440, 300, 34]
+    content:
+      style: "$small"
+      fontSize: 10.5
+      text: 离职员工将「排班不合理」列为离职原因前三
+
+  - elementId: p2-flowt
+    elementType: text
+    bounds: [440, 148, 456, 22]
+    content:
+      style: "$h3"
+      text: 一张表的连锁反应
+  - elementId: p2-f1
+    elementType: text
+    bounds: [440, 178, 456, 20]
+    content:
+      style: "$body"
+      fontSize: 12.5
+      text: <strong>排班慢</strong>——依赖老师傅 Excel 经验，跨店无人能替
+  - elementId: p2-a1
+    elementType: line
+    bounds: [452, 202, 12, 26]
+    viewBox: [12, 26]
+    points: "6,0 6,26"
+    arrow: [null, arrow]
+    border: { style: solid, width: 1.5, color: "$accent" }
+  - elementId: p2-f2
+    elementType: text
+    bounds: [440, 232, 456, 20]
+    content:
+      style: "$body"
+      fontSize: 12.5
+      text: <strong>错配</strong>——高峰缺人、平峰养人，人效持续走低
+  - elementId: p2-a2
+    elementType: line
+    bounds: [452, 256, 12, 26]
+    viewBox: [12, 26]
+    points: "6,0 6,26"
+    arrow: [null, arrow]
+    border: { style: solid, width: 1.5, color: "$accent" }
+  - elementId: p2-f3
+    elementType: text
+    bounds: [440, 286, 456, 20]
+    content:
+      style: "$body"
+      fontSize: 12.5
+      text: <strong>体验差</strong>——员工拿不到可预期的班表，请假换班全靠吼
+  - elementId: p2-a3
+    elementType: line
+    bounds: [452, 310, 12, 26]
+    viewBox: [12, 26]
+    points: "6,0 6,26"
+    arrow: [null, arrow]
+    border: { style: solid, width: 1.5, color: "$accent" }
+  - elementId: p2-f4
+    elementType: text
+    bounds: [440, 340, 456, 20]
+    content:
+      style: "$body"
+      fontSize: 12.5
+      text: <strong>离职</strong>——重训成本 ¥6,800/人，旺季雪上加霜
+  - elementId: p2-a4
+    elementType: line
+    bounds: [452, 364, 12, 26]
+    viewBox: [12, 26]
+    points: "6,0 6,26"
+    arrow: [null, arrow]
+    border: { style: solid, width: 1.5, color: "$accent" }
+  - elementId: p2-f5
+    elementType: text
+    bounds: [440, 394, 456, 20]
+    content:
+      style: "$body"
+      fontSize: 12.5
+      text: <strong>更慢</strong>——老师傅更忙，数字化更难推，恶性循环
+
+  - elementId: p2-mani
+    elementType: text
+    bounds: [440, 442, 456, 30]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 15
+      color: "$accent"
+      text: 「排班不是排人头，是在预测未来的生意。」
+
+  - elementId: p2-src
+    elementType: text
+    bounds: [64, 512, 700, 14]
+    content:
+      style: "$source"
+      text: 数据口径：秒排《2025 连锁门店劳动力调研》（n=217 家门店，示例数据）；重训成本为行业访谈中位数（示例）。
+  - elementId: p2-page
+    elementType: text
+    bounds: [864, 512, 32, 14]
+    content:
+      style: "$source"
+      align: [right, top]
+      text: 02

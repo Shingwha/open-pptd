@@ -1,0 +1,137 @@
+pageType: content
+notes: 证据页（相信）：before/after 双图 + 客户证言。指标数值标注示例口径。
+elements:
+  - elementId: p4-kicker
+    elementType: text
+    bounds: [64, 34, 400, 16]
+    content:
+      style: "$kicker"
+      text: 证据 EVIDENCE · 相信
+
+  - elementId: p4-title
+    elementType: text
+    bounds: [64, 56, 800, 36]
+    content:
+      style: "$disp"
+      text: 12 周：排班耗时 -91%，空班率 -62%，离职率 -19%
+
+  - elementId: p4-rule
+    elementType: shape
+    bounds: [64, 124, 832, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: p4-c1t
+    elementType: text
+    bounds: [64, 138, 400, 20]
+    content:
+      style: "$h3"
+      fontSize: 13
+      text: 店长周均排班耗时（小时）
+  - elementId: p4-chart1
+    elementType: chart
+    bounds: [64, 162, 400, 240]
+    data:
+      cols: [phase, hours]
+      rows:
+        - ["上线前", 6.5]
+        - ["上线 12 周", 0.6]
+    fontFamily: "LXGW Neo XiHei"
+    legend: false
+    xAxis:
+      type: category
+      gridLine: false
+      label: { fontSize: 10.5, color: "#1D232B" }
+    yAxis:
+      min: 0
+      gridLine: { color: "#EDF0EA", width: 0.75 }
+      label: { fontSize: 9.5, color: "#6C746D", numberFormat: "0.0" }
+    barWidth: 0.4
+    categoryGap: 0.5
+    series:
+      - type: bar
+        encode: { x: phase, y: hours }
+        fill: "$primary"
+        dataLabels: { show: true, fontSize: 11, color: "#141414", numberFormat: "0.0" }
+
+  - elementId: p4-c2t
+    elementType: text
+    bounds: [496, 138, 400, 20]
+    content:
+      style: "$h3"
+      fontSize: 13
+      text: 高峰时段空班率（%）
+  - elementId: p4-chart2
+    elementType: chart
+    bounds: [496, 162, 400, 240]
+    data:
+      cols: [phase, gap]
+      rows:
+        - ["上线前", 8.2]
+        - ["上线 12 周", 3.1]
+    fontFamily: "LXGW Neo XiHei"
+    legend: false
+    xAxis:
+      type: category
+      gridLine: false
+      label: { fontSize: 10.5, color: "#1D232B" }
+    yAxis:
+      min: 0
+      gridLine: { color: "#EDF0EA", width: 0.75 }
+      label: { fontSize: 9.5, color: "#6C746D", numberFormat: "0.0" }
+    barWidth: 0.4
+    categoryGap: 0.5
+    series:
+      - type: bar
+        encode: { x: phase, y: gap }
+        fill: "$accent"
+        dataLabels: { show: true, fontSize: 11, color: "#4F7A1E", numberFormat: "0.0" }
+
+  - elementId: p4-qrule
+    elementType: shape
+    bounds: [64, 420, 832, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: p4-quote
+    elementType: text
+    bounds: [64, 434, 640, 44]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "$text"
+      italic: true
+      lineHeight: 1.6
+      text: 「以前每周日下午固定闭门做表，现在周一到店先看昨天的预测准确率——排班这件事，终于不用店长扛了。」
+  - elementId: p4-quotec
+    elementType: text
+    bounds: [64, 482, 640, 16]
+    content:
+      style: "$small"
+      fontSize: 10
+      text: ——某头部茶饮连锁 运营VP（示例客户证言）
+
+  - elementId: p4-kpi
+    elementType: text
+    bounds: [736, 434, 160, 60]
+    content:
+      style: "$small"
+      fontSize: 10
+      lineHeight: 1.6
+      align: [right, top]
+      text: |
+        <p><strong style="color:#4F7A1E;">12 周留存店占比 96%</strong></p>
+        <p>NPS 71 · 月活店长 2,300+</p>
+
+  - elementId: p4-src
+    elementType: text
+    bounds: [64, 512, 700, 14]
+    content:
+      style: "$source"
+      text: 示例客户：某头部茶饮连锁 120 门店，2025-03 上线，对比上线前后各 12 周均值（示例数据，用于演示叙事结构）。
+  - elementId: p4-page
+    elementType: text
+    bounds: [864, 512, 32, 14]
+    content:
+      style: "$source"
+      align: [right, top]
+      text: 04

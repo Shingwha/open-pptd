@@ -1,0 +1,69 @@
+pageType: cover
+notes: 发布会撞色封面：墨黑底 + 荧光黄绿大字，标题即价值主张。
+elements:
+  - elementId: p1-bg
+    elementType: shape
+    bounds: [0, 0, 960, 540]
+    shapeName: rect
+    fill: { type: solid, color: "#141414" }
+
+  - elementId: p1-kicker
+    elementType: text
+    bounds: [64, 60, 600, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      color: "#C6F24E"
+      letterSpacing: 4
+      bold: true
+      text: MIAOPAI 秒排 · A 轮商业计划 · 2026.08
+
+  - elementId: p1-limebar
+    elementType: shape
+    bounds: [64, 108, 56, 8]
+    shapeName: rect
+    fill: { type: solid, color: "#C6F24E" }
+
+  - elementId: p1-title
+    elementType: text
+    bounds: [64, 140, 720, 210]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 58
+      color: "#F2F4EF"
+      lineHeight: 1.12
+      text: |
+        把排班，
+        从 <span style="color:#C6F24E;">3 天</span> 压到 <span style="color:#C6F24E;">3 分钟</span>。
+
+  - elementId: p1-sub
+    elementType: text
+    bounds: [64, 372, 620, 22]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "#9BA39A"
+      text: 面向连锁服务业的 AI 排班与劳动力管理平台
+
+  - elementId: p1-meta
+    elementType: text
+    bounds: [600, 462, 296, 44]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "#9BA39A"
+      lineHeight: 1.6
+      align: [right, top]
+      text: |
+        <p>本轮融资　¥8,000 万 · 出让 15%（示例）</p>
+        <p>商业计划 · 场景风格示例演示</p>
+
+  - elementId: p1-conf
+    elementType: text
+    bounds: [64, 462, 300, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      color: "#6A726A"
+      letterSpacing: 1
+      text: CONFIDENTIAL · 仅供意向投资人参阅

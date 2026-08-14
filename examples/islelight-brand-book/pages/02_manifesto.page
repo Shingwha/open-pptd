@@ -1,0 +1,50 @@
+pageType: chapter
+notes: 章节页语法：整页只留巨大蓝色编号与一句宣言，其余全部留白——留白即呼吸。
+elements:
+  - elementId: m-motif
+    elementType: shape
+    bounds: [48, 48, 4, 36]
+    shapeName: rect
+    fill: { type: solid, color: "#0038B8" }
+  - elementId: m-no
+    elementType: text
+    bounds: [64, 44, 60, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "#6B6A66"
+      letterSpacing: 2
+      text: "01"
+
+  - elementId: m-num
+    elementType: text
+    bounds: [48, 130, 400, 170]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 130
+      color: "#0038B8"
+      lineHeight: 1.0
+      text: 01
+
+  - elementId: m-word
+    elementType: text
+    bounds: [48, 330, 700, 60]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 44
+      color: "#101010"
+      lineHeight: 1.2
+      text: 一座岛，一间书店，一盏为阅读留的灯。
+
+  - elementId: m-cap
+    elementType: text
+    bounds: [640, 470, 272, 40]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      color: "#6B6A66"
+      align: [right, top]
+      lineHeight: 1.6
+      text: |
+        屿光 ISLELIGHT · 品牌主张
+        品牌名释义：屿（城市中的岛）+ 光（阅读的灯）

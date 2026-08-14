@@ -1,0 +1,210 @@
+pageType: content
+notes: 方案页：四段 chevron 流程（末段荧光绿收尾），下接三能力行式列表（图标来自同一体系）。
+elements:
+  - elementId: p3-kicker
+    elementType: text
+    bounds: [64, 34, 400, 16]
+    content:
+      style: "$kicker"
+      text: 方案 SOLUTION · 希望
+
+  - elementId: p3-title
+    elementType: text
+    bounds: [64, 56, 760, 36]
+    content:
+      style: "$disp"
+      text: 四个环节全部在线：预测 → 生成 → 校验 → 发布
+
+  - elementId: p3-rule
+    elementType: shape
+    bounds: [64, 124, 832, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: p3-step1
+    elementType: shape
+    bounds: [64, 150, 218, 62]
+    shapeName: chevron
+    fill: { type: solid, color: "$primary" }
+  - elementId: p3-step1t
+    elementType: text
+    bounds: [88, 168, 150, 26]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14.5
+      color: "#FFFFFF"
+      bold: true
+      align: [center, middle]
+      text: 01 预测客流
+  - elementId: p3-step1d
+    elementType: text
+    bounds: [64, 226, 200, 70]
+    content:
+      style: "$body"
+      fontSize: 11
+      lineHeight: 1.55
+      text: 融合 POS 流水、天气、活动与节假日，输出未来 14 天分时客流预测。
+
+  - elementId: p3-step2
+    elementType: shape
+    bounds: [276, 150, 218, 62]
+    shapeName: chevron
+    fill: { type: solid, color: "$primary" }
+  - elementId: p3-step2t
+    elementType: text
+    bounds: [300, 168, 150, 26]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14.5
+      color: "#FFFFFF"
+      bold: true
+      align: [center, middle]
+      text: 02 生成排班
+  - elementId: p3-step2d
+    elementType: text
+    bounds: [276, 226, 200, 70]
+    content:
+      style: "$body"
+      fontSize: 11
+      lineHeight: 1.55
+      text: 按技能矩阵、工时偏好与用工约束求解，3 分钟给出整周合规方案。
+
+  - elementId: p3-step3
+    elementType: shape
+    bounds: [488, 150, 218, 62]
+    shapeName: chevron
+    fill: { type: solid, color: "$primary" }
+  - elementId: p3-step3t
+    elementType: text
+    bounds: [512, 168, 150, 26]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14.5
+      color: "#FFFFFF"
+      bold: true
+      align: [center, middle]
+      text: 03 合规校验
+  - elementId: p3-step3d
+    elementType: text
+    bounds: [488, 226, 200, 70]
+    content:
+      style: "$body"
+      fontSize: 11
+      lineHeight: 1.55
+      text: 劳动法规、加班上限、社保工时规则库逐条拦截，风险班次标红。
+
+  - elementId: p3-step4
+    elementType: shape
+    bounds: [700, 150, 196, 62]
+    shapeName: chevron
+    fill: { type: solid, color: "#C6F24E" }
+  - elementId: p3-step4t
+    elementType: text
+    bounds: [718, 168, 150, 26]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14.5
+      color: "#141414"
+      bold: true
+      align: [center, middle]
+      text: 04 一键发布
+  - elementId: p3-step4d
+    elementType: text
+    bounds: [700, 226, 196, 70]
+    content:
+      style: "$body"
+      fontSize: 11
+      lineHeight: 1.55
+      text: 班表同步员工微信端，换班/代班自动走审批，异常实时提醒。
+
+  - elementId: p3-rule2
+    elementType: shape
+    bounds: [64, 322, 832, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: p3-cap1i
+    elementType: icon
+    bounds: [64, 348, 30, 30]
+    iconName: "bs:graph-up"
+    fill: { type: solid, color: "$accent" }
+  - elementId: p3-cap1t
+    elementType: text
+    bounds: [108, 344, 220, 24]
+    content:
+      style: "$h3"
+      fontSize: 14
+      text: 预测引擎
+  - elementId: p3-cap1b
+    elementType: text
+    bounds: [108, 370, 220, 44]
+    content:
+      style: "$small"
+      fontSize: 10.5
+      lineHeight: 1.55
+      text: 回测 MAPE ≤ 11%（120 店回测口径，示例），随数据积累持续收敛。
+
+  - elementId: p3-cap2i
+    elementType: icon
+    bounds: [360, 348, 30, 30]
+    iconName: "bs:bank"
+    fill: { type: solid, color: "$accent" }
+  - elementId: p3-cap2t
+    elementType: text
+    bounds: [404, 344, 220, 24]
+    content:
+      style: "$h3"
+      fontSize: 14
+      text: 合规规则库
+  - elementId: p3-cap2b
+    elementType: text
+    bounds: [404, 370, 220, 44]
+    content:
+      style: "$small"
+      fontSize: 10.5
+      lineHeight: 1.55
+      text: 覆盖 32 个城市的地方工时/社保规则，法条更新 7 日内入库。
+
+  - elementId: p3-cap3i
+    elementType: icon
+    bounds: [656, 348, 30, 30]
+    iconName: "bs:phone"
+    fill: { type: solid, color: "$accent" }
+  - elementId: p3-cap3t
+    elementType: text
+    bounds: [700, 344, 196, 24]
+    content:
+      style: "$h3"
+      fontSize: 14
+      text: 员工端零门槛
+  - elementId: p3-cap3b
+    elementType: text
+    bounds: [700, 370, 196, 44]
+    content:
+      style: "$small"
+      fontSize: 10.5
+      lineHeight: 1.55
+      text: 微信小程序查班/换班/请假，覆盖 100% 门店员工，无需培训。
+
+  - elementId: p3-mani
+    elementType: text
+    bounds: [64, 442, 832, 30]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 16
+      color: "$primary"
+      text: 店长只做一件事：看一眼，点「发布」。
+
+  - elementId: p3-src
+    elementType: text
+    bounds: [64, 512, 700, 14]
+    content:
+      style: "$source"
+      text: 注：回测口径为 2025-09 至 2025-12 上线门店滚动回测（示例数据）；产品指标为演示用途。
+  - elementId: p3-page
+    elementType: text
+    bounds: [864, 512, 32, 14]
+    content:
+      style: "$source"
+      align: [right, top]
+      text: 03

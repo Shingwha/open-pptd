@@ -1,0 +1,131 @@
+pageType: content
+notes: 选书页：12 栏网格上的三条选书法 + 本月书单（蓝编号）；右下固定 16:10 摄影槽呼应第 4 页规范。
+elements:
+  - elementId: u-motif
+    elementType: shape
+    bounds: [48, 48, 4, 36]
+    shapeName: rect
+    fill: { type: solid, color: "#0038B8" }
+  - elementId: u-no
+    elementType: text
+    bounds: [64, 44, 300, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "#6B6A66"
+      letterSpacing: 2
+      text: "05 · 选书与内容"
+
+  - elementId: u-t
+    elementType: text
+    bounds: [48, 104, 640, 44]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 34
+      color: "#101010"
+      lineHeight: 1.15
+      text: 每月只选 30 本，每本都有理由
+
+  - elementId: u-p1n
+    elementType: text
+    bounds: [48, 176, 40, 26]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 20
+      color: "#0038B8"
+      text: 1
+  - elementId: u-p1
+    elementType: text
+    bounds: [92, 176, 200, 76]
+    content:
+      style: "$body"
+      fontSize: 11
+      lineHeight: 1.6
+      text: |
+        <p><strong>一条理由</strong>　每本书用一句话说明「为什么是它」；说不出理由的书不上架。</p>
+
+  - elementId: u-p2n
+    elementType: text
+    bounds: [312, 176, 40, 26]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 20
+      color: "#0038B8"
+      text: 2
+  - elementId: u-p2
+    elementType: text
+    bounds: [356, 176, 200, 76]
+    content:
+      style: "$body"
+      fontSize: 11
+      lineHeight: 1.6
+      text: |
+        <p><strong>一个比例</strong>　新版:再版:绝版重印 = 5:3:2——重印书是书店的态度，不是库存的尾巴。</p>
+
+  - elementId: u-p3n
+    elementType: text
+    bounds: [576, 176, 40, 26]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 20
+      color: "#0038B8"
+      text: 3
+  - elementId: u-p3
+    elementType: text
+    bounds: [620, 176, 292, 76]
+    content:
+      style: "$body"
+      fontSize: 11
+      lineHeight: 1.6
+      text: |
+        <p><strong>一位店员</strong>　每本书挂一张店员手写卡——书单由人担保，而非算法推荐。</p>
+
+  - elementId: u-rule
+    elementType: shape
+    bounds: [48, 264, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "#D8D7D2" }
+
+  - elementId: u-list-t
+    elementType: text
+    bounds: [48, 280, 300, 20]
+    content:
+      style: "$h3"
+      fontSize: 13
+      text: 本月书单（节选 · 示例）
+  - elementId: u-list
+    elementType: text
+    bounds: [48, 306, 520, 130]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      color: "#101010"
+      lineHeight: 1.9
+      text: |
+        <p><span style="color:#0038B8; font-family:'Smiley Sans';">01</span>　《岛屿书》——五十座岛，五十种孤独的解法</p>
+        <p><span style="color:#0038B8; font-family:'Smiley Sans';">02</span>　《夜间飞行》——写给所有在深夜赶路的人</p>
+        <p><span style="color:#0038B8; font-family:'Smiley Sans';">03</span>　《纸上的夜晚》——再版：一家书店的二十年书信集</p>
+        <p><span style="color:#0038B8; font-family:'Smiley Sans';">04</span>　《灯塔手册》——绝版重印：把光当成一门手艺</p>
+
+  - elementId: u-img
+    elementType: image
+    bounds: [600, 306, 312, 195]
+    src: "media/reader.gray.jpg"
+    fit: { mode: cover }
+  - elementId: u-imgcap
+    elementType: text
+    bounds: [600, 506, 312, 16]
+    content:
+      style: "$source"
+      fontSize: 8.5
+      text: 固定 16:10 槽 · 读者样张（黑白，示意）：侧影与书脊——「人与书的相处」。
+
+  - elementId: u-note
+    elementType: text
+    bounds: [48, 448, 520, 60]
+    content:
+      style: "$small"
+      fontSize: 10
+      lineHeight: 1.6
+      text: |
+        <p>书单在每月首个周五 19:00 发布（店內黑板上先于一切线上渠道）；书名与推荐语为示例文案。</p>

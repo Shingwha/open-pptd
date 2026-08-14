@@ -1,0 +1,81 @@
+pageType: final
+notes: 结尾页回到封面的蓝块比例与巨字，闭合环路；colophon 记录手册信息。
+elements:
+  - elementId: f-blue
+    elementType: shape
+    bounds: [0, 0, 360, 540]
+    shapeName: rect
+    fill: { type: solid, color: "#0038B8" }
+
+  - elementId: f-mark
+    elementType: text
+    bounds: [48, 150, 280, 200]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 50
+      color: "#F7F5EF"
+      lineHeight: 1.15
+      text: |
+        把灯
+        留给
+        阅读的人
+
+  - elementId: f-title
+    elementType: text
+    bounds: [424, 140, 488, 110]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 40
+      color: "#101010"
+      lineHeight: 1.2
+      text: |
+        这本手册只回答
+        一个问题：我们是怎样一家书店。
+
+  - elementId: f-rule
+    elementType: shape
+    bounds: [424, 280, 488, 1]
+    shapeName: rect
+    fill: { type: solid, color: "#D8D7D2" }
+
+  - elementId: f-c1
+    elementType: text
+    bounds: [424, 296, 488, 60]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      lineHeight: 1.65
+      text: |
+        <p><strong>对内</strong>　一切物料、活动与空间的取舍，先回手册；手册没写的，按「纸白 85 / 近黑 10 / 克莱因蓝 ≤5」的感觉走。</p>
+  - elementId: f-c2
+    elementType: text
+    bounds: [424, 364, 488, 60]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      lineHeight: 1.65
+      text: |
+        <p><strong>对外</strong>　合作方引用品牌资产（标志、色彩、书单体例）前，请邮件品牌组过目——不是管束，是保证灯的亮度一致。</p>
+
+  - elementId: f-colo
+    elementType: text
+    bounds: [424, 440, 488, 60]
+    content:
+      style: "$source"
+      fontSize: 8.5
+      lineHeight: 1.6
+      text: |
+        <p>COLOPHON　屿光 ISLELIGHT 品牌手册 Vol.1 · 2026-08 · 品牌组（虚构品牌示例）</p>
+        <p>字体：得意黑 / 霞鹜新晰黑 · 摄影：图片搜索素材（黑白处理，示意） · 本页为「品牌创意」场景风格示例</p>
+
+  - elementId: f-addr
+    elementType: text
+    bounds: [48, 420, 280, 60]
+    content:
+      style: "$source"
+      fontSize: 8.5
+      color: "#9FB4E8"
+      lineHeight: 1.7
+      text: |
+        <p>屿光书店 · 12 街区 7 号（示例地址）</p>
+        <p>每天 10:00 – 22:30 · 阅读区灯亮到 23:00</p>

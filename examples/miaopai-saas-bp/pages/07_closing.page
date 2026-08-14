@@ -1,0 +1,68 @@
+pageType: final
+notes: 收尾回到封面撞色比例：大字行动号召 + 联系方式。
+elements:
+  - elementId: p7-bg
+    elementType: shape
+    bounds: [0, 0, 960, 540]
+    shapeName: rect
+    fill: { type: solid, color: "#141414" }
+
+  - elementId: p7-kicker
+    elementType: text
+    bounds: [64, 60, 600, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      color: "#C6F24E"
+      letterSpacing: 4
+      bold: true
+      text: MIAOPAI 秒排 · NEXT
+
+  - elementId: p7-title
+    elementType: text
+    bounds: [64, 150, 760, 200]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 54
+      color: "#F2F4EF"
+      lineHeight: 1.14
+      text: |
+        下一次开店高峰，
+        让<span style="color:#C6F24E;">算法</span>值班。
+
+  - elementId: p7-sub
+    elementType: text
+    bounds: [64, 370, 620, 22]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "#9BA39A"
+      text: A 轮 · ¥8,000 万 · 与我们一起重新定义门店劳动力
+
+  - elementId: p7-limebar
+    elementType: shape
+    bounds: [64, 412, 56, 8]
+    shapeName: rect
+    fill: { type: solid, color: "#C6F24E" }
+
+  - elementId: p7-contact
+    elementType: text
+    bounds: [64, 442, 500, 44]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      color: "#9BA39A"
+      lineHeight: 1.7
+      text: |
+        创始人 · 林晓（示例）　bp@miaopai.example　·　www.miaopai.example
+        本页为「商务提案」场景风格示例，品牌与数据均为虚构。
+
+  - elementId: p7-mark
+    elementType: text
+    bounds: [700, 442, 196, 30]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 22
+      color: "#C6F24E"
+      align: [right, top]
+      text: 秒排

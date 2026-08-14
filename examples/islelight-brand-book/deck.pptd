@@ -1,0 +1,84 @@
+version: v2
+title: 屿光 ISLELIGHT——独立书店品牌手册
+size: [960, 540]
+fonts:
+  得意黑: { family: "Smiley Sans" }
+  霞鹜新晰黑: { family: "LXGW Neo XiHei" }
+theme:
+  colors:
+    primary: "#101010"
+    accent: "#0038B8"
+    bg: "#F7F5EF"
+    text: "#101010"
+    muted: "#6B6A66"
+    line: "#D8D7D2"
+    success: "#33A362"
+    warning: "#B4872D"
+    danger: "#BE392D"
+    primarySoft: "#EFEFEC"
+    primaryTint: "#DEDEDA"
+    primaryDeep: "#000000"
+    accent3: "#55534E"
+    accent4: "#8C8B87"
+    accent5: "#B5B4B0"
+    accent6: "#D8D7D2"
+  textStyles:
+    kicker:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "$muted"
+      letterSpacing: 2.5
+    disp:
+      fontFamily: "Smiley Sans"
+      fontSize: 30
+      color: "$primary"
+      lineHeight: 1.15
+    h3:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14.5
+      color: "$primary"
+      bold: true
+      lineHeight: 1.4
+    body:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 12
+      color: "$text"
+      lineHeight: 1.6
+    small:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      lineHeight: 1.5
+    source:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      lineHeight: 1.4
+    num:
+      fontFamily: "Smiley Sans"
+      fontSize: 44
+      color: "$accent"
+      lineHeight: 1.0
+  tableStyles:
+    default:
+      cellStyle:
+        fontSize: 11
+        color: "$text"
+        fontFamily: "LXGW Neo XiHei"
+        fill: { type: solid, color: "#FFFFFF" }
+        border: [null, null, { style: solid, width: 0.75, color: "$line" }, null]
+        align: [left, middle]
+      firstRowStyle:
+        fill: { type: solid, color: "$primary" }
+        color: "#FFFFFF"
+        bold: true
+        fontSize: 11
+      rowOverColumn: true
+pages:
+  - pages/01_cover.page
+  - pages/02_manifesto.page
+  - pages/03_numbers.page
+  - pages/04_identity.page
+  - pages/05_space.page
+  - pages/06_curation.page
+  - pages/07_closing.page

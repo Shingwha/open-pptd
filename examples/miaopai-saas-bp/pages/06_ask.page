@@ -1,0 +1,156 @@
+pageType: content
+notes: 行动页：资金用途横条图 + 里程碑时间线；明确 12 个月的目标与假设。
+elements:
+  - elementId: p6-kicker
+    elementType: text
+    bounds: [64, 34, 400, 16]
+    content:
+      style: "$kicker"
+      text: 本轮融资 THE ASK · 行动
+
+  - elementId: p6-title
+    elementType: text
+    bounds: [64, 56, 800, 36]
+    content:
+      style: "$disp"
+      text: A 轮 8,000 万：12 个月跑通 3 个业态、1,500 家门店
+
+  - elementId: p6-rule
+    elementType: shape
+    bounds: [64, 124, 832, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: p6-c1t
+    elementType: text
+    bounds: [64, 140, 420, 20]
+    content:
+      style: "$h3"
+      fontSize: 13
+      text: 资金用途（%）
+  - elementId: p6-chart
+    elementType: chart
+    bounds: [64, 164, 420, 220]
+    data:
+      cols: [use, pct]
+      rows:
+        - ["产品与算法研发", 45]
+        - ["市场与销售", 30]
+        - ["客户成功", 15]
+        - ["运营与储备", 10]
+    fontFamily: "LXGW Neo XiHei"
+    legend: false
+    xAxis:
+      type: value
+      max: 50
+      gridLine: false
+      label: { fontSize: 9.5, color: "#6C746D", numberFormat: "0" }
+    yAxis:
+      type: category
+      gridLine: false
+      label: { fontSize: 10.5, color: "#1D232B" }
+    barWidth: 0.5
+    categoryGap: 0.35
+    series:
+      - type: bar
+        encode: { x: pct, y: use }
+        fill: "$primary"
+        dataLabels: { show: true, fontSize: 10, color: "#141414", numberFormat: '0"%"' }
+
+  - elementId: p6-note
+    elementType: text
+    bounds: [64, 394, 420, 56]
+    content:
+      style: "$small"
+      fontSize: 10
+      lineHeight: 1.6
+      text: 关键假设（示例）：客单价 1.2 万元/店·年；年续费率 85%；销售人效 8 单/人·季。资金规划按 18 个月 runway 编制。
+
+  - elementId: p6-tlt
+    elementType: text
+    bounds: [540, 140, 356, 20]
+    content:
+      style: "$h3"
+      fontSize: 13
+      text: 里程碑（融资后 12 个月）
+  - elementId: p6-timeline
+    elementType: line
+    bounds: [556, 172, 2, 264]
+    viewBox: [2, 264]
+    points: "1,0 1,264"
+    border: { style: solid, width: 1.5, color: "$line" }
+  - elementId: p6-d1
+    elementType: shape
+    bounds: [550, 180, 12, 12]
+    shapeName: ellipse
+    fill: { type: solid, color: "#C6F24E" }
+  - elementId: p6-d1t
+    elementType: text
+    bounds: [578, 172, 318, 34]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      lineHeight: 1.5
+      text: <strong>T+3</strong>　茶饮标杆客户扩至 500 店；预测引擎 v3 上线。
+  - elementId: p6-d2
+    elementType: shape
+    bounds: [550, 244, 12, 12]
+    shapeName: ellipse
+    fill: { type: solid, color: "$accent" }
+  - elementId: p6-d2t
+    elementType: text
+    bounds: [578, 236, 318, 34]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      lineHeight: 1.5
+      text: <strong>T+6</strong>　零售、餐饮双业态打样，签约 3 家区域连锁。
+  - elementId: p6-d3
+    elementType: shape
+    bounds: [550, 308, 12, 12]
+    shapeName: ellipse
+    fill: { type: solid, color: "$accent" }
+  - elementId: p6-d3t
+    elementType: text
+    bounds: [578, 300, 318, 34]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      lineHeight: 1.5
+      text: <strong>T+9</strong>　合规规则库覆盖 50 城；员工端 MAU 破 10 万。
+  - elementId: p6-d4
+    elementType: shape
+    bounds: [550, 372, 12, 12]
+    shapeName: ellipse
+    fill: { type: solid, color: "$primary" }
+  - elementId: p6-d4t
+    elementType: text
+    bounds: [578, 364, 318, 34]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      lineHeight: 1.5
+      text: <strong>T+12</strong>　付费门店 1,500 家，ARR ¥3,600 万（目标，示例）。
+
+  - elementId: p6-mani
+    elementType: text
+    bounds: [540, 420, 356, 30]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 15
+      color: "$primary"
+      text: 钱花在引擎和标杆上，不烧补贴。
+
+  - elementId: p6-src
+    elementType: text
+    bounds: [64, 512, 700, 14]
+    content:
+      style: "$source"
+      text: 本页金额、比例与里程碑均为商业计划示例口径；正式条款以投资协议为准。
+  - elementId: p6-page
+    elementType: text
+    bounds: [864, 512, 32, 14]
+    content:
+      style: "$source"
+      align: [right, top]
+      text: 06

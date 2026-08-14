@@ -1,0 +1,85 @@
+version: v2
+title: 秒排 MiaoPai——AI 智能排班平台 A 轮商业计划
+size: [960, 540]
+fonts:
+  得意黑: { family: "Smiley Sans" }
+  霞鹜新晰黑: { family: "LXGW Neo XiHei" }
+theme:
+  colors:
+    primary: "#141414"
+    accent: "#4F7A1E"
+    bg: "#F5F6F3"
+    text: "#1D232B"
+    muted: "#6C746D"
+    line: "#E4E8E2"
+    success: "#33A362"
+    warning: "#B4872D"
+    danger: "#BE392D"
+    primarySoft: "#EFF2E9"
+    primaryTint: "#DEE5D2"
+    primaryDeep: "#0A0A0A"
+    accent3: "#2B9D9D"
+    accent4: "#C15533"
+    accent5: "#3B5BBA"
+    accent6: "#A9488F"
+  textStyles:
+    kicker:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$accent"
+      letterSpacing: 3
+      bold: true
+    disp:
+      fontFamily: "Smiley Sans"
+      fontSize: 26
+      color: "$primary"
+      lineHeight: 1.3
+    h3:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 15
+      color: "$text"
+      bold: true
+      lineHeight: 1.4
+    body:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 12
+      color: "$text"
+      lineHeight: 1.6
+    small:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      lineHeight: 1.5
+    source:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      lineHeight: 1.4
+    num:
+      fontFamily: "Smiley Sans"
+      fontSize: 40
+      color: "$primary"
+      lineHeight: 1.05
+  tableStyles:
+    default:
+      cellStyle:
+        fontSize: 11
+        color: "$text"
+        fontFamily: "LXGW Neo XiHei"
+        fill: { type: solid, color: "#FFFFFF" }
+        border: [null, null, { style: solid, width: 0.75, color: "$line" }, null]
+        align: [left, middle]
+      firstRowStyle:
+        fill: { type: solid, color: "$primary" }
+        color: "#FFFFFF"
+        bold: true
+        fontSize: 11
+      rowOverColumn: true
+pages:
+  - pages/01_cover.page
+  - pages/02_problem.page
+  - pages/03_solution.page
+  - pages/04_evidence.page
+  - pages/05_market.page
+  - pages/06_ask.page
+  - pages/07_closing.page

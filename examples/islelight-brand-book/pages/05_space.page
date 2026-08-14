@@ -1,0 +1,86 @@
+pageType: content
+notes: 空间页：一张主图占页面 65%（满宽出血到右缘），左侧窄栏标注「看什么」——瑞士海报式左字右图反转。
+elements:
+  - elementId: s-motif
+    elementType: shape
+    bounds: [48, 48, 4, 36]
+    shapeName: rect
+    fill: { type: solid, color: "#0038B8" }
+  - elementId: s-no
+    elementType: text
+    bounds: [64, 44, 300, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "#6B6A66"
+      letterSpacing: 2
+      text: "04 · 空间与摄影"
+
+  - elementId: s-img
+    elementType: image
+    bounds: [320, 96, 640, 400]
+    src: "media/bookstore.gray.jpg"
+    fit: { mode: cover }
+  - elementId: s-imgcap
+    elementType: text
+    bounds: [320, 502, 640, 16]
+    content:
+      style: "$source"
+      fontSize: 8.5
+      text: 主图槽 · 门店中庭（黑白样张，示意）：原木书架 + 暖光——品牌摄影的标准情绪。
+
+  - elementId: s-t
+    elementType: text
+    bounds: [48, 110, 240, 90]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 34
+      color: "#101010"
+      lineHeight: 1.15
+      text: |
+        空间是
+        第一本书
+
+  - elementId: s-b1
+    elementType: text
+    bounds: [48, 220, 240, 64]
+    content:
+      style: "$body"
+      fontSize: 11
+      lineHeight: 1.65
+      text: |
+        <p><strong>岛式动线</strong>　七座「书岛」各守一个主题，读者绕岛而行——像在城里走路，不像在货架间穿行。</p>
+  - elementId: s-l1
+    elementType: shape
+    bounds: [48, 292, 240, 1]
+    shapeName: rect
+    fill: { type: solid, color: "#D8D7D2" }
+  - elementId: s-b2
+    elementType: text
+    bounds: [48, 304, 240, 64]
+    content:
+      style: "$body"
+      fontSize: 11
+      lineHeight: 1.65
+      text: |
+        <p><strong>一盏灯的责任</strong>　阅读区照度 500lx、色温 3000K——暖光是品牌识别的一部分，比 logo 更早被记住。</p>
+  - elementId: s-l2
+    elementType: shape
+    bounds: [48, 376, 240, 1]
+    shapeName: rect
+    fill: { type: solid, color: "#D8D7D2" }
+  - elementId: s-b3
+    elementType: text
+    bounds: [48, 388, 240, 64]
+    content:
+      style: "$body"
+      fontSize: 11
+      lineHeight: 1.65
+      text: |
+        <p><strong>看什么</strong>　摄影只讲「人与书的相处」：手、侧影、书脊；不拍空镜大全景。</p>
+
+  - elementId: s-blue
+    elementType: shape
+    bounds: [48, 470, 240, 4]
+    shapeName: rect
+    fill: { type: solid, color: "#0038B8" }
