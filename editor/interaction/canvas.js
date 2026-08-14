@@ -1,22 +1,22 @@
 // ============================================================================
-// interaction/canvas.js — 画布交互控制器（选中 / 拖动 / 缩放 / 删除 / 方向键）
+// interaction/canvas.js — 元素手势执行器（选中框 / 拖动 / 缩放 / 旋转 / 键盘微调）
 // ----------------------------------------------------------------------------
+// 手势的分类与仲裁在 interaction/stage.js（统一路由器），本模块只负责
+// 「执行」元素手势：路由器判定目标后调用 startGesture，之后的
+// pointermove/up 由这里自行监听。
 // 关键设计：
-//   - pointerdown 用「捕获阶段」监听：ECharts canvas / 表格等内部控件会
-//     stopPropagation，捕获阶段先于它们触发，保证图表也能选中与拖动。
-//   - 选中框带「移动把手」（左上）+「缩放手柄」（右下）：chart/table 等
-//     内部有交互的元素可通过把手拖动；普通元素直接拖。
 //   - 拖动期间直接改模型 + DOM，结束才全量重渲染（流畅 + 一致）。
 //   - pointercancel / window blur 兜底结束拖拽（鼠标在窗口外释放）。
+//   - cancelGesture 供路由器在捏合接管时调用（提交已发生的位移）。
 // ============================================================================
 
 export function createCanvasController(canvas, opts) {
   const {
     getPage,
-    beginChange, // () => void  变更前快照
-    endChange,   // () => void  变更结束（重渲染 + 属性面板刷新）
-    select,      // (id|null) => void
+    beginChange,     // () => void  变更前快照
+    endChange,       // () => void  变更结束（重渲染 + 属性面板刷新）
     getSelected,
+    deleteSelected,  // 键盘 Delete/Backspace
   } = opts;
 
   let overlay = null;
@@ -92,9 +92,9 @@ export function createCanvasController(canvas, opts) {
   }
 
   // --------------------------------------------------------------------------
-  // 拖动 / 缩放
+  // 拖动 / 缩放 / 旋转（由 interaction/stage.js 路由进入）
   // --------------------------------------------------------------------------
-  function startDrag(e, mode, id) {
+  function startGesture(e, mode, id) {
     const rect = canvas.getBoundingClientRect();
     const s = scale();
     const el = findElement(id);
@@ -205,134 +205,8 @@ export function createCanvasController(canvas, opts) {
   }
 
   // --------------------------------------------------------------------------
-  // 触屏双指捏合缩放（window 级指针跟踪；与单指拖动互斥：第二指按下即取消拖动）
+  // 键盘：Delete 删除 / 方向键微调（空格平移等视口手势见 stage.js）
   // --------------------------------------------------------------------------
-  const pointers = new Map();
-  let pinchStart = null;
-
-  window.addEventListener("pointermove", (e) => {
-    if (!pointers.has(e.pointerId)) return;
-    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (!pinchStart || pointers.size < 2) return;
-    const pts = [...pointers.values()];
-    const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
-    if (dist > 0) opts.setZoom?.(pinchStart.zoom * (dist / pinchStart.dist));
-  });
-
-  const endPointer = (e) => {
-    pointers.delete(e.pointerId);
-    if (pointers.size < 2) pinchStart = null;
-  };
-  window.addEventListener("pointerup", endPointer);
-  window.addEventListener("pointercancel", endPointer);
-  window.addEventListener("blur", () => {
-    pointers.clear();
-    pinchStart = null;
-  });
-
-  // 桌面：Ctrl/⌘ + 滚轮缩放（preventDefault 阻止浏览器页面缩放）
-  canvas.addEventListener(
-    "wheel",
-    (e) => {
-      if (!(e.ctrlKey || e.metaKey)) return;
-      e.preventDefault();
-      const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
-      opts.setZoom?.((opts.getZoom?.() ?? 1) * factor);
-    },
-    { passive: false }
-  );
-
-  // --------------------------------------------------------------------------
-  // 事件绑定（捕获阶段，确保图表等内部交互元素可选中）
-  // --------------------------------------------------------------------------
-  let lastPointer = null;
-  canvas.addEventListener(
-    "pointerdown",
-    (e) => {
-      // 双击检测：第二击不再 select/startDrag（避免 render 重建打断 dblclick）
-      const now = performance.now();
-      const isDblClick = lastPointer &&
-        now - lastPointer.t < 350 &&
-        Math.abs(e.clientX - lastPointer.x) < 8 &&
-        Math.abs(e.clientY - lastPointer.y) < 8;
-      lastPointer = { t: now, x: e.clientX, y: e.clientY };
-      if (isDblClick) return;
-
-      // 双指捏合：第二指按下 → 取消进行中的拖动，进入缩放模式
-      if (pointers.size >= 1) {
-        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-        if (drag) endDrag();
-        const pts = [...pointers.values()];
-        pinchStart = {
-          dist: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1,
-          zoom: opts.getZoom?.() ?? 1,
-        };
-        e.preventDefault();
-        return;
-      }
-      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-
-      // 1) 缩放手柄
-      const resizeHandle = e.target.closest("[data-handle]");
-      if (resizeHandle) {
-        const id = getSelected();
-        if (id) {
-          e.preventDefault();
-          startDrag(e, "resize", id);
-        }
-        return;
-      }
-      // 1.5) 旋转把手
-      const rotateHandle = e.target.closest("[data-rotate-handle]");
-      if (rotateHandle) {
-        const id = getSelected();
-        if (id) {
-          e.preventDefault();
-          startDrag(e, "rotate", id);
-        }
-        return;
-      }
-      // 2) 移动把手
-      const moveHandle = e.target.closest("[data-move-handle]");
-      if (moveHandle) {
-        const id = getSelected();
-        if (id) {
-          e.preventDefault();
-          e.stopPropagation();
-          startDrag(e, "move", id);
-        }
-        return;
-      }
-      // 3) 元素本体
-      const node = e.target.closest("[data-element-id]");
-      if (node) {
-        const id = node.dataset.elementId;
-        if (getSelected() !== id) select(id);
-        e.preventDefault(); // 阻止拖动时选中元素内文本
-        // 文字/形状等纯 DOM 元素直接拖动；图表/表格也允许（拖动=移动）
-        startDrag(e, "move", id);
-      } else {
-        select(null);
-      }
-    },
-    true // capture：先于 ECharts/zrender 等内部事件处理
-  );
-
-  canvas.addEventListener(
-    "dblclick",
-    (e) => {
-      const node = e.target.closest("[data-element-id]");
-      if (!node) {
-        // 空白处双击：还原到适配视图
-        opts.zoomReset?.();
-        return;
-      }
-      const id = node.dataset.elementId;
-      if (opts.onActivate) opts.onActivate(id);
-    },
-    true
-  );
-
   document.addEventListener("keydown", (e) => {
     const tag = (e.target.tagName || "").toLowerCase();
     if (tag === "input" || tag === "textarea" || tag === "select" || e.target.isContentEditable) return;
@@ -342,7 +216,7 @@ export function createCanvasController(canvas, opts) {
     if (!el) return;
     if (e.key === "Delete" || e.key === "Backspace") {
       e.preventDefault();
-      opts.deleteSelected && opts.deleteSelected();
+      deleteSelected && deleteSelected();
       return;
     }
     const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
@@ -368,5 +242,9 @@ export function createCanvasController(canvas, opts) {
     setScale(s) {
       canvas._scale = s;
     },
+    startGesture,
+    // 捏合接管时由路由器调用：与正常松手等价（提交已发生的位移并重渲染）
+    cancelGesture: onDragEnd,
+    isGestureActive: () => !!drag,
   };
 }

@@ -20,6 +20,8 @@ import { bindKeyboard } from "./app/keyboard.js";
 import { createPresent } from "./app/present.js";
 import { showToast } from "./app/toast.js";
 import { createCanvasController } from "./interaction/canvas.js";
+import { createStageController } from "./interaction/stage.js";
+import { makeZoomCtlDraggable } from "./app/zoom-ctl.js";
 import { bindProperties } from "./interaction/properties.js";
 import { createDeck, createPage } from "./core/model.js";
 import { normalizeTheme } from "./core/theme.js";
@@ -52,12 +54,20 @@ function initEditor(deckUrl) {
 
   const api = createEditorApi({ state, page, selected, ops });
 
-  const controller = createCanvasController($("canvas"), {
-    ...api,
-    // 缩放：view 在下方创建，用闭包延迟绑定（事件触发时 view 已就绪）
-    setZoom: (z) => view.setZoom(z),
-    getZoom: () => view.getZoom(),
-    zoomReset: () => view.zoomReset(),
+  // 元素手势执行器（拖动/缩放/旋转；不含视口手势，见下方 stage 路由器）
+  const controller = createCanvasController($("canvas"), { ...api });
+
+  const props = bindProperties($("props"), api);
+  const view = createView({ state, page, selected, api, controller, props });
+  api.bind({ controller, view });
+
+  // 舞台手势路由器：视口平移/缩放（空白拖动、空格/中键、滚轮、捏合）
+  // + 元素手势分发 + 点击空白取消选中 + 双击（元素进编辑 / 空白还原视图）
+  createStageController($("stage"), {
+    element: controller,
+    select: api.select,
+    getSelected: api.getSelected,
+    deselect: () => api.select(null),
     onActivate: (id) => {
       // 双击：图表/表格进入数据编辑
       const el = page().elements.find((e) => e.elementId === id);
@@ -65,11 +75,13 @@ function initEditor(deckUrl) {
       ops.beginChange();
       api.openEditor(el);
     },
+    panBy: (dx, dy) => view.panBy(dx, dy),
+    setZoom: (z, anchor) => view.setZoom(z, anchor),
+    getZoom: () => view.getZoom(),
+    zoomReset: () => view.zoomReset(),
   });
-
-  const props = bindProperties($("props"), api);
-  const view = createView({ state, page, selected, api, controller, props });
-  api.bind({ controller, view });
+  // 缩放控件：拖拽换位（位置持久化，双击百分比归位）
+  makeZoomCtlDraggable($("stage"), $("zoom-ctl"));
 
   io = createIo({ state, view }); // 模块级 io：二次进入时复用（loadDeck）
   api.fontOptions = () => io.fontManager.fontOptions(); // 元素字体下拉选项（延迟绑定，运行时取）

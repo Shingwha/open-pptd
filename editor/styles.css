@@ -249,7 +249,8 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   background: var(--primary-strong);
 }
 
-/* 画布缩放控件：浮动在画布底部中央（双端统一，独立于右下角按钮组） */
+/* 画布缩放控件：浮动在画布底部中央（双端统一，独立于右下角按钮组）。
+   可拖拽换位（app/zoom-ctl.js）：抓手 = 控件空白处与百分比标签，按钮除外 */
 .zoom-ctl {
   position: absolute;
   left: 50%;
@@ -264,6 +265,14 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   border: 1px solid var(--line);
   border-radius: 999px;
   box-shadow: var(--shadow-md);
+  cursor: grab;
+  touch-action: none; /* 触屏拖动换位，不经浏览器手势 */
+}
+.zoom-ctl button { cursor: pointer; }
+.zoom-ctl.dragging {
+  cursor: grabbing;
+  box-shadow: var(--shadow-lg);
+  user-select: none;
 }
 .zoom-ctl .icon-btn { width: 26px; height: 26px; }
 .zoom-ctl .icon-btn svg { width: 14px; height: 14px; }
@@ -486,6 +495,24 @@ body:not(.inspector-collapsed) #btn-inspector-open {
 }
 
 .canvas-wrap { position: relative; }
+
+/* 拖拽平移中（stage.js 加 .panning）：全舞台抓手光标；
+   空格抓手（.space-pan）：按住空格时任何位置均为可拖平移状态 */
+.stage.panning,
+.stage.panning *,
+.stage.space-pan,
+.stage.space-pan * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+.stage.space-pan,
+.stage.space-pan * {
+  cursor: grab !important;
+}
+.stage.space-pan.panning,
+.stage.space-pan.panning * {
+  cursor: grabbing !important;
+}
 
 .canvas {
   position: relative;
