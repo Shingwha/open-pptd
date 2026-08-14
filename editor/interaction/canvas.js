@@ -5,10 +5,23 @@
 // 「执行」元素手势：路由器判定目标后调用 startGesture，之后的
 // pointermove/up 由这里自行监听。
 // 关键设计：
+//   - 选中框渲染在 canvas-wrap 的不缩放图层（.sel-overlay）：几何按
+//     canvas._scale 换算，边框 / 手柄在任何缩放下恒定屏幕尺寸（行业惯例，
+//     否则放大后手柄巨大、缩小时点不中）。样式在 styles.css 的 .sel-* 体系。
+//   - 手柄 8 向（四角 + 四边中点），data-handle 值即缩放方向；
+//     旋转手柄带连接杆，随元素一起旋转；Shift = 角柄等比 / 旋转 15° 吸附。
 //   - 拖动期间直接改模型 + DOM，结束才全量重渲染（流畅 + 一致）。
 //   - pointercancel / window blur 兜底结束拖拽（鼠标在窗口外释放）。
 //   - cancelGesture 供路由器在捏合接管时调用（提交已发生的位移）。
 // ============================================================================
+
+// 手柄方向 → 悬停光标（四角对角线 / 四边单轴）
+const HANDLE_CURSOR = {
+  nw: "nwse-resize", se: "nwse-resize",
+  ne: "nesw-resize", sw: "nesw-resize",
+  n: "ns-resize", s: "ns-resize",
+  e: "ew-resize", w: "ew-resize",
+};
 
 export function createCanvasController(canvas, opts) {
   const {
@@ -19,7 +32,10 @@ export function createCanvasController(canvas, opts) {
     deleteSelected,  // 键盘 Delete/Backspace
   } = opts;
 
-  let overlay = null;
+  const wrapLayer = canvas.parentElement; // canvas-wrap：不缩放图层
+  let overlay = null; // .sel-overlay（含 sel-box + 手柄）
+  let box = null;     // .sel-box（边框矩形，手柄都挂在它上面随元素旋转）
+  let sizeBadge = null;
   let drag = null;
 
   const scale = () => canvas._scale || 1;
@@ -27,72 +43,98 @@ export function createCanvasController(canvas, opts) {
   const nodeBy = (id) => canvas.querySelector(`[data-element-id="${CSS.escape(id)}"]`);
 
   // --------------------------------------------------------------------------
-  // 选中框（边框 + 移动把手 + 缩放手柄）
+  // 选中框（恒定屏幕尺寸：几何 × scale，控件 1:1）
   // --------------------------------------------------------------------------
   function refreshSelection() {
     if (overlay) overlay.remove();
     overlay = null;
+    box = null;
     const id = getSelected();
     if (!id) return;
     const el = findElement(id);
     if (!el) return;
+
     overlay = document.createElement("div");
-    overlay.dataset.selection = "true";
-    overlay.style.cssText =
-      `position:absolute;pointer-events:none;z-index:50;box-sizing:border-box;` +
-      `border:1.5px solid #2563eb;`;
-    const move = document.createElement("div");
-    move.dataset.moveHandle = "1";
-    move.style.cssText =
-      `position:absolute;left:-7px;top:-7px;width:22px;height:22px;pointer-events:auto;` +
-      `cursor:move;background:#fff;border:1.5px solid #2563eb;border-radius:6px;` +
-      `display:flex;align-items:center;justify-content:center;` +
-      `font-size:12px;color:#2563eb;line-height:1;touch-action:none;`;
-    move.textContent = "✥";
-    const resize = document.createElement("div");
-    resize.dataset.handle = "se";
-    resize.style.cssText =
-      `position:absolute;right:-7px;bottom:-7px;width:16px;height:16px;` +
-      `background:#2563eb;border:1.5px solid #fff;pointer-events:auto;cursor:nwse-resize;touch-action:none;`;
-    overlay.append(move, resize);
-    // 旋转把手（顶部中间；chart/table 官方不支持整体旋转，不显示）
+    overlay.className = "sel-overlay";
+    box = document.createElement("div");
+    box.className = "sel-box";
+
+    // 8 向缩放手柄：四角 = 白底圆点，四边中点 = 胶囊条（形状暗示可拉方向）
+    for (const dir of Object.keys(HANDLE_CURSOR)) {
+      const h = document.createElement("div");
+      h.dataset.handle = dir;
+      h.className = "sel-handle" + (dir === "n" || dir === "s" ? " sel-handle--h" : "") +
+        (dir === "e" || dir === "w" ? " sel-handle--v" : "");
+      h.style.cursor = HANDLE_CURSOR[dir];
+      h.title = "拖动调整大小（Shift 等比）";
+      box.appendChild(h);
+    }
+
+    // 旋转手柄（顶部中间，连接杆 + 圆形箭头；chart/table 不支持整体旋转）
     if (!["chart", "table"].includes(el.elementType)) {
+      const stem = document.createElement("div");
+      stem.className = "sel-rotate-stem";
       const rotate = document.createElement("div");
       rotate.dataset.rotateHandle = "1";
-      rotate.style.cssText =
-        `position:absolute;left:50%;top:-26px;width:14px;height:14px;transform:translateX(-50%);` +
-        `background:#fff;border:1.5px solid #2563eb;border-radius:50%;` +
-        `pointer-events:auto;cursor:grab;touch-action:none;` +
-        `display:flex;align-items:center;justify-content:center;`;
-      rotate.innerHTML = `<svg viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round"><path d="M4 12a8 8 0 0 1 14-5l2 2M20 12a8 8 0 0 1-14 5l-2-2"/></svg>`;
-      overlay.appendChild(rotate);
+      rotate.className = "sel-rotate";
+      rotate.title = "拖动旋转（Shift 每 15° 吸附）";
+      rotate.innerHTML =
+        `<span class="sel-rotate-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" ` +
+        `stroke-linecap="round"><path d="M4.5 12a7.5 7.5 0 0 1 13-5.2L20 9.3M19.5 12a7.5 7.5 0 0 1-13 5.2L4 14.7" ` +
+        `stroke="currentColor"/></svg></span>`;
+      box.append(stem, rotate);
     }
-    canvas.appendChild(overlay);
+
+    // 尺寸 / 角度角标（仅手势进行中显示，见 .resizing）
+    sizeBadge = document.createElement("div");
+    sizeBadge.className = "sel-size";
+    box.appendChild(sizeBadge);
+
+    overlay.appendChild(box);
+    wrapLayer.appendChild(overlay);
     updateSelectionBox();
   }
 
-  /** 仅更新选中框几何（拖动中不重建 DOM）。表格用实测显示高度（内容自适应）。
-   * 直接同步读 offsetHeight（读取即强制同步布局）：渲染后/拖动中任何时刻都准确，
-   * 不依赖 ResizeObserver 的异步回调（重渲染瞬间新节点 dataset 尚未写入，
-   * 回退 bounds[3] 会让选中框比实际渲染高度小一截）。 */
+  /** 同步选中框几何（拖动中高频调用，只改样式不重建 DOM）。
+   * 模型坐标 → wrap 视觉坐标：canvas 以中心为 transform-origin 缩放，模型
+   * (0,0) 的视觉位置 ≠ wrap (0,0)，取 canvas 与 wrap 的 rect 差作为视觉原点
+   * （同时自动抵消 wrap 的平移 translate）。表格用实测显示高度（内容自适应）：
+   * offsetHeight 是未缩放的布局像素，与 bounds 同一坐标系，同样乘 scale。 */
   function updateSelectionBox() {
-    if (!overlay) return;
+    if (!box) return;
     const el = findElement(getSelected());
     if (!el) return;
+    const s = scale();
+    const cr = canvas.getBoundingClientRect();
+    const wr = wrapLayer.getBoundingClientRect();
+    const ox = cr.left - wr.left;
+    const oy = cr.top - wr.top;
     const [x, y, w, h] = el.bounds;
     let dispH = h;
     if (el.elementType === "table") {
       const node = nodeBy(el.elementId);
       if (node && node.offsetHeight > 0) dispH = node.offsetHeight;
     }
-    overlay.style.left = `${x}px`;
-    overlay.style.top = `${y}px`;
-    overlay.style.width = `${w}px`;
-    overlay.style.height = `${dispH}px`;
+    box.style.left = `${ox + x * s}px`;
+    box.style.top = `${oy + y * s}px`;
+    box.style.width = `${w * s}px`;
+    box.style.height = `${dispH * s}px`;
+    // 元素旋转时框随手柄一起转（手柄挂在 box 上，自动跟随）
+    box.style.transform = el.rotation ? `rotate(${el.rotation}deg)` : "";
+  }
+
+  /** 手势进行中显示 W×H（缩放）或角度（旋转）。
+   * 角标挂在 sel-box 上会随元素旋转，按当前角度反向补偿保持水平。 */
+  function showBadge(text, rotation = 0) {
+    if (!sizeBadge) return;
+    sizeBadge.textContent = text;
+    sizeBadge.style.transform = rotation ? `rotate(${-rotation}deg)` : "";
+    overlay.classList.add("resizing");
   }
 
   // --------------------------------------------------------------------------
   // 拖动 / 缩放 / 旋转（由 interaction/stage.js 路由进入）
+  //   mode = "move" | "rotate" | "n"|"s"|"e"|"w"|"nw"|"ne"|"sw"|"se"
   // --------------------------------------------------------------------------
   function startGesture(e, mode, id) {
     const rect = canvas.getBoundingClientRect();
@@ -104,8 +146,6 @@ export function createCanvasController(canvas, opts) {
       id,
       clientX: e.clientX,
       clientY: e.clientY,
-      pageX: (e.clientX - rect.left) / s,
-      pageY: (e.clientY - rect.top) / s,
       origX: el.bounds[0],
       origY: el.bounds[1],
       origW: el.bounds[2],
@@ -127,8 +167,8 @@ export function createCanvasController(canvas, opts) {
       /* 部分元素（SVG/ECharts）不支持时忽略 */
     }
     beginChange();
-    // 自动行高的表格（无 rowHeights）拖缩放 → 写入均分行高比例，转为受控最小行高
-    if (mode === "resize" && el.elementType === "table" && !Array.isArray(el.rowHeights)) {
+    // 自动行高的表格（无 rowHeights）纵向拖缩放 → 写入均分行高比例，转为受控最小行高
+    if (mode !== "move" && mode !== "rotate" && el.elementType === "table" && !Array.isArray(el.rowHeights)) {
       const n = Math.max(1, Array.isArray(el.rows) ? el.rows.length : 1);
       el.rowHeights = Array.from({ length: n }, () => 1 / n);
     }
@@ -147,13 +187,15 @@ export function createCanvasController(canvas, opts) {
     const dx = (e.clientX - drag.clientX) / s;
     const dy = (e.clientY - drag.clientY) / s;
     if (drag.mode === "rotate") {
-      // 旋转角度 = 起始角度差（元素中心为原点），取整避免抖动
+      // 旋转角度 = 起始角度差（元素中心为原点）；Shift 吸附 15° 步进
       const a = Math.atan2(e.clientY - rect.top - drag.cy * s, e.clientX - rect.left - drag.cx * s);
-      let deg = drag.startRot + Math.round(((a - drag.startAngle) * 180) / Math.PI);
+      const step = e.shiftKey ? 15 : 1;
+      let deg = drag.startRot + Math.round((((a - drag.startAngle) * 180) / Math.PI) / step) * step;
       deg = ((deg % 360) + 360) % 360; // 归一化到 [0, 360)
       el.rotation = deg;
       const node = nodeBy(drag.id);
       if (node) node.style.transform = `rotate(${deg}deg)`;
+      showBadge(`${deg}°`, deg);
       return;
     }
     if (drag.mode === "move") {
@@ -165,24 +207,43 @@ export function createCanvasController(canvas, opts) {
         node.style.top = `${el.bounds[1]}px`;
       }
       updateSelectionBox();
-    } else {
-      let nw = Math.max(8, Math.round(drag.origW + dx));
-      let nh = Math.max(8, Math.round(drag.origH + dy));
-      if (e.shiftKey && drag.origW > 0 && drag.origH > 0) {
-        // Shift：等比缩放（以宽度为基准）
-        const ratio = drag.origH / drag.origW;
-        nh = Math.round(nw * ratio);
-      }
-      el.bounds[2] = nw;
-      el.bounds[3] = nh;
-      const node = nodeBy(drag.id);
-      if (node) {
-        node.style.width = `${nw}px`;
-        node.style.height = `${nh}px`;
-        syncSvgSize(node, [0, 0, nw, nh]);
-      }
-      updateSelectionBox();
+      return;
     }
+    // 缩放：mode 含 n/s/e/w 才调整对应轴，锚点是反向边 / 角（固定不动）
+    const m = drag.mode;
+    let nx = drag.origX;
+    let ny = drag.origY;
+    let nw = drag.origW;
+    let nh = drag.origH;
+    if (m.includes("e")) nw = Math.max(8, Math.round(drag.origW + dx));
+    if (m.includes("s")) nh = Math.max(8, Math.round(drag.origH + dy));
+    if (m.includes("w")) {
+      nw = Math.max(8, Math.round(drag.origW - dx));
+      nx = drag.origX + drag.origW - nw;
+    }
+    if (m.includes("n")) {
+      nh = Math.max(8, Math.round(drag.origH - dy));
+      ny = drag.origY + drag.origH - nh;
+    }
+    // Shift + 角柄：等比缩放（以宽度为基准，高度按原始比例联动）
+    if (e.shiftKey && /[ns]/.test(m) && /[ew]/.test(m) && drag.origW > 0 && drag.origH > 0) {
+      nh = Math.max(8, Math.round(nw * (drag.origH / drag.origW)));
+      if (m.includes("n")) ny = drag.origY + drag.origH - nh;
+    }
+    el.bounds[0] = nx;
+    el.bounds[1] = ny;
+    el.bounds[2] = nw;
+    el.bounds[3] = nh;
+    const node = nodeBy(drag.id);
+    if (node) {
+      node.style.left = `${nx}px`;
+      node.style.top = `${ny}px`;
+      node.style.width = `${nw}px`;
+      node.style.height = `${nh}px`;
+      syncSvgSize(node, [nx, ny, nw, nh]);
+    }
+    updateSelectionBox();
+    showBadge(`${nw} × ${nh}`, el.rotation || 0);
   }
 
   /** 拖动中保持 SVG 图形按比例缩放（viewBox 不变，width/height 变化）。 */
@@ -201,6 +262,7 @@ export function createCanvasController(canvas, opts) {
     window.removeEventListener("pointerup", onDragEnd);
     window.removeEventListener("pointercancel", onDragEnd);
     window.removeEventListener("blur", onDragEnd);
+    overlay?.classList.remove("resizing");
     endChange(); // 全量重渲染校准（SVG 几何 / 图表重绘）
   }
 

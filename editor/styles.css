@@ -514,6 +514,141 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   cursor: grabbing !important;
 }
 
+/* ----------------------------------------------------------------------------
+   选中框（interaction/canvas.js）：canvas-wrap 内的不缩放图层。
+   几何由 JS 按 canvas._scale 换算，边框 / 手柄恒定屏幕尺寸（任何缩放下
+   视觉一致、命中目标稳定）。四角 = 白底圆点，四边中点 = 胶囊条，
+   旋转手柄 = 连接杆 + 圆形箭头芯片。
+   ---------------------------------------------------------------------------- */
+.sel-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.sel-box {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1.5px solid var(--primary);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* 手柄：22px 命中区（触屏可点），视觉圆点由 ::before 绘制（10px） */
+.sel-handle {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  touch-action: none;
+}
+.sel-handle::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid var(--primary);
+  box-shadow: 0 1px 3px rgba(28, 37, 50, 0.3);
+  transition: transform 0.08s ease;
+  box-sizing: border-box;
+}
+.sel-handle:hover::before,
+.sel-handle:active::before {
+  transform: scale(1.25);
+}
+
+/* 四边中点手柄：胶囊条（形状暗示可拉伸方向） */
+.sel-handle--h::before {
+  width: 17px;
+  height: 7px;
+  border-radius: 99px;
+}
+.sel-handle--v::before {
+  width: 7px;
+  height: 17px;
+  border-radius: 99px;
+}
+
+/* 八个锚点位置（都居中于框的角 / 边中点） */
+.sel-handle[data-handle="nw"] { left: 0; top: 0; transform: translate(-50%, -50%); }
+.sel-handle[data-handle="n"]  { left: 50%; top: 0; transform: translate(-50%, -50%); }
+.sel-handle[data-handle="ne"] { left: 100%; top: 0; transform: translate(-50%, -50%); }
+.sel-handle[data-handle="e"]  { left: 100%; top: 50%; transform: translate(-50%, -50%); }
+.sel-handle[data-handle="se"] { left: 100%; top: 100%; transform: translate(-50%, -50%); }
+.sel-handle[data-handle="s"]  { left: 50%; top: 100%; transform: translate(-50%, -50%); }
+.sel-handle[data-handle="sw"] { left: 0; top: 100%; transform: translate(-50%, -50%); }
+.sel-handle[data-handle="w"]  { left: 0; top: 50%; transform: translate(-50%, -50%); }
+
+/* 旋转手柄：连接杆 + 圆形箭头芯片（悬于框顶中点上方，随元素旋转） */
+.sel-rotate-stem {
+  position: absolute;
+  left: 50%;
+  top: -16px;
+  width: 1.5px;
+  height: 16px;
+  background: var(--primary);
+  transform: translateX(-50%);
+}
+.sel-rotate {
+  position: absolute;
+  left: 50%;
+  top: -16px;
+  transform: translate(-50%, -100%);
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+}
+.sel-rotate:active { cursor: grabbing; }
+.sel-rotate-ic {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid var(--primary);
+  box-shadow: 0 1px 3px rgba(28, 37, 50, 0.3);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: transform 0.08s ease;
+}
+.sel-rotate:hover .sel-rotate-ic,
+.sel-rotate:active .sel-rotate-ic {
+  transform: scale(1.15);
+}
+.sel-rotate-ic svg { width: 10px; height: 10px; }
+
+/* 尺寸 / 角度角标：仅手势进行中显示；随框旋转但自身反向补偿保持水平 */
+.sel-size {
+  position: absolute;
+  right: 0;
+  bottom: -8px;
+  transform-origin: top right;
+  display: none;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+.sel-overlay.resizing .sel-size { display: block; }
+
 .canvas {
   position: relative;
   width: 960px;

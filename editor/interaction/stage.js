@@ -34,16 +34,10 @@ export function createStageController(stage, opts) {
     "button, input, textarea, select, [contenteditable]";
   const isFloating = (t) => !!t.closest(FLOATING);
 
-  // 选中框手柄 → 元素手势类型（顺序与视觉层级一致：手柄浮在元素上方）
-  const HANDLE_MODE = {
-    "[data-handle]": "resize",
-    "[data-rotate-handle]": "rotate",
-    "[data-move-handle]": "move",
-  };
-  const handleMode = (t) => {
-    for (const sel of Object.keys(HANDLE_MODE)) if (t.closest(sel)) return HANDLE_MODE[sel];
-    return null;
-  };
+  // 选中框手柄 → 手势类型：缩放手柄的 data-handle 值本身就是方向
+  // （n/s/e/w/nw/ne/sw/se，见 canvas.js），旋转手柄为 "rotate"
+  const handleMode = (t) =>
+    t.closest("[data-handle]")?.dataset.handle || (t.closest("[data-rotate-handle]") ? "rotate" : null);
 
   // 触屏：空白面阻止浏览器手势（页面回弹 / 双击缩放），指针事件才能完整送达。
   // 元素与手柄由 .canvas 的 touch-action:none 覆盖。
@@ -133,13 +127,12 @@ export function createStageController(stage, opts) {
         startPan(e);
         return;
       }
-      // 2) 选中框手柄 → 元素缩放 / 旋转 / 移动
+      // 2) 选中框手柄 → 元素缩放 / 旋转（canvas.js 执行）
       const mode = handleMode(e.target);
       if (mode) {
         const id = getSelected();
         if (id) {
           e.preventDefault();
-          if (mode === "move") e.stopPropagation(); // 图表 / 表格等内部交互不再响应
           element.startGesture(e, mode, id);
         }
         return;
