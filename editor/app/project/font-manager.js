@@ -1,5 +1,5 @@
 // ============================================================================
-// app/font-manager.js — 编辑器字体库（本地文件 / 网络 URL）+ 字体管理对话框
+// app/project/font-manager.js — 编辑器字体库（本地文件 / 网络 URL）+ 字体管理对话框
 // ----------------------------------------------------------------------------
 // 职责：
 //   - 添加字体（<input type=file> 读字节 / fetch URL）→ parseFontInfo 取名
@@ -15,11 +15,11 @@
 //     title: 站酷小薇                                                          # 组件槽引用
 // ============================================================================
 
-import { parseFontInfo } from "../core/font.js";
-import { parseFontResources } from "../core/theme.js";
-import { loadFontRegistry, findFont, fontFileUrl, fetchFontBytes } from "../core/font-registry.js";
-import { showDialog } from "../interaction/dialogs/base.js";
-import { showToast } from "./toast.js";
+import { parseFontInfo } from "../../core/font.js";
+import { parseFontResources } from "../../core/theme.js";
+import { loadFontRegistry, findFont, fontFileUrl, fetchFontBytes } from "../../core/font-registry.js";
+import { showDialog } from "../../interaction/dialogs/base.js";
+import { showToast } from "../toast.js";
 
 /** 系统字体池（styles.md 0.5 节；元素 fontFamily 下拉兜底选项）。 */
 export const SYSTEM_FONTS = ["Microsoft YaHei", "KaiTi", "SimSun", "SimHei", "FangSong", "YouYuan"];

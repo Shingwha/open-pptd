@@ -6,7 +6,7 @@
 // renderPage（960×540 逻辑尺寸，按容器宽度自适应缩放）。
 // 纯静态可用（GitHub Pages 无服务器，全部相对路径 fetch；项目媒体图同样
 // 以相对路径解析为绝对 URL 加载）。
-// 性能：项目文件走 Cache API 跨会话缓存（app/project-cache.js），
+// 性能：项目文件走 Cache API 跨会话缓存（app/project/project-cache.js），
 // 缩略图懒加载（滚动到才拉）+ ResizeObserver 随卡片宽度重渲染。
 // ============================================================================
 
@@ -14,7 +14,7 @@ import * as yaml from "./vendor/js-yaml.mjs";
 import { parseDeck } from "./core/pptd-io.js";
 import { normalizeTheme, mergeFonts } from "./core/theme.js";
 import { renderPage, disposeChartInstances } from "./renderer/page.js";
-import { fetchProjectTexts } from "./app/project-cache.js";
+import { fetchProjectTexts } from "./app/project/project-cache.js";
 import { loadFontRegistry, findFont, fetchFontBytes } from "./core/font-registry.js";
 
 const PAGE_W = 960;

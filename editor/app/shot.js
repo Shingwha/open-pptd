@@ -11,7 +11,7 @@
 // ============================================================================
 
 import { createEditorState } from "./state.js";
-import { createIo } from "./io.js";
+import { createIo } from "./project/io.js";
 import { renderPage } from "../renderer/page.js";
 import { PAGE_WIDTH, PAGE_HEIGHT } from "../core/model.js";
 

@@ -1,13 +1,13 @@
 // ============================================================================
-// app/thumbnails.js — 缩略条：渲染 + 拖拽/滚轮横向滚动 + 自动跟随当前页
+// app/view/thumbnails.js — 缩略条：渲染 + 拖拽/滚轮横向滚动 + 自动跟随当前页
 // ----------------------------------------------------------------------------
 // 关注点独立：拖拽滚动等 DOM 接线在创建时挂一次（窗口级监听），
 // renderThumbnails 只重建缩略图内容；页面切换/删除经 reload 回调触发全量渲染。
 // ============================================================================
 
-import { PAGE_WIDTH } from "../core/model.js";
-import { renderPage, disposeChartInstances } from "../renderer/page.js";
-import { isNarrow } from "../ui.js";
+import { PAGE_WIDTH } from "../../core/model.js";
+import { renderPage, disposeChartInstances } from "../../renderer/page.js";
+import { isNarrow } from "../../ui.js";
 
 const THUMB_W = 140;
 // 窄屏（≤900px）迷你缩略图宽度，与 styles.css 响应式块中的 .thumb 同步

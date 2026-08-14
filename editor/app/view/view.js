@@ -1,5 +1,5 @@
 // ============================================================================
-// app/view.js — 渲染编排（画布 / 缩略条 / 属性面板 / 快速条 / 按钮状态）
+// app/view/view.js — 渲染编排（画布 / 缩略条 / 属性面板 / 快速条 / 按钮状态）
 // ----------------------------------------------------------------------------
 // 所有"把模型画到屏幕上"的入口集中在这里：render() 全量刷新，
 // renderCanvas / renderThumbnails / renderProps / renderQuickbar / updateButtons
@@ -8,11 +8,11 @@
 // 各自持有状态与 DOM 接线，这里只做编排与画布重建。
 // ============================================================================
 
-import { renderPage } from "../renderer/page.js";
-import { resolveColor } from "../core/theme.js";
-import { getType } from "../types/index.js";
-import { quickbarColor, quickbarSelect, quickbarBtn, quickbarTextBtn, isNarrow } from "../ui.js";
-import { relRect } from "../coords.js";
+import { renderPage } from "../../renderer/page.js";
+import { resolveColor } from "../../core/theme.js";
+import { getType } from "../../types/index.js";
+import { quickbarColor, quickbarSelect, quickbarBtn, quickbarTextBtn, isNarrow } from "../../ui.js";
+import { relRect } from "../../coords.js";
 import { applyMeasurements } from "./measure.js";
 import { createViewport } from "./viewport.js";
 import { createThumbnails } from "./thumbnails.js";

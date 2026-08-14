@@ -1,12 +1,12 @@
 // ============================================================================
-// app/viewport.js — 画布视口：缩放/平移状态 + transform 应用
+// app/view/viewport.js — 画布视口：缩放/平移状态 + transform 应用
 // ----------------------------------------------------------------------------
 // 触屏捏合 / Ctrl+滚轮 / 缩放控件 / 画布外拖拽平移（interaction/stage.js）
 // 均经 setZoom / panBy 进入这里；平移量作用在 canvas-wrap 上（屏幕像素），
 // 不影响元素命中与导出。1 = 适配视口。
 // ============================================================================
 
-import { PAGE_WIDTH, PAGE_HEIGHT } from "../core/model.js";
+import { PAGE_WIDTH, PAGE_HEIGHT } from "../../core/model.js";
 
 export function createViewport({ stage, canvas, wrap, zoomLabel, controller, repaint }) {
   let zoom = 1;

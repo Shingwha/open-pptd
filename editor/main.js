@@ -4,8 +4,8 @@
 // 编辑器装配：把 state / api / controller / props / view / io /
 // toolbar / keyboard 组装起来并启动。业务逻辑都在对应模块里：
 //   app/state.js    状态 + 纯模型操作
-//   app/view.js     渲染编排（画布/缩略条/面板/快速条）
-//   app/io.js       加载/保存/导出/图片
+//   app/view/view.js     渲染编排（画布/缩略条/面板/快速条）
+//   app/project/io.js       加载/保存/导出/图片
 //   app/toolbar.js  顶栏 + 添加菜单
 //   app/keyboard.js 全局快捷键
 //   types/          元素类型注册表（新增元素类型入口）
@@ -13,15 +13,15 @@
 
 import { createEditorState } from "./app/state.js";
 import { createEditorApi } from "./app/api.js";
-import { createView } from "./app/view.js";
-import { createIo } from "./app/io.js";
+import { createView } from "./app/view/view.js";
+import { createIo } from "./app/project/io.js";
 import { bindToolbar } from "./app/toolbar.js";
 import { bindKeyboard } from "./app/keyboard.js";
 import { createPresent } from "./app/present.js";
 import { showToast } from "./app/toast.js";
 import { createCanvasController } from "./interaction/canvas.js";
 import { createStageController } from "./interaction/stage.js";
-import { makeZoomCtlDraggable } from "./app/zoom-ctl.js";
+import { makeZoomCtlDraggable } from "./app/view/zoom-ctl.js";
 import { bindProperties } from "./interaction/properties.js";
 import { createDeck, createPage } from "./core/model.js";
 import { normalizeTheme } from "./core/theme.js";
