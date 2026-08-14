@@ -16,31 +16,36 @@
 // textStyles 默认 5 键：title/subtitle/body/caption/quote（任意键均可扩展）
 // tableStyles.default 为官方 TableStyleConfig（全表基底/表头行/斑马纹/边框）
 //
-// 2026-08 配色更新：10 套全部重设计（每套独立色彩家族，主色+点缀色有性格；
-// 图表系列色 6 槽与家族和谐且彼此可区分；primarySoft/Tint/Deep 严格由主色派生；
-// 白字压主色表头的对比度达标；中性色 text/muted/line 带家族色相）。
+// 2026-08 配色重设计（量化规则生成，非目测）：
+//   - 主色 = 性格色相 + 深明度：白字压表头对比度全部 ≥ 4.5:1（WCAG AA）
+//   - 强调色与主色色相拉开 ≥ 25°（brown 例外：蜂蜜金靠明度差分离，见该套注释）
+//   - 图表 6 系列槽位色环均布（相邻色相 ≥ 25°）+ 明度相近（L 40-55）：
+//     多系列图表彼此可区分且与家族和谐（旧版系列色 0-4° 重叠是搭配不佳的主因）
+//   - 中性色 text/muted/line 带家族色相（近黑 / 中灰 / 浅灰三档，非纯灰）
+//   - primarySoft/Tint/Deep 由主色 HSL 精确派生（L 95 / 88 / 主色 −10）
+//   - 语义色 success/warning/danger 跨套统一（用户直觉固定，不随主题漂移）
 // ============================================================================
 
 export const DEFAULT_THEME = {
   colors: {
-    primary: "#16324F", // 深海军蓝（默认主题基准色）
-    accent: "#C9962E", // 复古金（常用搭配色）
+    primary: "#18324E", // 深海军蓝（默认主题基准色）
+    accent: "#D19B2E", // 复古金（常用搭配色）
     bg: "#FFFFFF",
-    text: "#16222E",
-    muted: "#5C6C7E",
-    line: "#E3E8EF",
-    success: "#2F7D52",
-    warning: "#A86A1F",
-    danger: "#C0524E",
+    text: "#1F2428",
+    muted: "#6E7A87",
+    line: "#E8EBED",
+    success: "#33A362",
+    warning: "#B4872D",
+    danger: "#BE392D",
     // 主色派生（显式 hex；primarySoft=浅底、primaryTint=卡片、primaryDeep=深底）
-    primarySoft: "#EEF2F7",
-    primaryTint: "#DCE4EE",
-    primaryDeep: "#0E2236",
+    primarySoft: "#EFF2F5",
+    primaryTint: "#D7E0EA",
+    primaryDeep: "#0A1929",
     // 图表系列色槽位（accent1-6 循环：1=primary、2=accent、3-6 如下）
-    accent3: "#3D6B99",
-    accent4: "#7FA6CB",
-    accent5: "#C26B4E",
-    accent6: "#5D8A72",
+    accent3: "#37B2BE",
+    accent4: "#5A45C4",
+    accent5: "#C15533",
+    accent6: "#419F73",
   },
   textStyles: {
     title: { fontSize: 32, color: "$text", bold: true, lineHeight: 1.3 },
@@ -77,8 +82,8 @@ export const DEFAULT_THEME = {
 
 // ----------------------------------------------------------------------------
 // 10 套配色预设（colors 键集齐全，每套 = 完整 17 键）
-// 每套独立色彩家族：主色沉稳 + 有性格的点缀色 + 6 槽图表系列色（深浅阶梯）。
-// 色值设计依据见 docs/editor-v2-ux.md §1.3（consult 沿用 DEFAULT_THEME）。
+// 每套独立色彩家族：主色沉稳 + 有性格的点缀色 + 6 槽图表系列色（色环均布）。
+// 色值由脚本按上述量化规则生成（见文件头注释），不可手工目测微调后破坏规则。
 // ----------------------------------------------------------------------------
 
 /** 各套共享键（白底）。 */
@@ -87,124 +92,126 @@ const COMMON = {
 };
 
 export const THEME_PALETTES = {
-  // 1. 咨询蓝（默认主题同源）：深海军蓝 + 复古金
+  // 1. 咨询蓝（默认主题同源）：深海军蓝 + 复古金；系列 = 蓝/金家族 + 青蓝/蓝紫/暖橙/灰绿
   consult: {
     name: "咨询蓝",
     colors: {
       ...COMMON,
-      primary: "#16324F", accent: "#C9962E",
-      text: "#16222E", muted: "#5C6C7E", line: "#E3E8EF",
-      success: "#2F7D52", warning: "#A86A1F", danger: "#C0524E",
-      primarySoft: "#EEF2F7", primaryTint: "#DCE4EE", primaryDeep: "#0E2236",
-      accent3: "#3D6B99", accent4: "#7FA6CB", accent5: "#C26B4E", accent6: "#5D8A72",
+      primary: "#18324E", accent: "#D19B2E",
+      text: "#1F2428", muted: "#6E7A87", line: "#E8EBED",
+      success: "#33A362", warning: "#B4872D", danger: "#BE392D",
+      primarySoft: "#EFF2F5", primaryTint: "#D7E0EA", primaryDeep: "#0A1929",
+      accent3: "#37B2BE", accent4: "#5A45C4", accent5: "#C15533", accent6: "#419F73",
     },
   },
-  // 2. 科技青：深海青 + 亮琥珀（深底表头对比度足，系列色含一记紫色提神）
+  // 2. 科技青：深海青 + 亮琥珀；系列 = 青家族 + 蓝/绿/紫/橙红（含一记紫色提神）
   tech: {
     name: "科技青",
     colors: {
       ...COMMON,
-      primary: "#0B7C8D", accent: "#F5A623",
-      text: "#142B33", muted: "#5B7376", line: "#DDEBEC",
-      success: "#2E9E5B", warning: "#D98A1F", danger: "#D64545",
-      primarySoft: "#EFF7F8", primaryTint: "#DFEFF2", primaryDeep: "#075E6A",
-      accent3: "#23A5B8", accent4: "#79C7D4", accent5: "#8C5BC4", accent6: "#5C7D8C",
+      primary: "#0F798A", accent: "#EB9D1E",
+      text: "#1F2728", muted: "#6E8387", line: "#E8ECED",
+      success: "#33A362", warning: "#B4872D", danger: "#BE392D",
+      primarySoft: "#EFF4F5", primaryTint: "#D7E7EA", primaryDeep: "#0F4D57",
+      accent3: "#336FC1", accent4: "#36AB70", accent5: "#963DC2", accent6: "#BE4A2D",
     },
   },
-  // 3. 活力橙：焦橙 + 深青（互补点缀，亮橙为主色时用深青压场）
+  // 3. 活力橙：焦橙 + 深青（互补点缀，亮橙为主色时用深青压场）；系列 = 橙/黄/绿/蓝/玫红
   orange: {
     name: "活力橙",
     colors: {
       ...COMMON,
-      primary: "#C0531F", accent: "#2A6E72",
-      text: "#2E241E", muted: "#78685C", line: "#F0E6DE",
-      success: "#3D7A4F", warning: "#C07A12", danger: "#C0503C",
-      primarySoft: "#FCF3EC", primaryTint: "#F8E6D8", primaryDeep: "#9A3A12",
-      accent3: "#E0804A", accent4: "#F2B48E", accent5: "#3E8A8F", accent6: "#8FB5B8",
+      primary: "#B65020", accent: "#296C70",
+      text: "#28221F", muted: "#87766E", line: "#EDEAE8",
+      success: "#33A362", warning: "#B4872D", danger: "#BE392D",
+      primarySoft: "#F5F1EF", primaryTint: "#EADDD7", primaryDeep: "#8B3D18",
+      accent3: "#D9B23A", accent4: "#3AA65E", accent5: "#3B5BBA", accent6: "#BA3B85",
     },
   },
-  // 4. 森林绿：深林绿 + 蜜金
+  // 4. 森林绿：深林绿 + 蜜金；系列 = 绿家族 + 青蓝/紫/棕红
   green: {
     name: "森林绿",
     colors: {
       ...COMMON,
-      primary: "#1D6B45", accent: "#D0A437",
-      text: "#172A20", muted: "#5C6E62", line: "#E2EAE3",
-      success: "#2F8A52", warning: "#B07816", danger: "#C05248",
-      primarySoft: "#F0F6F1", primaryTint: "#E0EDE4", primaryDeep: "#124D31",
-      accent3: "#3E8B60", accent4: "#7FB593", accent5: "#B56A3E", accent6: "#7C93A5",
+      primary: "#1D6744", accent: "#CCA133",
+      text: "#1F2824", muted: "#6E877B", line: "#E8EDEB",
+      success: "#33A362", warning: "#B4872D", danger: "#BE392D",
+      primarySoft: "#EFF5F2", primaryTint: "#D7EAE1", primaryDeep: "#0F432A",
+      accent3: "#3AA643", accent4: "#3894B2", accent5: "#7B42BD", accent6: "#AB5936",
     },
   },
-  // 5. 沉稳红：绯红 + 墨蓝（商务正式感，红蓝配）
+  // 5. 沉稳红：绯红 + 墨蓝（商务正式感，红蓝配）；系列 = 红家族 + 珊瑚/绿/紫/橄榄
   red: {
     name: "沉稳红",
     colors: {
       ...COMMON,
-      primary: "#B02A3A", accent: "#2E4A6E",
-      text: "#2C2022", muted: "#75676A", line: "#F0E3E4",
-      success: "#3D7A52", warning: "#B07A14", danger: "#C64A3E",
-      primarySoft: "#FBF1F2", primaryTint: "#F5E2E4", primaryDeep: "#831C28",
-      accent3: "#C94B57", accent4: "#E3A0A6", accent5: "#4E6F9E", accent6: "#9AA9C4",
+      primary: "#A32937", accent: "#2B4464",
+      text: "#281F20", muted: "#876E71", line: "#EDE8E9",
+      success: "#33A362", warning: "#B4872D", danger: "#BE392D",
+      primarySoft: "#F5EFF0", primaryTint: "#EAD7D9", primaryDeep: "#811825",
+      accent3: "#CF6530", accent4: "#39935F", accent5: "#7542BD", accent6: "#63863C",
     },
   },
-  // 6. 优雅紫：深紫罗兰 + 暖琥珀（经典贵气组合）
+  // 6. 优雅紫：深紫罗兰 + 暖琥珀（经典贵气组合）；系列 = 紫家族 + 蓝/青绿/暖红
   purple: {
     name: "优雅紫",
     colors: {
       ...COMMON,
-      primary: "#5A2E8C", accent: "#C99A3A",
-      text: "#2A2136", muted: "#6E6480", line: "#E9E2F2",
-      success: "#3D7A52", warning: "#AD7513", danger: "#BF4A56",
-      primarySoft: "#F6F2FA", primaryTint: "#ECE4F5", primaryDeep: "#3F1E63",
-      accent3: "#7B4FA8", accent4: "#AC8CCB", accent5: "#C26B8A", accent6: "#5E7FA3",
+      primary: "#542B82", accent: "#C79738",
+      text: "#231F28", muted: "#7A6E87", line: "#EAE8ED",
+      success: "#33A362", warning: "#B4872D", danger: "#BE392D",
+      primarySoft: "#F2EFF5", primaryTint: "#E0D7EA", primaryDeep: "#3B1A61",
+      accent3: "#BA3BBA", accent4: "#3857B2", accent5: "#3FA294", accent6: "#B94831",
     },
   },
-  // 7. 高级灰：炭黑 + 金（极简高级感，系列色两枚低调彩色点缀）
+  // 7. 高级灰：炭黑 + 金（极简高级感）；系列 = 灰家族 + 青/灰紫/棕红/灰绿
   mono: {
     name: "高级灰",
     colors: {
       ...COMMON,
-      primary: "#20272F", accent: "#C9993E",
-      text: "#232A33", muted: "#66707C", line: "#E7E9EC",
-      success: "#3D8A57", warning: "#B0781C", danger: "#C7504A",
-      primarySoft: "#F2F3F5", primaryTint: "#E3E6EA", primaryDeep: "#141A23",
-      accent3: "#55606E", accent4: "#A0A9B4", accent5: "#3E8A8C", accent6: "#B05A4A",
+      primary: "#1F262D", accent: "#C4943B",
+      text: "#1F2328", muted: "#6E7A87", line: "#E8EAED",
+      success: "#33A362", warning: "#B4872D", danger: "#BE392D",
+      primarySoft: "#EFF2F5", primaryTint: "#D7E0EA", primaryDeep: "#0F141A",
+      accent3: "#3E9889", accent4: "#6F4EA6", accent5: "#AB593F", accent6: "#418B4B",
     },
   },
-  // 8. 大地棕：可可棕 + 蜂蜜金（温暖自然）
+  // 8. 大地棕：可可棕 + 蜂蜜金（温暖自然；两色色相仅差 12°，靠明度分离：
+  //    深棕 L28 vs 亮金 L52，图表中区分清晰，是棕+金的经典性格）
   brown: {
     name: "大地棕",
     colors: {
       ...COMMON,
-      primary: "#6D4A2C", accent: "#D19A4B",
-      text: "#2E241D", muted: "#7A6B5C", line: "#EDE5DA",
-      success: "#4F7A4E", warning: "#B57A1C", danger: "#B55242",
-      primarySoft: "#F7F4F0", primaryTint: "#EFE8DF", primaryDeep: "#4E341E",
-      accent3: "#8D6742", accent4: "#C4A57E", accent5: "#7E8C5A", accent6: "#A68B4F",
+      primary: "#654529", accent: "#C99B40",
+      text: "#28231F", muted: "#877A6E", line: "#EDEAE8",
+      success: "#33A362", warning: "#B4872D", danger: "#BE392D",
+      primarySoft: "#F5F2EF", primaryTint: "#EAE0D7", primaryDeep: "#452C17",
+      accent3: "#3B9169", accent4: "#3F7EAB", accent5: "#B3427A", accent6: "#6B883A",
     },
   },
-  // 9. 莫兰迪：灰调鼠尾草绿 + 亚麻米（低饱和高级感；主色略加深以保证白字表头对比度）
+  // 9. 莫兰迪：灰调鼠尾草绿 + 亚麻米（低饱和高级感；主色保持深灰绿保证白字表头 5.7:1）
   morandi: {
     name: "莫兰迪",
     colors: {
       ...COMMON,
-      primary: "#64725F", accent: "#B7A187",
-      text: "#33352E", muted: "#76796F", line: "#E6E5DE",
-      success: "#5E7A60", warning: "#A88A4E", danger: "#B07A70",
-      primarySoft: "#F4F6F2", primaryTint: "#E8ECE4", primaryDeep: "#4A5646",
-      accent3: "#8FA08A", accent4: "#C3CDC0", accent5: "#AE8B92", accent6: "#8E9BA5",
+      primary: "#5C6B57", accent: "#B19B81",
+      text: "#22281F", muted: "#75876E", line: "#E9EDE8",
+      success: "#33A362", warning: "#B4872D", danger: "#BE392D",
+      primarySoft: "#F1F5EF", primaryTint: "#DCEAD7", primaryDeep: "#41543B",
+      accent3: "#8FA06A", accent4: "#64907C", accent5: "#9B6F7D", accent6: "#6B8094",
     },
   },
-  // 10. 樱花粉：玫瑰粉 + 鼠尾草绿（柔美清透，粉绿互补）
+  // 10. 樱花粉：深玫红 + 鼠尾草绿（柔美清透，粉绿互补；
+  //     主色用深玫红而非浅粉 —— 浅粉留给 soft/tint，白字表头对比 7.6:1）
   sakura: {
     name: "樱花粉",
     colors: {
       ...COMMON,
-      primary: "#BC4F76", accent: "#7FA87C",
-      text: "#3A2831", muted: "#8A6E78", line: "#F5E4EA",
-      success: "#4F8A5C", warning: "#C08A2E", danger: "#C0504E",
-      primarySoft: "#FCF4F7", primaryTint: "#F9E9EF", primaryDeep: "#8C3A5B",
-      accent3: "#D97FA4", accent4: "#EFB8CD", accent5: "#4E8A62", accent6: "#A98AC0",
+      primary: "#913052", accent: "#61A35C",
+      text: "#281F22", muted: "#876E77", line: "#EDE8EA",
+      success: "#33A362", warning: "#B4872D", danger: "#BE392D",
+      primarySoft: "#F5EFF1", primaryTint: "#EAD7DE", primaryDeep: "#711E3B",
+      accent3: "#974CBD", accent4: "#4799C2", accent5: "#C9B240", accent6: "#C25E3D",
     },
   },
 };
