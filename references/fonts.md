@@ -2,7 +2,7 @@
 
 ## Overview
 
-- **Built-in font library**: `assets/fonts/` (skill resource folder, not uploaded to GitHub) contains **27 free-for-commercial-use fonts**, all verified for name-table family names, embeddable fsType, and subsetting support.
+- **Built-in font library**: `assets/fonts/` (skill resource folder, not uploaded to GitHub) contains **26 free-for-commercial-use fonts**, all verified for name-table family names, embeddable fsType, and subsetting support.
 - **Usage**: declare `{family: <registered-name>}` in `deck.fonts` and the font is embedded automatically (subsetted by default). No need to download or place font files.
 - **Default font**: `Microsoft YaHei` (built into Windows, declared only — not embedded). It is not in the built-in library (Microsoft copyright, cannot be redistributed/embedded), so it is a system font: declared only, consistent on any Windows machine. For a cross-machine brand font, declare it in `deck.fonts` and reference it explicitly on pages.
 - **System fonts**: any `fontFamily` that misses the registry is declared only (not embedded) and depends on the opening system. Common system fonts and their platform coverage are listed under "System Fonts" below (also queryable via `node bin/open-pptd.js fonts list`).
@@ -17,7 +17,7 @@
 
 > The sans table below is ordered by recommendation: **steady, formal, widely applicable fonts first** — pick from the top of the list for a professional look; stylized/creative fonts follow for titles and special pages.
 
-## Built-in Font Library (27 fonts, all free-for-commercial-use + subsettable embedding)
+## Built-in Font Library (26 fonts, all free-for-commercial-use + subsettable embedding)
 
 ### Sans (黑体)
 
@@ -27,7 +27,6 @@
 | 霞鹜新晰黑 | `LXGW Neo XiHei` | Clear, modern, clean and neat | Tech/body text/general |
 | Liter | `Liter` | Modern sans-serif, rational and clean (Latin only — no Chinese glyphs) | Tech/products (English only) |
 | Quattrocento Sans | `Quattrocento Sans` | Classic elegant sans-serif, legible at small sizes (Latin only — no Chinese glyphs) | Academic/business/education (English only) |
-| MiSans | `MiSans` | Xiaomi system sans, modern and clear, multiple weights | Tech/enterprise/products (backup choice) |
 | 得意黑 | `Smiley Sans` | Narrow slanted sans, balance of humanist and geometric (italic glyphs) | Creative tech/brand display/titles |
 | HedvigLettersSans | `Hedvig Letters Sans` | Non-designer perspective, distinctive personality (Latin only — no Chinese glyphs) | Creative design/brand (English only) |
 | Coda | `Coda` | Rounded, friendly, open curves (Latin only — no Chinese glyphs) | Business/friendly brands (English only) |
@@ -134,7 +133,7 @@ fonts:
   得意黑: { family: "Smiley Sans" }          # registry reference: export takes font from built-in library → subsets → embeds
   title-font: { family: "Alimama DaoLiTi", subset: false }   # explicitly disable subsetting (default true)
   web-font:  { family: "SomeFont", url: https://cdn.example.com/somefont.ttf }  # web font (needs CORS)
-  body: MiSans                              # slot string: reference only, no embedding
+  body: PingFang SC                         # slot string: reference only, no embedding
 ```
 
 - `family` is the **embedding registered name**: must exactly match the tables above (including case and spaces); **a family that misses the registry and has no `url` is treated as a system font — declared only, not embedded**
@@ -163,6 +162,6 @@ Toolbar "Fonts" → font management dialog: browse the built-in library by categ
 - **Use = embed**: fonts referenced via the registry are always embedded (whether or not installed locally), guaranteeing consistency on any machine; size is controlled by subsetting
 - **Do not use embedded fonts as the theme default font** (PowerPoint treats theme fonts as "in use" and forces embedding, bloating the file)
 - **A run must actually use the font**: declaring fonts while no page/theme style references the family → PowerPoint drops the embedded declaration. After declaring in `deck.fonts`, remember to use it in `theme.textStyles` or element `fontFamily`
-- **Licensing**: all 27 built-in fonts are free for commercial use (OFL / IPA / Alimama / ZCOOL licenses), embeddable and redistributable; Windows commercial fonts such as Microsoft YaHei cannot be redistributed/embedded
+- **Licensing**: all 26 built-in fonts are free for commercial use (OFL / IPA / Alimama / ZCOOL licenses), embeddable and redistributable; Windows commercial fonts such as Microsoft YaHei cannot be redistributed/embedded
 - **Restricted fonts**: fonts with fsType = Restricted (0x0002) are skipped with a warning at export (none in the built-in library)
 - Embedding implementation details: `docs/font-embedding.md` (developer doc, consult when troubleshooting)

@@ -47,7 +47,7 @@ elements:
     elementType: text
     bounds: [80, 184, 620, 18]
     content:
-      fontFamily: "MiSans"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 11
       color: "$accent"
       letterSpacing: 3
@@ -71,7 +71,7 @@ elements:
     elementType: text
     bounds: [80, 318, 700, 20]
     content:
-      fontFamily: "MiSans"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 13
       color: "$muted"
       text: 品牌月度经营分析 · 报告期 2026.05.01 — 05.31
@@ -79,7 +79,7 @@ elements:
     elementType: text
     bounds: [80, 342, 700, 16]
     content:
-      fontFamily: "MiSans"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 10
       color: "$muted"
       text: 编制：运营管理部 · 数据截至 2026-05-31 · 财务口径（含税）
@@ -93,7 +93,7 @@ elements:
     elementType: text
     bounds: [100, 388, 740, 52]
     content:
-      fontFamily: "MiSans"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 17
       color: "$text"
       align: [left, middle]
@@ -103,7 +103,7 @@ elements:
     elementType: text
     bounds: [80, 444, 640, 14]
     content:
-      fontFamily: "MiSans"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 10
       color: "$muted"
       text: 内部资料 · 请勿外传

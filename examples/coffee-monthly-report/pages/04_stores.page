@@ -181,7 +181,7 @@ elements:
     elementType: text
     bounds: [644, 380, 260, 104]
     content:
-      fontFamily: "MiSans"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$text"
       align: [left, middle]
