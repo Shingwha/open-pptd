@@ -8,6 +8,7 @@
 
 import { resolveColor } from "../core/theme.js";
 import { shapePaths } from "../core/preset-geometry.js";
+import { createElementShell } from "./shell.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -45,22 +46,10 @@ function shadeColor(hex, modifier) {
 
 /** 形状元素 → 定位 SVG（viewBox + preserveAspectRatio=none，缩放时按比例拉伸不变形）。 */
 export function renderShape(theme, el) {
-  const [x, y, w, h] = el.bounds;
-  const svg = document.createElementNS(SVG_NS, "svg");
-  svg.setAttribute("width", w);
-  svg.setAttribute("height", h);
+  const [, , w, h] = el.bounds;
+  const svg = createElementShell(el, { tag: "svg" });
   svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
   svg.setAttribute("preserveAspectRatio", "none");
-  svg.style.cssText = `position:absolute;left:${x}px;top:${y}px;overflow:visible;`;
-  svg.dataset.elementId = el.elementId;
-  svg.dataset.elementType = "shape";
-  if (el.rotation || el.flip?.[0] || el.flip?.[1]) {
-    const t = [];
-    if (el.rotation) t.push(`rotate(${el.rotation}deg)`);
-    if (el.flip?.[0] || el.flip?.[1]) t.push(`scale(${el.flip[0] ? -1 : 1}, ${el.flip[1] ? -1 : 1})`);
-    svg.style.transform = t.join(" ");
-  }
-  if (el.opacity != null) svg.style.opacity = el.opacity;
 
   // 填充基色：规格 fill 默认不应用（透明，与 writer 无填充导出一致）；
   // 渐变因 SVG path 不能直接用 CSS 渐变，暂保留灰底近似（后续改 SVG gradient）；无 fill 为透明

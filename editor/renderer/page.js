@@ -8,6 +8,7 @@
 import { getType } from "../types/index.js";
 import { pageBackground } from "./background.js";
 import { disposeChartInstances } from "./chart.js";
+import { createElementShell } from "./shell.js";
 
 /** 元素 → DOM（经注册表分派；未注册类型回退占位）。
  * @param {object} ctx 渲染上下文（{ imageMap: { [src]: dataUrl } }）
@@ -15,18 +16,16 @@ import { disposeChartInstances } from "./chart.js";
 export function renderElement(theme, el, ctx = {}) {
   const def = getType(el.elementType);
   if (def && def.render) return def.render(theme, el, ctx);
-  return placeholder(theme, el, el.elementType);
+  return placeholder(el);
 }
 
-function placeholder(theme, el, label) {
-  const [x, y, w, h] = el.bounds;
-  const div = document.createElement("div");
-  div.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;` +
-    `display:flex;align-items:center;justify-content:center;` +
-    `border:1px dashed #c4cbd4;color:#8a94a3;font-size:13px;background:#f8fafc;`;
-  div.dataset.elementId = el.elementId;
-  div.dataset.elementType = el.elementType;
-  div.textContent = `[${label} · 编辑能力开发中]`;
+function placeholder(el) {
+  const div = createElementShell(el, {
+    css:
+      `display:flex;align-items:center;justify-content:center;` +
+      `border:1px dashed #c4cbd4;color:#8a94a3;font-size:13px;background:#f8fafc;`,
+  });
+  div.textContent = `[${el.elementType} · 编辑能力开发中]`;
   return div;
 }
 

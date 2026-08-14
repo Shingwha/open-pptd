@@ -9,6 +9,7 @@ import { resolveColor, resolveFont, resolveTableStyle, resolveTableCellStyle, re
 import { estimateTableLayout, tableGrid, TABLE_FONT_SIZE, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../core/table.js";
 import { parseRichText } from "../core/richtext.js";
 import { runSpan, applyParaStyle } from "./text.js";
+import { createElementShell } from "./shell.js";
 
 const H_ALIGN = { left: "left", center: "center", right: "right", justify: "justify", distributed: "justify" };
 
@@ -62,14 +63,9 @@ export function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) 
 }
 
 export function renderTable(theme, el) {
-  const [x, y, w] = el.bounds;
   const { rowHeights, columnWidths } = estimateTableLayout(el);
-  const box = document.createElement("div");
   // 高度不预设：由内容决定（含边框线），避免底部边框被 overflow:hidden 裁剪
-  box.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;overflow:hidden;`;
-  box.dataset.elementId = el.elementId;
-  box.dataset.elementType = "table";
-  if (el.opacity != null) box.style.opacity = el.opacity;
+  const box = createElementShell(el, { height: false });
 
   const ts = resolveTableStyle(theme, el.style);
   const rows = el.rows || [];

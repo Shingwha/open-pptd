@@ -12,6 +12,7 @@ import { renderPage, disposeChartInstances } from "../renderer/page.js";
 import { resolveColor } from "../core/theme.js";
 import { getType } from "../types/index.js";
 import { quickbarColor, quickbarSelect, quickbarBtn, quickbarTextBtn } from "../ui.js";
+import { relRect } from "../coords.js";
 
 const THUMB_W = 140;
 // 表格实测高度写回 bounds[3] 的容差：border-collapse 下渲染高度比 Σ最小行高多出
@@ -352,11 +353,10 @@ export function createView({ state, page, selected, api, controller, props }) {
     qb.appendChild(quickbarTextBtn("删除", "删除元素", () => api.deleteSelected()));
 
     // 定位：元素上方居中；空间不足（贴近画布顶部）时放到元素下方
-    const cRect = canvas.getBoundingClientRect();
-    const nRect = node.getBoundingClientRect();
-    const sRect = stage.getBoundingClientRect();
-    const x = cRect.left - sRect.left + (nRect.left - cRect.left) + nRect.width / 2;
-    const y = cRect.top - sRect.top + (nRect.top - cRect.top);
+    // （节点 → 舞台坐标换算统一走 coords.js）
+    const r = relRect(node.getBoundingClientRect(), stage.getBoundingClientRect());
+    const x = r.left + r.width / 2;
+    const y = r.top;
     qb.classList.add("show");
     // 窄屏：吸底横滑定位由 CSS 负责，清掉残留的内联定位（跨断点拖动窗口时）
     if (NARROW()) {
@@ -368,9 +368,12 @@ export function createView({ state, page, selected, api, controller, props }) {
     const qbW = qb.offsetWidth;
     const half = qbW / 2;
     const minLeft = half + 8;
-    const maxLeft = Math.max(minLeft, sRect.width - half - 8);
+    const maxLeft = Math.max(minLeft, stage.getBoundingClientRect().width - half - 8);
     qb.style.left = `${Math.max(minLeft, Math.min(x, maxLeft))}px`;
-    qb.style.top = y - 46 >= 8 ? `${y - 46}px` : `${y + nRect.height + 8}px`;
+    // 上方定位：紧贴元素顶缘（旋转手柄在框底，顶部空间整个让给快速条）；
+    // 放不下时翻到元素下方，需让出底边旋转手柄区（连接杆 16 + 手柄 26 + 间距 10 = 52px）
+    const topY = y - qb.offsetHeight - 12;
+    qb.style.top = topY >= 8 ? `${topY}px` : `${y + r.height + 52}px`;
     // 与底部中央缩放控件避让：矩形相交时上移到控件上方（元素恰好拖到画布底部时）
     const zc = $("zoom-ctl");
     if (zc) {

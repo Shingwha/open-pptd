@@ -13,6 +13,7 @@ import {
   darkenByLightness, toAxisArray, resolveChartDirection, seriesAxisIndex, hierarchyColor, seriesChannels,
 } from "../core/chart.js";
 import { resolveColor, resolveFont, themeChartPalette } from "../core/theme.js";
+import { createElementShell } from "./shell.js";
 
 const AXIS_TEXT = { color: "#6b7280", fontSize: 11 };
 
@@ -596,14 +597,9 @@ export function buildChartOption(theme, el) {
 
 /** 图表元素 → 定位 DOM（ECharts 实例；图表框 fill/border/shadow 与导出 chartSpace spPr 对应）。 */
 export function renderChart(theme, el) {
-  const [x, y, w, h] = el.bounds;
-  const box = document.createElement("div");
-  box.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:#fff;`;
-  box.dataset.elementId = el.elementId;
-  box.dataset.elementType = "chart";
+  const box = createElementShell(el, { css: "background:#fff;" });
   box.dataset.chartEl = "1";
   Object.assign(box.style, frameStyle(theme, el));
-  if (el.opacity != null) box.style.opacity = el.opacity;
   const option = buildChartOption(theme, el);
   const chart = echarts.init(box, null, { renderer: "canvas" });
   chart.setOption(option, true);

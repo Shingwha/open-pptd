@@ -13,6 +13,7 @@ import { parseRichText } from "../core/richtext.js";
 import { computeBaseStyle } from "../core/style.js";
 import { latexToMathml } from "../core/latex.js";
 import { resolveColor, resolveFont } from "../core/theme.js";
+import { createElementShell } from "./shell.js";
 
 const DEFAULT_FONT_SIZE = 18;
 const DEFAULT_LINE_HEIGHT = 1;
@@ -190,22 +191,9 @@ export function renderTextContent(theme, content) {
   return root;
 }
 
-/** 文本元素 → 定位 DOM（含 bounds、rotation、opacity、flip）。 */
+/** 文本元素 → 定位 DOM（定位 / 变换 / 标记统一走 renderer/shell.js）。 */
 export function renderText(theme, el) {
-  const [x, y, w, h] = el.bounds;
-  const box = document.createElement("div");
-  box.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;overflow:hidden;`;
-  box.dataset.elementId = el.elementId;
-  box.dataset.elementType = "text";
-  const transforms = [];
-  if (el.rotation) transforms.push(`rotate(${el.rotation}deg)`);
-  // flip：OOXML 语义为先翻转后旋转 → CSS transform 从右到左应用，scale 放最后
-  if (Array.isArray(el.flip)) {
-    if (el.flip[0]) transforms.push("scaleX(-1)");
-    if (el.flip[1]) transforms.push("scaleY(-1)");
-  }
-  if (transforms.length) box.style.transform = transforms.join(" ");
-  if (el.opacity != null) box.style.opacity = el.opacity;
+  const box = createElementShell(el);
   box.appendChild(renderTextContent(theme, el.content));
   return box;
 }

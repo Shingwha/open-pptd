@@ -8,21 +8,12 @@
 
 import { resolveColor } from "../core/theme.js";
 import { shapePaths } from "../core/preset-geometry.js";
+import { createElementShell } from "./shell.js";
 
 /** 图片元素 → 定位 DOM。 */
 export function renderImage(theme, el, ctx = {}) {
-  const [x, y, w, h] = el.bounds;
-  const box = document.createElement("div");
-  box.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${w}px;height:${h}px;overflow:hidden;`;
-  box.dataset.elementId = el.elementId;
-  box.dataset.elementType = "image";
-  if (el.rotation || el.flip?.[0] || el.flip?.[1]) {
-    const t = [];
-    if (el.rotation) t.push(`rotate(${el.rotation}deg)`);
-    if (el.flip?.[0] || el.flip?.[1]) t.push(`scale(${el.flip[0] ? -1 : 1}, ${el.flip[1] ? -1 : 1})`);
-    box.style.transform = t.join(" ");
-  }
-  if (el.opacity != null) box.style.opacity = el.opacity;
+  const [, , w, h] = el.bounds;
+  const box = createElementShell(el);
 
   const img = document.createElement("img");
   // 本地文件夹模式：src 相对路径 → 经 imageMap 解析为 dataURL（调用方传入，不再读全局）

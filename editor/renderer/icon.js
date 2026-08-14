@@ -8,28 +8,16 @@
 import { ICONS } from "../core/icon-library.js";
 import { resolveIconName } from "../core/icon-name.js";
 import { iconSvgBody, normalizeIconFill } from "../core/icon-svg.js";
+import { createElementShell } from "./shell.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /** 图标元素 → SVG（等比缩放居中，不拉伸变形）。未知图标 → 占位框。 */
 export function renderIcon(theme, el) {
-  const [x, y, w, h] = el.bounds;
   const def = ICONS[resolveIconName(el.iconName)];
-  const svg = document.createElementNS(SVG_NS, "svg");
-  svg.setAttribute("width", w);
-  svg.setAttribute("height", h);
+  const svg = createElementShell(el, { tag: "svg" });
   svg.setAttribute("viewBox", "0 0 16 16");
   svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-  svg.style.cssText = `position:absolute;left:${x}px;top:${y}px;overflow:visible;`;
-  svg.dataset.elementId = el.elementId;
-  svg.dataset.elementType = "icon";
-  if (el.rotation || el.flip?.[0] || el.flip?.[1]) {
-    const t = [];
-    if (el.rotation) t.push(`rotate(${el.rotation}deg)`);
-    if (el.flip?.[0] || el.flip?.[1]) t.push(`scale(${el.flip[0] ? -1 : 1}, ${el.flip[1] ? -1 : 1})`);
-    svg.style.transform = t.join(" ");
-  }
-  if (el.opacity != null) svg.style.opacity = el.opacity;
 
   if (!def) {
     // 未知图标：占位框提示

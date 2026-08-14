@@ -15,6 +15,8 @@
 //   - cancelGesture 供路由器在捏合接管时调用（提交已发生的位移）。
 // ============================================================================
 
+import { overlayGeom } from "../coords.js";
+
 // 手柄方向 → 悬停光标（四角对角线 / 四边单轴）
 const HANDLE_CURSOR = {
   nw: "nwse-resize", se: "nwse-resize",
@@ -59,18 +61,21 @@ export function createCanvasController(canvas, opts) {
     box = document.createElement("div");
     box.className = "sel-box";
 
-    // 8 向缩放手柄：四角 = 白底圆点，四边中点 = 胶囊条（形状暗示可拉方向）
+    // 8 向缩放手柄：四角 = 白底圆点，四边中点 = 胶囊条（形状暗示可拉方向）。
+    // 底边中点（s）不设手柄：该位置让给旋转手柄（Canva 式布局，
+    // 顶部留给快速条；高度调整由四角承担）
     for (const dir of Object.keys(HANDLE_CURSOR)) {
+      if (dir === "s") continue;
       const h = document.createElement("div");
       h.dataset.handle = dir;
-      h.className = "sel-handle" + (dir === "n" || dir === "s" ? " sel-handle--h" : "") +
+      h.className = "sel-handle" + (dir === "n" ? " sel-handle--h" : "") +
         (dir === "e" || dir === "w" ? " sel-handle--v" : "");
       h.style.cursor = HANDLE_CURSOR[dir];
       h.title = "拖动调整大小（Shift 等比）";
       box.appendChild(h);
     }
 
-    // 旋转手柄（顶部中间，连接杆 + 圆形箭头；chart/table 不支持整体旋转）
+    // 旋转手柄（底部中间，连接杆 + 圆形箭头；chart/table 不支持整体旋转）
     if (!["chart", "table"].includes(el.elementType)) {
       const stem = document.createElement("div");
       stem.className = "sel-rotate-stem";
@@ -96,29 +101,23 @@ export function createCanvasController(canvas, opts) {
   }
 
   /** 同步选中框几何（拖动中高频调用，只改样式不重建 DOM）。
-   * 模型坐标 → wrap 视觉坐标：canvas 以中心为 transform-origin 缩放，模型
-   * (0,0) 的视觉位置 ≠ wrap (0,0)，取 canvas 与 wrap 的 rect 差作为视觉原点
-   * （同时自动抵消 wrap 的平移 translate）。表格用实测显示高度（内容自适应）：
-   * offsetHeight 是未缩放的布局像素，与 bounds 同一坐标系，同样乘 scale。 */
+   * 模型坐标 → wrap 图层视觉坐标统一走 coords.js（中心锚点缩放偏移、
+   * 平移抵消都在那里处理）。表格用实测显示高度（内容自适应）：
+   * offsetHeight 是未缩放的布局像素，与 bounds 同一坐标系。 */
   function updateSelectionBox() {
     if (!box) return;
     const el = findElement(getSelected());
     if (!el) return;
-    const s = scale();
-    const cr = canvas.getBoundingClientRect();
-    const wr = wrapLayer.getBoundingClientRect();
-    const ox = cr.left - wr.left;
-    const oy = cr.top - wr.top;
-    const [x, y, w, h] = el.bounds;
-    let dispH = h;
+    let dispH = el.bounds[3];
     if (el.elementType === "table") {
       const node = nodeBy(el.elementId);
       if (node && node.offsetHeight > 0) dispH = node.offsetHeight;
     }
-    box.style.left = `${ox + x * s}px`;
-    box.style.top = `${oy + y * s}px`;
-    box.style.width = `${w * s}px`;
-    box.style.height = `${dispH * s}px`;
+    const g = overlayGeom(canvas, wrapLayer, [el.bounds[0], el.bounds[1], el.bounds[2], dispH]);
+    box.style.left = `${g.left}px`;
+    box.style.top = `${g.top}px`;
+    box.style.width = `${g.width}px`;
+    box.style.height = `${g.height}px`;
     // 元素旋转时框随手柄一起转（手柄挂在 box 上，自动跟随）
     box.style.transform = el.rotation ? `rotate(${el.rotation}deg)` : "";
   }

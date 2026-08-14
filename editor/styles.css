@@ -584,11 +584,12 @@ body:not(.inspector-collapsed) #btn-inspector-open {
 .sel-handle[data-handle="sw"] { left: 0; top: 100%; transform: translate(-50%, -50%); }
 .sel-handle[data-handle="w"]  { left: 0; top: 50%; transform: translate(-50%, -50%); }
 
-/* 旋转手柄：连接杆 + 圆形箭头芯片（悬于框顶中点上方，随元素旋转） */
+/* 旋转手柄：连接杆 + 圆形箭头芯片（悬于框底中点下方，随元素旋转；
+   顶部空间整个让给快速条 —— Canva 式布局） */
 .sel-rotate-stem {
   position: absolute;
   left: 50%;
-  top: -16px;
+  bottom: -16px;
   width: 1.5px;
   height: 16px;
   background: var(--primary);
@@ -597,8 +598,8 @@ body:not(.inspector-collapsed) #btn-inspector-open {
 .sel-rotate {
   position: absolute;
   left: 50%;
-  top: -16px;
-  transform: translate(-50%, -100%);
+  bottom: -16px;
+  transform: translate(-50%, 100%);
   width: 26px;
   height: 26px;
   display: flex;
