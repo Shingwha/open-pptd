@@ -77,7 +77,14 @@ select, input, textarea { font-family: inherit; }
   border-bottom: 1px solid var(--line);
   gap: 10px;
   z-index: 20;
+  /* 横向溢出保护：桌面 900-1000px 窄窗口 / 移动浏览器「桌面版网站」(980px 布局视口)
+     / 平板横屏时按钮总宽超出视口 → 允许横向滚动访问全部按钮，
+     否则溢出内容被 .app 裁死（看不见也滑不到）。≤900px 由媒体查询改为隐藏滚动条 */
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
+/* 顶栏按钮不被挤压变形：超宽时整条横滚（brand 文件名收缩由自身省略号处理） */
+.topbar-actions > * { flex-shrink: 0; }
 
 .brand {
   display: flex;
