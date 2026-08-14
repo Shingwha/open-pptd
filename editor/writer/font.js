@@ -48,27 +48,32 @@ export function collectFontSpecs(deck) {
   return specs;
 }
 
-/** 收集 deck 全部文本字符（text / table 元素；chart 标题后续），子集化用。 */
+/**
+ * 收集 deck 全部文本字符（子集化用）。
+ * 深度遍历整页（含 notes），不按元素类型/字段枚举——text 的 content.text、
+ * table 顶层 rows、chart 的 data.cols/rows/title/series、未来新增的任何
+ * 承载文字的字段一律覆盖（曾因按类型枚举漏收 table.rows / chart 文字，
+ * 表格/图表里子集缺的字被 PowerPoint 逐字回退成微软雅黑）。
+ * 另收 ASCII 可见字符基线：图表数值标签/轴刻度由 PowerPoint 按数字格式渲染，
+ * 不经过任何文本字段，纯中文 deck 的子集会缺数字标点。
+ * 字体 cmap 里不存在的字符 subsetTtf 会安全跳过，多收无副作用（体积略增）。
+ */
 export function collectTextChars(deck) {
   const chars = new Set();
-  const add = (s) => {
-    if (typeof s !== "string" || !s) return;
-    for (const ch of s) chars.add(ch.codePointAt(0));
-  };
-  for (const page of deck?.pages || []) {
-    for (const el of page?.elements || []) {
-      if (el.elementType === "text") {
-        add(el.content?.text);
-      } else if (el.elementType === "table") {
-        for (const row of el.content?.rows || []) {
-          for (const cell of row) {
-            if (typeof cell === "string") add(cell);
-            else add(cell?.text);
-          }
-        }
-      }
+  for (let c = 0x20; c <= 0x7e; c++) chars.add(c); // ASCII 基线
+  const seen = new Set();
+  const walk = (v) => {
+    if (typeof v === "string") {
+      for (const ch of v) chars.add(ch.codePointAt(0));
+    } else if (Array.isArray(v)) {
+      v.forEach(walk);
+    } else if (v && typeof v === "object") {
+      if (seen.has(v)) return; // 防循环引用
+      seen.add(v);
+      Object.values(v).forEach(walk);
     }
-  }
+  };
+  for (const page of deck?.pages || []) walk(page);
   return chars;
 }
 
