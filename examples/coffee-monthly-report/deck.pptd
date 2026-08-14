@@ -3,7 +3,7 @@ title: 屿间咖啡 2026 年 5 月经营月报
 size: [960, 540]
 fonts:
   阿里妈妈数黑体: { family: "Alimama ShuHeiTi" }
-  霞鹜新晰黑: { family: "LXGW Neo XiHei" }
+  MiSans: { family: "MiSans" }
 theme:
   colors:
     primary: "#3D2C4F"
@@ -30,17 +30,17 @@ theme:
       color: "$text"
       lineHeight: 1.25
     subtitle:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 12
       color: "$muted"
       lineHeight: 1.4
     body:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 13
       color: "$text"
       lineHeight: 1.55
     caption:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 9
       color: "$muted"
       lineHeight: 1.35
@@ -51,7 +51,7 @@ theme:
       letterSpacing: 2
       lineHeight: 1.2
     quote:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 13
       color: "$muted"
       italic: true
@@ -60,7 +60,7 @@ theme:
     threeline:
       cellStyle:
         fontSize: 11
-        fontFamily: "LXGW Neo XiHei"
+        fontFamily: "MiSans"
         color: "$text"
         align: [center, middle]
         fill: { type: solid, color: "#FFFFFF" }
@@ -85,7 +85,7 @@ theme:
     default:
       cellStyle:
         fontSize: 10
-        fontFamily: "LXGW Neo XiHei"
+        fontFamily: "MiSans"
         color: "$text"
         fill: { type: solid, color: "#FFFFFF" }
         border: { style: solid, width: 1, color: "$line" }

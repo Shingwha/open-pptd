@@ -44,7 +44,7 @@ elements:
     elementType: text
     bounds: [56, 154, 176, 14]
     content:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 10
       color: "$muted"
       text: 月度营收
@@ -60,7 +60,7 @@ elements:
     elementType: text
     bounds: [56, 202, 176, 14]
     content:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 9
       text: |
         <p><span style="color:$success;">同比 +12.4%</span> · <span style="color:$success;">环比 +9.2%</span></p>
@@ -80,7 +80,7 @@ elements:
     elementType: text
     bounds: [280, 154, 176, 14]
     content:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 10
       color: "$muted"
       text: 在营门店
@@ -96,7 +96,7 @@ elements:
     elementType: text
     bounds: [280, 202, 176, 14]
     content:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 9
       text: |
         <p><span style="color:$success;">环比净增 6 家</span>（3 新开 · 0 闭店）</p>
@@ -116,7 +116,7 @@ elements:
     elementType: text
     bounds: [504, 154, 176, 14]
     content:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 10
       color: "$muted"
       text: 客单价
@@ -132,7 +132,7 @@ elements:
     elementType: text
     bounds: [504, 202, 176, 14]
     content:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 9
       text: |
         <p><span style="color:$success;">同比 +1.8%</span> · <span style="color:$danger;">环比 -0.3%</span></p>
@@ -152,7 +152,7 @@ elements:
     elementType: text
     bounds: [728, 154, 176, 14]
     content:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 10
       color: "$muted"
       text: 90 天复购率
@@ -168,7 +168,7 @@ elements:
     elementType: text
     bounds: [728, 202, 176, 14]
     content:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 9
       text: |
         <p><span style="color:$success;">同比 +2.3pp</span> · <span style="color:$success;">环比 +1.1pp</span></p>
@@ -230,7 +230,7 @@ elements:
     elementType: text
     bounds: [60, 446, 844, 54]
     content:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 12
       color: "$text"
       align: [left, middle]

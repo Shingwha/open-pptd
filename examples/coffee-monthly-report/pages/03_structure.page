@@ -79,7 +79,7 @@ elements:
     elementType: text
     bounds: [188, 276, 134, 16]
     content:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 9
       color: "$muted"
       align: [center, top]
@@ -146,7 +146,7 @@ elements:
     elementType: text
     bounds: [60, 446, 844, 54]
     content:
-      fontFamily: "LXGW Neo XiHei"
+      fontFamily: "MiSans"
       fontSize: 12
       color: "$text"
       align: [left, middle]

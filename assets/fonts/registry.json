@@ -22,6 +22,25 @@
    ]
   },
   {
+   "key": "MiSans",
+   "family": "MiSans",
+   "file": "MiSans-Regular.ttf",
+   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/小米/小米MiSans-Regular.ttf",
+   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/小米/小米MiSans-Regular.ttf"],
+   "category": "sans",
+   "style": "小米系统黑体,现代清晰,多字重",
+   "usage": "科技/企业/产品(默认字体)",
+   "license": "小米官方 免费商用",
+   "subset": true,
+   "weight": 330,
+   "italic": false,
+   "fsType": 8,
+   "size": 8073152,
+   "mirrors": [
+    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/小米/小米MiSans-Regular.ttf"
+   ]
+  },
+  {
    "key": "思源宋体",
    "family": "Source Han Serif CN",
    "file": "SourceHanSerifCN.ttf",
