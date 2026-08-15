@@ -33,6 +33,14 @@ push tag 后 CI 自动执行：
 git tag -a v1.1.0    # 编辑器中写多行更新说明
 ```
 
+⚠️ **Markdown 标题会被吃**：`git tag -a` 默认 `--cleanup=strip`，注释里 `#` 开头的行（如 `## v1.1.0 更新内容`、`### 新增`）会被当注释剔除。用 `-F` 文件或 `-m` 时同样如此。**写 Markdown 标题务必加 `--cleanup=verbatim`**：
+
+```bash
+git tag -a v1.1.0 -F notes.md --cleanup=verbatim
+```
+
+验证注释完整：`git tag -l --format='%(contents)' v1.1.0`
+
 - 忘了写注释（轻量 tag）不阻塞发布：CI 自动退回 commits 自动生成
 - 发布后想补充修改：Release 页面右上角 Edit，或 `gh release edit v1.1.0 --notes "..."`
 
