@@ -60,7 +60,8 @@ jobs:
           git fetch --force origin "+refs/tags/${GITHUB_REF_NAME}:refs/tags/${GITHUB_REF_NAME}"
           if [ "$(git tag -l --format='%(objecttype)' "$GITHUB_REF_NAME")" = "tag" ]; then
             git tag -l --format='%(contents)' "$GITHUB_REF_NAME" > release-notes.md
-            gh release create "$GITHUB_REF_NAME" dist/*.zip --notes-file release-notes.md
+            # --title 必须显式指定：--notes-file 时 gh 会把 notes 第一行当标题
+            gh release create "$GITHUB_REF_NAME" dist/*.zip --notes-file release-notes.md --title "$GITHUB_REF_NAME"
           else
-            gh release create "$GITHUB_REF_NAME" dist/*.zip --generate-notes
+            gh release create "$GITHUB_REF_NAME" dist/*.zip --generate-notes --title "$GITHUB_REF_NAME"
           fi
