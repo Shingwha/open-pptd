@@ -52,18 +52,22 @@ The repo ships with curated examples in `examples/` (also shown in the online ga
 - **Node.js v18+** (the only dependency; no npm packages to install; render command recommended on Node 21+)
 - Browser: Chrome / Edge recommended (needed for the "Open Folder" save feature)
 
-## Installation (3 steps)
+## Installation
 
-Clone the repo into your AI tool's **skills folder**:
+Choose either method:
+
+**Option 1: download the release zip (recommended — no git needed)**
+
+1. Grab the latest `open-pptd-v*.zip` from the [Releases](https://github.com/Shingwha/open-pptd/releases) page
+2. Extract it into your AI tool's **skills folder** — you get `<your-skills-folder>/open-pptd/`; to update, re-download and overwrite
+
+**Option 2: git clone (for tracking updates / development)**
 
 ```bash
-# Option 1: clone to a specific location (recommended)
 git clone https://github.com/Shingwha/open-pptd <your-skills-folder>/open-pptd
-
-# Option 2: cd into the skills folder first (folder name becomes open-pptd automatically)
-cd <your-skills-folder>
-git clone https://github.com/Shingwha/open-pptd
 ```
+
+> A clone brings tests/docs/examples along; the release zip contains only the skill runtime and is much lighter.
 
 Skills folder locations vary by tool:
 
@@ -137,7 +141,7 @@ open-pptd/
 │   └── app/                  #   editor assembly (state/views/IO/toolbar)
 ├── assets/                   # built-in assets (icons/ icon sources; fonts/ 29 free-for-commercial-use fonts, local assets not uploaded to GitHub)
 ├── references/               # reference docs read on demand (pptd.md / shapes.md / fonts.md / icons.md / …)
-├── scripts/                  # build scripts (icon library / preset geometry / reference doc generation)
+├── scripts/                  # build scripts (icon library / preset geometry / reference doc generation / release packaging)
 ├── tests/                    # tests (see tests/README.md: component projects + one-shot regression + E2E)
 └── package.json
 ```
@@ -150,16 +154,13 @@ npm run test:live             # project-mode E2E (SSE live reload + save-back to
 npm run test:incremental      # incremental-load E2E (pages show up as a project is being written, needs Chrome)
 ```
 
-See `tests/README.md` for details (the publish repo does not include tests; testing and dev resources live in the dev repo).
+See `tests/README.md` for details (the release zip does not include tests).
 
 ## Repository Notes
 
-This project has two repositories:
-
-- **Dev repo [open-pptd](https://github.com/Shingwha/open-pptd) (use by default)**: full source, all tests, and the example gallery (`examples/`). **The GitHub Pages site (online gallery) is deployed from this repo**: https://shingwha.github.io/open-pptd/ — pushed commits are automatically built by GitHub Actions (regression tests → gallery index rebuild → deploy).
-- **Publish repo [open-pptd-publish](https://github.com/Shingwha/open-pptd-publish)**: a runtime-only snapshot of the skill for direct installation. No tests, icon sources, generation scripts, or example gallery (`examples/` is excluded from sync). If you are not developing the code, clone this one (see Installation above).
-
-The publish repo is kept in sync from the dev repo via `npm run sync:publish -- --push` (a whitelist snapshot, see `scripts/sync-publish.mjs` in the dev repo); its content always tracks the `main` branch of the dev repo.
+- Source code, tests, and the example gallery all live in this repo (open-pptd). **The GitHub Pages site (online gallery) is deployed from it**: https://shingwha.github.io/open-pptd/ — pushed commits are automatically built by GitHub Actions (regression tests → gallery index rebuild → deploy).
+- **Releases**: pushing a `v*` tag (matching package.json's version) triggers CI to run regression tests → package the runtime from a whitelist → create a GitHub Release; the attached `open-pptd-v*.zip` is what Installation Option 1 downloads (see `.github/workflows/release.yml`; try packaging locally with `npm run pack`).
+- The old publish repo [open-pptd-publish](https://github.com/Shingwha/open-pptd-publish) has been retired and archived; its users should switch to the release zip or clone this repo.
 
 ## Using as an AI Skill
 

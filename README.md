@@ -53,18 +53,22 @@
 - **Node.js v18+**（唯一依赖，无需安装任何 npm 包）
 - 浏览器推荐 Chrome / Edge（「打开文件夹」保存功能需要）
 
-## 安装（3 步）
+## 安装
 
-把仓库 clone 到你的 AI 工具的 **skills 文件夹** 即可使用：
+二选一：
+
+**方式一：下载发布包（推荐，无需 git）**
+
+1. 到 [Releases](https://github.com/Shingwha/open-pptd/releases) 页面下载最新的 `open-pptd-v*.zip`
+2. 解压到你的 AI 工具的 **skills 文件夹**，得到 `<skills 文件夹>/open-pptd/`；更新时重新下载覆盖即可
+
+**方式二：git clone（适合跟踪更新 / 参与开发）**
 
 ```bash
-# 方式一：指定目录克隆（推荐，目录名保持 open-pptd）
-git clone https://github.com/Shingwha/open-pptd-publish <你的 skills 文件夹>/open-pptd
-
-# 方式二：先进入 skills 文件夹再克隆
-cd <你的 skills 文件夹>
-git clone https://github.com/Shingwha/open-pptd-publish open-pptd
+git clone https://github.com/Shingwha/open-pptd <你的 skills 文件夹>/open-pptd
 ```
+
+> clone 会带上 tests/docs/examples 等开发内容；发布包只含 skill 运行时，更轻量。
 
 skills 文件夹的位置因工具而异：
 
@@ -135,7 +139,7 @@ open-pptd/
 │   └── app/                  #   编辑器装配（状态/视图/IO/工具栏）
 ├── assets/                   # 内置资源（icons/ 图标源；fonts/ 字体库 29 种免费商用字体，本地资源不上传 GitHub）
 ├── references/               # 按需读取的参考文档（pptd.md / shapes.md / fonts.md / icons.md / …）
-├── scripts/                  # 构建脚本（图标库 / 预置几何 / 参考文件生成 / publish 同步）
+├── scripts/                  # 构建脚本（图标库 / 预置几何 / 参考文件生成 / 发布打包）
 ├── tests/                    # 测试（见 tests/README.md：组件项目 + 一键回归 + E2E）
 ├── docs/                     # 开发文档 + README 配图
 └── package.json
@@ -149,16 +153,13 @@ npm run test:live             # 项目模式 E2E（SSE 实时刷新 + 保存写�
 npm run test:incremental      # 渐进加载 E2E（写入中的项目逐页显示，需 Chrome）
 ```
 
-详见 `tests/README.md`（发布仓库不含测试，测试与开发资源见开发仓库）。
+详见 `tests/README.md`（发布 zip 不含测试）。
 
 ## 仓库说明
 
-本项目分两个仓库：
-
-- **开发仓库 [open-pptd](https://github.com/Shingwha/open-pptd)（默认使用）**：完整源码 + 全部测试 + 示例画廊（`examples/`）。**GitHub Pages 站点（在线画廊）由此仓库部署**：https://shingwha.github.io/open-pptd/ ，提交后由 GitHub Actions 自动「回归测试 → 重建画廊索引 → 部署」。
-- **发布仓库 [open-pptd-publish](https://github.com/Shingwha/open-pptd-publish)**：skill 运行时精简版，仅供直接安装使用，不含测试、图标源、生成脚本与示例画廊（`examples/` 不参与同步）。不参与代码开发的用户 clone 这个即可（见上方安装）。
-
-发布仓库由开发仓库经 `npm run sync:publish -- --push` 自动同步（白名单快照，见开发仓库 `scripts/sync-publish.mjs`），其内容以开发仓库 `main` 分支为准。
+- 源码、测试与示例画廊都在本仓库（open-pptd）。**GitHub Pages 站点（在线画廊）由此部署**：https://shingwha.github.io/open-pptd/ ，提交后由 GitHub Actions 自动「回归测试 → 重建画廊索引 → 部署」。
+- **发布**：push `v*` tag（版本号与 package.json 一致）后，CI 自动「回归测试 → 按白名单打包 → 创建 GitHub Release」，附件 `open-pptd-v*.zip` 即安装方式一下载的发布包（流水线见 `.github/workflows/release.yml`，本地可用 `npm run pack` 试打包）。
+- 旧发布仓库 [open-pptd-publish](https://github.com/Shingwha/open-pptd-publish) 已停止维护并归档；此前 clone 它的用户请改用发布包或 clone 本仓库。
 
 ## 作为 AI 技能使用
 

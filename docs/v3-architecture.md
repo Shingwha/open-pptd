@@ -345,7 +345,7 @@ open-pptd/
 ├── references/                   # 共享参考文档（pptd.md / themes.md / shapes.md / …）
 ├── examples/                     # 画廊示例（与现状一致）
 ├── tests/                        # 分层：unit(model/writer) / generator fixture / server API / E2E
-├── scripts/                      # 构建与发布脚本（gen-icons / sync-publish / …）
+├── scripts/                      # 构建与发布脚本（gen-icons / pack-release / …）
 └── docs/                         # 架构与开发文档
 ```
 

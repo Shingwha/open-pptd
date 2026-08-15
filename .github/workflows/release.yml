@@ -1,0 +1,52 @@
+# ============================================================================
+# Release 发布流水线：校验版本 → 回归测试 → 白名单打包 → 发布 Release
+#   - push v* 形如 v1.0.1 的 tag 自动触发（版本号必须与 package.json 一致）
+#   - 任何一步失败都不会发布（坏提交不会进 release）
+#   - 产物: open-pptd-v<version>.zip（顶层目录 open-pptd/，解压到 skills 文件夹即用）
+# ============================================================================
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # ① 校验 tag 与 package.json version 一致（打 tag 前先 bump 版本）
+      - name: 校验版本一致
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG=$(node -p "JSON.parse(require('fs').readFileSync('package.json','utf8')).version")
+          if [ "$TAG" != "$PKG" ]; then
+            echo "✗ tag v$TAG 与 package.json version $PKG 不一致"
+            exit 1
+          fi
+
+      # ② 生成公式中间产物（tests/formula/fixtures/mml/ 不入库，KaTeX 本地生成）
+      - name: 生成公式中间产物
+        run: npm run test:fixtures
+
+      # ③ 回归测试（与 Deploy Pages 同款守门）
+      - name: 回归测试
+        run: npm test
+
+      # ④ 按白名单打包 skill 运行时 → dist/open-pptd-v<version>.zip
+      - name: 打包
+        run: npm run pack
+
+      # ⑤ 创建 Release 并附上 zip（release notes 从 commits 自动生成）
+      - name: 发布 Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/*.zip --generate-notes
