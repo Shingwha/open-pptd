@@ -10,8 +10,9 @@
 # 1. bump 版本：改 package.json 的 "version" 字段（如 1.0.0 → 1.1.0）
 # 2. 提交
 git commit -am "chore(release): v1.1.0"
-# 3. 打 tag 并推送（tag 必须以 v 开头，且去掉 v 后与 package.json 版本一致，否则 CI 第一步即失败）
-git tag v1.1.0
+# 3. 打带注释的 tag（注释 = 更新说明，将作为 Release 正文），推送
+#    tag 必须以 v 开头，且去掉 v 后与 package.json 版本一致，否则 CI 第一步即失败
+git tag -a v1.1.0 -m "这里写本版更新内容"
 git push origin main v1.1.0
 ```
 
@@ -22,7 +23,18 @@ push tag 后 CI 自动执行：
 | 校验版本 | tag 与 package.json 的 version 必须一致 |
 | 回归测试 | `npm run test:fixtures` + `npm test`（与 Deploy Pages 同款守门，任何一步失败都不会发布） |
 | 打包 | `npm run pack` → `dist/open-pptd-v<版本>.zip` |
-| 发布 | 创建 GitHub Release 并附上 zip，release notes 从 commits 自动生成（可在 Release 页面手动编辑补充） |
+| 发布 | 创建 GitHub Release 并附上 zip；notes 优先取 tag 注释，未写则 commit 列表自动生成 |
+
+## 更新说明（Release Notes）
+
+**写在 tag 注释里**：用 `git tag -a` 打带注释的 tag，注释内容原样成为 Release 正文（支持 Markdown）。多行说明省略 `-m`，git 会打开编辑器：
+
+```bash
+git tag -a v1.1.0    # 编辑器中写多行更新说明
+```
+
+- 忘了写注释（轻量 tag）不阻塞发布：CI 自动退回 commits 自动生成
+- 发布后想补充修改：Release 页面右上角 Edit，或 `gh release edit v1.1.0 --notes "..."`
 
 ## 发布包里有什么
 

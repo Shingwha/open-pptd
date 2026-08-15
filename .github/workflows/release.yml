@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 全量检出：读取带注释 tag 的注释内容作为 release notes
 
       - uses: actions/setup-node@v4
         with:
@@ -45,8 +47,15 @@ jobs:
       - name: 打包
         run: npm run pack
 
-      # ⑤ 创建 Release 并附上 zip（release notes 从 commits 自动生成）
+      # ⑤ 创建 Release 并附上 zip；notes 优先取带注释 tag（-a）的注释内容（发版时手写的
+      #    更新说明），轻量 tag 未写注释则退回 commit 列表自动生成
       - name: 发布 Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/*.zip --generate-notes
+        run: |
+          if [ "$(git tag -l --format='%(objecttype)' "$GITHUB_REF_NAME")" = "tag" ]; then
+            git tag -l --format='%(contents)' "$GITHUB_REF_NAME" > release-notes.md
+            gh release create "$GITHUB_REF_NAME" dist/*.zip --notes-file release-notes.md
+          else
+            gh release create "$GITHUB_REF_NAME" dist/*.zip --generate-notes
+          fi
