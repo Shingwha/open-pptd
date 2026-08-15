@@ -53,6 +53,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # actions/checkout@v4 检出 tag ref 时会把 annotated tag 覆盖为轻量 tag
+          # （testRef 用 rev-parse 拿到的 tag 对象 SHA 比对事件 commit SHA，annotated tag
+          #  永不相等 → 二次 fetch +<commit>:refs/tags/<tag> 降级）。此处从远程强制
+          # 重新拉回 annotated tag 对象，保证手写注释可用；轻量 tag 则仍退回自动生成。
+          git fetch --force origin "+refs/tags/${GITHUB_REF_NAME}:refs/tags/${GITHUB_REF_NAME}"
           if [ "$(git tag -l --format='%(objecttype)' "$GITHUB_REF_NAME")" = "tag" ]; then
             git tag -l --format='%(contents)' "$GITHUB_REF_NAME" > release-notes.md
             gh release create "$GITHUB_REF_NAME" dist/*.zip --notes-file release-notes.md
