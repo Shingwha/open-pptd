@@ -10,18 +10,20 @@
 
 ## 示例画廊
 
-仓库自带 5 套精选示例（`examples/`），点击标题直接在线打开编辑：
+仓库自带 7 套精选示例（`examples/`），点击标题直接在线打开编辑：
 
 | 示例 | 场景 | 亮点 |
 |---|---|---|
-| [屿间咖啡经营月报](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fcoffee-monthly-report%2Fdeck.pptd) | 管理汇报 · 5 页 | 六类原生图表 + KPI 卡片 + 三线表 |
+| [远川科技经营复盘](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd) | 管理汇报 · 7 页 | 净利润瀑布图、收入结构环形图、续约率三线表、行动请求页 |
 | [电动汽车续驶里程预测](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fev-range%2Fdeck.pptd) | 学术答辩 · 17 页 | LaTeX 公式混排、图片排版、章节结构 |
 | [屿光品牌手册](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fislelight-brand-book%2Fdeck.pptd) | 品牌创意 · 7 页 | 克莱因蓝瑞士海报风、黑白摄影构图 |
+| [MORI 森野品牌提案](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbrand-mori-showcase-7p%2Fdeck.pptd) | 品牌创意 · 7 页 | 纸白/墨黑/信号红三色纪律、超大字号排版 |
 | [秒排 A 轮商业计划](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fmiaopai-saas-bp%2Fdeck.pptd) | 融资 BP · 7 页 | 墨黑 × 荧光黄绿撞色、TAM/SAM/SOM 嵌套图、时间线 |
 | [山茗集品牌发布会](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fshanmingji-2026-launch%2Fdeck.pptd) | 新中式 · 7 页 | 表格、图片、中式装饰版式、三字体混排 |
+| [订单中台架构评审](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftech-architecture-review-7p%2Fdeck.pptd) | 技术评审 · 7 页 | 现状/目标架构链路对比、机制取舍、灰度迁移路线 |
 
 <p align="center">
-  <img src="docs/images/coffee-monthly.png" width="45%" alt="屿间咖啡经营月报"/>
+  <img src="docs/images/business-review.png" width="45%" alt="远川科技经营复盘"/>
   <img src="docs/images/ev-range.png" width="45%" alt="电动汽车续驶里程预测"/>
 </p>
 

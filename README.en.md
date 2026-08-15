@@ -10,18 +10,20 @@ No installation needed — open the online gallery in a browser: curated decks w
 
 ## Example Gallery
 
-The repo ships with 5 curated examples in `examples/` — click a title to open it in the online editor:
+The repo ships with 7 curated examples in `examples/` — click a title to open it in the online editor:
 
 | Example | Scenario | Highlights |
 |---|---|---|
-| [Coffee Monthly Report](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fcoffee-monthly-report%2Fdeck.pptd) | Management review · 5 slides | Six native chart types + KPI cards + booktabs-style tables |
+| [Yuanchuan Tech Business Review](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd) | Management review · 7 slides | Net-profit waterfall, revenue donut chart, renewal-rate tables, closing asks page |
 | [EV Range Prediction](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fev-range%2Fdeck.pptd) | Academic defense · 17 slides | LaTeX formulas, image layout, chapter structure |
 | [Islelight Brand Book](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fislelight-brand-book%2Fdeck.pptd) | Brand creative · 7 slides | Klein-blue Swiss poster style, B&W photography grid |
+| [MORI Brand Proposal](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbrand-mori-showcase-7p%2Fdeck.pptd) | Brand creative · 7 slides | Paper-white / ink-black / signal-red three-color discipline, oversized type |
 | [MiaoPai Round-A Pitch](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fmiaopai-saas-bp%2Fdeck.pptd) | Startup BP · 7 slides | Ink-black × neon-green contrast, TAM/SAM/SOM, timeline |
 | [Shanmingji Brand Launch](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fshanmingji-2026-launch%2Fdeck.pptd) | New-Chinese style · 7 slides | Tables, images, Chinese-style layout, 3-font mixing |
+| [Order Platform Architecture Review](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftech-architecture-review-7p%2Fdeck.pptd) | Tech review · 7 slides | Current vs. target architecture, trade-off analysis, canary rollout plan |
 
 <p align="center">
-  <img src="docs/images/coffee-monthly.png" width="45%" alt="Coffee Monthly Report"/>
+  <img src="docs/images/business-review.png" width="45%" alt="Yuanchuan Tech Business Review"/>
   <img src="docs/images/ev-range.png" width="45%" alt="EV Range Prediction"/>
 </p>
 
