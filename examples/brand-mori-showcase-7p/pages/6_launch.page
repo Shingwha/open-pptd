@@ -1,0 +1,189 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  发布节奏用三个巨大数字建立纵向轴线；内容紧凑，保留充足留白，避免回到普通商业列表。
+elements:
+  - elementId: section-rule
+    elementType: shape
+    bounds: [48, 44, 3, 30]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: section-number
+    elementType: text
+    bounds: [66, 40, 120, 36]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: "05"
+
+  - elementId: page-number
+    elementType: text
+    bounds: [820, 40, 92, 22]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: "06 / 07"
+
+  - elementId: title
+    elementType: text
+    bounds: [48, 84, 864, 52]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 42
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 发布节奏：三幕，十二周
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 138, 864, 24]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 先建立识别，再进入城市，最后回到山野完成体验闭环。
+
+  - elementId: act-1-number
+    elementType: text
+    bounds: [48, 176, 120, 90]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 64
+      bold: true
+      color: "$accent"
+      align: [left, top]
+      text: "01"
+
+  - elementId: act-1-title
+    elementType: text
+    bounds: [190, 180, 340, 36]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 品牌发布 · W1–4
+
+  - elementId: act-1-detail
+    elementType: text
+    bounds: [190, 220, 340, 36]
+    content:
+      style: "$body"
+      align: [left, top]
+      text: 视觉系统落地，门店与包装切换。
+
+  - elementId: act-1-rule
+    elementType: shape
+    bounds: [48, 276, 420, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: act-2-number
+    elementType: text
+    bounds: [48, 290, 120, 90]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 64
+      bold: true
+      color: "$accent"
+      align: [left, top]
+      text: "02"
+
+  - elementId: act-2-title
+    elementType: text
+    bounds: [190, 294, 340, 36]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 城市快闪 · W5–8
+
+  - elementId: act-2-detail
+    elementType: text
+    bounds: [190, 334, 340, 36]
+    content:
+      style: "$body"
+      align: [left, top]
+      text: 上海、杭州、深圳三城快闪与会员招募。
+
+  - elementId: act-2-rule
+    elementType: shape
+    bounds: [48, 390, 420, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: act-3-number
+    elementType: text
+    bounds: [48, 404, 120, 90]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 64
+      bold: true
+      color: "$accent"
+      align: [left, top]
+      text: "03"
+
+  - elementId: act-3-title
+    elementType: text
+    bounds: [190, 408, 340, 36]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 山野体验 · W9–12
+
+  - elementId: act-3-detail
+    elementType: text
+    bounds: [190, 448, 340, 36]
+    content:
+      style: "$body"
+      align: [left, top]
+      text: 会员山野日，首发第一季产品。
+
+  - elementId: act-3-rule
+    elementType: shape
+    bounds: [48, 502, 420, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: big-week
+    elementType: text
+    bounds: [660, 180, 252, 140]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 110
+      bold: true
+      color: "$text"
+      lineHeight: 0.9
+      align: [right, top]
+      text: "12"
+
+  - elementId: big-week-label
+    elementType: text
+    bounds: [760, 326, 152, 30]
+    content:
+      style: "$eyebrow"
+      color: "$muted"
+      align: [right, middle]
+      text: WEEKS
+
+  - elementId: right-note
+    elementType: text
+    bounds: [600, 410, 312, 66]
+    content:
+      style: "$small"
+      color: "$muted"
+      lineHeight: 1.7
+      align: [right, top]
+      text: 节奏原则：每一幕只验证一个核心问题；发布验证识别，快闪验证转化，山野体验验证复购与口碑。

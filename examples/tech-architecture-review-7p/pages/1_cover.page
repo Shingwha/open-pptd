@@ -1,0 +1,96 @@
+pageType: cover
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  开场用一句话给出评审结论：现状撑不住促销峰值，建议升级为 CQRS 异步化与读写分离，风险可控。
+elements:
+  - elementId: meta-rule
+    elementType: shape
+    bounds: [48, 44, 28, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: meta-left
+    elementType: text
+    bounds: [88, 34, 500, 22]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: ORDER PLATFORM · ARCHITECTURE REVIEW
+
+  - elementId: meta-right
+    elementType: text
+    bounds: [620, 34, 292, 22]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: v1.2 / 2026-01 · 机密
+
+  - elementId: title
+    elementType: text
+    bounds: [48, 116, 864, 220]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 50
+      bold: true
+      color: "$text"
+      lineHeight: 1.08
+      align: [left, top]
+      text: |
+        <p>订单中台架构升级评审</p>
+        <p style="margin-top:18px; color:$accent; font-size:28px;">CQRS 异步化与读写分离方案</p>
+
+  - elementId: title-rule
+    elementType: shape
+    bounds: [48, 356, 72, 4]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: conclusion-label
+    elementType: text
+    bounds: [48, 386, 180, 22]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 评审结论
+
+  - elementId: conclusion-copy
+    elementType: text
+    bounds: [48, 412, 840, 70]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 15
+      color: "$text"
+      lineHeight: 1.65
+      align: [left, top]
+      text: 现状同步写库链路可稳定支撑约 1,200 单/秒，但促销峰值 2,400 单/秒时写确认 P95 升至 1,680ms；建议采用命令查询分离、事务 Outbox 与读写分离，将峰值写 P95 控制在 400ms 以内。
+
+  - elementId: footer-left
+    elementType: text
+    bounds: [48, 506, 540, 20]
+    content:
+      style: "$small"
+      align: [left, middle]
+      text: 架构评审材料 · 示例推演数据，非生产实测
+
+  - elementId: footer-right
+    elementType: text
+    bounds: [620, 506, 292, 20]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: 平台工程部 / 订单中台组
+
+  - elementId: motif-square
+    elementType: shape
+    bounds: [812, 70, 100, 100]
+    shapeName: rect
+    border: { style: solid, width: 1, color: "$primaryTint" }
+    opacity: 0.8
+
+  - elementId: motif-dot
+    elementType: shape
+    bounds: [834, 92, 14, 14]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }

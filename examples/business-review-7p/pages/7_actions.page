@@ -1,0 +1,255 @@
+pageType: final
+background:
+  type: solid
+  color: "$primaryDeep"
+notes: |
+  收尾建议：回到“需要管理层做什么”，逐项确认责任人和截止时间，避免汇报结束但没有决策。
+elements:
+  - elementId: page-marker
+    elementType: shape
+    bounds: [872, 36, 28, 28]
+    shapeName: ellipse
+    border: { style: solid, width: 1, color: "$accent" }
+    opacity: 0.9
+
+  - elementId: page-number
+    elementType: text
+    bounds: [872, 36, 28, 28]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 11
+      bold: true
+      color: "$accent"
+      align: [center, middle]
+      text: "06"
+
+  - elementId: eyebrow
+    elementType: text
+    bounds: [60, 38, 500, 24]
+    content:
+      style: "$eyebrow"
+      color: "$accent"
+      align: [left, middle]
+      text: 06 · 行动请求
+
+  - elementId: title
+    elementType: text
+    bounds: [60, 66, 840, 46]
+    content:
+      style: "$title"
+      color: "#FFFFFF"
+      align: [left, middle]
+      text: 需要管理层拍板的四件事
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [60, 116, 840, 26]
+    content:
+      style: "$subtitle"
+      color: "$primaryTint"
+      align: [left, middle]
+      text: 每项均需在截止日前完成决策，否则将直接影响 Q1 资源到位与 Q2 目标达成。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [60, 152, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+    opacity: 0.55
+
+  - elementId: action-rule-1
+    elementType: shape
+    bounds: [60, 232, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+    opacity: 0.3
+
+  - elementId: action-rule-2
+    elementType: shape
+    bounds: [60, 308, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+    opacity: 0.3
+
+  - elementId: action-rule-3
+    elementType: shape
+    bounds: [60, 384, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+    opacity: 0.3
+
+  - elementId: action-rule-4
+    elementType: shape
+    bounds: [60, 460, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+    opacity: 0.3
+
+  - elementId: action-1-number
+    elementType: text
+    bounds: [60, 164, 56, 50]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 26
+      bold: true
+      color: "$accent"
+      align: [left, middle]
+      text: "01"
+
+  - elementId: action-1
+    elementType: text
+    bounds: [132, 164, 540, 58]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 15
+      color: "#FFFFFF"
+      lineHeight: 1.5
+      align: [left, top]
+      text: |
+        <p><strong>批准华东客户成功团队扩编（3→8人）</strong></p>
+        <p style="margin-top:4px; color:$primaryTint;">新增年化成本约 240 万元，预计拉动续约率 +7 个百分点</p>
+
+  - elementId: action-1-owner
+    elementType: text
+    bounds: [700, 166, 200, 52]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "$primaryTint"
+      lineHeight: 1.6
+      align: [right, top]
+      text: |
+        <p><strong>CEO · 决策</strong></p>
+        <p>截止：2月10日</p>
+
+  - elementId: action-2-number
+    elementType: text
+    bounds: [60, 240, 56, 50]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 26
+      bold: true
+      color: "$accent"
+      align: [left, middle]
+      text: "02"
+
+  - elementId: action-2
+    elementType: text
+    bounds: [132, 240, 540, 58]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 15
+      color: "#FFFFFF"
+      lineHeight: 1.5
+      align: [left, top]
+      text: |
+        <p><strong>批准 2026 研发预算追加 800 万元</strong></p>
+        <p style="margin-top:4px; color:$primaryTint;">投入订阅产品线 V4.0 与客户成功系统建设</p>
+
+  - elementId: action-2-owner
+    elementType: text
+    bounds: [700, 242, 200, 52]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "$primaryTint"
+      lineHeight: 1.6
+      align: [right, top]
+      text: |
+        <p><strong>董事会 · 决策</strong></p>
+        <p>截止：2月20日</p>
+
+  - elementId: action-3-number
+    elementType: text
+    bounds: [60, 316, 56, 50]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 26
+      bold: true
+      color: "$accent"
+      align: [left, middle]
+      text: "03"
+
+  - elementId: action-3
+    elementType: text
+    bounds: [132, 316, 540, 58]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 15
+      color: "#FFFFFF"
+      lineHeight: 1.5
+      align: [left, top]
+      text: |
+        <p><strong>确认渠道佣金政策调整方案</strong></p>
+        <p style="margin-top:4px; color:$primaryTint;">降低单一渠道依赖，支撑单客户 CAC ≤1.6 万元目标</p>
+
+  - elementId: action-3-owner
+    elementType: text
+    bounds: [700, 318, 200, 52]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "$primaryTint"
+      lineHeight: 1.6
+      align: [right, top]
+      text: |
+        <p><strong>经管会 · 决策</strong></p>
+        <p>截止：3月1日</p>
+
+  - elementId: action-4-number
+    elementType: text
+    bounds: [60, 392, 56, 50]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 26
+      bold: true
+      color: "$accent"
+      align: [left, middle]
+      text: "04"
+
+  - elementId: action-4
+    elementType: text
+    bounds: [132, 392, 540, 58]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 15
+      color: "#FFFFFF"
+      lineHeight: 1.5
+      align: [left, top]
+      text: |
+        <p><strong>确定 Q2 经营复盘会安排</strong></p>
+        <p style="margin-top:4px; color:$primaryTint;">建议 7月8日召开，重点复盘续约率与 CAC 改善进展</p>
+
+  - elementId: action-4-owner
+    elementType: text
+    bounds: [700, 394, 200, 52]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "$primaryTint"
+      lineHeight: 1.6
+      align: [right, top]
+      text: |
+        <p><strong>CEO · 决策</strong></p>
+        <p>截止：3月15日</p>
+
+  - elementId: thanks
+    elementType: text
+    bounds: [700, 468, 200, 32]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 18
+      bold: true
+      color: "$bg"
+      align: [right, middle]
+      text: 感谢审议
+
+  - elementId: data-note
+    elementType: text
+    bounds: [60, 470, 620, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "$primaryTint"
+      align: [left, middle]
+      text: 数据说明：本演示为占位示例，正式使用前请替换为公司真实经营口径与决策信息。

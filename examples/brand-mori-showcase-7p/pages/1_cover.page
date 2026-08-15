@@ -1,0 +1,77 @@
+pageType: cover
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  封面建立强对比：左侧大字号品牌名，右侧整块信号红。整个提案只使用纸白、墨黑、信号红三种颜色。
+elements:
+  - elementId: meta-rule
+    elementType: shape
+    bounds: [48, 40, 32, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: meta-left
+    elementType: text
+    bounds: [92, 30, 520, 22]
+    content:
+      style: "$eyebrow"
+      color: "$muted"
+      align: [left, middle]
+      text: BRAND PROPOSAL / 2026
+
+  - elementId: title
+    elementType: text
+    bounds: [48, 92, 630, 280]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 68
+      bold: true
+      color: "$text"
+      lineHeight: 0.95
+      align: [left, top]
+      text: |
+        <p><span style="font-size:112px;">MORI</span></p>
+        <p style="margin-top:12px"><span style="font-size:78px; color:$accent;">森野</span></p>
+
+  - elementId: intro
+    elementType: text
+    bounds: [48, 372, 580, 84]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 16
+      color: "$text"
+      lineHeight: 1.7
+      align: [left, top]
+      text: 为城市通勤与周末山野之间，建立一个安静、耐用、可识别的品牌系统。视觉语言来自城市导视的秩序与森林的呼吸感。
+
+  - elementId: footer-meta
+    elementType: text
+    bounds: [48, 492, 580, 24]
+    content:
+      style: "$small"
+      color: "$muted"
+      align: [left, middle]
+      text: 城市户外生活方式品牌 · 品牌识别提案
+
+  - elementId: red-panel
+    elementType: shape
+    bounds: [700, 0, 260, 540]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: red-panel-label
+    elementType: text
+    bounds: [700, 500, 260, 24]
+    content:
+      style: "$eyebrow"
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: CITY TO FOREST
+
+  - elementId: red-panel-mark
+    elementType: shape
+    bounds: [892, 40, 28, 28]
+    shapeName: rect
+    border: { style: solid, width: 2, color: "#FFFFFF" }
+    opacity: 0.9

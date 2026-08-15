@@ -1,0 +1,163 @@
+pageType: final
+background:
+  type: solid
+  color: "$primaryDeep"
+notes: |
+  结尾回到决策：方向成立、风险可控，批准进入 5% 灰度，并明确回滚决策人。
+elements:
+  - elementId: section-rule
+    elementType: shape
+    bounds: [48, 36, 3, 26]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: section-label
+    elementType: text
+    bounds: [64, 38, 420, 22]
+    content:
+      style: "$eyebrow"
+      color: "$accent"
+      align: [left, middle]
+      text: 06 / 风险与决策
+
+  - elementId: page-number
+    elementType: text
+    bounds: [820, 38, 92, 22]
+    content:
+      style: "$small"
+      color: "$primaryTint"
+      align: [right, middle]
+      text: "07 / 07"
+
+  - elementId: title
+    elementType: text
+    bounds: [48, 70, 864, 42]
+    content:
+      style: "$title"
+      color: "#FFFFFF"
+      align: [left, middle]
+      text: 建议决议：批准进入 5% 灰度，并建立三周观察窗口
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 116, 864, 24]
+    content:
+      style: "$subtitle"
+      color: "$primaryTint"
+      align: [left, middle]
+      text: 目标架构方向成立，残余风险均有明确缓解措施与触发条件。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [48, 146, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+    opacity: 0.5
+
+  - elementId: risk-1
+    elementType: text
+    bounds: [48, 162, 864, 50]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 13
+      color: "#FFFFFF"
+      lineHeight: 1.55
+      align: [left, top]
+      text: |
+        <p><strong><span style="color:$accent;">R1 查询读到旧数据</span></strong>　缓解：读接口返回 stale_ok，前端弱提示；每日对账，差异 > 0.01% 触发告警。</p>
+
+  - elementId: risk-1-rule
+    elementType: shape
+    bounds: [48, 222, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+    opacity: 0.25
+
+  - elementId: risk-2
+    elementType: text
+    bounds: [48, 232, 864, 50]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 13
+      color: "#FFFFFF"
+      lineHeight: 1.55
+      align: [left, top]
+      text: |
+        <p><strong><span style="color:$accent;">R2 Kafka 消费积压</span></strong>　缓解：消费并发 32；积压 > 50 万触发扩容与值班告警，死信进入人工队列。</p>
+
+  - elementId: risk-2-rule
+    elementType: shape
+    bounds: [48, 292, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+    opacity: 0.25
+
+  - elementId: risk-3
+    elementType: text
+    bounds: [48, 302, 864, 50]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 13
+      color: "#FFFFFF"
+      lineHeight: 1.55
+      align: [left, top]
+      text: |
+        <p><strong><span style="color:$accent;">R3 回滚期双写不一致</span></strong>　缓解：保留同步写开关；回滚后以主库为准补偿，对账窗口缩短至 1 小时。</p>
+
+  - elementId: risk-3-rule
+    elementType: shape
+    bounds: [48, 362, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+    opacity: 0.25
+
+  - elementId: decision-label
+    elementType: text
+    bounds: [48, 378, 200, 24]
+    content:
+      style: "$eyebrow"
+      color: "$accent"
+      align: [left, middle]
+      text: 建议决议
+
+  - elementId: decision-1
+    elementType: text
+    bounds: [48, 408, 864, 28]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 14
+      color: "#FFFFFF"
+      align: [left, middle]
+      text: |
+        <p><strong>D1</strong>　批准目标架构与迁移预算 180 万元（含 6 个月实施周期）。</p>
+
+  - elementId: decision-2
+    elementType: text
+    bounds: [48, 442, 864, 28]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 14
+      color: "#FFFFFF"
+      align: [left, middle]
+      text: |
+        <p><strong>D2</strong>　批准 2026-02-09 启动 5% 灰度，观察窗口三周。</p>
+
+  - elementId: decision-3
+    elementType: text
+    bounds: [48, 476, 864, 28]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 14
+      color: "#FFFFFF"
+      align: [left, middle]
+      text: |
+        <p><strong>D3</strong>　指定平台负责人与值班 SRE 为联合回滚决策人。</p>
+
+  - elementId: close-line
+    elementType: text
+    bounds: [48, 512, 864, 20]
+    content:
+      style: "$small"
+      color: "$primaryTint"
+      align: [left, middle]
+      text: 评审结论：架构方向成立，残余风险可控；未经真实压测与生产观察，不进入 100% 放量。

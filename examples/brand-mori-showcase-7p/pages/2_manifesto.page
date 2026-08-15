@@ -1,0 +1,61 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  观点页只保留一句核心主张，用小字在右下角补充品牌态度，建立与商业模板完全不同的节奏。
+elements:
+  - elementId: section-rule
+    elementType: shape
+    bounds: [48, 44, 3, 30]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: section-number
+    elementType: text
+    bounds: [66, 40, 120, 36]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: "01"
+
+  - elementId: page-number
+    elementType: text
+    bounds: [820, 40, 92, 22]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: "02 / 07"
+
+  - elementId: statement
+    elementType: text
+    bounds: [48, 126, 864, 270]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 64
+      bold: true
+      color: "$text"
+      lineHeight: 1.02
+      align: [left, top]
+      text: |
+        <p>让城市，</p>
+        <p>重新<span style="color:$accent;">呼吸。</span></p>
+
+  - elementId: red-square
+    elementType: shape
+    bounds: [48, 414, 32, 32]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: annotation
+    elementType: text
+    bounds: [620, 420, 292, 66]
+    content:
+      style: "$small"
+      color: "$muted"
+      lineHeight: 1.7
+      align: [right, top]
+      text: 品牌态度：通勤体面，入野自由。不制造逃离城市的焦虑，只提供切换状态的装备与审美。

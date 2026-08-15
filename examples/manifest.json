@@ -1,23 +1,41 @@
 {
   "version": 1,
-  "generated": "2026-08-14T13:33:31.565Z",
+  "generated": "2026-08-15T05:25:30.973Z",
   "entries": [
     {
-      "id": "coffee-monthly-report",
-      "title": "屿间咖啡 2026 年 5 月经营月报",
-      "description": "连锁咖啡品牌月度经营分析会材料：KPI 卡片、柱状/环形/瀑布/雷达/树图/折线六类图表、三线表、建议卡片与演讲者备注",
+      "id": "brand-mori-showcase-7p",
+      "title": "MORI 森野 · 城市户外生活方式品牌提案",
+      "description": "品牌创意场景示例：纸白 / 墨黑 / 信号红三色纪律，阿里妈妈数黑体超大字号排版，巨型「森」字命名页、固定 16:10 图位与首尾呼应的信号红块构图",
       "tags": [
-        "经营月报",
-        "图表",
-        "管理汇报",
-        "咖啡零售"
+        "品牌提案",
+        "三色纪律",
+        "阿里妈妈数黑体",
+        "大字号排版"
       ],
-      "pages": 5,
+      "pages": 7,
       "fonts": [
         "阿里妈妈数黑体",
         "霞鹜新晰黑"
       ],
-      "deck": "examples/coffee-monthly-report/deck.pptd"
+      "deck": "examples/brand-mori-showcase-7p/deck.pptd"
+    },
+    {
+      "id": "business-review-7p",
+      "title": "远川科技 2025年度经营复盘与2026年增长策略",
+      "description": "管理汇报场景示例：深绿 × 金棕年度复盘配色，思源宋体标题配霞鹜新晰黑正文，净利润瀑布图、收入结构环形图、区域续约率三线表，以行动请求（asks）页收尾",
+      "tags": [
+        "管理汇报",
+        "年度复盘",
+        "瀑布图",
+        "环形图",
+        "思源宋体"
+      ],
+      "pages": 7,
+      "fonts": [
+        "思源宋体",
+        "霞鹜新晰黑"
+      ],
+      "deck": "examples/business-review-7p/deck.pptd"
     },
     {
       "id": "ev-range",
@@ -87,6 +105,24 @@
         "霞鹜新晰黑"
       ],
       "deck": "examples/shanmingji-2026-launch/deck.pptd"
+    },
+    {
+      "id": "tech-architecture-review-7p",
+      "title": "订单中台架构升级评审：CQRS 异步化与读写分离",
+      "description": "技术评审场景示例：墨绿 × 暖橙工程评审风，得意黑标题配 MiSans 正文，现状与目标架构链路对比、机制取舍分析、压测灰度迁移路线与决议页收尾",
+      "tags": [
+        "技术评审",
+        "架构设计",
+        "CQRS",
+        "得意黑",
+        "MiSans"
+      ],
+      "pages": 7,
+      "fonts": [
+        "得意黑",
+        "MiSans"
+      ],
+      "deck": "examples/tech-architecture-review-7p/deck.pptd"
     }
   ]
 }

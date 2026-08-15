@@ -1,0 +1,103 @@
+pageType: cover
+background:
+  type: solid
+  color: "$primaryDeep"
+notes: |
+  开场建议：先给结论。全年收入目标达成96.8%，经营性现金流转正；最大缺口是华东区续约率78%（目标85%）。
+elements:
+  - elementId: accent-mark
+    elementType: shape
+    bounds: [60, 48, 44, 4]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: brand-line
+    elementType: text
+    bounds: [116, 38, 740, 26]
+    content:
+      style: "$eyebrow"
+      color: "$accent"
+      align: [left, middle]
+      text: 远川科技 · 年度经营简报
+
+  - elementId: hero-title
+    elementType: text
+    bounds: [60, 116, 840, 116]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 62
+      bold: true
+      color: "#FFFFFF"
+      letterSpacing: 6
+      align: [left, middle]
+      lineHeight: 1.1
+      text: 行稳致远
+
+  - elementId: hero-subtitle
+    elementType: text
+    bounds: [60, 258, 840, 46]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 22
+      color: "$bg"
+      align: [left, middle]
+      lineHeight: 1.3
+      text: 2025年度经营复盘与2026年增长策略
+
+  - elementId: title-rule
+    elementType: shape
+    bounds: [60, 340, 64, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: conclusion-label
+    elementType: text
+    bounds: [60, 378, 280, 24]
+    content:
+      style: "$eyebrow"
+      color: "$accent"
+      align: [left, middle]
+      text: 核心结论
+
+  - elementId: conclusion-copy
+    elementType: text
+    bounds: [60, 408, 840, 66]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 16
+      color: "#FFFFFF"
+      lineHeight: 1.6
+      align: [left, top]
+      text: 全年收入目标达成 96.8%，经营性现金流转正；最大缺口来自华东区续约率（78% vs 85%），这是2026年必须优先解决的问题。
+
+  - elementId: footer-left
+    elementType: text
+    bounds: [60, 496, 500, 26]
+    content:
+      style: "$small"
+      color: "$primaryTint"
+      align: [left, middle]
+      text: 2026年1月 · 董事会 / 经营管理层简报
+
+  - elementId: footer-right
+    elementType: text
+    bounds: [560, 496, 340, 26]
+    content:
+      style: "$small"
+      color: "$primaryTint"
+      align: [right, middle]
+      text: 演示占位数据 · 请替换为实际口径
+
+  - elementId: motif-ring-1
+    elementType: shape
+    bounds: [640, 36, 260, 260]
+    shapeName: ellipse
+    border: { style: solid, width: 1, color: "$accent" }
+    opacity: 0.35
+
+  - elementId: motif-ring-2
+    elementType: shape
+    bounds: [586, 124, 150, 150]
+    shapeName: ellipse
+    border: { style: solid, width: 1, color: "$primaryTint" }
+    opacity: 0.3

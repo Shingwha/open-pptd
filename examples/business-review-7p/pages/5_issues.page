@@ -1,0 +1,157 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  讲解建议：不回避问题。每个问题按“根因—对策—目标”讲，明确这是可控、可改善的结构性问题。
+elements:
+  - elementId: page-marker
+    elementType: shape
+    bounds: [872, 36, 28, 28]
+    shapeName: ellipse
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: page-number
+    elementType: text
+    bounds: [872, 36, 28, 28]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: "04"
+
+  - elementId: eyebrow
+    elementType: text
+    bounds: [60, 38, 500, 24]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 04 · 问题与风险
+
+  - elementId: title
+    elementType: text
+    bounds: [60, 66, 840, 46]
+    content:
+      style: "$title"
+      align: [left, middle]
+      text: 两个结构性问题，必须在上半年解决
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [60, 116, 840, 26]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 问题均有明确根因与对策；建议以季度为节点跟踪关闭，Q2结束时进行半年度复判。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [60, 152, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: zone-rule-1
+    elementType: shape
+    bounds: [60, 318, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: zone-rule-2
+    elementType: shape
+    bounds: [60, 500, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: issue-1-number
+    elementType: text
+    bounds: [60, 170, 90, 120]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 44
+      bold: true
+      color: "$accent"
+      align: [left, top]
+      text: "01"
+
+  - elementId: issue-1-title
+    elementType: text
+    bounds: [168, 172, 732, 38]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 20
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 华东续约率 78%，低于目标 7 个百分点
+
+  - elementId: issue-1-cause
+    elementType: text
+    bounds: [168, 216, 732, 28]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "$text"
+      lineHeight: 1.5
+      align: [left, top]
+      text: |
+        <p><strong>根因</strong>：交付资源错配，客户成功覆盖率仅 42%；续约风险集中在年合同额 50 万元以下客户。</p>
+
+  - elementId: issue-1-action
+    elementType: text
+    bounds: [168, 252, 732, 56]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "$text"
+      lineHeight: 1.6
+      align: [left, top]
+      text: |
+        <p><strong>对策</strong>：客户成功团队由 3 人扩至 8 人；6月底前完成 Top 40 客户健康度复盘，Q2 续约率目标 82%。</p>
+
+  - elementId: issue-2-number
+    elementType: text
+    bounds: [60, 340, 90, 120]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 44
+      bold: true
+      color: "$accent"
+      align: [left, top]
+      text: "02"
+
+  - elementId: issue-2-title
+    elementType: text
+    bounds: [168, 342, 732, 38]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 20
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 新客获客成本 CAC 回升至 1.9 万元，同比 +32%
+
+  - elementId: issue-2-cause
+    elementType: text
+    bounds: [168, 386, 732, 28]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "$text"
+      lineHeight: 1.5
+      align: [left, top]
+      text: |
+        <p><strong>根因</strong>：线索质量下降，付费渠道贡献过度集中在单一来源，自然线索占比持续走低。</p>
+
+  - elementId: issue-2-action
+    elementType: text
+    bounds: [168, 422, 732, 56]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "$text"
+      lineHeight: 1.6
+      align: [left, top]
+      text: |
+        <p><strong>对策</strong>：重建内容获客与伙伴转介绍体系；Q2 单客户 CAC 目标 ≤1.6 万元，付费渠道占比压降至 60% 以下。</p>

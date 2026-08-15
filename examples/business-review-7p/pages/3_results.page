@@ -1,0 +1,196 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  讲解建议：收入接近目标，利润和现金流改善更明显；右图解释净利润如何从毛利一路走到0.61亿元。
+elements:
+  - elementId: page-marker
+    elementType: shape
+    bounds: [872, 36, 28, 28]
+    shapeName: ellipse
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: page-number
+    elementType: text
+    bounds: [872, 36, 28, 28]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: "02"
+
+  - elementId: eyebrow
+    elementType: text
+    bounds: [60, 38, 500, 24]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 02 · 经营结果
+
+  - elementId: title
+    elementType: text
+    bounds: [60, 66, 840, 46]
+    content:
+      style: "$title"
+      align: [left, middle]
+      text: 收入基本达标，利润与现金流明显改善
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [60, 116, 840, 26]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 单位：亿元。本页为演示占位数据，正式汇报请替换为审计/管理口径。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [60, 152, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: metric-1-value
+    elementType: text
+    bounds: [60, 164, 190, 48]
+    content:
+      style: "$metric"
+      fontSize: 32
+      align: [left, middle]
+      text: "4.82"
+
+  - elementId: metric-1-delta
+    elementType: text
+    bounds: [60, 216, 190, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      bold: true
+      color: "$success"
+      align: [left, middle]
+      text: +14.2%
+
+  - elementId: metric-1-label
+    elementType: text
+    bounds: [60, 244, 220, 24]
+    content:
+      style: "$small"
+      color: "$text"
+      align: [left, middle]
+      text: 营业收入（亿元）
+
+  - elementId: metric-1-rule
+    elementType: shape
+    bounds: [60, 286, 220, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: metric-2-value
+    elementType: text
+    bounds: [60, 302, 190, 48]
+    content:
+      style: "$metric"
+      fontSize: 32
+      align: [left, middle]
+      text: "0.61"
+
+  - elementId: metric-2-delta
+    elementType: text
+    bounds: [60, 354, 190, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      bold: true
+      color: "$success"
+      align: [left, middle]
+      text: +38.6%
+
+  - elementId: metric-2-label
+    elementType: text
+    bounds: [60, 382, 220, 24]
+    content:
+      style: "$small"
+      color: "$text"
+      align: [left, middle]
+      text: 净利润（亿元）
+
+  - elementId: metric-2-rule
+    elementType: shape
+    bounds: [60, 424, 220, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: metric-3-value
+    elementType: text
+    bounds: [60, 440, 190, 48]
+    content:
+      style: "$metric"
+      fontSize: 32
+      align: [left, middle]
+      text: "0.32"
+
+  - elementId: metric-3-delta
+    elementType: text
+    bounds: [60, 492, 190, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      bold: true
+      color: "$success"
+      align: [left, middle]
+      text: 由负转正
+
+  - elementId: metric-3-label
+    elementType: text
+    bounds: [60, 520, 220, 18]
+    content:
+      style: "$small"
+      color: "$text"
+      align: [left, middle]
+      text: 经营性现金流（亿元）
+
+  - elementId: chart-heading
+    elementType: text
+    bounds: [330, 160, 570, 28]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 16
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 净利润桥：从营业毛利到净利润（亿元）
+
+  - elementId: profit-bridge
+    elementType: chart
+    bounds: [330, 194, 570, 320]
+    data:
+      cols: [项目, 金额, 是否合计]
+      rows:
+        - [营业毛利, 2.76, true]
+        - [销售及市场费用, -0.98, null]
+        - [研发费用, -0.66, null]
+        - [管理费用, -0.31, null]
+        - [财务及税费, -0.20, null]
+        - [净利润, 0.61, true]
+    xAxis:
+      axisLine: false
+      gridLine: false
+      label: { fontSize: 11, color: "$muted" }
+    yAxis:
+      title: "亿元"
+      min: 0
+      max: 3.2
+      axisLine: false
+      gridLine: { color: "$line" }
+      label: { numberFormat: "0.0", fontSize: 11, color: "$muted" }
+    legend: false
+    fontFamily: "LXGW Neo XiHei"
+    series:
+      - type: waterfall
+        encode: { x: 项目, y: 金额, isTotal: 是否合计 }
+        totalBars: { fill: "$primary", border: { style: solid, width: 1, color: "$primary" } }
+        increaseBars: { fill: "$success", border: { style: solid, width: 1, color: "$success" } }
+        decreaseBars: { fill: "$danger", border: { style: solid, width: 1, color: "$danger" } }
+        dataLabels: { show: true, numberFormat: "0.00", color: "$text", fontSize: 10 }

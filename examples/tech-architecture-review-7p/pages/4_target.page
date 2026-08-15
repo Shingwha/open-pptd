@@ -1,0 +1,317 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  目标架构只保留一条同步写路径：命令落库。查询、外部通知与事件投影全部异步化，故障半径被隔离。
+elements:
+  - elementId: section-rule
+    elementType: shape
+    bounds: [48, 36, 3, 26]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: section-label
+    elementType: text
+    bounds: [64, 38, 360, 22]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 03 / 目标架构
+
+  - elementId: page-number
+    elementType: text
+    bounds: [820, 38, 92, 22]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: "04 / 07"
+
+  - elementId: title
+    elementType: text
+    bounds: [48, 70, 864, 42]
+    content:
+      style: "$title"
+      align: [left, middle]
+      text: 目标：命令与查询分离，写链路只保留一次落库
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 116, 864, 24]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 同步路径只剩“命令落库”；查询与外部通知异步解耦。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [48, 146, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: node-client
+    elementType: shape
+    bounds: [48, 166, 100, 42]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$primary" }
+
+  - elementId: node-client-text
+    elementType: text
+    bounds: [48, 166, 100, 42]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 12
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: 客户端
+
+  - elementId: node-gateway
+    elementType: shape
+    bounds: [180, 166, 130, 42]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$primary" }
+
+  - elementId: node-gateway-text
+    elementType: text
+    bounds: [180, 166, 130, 42]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 12
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: 接入网关
+
+  - elementId: node-command
+    elementType: shape
+    bounds: [342, 166, 170, 42]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    border: { style: solid, width: 1, color: "$primary" }
+
+  - elementId: node-command-text
+    elementType: text
+    bounds: [342, 166, 170, 42]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 12
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 订单命令服务
+
+  - elementId: node-write-db
+    elementType: shape
+    bounds: [544, 166, 150, 42]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryDeep" }
+    border: { style: solid, width: 1, color: "$primaryDeep" }
+
+  - elementId: node-write-db-text
+    elementType: text
+    bounds: [544, 166, 150, 42]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 订单主库（写）
+
+  - elementId: node-mq
+    elementType: shape
+    bounds: [342, 286, 150, 42]
+    shapeName: rect
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primary" }
+
+  - elementId: node-mq-text
+    elementType: text
+    bounds: [342, 286, 150, 42]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 11
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: Kafka 事件流
+
+  - elementId: node-processor
+    elementType: shape
+    bounds: [524, 286, 180, 42]
+    shapeName: rect
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primary" }
+
+  - elementId: node-processor-text
+    elementType: text
+    bounds: [524, 286, 180, 42]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 11
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: 订单事件处理器
+
+  - elementId: node-read-db
+    elementType: shape
+    bounds: [736, 286, 130, 42]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryTint" }
+    border: { style: solid, width: 1, color: "$primary" }
+
+  - elementId: node-read-db-text
+    elementType: text
+    bounds: [736, 286, 130, 42]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 11
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: 订单查询库
+
+  - elementId: node-query-api
+    elementType: shape
+    bounds: [736, 384, 130, 42]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$primary" }
+
+  - elementId: node-query-api-text
+    elementType: text
+    bounds: [736, 384, 130, 42]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 11
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: 查询服务
+
+  - elementId: path-write-label
+    elementType: text
+    bounds: [544, 148, 150, 18]
+    content:
+      style: "$small"
+      color: "$accent"
+      align: [center, middle]
+      text: 唯一同步路径
+
+  - elementId: path-read-label
+    elementType: text
+    bounds: [620, 342, 170, 20]
+    content:
+      style: "$small"
+      color: "$primary"
+      align: [right, middle]
+      text: 读路径 / 最终一致
+
+  - elementId: arrow-client-gateway
+    elementType: line
+    bounds: [148, 182, 32, 10]
+    viewBox: [32, 10]
+    points: "0,5 32,5"
+    curve: sharp
+    arrow: [null, stealth]
+    border: { style: solid, width: 1.5, color: "$primary" }
+
+  - elementId: arrow-gateway-command
+    elementType: line
+    bounds: [310, 182, 32, 10]
+    viewBox: [32, 10]
+    points: "0,5 32,5"
+    curve: sharp
+    arrow: [null, stealth]
+    border: { style: solid, width: 1.5, color: "$primary" }
+
+  - elementId: arrow-command-db
+    elementType: line
+    bounds: [512, 182, 32, 10]
+    viewBox: [32, 10]
+    points: "0,5 32,5"
+    curve: sharp
+    arrow: [null, stealth]
+    border: { style: solid, width: 2, color: "$accent" }
+
+  - elementId: arrow-command-mq
+    elementType: line
+    bounds: [422, 208, 8, 78]
+    viewBox: [8, 78]
+    points: "4,0 4,78"
+    curve: sharp
+    arrow: [null, stealth]
+    border: { style: solid, width: 1.5, color: "$accent" }
+
+  - elementId: arrow-mq-processor
+    elementType: line
+    bounds: [492, 302, 32, 10]
+    viewBox: [32, 10]
+    points: "0,5 32,5"
+    curve: sharp
+    arrow: [null, stealth]
+    border: { style: solid, width: 1.5, color: "$primary" }
+
+  - elementId: arrow-processor-read
+    elementType: line
+    bounds: [704, 302, 32, 10]
+    viewBox: [32, 10]
+    points: "0,5 32,5"
+    curve: sharp
+    arrow: [null, stealth]
+    border: { style: solid, width: 1.5, color: "$primary" }
+
+  - elementId: arrow-read-query
+    elementType: line
+    bounds: [796, 328, 8, 56]
+    viewBox: [8, 56]
+    points: "4,0 4,56"
+    curve: sharp
+    arrow: [null, stealth]
+    border: { style: solid, width: 1.5, color: "$primary" }
+
+  - elementId: legend-solid
+    elementType: shape
+    bounds: [48, 438, 40, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: legend-solid-text
+    elementType: text
+    bounds: [100, 428, 130, 22]
+    content:
+      style: "$small"
+      align: [left, middle]
+      text: 同步调用
+
+  - elementId: legend-async
+    elementType: line
+    bounds: [190, 439, 40, 2]
+    viewBox: [40, 2]
+    points: "0,1 40,1"
+    curve: sharp
+    border: { style: dash, width: 1.5, color: "$accent" }
+
+  - elementId: legend-async-text
+    elementType: text
+    bounds: [242, 428, 150, 22]
+    content:
+      style: "$small"
+      align: [left, middle]
+      text: 异步事件投影
+
+  - elementId: key-change
+    elementType: text
+    bounds: [48, 476, 864, 44]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 13
+      color: "$text"
+      lineHeight: 1.6
+      align: [left, top]
+      text: |
+        <p><strong>变化</strong>：外部库存 / 支付 / 履约由同步等待改为事件通知；查询服务只读查询库，峰值读流量不再与写事务争抢主库。</p>

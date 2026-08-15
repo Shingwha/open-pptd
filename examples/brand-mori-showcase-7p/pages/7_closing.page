@@ -1,0 +1,65 @@
+pageType: final
+background:
+  type: solid
+  color: "$accent"
+notes: |
+  收尾回到封面的信号红，用一句完整的品牌承诺闭环，不以“谢谢”结束。
+elements:
+  - elementId: meta-left
+    elementType: text
+    bounds: [48, 44, 500, 22]
+    content:
+      style: "$eyebrow"
+      color: "#FFFFFF"
+      align: [left, middle]
+      text: MORI / BRAND PROPOSAL
+
+  - elementId: meta-right
+    elementType: text
+    bounds: [820, 44, 92, 22]
+    content:
+      style: "$small"
+      color: "#FFFFFF"
+      align: [right, middle]
+      text: "07 / 07"
+
+  - elementId: closing-title
+    elementType: text
+    bounds: [48, 120, 864, 280]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 88
+      bold: true
+      color: "#FFFFFF"
+      lineHeight: 1.0
+      align: [left, top]
+      text: |
+        <p>从城市，</p>
+        <p>到森林。</p>
+
+  - elementId: closing-rule
+    elementType: shape
+    bounds: [48, 456, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    opacity: 0.85
+
+  - elementId: closing-left
+    elementType: text
+    bounds: [48, 474, 460, 28]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 18
+      bold: true
+      color: "#FFFFFF"
+      align: [left, middle]
+      text: MORI 森野 · 2026
+
+  - elementId: closing-right
+    elementType: text
+    bounds: [560, 474, 352, 28]
+    content:
+      style: "$eyebrow"
+      color: "#FFFFFF"
+      align: [right, middle]
+      text: CITY TO FOREST

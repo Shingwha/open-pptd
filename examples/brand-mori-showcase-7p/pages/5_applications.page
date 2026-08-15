@@ -1,0 +1,148 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  应用页用一个固定 16:10 产品图位锚定左半区，右侧列出关键触点；图片后补后无需改动版式骨架。
+elements:
+  - elementId: section-rule
+    elementType: shape
+    bounds: [48, 44, 3, 30]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: section-number
+    elementType: text
+    bounds: [66, 40, 120, 36]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: "04"
+
+  - elementId: page-number
+    elementType: text
+    bounds: [820, 40, 92, 22]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: "05 / 07"
+
+  - elementId: title
+    elementType: text
+    bounds: [48, 84, 864, 52]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 42
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 应用：所有触点共用同一张嘴
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 138, 864, 24]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 版式、色彩与语气统一；产品图进入固定 16:10 画幅，不随页面随意裁切。
+
+  - elementId: product-slot
+    elementType: shape
+    bounds: [48, 176, 460, 288]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$primary" }
+
+  - elementId: product-slot-corner
+    elementType: shape
+    bounds: [48, 176, 28, 28]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: product-slot-label
+    elementType: text
+    bounds: [48, 176, 460, 288]
+    content:
+      style: "$small"
+      color: "$muted"
+      align: [center, middle]
+      text: 产品图位 / 16:10
+
+  - elementId: product-slot-note
+    elementType: text
+    bounds: [48, 472, 460, 22]
+    content:
+      style: "$small"
+      align: [left, middle]
+      text: 图片规则：黑白高反差摄影，可局部叠加信号红。
+
+  - elementId: app-1
+    elementType: text
+    bounds: [560, 176, 352, 34]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>01</strong>　门店标识与导视</p>
+
+  - elementId: app-1-rule
+    elementType: shape
+    bounds: [560, 218, 352, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: app-2
+    elementType: text
+    bounds: [560, 226, 352, 34]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>02</strong>　产品吊牌与包装</p>
+
+  - elementId: app-2-rule
+    elementType: shape
+    bounds: [560, 268, 352, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: app-3
+    elementType: text
+    bounds: [560, 276, 352, 34]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>03</strong>　小程序与会员体系</p>
+
+  - elementId: app-3-rule
+    elementType: shape
+    bounds: [560, 318, 352, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: app-4
+    elementType: text
+    bounds: [560, 326, 352, 34]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>04</strong>　城市活动与山野体验海报</p>
+
+  - elementId: app-4-rule
+    elementType: shape
+    bounds: [560, 368, 352, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: app-note
+    elementType: text
+    bounds: [560, 384, 352, 70]
+    content:
+      style: "$small"
+      align: [left, top]
+      text: 原则：同一版式骨架可在数字端与印刷端复用；红色只标记行动点，不用于大面积信息底色。

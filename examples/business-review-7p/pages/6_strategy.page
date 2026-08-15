@@ -1,0 +1,228 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  讲解建议：三项优先级不并列铺开，而是共享一个原则——先改善单位经济模型，再谈规模增长。
+elements:
+  - elementId: page-marker
+    elementType: shape
+    bounds: [872, 36, 28, 28]
+    shapeName: ellipse
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: page-number
+    elementType: text
+    bounds: [872, 36, 28, 28]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: "05"
+
+  - elementId: eyebrow
+    elementType: text
+    bounds: [60, 38, 500, 24]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 05 · 2026 战略重点
+
+  - elementId: title
+    elementType: text
+    bounds: [60, 66, 840, 46]
+    content:
+      style: "$title"
+      align: [left, middle]
+      text: 聚焦续约、订阅与效率，不扩规模摊子
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [60, 116, 840, 26]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 三项优先战役共享一个原则：先改善单位经济模型，再谈规模增长。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [60, 152, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: priority-rule-1
+    elementType: shape
+    bounds: [60, 286, 400, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: priority-rule-2
+    elementType: shape
+    bounds: [60, 416, 400, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: priority-1-number
+    elementType: text
+    bounds: [60, 170, 70, 80]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 38
+      bold: true
+      color: "$accent"
+      align: [left, top]
+      text: "01"
+
+  - elementId: priority-1-title
+    elementType: text
+    bounds: [150, 174, 310, 34]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 19
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 客户成功优先
+
+  - elementId: priority-1-detail
+    elementType: text
+    bounds: [150, 214, 310, 56]
+    content:
+      style: "$body"
+      fontSize: 13
+      lineHeight: 1.6
+      align: [left, top]
+      text: 华东区续约率 78% → 88%，重点客户覆盖率 42% → 100%。
+
+  - elementId: priority-2-number
+    elementType: text
+    bounds: [60, 300, 70, 80]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 38
+      bold: true
+      color: "$accent"
+      align: [left, top]
+      text: "02"
+
+  - elementId: priority-2-title
+    elementType: text
+    bounds: [150, 304, 310, 34]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 19
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 订阅产品优先
+
+  - elementId: priority-2-detail
+    elementType: text
+    bounds: [150, 344, 310, 56]
+    content:
+      style: "$body"
+      fontSize: 13
+      lineHeight: 1.6
+      align: [left, top]
+      text: SaaS ARR 增长 35%，订阅收入占比 58% → 65%。
+
+  - elementId: priority-3-number
+    elementType: text
+    bounds: [60, 430, 70, 80]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 38
+      bold: true
+      color: "$accent"
+      align: [left, top]
+      text: "03"
+
+  - elementId: priority-3-title
+    elementType: text
+    bounds: [150, 434, 310, 34]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 19
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 效率优先
+
+  - elementId: priority-3-detail
+    elementType: text
+    bounds: [150, 474, 310, 52]
+    content:
+      style: "$body"
+      fontSize: 13
+      lineHeight: 1.6
+      align: [left, top]
+      text: 单客户 CAC 下降 20%，人均确认收入提升 15%。
+
+  - elementId: roadmap-heading
+    elementType: text
+    bounds: [480, 164, 420, 28]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 16
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 2026 关键战役路线图
+
+  - elementId: roadmap-table
+    elementType: table
+    bounds: [480, 194, 420, 300]
+    columnWidths: [0.24, 0.19, 0.19, 0.19, 0.19]
+    rowHeights: [0.22, 0.26, 0.26, 0.26]
+    style:
+      cellStyle:
+        fontFamily: "LXGW Neo XiHei"
+        fontSize: 11
+        color: "$text"
+        fill: { type: solid, color: "#F7F3E8" }
+        border: [null, null, { style: solid, width: 1, color: "$line" }, null]
+        align: ["center", "middle"]
+      firstRowStyle:
+        fontFamily: "Source Han Serif CN"
+        fontSize: 12
+        fill: { type: solid, color: "$primary" }
+        color: "#FFFFFF"
+        bold: true
+      bodyStyles:
+        - { fill: { type: solid, color: "$primarySoft" } }
+        - { fill: { type: solid, color: "#F7F3E8" } }
+      rowOverColumn: true
+    rows:
+      - - text: 关键战役
+        - text: Q1
+        - text: Q2
+        - text: Q3
+        - text: Q4
+      - - text: 客户成功
+          bold: true
+        - text: 团队 3→8 到位
+        - text: 续约率 82%
+        - text: 续约率 85%
+        - text: 续约率 88%
+      - - text: 订阅增长
+          bold: true
+        - text: 新定价上线
+        - text: V4.0 发布
+        - text: ARR +20%
+        - text: ARR +35%
+      - - text: 效率提升
+          bold: true
+        - text: 渠道结构审计
+        - text: CAC ≤1.6万
+        - text: 人效 +10%
+        - text: 人效 +15%
+
+  - elementId: footnote
+    elementType: text
+    bounds: [480, 500, 420, 22]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: 路线图目标为建议值，可按董事会意见调整。

@@ -1,0 +1,132 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  验证与灰度：所有数字为示例推演。正式评审必须替换为真实压测报告、生产监控窗口和放量记录。
+elements:
+  - elementId: section-rule
+    elementType: shape
+    bounds: [48, 36, 3, 26]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: section-label
+    elementType: text
+    bounds: [64, 38, 360, 22]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 05 / 验证与迁移
+
+  - elementId: page-number
+    elementType: text
+    bounds: [820, 38, 92, 22]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: "06 / 07"
+
+  - elementId: title
+    elementType: text
+    bounds: [48, 70, 864, 42]
+    content:
+      style: "$title"
+      align: [left, middle]
+      text: 验证：三档压测达标后，按 5% → 50% → 100% 灰度
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 116, 864, 24]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 延迟曲线与放量闸门并列；所有数字为示例推演，正式评审须替换为真实压测与生产数据。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [48, 146, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: latency-chart
+    elementType: chart
+    bounds: [48, 166, 490, 300]
+    data:
+      cols: [流量, 现状写P95, 目标写P95]
+      rows:
+        - [400, 280, 120]
+        - [800, 340, 140]
+        - [1200, 480, 170]
+        - [1600, 780, 210]
+        - [2000, 1150, 260]
+        - [2400, 1680, 330]
+    xAxis:
+      type: category
+      title: "流量（单/秒）"
+      axisLine: false
+      gridLine: false
+      label: { fontSize: 10, color: "$muted" }
+    yAxis:
+      title: "P95 延迟（ms）"
+      min: 0
+      max: 1800
+      axisLine: false
+      gridLine: { color: "$line" }
+      label: { fontSize: 10, color: "$muted", numberFormat: "0" }
+    legend:
+      show: true
+      position: bottom
+      fontSize: 10
+      color: "$text"
+    fontFamily: "MiSans"
+    series:
+      - type: line
+        encode: { x: 流量, y: 现状写P95 }
+        name: 现状写路径
+        lineColor: "$muted"
+        width: 2
+        marker: { shape: circle, size: 5, fill: "$muted" }
+      - type: line
+        encode: { x: 流量, y: 目标写P95 }
+        name: 目标写路径
+        lineColor: "$accent"
+        width: 3
+        marker: { shape: circle, size: 5, fill: "$accent" }
+        dataLabels: { show: true, content: value, color: "$accent", fontSize: 9 }
+
+  - elementId: gate-table
+    elementType: table
+    bounds: [560, 166, 352, 280]
+    columnWidths: [0.18, 0.42, 0.40]
+    rowHeights: [0.18, 0.205, 0.205, 0.205, 0.205]
+    style: "$default"
+    rows:
+      - - text: 阶段
+        - text: 放量条件
+        - text: 回滚条件
+      - - text: 影子
+        - text: 镜像流量连续 7 天
+        - text: 对账差异 > 0.01%
+      - - text: 5%
+        - text: 影子验收通过
+        - text: 写 P95 > 600ms 或错误率 > 0.05%
+      - - text: 50%
+        - text: 5% 灰度观察 48h 无异常
+        - text: 错误率 > 0.1% 或对账差异 > 0.01%
+      - - text: 100%
+        - text: 50% 灰度观察 7d 无异常
+        - text: 错误率 > 0.1% 或客诉异常
+
+  - elementId: env-note
+    elementType: text
+    bounds: [48, 482, 864, 44]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 11
+      color: "$muted"
+      lineHeight: 1.55
+      align: [left, top]
+      text: |
+        <p>示例环境标注：Kubernetes 1.28 / MySQL 8.0.30 / Kafka 3.5；压测负载 8,000 并发连接；样本为 30 分钟峰值窗口。</p>
+        <p>待补：真实压测报告编号、发布窗口、值班人与回滚决策人。</p>

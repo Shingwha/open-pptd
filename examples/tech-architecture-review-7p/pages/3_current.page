@@ -1,0 +1,319 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  现状链路：下单事务同步等待库存、支付、履约，峰值时数据库连接与外部依赖把延迟放大。
+elements:
+  - elementId: section-rule
+    elementType: shape
+    bounds: [48, 36, 3, 26]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: section-label
+    elementType: text
+    bounds: [64, 38, 360, 22]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 02 / 现状与问题
+
+  - elementId: page-number
+    elementType: text
+    bounds: [820, 38, 92, 22]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: "03 / 07"
+
+  - elementId: title
+    elementType: text
+    bounds: [48, 70, 864, 42]
+    content:
+      style: "$title"
+      align: [left, middle]
+      text: 现状：同步写库与同步扇出，放大峰值延迟
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 116, 864, 24]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 下单事务持有数据库连接并同步等待库存、支付、履约结果；任一外部依赖抖动，主链路同步劣化。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [48, 146, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: node-client
+    elementType: shape
+    bounds: [48, 166, 100, 40]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$primary" }
+
+  - elementId: node-client-text
+    elementType: text
+    bounds: [48, 166, 100, 40]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 12
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: 客户端
+
+  - elementId: node-gateway
+    elementType: shape
+    bounds: [190, 166, 130, 40]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$primary" }
+
+  - elementId: node-gateway-text
+    elementType: text
+    bounds: [190, 166, 130, 40]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 12
+      bold: true
+      color: "$primary"
+      align: [center, middle]
+      text: 接入网关
+
+  - elementId: node-order
+    elementType: shape
+    bounds: [360, 166, 320, 40]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    border: { style: solid, width: 1, color: "$primary" }
+
+  - elementId: node-order-text
+    elementType: text
+    bounds: [360, 166, 320, 40]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 13
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 订单服务（同步事务）
+
+  - elementId: node-mysql
+    elementType: shape
+    bounds: [710, 166, 140, 40]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryDeep" }
+    border: { style: solid, width: 1, color: "$primaryDeep" }
+
+  - elementId: node-mysql-text
+    elementType: text
+    bounds: [710, 166, 140, 40]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 12
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 订单主库 MySQL
+
+  - elementId: node-inventory
+    elementType: shape
+    bounds: [380, 286, 100, 40]
+    shapeName: rect
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+
+  - elementId: node-inventory-text
+    elementType: text
+    bounds: [380, 286, 100, 40]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 11
+      color: "$muted"
+      align: [center, middle]
+      text: 库存服务
+
+  - elementId: node-payment
+    elementType: shape
+    bounds: [480, 286, 100, 40]
+    shapeName: rect
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+
+  - elementId: node-payment-text
+    elementType: text
+    bounds: [480, 286, 100, 40]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 11
+      color: "$muted"
+      align: [center, middle]
+      text: 支付服务
+
+  - elementId: node-fulfillment
+    elementType: shape
+    bounds: [580, 286, 100, 40]
+    shapeName: rect
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+
+  - elementId: node-fulfillment-text
+    elementType: text
+    bounds: [580, 286, 100, 40]
+    content:
+      fontFamily: "MiSans"
+      fontSize: 11
+      color: "$muted"
+      align: [center, middle]
+      text: 履约服务
+
+  - elementId: sync-wait-label
+    elementType: text
+    bounds: [700, 232, 164, 20]
+    content:
+      style: "$small"
+      color: "$accent"
+      align: [right, middle]
+      text: 外部同步等待
+
+  - elementId: arrow-client-gateway
+    elementType: line
+    bounds: [148, 181, 42, 10]
+    viewBox: [42, 10]
+    points: "0,5 42,5"
+    curve: sharp
+    arrow: [null, stealth]
+    border: { style: solid, width: 1.5, color: "$primary" }
+
+  - elementId: arrow-gateway-order
+    elementType: line
+    bounds: [320, 181, 40, 10]
+    viewBox: [40, 10]
+    points: "0,5 40,5"
+    curve: sharp
+    arrow: [null, stealth]
+    border: { style: solid, width: 1.5, color: "$primary" }
+
+  - elementId: arrow-order-mysql
+    elementType: line
+    bounds: [680, 181, 30, 10]
+    viewBox: [30, 10]
+    points: "0,5 30,5"
+    curve: sharp
+    arrow: [null, stealth]
+    border: { style: solid, width: 2, color: "$accent" }
+
+  - elementId: arrow-order-inventory
+    elementType: line
+    bounds: [426, 206, 8, 80]
+    viewBox: [8, 80]
+    points: "4,0 4,80"
+    curve: sharp
+    arrow: [null, stealth]
+    border: { style: solid, width: 1.5, color: "$primary" }
+
+  - elementId: arrow-order-payment
+    elementType: line
+    bounds: [526, 206, 8, 80]
+    viewBox: [8, 80]
+    points: "4,0 4,80"
+    curve: sharp
+    arrow: [null, stealth]
+    border: { style: solid, width: 1.5, color: "$primary" }
+
+  - elementId: arrow-order-fulfillment
+    elementType: line
+    bounds: [626, 206, 8, 80]
+    viewBox: [8, 80]
+    points: "4,0 4,80"
+    curve: sharp
+    arrow: [null, stealth]
+    border: { style: solid, width: 1.5, color: "$primary" }
+
+  - elementId: problem-rule-1
+    elementType: shape
+    bounds: [48, 352, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: problem-1-number
+    elementType: text
+    bounds: [48, 360, 70, 34]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 20
+      bold: true
+      color: "$accent"
+      align: [left, middle]
+      text: "P1"
+
+  - elementId: problem-1
+    elementType: text
+    bounds: [130, 360, 782, 34]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: 峰值写入排队：同步事务持有连接，写确认 P95 由 280ms 恶化至 1,680ms。
+
+  - elementId: problem-rule-2
+    elementType: shape
+    bounds: [48, 404, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: problem-2-number
+    elementType: text
+    bounds: [48, 412, 70, 34]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 20
+      bold: true
+      color: "$accent"
+      align: [left, middle]
+      text: "P2"
+
+  - elementId: problem-2
+    elementType: text
+    bounds: [130, 412, 782, 34]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: 热点单表：订单主表单表约 4.2 亿行，DDL 与归档风险高，读写互相争抢资源。
+
+  - elementId: problem-rule-3
+    elementType: shape
+    bounds: [48, 456, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: problem-3-number
+    elementType: text
+    bounds: [48, 464, 70, 34]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 20
+      bold: true
+      color: "$accent"
+      align: [left, middle]
+      text: "P3"
+
+  - elementId: problem-3
+    elementType: text
+    bounds: [130, 464, 782, 34]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: 故障半径大：库存、支付、履约任一服务慢，都会直接拖垮下单主链路。
+
+  - elementId: data-note
+    elementType: text
+    bounds: [48, 510, 864, 20]
+    content:
+      style: "$small"
+      align: [left, middle]
+      text: 注：延迟与表单数据为示例推演；正式评审需替换为监控系统 30 天窗口的真实数据。

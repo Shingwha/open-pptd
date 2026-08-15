@@ -1,0 +1,169 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  视觉系统页直接展示三色与字体层级；色块不等宽，避免均衡三列。红色只保留给强调与行动。
+elements:
+  - elementId: section-rule
+    elementType: shape
+    bounds: [48, 44, 3, 30]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: section-number
+    elementType: text
+    bounds: [66, 40, 120, 36]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: "03"
+
+  - elementId: page-number
+    elementType: text
+    bounds: [820, 40, 92, 22]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: "04 / 07"
+
+  - elementId: title
+    elementType: text
+    bounds: [48, 84, 864, 52]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 42
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 视觉系统：纸白、墨黑、信号红
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 138, 864, 24]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 三色、两级字体、十二列网格；所有页面共用同一套秩序。
+
+  - elementId: red-swatch
+    elementType: shape
+    bounds: [48, 174, 170, 276]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: ink-swatch
+    elementType: shape
+    bounds: [228, 174, 110, 276]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: paper-swatch
+    elementType: shape
+    bounds: [348, 174, 80, 276]
+    shapeName: rect
+    fill: { type: solid, color: "$bg" }
+    border: { style: solid, width: 1, color: "$line" }
+
+  - elementId: swatch-label-1
+    elementType: text
+    bounds: [48, 458, 170, 22]
+    content:
+      style: "$small"
+      color: "$text"
+      align: [left, middle]
+      text: 信号红 #E23A1E
+
+  - elementId: swatch-label-2
+    elementType: text
+    bounds: [228, 458, 110, 22]
+    content:
+      style: "$small"
+      color: "$text"
+      align: [left, middle]
+      text: 墨黑 #12100E
+
+  - elementId: swatch-label-3
+    elementType: text
+    bounds: [348, 458, 80, 22]
+    content:
+      style: "$small"
+      color: "$text"
+      align: [left, middle]
+      text: 纸白 #F5F2EA
+
+  - elementId: type-heading
+    elementType: text
+    bounds: [520, 174, 392, 24]
+    content:
+      style: "$eyebrow"
+      color: "$muted"
+      align: [left, middle]
+      text: TYPOGRAPHY
+
+  - elementId: type-sample
+    elementType: text
+    bounds: [520, 204, 392, 90]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 56
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 森野 MORI
+
+  - elementId: type-rule
+    elementType: shape
+    bounds: [520, 306, 392, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: type-line-1
+    elementType: text
+    bounds: [520, 318, 392, 30]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>标题字</strong>　Alimama ShuHeiTi / 44–120pt</p>
+
+  - elementId: type-line-1-rule
+    elementType: shape
+    bounds: [520, 356, 392, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: type-line-2
+    elementType: text
+    bounds: [520, 364, 392, 30]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>正文字</strong>　LXGW Neo XiHei / 15–18pt</p>
+
+  - elementId: type-line-2-rule
+    elementType: shape
+    bounds: [520, 402, 392, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: type-line-3
+    elementType: text
+    bounds: [520, 410, 392, 30]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>辅助信息</strong>　10pt / 字距 +3</p>
+
+  - elementId: type-note
+    elementType: text
+    bounds: [520, 456, 392, 40]
+    content:
+      style: "$small"
+      align: [left, top]
+      text: 规则：版式以纸白为底，墨黑承载信息，红色只用于强调与行动信息。

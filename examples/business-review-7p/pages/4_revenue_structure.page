@@ -1,0 +1,160 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  讲解建议：左图强调收入结构向订阅迁移；右表把“华东续约率”问题点透，为下一页问题分析做铺垫。
+elements:
+  - elementId: page-marker
+    elementType: shape
+    bounds: [872, 36, 28, 28]
+    shapeName: ellipse
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: page-number
+    elementType: text
+    bounds: [872, 36, 28, 28]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: "03"
+
+  - elementId: eyebrow
+    elementType: text
+    bounds: [60, 38, 500, 24]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 03 · 收入结构
+
+  - elementId: title
+    elementType: text
+    bounds: [60, 66, 840, 46]
+    content:
+      style: "$title"
+      align: [left, middle]
+      text: 订阅占比过半，华东续约是最大短板
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [60, 116, 840, 26]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 收入结构持续向高毛利订阅业务迁移；区域续约率分化明显，华东区需要重点干预。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [60, 152, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: left-heading
+    elementType: text
+    bounds: [60, 164, 420, 28]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 16
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 收入结构：订阅已成主体
+
+  - elementId: revenue-mix
+    elementType: chart
+    bounds: [60, 198, 420, 278]
+    data:
+      cols: [收入类型, 占比]
+      rows:
+        - [SaaS订阅, 58]
+        - [项目交付, 27]
+        - [专业服务, 15]
+    legend:
+      show: true
+      position: bottom
+      fontSize: 12
+      color: "$text"
+    fontFamily: "LXGW Neo XiHei"
+    series:
+      - type: pie
+        encode: { category: 收入类型, value: 占比 }
+        innerRadius: 0.62
+        fill: ["$primary", "$accent3", "$accent4"]
+        border: { style: solid, width: 2, color: "$bg" }
+        dataLabels: { show: true, content: percentage, numberFormat: "0%", color: "$text", fontSize: 13 }
+
+  - elementId: right-heading
+    elementType: text
+    bounds: [520, 164, 380, 28]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 16
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 结构变化（同比）
+
+  - elementId: mix-detail
+    elementType: text
+    bounds: [520, 200, 380, 152]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "$text"
+      lineHeight: 2.15
+      align: [left, top]
+      text: |
+        <p><span style="color:$primary; font-size:20px;">58%</span>　SaaS 订阅　<span style="color:$success;">+9pct</span></p>
+        <p><span style="color:$accent3; font-size:20px;">27%</span>　项目交付　<span style="color:$muted;">-4pct</span></p>
+        <p><span style="color:$accent4; font-size:20px;">15%</span>　专业服务　<span style="color:$muted;">-5pct</span></p>
+
+  - elementId: table-heading
+    elementType: text
+    bounds: [520, 356, 380, 24]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 14
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 区域续约率：华东明显落后
+
+  - elementId: renewal-table
+    elementType: table
+    bounds: [520, 384, 380, 106]
+    columnWidths: [0.34, 0.33, 0.33]
+    rowHeights: [0.25, 0.25, 0.25, 0.25]
+    style: "$default"
+    rows:
+      - - text: 区域
+        - text: 2025续约率
+        - text: 目标
+      - - text: 华东
+        - text: 78%
+          color: "$danger"
+          bold: true
+        - text: 85%
+          color: "$muted"
+      - - text: 华南
+        - text: 86%
+          color: "$success"
+          bold: true
+        - text: 85%
+          color: "$muted"
+      - - text: 华北
+        - text: 91%
+          color: "$success"
+          bold: true
+        - text: 85%
+          color: "$muted"
+
+  - elementId: footnote
+    elementType: text
+    bounds: [60, 498, 840, 22]
+    content:
+      style: "$small"
+      align: [left, middle]
+      text: 口径：收入占比按确认收入计；区域续约率为年度合同续约率。数据为演示占位。

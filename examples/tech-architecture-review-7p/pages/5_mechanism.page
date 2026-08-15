@@ -1,0 +1,195 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  这一页把方案代价讲清楚：换来吞吐和隔离，代价是最终一致、消息补偿和更高的运维复杂度。
+elements:
+  - elementId: section-rule
+    elementType: shape
+    bounds: [48, 36, 3, 26]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: section-label
+    elementType: text
+    bounds: [64, 38, 360, 22]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 04 / 关键机制与取舍
+
+  - elementId: page-number
+    elementType: text
+    bounds: [820, 38, 92, 22]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: "05 / 07"
+
+  - elementId: title
+    elementType: text
+    bounds: [48, 70, 864, 42]
+    content:
+      style: "$title"
+      align: [left, middle]
+      text: 方案取舍：以最终一致换取吞吐、隔离与可回滚
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 116, 864, 24]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 收益与代价并排呈现；本页对比均为示例推演，正式评审需按详细设计重新测算。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [48, 146, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: left-heading
+    elementType: text
+    bounds: [48, 156, 430, 26]
+    content:
+      fontFamily: "Smiley Sans"
+      fontSize: 15
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 关键机制
+
+  - elementId: m1
+    elementType: text
+    bounds: [48, 190, 430, 36]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>M1</strong>　事务 Outbox：订单与事件同库同事务提交</p>
+
+  - elementId: m1-rule
+    elementType: shape
+    bounds: [48, 232, 430, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: m2
+    elementType: text
+    bounds: [48, 238, 430, 36]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>M2</strong>　幂等键：order_id + event_id，重复投递无副作用</p>
+
+  - elementId: m2-rule
+    elementType: shape
+    bounds: [48, 280, 430, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: m3
+    elementType: text
+    bounds: [48, 286, 430, 36]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>M3</strong>　消费重试：退避重试 3 次后进入死信，人工介入</p>
+
+  - elementId: m3-rule
+    elementType: shape
+    bounds: [48, 328, 430, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: m4
+    elementType: text
+    bounds: [48, 334, 430, 36]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>M4</strong>　读路径：查询库最终一致，接口明确返回 stale_ok</p>
+
+  - elementId: m4-rule
+    elementType: shape
+    bounds: [48, 376, 430, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: m5
+    elementType: text
+    bounds: [48, 382, 430, 36]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>M5</strong>　降级：MQ 不可用时切回同步写，峰值自动限流</p>
+
+  - elementId: m5-rule
+    elementType: shape
+    bounds: [48, 424, 430, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: left-note
+    elementType: text
+    bounds: [48, 438, 430, 70]
+    content:
+      style: "$small"
+      align: [left, top]
+      text: |
+        <p>适用条件：读多写少、查询容忍秒级最终一致。</p>
+        <p>失效条件：业务要求下单后立即强一致查询，则需保留同步读回退。</p>
+
+  - elementId: compare-table
+    elementType: table
+    bounds: [520, 156, 392, 330]
+    columnWidths: [0.22, 0.34, 0.44]
+    rowHeights: [0.14, 0.172, 0.172, 0.172, 0.172, 0.172]
+    style: "$default"
+    rows:
+      - - text: 维度
+        - text: 现状
+        - text: 目标方案
+      - - text: 写路径
+          align: ["left", "middle"]
+        - text: 同步事务
+          align: ["left", "middle"]
+        - text: 命令落库 + 异步投影
+          align: ["left", "middle"]
+      - - text: 峰值吞吐
+          align: ["left", "middle"]
+        - text: 约 1,200 单/秒
+          align: ["left", "middle"]
+        - text: ≥ 2,400 单/秒
+          align: ["left", "middle"]
+      - - text: 写确认 P95
+          align: ["left", "middle"]
+        - text: 1,680ms
+          align: ["left", "middle"]
+        - text: ≤ 400ms
+          align: ["left", "middle"]
+      - - text: 一致性
+          align: ["left", "middle"]
+        - text: 强一致
+          align: ["left", "middle"]
+        - text: 命令强一致 / 查询最终一致
+          align: ["left", "middle"]
+      - - text: 故障隔离
+          align: ["left", "middle"]
+        - text: 外部依赖同步等待
+          align: ["left", "middle"]
+        - text: 事件异步隔离
+          align: ["left", "middle"]
+
+  - elementId: table-note
+    elementType: text
+    bounds: [520, 496, 392, 30]
+    content:
+      style: "$small"
+      align: [left, top]
+      text: 注：复杂度、运维成本与迁移成本未在上表展开，需在详细设计阶段补充。

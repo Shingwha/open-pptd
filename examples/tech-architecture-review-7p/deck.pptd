@@ -1,0 +1,47 @@
+version: v2
+title: "订单中台架构升级评审：CQRS 异步化与读写分离"
+size: [960, 540]
+fonts:
+  得意黑: { family: "Smiley Sans" }
+  MiSans: { family: "MiSans" }
+theme:
+  colors:
+    primary: "#1F2D2A"
+    accent: "#D2691E"
+    bg: "#F5F3EE"
+    text: "#232A28"
+    muted: "#6D746F"
+    line: "#D8D5CE"
+    success: "#3F7A5B"
+    warning: "#C2901D"
+    danger: "#C7431E"
+    primarySoft: "#ECEFEB"
+    primaryTint: "#D6DED9"
+    primaryDeep: "#101B19"
+    accent3: "#3E6A66"
+    accent4: "#7A938B"
+    accent5: "#C6A15B"
+    accent6: "#B5533A"
+  textStyles:
+    eyebrow: { fontFamily: "MiSans", fontSize: 11, color: "$accent", bold: true, letterSpacing: 2, lineHeight: 1.3 }
+    title: { fontFamily: "Smiley Sans", fontSize: 28, color: "$text", bold: true, lineHeight: 1.25 }
+    subtitle: { fontFamily: "MiSans", fontSize: 13, color: "$muted", lineHeight: 1.55 }
+    body: { fontFamily: "MiSans", fontSize: 13, color: "$text", lineHeight: 1.6 }
+    small: { fontFamily: "MiSans", fontSize: 10, color: "$muted", lineHeight: 1.45 }
+    metric: { fontFamily: "Smiley Sans", fontSize: 30, color: "$text", bold: true, lineHeight: 1.1 }
+  tableStyles:
+    default:
+      cellStyle: { fontFamily: "MiSans", fontSize: 11, color: "$text", fill: { type: "solid", color: "#F5F3EE" }, border: [null, null, { style: "solid", width: 1, color: "$line" }, null], align: ["center", "middle"] }
+      firstRowStyle: { fill: { type: "solid", color: "$primary" }, color: "#FFFFFF", bold: true }
+      bodyStyles:
+        - { fill: { type: "solid", color: "$primarySoft" } }
+        - { fill: { type: "solid", color: "#F5F3EE" } }
+      rowOverColumn: true
+pages:
+  - pages/1_cover.page
+  - pages/2_goals.page
+  - pages/3_current.page
+  - pages/4_target.page
+  - pages/5_mechanism.page
+  - pages/6_validation.page
+  - pages/7_decision.page

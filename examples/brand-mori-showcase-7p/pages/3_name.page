@@ -1,0 +1,135 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  命名页用一个巨大的“森”字锚定视觉，右侧解释含义与英文命名逻辑，版式保持不对称。
+elements:
+  - elementId: section-rule
+    elementType: shape
+    bounds: [48, 44, 3, 30]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: section-number
+    elementType: text
+    bounds: [66, 40, 120, 36]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: "02"
+
+  - elementId: page-number
+    elementType: text
+    bounds: [820, 40, 92, 22]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: "03 / 07"
+
+  - elementId: title
+    elementType: text
+    bounds: [48, 84, 864, 52]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 42
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 命名：MORI / 森野
+
+  - elementId: giant-char
+    elementType: text
+    bounds: [48, 150, 270, 330]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 170
+      bold: true
+      color: "$accent"
+      lineHeight: 0.95
+      align: [left, top]
+      text: 森
+
+  - elementId: vertical-rule
+    elementType: shape
+    bounds: [344, 158, 1, 320]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: name-title
+    elementType: text
+    bounds: [390, 158, 522, 44]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 28
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: MORI / 森野
+
+  - elementId: n1
+    elementType: text
+    bounds: [390, 216, 522, 34]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>森</strong>　三木成林，代表自然的密度与秩序。</p>
+
+  - elementId: n1-rule
+    elementType: shape
+    bounds: [390, 258, 522, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: n2
+    elementType: text
+    bounds: [390, 266, 522, 34]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>野</strong>　离开铺装路面之后的状态，也是产品使用场景。</p>
+
+  - elementId: n2-rule
+    elementType: shape
+    bounds: [390, 308, 522, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: n3
+    elementType: text
+    bounds: [390, 316, 522, 34]
+    content:
+      style: "$body"
+      align: [left, middle]
+      text: |
+        <p><strong>MORI</strong>　取自日语“森”的读音，短促、中性、便于国际传播。</p>
+
+  - elementId: n3-rule
+    elementType: shape
+    bounds: [390, 358, 522, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: slogan
+    elementType: text
+    bounds: [390, 370, 522, 50]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 24
+      bold: true
+      color: "$text"
+      align: [left, top]
+      text: CITY TO FOREST
+
+  - elementId: slogan-note
+    elementType: text
+    bounds: [390, 420, 522, 34]
+    content:
+      style: "$small"
+      align: [left, top]
+      text: 英文标语：从城市到森林，也是从通勤状态到户外状态的切换。

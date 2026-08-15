@@ -1,0 +1,256 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  这一页用四个数字回答“全年干得怎么样”：规模接近目标、增长有质量、现金流转正、续约率是短板。
+elements:
+  - elementId: page-marker
+    elementType: shape
+    bounds: [872, 36, 28, 28]
+    shapeName: ellipse
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: page-number
+    elementType: text
+    bounds: [872, 36, 28, 28]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: "01"
+
+  - elementId: eyebrow
+    elementType: text
+    bounds: [60, 38, 500, 24]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 01 · 核心结论
+
+  - elementId: title
+    elementType: text
+    bounds: [60, 66, 840, 46]
+    content:
+      style: "$title"
+      align: [left, middle]
+      text: 增长质量改善，规模目标仍有缺口
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [60, 116, 840, 26]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 四个数字看懂全年：基本面稳健，下一阶段必须聚焦续约与获客效率。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [60, 152, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: row-1-line
+    elementType: shape
+    bounds: [60, 252, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: row-2-line
+    elementType: shape
+    bounds: [60, 348, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: row-3-line
+    elementType: shape
+    bounds: [60, 444, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: badge-1
+    elementType: shape
+    bounds: [60, 188, 32, 32]
+    shapeName: ellipse
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: badge-1-text
+    elementType: text
+    bounds: [60, 188, 32, 32]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: "01"
+
+  - elementId: metric-1
+    elementType: text
+    bounds: [112, 170, 196, 68]
+    content:
+      style: "$metric"
+      align: [left, middle]
+      text: 96.8%
+
+  - elementId: headline-1
+    elementType: text
+    bounds: [326, 174, 336, 62]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 20
+      bold: true
+      color: "$text"
+      lineHeight: 1.5
+      align: [left, middle]
+      text: 全年收入目标达成率
+
+  - elementId: detail-1
+    elementType: text
+    bounds: [680, 178, 220, 52]
+    content:
+      style: "$small"
+      lineHeight: 1.55
+      align: [left, top]
+      text: 低于目标 3.2 个百分点，缺口集中在华东区续约收入。
+
+  - elementId: badge-2
+    elementType: shape
+    bounds: [60, 284, 32, 32]
+    shapeName: ellipse
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: badge-2-text
+    elementType: text
+    bounds: [60, 284, 32, 32]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: "02"
+
+  - elementId: metric-2
+    elementType: text
+    bounds: [112, 266, 196, 68]
+    content:
+      style: "$metric"
+      align: [left, middle]
+      text: +14.2%
+
+  - elementId: headline-2
+    elementType: text
+    bounds: [326, 270, 336, 62]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 20
+      bold: true
+      color: "$text"
+      lineHeight: 1.5
+      align: [left, middle]
+      text: 营业收入同比增长
+
+  - elementId: detail-2
+    elementType: text
+    bounds: [680, 274, 220, 52]
+    content:
+      style: "$small"
+      lineHeight: 1.55
+      align: [left, top]
+      text: 增长主要由高毛利 SaaS 订阅驱动，项目制收入主动收缩。
+
+  - elementId: badge-3
+    elementType: shape
+    bounds: [60, 380, 32, 32]
+    shapeName: ellipse
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: badge-3-text
+    elementType: text
+    bounds: [60, 380, 32, 32]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: "03"
+
+  - elementId: metric-3
+    elementType: text
+    bounds: [112, 362, 196, 68]
+    content:
+      style: "$metric"
+      align: [left, middle]
+      text: 3,200万
+
+  - elementId: headline-3
+    elementType: text
+    bounds: [326, 366, 336, 62]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 20
+      bold: true
+      color: "$text"
+      lineHeight: 1.5
+      align: [left, middle]
+      text: 经营性现金流转正
+
+  - elementId: detail-3
+    elementType: text
+    bounds: [680, 370, 220, 52]
+    content:
+      style: "$small"
+      lineHeight: 1.55
+      align: [left, top]
+      text: 三年来首次转正，回款周期同比缩短 12 天。
+
+  - elementId: badge-4
+    elementType: shape
+    bounds: [60, 476, 32, 32]
+    shapeName: ellipse
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: badge-4-text
+    elementType: text
+    bounds: [60, 476, 32, 32]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: "04"
+
+  - elementId: metric-4
+    elementType: text
+    bounds: [112, 458, 196, 68]
+    content:
+      style: "$metric"
+      color: "$danger"
+      align: [left, middle]
+      text: 78%
+
+  - elementId: headline-4
+    elementType: text
+    bounds: [326, 462, 336, 62]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 20
+      bold: true
+      color: "$text"
+      lineHeight: 1.5
+      align: [left, middle]
+      text: 华东区续约率
+
+  - elementId: detail-4
+    elementType: text
+    bounds: [680, 466, 220, 52]
+    content:
+      style: "$small"
+      lineHeight: 1.55
+      align: [left, top]
+      text: 低于 85% 目标，是2026年最优先改进的结构性问题。
