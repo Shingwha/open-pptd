@@ -14,16 +14,17 @@ import { buildPptx, downloadPptx } from "../../writer/pptx.js";
 import { ZipWriter } from "../../writer/zip.js";
 import { showToast } from "../toast.js";
 import { showDialog } from "../../interaction/dialogs/base.js";
+import { writeFiles } from "./handle-io.js";
+import { mediaFilesOfDeck } from "./images.js";
 
 export function createProjectSaver({ state, images, fontManager, renderStatusBar, onSaved }) {
   // --------------------------------------------------------------------------
-  // 导出 PPTX
+  // 导出（PPTX 对话框 / 项目包 zip 直达，入口在顶栏「文件」菜单）
   // --------------------------------------------------------------------------
-  /** 导出对话框：嵌入字体勾选（默认开）+ 字体管理入口。 */
+  /** 导出 PPTX 对话框：嵌入字体勾选（默认开）+ 字体管理入口。 */
   function openExportDialog() {
-    // 注意：body 内容必须独立构造（showDialog 参数在返回前求值，不能引用返回值）
     const wrap = document.createElement("div");
-    wrap.className = "export-options";
+    wrap.className = "export-pptx-opts";
     const embedCb = document.createElement("input");
     embedCb.type = "checkbox";
     embedCb.checked = true;
@@ -44,6 +45,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     mgrBtn.addEventListener("click", () => fontManager.openManagerDialog());
     wrap.appendChild(mgrBtn);
     const { close } = showDialog("导出 PPTX", wrap, {
+      doneText: "导出",
       onDone() {
         close();
         doExport(embedCb.checked);
@@ -75,6 +77,30 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     })();
   }
 
+  /** 导出项目包（zip）：deck.pptd + pages/ + media/，命名与 CLI export-project 一致。 */
+  async function doExportZip() {
+    try {
+      fontManager.syncToDeck(); // 字体资源表 → deck.fonts，随包带上
+      // 对快照做图片收集与序列化——导出不改变当前编辑现场
+      // （imageMap 同时覆盖内嵌 dataURL 与已落盘化的相对路径引用，zip 里都有字节）
+      const snapshot = JSON.parse(JSON.stringify(state.deck));
+      const mediaFiles = mediaFilesOfDeck(snapshot, state.imageMap);
+      const files = serializeDeck(snapshot, {
+        manifestName: state.manifestPath?.split("/").pop() || "deck.pptd",
+      });
+      const zip = new ZipWriter();
+      for (const f of files) zip.add(f.path, f.content);
+      for (const m of mediaFiles) zip.add(m.path, base64ToBytes(m.b64));
+      const bytes = zip.build();
+      const name = (state.deck.title || "deck").replace(/[\\/:*?"<>|]/g, "_") + "-project.zip";
+      downloadPptx(bytes, name);
+      showToast(`项目包已导出 ${name}（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
+    } catch (err) {
+      showToast(`导出项目包失败: ${err.message}`, "danger");
+      console.error(err);
+    }
+  }
+
   function exportPptx() {
     openExportDialog();
   }
@@ -84,11 +110,27 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
   // --------------------------------------------------------------------------
   async function saveProject() {
     fontManager.syncToDeck(); // 字体库（嵌入勾选）→ deck.fonts 资源表，随项目落盘
+    // dataURL 图片先落盘化（重写 el.src 为 media/ 路径），序列化后的页面干净引用媒体文件
+    const mediaFiles = images.persistDataUrlImages();
     const files = serializeDeck(state.deck, {
       manifestName: state.manifestPath?.split("/").pop() || "deck.pptd",
     }).map((f) => ({ path: f.path, content: f.content }));
-    // dataURL 图片 → media/ 文件条目（路径重写与映射更新在 persistDataUrlImages 内完成）
-    files.push(...images.persistDataUrlImages());
+    files.push(...mediaFiles);
+    // 本地项目句柄：直接经句柄写回所选文件夹（不经服务器）
+    if (state.projectHandle) {
+      try {
+        const count = await writeFiles(state.projectHandle, files);
+        state.dirty = false;
+        onSaved(); // 抑制轮询触发的自动刷新回环
+        renderStatusBar();
+        showToast(`已保存 ${count} 个文件到 ${state.projectName || "项目文件夹"}`, "success");
+      } catch (err) {
+        showToast(`保存失败: ${err.message}`, "danger");
+        console.error(err);
+      }
+      return;
+    }
+    // URL 模式：POST /api/save 写回挂载目录
     try {
       const res = await fetch("/api/save", {
         method: "POST",
@@ -133,5 +175,5 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     return bytes;
   }
 
-  return { exportPptx, saveProject };
+  return { exportPptx, exportProjectZip: doExportZip, saveProject };
 }

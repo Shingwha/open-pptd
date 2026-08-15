@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>open-pptd · 编辑器</title>
+    <title>OPEN PPTD · 编辑器</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232563eb'/><path d='M9 16l5 5 9-10' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
@@ -11,14 +11,17 @@
     <div class="app" id="editor-app">
       <!-- 顶栏 -->
       <header class="topbar">
-        <a class="btn btn-topbar-home" href="../" title="返回作品画廊">
-          <span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9h12v-9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 19v-5h4v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
-          <span class="btn-label">画廊</span>
-        </a>
+        <button id="btn-app-menu" class="icon-btn" title="应用菜单：作品画廊 / 新建空白演示">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
         <div class="brand">
-          <span class="brand-dot"></span>
-          <strong>open-pptd</strong>
+          <a class="brand-home" href="../" title="返回作品画廊">OPEN PPTD</a>
           <span class="brand-file" id="brand-file"></span>
+        </div>
+        <div class="tb-status" id="tb-status">
+          <span class="status-hint" id="status-hint" hidden title="GitHub Pages 部署模式：保存将下载项目包（zip）"></span>
+          <span class="status-dirty" id="status-dirty" hidden>● 未保存</span>
+          <button type="button" class="status-btn" id="btn-reload" title="从磁盘重新加载当前项目">刷新</button>
         </div>
         <div class="topbar-actions">
           <span class="topbar-divider"></span>
@@ -29,9 +32,9 @@
             <svg viewBox="0 0 24 24"><path d="M16 7l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 11H10a5 5 0 0 0 0 10h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           </button>
           <span class="topbar-divider"></span>
-          <button id="btn-save" class="btn" title="保存项目 (Ctrl+S)">
-            <span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 4v5h7V4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 20v-6h8v6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span>
-            <span class="btn-label">保存</span>
+          <button id="btn-file" class="btn" title="文件：打开本地项目 / 保存 / 导出（Ctrl+S 可直接保存）">
+            <span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M3 6a1.5 1.5 0 0 1 1.5-1.5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.2V18a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+            <span class="btn-label">文件</span>
           </button>
           <button id="btn-fonts" class="btn" title="字体管理：添加本地/网络字体，导出时嵌入">
             <span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M5 5h14M12 5v14M9 19h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
@@ -44,10 +47,6 @@
           <button id="btn-present" class="btn btn-present" title="放映：从当前页开始全屏演示 (F5)">
             <span class="btn-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 21v-2M8 21h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 8.5v5l4.2-2.5z" fill="currentColor"/></svg></span>
             <span class="btn-label">放映</span>
-          </button>
-          <button id="btn-export" class="btn btn-primary">
-            <span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
-            <span class="btn-label">导出 PPTX</span>
           </button>
           <a class="icon-btn" href="https://github.com/Shingwha/open-pptd" target="_blank" rel="noopener" title="GitHub 仓库">
             <svg viewBox="0 0 16 16" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
@@ -91,8 +90,6 @@
             </button>
           </div>
           <div id="add-menu" class="add-menu"></div>
-
-          <div class="stage-status" id="stage-status"></div>
         </main>
 
         <!-- 右侧属性抽屉 -->

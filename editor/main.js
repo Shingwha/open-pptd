@@ -25,6 +25,8 @@ import { makeZoomCtlDraggable } from "./app/view/zoom-ctl.js";
 import { bindProperties } from "./interaction/properties.js";
 import { createDeck, createPage } from "./core/model.js";
 import { normalizeTheme } from "./core/theme.js";
+import { ensurePermission } from "./app/project/handle-io.js";
+import { getRecent, getPendingProjectId, clearPendingProject, addRecent, setPendingProject } from "./app/project/handle-store.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -37,7 +39,7 @@ const ROOT = new URL("../", import.meta.url).href;
 let editorReady = false;
 let io = null;
 
-function initEditor(deckUrl) {
+function initEditor(deckUrl, { blankToast = true } = {}) {
   if (editorReady) {
     // 已装配：仅切换项目
     if (deckUrl) {
@@ -120,14 +122,102 @@ function initEditor(deckUrl) {
     state.deck.pages.push(createPage({ pageType: "content" }));
     state.theme = normalizeTheme(null);
     view.render();
-    showToast("已新建空白演示", "info");
+    if (blankToast) showToast("已新建空白演示", "info");
   }
 }
 
 // ----------------------------------------------------------------------------
-// 启动：?deck= 加载指定项目；否则空白编辑器（新建空演示）
+// 本地项目会话恢复：上次打开的本地项目（画廊跳转 / 编辑器刷新）——授权仍有效
+// 则直接续开；否则弹恢复卡片，点「打开」在用户手势里重新授权（浏览器要求）。
 // ----------------------------------------------------------------------------
-function boot() {
+async function restorePendingProject() {
+  const id = getPendingProjectId();
+  if (!id) return false;
+  const entry = await getRecent(id);
+  if (!entry?.handle) {
+    clearPendingProject();
+    return false;
+  }
+  initEditor(null, { blankToast: false }); // 空白垫底，恢复失败也能用
+  let granted = false;
+  try {
+    granted = (await entry.handle.queryPermission({ mode: "readwrite" })) === "granted";
+  } catch {
+    /* 句柄失效 → 走卡片让用户确认 */
+  }
+  if (granted) {
+    try {
+      await io.loadDeckFromHandle(entry.handle);
+      return true;
+    } catch (err) {
+      showToast(`恢复项目失败: ${err.message}`, "danger");
+    }
+  }
+  showRestoreCard(entry);
+  return true;
+}
+
+/** 恢复卡片：项目名 + [新建空白 / 打开项目]（打开在点击手势里请求授权）。 */
+function showRestoreCard(entry) {
+  const overlay = document.createElement("div");
+  overlay.className = "dialog-overlay";
+  const panel = document.createElement("div");
+  panel.className = "dialog restore-card";
+  const head = document.createElement("div");
+  head.className = "dialog-head";
+  const title = document.createElement("strong");
+  title.textContent = "恢复本地项目";
+  head.appendChild(title);
+  const body = document.createElement("div");
+  body.className = "dialog-body";
+  const hint = document.createElement("div");
+  hint.className = "prop-hint";
+  hint.textContent = `上次打开的「${entry.name}」。浏览器要求重新授权后才能访问该文件夹。`;
+  body.appendChild(hint);
+  const foot = document.createElement("div");
+  foot.className = "dialog-foot";
+  const blankBtn = document.createElement("button");
+  blankBtn.type = "button";
+  blankBtn.className = "btn btn-sm";
+  blankBtn.textContent = "新建空白演示";
+  const openBtn = document.createElement("button");
+  openBtn.type = "button";
+  openBtn.className = "btn btn-primary btn-sm";
+  openBtn.textContent = "打开项目";
+  foot.append(blankBtn, openBtn);
+  panel.append(head, body, foot);
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+  blankBtn.onclick = () => {
+    clearPendingProject();
+    close();
+    showToast("已新建空白演示", "info");
+  };
+  openBtn.onclick = async () => {
+    openBtn.disabled = true;
+    try {
+      if (!(await ensurePermission(entry.handle))) {
+        openBtn.disabled = false;
+        showToast("未获得文件夹访问授权", "danger");
+        return;
+      }
+      await io.loadDeckFromHandle(entry.handle);
+      const fresh = await addRecent(entry.handle);
+      if (fresh) setPendingProject(fresh.id);
+      close();
+    } catch (err) {
+      openBtn.disabled = false;
+      showToast(`打开失败: ${err.message}`, "danger");
+    }
+  };
+}
+
+// ----------------------------------------------------------------------------
+// 启动：?deck= 加载指定项目；有会话恢复标记则续开本地项目；否则空白编辑器
+// ----------------------------------------------------------------------------
+async function boot() {
   // 兼容旧分享链接 #edit?deck=xxx → 转为 query 参数
   if (location.hash.startsWith("#edit")) {
     const q = new URLSearchParams(location.hash.slice(5)).get("deck");
@@ -149,7 +239,13 @@ function boot() {
       });
     return;
   }
-  initEditor(deckUrl);
+  if (deckUrl) {
+    clearPendingProject(); // URL 项目优先，清掉本地项目会话标记
+    initEditor(deckUrl);
+    return;
+  }
+  if (await restorePendingProject()) return;
+  initEditor(null);
 }
 
 boot();

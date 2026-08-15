@@ -1,16 +1,12 @@
 // ============================================================================
 // app/project/io.js — 项目模式装配根（加载 / 保存 / 导出 / 图片 / 实时刷新）
 // ----------------------------------------------------------------------------
-// 单一模型：项目文件在磁盘（serve --project 挂载目录），浏览器经 HTTP 读写。
-//   - 加载：fetch 项目文件（/project/deck.pptd + pages/*.page）
-//   - 保存：POST /api/save 写回磁盘（端点不存在 = 部署模式，降级为下载 zip）
-//   - 实时刷新：EventSource("/events") 订阅文件变更（server 推送）
-//   - 图片：统一由 images.js 预读为 dataURL
-// 部署模式（GitHub Pages）：无 /events 与 /api/save，加载/导出照常，
-// 保存 = 下载项目 zip（备份），实时刷新不启用。
-//
-// 本文件只做装配：loader（加载）/ saver（保存导出）/ images（图片）/
-// live-reload（SSE + 状态栏）经依赖注入单向接线，对外 API 保持稳定，
+// 项目两种来源，统一经此装配（loader/saver/live 单向依赖注入，对外 API 稳定）：
+//   - 本地项目句柄（官方文件夹选择器打开，handle-io）：读文件不经 HTTP，
+//     保存直接写回所选文件夹，实时刷新走指纹轮询
+//   - URL 模式（serve --project 挂载 / examples / 部署模式）：fetch 加载；
+//     保存 POST /api/save 写回挂载目录，端点不存在（GitHub Pages）降级 zip；
+//     实时刷新 EventSource("/events")，部署模式自动不启用
 // 编辑器外壳（main/toolbar/keyboard/api/shot）零感知。
 // ============================================================================
 
@@ -19,6 +15,12 @@ import { createImageStore } from "./images.js";
 import { createLoader } from "./loader.js";
 import { createLiveReload } from "./live-reload.js";
 import { createProjectSaver } from "./saver.js";
+import { pickProjectFolder, ensurePermission } from "./handle-io.js";
+import { addRecent, setPendingProject, clearPendingProject } from "./handle-store.js";
+import { createDeck, createPage, syncElementId } from "../../core/model.js";
+import { normalizeTheme } from "../../core/theme.js";
+import { createHistory } from "../../interaction/history.js";
+import { showToast } from "../toast.js";
 
 export function createIo({ state, view }) {
   const fontManager = createFontManager(state);
@@ -40,22 +42,77 @@ export function createIo({ state, view }) {
     images,
     fontManager,
     renderStatusBar: () => live.renderStatusBar(),
-    onSaved: () => live.suppressRefreshes(), // 保存后抑制 SSE 刷新回环
+    onSaved: () => live.suppressRefreshes(), // 保存后抑制刷新回环
   });
   live = createLiveReload({
     state,
     reload: () => loader.loadDeck(state.manifestPath, { keepPage: true, silent: true }),
-    manualReload: loader.manualReload,
+    reloadHandle: () => loader.loadDeckFromHandle(state.projectHandle, { keepPage: true, silent: true }),
+    manualReload: loader.manualReload, // 顶栏「实时」标记点击
   });
+
+  /**
+   * 打开一个已持有的本地项目句柄（「打开本地项目」新选 / 最近列表共用）：
+   * 授权 → 加载 → 记最近 + 会话恢复标记（刷新编辑器页可续开）。
+   */
+  async function openProjectHandle(handle) {
+    if (!(await ensurePermission(handle))) {
+      showToast("需要文件夹读写权限才能打开并保存项目", "danger");
+      return false;
+    }
+    await loader.loadDeckFromHandle(handle);
+    history.replaceState(null, "", location.pathname); // 清掉旧 ?deck=，刷新走会话恢复
+    const entry = await addRecent(handle);
+    if (entry) setPendingProject(entry.id);
+    return true;
+  }
+
+  /** 打开本地项目：系统文件夹选择框（官方控件）→ openProjectHandle。 */
+  async function openLocalProject() {
+    const handle = await pickProjectFolder();
+    if (!handle) return false; // 用户取消
+    return openProjectHandle(handle);
+  }
+
+  /**
+   * 新建空白演示（应用菜单「＋ 新建空白」）：dirty 确认后重置为空白项目，
+   * 断开实时通道、清会话恢复标记（刷新页面回到空白而不是旧项目）。
+   */
+  function newProject() {
+    if (state.dirty && !window.confirm("编辑器有未保存的修改，新建将放弃这些修改。确定继续？")) return false;
+    state.deck = createDeck({ title: "未命名演示文稿" });
+    state.deck.pages.push(createPage({ pageType: "content" }));
+    state.theme = normalizeTheme(null);
+    state.manifestPath = null;
+    state.projectHandle = null;
+    state.projectName = "";
+    state.currentPage = 0;
+    state.selectedId = null;
+    state.dirty = false;
+    state.history = createHistory();
+    syncElementId(state.deck);
+    images.rebuildImageMap();
+    clearPendingProject();
+    history.replaceState(null, "", location.pathname);
+    view.render();
+    live.connectLiveReload(); // 空白项目：断开旧实时通道（内部按无项目处理）
+    showToast("已新建空白演示", "info");
+    return true;
+  }
 
   return {
     applyTheme: loader.applyTheme,
     applyHistory: loader.applyHistory,
     loadDeck: loader.loadDeck,
+    loadDeckFromHandle: loader.loadDeckFromHandle,
+    newProject,
+    openLocalProject,
+    openProjectHandle,
     manualReload: loader.manualReload,
     connectLiveReload: live.connectLiveReload,
     rebuildImageMap: images.rebuildImageMap,
     exportPptx: saver.exportPptx,
+    exportProjectZip: saver.exportProjectZip,
     saveProject: saver.saveProject,
     preloadRemoteImages: images.preloadRemoteImages,
     renderStatusBar: live.renderStatusBar,

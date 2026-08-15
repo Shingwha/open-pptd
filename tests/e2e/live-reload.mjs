@@ -83,13 +83,15 @@ await send("Runtime.enable");
 try {
   await new Promise((r) => setTimeout(r, 2500));
 
-  // 1) 编辑器加载 + 项目模式状态栏
+  // 1) 编辑器加载 + 项目模式（顶栏刷新按钮 + 无部署模式提示）
   const s1 = await evalJs(`(() => ({
     pages: window.__pptdEditor?.state?.deck?.pages?.length,
-    status: document.querySelector(".stage-status")?.textContent || "",
+    reloadBtn: !!document.getElementById("btn-reload"),
+    deployHint: !document.getElementById("status-hint")?.hidden,
   }))()`);
   log("编辑器加载项目", s1.pages >= 1, JSON.stringify(s1));
-  log("状态栏显示项目模式", (s1.status || "").includes("已连接项目"), s1.status || "");
+  log("顶栏刷新按钮存在", !!s1.reloadBtn);
+  log("本地项目不显示部署提示", !s1.deployHint);
 
   // 2) 外部写文件 → SSE 自动刷新（页面数 +1）
   const before = await evalJs(`window.__pptdEditor.state.deck.pages.length`);

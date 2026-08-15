@@ -15,6 +15,10 @@ import { parseDeck } from "./core/pptd-io.js";
 import { normalizeTheme, mergeFonts } from "./core/theme.js";
 import { renderPage, disposeChartInstances } from "./renderer/page.js";
 import { fetchProjectTexts } from "./app/project/project-cache.js";
+import { pickProjectFolder, hasDeck } from "./app/project/handle-io.js";
+import { addRecent, setPendingProject } from "./app/project/handle-store.js";
+import { createFileMenu } from "./app/file-menu.js";
+import { showToast } from "./app/toast.js";
 import { loadFontRegistry, findFont, fetchFontBytes } from "./core/font-registry.js";
 
 const PAGE_W = 960;
@@ -194,11 +198,24 @@ export async function showGallery() {
         : `<span class="mode-dot"></span>线上模式：可编辑预览，保存将下载项目包（zip）`;
   }
 
+  // 「文件」菜单（与编辑器同一外壳）：画廊=开始页角色，只有 打开 + 最近
+  const fileBtn = $("btn-file");
+  if (fileBtn) {
+    const supported = "showDirectoryPicker" in window; // 句柄读写不经服务器，本地/线上均可用
+    fileBtn.hidden = !supported;
+    if (supported) {
+      createFileMenu(fileBtn, async ({ menu, item, appendRecents }) => {
+        menu.appendChild(item("打开本地项目", { onClick: openLocalFromPicker }));
+        await appendRecents(menu, (entry) => {
+          setPendingProject(entry.id); // 编辑器据此续开（授权仍有效则免确认）
+          location.href = new URL("editor/", ROOT).href;
+        });
+      });
+    }
+  }
+
   const entries = await loadManifest();
   if (!entries.length) {
-    // 隐藏“编辑示例作品”快捷按钮（无示例时不可用）
-    const btn = $("btn-open-example");
-    if (btn) btn.style.display = "none";
     grid.innerHTML =
       `<div class="gallery-empty">examples/ 下暂无作品。<br>` +
       `把做好的 PPTD 项目文件夹（deck.pptd + pages/ + media/）放进 examples/ 即出现在这里。</div>`;
@@ -230,5 +247,22 @@ export async function showGallery() {
     thumbEntries.set(thumb, entry);
     thumbObserver.observe(thumb);
     sizeObserver.observe(thumb);
+  }
+}
+
+/** 「打开本地项目」：原生选择器 → 校验 deck.pptd → 记最近 → 跳编辑器续开。 */
+async function openLocalFromPicker() {
+  try {
+    const handle = await pickProjectFolder();
+    if (!handle) return; // 用户取消
+    if (!(await hasDeck(handle))) {
+      showToast("所选文件夹里没有 deck.pptd，请选择 PPTD 项目文件夹", "danger", 5000);
+      return;
+    }
+    const entry = await addRecent(handle);
+    if (entry) setPendingProject(entry.id); // 编辑器据此续开（同会话授权仍有效，免确认）
+    location.href = new URL("editor/", ROOT).href;
+  } catch (err) {
+    showToast(`打开失败: ${err.message}`, "danger");
   }
 }

@@ -30,7 +30,7 @@ export function createStageController(stage, opts) {
 
   // 悬浮控件自带点击 / 滚动行为，不参与舞台手势
   const FLOATING =
-    ".zoom-ctl, .fab-stack, .add-menu, .stage-status, .quickbar, " +
+    ".zoom-ctl, .fab-stack, .add-menu, .quickbar, " +
     "button, input, textarea, select, [contenteditable]";
   const isFloating = (t) => !!t.closest(FLOATING);
 

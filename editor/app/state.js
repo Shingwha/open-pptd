@@ -18,6 +18,8 @@ export function createEditorState() {
     imageMap: {},
     fontLibrary: {}, // { [family]: { bytes, source: "local"|"url", url, file, subset, embed, size } }
     manifestPath: null, // 当前项目 URL（/project/xxx/deck.pptd；部署模式为远程 URL）
+    projectHandle: null, // 本地项目 DirectoryHandle（官方文件夹选择器打开；经句柄读写）
+    projectName: "", // 本地项目文件夹名（顶栏/状态栏显示）
     dirty: false, // 编辑器是否有未保存修改（自动刷新前检查，防丢更新）
   };
 

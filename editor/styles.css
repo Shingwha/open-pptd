@@ -88,13 +88,12 @@ select, input, textarea { font-family: inherit; }
   user-select: none;
   white-space: nowrap;
 }
-.brand-dot {
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  background: var(--primary);
-  flex: 0 0 auto;
+.brand-home {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 700;
 }
+.brand-home:hover { opacity: 0.8; }
 
 .brand-file {
   font-size: 12px;
@@ -229,24 +228,26 @@ a.icon-btn {
   width: 46px;
   height: 46px;
   padding: 0;
-  border: 0;
+  border: 1px solid rgba(37, 99, 235, 0.22);
   border-radius: 50%;
-  background: var(--primary);
-  color: #fff;
+  background: var(--primary-soft); /* 浅蓝底 */
+  color: var(--primary-strong); /* 深蓝图标 */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   box-shadow: var(--shadow-md);
-  transition: background 0.12s;
+  transition: background 0.12s, border-color 0.12s;
 }
 .fab-ic { width: 20px; height: 20px; }
-.fab:hover { background: var(--primary-strong); }
-/* 激活态（高亮 = 状态打开）：添加菜单展开 / 属性面板展开（双端同一规则） */
+.fab:hover { background: #dfeafc; border-color: rgba(37, 99, 235, 0.4); }
+/* 激活态（高亮 = 状态打开）：实心深蓝 + 白图标，与浅蓝闲置态对比鲜明 */
 .fab.active,
 body.inspector-open #btn-inspector-open,
 body:not(.inspector-collapsed) #btn-inspector-open {
   background: var(--primary-strong);
+  border-color: var(--primary-strong);
+  color: #fff;
 }
 
 /* 画布缩放控件：浮动在画布底部中央（双端统一，独立于右下角按钮组）。
@@ -663,59 +664,31 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   touch-action: none;
 }
 
-.stage-status {
-  position: absolute;
-  left: 14px;
-  bottom: 12px;
+/* 顶栏状态簇（原底部状态栏整组迁移，live-reload.js） */
+.tb-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
   color: var(--faint);
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 3px 12px;
-  max-width: 560px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
-  pointer-events: none;
+  flex: none;
 }
-.stage-status .mode-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin-right: 6px;
-  vertical-align: middle;
+.status-hint {
+  color: var(--sub);
 }
-.stage-status.mode-project .mode-dot { background: #2e9e5b; }
-.stage-status.mode-deploy .mode-dot { background: var(--faint); }
-/* 状态栏按钮（实时刷新开关 / 手动刷新）与 dirty 圆点 */
-.stage-status button { pointer-events: auto; }
-.stage-status .status-btn {
-  margin-left: 6px;
+.status-dirty { color: var(--danger); }
+.status-btn {
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   background: var(--panel);
   color: var(--sub);
   font-size: 12px;
   line-height: 1.4;
-  padding: 1px 8px;
+  padding: 1px 10px;
   cursor: pointer;
-  vertical-align: middle;
 }
-.stage-status .status-btn:hover { border-color: var(--primary); color: var(--primary); }
-.stage-status .status-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin-right: 4px;
-  vertical-align: middle;
-  background: var(--faint);
-}
-.stage-status .status-btn.on .status-dot { background: #2e9e5b; }
-.stage-status .status-dirty { color: var(--danger); margin-left: 6px; }
-.stage-status .status-hint { margin-left: 6px; opacity: 0.85; }
+.status-btn:hover { border-color: var(--primary); color: var(--primary); }
 
 /* 页面解析失败红框（renderer/page.js） */
 .page-error {
@@ -1316,6 +1289,45 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   gap: 8px;
 }
 
+/* 恢复本地项目卡片（main.js showRestoreCard） */
+.restore-card { width: min(400px, 92vw); }
+
+/* 顶栏「文件」菜单（toolbar.js bindFileMenu；浮层模式同配色面板） */
+.file-menu {
+  position: fixed;
+  z-index: 95;
+  min-width: 208px;
+  padding: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  display: none;
+  flex-direction: column;
+}
+.file-menu.open { display: flex; }
+.file-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 9px 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  font-size: 13px;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.file-menu-item:hover { background: var(--bg); }
+.file-menu-hint { font-size: 11px; color: var(--sub); flex: none; }
+.file-menu-label { font-size: 11px; color: var(--sub); padding: 5px 10px 3px; }
+.file-menu-sep { height: 1px; background: var(--line); margin: 5px 8px; }
+
+/* 导出 PPTX 对话框选项区（saver.js openExportDialog） */
+.export-pptx-opts { display: flex; flex-direction: column; gap: 8px; }
+
 .editor-section { margin-bottom: 14px; }
 .editor-section-title {
   font-size: 12px;
@@ -1516,7 +1528,8 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   /* 顶栏子项禁止被 flex 挤压：内容超宽时整体横向滚动（不裁剪、按钮始终可点） */
   .topbar > *, .topbar-actions > * { flex-shrink: 0; }
   .brand { gap: 6px; }
-  .brand strong, .brand-file { display: none; } /* 品牌名/文件名省略，仅保留圆点（窄屏空间优先给按钮） */
+  .brand-home, .brand-file { display: none; } /* 品牌区整体省略（窄屏空间优先给按钮） */
+  .status-hint, .status-dirty { display: none; } /* 窄屏只留【刷新】按钮（同原底部栏行为） */
   .btn-label { display: none; }   /* 文字按钮图标化 */
   .btn { width: 30px; padding: 0; }
   .topbar-divider { margin: 0 1px; }
@@ -1598,10 +1611,6 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   .thumb-add { width: 34px; height: 34px; font-size: 17px; }
   .thumbbar-meta { font-size: 10px; padding-right: 2px; }
 
-  /* —— 状态栏 —— */
-  .stage-status { left: 10px; bottom: 10px; max-width: 52vw; font-size: 11px; padding: 2px 10px; }
-  .stage-status .status-hint { display: none; }
-
   /* —— 对话框：底部 sheet —— */
   .dialog-overlay { align-items: flex-end; }
   .dialog {
@@ -1622,7 +1631,6 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   .topbar-divider { margin: 0; }
   .add-menu { max-height: 66vh; }
   .fab-stack { right: 10px; bottom: 12px; }
-  .stage-status { max-width: 62vw; }
 }
 
 /* ============================================================================

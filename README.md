@@ -105,6 +105,12 @@ node bin/open-pptd.js render /path/to/项目目录/deck.pptd -o 图片目录
 # 4. 人工使用：前台启动网页编辑器实时预览/编辑/导出
 node bin/open-pptd.js serve --project /path/to/项目目录 --port 55173
 # 浏览器打开启动时打印的链接
+
+# 5. 也可以不带 --project 直接起服务，在网页里打开磁盘上的任意本地项目：
+node bin/open-pptd.js serve
+# 浏览器打开画廊（站点根）→「打开本地项目」调起系统文件夹选择框（Chrome/Edge），
+# 选中项目文件夹即开：可编辑、保存直接写回该文件夹、外部改动实时刷新；
+# 编辑器顶栏「打开」随时切换，画廊的「最近打开的本地项目」一键重开（IndexedDB 记忆）
 ```
 
 格式规范按需查阅 `references/`：`pptd.md`（PPTD v2 完整规范，**一切格式决策的唯一依据**）、`shapes.md`（187 种预置形状）、`fonts.md`（字体清单）、`icons.md`（图标清单）、`slides_categories.md`（各场景排版方案）、`general-poster.md`（海报/信息图单页设计）。

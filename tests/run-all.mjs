@@ -59,6 +59,8 @@ const suites = [
   ["公式转换", "node tests/formula/test-formula.mjs"],
   ["图标导出", "node tests/icon/test-icon.mjs"],
   ["线条导出", "node tests/line/test-line.mjs"],
+  ["本地项目句柄读写", "node tests/handle-io.mjs"],
+  ["项目包图片完整性", "node tests/export-media.mjs"],
 ];
 for (const [name, cmd] of suites) {
   const { code, stdout } = await run(cmd);

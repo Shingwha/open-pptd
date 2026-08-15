@@ -4,7 +4,7 @@
 // 图表编辑器与表格编辑器共用；showDialog 是唯一弹窗入口。
 // ============================================================================
 
-/** 通用模态框：标题 + body + 完成按钮（点遮罩/✕ 关闭）。 */
+/** 通用模态框：标题 + body + 完成按钮（点遮罩/✕ 关闭）。doneText 自定义完成按钮文案。 */
 export function showDialog(title, buildBody, actions) {
   const overlay = document.createElement("div");
   overlay.className = "dialog-overlay";
@@ -24,7 +24,7 @@ export function showDialog(title, buildBody, actions) {
   foot.className = "dialog-foot";
   const doneBtn = document.createElement("button");
   doneBtn.className = "btn btn-primary btn-sm";
-  doneBtn.textContent = "完成";
+  doneBtn.textContent = actions?.doneText || "完成";
   foot.appendChild(doneBtn);
   panel.append(head, body, foot);
   overlay.appendChild(panel);
@@ -38,7 +38,7 @@ export function showDialog(title, buildBody, actions) {
     actions?.onDone && actions.onDone();
     close();
   };
-  return { overlay, body, close };
+  return { overlay, body, close, doneBtn };
 }
 
 // ----------------------------------------------------------------------------

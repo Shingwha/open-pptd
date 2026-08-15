@@ -8,6 +8,9 @@
 import { createPage } from "../core/model.js";
 import { bindAddMenu } from "../interaction/add-menu.js";
 import { bindThemePanel } from "../interaction/theme-panel.js";
+import { createFileMenu } from "./file-menu.js";
+import { removeRecent } from "./project/handle-store.js";
+import { showToast } from "./toast.js";
 
 export function bindToolbar({ state, page, api, view, io, present }) {
   const $ = (id) => document.getElementById(id);
@@ -33,6 +36,59 @@ export function bindToolbar({ state, page, api, view, io, present }) {
   }
 
   // --------------------------------------------------------------------------
+  // 应用菜单（☰ 最左侧）：页面切换 + 新建空白（Logo 本体保持「回画廊」直觉）
+  // --------------------------------------------------------------------------
+  function bindAppMenu() {
+    createFileMenu($("btn-app-menu"), async ({ menu, item }) => {
+      menu.appendChild(item("作品画廊", { onClick: () => (location.href = "../") }));
+      menu.appendChild(item("新建空白演示", { onClick: () => io.newProject() }));
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // 文件菜单（共用外壳 app/file-menu.js；编辑器内容：打开/最近/保存/导出）
+  // --------------------------------------------------------------------------
+  function bindFileMenu() {
+    /** 切换/打开项目前的未保存确认。 */
+    const confirmDiscard = () =>
+      !state.dirty || window.confirm("编辑器有未保存的修改，切换项目将放弃这些修改。确定继续？");
+
+    async function openLocal() {
+      if (!confirmDiscard()) return;
+      try {
+        await io.openLocalProject();
+      } catch (err) {
+        showToast(`打开失败: ${err.message}`, "danger");
+      }
+    }
+
+    /** 打开最近项目；句柄失效时移出最近列表。 */
+    async function openRecent(entry) {
+      if (!confirmDiscard()) return;
+      try {
+        await io.openProjectHandle(entry.handle);
+      } catch (err) {
+        showToast(`打开失败: ${err.message}`, "danger");
+        await removeRecent(entry.id);
+      }
+    }
+
+    createFileMenu($("btn-file"), async ({ menu, item, sep, appendRecents }) => {
+      const openItem = item("打开本地项目", { onClick: openLocal });
+      if (!window.showDirectoryPicker) openItem.hidden = true; // 不支持的浏览器不显示
+      menu.appendChild(openItem);
+      await appendRecents(menu, openRecent);
+      menu.append(
+        sep(),
+        item("保存项目", { hint: "Ctrl+S", onClick: () => io.saveProject() }),
+        sep(),
+        item("导出幻灯片（pptx）", { onClick: () => io.exportPptx() }),
+        item("导出项目文件（zip）", { onClick: () => io.exportProjectZip() })
+      );
+    });
+  }
+
+  // --------------------------------------------------------------------------
   // 顶栏按钮
   // --------------------------------------------------------------------------
   function bindTopbar() {
@@ -47,8 +103,8 @@ export function bindToolbar({ state, page, api, view, io, present }) {
     $("btn-undo").onclick = () => io.applyHistory(state.history.undo(state.deck));
     $("btn-redo").onclick = () => io.applyHistory(state.history.redo());
 
-    $("btn-export").onclick = io.exportPptx;
-    $("btn-save").onclick = io.saveProject;
+    bindFileMenu();
+    bindAppMenu();
     $("btn-fonts").onclick = () => io.fontManager.openManagerDialog();
     // 放映：从当前页开始全屏演示（present 内部处理全屏/降级）
     $("btn-present").onclick = () => present.start();

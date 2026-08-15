@@ -14,6 +14,7 @@ import { syncElementId } from "../../core/model.js";
 import { createHistory } from "../../interaction/history.js";
 import { showToast } from "../toast.js";
 import { fetchProjectTexts } from "./project-cache.js";
+import { readProject } from "./handle-io.js";
 
 export function createLoader({ state, view, images, fontManager, connect, renderStatusBar }) {
   const $ = (id) => document.getElementById(id);
@@ -54,10 +55,17 @@ export function createLoader({ state, view, images, fontManager, connect, render
    * 应用一份已解析的 PPTD 项目到编辑器状态：
    * 重置历史/选中/页面/图片映射/id 计数器并渲染（loadDeck 与手动刷新共用）。
    */
-  function applyDeck(manifestText, pageFiles, { manifestPath = "" } = {}) {
+  /**
+   * 应用一份已解析的 PPTD 项目到编辑器状态：
+   * 重置历史/选中/页面/图片映射/id 计数器并渲染（loadDeck 与手动刷新共用）。
+   * handle：本地项目句柄模式（官方文件夹选择器打开），None = URL 模式。
+   */
+  function applyDeck(manifestText, pageFiles, { manifestPath = "", handle = null, projectName = "" } = {}) {
     state.deck = parseDeck(manifestText, pageFiles);
     state.manifestPath = manifestPath;
-    setBrandFile(manifestPath);
+    state.projectHandle = handle;
+    state.projectName = projectName;
+    setBrandFile(handle ? projectName : manifestPath);
     applyTheme(state.deck.theme || DEFAULT_THEME);
     state.currentPage = 0;
     state.selectedId = null;
@@ -77,8 +85,22 @@ export function createLoader({ state, view, images, fontManager, connect, render
     // 跨会话缓存：二次打开同一项目直接命中（画廊与编辑器共用，见 project-cache.js）
     const { manifestText, pageTexts, missing = 0 } = await fetchProjectTexts(manifestUrl, yaml.load);
     applyDeck(manifestText, pageTexts, { manifestPath: manifestUrl });
+    await finishLoad(prevPage, { keepPage, silent, missing, viaHandle: false });
+  }
+
+  /** 本地项目句柄加载（官方文件夹选择器打开的项目，读文件不经 HTTP）。 */
+  async function loadDeckFromHandle(handle, { keepPage = false, silent = false } = {}) {
+    const prevPage = state.currentPage;
+    const { manifestText, pageTexts, missing = 0 } = await readProject(handle);
+    applyDeck(manifestText, pageTexts, { handle, projectName: handle.name || "本地项目" });
+    await finishLoad(prevPage, { keepPage, silent, missing, viaHandle: true });
+  }
+
+  /** 加载收尾（两种来源共用）：保留页码/图片预载/字体恢复/渲染/实时刷新。 */
+  async function finishLoad(prevPage, { keepPage, silent, missing, viaHandle }) {
     if (keepPage) state.currentPage = Math.min(prevPage, Math.max(0, state.deck.pages.length - 1));
-    await images.preloadRemoteImages();
+    if (viaHandle) await images.preloadHandleImages(state.projectHandle);
+    else await images.preloadRemoteImages();
     await fontManager.restoreFromDeck(); // 资源表 url 字体自动拉取注册（file 字体待用户重选）
     view.render();
     connect(); // 项目就绪后订阅实时刷新（幂等；部署模式自动不启用）
@@ -89,14 +111,18 @@ export function createLoader({ state, view, images, fontManager, connect, render
     }
   }
 
-  /** 手动刷新：dirty 时需确认放弃未保存修改。 */
+  /** 手动从磁盘重新加载当前项目（文件菜单）：dirty 时需确认放弃未保存修改。 */
   function manualReload() {
     if (state.dirty && !window.confirm("编辑器有未保存的修改，重新加载将放弃这些修改。确定继续？")) return;
+    const done = () => showToast("已从磁盘重新加载", "success");
+    const fail = (err) => showToast(`重新加载失败: ${err.message}`, "danger");
+    if (state.projectHandle) {
+      loadDeckFromHandle(state.projectHandle, { keepPage: true, silent: true }).then(done).catch(fail);
+      return;
+    }
     if (!state.manifestPath) return;
-    loadDeck(state.manifestPath, { keepPage: true, silent: true })
-      .then(() => showToast("已从磁盘重新加载", "success"))
-      .catch((err) => showToast(`刷新失败: ${err.message}`, "danger"));
+    loadDeck(state.manifestPath, { keepPage: true, silent: true }).then(done).catch(fail);
   }
 
-  return { applyTheme, applyHistory, loadDeck, manualReload };
+  return { applyTheme, applyHistory, loadDeck, loadDeckFromHandle, manualReload };
 }
