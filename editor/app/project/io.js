@@ -89,6 +89,7 @@ export function createIo({ state, view }) {
     state.currentPage = 0;
     state.selectedId = null;
     state.dirty = false;
+    state.savedDeck = structuredClone(state.deck); // 空白项目基线（撤销/重做等值比较）
     state.history = createHistory();
     syncElementId(state.deck);
     images.rebuildImageMap();

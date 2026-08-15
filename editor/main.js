@@ -92,6 +92,7 @@ function initEditor(deckUrl, { blankToast = true } = {}) {
   const present = createPresent({ state, view });
   api.present = present;
   view.afterRender = () => {
+    ops.syncDirty(); // 撤销/重做、内容改回保存值后重算 dirty（与保存基线等值比较）
     io.renderStatusBar(); // 状态栏（dirty 圆点等）随每次渲染刷新
     present.sync(); // 放映中：实时刷新/窗口缩放时同步当前放映页
   };
@@ -121,6 +122,7 @@ function initEditor(deckUrl, { blankToast = true } = {}) {
     state.deck = createDeck({ title: "未命名演示文稿" });
     state.deck.pages.push(createPage({ pageType: "content" }));
     state.theme = normalizeTheme(null);
+    ops.markSaved(); // 空白项目基线（无未保存修改，撤销/重做等值比较的起点）
     view.render();
     if (blankToast) showToast("已新建空白演示", "info");
   }

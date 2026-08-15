@@ -18,6 +18,11 @@ import { writeFiles } from "./handle-io.js";
 import { mediaFilesOfDeck } from "./images.js";
 
 export function createProjectSaver({ state, images, fontManager, renderStatusBar, onSaved }) {
+  /** 保存成功：当前 deck 记为已落盘基线（撤销回它即恢复干净，不再一律标脏）。 */
+  const markSaved = () => {
+    state.savedDeck = structuredClone(state.deck);
+    state.dirty = false;
+  };
   // --------------------------------------------------------------------------
   // 导出（PPTX 对话框 / 项目包 zip 直达，入口在顶栏「文件」菜单）
   // --------------------------------------------------------------------------
@@ -120,7 +125,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     if (state.projectHandle) {
       try {
         const count = await writeFiles(state.projectHandle, files);
-        state.dirty = false;
+        markSaved();
         onSaved(); // 抑制轮询触发的自动刷新回环
         renderStatusBar();
         showToast(`已保存 ${count} 个文件到 ${state.projectName || "项目文件夹"}`, "success");
@@ -139,7 +144,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      state.dirty = false;
+      markSaved();
       onSaved(); // 抑制自己保存触发的 SSE 刷新
       renderStatusBar();
       showToast(`已保存 ${data.count} 个文件到项目目录`, "success");
@@ -158,7 +163,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
       }
       const bytes = zip.build();
       downloadPptx(bytes, "project.zip");
-      state.dirty = false;
+      markSaved();
       renderStatusBar();
       showToast(`项目已打包下载（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
     } catch (err) {

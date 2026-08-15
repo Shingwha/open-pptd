@@ -21,6 +21,7 @@ export function createEditorState() {
     projectHandle: null, // 本地项目 DirectoryHandle（官方文件夹选择器打开；经句柄读写）
     projectName: "", // 本地项目文件夹名（顶栏/状态栏显示）
     dirty: false, // 编辑器是否有未保存修改（自动刷新前检查，防丢更新）
+    savedDeck: null, // 最后一次加载/保存时的 deck 基线（撤销/重做回该状态即视为已保存）
   };
 
   const page = () => state.deck.pages[state.currentPage];
@@ -31,6 +32,23 @@ export function createEditorState() {
     beginChange() {
       state.history.snapshot(state.deck);
       state.dirty = true;
+    },
+    /** 标记当前 deck 为已落盘基线（加载/保存成功后调用；撤销回它即恢复干净）。 */
+    markSaved() {
+      state.savedDeck = structuredClone(state.deck);
+      state.dirty = false;
+    },
+    /** 重算 dirty：当前 deck 与保存基线等值比较（渲染钩子里调用）。
+     * 无用户编辑时（dirty=false），渲染触发的被动归一化——文本自适应增高、
+     * 表格实测高度写回（app/view/measure.js）——直接同化进基线，不视为未保存修改；
+     * 有用户编辑时（dirty=true，含撤销/重做先置位），按内容比较精确化：撤销回保存点即恢复干净。 */
+    syncDirty() {
+      if (!state.savedDeck) return;
+      if (!state.dirty) {
+        state.savedDeck = structuredClone(state.deck);
+        return;
+      }
+      state.dirty = JSON.stringify(state.deck) !== JSON.stringify(state.savedDeck);
     },
     updateSelected(patch) {
       const el = selected();

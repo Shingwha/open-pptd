@@ -18,7 +18,7 @@
 //   button   整行按钮                              {kind:"button", label, onClick, className?}
 //   hint     整行提示                              {kind:"hint", text}
 //
-// 事务模式：控件 focus → beginChange（快照）；input → update；blur → endChange。
+// 事务模式：首次实际提交 → beginChange（快照）；input → update；blur → endChange。
 // 颜色控件：令牌（$primary 等）经 resolveColor 解析回填，展示当前真实颜色。
 // ============================================================================
 
@@ -31,15 +31,29 @@ import { renderGroup, fieldHandlers, themeSwatches } from "./fields.js";
 export function bindProperties(panel, api) {
   const { state, page, getSelectedElement, beginChange, endChange, deleteSelected, duplicateSelected, moveLayer } = api;
 
-  /** 注册表 props 用控件（focus/blur 事务 + 提交后即时刷新画布，面板不重建保焦点）。 */
+  // 输入事务：首次实际提交才快照（点进输入框不输入不再误标脏），blur 结束事务
+  let txActive = false;
+
+  /** 注册表 props 用控件（提交事务 + 提交后即时刷新画布，面板不重建保焦点）。 */
   function helpers() {
-    // 提交包装：改模型 → 立即只刷新画布（blur 时 endChange 再全量对齐面板）
-    const commit = (fn) => (v) => { fn(v); api.refreshPreview(); };
+    // 提交包装：首次提交前快照 → 改模型 → 立即只刷新画布（blur 时 endChange 再全量对齐面板）
+    const commit = (fn) => (v) => {
+      if (!txActive) {
+        txActive = true;
+        beginChange();
+      }
+      fn(v);
+      api.refreshPreview();
+    };
+    const endTx = () => {
+      if (!txActive) return; // 无实际提交：不标脏、不入历史
+      txActive = false;
+      endChange();
+    };
     return fieldHandlers({
       theme: () => state.theme,
       wrap: commit,
-      onFocus: beginChange,
-      onBlur: endChange,
+      onBlur: endTx,
       extra: {
         fontOptions: () => api.fontOptions?.() || [["", "默认"]],
         beginChange,

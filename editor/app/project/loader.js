@@ -38,7 +38,9 @@ export function createLoader({ state, view, images, fontManager, connect, render
     state.theme = mergeFonts(normalizeTheme(state.deck.theme), state.deck.fonts);
     if (state.currentPage >= state.deck.pages.length) state.currentPage = state.deck.pages.length - 1;
     state.selectedId = null;
-    state.dirty = true; // 撤销/重做后状态偏离磁盘，视为未保存修改
+    // 撤销/重做落地：先视为修改，渲染钩子再按保存基线等值比较精确化
+    // （撤销回保存点恢复干净，重做越过重新标脏）
+    state.dirty = true;
     syncElementId(state.deck);
     images.rebuildImageMap();
     view.render();
@@ -70,6 +72,7 @@ export function createLoader({ state, view, images, fontManager, connect, render
     state.currentPage = 0;
     state.selectedId = null;
     state.history = createHistory();
+    state.savedDeck = structuredClone(state.deck); // 保存基线：撤销/重做回它即视为无未保存修改
     state.dirty = false; // 刚从磁盘/服务器加载，无未保存修改
     syncElementId(state.deck);
     images.rebuildImageMap();

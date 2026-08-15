@@ -149,6 +149,7 @@ export function createCanvasController(canvas, opts) {
       origY: el.bounds[1],
       origW: el.bounds[2],
       origH: el.bounds[3],
+      changed: false, // 首次真实位移/写入才快照（纯点击选中不标脏、不入历史）
     };
     if (mode === "rotate") {
       // 旋转：以元素中心为基准，记录起始角度差
@@ -165,9 +166,10 @@ export function createCanvasController(canvas, opts) {
     } catch {
       /* 部分元素（SVG/ECharts）不支持时忽略 */
     }
-    beginChange();
     // 自动行高的表格（无 rowHeights）纵向拖缩放 → 写入均分行高比例，转为受控最小行高
     if (mode !== "move" && mode !== "rotate" && el.elementType === "table" && !Array.isArray(el.rowHeights)) {
+      beginChange();
+      drag.changed = true;
       const n = Math.max(1, Array.isArray(el.rows) ? el.rows.length : 1);
       el.rowHeights = Array.from({ length: n }, () => 1 / n);
     }
@@ -183,6 +185,10 @@ export function createCanvasController(canvas, opts) {
     const el = findElement(drag.id);
     if (!el) return;
     const rect = canvas.getBoundingClientRect();
+    if (!drag.changed) {
+      drag.changed = true;
+      beginChange(); // 首次真实位移前快照（orig 已捕获，模型尚未改动）
+    }
     const dx = (e.clientX - drag.clientX) / s;
     const dy = (e.clientY - drag.clientY) / s;
     if (drag.mode === "rotate") {
