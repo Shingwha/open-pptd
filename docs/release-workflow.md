@@ -21,7 +21,7 @@ push tag 后 CI 自动执行：
 |---|---|
 | 校验版本 | tag 与 package.json 的 version 必须一致 |
 | 回归测试 | `npm run test:fixtures` + `npm test`（与 Deploy Pages 同款守门，任何一步失败都不会发布） |
-| 打包 | `npm run pack` → `dist/open-pptd-v<版本>.zip` |
+| 打包 | `npm run pack` → `dist/open-pptd.zip` |
 | 发布 | 创建 GitHub Release 并附上 zip，release notes 从 commits 自动生成（可在 Release 页面手动编辑补充） |
 
 ## 发布包里有什么
@@ -41,8 +41,10 @@ bin/ / lib/ / editor/ / references/ / assets/fonts/registry.json
 要调整发布内容 = 改 `WHITELIST`，然后本地验证：
 
 ```bash
-npm run pack    # 产物 dist/open-pptd-v<版本>.zip（dist/ 不入 git），解压比对即可
+npm run pack    # 产物 dist/open-pptd.zip（dist/ 不入 git），解压比对即可
 ```
+
+> 发布包统一命名 `open-pptd.zip`（不带版本号后缀）；版本信息以 Release 标题/tag 为准。GitHub 允许不同 Release 使用同名附件。
 
 ## 用户如何更新
 

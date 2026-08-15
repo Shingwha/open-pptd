@@ -46,7 +46,7 @@
 
 **方式一：下载发布包（推荐，无需 git）**
 
-1. 到 [Releases](https://github.com/Shingwha/open-pptd/releases) 页面下载最新的 `open-pptd-v*.zip`
+1. 到 [Releases](https://github.com/Shingwha/open-pptd/releases) 页面下载最新的 `open-pptd.zip`
 2. 解压到你的 AI 工具的 **skills 文件夹**，得到 `<skills 文件夹>/open-pptd/`；更新时重新下载覆盖即可
 
 **方式二：git clone（适合跟踪更新 / 参与开发）**
@@ -158,7 +158,7 @@ npm run test:incremental      # 渐进加载 E2E（写入中的项目逐页显�
 
 ### 发布
 
-push `v*` tag（如 `v1.1.0`，需与 package.json 版本一致）后，CI 自动「回归测试 → 按白名单打包 → 创建 GitHub Release」，附件 `open-pptd-v*.zip` 即安装方式一下载的发布包。完整流程与本地试打包（`npm run pack`）见 **[docs/release-workflow.md](docs/release-workflow.md)**。
+push `v*` tag（如 `v1.1.0`，需与 package.json 版本一致）后，CI 自动「回归测试 → 按白名单打包 → 创建 GitHub Release」，附件 `open-pptd.zip` 即安装方式一下载的发布包。完整流程与本地试打包（`npm run pack`）见 **[docs/release-workflow.md](docs/release-workflow.md)**。
 
 > 旧发布仓库 [open-pptd-publish](https://github.com/Shingwha/open-pptd-publish) 已于 2026-08 退役归档，请改用发布包或 clone 本仓库。
 

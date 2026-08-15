@@ -2,7 +2,7 @@
 # Release 发布流水线：校验版本 → 回归测试 → 白名单打包 → 发布 Release
 #   - push v* 形如 v1.0.1 的 tag 自动触发（版本号必须与 package.json 一致）
 #   - 任何一步失败都不会发布（坏提交不会进 release）
-#   - 产物: open-pptd-v<version>.zip（顶层目录 open-pptd/，解压到 skills 文件夹即用）
+#   - 产物: open-pptd.zip（顶层目录 open-pptd/，解压到 skills 文件夹即用）
 # ============================================================================
 name: Release
 
