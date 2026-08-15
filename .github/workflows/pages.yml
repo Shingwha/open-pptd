@@ -1,6 +1,8 @@
 # ============================================================================
 # GitHub Pages 部署流水线：测试 → 重建画廊索引 → 部署
 #   - push 到 main 自动触发；也可在 Actions 页手动触发（workflow_dispatch）
+#   - 仅当站点内容或被守门的代码变化时触发（paths 过滤）：
+#     README / docs / scripts 等与站点无关的小改动自动跳过，不跑测试不部署
 #   - 任何一步失败都不会部署（坏提交不会上线画廊）
 #   - 零依赖：项目无 npm install；测试为 Node 原生脚本
 # ============================================================================
@@ -9,6 +11,16 @@ name: Deploy Pages
 on:
   push:
     branches: [main]
+    paths:
+      - "index.html"     # 站点入口
+      - "editor/**"      # 编辑器前端
+      - "examples/**"    # 画廊示例
+      - "assets/**"      # 站点资源（图标 / 字体 registry）
+      - "lib/**"         # 本地服务器（测试守门对象）
+      - "bin/**"
+      - "tests/**"
+      - "package.json"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
