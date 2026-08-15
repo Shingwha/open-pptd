@@ -4,33 +4,21 @@
 
 A "content → editable project → live preview → PPTX" presentation pipeline that runs entirely locally — **zero dependencies, no network required, no npm install**.
 
-## What It Is
+**See it in action 👉 https://shingwha.github.io/open-pptd/**
 
-- **PPTD** is a human-readable YAML presentation format: one manifest (`deck.pptd`) + one `pages/*.page` per slide + `media/` images
-- A browser-based editor for live preview / collaborative editing (edit files, refresh to apply), exporting standard `.pptx`
-- **Preview (browser) = Export (PowerPoint)**: single definition, dual consumers (writer / renderer share the same source)
-- Capabilities: 13 chart types, 187 preset shapes + custom paths, LaTeX formula mixing, font embedding, fade slide transitions
-
-> This project is fully self-developed (web editor, PPTX writer, icon library, chart & LaTeX rendering, CLI export pipeline) — no third-party editor code or reverse-engineered implementations.
-
-## Try It Online
-
-No installation needed — open the live gallery (GitHub Pages):
-
-**https://shingwha.github.io/open-pptd/**
-
-- The gallery showcases curated PPTD example decks with live-rendered covers; click a card to open it in the editor
-- Online mode lets you freely edit examples, export PPTX, or click **Save** to download the project bundle (zip) for local editing
+No installation needed — open the online gallery in a browser: curated decks with live-rendered covers; click a card to open it in the editor, tweak it freely, export PPTX, or download the project bundle (zip) for local editing.
 
 ## Example Gallery
 
-The repo ships with curated examples in `examples/` (also shown in the online gallery):
+The repo ships with 5 curated examples in `examples/` (also shown in the online gallery):
 
 | Example | Scenario | Highlights |
 |---|---|---|
-| [Coffee Monthly Report](examples/coffee-monthly-report/) | Management review · 5 slides | Native charts (bar/line/pie/radar/waterfall/treemap) + KPI cards + table |
+| [Coffee Monthly Report](examples/coffee-monthly-report/) | Management review · 5 slides | Six native chart types + KPI cards + booktabs-style tables |
 | [EV Range Prediction](examples/ev-range/) | Academic defense · 17 slides | LaTeX formulas, image layout, chapter structure |
-| [Shanmingji Brand Launch](examples/shanmingji-2026-launch/) | New-Chinese brand · 7 slides | Tables, images, Chinese-style layout, 3-font mixing |
+| [Islelight Brand Book](examples/islelight-brand-book/) | Brand creative · 7 slides | Klein-blue Swiss poster style, B&W photography grid |
+| [MiaoPai Round-A Pitch](examples/miaopai-saas-bp/) | Startup BP · 7 slides | Ink-black × neon-green contrast, TAM/SAM/SOM, timeline |
+| [Shanmingji Brand Launch](examples/shanmingji-2026-launch/) | New-Chinese style · 7 slides | Tables, images, Chinese-style layout, 3-font mixing |
 
 <p align="center">
   <img src="docs/images/coffee-monthly.png" width="45%" alt="Coffee Monthly Report"/>
@@ -41,25 +29,25 @@ The repo ships with curated examples in `examples/` (also shown in the online ga
   <img src="docs/images/shanmingji.png" width="45%" alt="Shanmingji Brand Launch"/>
 </p>
 
-### Adding Your Own Deck to the Gallery
+## What It Is
 
-1. Drop a finished PPTD project folder (`deck.pptd` + `pages/` + `media/`) into `examples/<name>/`
-2. The local gallery picks it up immediately (`serve` scans automatically); optional `meta.yaml` adds title/description/tags
-3. Run `node bin/open-pptd.js gallery scan` to rebuild the index, then commit & push — the online gallery (GitHub Pages) updates via CI
+- **PPTD** is a human-readable YAML presentation format: one manifest (`deck.pptd`) + one `pages/*.page` per slide + `media/` images
+- A browser-based editor for live preview / collaborative editing (edit files, refresh to apply), exporting standard `.pptx`
+- **Preview (browser) = Export (PowerPoint)**: single definition, dual consumers (writer / renderer share the same source)
+- Capabilities: 13 chart types, 187 preset shapes + custom paths, LaTeX formula mixing, font embedding, fade slide transitions
 
-## Prerequisites
-
-- **Node.js v18+** (the only dependency; no npm packages to install; render command recommended on Node 21+)
-- Browser: Chrome / Edge recommended (needed for the "Open Folder" save feature)
+> This project is fully self-developed (web editor, PPTX writer, icon library, chart & LaTeX rendering, CLI export pipeline) — no third-party editor code or reverse-engineered implementations.
 
 ## Installation
 
-Choose either method:
+The only prerequisite is **Node.js v18+** (no npm install, no network; render command recommended on Node 21+); browser: Chrome / Edge recommended (needed for the "Open Folder" save feature).
+
+Choose either method, installing into your AI tool's **skills folder**:
 
 **Option 1: download the release zip (recommended — no git needed)**
 
 1. Grab the latest `open-pptd-v*.zip` from the [Releases](https://github.com/Shingwha/open-pptd/releases) page
-2. Extract it into your AI tool's **skills folder** — you get `<your-skills-folder>/open-pptd/`; to update, re-download and overwrite
+2. Extract it into your skills folder — you get `<your-skills-folder>/open-pptd/`; to update, re-download and overwrite
 
 **Option 2: git clone (for tracking updates / development)**
 
@@ -77,11 +65,11 @@ Skills folder locations vary by tool:
 | pi | `~/.pi/agent/skills` |
 | Other custom directories | Per your tool's configuration |
 
-> All paths inside the skill are relative to the skill directory, so it works wherever you install it. The only prerequisite is Node.js v18+ (no npm install, no network; render recommended on Node 21+).
+> All paths inside the skill are relative to the skill directory, so it works wherever you install it.
 
 ### First-time setup: download the font library (optional but recommended)
 
-Font binaries (~155 MB) are not committed to git. Choose one of two options before first use:
+Font binaries (~155 MB) are not shipped in the package. Choose one of two options before first use:
 
 ```bash
 # Option A: one-time full download (one and done, ~155 MB, works offline)
@@ -122,6 +110,15 @@ node bin/open-pptd.js serve --project /path/to/project --port 55173
 
 Consult `references/` as needed: `pptd.md` (complete PPTD v2 spec — **the single source of truth for format decisions**), `shapes.md` (187 preset shapes), `fonts.md` (font list), `icons.md` (icon list), `slides_categories.md` (per-scenario layout guidance), `general-poster.md` (poster/infographic single-page design).
 
+## Using as an AI Skill
+
+Install the whole directory as a skill (SKILL.md is the entry point). The AI works as follows:
+
+1. Confirms content/scenario with the user → decides the theme (colors/fonts/table styles, a one-time design decision written into `deck.theme` at generation; the editor's 10 built-in palette presets can replace `theme.colors` in one click, and CLI export supports `--theme <key>`)
+2. Writes `deck.pptd` first (full page list + theme + fonts), **then immediately starts `serve --project` in the background** (nohup; hands the URL to the user), then generates all `pages/*.page` in one pass — the user watches pages appear one by one in real time and can interrupt with feedback at any moment
+3. Structural validation always runs; **page-image rendering (`render`) is strictly on demand** — only when the user explicitly asks the agent to check/adjust the visuals itself, AND the model can read images, AND a browser is available
+4. Exports and delivers the `.pptx` (fonts embedded + fade transitions by default), reporting the preview server status in the delivery
+
 ## Directory Structure
 
 ```
@@ -146,7 +143,13 @@ open-pptd/
 └── package.json
 ```
 
-## Testing
+## Development
+
+### Contributing to the Gallery
+
+The online gallery is deployed from this repo via GitHub Pages — pushed commits are automatically built by GitHub Actions (regression tests → gallery index rebuild → deploy). To add your own deck: drop the finished project folder (`deck.pptd` + `pages/` + `media/`, optional `meta.yaml` for title/description/tags) into `examples/<name>/`; local `serve` picks it up automatically, then run `node bin/open-pptd.js gallery scan` to rebuild the index and commit & push.
+
+### Testing
 
 ```bash
 npm test                      # one-shot regression: export all component projects + package consistency + colors + full shapes + formulas + icons
@@ -156,20 +159,11 @@ npm run test:incremental      # incremental-load E2E (pages show up as a project
 
 See `tests/README.md` for details (the release zip does not include tests).
 
-## Repository Notes
+### Releases
 
-- Source code, tests, and the example gallery all live in this repo (open-pptd). **The GitHub Pages site (online gallery) is deployed from it**: https://shingwha.github.io/open-pptd/ — pushed commits are automatically built by GitHub Actions (regression tests → gallery index rebuild → deploy).
-- **Releases**: pushing a `v*` tag (matching package.json's version) triggers CI to run regression tests → package the runtime from a whitelist → create a GitHub Release; the attached `open-pptd-v*.zip` is what Installation Option 1 downloads (see `.github/workflows/release.yml`; try packaging locally with `npm run pack`).
-- The old publish repo [open-pptd-publish](https://github.com/Shingwha/open-pptd-publish) has been retired and archived; its users should switch to the release zip or clone this repo.
+Pushing a `v*` tag (e.g. `v1.1.0`, matching package.json's version) triggers CI to run regression tests → package the runtime from a whitelist → create a GitHub Release; the attached `open-pptd-v*.zip` is what Installation Option 1 downloads. See **[docs/release-workflow.md](docs/release-workflow.md)** for the full flow and local packaging (`npm run pack`).
 
-## Using as an AI Skill
-
-Install the whole directory as a skill (SKILL.md is the entry point). The AI works as follows:
-
-1. Confirms content/scenario with the user → decides the theme (colors/fonts/table styles, a one-time design decision written into `deck.theme` at generation; the editor's 10 built-in palette presets can replace `theme.colors` in one click, and CLI export supports `--theme <key>`)
-2. Writes `deck.pptd` first (full page list + theme + fonts), **then immediately starts `serve --project` in the background** (nohup; hands the URL to the user), then generates all `pages/*.page` in one pass — the user watches pages appear one by one in real time and can interrupt with feedback at any moment
-3. Structural validation always runs; **page-image rendering (`render`) is strictly on demand** — only when the user explicitly asks the agent to check/adjust the visuals itself, AND the model can read images, AND a browser is available
-4. Exports and delivers the `.pptx` (fonts embedded + fade transitions by default), reporting the preview server status in the delivery
+> The old publish repo [open-pptd-publish](https://github.com/Shingwha/open-pptd-publish) was retired and archived in 2026-08; switch to the release zip or clone this repo.
 
 ## License
 
