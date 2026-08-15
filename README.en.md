@@ -46,7 +46,7 @@ Choose either method, installing into your AI tool's **skills folder**:
 
 **Option 1: download the release zip (recommended — no git needed)**
 
-1. Grab the latest `open-pptd.zip` from the [Releases](https://github.com/Shingwha/open-pptd/releases) page
+1. Grab the latest `open-pptd-v*.zip` from the [Releases](https://github.com/Shingwha/open-pptd/releases) page
 2. Extract it into your skills folder — you get `<your-skills-folder>/open-pptd/`; to update, re-download and overwrite
 
 **Option 2: git clone (for tracking updates / development)**
@@ -161,7 +161,7 @@ See `tests/README.md` for details (the release zip does not include tests).
 
 ### Releases
 
-Pushing a `v*` tag (e.g. `v1.1.0`, matching package.json's version) triggers CI to run regression tests → package the runtime from a whitelist → create a GitHub Release; the attached `open-pptd.zip` is what Installation Option 1 downloads. See **[docs/release-workflow.md](docs/release-workflow.md)** for the full flow and local packaging (`npm run pack`).
+Pushing a `v*` tag (e.g. `v1.1.0`, matching package.json's version) triggers CI to run regression tests → package the runtime from a whitelist → create a GitHub Release; the attached `open-pptd-v*.zip` is what Installation Option 1 downloads. See **[docs/release-workflow.md](docs/release-workflow.md)** for the full flow and local packaging (`npm run pack`).
 
 > The old publish repo [open-pptd-publish](https://github.com/Shingwha/open-pptd-publish) was retired and archived in 2026-08; switch to the release zip or clone this repo.
 

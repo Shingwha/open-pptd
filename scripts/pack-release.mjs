@@ -2,7 +2,7 @@
 // ============================================================================
 // pack-release.mjs — 按「运行时白名单」把 skill 打包为发布 zip
 // ----------------------------------------------------------------------------
-// 产物: dist/open-pptd.zip，顶层目录 open-pptd/，
+// 产物: dist/open-pptd-v<version>.zip，顶层目录 open-pptd/，
 //       解压到 skills 文件夹即得 <skills 文件夹>/open-pptd/。
 //
 // 白名单是发布内容的单一事实来源：tests/、docs/、examples/、.github/、
@@ -67,6 +67,7 @@ if (!tracked.length) {
   process.exit(1);
 }
 
+const version = JSON.parse(readFileSync(path.join(ROOT, "package.json"), "utf8")).version;
 const files = tracked.map((rel) => {
   const abs = path.join(ROOT, rel);
   return { name: `open-pptd/${rel}`, data: readFileSync(abs), mtime: statSync(abs).mtime };
@@ -166,7 +167,7 @@ function buildZip(entries) {
 const zip = buildZip(files);
 const outDir = path.join(ROOT, "dist");
 mkdirSync(outDir, { recursive: true });
-const outPath = path.join(outDir, "open-pptd.zip");
+const outPath = path.join(outDir, `open-pptd-v${version}.zip`);
 writeFileSync(outPath, zip);
 
 const rawTotal = files.reduce((s, f) => s + f.data.length, 0);
