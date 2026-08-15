@@ -10,15 +10,15 @@ No installation needed — open the online gallery in a browser: curated decks w
 
 ## Example Gallery
 
-The repo ships with 5 curated examples in `examples/` (also shown in the online gallery):
+The repo ships with 5 curated examples in `examples/` — click a title to open it in the online editor:
 
 | Example | Scenario | Highlights |
 |---|---|---|
-| [Coffee Monthly Report](examples/coffee-monthly-report/) | Management review · 5 slides | Six native chart types + KPI cards + booktabs-style tables |
-| [EV Range Prediction](examples/ev-range/) | Academic defense · 17 slides | LaTeX formulas, image layout, chapter structure |
-| [Islelight Brand Book](examples/islelight-brand-book/) | Brand creative · 7 slides | Klein-blue Swiss poster style, B&W photography grid |
-| [MiaoPai Round-A Pitch](examples/miaopai-saas-bp/) | Startup BP · 7 slides | Ink-black × neon-green contrast, TAM/SAM/SOM, timeline |
-| [Shanmingji Brand Launch](examples/shanmingji-2026-launch/) | New-Chinese style · 7 slides | Tables, images, Chinese-style layout, 3-font mixing |
+| [Coffee Monthly Report](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fcoffee-monthly-report%2Fdeck.pptd) | Management review · 5 slides | Six native chart types + KPI cards + booktabs-style tables |
+| [EV Range Prediction](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fev-range%2Fdeck.pptd) | Academic defense · 17 slides | LaTeX formulas, image layout, chapter structure |
+| [Islelight Brand Book](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fislelight-brand-book%2Fdeck.pptd) | Brand creative · 7 slides | Klein-blue Swiss poster style, B&W photography grid |
+| [MiaoPai Round-A Pitch](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fmiaopai-saas-bp%2Fdeck.pptd) | Startup BP · 7 slides | Ink-black × neon-green contrast, TAM/SAM/SOM, timeline |
+| [Shanmingji Brand Launch](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fshanmingji-2026-launch%2Fdeck.pptd) | New-Chinese style · 7 slides | Tables, images, Chinese-style layout, 3-font mixing |
 
 <p align="center">
   <img src="docs/images/coffee-monthly.png" width="45%" alt="Coffee Monthly Report"/>
