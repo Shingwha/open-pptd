@@ -1704,6 +1704,118 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   .theme-panel { width: min(320px, calc(100vw - 16px)); }
 }
 
+/* ----------------------------------------------------------------------------
+   字体浮层（font-panel.js）：我的字体 + 内置字体库 + 添加条
+   外壳与配色浮层同款（锚定顶栏「字体」按钮，z-index/圆角/阴影一致）
+---------------------------------------------------------------------------- */
+.font-panel {
+  position: fixed;
+  z-index: 95;
+  display: none;
+  flex-direction: column;
+  width: 400px;
+  max-height: min(600px, 80vh);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.font-panel.open { display: flex; }
+
+.font-panel-head { display: flex; align-items: baseline; gap: 8px; padding: 12px 14px 8px; }
+.font-panel-title { font-size: 13px; font-weight: 600; color: var(--ink); }
+.font-panel-hint { font-size: 11px; color: var(--faint); flex: 1; min-width: 0; }
+
+.font-search {
+  margin: 0 14px 8px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--ink);
+  outline: none;
+}
+.font-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+
+/* 滚动列表区（外壳重建内容时保留本节点，滚动位置不丢） */
+.font-body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 14px 8px; }
+
+.font-sec { font-size: 11px; font-weight: 600; color: var(--faint); margin: 8px 0 2px; }
+.font-empty { font-size: 12px; color: var(--sub); padding: 10px 0; }
+.font-cat { font-size: 11px; color: var(--faint); margin: 8px 0 0; }
+
+.font-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+}
+.font-item:last-child { border-bottom: 0; }
+.font-item-main { flex: 1; min-width: 0; }
+.font-item-preview {
+  font-size: 16px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink);
+}
+.font-item-info { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.font-item-name { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+.font-item-meta { font-size: 11px; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.font-item-ops { display: flex; align-items: center; gap: 6px; flex: none; }
+
+/* 开关 chip：胶囊按钮，active = 主色浅底（视觉对齐 add-cat 选中态） */
+.font-chip {
+  flex: none;
+  padding: 2px 9px;
+  font-size: 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--sub);
+  cursor: pointer;
+}
+.font-chip:hover { border-color: var(--line-strong); color: var(--ink); }
+.font-chip.active { background: var(--primary-soft); border-color: transparent; color: var(--primary-strong); }
+
+.font-del {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--faint);
+  font-size: 13px;
+  cursor: pointer;
+}
+.font-del:hover { background: var(--danger-soft); color: var(--danger); }
+
+/* 底部添加条：本地文件 + 网络 URL（固定不随列表滚动） */
+.font-add { display: flex; flex-direction: column; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); background: var(--bg); }
+.font-add-url { display: flex; gap: 8px; }
+.font-add-url input {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 10px;
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  color: var(--ink);
+  outline: none;
+}
+.font-add-url input:focus { border-color: var(--primary); }
+.font-add-file { display: none; }
+
+@media (max-width: 480px) {
+  .font-panel { width: min(400px, calc(100vw - 16px)); }
+}
+
 /* —— 图表编辑器（chart-editor.js）：Excel 式数据表 + 声明式样式面板 —— */
 .chart-editor { display: flex; flex-direction: column; gap: 10px; min-width: 640px; }
 .chart-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }

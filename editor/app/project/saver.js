@@ -14,6 +14,7 @@ import { buildPptx, downloadPptx } from "../../writer/pptx.js";
 import { ZipWriter } from "../../writer/zip.js";
 import { showToast } from "../toast.js";
 import { showDialog } from "../../interaction/dialogs/base.js";
+import { openFontPanel } from "../../interaction/font-panel.js";
 import { writeFiles } from "./handle-io.js";
 import { mediaFilesOfDeck } from "./images.js";
 
@@ -47,7 +48,10 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     const mgrBtn = document.createElement("button");
     mgrBtn.className = "btn btn-sm";
     mgrBtn.textContent = "字体管理…";
-    mgrBtn.addEventListener("click", () => fontManager.openManagerDialog());
+    mgrBtn.addEventListener("click", () => {
+      close();
+      openFontPanel(); // 关导出框、开字体浮层（不再叠加两层遮罩）
+    });
     wrap.appendChild(mgrBtn);
     const { close } = showDialog("导出 PPTX", wrap, {
       doneText: "导出",

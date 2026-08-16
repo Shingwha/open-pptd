@@ -8,6 +8,7 @@
 import { createPage } from "../core/model.js";
 import { bindAddMenu } from "../interaction/add-menu.js";
 import { bindThemePanel } from "../interaction/theme-panel.js";
+import { bindFontPanel } from "../interaction/font-panel.js";
 import { createFileMenu } from "./file-menu.js";
 import { removeRecent } from "./project/handle-store.js";
 import { showToast } from "./toast.js";
@@ -96,8 +97,7 @@ export function bindToolbar({ state, page, api, view, io, present }) {
     $("btn-redo").onclick = () => io.applyHistory(state.history.redo());
 
     bindFileMenu();
-    $("btn-fonts").onclick = () => io.fontManager.openManagerDialog();
-    // 放映：从当前页开始全屏演示（present 内部处理全屏/降级）
+    bindFontPanel({ state, io, anchor: $("btn-fonts") });
     $("btn-present").onclick = () => present.start();
 
     // 配色浮层（预设色卡 + 语义色编辑）
