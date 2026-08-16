@@ -198,20 +198,22 @@ export async function showGallery() {
         : `<span class="mode-dot"></span>线上模式：可编辑预览，保存将下载项目包（zip）`;
   }
 
-  // 「文件」菜单（与编辑器同一外壳）：画廊=开始页角色，只有 打开 + 最近
+  // 「文件」菜单（与编辑器同一外壳）：画廊=开始页角色，放 打开编辑器 / 打开 / 最近
   const fileBtn = $("btn-file");
   if (fileBtn) {
     const supported = "showDirectoryPicker" in window; // 句柄读写不经服务器，本地/线上均可用
-    fileBtn.hidden = !supported;
-    if (supported) {
-      createFileMenu(fileBtn, async ({ menu, item, appendRecents }) => {
-        menu.appendChild(item("打开本地项目", { onClick: openLocalFromPicker }));
+    createFileMenu(fileBtn, async ({ menu, item, appendRecents }) => {
+      menu.appendChild(item("打开编辑器", { onClick: () => (location.href = new URL("editor/", ROOT).href) }));
+      const openItem = item("打开本地项目", { onClick: openLocalFromPicker });
+      if (!supported) openItem.hidden = true; // 不支持的浏览器不显示
+      menu.appendChild(openItem);
+      if (supported) {
         await appendRecents(menu, (entry) => {
           setPendingProject(entry.id); // 编辑器据此续开（授权仍有效则免确认）
           location.href = new URL("editor/", ROOT).href;
         });
-      });
-    }
+      }
+    });
   }
 
   const entries = await loadManifest();

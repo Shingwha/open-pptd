@@ -1528,7 +1528,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   /* 顶栏子项禁止被 flex 挤压：内容超宽时整体横向滚动（不裁剪、按钮始终可点） */
   .topbar > *, .topbar-actions > * { flex-shrink: 0; }
   .brand { gap: 6px; }
-  .brand-home, .brand-file { display: none; } /* 品牌区整体省略（窄屏空间优先给按钮） */
+  .brand-file { display: none; } /* 窄屏只留 logo（回画廊入口），文件名省略给按钮腾空间 */
   .status-hint, .status-dirty { display: none; } /* 窄屏只留【刷新】按钮（同原底部栏行为） */
   .btn-label { display: none; }   /* 文字按钮图标化 */
   .btn { width: 30px; padding: 0; }
