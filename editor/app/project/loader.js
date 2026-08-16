@@ -49,8 +49,18 @@ export function createLoader({ state, view, images, fontManager, connect, render
   // --------------------------------------------------------------------------
   // 加载
   // --------------------------------------------------------------------------
+  /** 顶栏项目名：有项目显示名字；空项目显示「未命名」淡显（hover 说明）。 */
   function setBrandFile(text) {
-    $("brand-file").textContent = text;
+    const el = $("brand-file");
+    if (text) {
+      el.textContent = text;
+      el.classList.remove("unnamed");
+      el.removeAttribute("title");
+    } else {
+      el.textContent = "未命名";
+      el.classList.add("unnamed");
+      el.title = "空白演示 · 尚未关联项目文件";
+    }
   }
 
   /**
@@ -127,5 +137,5 @@ export function createLoader({ state, view, images, fontManager, connect, render
     loadDeck(state.manifestPath, { keepPage: true, silent: true }).then(done).catch(fail);
   }
 
-  return { applyTheme, applyHistory, loadDeck, loadDeckFromHandle, manualReload };
+  return { applyTheme, applyHistory, loadDeck, loadDeckFromHandle, manualReload, setBrandFile };
 }

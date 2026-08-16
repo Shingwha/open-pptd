@@ -122,6 +122,7 @@ function initEditor(deckUrl, { blankToast = true } = {}) {
     state.deck = createDeck({ title: "未命名演示文稿" });
     state.deck.pages.push(createPage({ pageType: "content" }));
     state.theme = normalizeTheme(null);
+    io.setBrandFile(""); // 顶栏显示「未命名」
     ops.markSaved(); // 空白项目基线（无未保存修改，撤销/重做等值比较的起点）
     view.render();
     if (blankToast) showToast("已新建空白演示", "info");

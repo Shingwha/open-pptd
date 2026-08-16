@@ -86,6 +86,7 @@ export function createIo({ state, view }) {
     state.manifestPath = null;
     state.projectHandle = null;
     state.projectName = "";
+    loader.setBrandFile(""); // 顶栏回到「未命名」，清掉旧项目名残留
     state.currentPage = 0;
     state.selectedId = null;
     state.dirty = false;
@@ -107,6 +108,7 @@ export function createIo({ state, view }) {
     loadDeck: loader.loadDeck,
     loadDeckFromHandle: loader.loadDeckFromHandle,
     newProject,
+    setBrandFile: loader.setBrandFile,
     openLocalProject,
     openProjectHandle,
     manualReload: loader.manualReload,
