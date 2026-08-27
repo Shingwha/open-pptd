@@ -16,7 +16,7 @@ on:
       - "editor/**"      # 编辑器前端
       - "examples/**"    # 画廊示例
       - "assets/**"      # 站点资源（图标 / 字体 registry）
-      - "lib/**"         # 本地服务器（测试守门对象）
+      - "packages/**"    # 引擎五包 model/writer/renderer/server/cli（测试守门对象）
       - "bin/**"
       - "tests/**"
       - "package.json"
