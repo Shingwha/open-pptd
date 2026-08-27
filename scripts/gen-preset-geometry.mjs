@@ -5,7 +5,7 @@
 // 输入：ECMA-376 Part 1 规范附带的 presetShapeDefinitions.xml
 //   （官方下载：https://ecma-international.org/publications-and-standards/standards/ecma-376/
 //    → ECMA-376-1_5th_edition_december_2016.zip → OfficeOpenXML-DrawingMLGeometries.zip）
-// 输出：editor/core/preset-geometry.data.js（几何数据 + 标签 + 分类，公式/路径原样转写）
+// 输出：packages/model/preset-geometry.data.js（几何数据 + 标签 + 分类，公式/路径原样转写）
 // 用法：node scripts/gen-preset-geometry.mjs <presetShapeDefinitions.xml>
 // ----------------------------------------------------------------------------
 // 收录全部 187 个预置形状（ECMA-376 附录），支持全部路径命令：
@@ -354,7 +354,7 @@ for (const [name, s] of Object.entries(out)) {
 lines.push("};");
 lines.push("");
 
-const dest = join(ROOT, "editor", "core", "preset-geometry.data.js");
+const dest = join(ROOT, "packages", "model", "preset-geometry.data.js");
 writeFileSync(dest, lines.join("\n"), "utf8");
 console.log(`✓ 已生成 ${dest}（${Object.keys(out).length} 个形状）`);
 for (const [name, s] of Object.entries(out)) {

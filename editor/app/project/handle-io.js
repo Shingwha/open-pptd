@@ -9,7 +9,7 @@
 // createWritable/queryPermission），Node 测试用 mock 句柄即可覆盖。
 // ============================================================================
 
-import * as yaml from "../../vendor/js-yaml.mjs";
+import * as yaml from "../../../packages/model/vendor/js-yaml.mjs";
 
 /** 调起系统文件夹选择框（需用户手势）。取消返回 null。 */
 export async function pickProjectFolder() {

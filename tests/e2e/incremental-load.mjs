@@ -13,10 +13,11 @@
 // ============================================================================
 
 import { spawn } from "node:child_process";
-import { existsSync, writeFileSync, rmSync, mkdirSync } from "node:fs";
+import { existsSync, writeFileSync, rmSync, mkdirSync, mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { startServer } from "../../lib/editor-server.js";
+import { startServer } from "../../packages/server/index.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CHROME_CANDIDATES = [
@@ -41,7 +42,9 @@ function log(name, pass, detail = "") {
 }
 
 const projIdx = process.argv.indexOf("--project");
-const PROJECT = projIdx >= 0 ? process.argv[projIdx + 1] : join(__dirname, "..", "..", "pptd-incremental-tmp");
+// 缺省用系统临时目录（跑完即清，不污染仓库）；显式 --project 才用指定目录
+const ownTmp = projIdx < 0;
+const PROJECT = ownTmp ? mkdtempSync(join(tmpdir(), "pptd-incremental-")) : process.argv[projIdx + 1];
 const PORT = 56122;
 rmSync(PROJECT, { recursive: true, force: true });
 mkdirSync(join(PROJECT, "pages"), { recursive: true });
@@ -115,6 +118,7 @@ try {
   ws.close();
   chrome.kill();
   server.close();
+  if (ownTmp) try { rmSync(PROJECT, { recursive: true, force: true }); } catch { /* 清理失败不影响结果 */ }
 }
 
 const failed = results.filter((r) => !r.pass);

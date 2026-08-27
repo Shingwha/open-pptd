@@ -1,13 +1,15 @@
 // ============================================================================
-// types/icon.js — 图标元素类型注册（内置图标库，SVG 图片嵌入导出）
+// types/icon.js — 图标元素类型 UI 分片注册（内置图标库，SVG 图片嵌入导出）
+// ----------------------------------------------------------------------------
+// render/toXml 分片分别由 packages/renderer/types、packages/writer/types 注册；
+// iconThumb 为 UI 用缩略图，由本侧直接从 renderer 引入。
 // ============================================================================
 
-import { registerType } from "./registry.js";
-import { nextElementId } from "../core/model.js";
-import { ICONS } from "../core/icon-library.js";
-import { resolveIconName } from "../core/icon-name.js";
-import { renderIcon, iconThumb } from "../renderer/icon.js";
-import { iconXml } from "../writer/icon.js";
+import { registerType } from "../../packages/model/registry.js";
+import { nextElementId } from "../../packages/model/model.js";
+import { ICONS } from "../../packages/model/icon-library.js";
+import { resolveIconName } from "../../packages/model/icon-name.js";
+import { iconThumb } from "../../packages/renderer/icon.js";
 import { openIconPicker } from "../interaction/dialogs/icon-editor.js";
 
 /** 图标默认模型（官方 iconName 格式："style:name"，bs: 为本地 Bootstrap 命名空间）。 */
@@ -58,8 +60,6 @@ registerType({
   },
 
   create: () => iconElement("check"),
-  render: renderIcon,
-  toXml: iconXml,
 
   props(el, h) {
     const key = resolveIconName(el.iconName);

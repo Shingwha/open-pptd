@@ -10,8 +10,8 @@
 // 事务：beginChange → applyTheme → endChange（全量渲染）。
 // ============================================================================
 
-import { THEME_PALETTES } from "../core/theme.js";
-import { resolveColor } from "../core/theme.js";
+import { THEME_PALETTES } from "../../packages/model/theme.js";
+import { resolveColor } from "../../packages/model/theme.js";
 import { showToast } from "../app/toast.js";
 
 /** 语义色中文名（17 键全集；accent1/2 = primary/accent，不单独列）。 */

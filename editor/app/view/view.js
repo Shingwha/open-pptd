@@ -8,8 +8,8 @@
 // 各自持有状态与 DOM 接线，这里只做编排与画布重建。
 // ============================================================================
 
-import { renderPage } from "../../renderer/page.js";
-import { resolveColor } from "../../core/theme.js";
+import { renderPage } from "../../../packages/renderer/page.js";
+import { resolveColor } from "../../../packages/model/theme.js";
 import { getType } from "../../types/index.js";
 import { quickbarColor, quickbarSelect, quickbarBtn, quickbarTextBtn, isNarrow } from "../../ui.js";
 import { relRect } from "../../coords.js";

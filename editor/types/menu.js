@@ -7,7 +7,7 @@
 //     （不再经过注册表 menu 声明——187 种形状不逐条声明）
 // ============================================================================
 
-import { allTypes } from "./registry.js";
+import { allTypes } from "../../packages/model/registry.js";
 
 /** 全部菜单项（id → item；item 可为 { create } 或自带 onClick）。 */
 export function buildAddItems() {

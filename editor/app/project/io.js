@@ -17,8 +17,8 @@ import { createLiveReload } from "./live-reload.js";
 import { createProjectSaver } from "./saver.js";
 import { pickProjectFolder, ensurePermission } from "./handle-io.js";
 import { addRecent, setPendingProject, clearPendingProject } from "./handle-store.js";
-import { createDeck, createPage, syncElementId } from "../../core/model.js";
-import { normalizeTheme } from "../../core/theme.js";
+import { createDeck, createPage, syncElementId } from "../../../packages/model/model.js";
+import { normalizeTheme } from "../../../packages/model/theme.js";
 import { createHistory } from "../../interaction/history.js";
 import { showToast } from "../toast.js";
 

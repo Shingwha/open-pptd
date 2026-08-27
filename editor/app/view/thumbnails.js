@@ -5,8 +5,8 @@
 // renderThumbnails 只重建缩略图内容；页面切换/删除经 reload 回调触发全量渲染。
 // ============================================================================
 
-import { PAGE_WIDTH } from "../../core/model.js";
-import { renderPage, disposeChartInstances } from "../../renderer/page.js";
+import { PAGE_WIDTH } from "../../../packages/model/model.js";
+import { renderPage, disposeChartInstances } from "../../../packages/renderer/page.js";
 import { isNarrow } from "../../ui.js";
 
 const THUMB_W = 140;

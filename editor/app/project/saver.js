@@ -9,9 +9,10 @@
 // onSaved（保存成功后抑制 SSE 刷新回环）、renderStatusBar。
 // ============================================================================
 
-import { serializeDeck } from "../../core/pptd-io.js";
-import { buildPptx, downloadPptx } from "../../writer/pptx.js";
-import { ZipWriter } from "../../writer/zip.js";
+import { serializeDeck } from "../../../packages/model/pptd-io.js";
+import { base64ToBytes } from "../../../packages/model/bytes.js";
+import { buildPptx, downloadPptx } from "../../../packages/writer/pptx.js";
+import { ZipWriter } from "../../../packages/writer/zip.js";
 import { showToast } from "../toast.js";
 import { showDialog } from "../../interaction/dialogs/base.js";
 import { openFontPanel } from "../../interaction/font-panel.js";
@@ -86,7 +87,13 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     })();
   }
 
-  /** 导出项目包（zip）：deck.pptd + pages/ + media/，命名与 CLI export-project 一致。 */
+  /**
+   * 导出项目包（zip）：deck.pptd + pages/ + media/，命名与 CLI export-project 一致。
+   * 语义说明（v3 #6）：与 CLI `export-project` 的差异是刻意的——CLI 原样打包
+   * 磁盘文件（保留注释/格式，反映磁盘现状）；浏览器导出的是**当前编辑现场**
+   * （可能含未保存修改），必须经模型重序列化，故注释/原始格式不保留。
+   * 「磁盘原样」以 CLI 为准，「编辑现场快照」以浏览器为准，两侧不再对齐实现。
+   */
   async function doExportZip() {
     try {
       fontManager.syncToDeck(); // 字体资源表 → deck.fonts，随包带上
@@ -174,14 +181,6 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
       showToast(`保存失败: ${err.message}`, "danger");
       console.error(err);
     }
-  }
-
-  /** base64 → Uint8Array（zip 打包用）。 */
-  function base64ToBytes(b64) {
-    const bin = atob(b64);
-    const bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    return bytes;
   }
 
   return { exportPptx, exportProjectZip: doExportZip, saveProject };

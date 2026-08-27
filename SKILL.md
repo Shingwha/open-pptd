@@ -23,7 +23,7 @@ The .pptd format is a simplified abstraction layer over OOXML that follows basic
 
 ## Capability Scope (Important Constraints)
 
-0. **File reading boundary**: the whole workflow only needs to read the documents under `references/` (pptd.md / themes.md / slides_categories.md and its scenario docs / shapes.md / icons.md / fonts.md / general-poster.md); online browsing and PPTX export are done by running `node bin/open-pptd.js serve|export` and `node tests/package-integrity.mjs`. **Do not read any source code by default** (implementations and test cases under `editor/`, `lib/`, `bin/`, `scripts/`, `assets/`, `tests/`; `docs/` is developer documentation, also not read by default) — unless an unsolvable problem is hit (format doubts, export anomalies, editor anomalies, etc.); only then consult the relevant source to locate the root cause, and stop once fixed.
+0. **File reading boundary**: the whole workflow only needs to read the documents under `references/` (pptd.md / themes.md / slides_categories.md and its scenario docs / shapes.md / icons.md / fonts.md / general-poster.md); online browsing and PPTX export are done by running `node bin/open-pptd.js serve|export|check`. **Do not read any source code by default** (implementations and test cases under `editor/`, `packages/`, `bin/`, `scripts/`, `assets/`, `tests/`; `docs/` is developer documentation, also not read by default) — unless an unsolvable problem is hit (format doubts, export anomalies, editor anomalies, etc.); only then consult the relevant source to locate the root cause, and stop once fixed.
 
 1. **Format baseline**: strictly implement per `references/pptd.md` (the complete PPTD v2 spec); the export target is a PPTX that opens in PowerPoint without repair and renders identically to the editor preview.
 2. **Export pipeline**: use the local exporter `node bin/open-pptd.js export <deck.pptd> [-o <out.pptx>]` (self-developed writer, no browser dependency).
@@ -182,20 +182,21 @@ Adopt different production approaches for different user [design directions].
 4. Export command (local writer, no browser needed):
 
    ```bash
-   node /abs/path/to/open-pptd-v2/bin/open-pptd.js export /abs/path/project/deck.pptd -o /abs/path/project/deck.pptx
+   node /abs/path/to/open-pptd/bin/open-pptd.js export /abs/path/project/deck.pptd -o /abs/path/project/deck.pptx
    ```
 
-   A project directory may be passed instead of the manifest only when it contains exactly one `.pptd` file.
-5. Default PPTX options:
+   A project directory may be passed instead of the manifest only when it contains exactly one `.pptd` file. **Export auto-validates**: structural errors (unknown element types, bad bounds, missing required fields) block the export with a located error list; warnings (overflow/contrast/font hints) are printed but do not block.
+5. Structural self-check (run standalone any time, especially before export or when fixing issues):
+
+   ```bash
+   node /abs/path/to/open-pptd/bin/open-pptd.js check /abs/path/project/deck.pptd
+   ```
+
+   Reports schema/token/resource/font/geometry/contrast issues per page with element ids; exit code 1 on errors. When export fails validation, run this and fix the listed issues one by one.
+6. Default PPTX options:
    - page transition: `fade`, written to every slide by the local writer;
    - font embedding: enabled by default; may be disabled with `--no-embed-fonts`;
    - embedded fonts are resolved automatically: deck.fonts `{family: <registered-name>}` hits the built-in font library (`assets/fonts/`) or a `url`; others are declared only. **Registered-name rule**: page `fontFamily` must exactly match the registered name in `references/fonts.md` (including case/spaces), otherwise PowerPoint does not recognize the embedded font.
-6. After export, verify that the output exists and report the generated path. Confirm that every slide has exactly one root-level fade transition in valid CT_Slide order (`cSld`, optional `clrMapOvr`, `transition`, optional `timing/extLst`) and that the PPTX ZIP passes integrity checks. A byte-string search for `<p:fade>` is insufficient because Office ignores transitions nested inside `cSld`. Run the integrity check:
-
-   ```bash
-   node /abs/path/to/open-pptd-v2/tests/package-integrity.mjs /abs/path/project/deck.pptx <slideCount>
-   ```
-
-   Do not claim PowerPoint/WPS/Keynote playback compatibility solely because ZIP validation succeeds.
+7. After export, verify that the output exists and report the generated path. Confirm that every slide has exactly one root-level fade transition in valid CT_Slide order (`cSld`, optional `clrMapOvr`, `transition`, optional `timing/extLst`) by unzipping the PPTX and inspecting `ppt/slides/slideN.xml`. Do not claim PowerPoint/WPS/Keynote playback compatibility solely because export succeeded.
 7. When the user wants to open, edit, save, or export a PPTD project manually, start the local browser editor with `node bin/open-pptd.js serve --project <project dir>` and ask the user to open the printed local URL in a browser. The editor supports preview, editing, saving back to the project, and one-click PPTX export.
 8. Always end the final response with the **preview status** and a concise next step: if the preview server started in step3 is still running, give the URL and how to stop it (or offer to keep it running for further editing); if it was stopped, give the restart command (`node bin/open-pptd.js serve --project <project dir>`). Mention the editor supports preview, editing, slide transitions, and manual PPTX export (or `node bin/open-pptd.js render <deck.pptd> -o <dir>` to export page images for a visual pass). Keep this reminder in addition to, not instead of, the required project and file links.

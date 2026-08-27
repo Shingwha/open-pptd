@@ -6,7 +6,7 @@
 // 不影响元素命中与导出。1 = 适配视口。
 // ============================================================================
 
-import { PAGE_WIDTH, PAGE_HEIGHT } from "../../core/model.js";
+import { PAGE_WIDTH, PAGE_HEIGHT } from "../../../packages/model/model.js";
 
 export function createViewport({ stage, canvas, wrap, zoomLabel, controller, repaint }) {
   let zoom = 1;

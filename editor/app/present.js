@@ -13,8 +13,8 @@
 // 实时刷新（SSE）触发编辑器重渲染时，当前放映页自动同步（present.sync）。
 // ============================================================================
 
-import { PAGE_WIDTH, PAGE_HEIGHT } from "../core/model.js";
-import { renderPage, disposeChartInstances } from "../renderer/page.js";
+import { PAGE_WIDTH, PAGE_HEIGHT } from "../../packages/model/model.js";
+import { renderPage, disposeChartInstances } from "../../packages/renderer/page.js";
 
 const FADE_MS = 260; // 与导出 PPTX 的 <p:fade/> 过渡节奏一致
 const UI_HIDE_MS = 1800; // 鼠标停止移动后隐藏底部工具条

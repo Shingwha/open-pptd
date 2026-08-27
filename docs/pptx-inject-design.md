@@ -147,7 +147,7 @@ lib/pptx-inject.js                        # 新增，~400-600 行
 
 ## 8. 校验策略
 
-1. **结构校验**：复用 `tests/package-integrity.mjs`——注入后 ZIP 完整性、slide 结构、content-types 一致性。
+1. **结构校验**：复用 `tests/regression/package-integrity.mjs`——注入后 ZIP 完整性、slide 结构、content-types 一致性。
 2. **往返测试**：examples 项目 export 出 pptx → 注入测试元素（每类元素各一个）→ 校验：
    - 原 slide 元素数量 +1（或 +N）；
    - 新元素 id/rId 无冲突；

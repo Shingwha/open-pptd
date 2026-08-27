@@ -5,12 +5,10 @@
 // （pie.innerRadius > 0 = 环形）；新建时 encode 用官方字段名。
 // ============================================================================
 
-import { registerType } from "./registry.js";
-import { nextElementId } from "../core/model.js";
-import { CHART_META } from "../core/chart.js";
-import { remapEncode } from "../core/chart.js";
-import { renderChart } from "../renderer/chart.js";
-import { chartXml } from "../writer/chart.js";
+import { registerType } from "../../packages/model/registry.js";
+import { nextElementId } from "../../packages/model/model.js";
+import { CHART_META } from "../../packages/model/chart.js";
+import { remapEncode } from "../../packages/model/chart.js";
 import { svgIcon } from "../ui.js";
 
 const CHART_TYPES = Object.entries(CHART_META).map(([k, v]) => [k, v.label]);
@@ -73,20 +71,6 @@ registerType({
       chartItem("sankey", "桑基图", '<path d="M4 8h8l4 4h4M4 16h5l4-4h7"/>', ["source", "target", "flow"], SANKEY_ROWS),
     ],
   },
-
-  // 图表导出需要先注册 chart part（嵌入 xlsx），再输出 p:graphicFrame
-  toXml(theme, el, ctx) {
-    if (!ctx.registerChart || !ctx.collectChart) {
-      console.warn(`[writer] 图表 ${el.elementId} 缺少图表部件上下文，已跳过`);
-      return "";
-    }
-    const chartId = ctx.registerChart();
-    const ok = ctx.collectChart(theme, el, chartId);
-    if (!ok) return ""; // 类型暂不支持原生导出（预览正常，导出跳过该元素）
-    return chartXml(theme, el, ctx, chartId);
-  },
-
-  render: renderChart,
 
   props(el, h) {
     return [{

@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 // 跳过全部编辑器 UI，把每页直接渲染进一个 960×540 的裸容器——与编辑器预览
 // 同一条渲染管线（renderer/page.js + 同一份字体文件 + 同一 imageMap）。
-// 对外契约（供 lib/pptd-render.js 的 CDP 驱动）：
+// 对外契约（供 packages/renderer/headless/shoot.js 的 CDP 驱动）：
 //   window.__pptdShot = { count, goto(index) }
 //   document.title === "PPTD_READY"  = 当前页渲染完成、画面稳定，可截图
 //   document.title === "PPTD_ERROR"  = 初始化失败
@@ -12,8 +12,8 @@
 
 import { createEditorState } from "./state.js";
 import { createIo } from "./project/io.js";
-import { renderPage } from "../renderer/page.js";
-import { PAGE_WIDTH, PAGE_HEIGHT } from "../core/model.js";
+import { renderPage } from "../../packages/renderer/page.js";
+import { PAGE_WIDTH, PAGE_HEIGHT } from "../../packages/model/model.js";
 
 export const READY_TITLE = "PPTD_READY";
 

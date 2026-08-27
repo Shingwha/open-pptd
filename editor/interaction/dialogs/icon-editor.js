@@ -3,8 +3,8 @@
 // ============================================================================
 
 import { showDialog } from "./base.js";
-import { ICONS } from "../../core/icon-library.js";
-import { iconThumb } from "../../renderer/icon.js";
+import { ICONS } from "../../../packages/model/icon-library.js";
+import { iconThumb } from "../../../packages/renderer/icon.js";
 
 /**
  * 打开图标选择器。

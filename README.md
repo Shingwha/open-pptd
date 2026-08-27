@@ -169,7 +169,7 @@ open-pptd/
 
 ```bash
 npm test                      # 一键回归：导出全部组件项目 + 包一致性 + 颜色 + 形状全量 + 公式 + 图标
-npm run test:live             # 项目模式 E2E（SSE 实时刷新 + 保存写回磁盘，需 Chrome）
+npm run test:render           # 渲染冒烟 E2E（无头 Chrome 逐页 PNG）
 npm run test:incremental      # 渐进加载 E2E（写入中的项目逐页显示，需 Chrome）
 ```
 

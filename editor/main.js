@@ -23,8 +23,8 @@ import { createCanvasController } from "./interaction/canvas.js";
 import { createStageController } from "./interaction/stage.js";
 import { makeZoomCtlDraggable } from "./app/view/zoom-ctl.js";
 import { bindProperties } from "./interaction/properties.js";
-import { createDeck, createPage } from "./core/model.js";
-import { normalizeTheme } from "./core/theme.js";
+import { createDeck, createPage } from "../packages/model/model.js";
+import { normalizeTheme } from "../packages/model/theme.js";
 import { ensurePermission } from "./app/project/handle-io.js";
 import { getRecent, getPendingProjectId, clearPendingProject, addRecent, setPendingProject } from "./app/project/handle-store.js";
 
@@ -102,7 +102,14 @@ function initEditor(deckUrl, { blankToast = true } = {}) {
   // 实时刷新（统一项目模式）：本地挂载时订阅 server 推送；部署模式自动不启用
   io.connectLiveReload();
 
-  // 调试/测试钩子（冒烟测试与浏览器控制台排查用）
+  // ------------------------------------------------------------------------
+  // 对外契约（window 调试/测试钩子，v3 #9 正式化——重命名/删除需同步更新消费端）：
+  //   window.__pptdEditor = api   编辑器操作门面（e2e 读 state.deck 页数等）
+  //   window.__pptdIo     = io    项目 IO（e2e 调 saveProject() 验证写回）
+  //   window.__pptdShot           shot 截图模式专用，契约见 app/shot.js 文件头
+  // 消费端：tests/e2e/incremental-load.mjs、
+  //         packages/renderer/headless/shoot.js（CDP 驱动）
+  // ------------------------------------------------------------------------
   window.__pptdEditor = api;
   window.__pptdIo = io;
   // resize：rAF 防抖 + 全量渲染（跨断点拖动窗口时缩略图尺寸 / 快速条定位同步）
@@ -221,14 +228,6 @@ function showRestoreCard(entry) {
 // 启动：?deck= 加载指定项目；有会话恢复标记则续开本地项目；否则空白编辑器
 // ----------------------------------------------------------------------------
 async function boot() {
-  // 兼容旧分享链接 #edit?deck=xxx → 转为 query 参数
-  if (location.hash.startsWith("#edit")) {
-    const q = new URLSearchParams(location.hash.slice(5)).get("deck");
-    if (q) {
-      location.replace("?deck=" + encodeURIComponent(q));
-      return;
-    }
-  }
   const params = new URLSearchParams(location.search);
   const deckParam = params.get("deck");
   const deckUrl = deckParam ? (/^https?:/.test(deckParam) ? deckParam : new URL(deckParam, ROOT).href) : null;

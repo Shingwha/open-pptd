@@ -2,10 +2,8 @@
 // types/table.js — 表格元素类型注册
 // ============================================================================
 
-import { registerType } from "./registry.js";
-import { nextElementId } from "../core/model.js";
-import { renderTable } from "../renderer/table.js";
-import { tableXml } from "../writer/table.js";
+import { registerType } from "../../packages/model/registry.js";
+import { nextElementId } from "../../packages/model/model.js";
 import { svgIcon } from "../ui.js";
 
 registerType({
@@ -37,9 +35,6 @@ registerType({
       },
     ],
   },
-
-  render: renderTable,
-  toXml: tableXml,
 
   props(el, h) {
     return [{

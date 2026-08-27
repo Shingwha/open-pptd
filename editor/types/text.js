@@ -1,11 +1,11 @@
 // ============================================================================
-// types/text.js — 文字元素类型注册（渲染/导出/属性/快速条/菜单）
+// types/text.js — 文字元素类型 UI 分片注册（属性/快速条/菜单）
+// ----------------------------------------------------------------------------
+// render/toXml 分片分别由 packages/renderer/types、packages/writer/types 注册。
 // ============================================================================
 
-import { registerType } from "./registry.js";
-import { nextElementId } from "../core/model.js";
-import { renderText } from "../renderer/text.js";
-import { textXml } from "../writer/text.js";
+import { registerType } from "../../packages/model/registry.js";
+import { nextElementId } from "../../packages/model/model.js";
 import { svgIcon } from "../ui.js";
 
 const FONT_SIZE_OPTIONS = ["", 12, 14, 16, 18, 20, 24, 28, 32, 40, 48];
@@ -44,9 +44,6 @@ registerType({
       },
     ],
   },
-
-  render: renderText,
-  toXml: textXml,
 
   props(el, h) {
     return [{

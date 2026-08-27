@@ -42,7 +42,7 @@ jobs:
         with:
           node-version: 20
 
-      # ① 生成公式中间产物（tests/formula/fixtures/mml/ 不入库，KaTeX 本地生成）
+      # ① 生成公式中间产物（tests/fixtures/formula/mml/ 不入库，KaTeX 本地生成）
       - name: 生成公式中间产物
         run: npm run test:fixtures
 

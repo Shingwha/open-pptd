@@ -23,8 +23,8 @@
 // ============================================================================
 
 import { getType } from "../types/index.js";
-import { PAGE_TYPES, PAGE_WIDTH, PAGE_HEIGHT } from "../core/model.js";
-import { resolveColor } from "../core/theme.js";
+import { PAGE_TYPES, PAGE_WIDTH, PAGE_HEIGHT } from "../../packages/model/model.js";
+import { resolveColor } from "../../packages/model/theme.js";
 import * as ui from "../ui.js";
 import { renderGroup, fieldHandlers, themeSwatches } from "./fields.js";
 

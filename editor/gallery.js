@@ -10,16 +10,16 @@
 // 缩略图懒加载（滚动到才拉）+ ResizeObserver 随卡片宽度重渲染。
 // ============================================================================
 
-import * as yaml from "./vendor/js-yaml.mjs";
-import { parseDeck } from "./core/pptd-io.js";
-import { normalizeTheme, mergeFonts } from "./core/theme.js";
-import { renderPage, disposeChartInstances } from "./renderer/page.js";
+import * as yaml from "../packages/model/vendor/js-yaml.mjs";
+import { parseDeck } from "../packages/model/pptd-io.js";
+import { normalizeTheme, mergeFonts } from "../packages/model/theme.js";
+import { renderPage, disposeChartInstances } from "../packages/renderer/page.js";
 import { fetchProjectTexts } from "./app/project/project-cache.js";
 import { pickProjectFolder, hasDeck } from "./app/project/handle-io.js";
 import { addRecent, setPendingProject } from "./app/project/handle-store.js";
 import { createFileMenu } from "./app/file-menu.js";
 import { showToast } from "./app/toast.js";
-import { loadFontRegistry, findFont, fetchFontBytes } from "./core/font-registry.js";
+import { loadFontRegistry, findFont, fetchFontBytes } from "../packages/model/font-registry.js";
 
 const PAGE_W = 960;
 const PAGE_H = 540;

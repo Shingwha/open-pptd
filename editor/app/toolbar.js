@@ -5,7 +5,7 @@
 // 菜单自动出现，无需在此改任何代码。
 // ============================================================================
 
-import { createPage } from "../core/model.js";
+import { createPage } from "../../packages/model/model.js";
 import { bindAddMenu } from "../interaction/add-menu.js";
 import { bindThemePanel } from "../interaction/theme-panel.js";
 import { bindFontPanel } from "../interaction/font-panel.js";

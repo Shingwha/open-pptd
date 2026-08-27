@@ -6,14 +6,14 @@
   "bin": { "open-pptd": "bin/open-pptd.js" },
   "scripts": {
     "test": "node tests/run-all.mjs",
-    "test:formula": "node tests/formula/test-formula.mjs",
-    "test:icon": "node tests/icon/test-icon.mjs",
-    "test:shapes": "node tests/preset-shapes.mjs",
-    "test:isolate": "node tests/isolate.mjs",
-    "test:live": "node tests/e2e/live-reload.mjs",
+    "test:deps": "node tests/regression/dep-graph.mjs",
+    "test:formula": "node tests/regression/formula.mjs",
+    "test:icon": "node tests/regression/icon.mjs",
+    "test:shapes": "node tests/regression/preset-shapes.mjs",
+    "test:isolate": "node tests/tools/isolate.mjs",
     "test:incremental": "node tests/e2e/incremental-load.mjs",
-    "test:render": "node tests/render.mjs",
-    "test:fixtures": "node tests/formula/dump-formula-mml.mjs",
+    "test:render": "node tests/e2e/render.mjs",
+    "test:fixtures": "node tests/tools/dump-formula-mml.mjs",
     "pack": "node scripts/pack-release.mjs"
   },
   "license": "MIT"

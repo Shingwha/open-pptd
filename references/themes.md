@@ -142,5 +142,5 @@ Page element references: text `style: "$title"`, `color: "$primary"`, table `sty
 
 ## Maintenance Convention
 
-- **Authoritative source**: `editor/core/theme-presets.js` (`THEME_PALETTES`, DEFAULT_THEME = the 1st preset, consult).
-- After modifying preset values, must sync: this document's two color tables + `docs/editor-v2-ux.md` §1.3; consistency is guarded by `tests/theme-presets-consistency.mjs`.
+- **Authoritative source**: `packages/model/theme-presets.js` (`THEME_PALETTES`, DEFAULT_THEME = the 1st preset, consult).
+- After modifying preset values, must sync: this document's two color tables + `docs/editor-v2-ux.md` §1.3; consistency is guarded by `tests/regression/theme-presets.mjs`.

@@ -9,8 +9,8 @@
 //   - 类型切换：语义键重映射（remapEncode）+ 共存约束警告（validateChartSeries）
 // ============================================================================
 
-import { CHART_META, CHART_TYPE_ORDER, validateChartSeries, remapEncode, DATA_LABEL_CONTENTS } from "../../core/chart.js";
-import { resolveColor, themeChartPalette } from "../../core/theme.js";
+import { CHART_META, CHART_TYPE_ORDER, validateChartSeries, remapEncode, DATA_LABEL_CONTENTS } from "../../../packages/model/chart.js";
+import { resolveColor, themeChartPalette } from "../../../packages/model/theme.js";
 import { showDialog, buildCellInput, button } from "./base.js";
 import { renderGroup, themeSwatches, fieldHandlers } from "../fields.js";
 import { createExcelGrid } from "../excel-grid.js";

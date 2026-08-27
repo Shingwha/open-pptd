@@ -7,10 +7,10 @@
 // connect（项目就绪后订阅实时刷新）、renderStatusBar（加载后刷新状态栏）。
 // ============================================================================
 
-import * as yaml from "../../vendor/js-yaml.mjs";
-import { parseDeck } from "../../core/pptd-io.js";
-import { normalizeTheme, mergeFonts, DEFAULT_THEME } from "../../core/theme.js";
-import { syncElementId } from "../../core/model.js";
+import * as yaml from "../../../packages/model/vendor/js-yaml.mjs";
+import { parseDeck } from "../../../packages/model/pptd-io.js";
+import { normalizeTheme, mergeFonts, DEFAULT_THEME } from "../../../packages/model/theme.js";
+import { syncElementId } from "../../../packages/model/model.js";
 import { createHistory } from "../../interaction/history.js";
 import { showToast } from "../toast.js";
 import { fetchProjectTexts } from "./project-cache.js";

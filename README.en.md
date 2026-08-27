@@ -166,7 +166,7 @@ The online gallery is deployed from this repo via GitHub Pages — pushed commit
 
 ```bash
 npm test                      # one-shot regression: export all component projects + package consistency + colors + full shapes + formulas + icons
-npm run test:live             # project-mode E2E (SSE live reload + save-back to disk, needs Chrome)
+npm run test:render           # render smoke E2E (headless Chrome, per-page PNG)
 npm run test:incremental      # incremental-load E2E (pages show up as a project is being written, needs Chrome)
 ```
 

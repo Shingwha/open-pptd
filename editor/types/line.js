@@ -2,10 +2,8 @@
 // types/line.js — 线条元素类型注册
 // ============================================================================
 
-import { registerType } from "./registry.js";
-import { nextElementId } from "../core/model.js";
-import { renderLine } from "../renderer/line.js";
-import { lineXml } from "../writer/line.js";
+import { registerType } from "../../packages/model/registry.js";
+import { nextElementId } from "../../packages/model/model.js";
 import { svgIcon } from "../ui.js";
 
 registerType({
@@ -32,9 +30,6 @@ registerType({
       },
     ],
   },
-
-  render: renderLine,
-  toXml: lineXml,
 
   props(el, h) {
     return [{

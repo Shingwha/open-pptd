@@ -18,10 +18,10 @@
 // ============================================================================
 
 import { showDialog, buildCellInput, button } from "./base.js";
-import { tableGrid, tryMerge, trySplit, normalizeCells, validateDims, estimateTableLayout } from "../../core/table.js";
-import { resolveColor, resolveTableStyle } from "../../core/theme.js";
+import { tableGrid, tryMerge, trySplit, normalizeCells, validateDims, estimateTableLayout } from "../../../packages/model/table.js";
+import { resolveColor, resolveTableStyle } from "../../../packages/model/theme.js";
 import * as ui from "../../ui.js";
-import { cellFinal, tdCss } from "../../renderer/table.js";
+import { cellFinal, tdCss } from "../../../packages/renderer/table.js";
 import { renderGroup, fieldHandlers } from "../fields.js";
 import { createExcelGrid } from "../excel-grid.js";
 

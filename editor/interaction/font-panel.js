@@ -10,7 +10,7 @@
 // 每次变更即时 fontManager.syncToDeck()，无「完成」按钮（对齐配色浮层即时生效）。
 // ============================================================================
 
-import { loadFontRegistry, fetchFontBytes } from "../core/font-registry.js";
+import { loadFontRegistry, fetchFontBytes } from "../../packages/model/font-registry.js";
 import { showToast } from "../app/toast.js";
 
 /** 内置库分类中文名（assets/fonts/registry.json 的 category）。 */

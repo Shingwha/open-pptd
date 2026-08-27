@@ -10,7 +10,7 @@
 // （约 155MB，装好后经 CLI 按需下载）。
 //
 // 文件清单取自 git ls-files（仅 git 跟踪文件，本地未跟踪杂物不会混入）。
-// zip 容器自建：结构同 editor/writer/zip.js（复用其 crc32），压缩方法用
+// zip 容器自建：结构同 packages/writer/zip.js（复用其 crc32），压缩方法用
 // deflate；已压缩内容（如 minified js）自动退回 store，避免负收益。
 //
 // 用法: npm run pack
@@ -21,7 +21,7 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "no
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { deflateRawSync } from "node:zlib";
-import { crc32, encodeUtf8 } from "../editor/writer/zip.js";
+import { crc32, encodeUtf8 } from "../packages/writer/zip.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -33,8 +33,8 @@ const WHITELIST = [
   "index.html",
   "package.json",
   "bin",
-  "lib",
   "editor",
+  "packages",
   "references",
   "assets/fonts/registry.json",
 ];
@@ -56,11 +56,14 @@ try {
   /* 无 git 环境时跳过 */
 }
 
-// ---- 收集 git 跟踪文件（限白名单路径）----
-const tracked = execSync(`git ls-files -- ${WHITELIST.join(" ")}`, { cwd: ROOT, encoding: "utf8" })
+// ---- 收集文件（限白名单路径）----
+// git ls-files --cached --others：已跟踪 + 未跟踪但未被 ignore 的工作树文件
+// （重构搬移后新目录尚未 git add 也要入包；工作树已删除的文件按 existsSync 剔除）
+const tracked = execSync(`git ls-files --cached --others --exclude-standard -- ${WHITELIST.join(" ")}`, { cwd: ROOT, encoding: "utf8" })
   .split("\n")
   .map((s) => s.trim())
   .filter(Boolean)
+  .filter((rel) => existsSync(path.join(ROOT, rel)))
   .sort();
 if (!tracked.length) {
   console.error("✗ 未找到任何白名单文件（git ls-files 为空）");
@@ -73,7 +76,7 @@ const files = tracked.map((rel) => {
   return { name: `open-pptd/${rel}`, data: readFileSync(abs), mtime: statSync(abs).mtime };
 });
 
-// ---- deflate 版最小 zip 写入器（布局与 editor/writer/zip.js 完全一致）----
+// ---- deflate 版最小 zip 写入器（布局与 packages/writer/zip.js 完全一致）----
 function dosDateTime(date) {
   const year = Math.max(date.getFullYear(), 1980); // DOS 时间从 1980 起
   return {

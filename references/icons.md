@@ -1,6 +1,6 @@
 # Icon Library
 
-> AUTO-GENERATED (scripts/gen-icons-doc.mjs) — regenerate after modifying the icon library.
+> AUTO-GENERATED (scripts/gen-icons.mjs) — regenerate after modifying the icon library.
 
 ## Usage
 

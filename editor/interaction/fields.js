@@ -16,7 +16,7 @@
 // ============================================================================
 
 import * as ui from "../ui.js";
-import { resolveColor } from "../core/theme.js";
+import { resolveColor } from "../../packages/model/theme.js";
 
 /** 主题语义色色板（供 colorField swatches 使用，属性面板/表格/图表共用）。 */
 export function themeSwatches(theme) {

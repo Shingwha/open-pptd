@@ -5,13 +5,24 @@
 // 导出（PPT spAutoFit / 行高语义）高度一致。纯测量函数，不接触 transform。
 // ============================================================================
 
-import { estimateTableLayout } from "../../core/table.js";
+import { estimateTableLayout } from "../../../packages/model/table.js";
 
 // 表格实测高度写回 bounds[3] 的容差：border-collapse 下渲染高度比 Σ最小行高多出
 // 底边框开销（默认 1px，粗边框至多几 px）。实测与最小行高和之差在此容差内视为
 // 「内容未超出」，不写回（否则行高按比例重算→渲染更高，每次点击/渲染累积 +1px
 // 无界增长）。内容撑行超出容差才写回实测高度（自动增高）。
 const TABLE_MEASURE_TOL = 8;
+
+/**
+ * 渲染层 → 数据层的唯一写回通道（v3 #11 隔离）。
+ * 渲染后把 DOM 实测高度写回模型 bounds[3]，是刻意的跨层写入：预览、选中框与
+ * 导出（PPT spAutoFit / 行高语义）需要高度一致。该写回不视为用户编辑——
+ * 与 app/state.js 的 syncDirty「被动归一化直接同化进基线」逻辑配对；
+ * 新增任何渲染写回都必须走这里并同步评估 dirty 语义，禁止在渲染层直接改模型。
+ */
+function writeBackBounds(el, height) {
+  el.bounds[3] = height;
+}
 
 /**
  * 文本框内容自适应高度：内容超出框高时自动增高（不裁剪、不溢出），
@@ -26,7 +37,7 @@ function autoGrowTexts(page, canvas) {
     if (!inner) continue;
     const need = inner.scrollHeight;
     if (need > el.bounds[3] + 1) {
-      el.bounds[3] = need;
+      writeBackBounds(el, need);
       node.style.height = `${need}px`;
     }
   }
@@ -47,9 +58,9 @@ function writebackTableHeights(page, canvas) {
     if (!node || node.offsetHeight <= 0) continue;
     if (Array.isArray(el.rowHeights)) {
       const minTotal = estimateTableLayout(el).rowHeights.reduce((a, b) => a + b, 0);
-      if (node.offsetHeight - minTotal > TABLE_MEASURE_TOL) el.bounds[3] = node.offsetHeight;
+      if (node.offsetHeight - minTotal > TABLE_MEASURE_TOL) writeBackBounds(el, node.offsetHeight);
     } else {
-      el.bounds[3] = node.offsetHeight;
+      writeBackBounds(el, node.offsetHeight);
     }
   }
 }

@@ -2,13 +2,11 @@
 // types/image.js — 图片元素类型注册（含本地文件选择）
 // ============================================================================
 
-import { registerType } from "./registry.js";
-import { nextElementId } from "../core/model.js";
-import { renderImage } from "../renderer/image.js";
-import { imageXml } from "../writer/image.js";
+import { registerType } from "../../packages/model/registry.js";
+import { nextElementId } from "../../packages/model/model.js";
 import { svgIcon } from "../ui.js";
-import { PRESET_SHAPES } from "../core/preset-geometry.data.js";
-import { SUPPORTED_SHAPES } from "../core/model.js";
+import { PRESET_SHAPES } from "../../packages/model/preset-geometry.data.js";
+import { SUPPORTED_SHAPES } from "../../packages/model/model.js";
 
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif"];
 
@@ -62,9 +60,6 @@ registerType({
       },
     ],
   },
-
-  render: renderImage,
-  toXml: imageXml,
 
   props(el, h) {
     const fields = [

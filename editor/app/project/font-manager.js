@@ -10,15 +10,15 @@
 //   - 导出时按「嵌入勾选」生成 options.fontFiles
 // 管理界面（浮层）见 interaction/font-panel.js，本模块只承担数据层。
 //
-// PPTD 格式（见 references/pptd-format.md）：
+// PPTD 格式（见 references/pptd.md）：
 //   fonts:
 //     站酷小薇: { family: ZCOOL XiaoWei, file: fonts/xxx.ttf, subset: true }   # 资源表
 //     title: 站酷小薇                                                          # 组件槽引用
 // ============================================================================
 
-import { parseFontInfo } from "../../core/font.js";
-import { parseFontResources } from "../../core/theme.js";
-import { loadFontRegistry, findFont, fontFileUrl, fetchFontBytes } from "../../core/font-registry.js";
+import { parseFontInfo } from "../../../packages/model/font.js";
+import { parseFontResources } from "../../../packages/model/font.js";
+import { loadFontRegistry, findFont, fontFileUrl, fetchFontBytes } from "../../../packages/model/font-registry.js";
 import { showToast } from "../toast.js";
 
 /** 系统字体池（styles.md 0.5 节；元素 fontFamily 下拉兜底选项）。 */
