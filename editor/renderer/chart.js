@@ -50,7 +50,7 @@ function fmtNum(v, format) {
   if (Number.isNaN(n)) return String(v ?? "");
   if (format === "0%") return `${Math.round(n * 100)}%`;
   if (format === "0.0%") return `${(n * 100).toFixed(1)}%`;
-  if (format === "0.0") return n.toFixed(1);
+  if (/^0\.0+$/.test(format)) return n.toFixed(format.length - 2);
   if (format === "0.0E+00") return n.toExponential(1);
   if (format === "#,##0") return n.toLocaleString("en-US");
   return String(Math.round(n));
@@ -90,6 +90,7 @@ function frameStyle(theme, el) {
   const st = {};
   if (el.fill) {
     if (typeof el.fill === "string") st.background = resolveColor(theme, el.fill) || "#ffffff";
+    else if (el.fill.type === "solid") st.background = resolveColor(theme, el.fill.color) || "#ffffff";
     else if (el.fill.type === "gradient") st.background = gradientCss(theme, el.fill) || "#ffffff";
   }
   if (el.border) {
@@ -357,8 +358,13 @@ export function buildChartOption(theme, el) {
     };
     const label = echartsLabel(theme, el, s, { position: "top" });
     const barWidth = el.barWidth != null ? `${el.barWidth * 100}%` : undefined;
-    const catLabel = resolveDataLabels(el, s, "waterfall")?.content === "category";
-    const fmt = (p) => (catLabel ? p.name : String(p.value));
+    const wfLabelCfg = resolveDataLabels(el, s, "waterfall");
+    const catLabel = wfLabelCfg?.content === "category";
+    const fmt = (p) => {
+      if (catLabel) return p.name;
+      const v = data[p.dataIndex].y;
+      return wfLabelCfg?.numberFormat ? fmtNum(v, wfLabelCfg.numberFormat) : String(v);
+    };
     return {
       ...common,
       series: [
