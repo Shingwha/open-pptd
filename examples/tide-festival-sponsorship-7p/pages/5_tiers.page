@@ -1,0 +1,142 @@
+pageType: content
+background:
+  type: solid
+  color: "$cream"
+notes: 权益页（清单）：四档赞助权益对比表，冠名档整列高亮。报价为单届参考价（示例），强调冠名仅 1 席、含排他，制造稀缺感。
+elements:
+  # ---- 页眉 ----
+  - elementId: header-dot
+    elementType: shape
+    bounds: [64, 41, 10, 10]
+    shapeName: rect
+    fill: { type: solid, color: "$coral" }
+  - elementId: header-kicker
+    elementType: text
+    bounds: [84, 36, 420, 20]
+    content:
+      style: "$kicker"
+      text: 肆 · 赞助档位 PARTNERSHIP TIERS
+  - elementId: header-tag
+    elementType: text
+    bounds: [556, 36, 340, 20]
+    content:
+      style: "$small"
+      letterSpacing: 2
+      align: [right, top]
+      text: TIDAL FEST 2026 · 招商合作方案
+  - elementId: header-rule
+    elementType: shape
+    bounds: [64, 64, 832, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: page-title
+    elementType: text
+    bounds: [64, 82, 420, 36]
+    content:
+      style: "$disp"
+      fontSize: 26
+      wrap: false
+      text: 四档合作权益一览
+  - elementId: title-note
+    elementType: text
+    bounds: [496, 92, 400, 18]
+    content:
+      style: "$small"
+      align: [right, top]
+      text: 价格单位：万元 / 届 · 可按品牌需求定制组合
+
+  # ---- 权益表 ----
+  - elementId: tier-table
+    elementType: table
+    bounds: [64, 130, 832, 322]
+    columnWidths: [0.22, 0.195, 0.195, 0.195, 0.195]
+    rowHeights: [0.16, 0.168, 0.168, 0.168, 0.168, 0.168]
+    style: "$default"
+    rows:
+      - - text: 权益 / 档位
+        - text: |
+            <p>冠名合作</p>
+            <p><span style="font-size:10.5px;">¥800 万 · 1 席</span></p>
+          fill: { type: solid, color: "$coral" }
+          color: "$night"
+        - text: |
+            <p>联合呈现</p>
+            <p><span style="font-size:10.5px;">¥400 万 · 2 席</span></p>
+        - text: |
+            <p>指定合作</p>
+            <p><span style="font-size:10.5px;">¥150 万 · 6 席</span></p>
+        - text: |
+            <p>市集摊位</p>
+            <p><span style="font-size:10.5px;">¥20 万 · 40 席</span></p>
+      - - text: 舞台冠名
+          bold: true
+          align: [left, middle]
+        - text: 主舞台独家冠名
+          bold: true
+          color: "$coralDeep"
+          fill: { type: solid, color: "$peachTint" }
+        - text: 新声舞台冠名
+        - text: —
+        - text: —
+      - - text: 现场露出物料
+          bold: true
+          align: [left, middle]
+        - text: 主视觉 + 全场物料
+          bold: true
+          color: "$coralDeep"
+          fill: { type: solid, color: "$peachTint" }
+        - text: 舞台周边物料
+        - text: 指定区域物料
+        - text: 摊位招牌
+      - - text: 票务权益
+          bold: true
+          align: [left, middle]
+        - text: VIP 票 200 张
+          bold: true
+          color: "$coralDeep"
+          fill: { type: solid, color: "$peachTint" }
+        - text: VIP 票 80 张
+        - text: 门票 40 张
+        - text: 门票 8 张
+      - - text: 展位与快闪
+          bold: true
+          align: [left, middle]
+        - text: 核心区快闪店 80㎡
+          bold: true
+          color: "$coralDeep"
+          fill: { type: solid, color: "$peachTint" }
+        - text: 品牌展位 30㎡
+        - text: 标准展位 9㎡
+        - text: 市集摊位 3×3m
+      - - text: 传播资源
+          bold: true
+          align: [left, middle]
+        - text: 全周期联合传播
+          bold: true
+          color: "$coralDeep"
+          fill: { type: solid, color: "$peachTint" }
+        - text: 爆发期联合传播
+        - text: 官方单条鸣谢
+        - text: 官方合集鸣谢
+
+  - elementId: table-footnote
+    elementType: text
+    bounds: [64, 462, 832, 18]
+    content:
+      style: "$small"
+      text: "* 以上为单届合作参考价（示例数据）；冠名 / 联合呈现档含品类排他条款，具体权益以正式合同为准。"
+
+  - elementId: footer-left
+    elementType: text
+    bounds: [64, 512, 340, 16]
+    content:
+      style: "$small"
+      text: 潮汐音乐节 TIDAL FEST 2026
+  - elementId: footer-page
+    elementType: text
+    bounds: [856, 512, 40, 16]
+    content:
+      style: "$small"
+      align: [right, top]
+      text: 05 / 07

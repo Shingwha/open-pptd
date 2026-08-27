@@ -1,0 +1,168 @@
+pageType: cover
+background:
+  type: solid
+  color: "$paper"
+notes: |
+  开场：这是一本"数据杂志"的封面。强调刊号（VOL.2025 · ANNUAL ISSUE）与编辑部口吻——本年报到此为止的所有数字均为虚构演示，但结构自洽，可作为数据报告模板替换真实口径。
+elements:
+  - elementId: masthead-name
+    elementType: text
+    bounds: [60, 30, 500, 20]
+    content:
+      style: "$masthead"
+      color: "$ink"
+      align: [left, middle]
+      text: 两轮城市研究院 · URBAN CYCLING ANNUAL
+
+  - elementId: masthead-issue
+    elementType: text
+    bounds: [560, 30, 340, 20]
+    content:
+      style: "$masthead"
+      color: "$ink"
+      align: [right, middle]
+      text: VOL.2025 · ANNUAL ISSUE
+
+  - elementId: masthead-rule
+    elementType: shape
+    bounds: [60, 58, 840, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$ink" }
+
+  - elementId: wheel-ring-outer
+    elementType: shape
+    bounds: [648, 126, 264, 264]
+    shapeName: ellipse
+    border: { style: solid, width: 1, color: "$mist" }
+
+  - elementId: wheel-ring-main
+    elementType: shape
+    bounds: [664, 142, 232, 232]
+    shapeName: ellipse
+    border: { style: solid, width: 2, color: "$ink" }
+
+  - elementId: wheel-arc
+    elementType: shape
+    bounds: [664, 142, 232, 232]
+    shapeName: blockArc
+    adjustments: [10800000, 0, 9000]
+    fill: { type: solid, color: "$orange" }
+
+  - elementId: wheel-spoke-v
+    elementType: line
+    bounds: [664, 142, 232, 232]
+    viewBox: [232, 232]
+    points: "116,4 116,228"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$line" }
+
+  - elementId: wheel-spoke-h
+    elementType: line
+    bounds: [664, 142, 232, 232]
+    viewBox: [232, 232]
+    points: "4,116 228,116"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$line" }
+
+  - elementId: wheel-spoke-d1
+    elementType: line
+    bounds: [664, 142, 232, 232]
+    viewBox: [232, 232]
+    points: "30,30 202,202"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$line" }
+
+  - elementId: wheel-spoke-d2
+    elementType: line
+    bounds: [664, 142, 232, 232]
+    viewBox: [232, 232]
+    points: "202,30 30,202"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$line" }
+
+  - elementId: wheel-hub
+    elementType: shape
+    bounds: [768, 246, 24, 24]
+    shapeName: ellipse
+    fill: { type: solid, color: "$orange" }
+
+  - elementId: cover-kicker
+    elementType: text
+    bounds: [60, 122, 520, 22]
+    content:
+      style: "$kicker"
+      align: [left, middle]
+      wrap: false
+      text: 年度数据观察 · ANNUAL DATA REVIEW
+
+  - elementId: cover-title
+    elementType: text
+    bounds: [60, 152, 580, 88]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 60
+      color: "$ink"
+      letterSpacing: 2
+      align: [left, middle]
+      wrap: false
+      text: 两轮上的城市脉搏
+
+  - elementId: cover-subtitle
+    elementType: text
+    bounds: [60, 252, 560, 34]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 20
+      color: "$navy"
+      letterSpacing: 4
+      align: [left, middle]
+      wrap: false
+      text: 2025 城市骑行数据年报
+
+  - elementId: cover-editor-bar
+    elementType: shape
+    bounds: [60, 316, 40, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$orange" }
+
+  - elementId: cover-editor-note
+    elementType: text
+    bounds: [60, 332, 500, 60]
+    content:
+      fontFamily: "LXGW Heart Serif MN"
+      fontSize: 13
+      color: "$muted"
+      lineHeight: 1.7
+      align: [left, top]
+      text: 编者按：我们数了一整年的车轮转动，试图回答一个问题——一座城市的活力，能不能从两个轮子上读出来？
+
+  - elementId: wheel-caption
+    elementType: text
+    bounds: [648, 404, 264, 18]
+    content:
+      style: "$small"
+      align: [center, middle]
+      wrap: false
+      text: FIG.01 — 一只车轮的构成
+
+  - elementId: bottom-rule
+    elementType: shape
+    bounds: [60, 478, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: bottom-left
+    elementType: text
+    bounds: [60, 490, 520, 20]
+    content:
+      style: "$small"
+      align: [left, middle]
+      text: 两轮城市研究院 出品 · 共享单车 / 电单车城市出行观察
+
+  - elementId: bottom-right
+    elementType: text
+    bounds: [600, 490, 300, 20]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: 本刊数据均为虚构演示

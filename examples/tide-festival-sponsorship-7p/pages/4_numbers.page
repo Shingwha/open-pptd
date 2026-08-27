@@ -1,0 +1,228 @@
+pageType: content
+background:
+  type: solid
+  color: "$night"
+notes: 数据页（证明）：四个往届核心数据建立信任——观众、曝光、短视频播放、满意度；右侧柱状图显示三年观众增长，与 6.2 万人次互相印证。数据为示例占位。
+elements:
+  # ---- 页眉（深底版） ----
+  - elementId: header-dot
+    elementType: shape
+    bounds: [64, 41, 10, 10]
+    shapeName: rect
+    fill: { type: solid, color: "$coral" }
+  - elementId: header-kicker
+    elementType: text
+    bounds: [84, 36, 420, 20]
+    content:
+      style: "$kicker"
+      color: "$peach"
+      text: 叁 · 往届数据 TRACK RECORD
+  - elementId: header-tag
+    elementType: text
+    bounds: [556, 36, 340, 20]
+    content:
+      style: "$small"
+      color: "$mutedDark"
+      letterSpacing: 2
+      align: [right, top]
+      text: TIDAL FEST 2026 · 招商合作方案
+  - elementId: header-rule
+    elementType: shape
+    bounds: [64, 64, 832, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$lineDark" }
+
+  - elementId: page-title
+    elementType: text
+    bounds: [64, 82, 500, 38]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 28
+      color: "$cream"
+      letterSpacing: 2
+      wrap: false
+      text: 潮水，一年比一年高
+
+  # ---- 左：四大数据 ----
+  - elementId: stat1-num
+    elementType: text
+    bounds: [64, 146, 200, 52]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 40
+      color: "$coral"
+      wrap: false
+      align: [left, middle]
+      text: |
+        <p>6.2<span style="font-size:18px;"> 万</span></p>
+  - elementId: stat1-label
+    elementType: text
+    bounds: [64, 204, 200, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 12
+      bold: true
+      color: "$cream"
+      text: 两日观众人次
+  - elementId: stat1-sub
+    elementType: text
+    bounds: [64, 226, 200, 32]
+    content:
+      style: "$small"
+      color: "$mutedDark"
+      lineHeight: 1.5
+      text: 2025 届累计入场，较首届 +121%
+
+  - elementId: stat2-num
+    elementType: text
+    bounds: [300, 146, 200, 52]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 40
+      color: "$coral"
+      wrap: false
+      align: [left, middle]
+      text: |
+        <p>3.8<span style="font-size:18px;"> 亿</span></p>
+  - elementId: stat2-label
+    elementType: text
+    bounds: [300, 204, 200, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 12
+      bold: true
+      color: "$cream"
+      text: 全网曝光量
+  - elementId: stat2-sub
+    elementType: text
+    bounds: [300, 226, 200, 32]
+    content:
+      style: "$small"
+      color: "$mutedDark"
+      lineHeight: 1.5
+      text: 直播 + 话题 + 媒体报道合计
+
+  - elementId: stat3-num
+    elementType: text
+    bounds: [64, 316, 200, 52]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 40
+      color: "$coral"
+      wrap: false
+      align: [left, middle]
+      text: |
+        <p>12<span style="font-size:18px;"> 亿</span></p>
+  - elementId: stat3-label
+    elementType: text
+    bounds: [64, 374, 200, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 12
+      bold: true
+      color: "$cream"
+      text: 短视频话题播放
+  - elementId: stat3-sub
+    elementType: text
+    bounds: [64, 396, 200, 32]
+    content:
+      style: "$small"
+      color: "$mutedDark"
+      lineHeight: 1.5
+      text: "#潮汐音乐节 主话题累计"
+
+  - elementId: stat4-num
+    elementType: text
+    bounds: [300, 316, 200, 52]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 40
+      color: "$coral"
+      wrap: false
+      align: [left, middle]
+      text: |
+        <p>96<span style="font-size:18px;"> %</span></p>
+  - elementId: stat4-label
+    elementType: text
+    bounds: [300, 374, 200, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 12
+      bold: true
+      color: "$cream"
+      text: 观众满意度
+  - elementId: stat4-sub
+    elementType: text
+    bounds: [300, 396, 200, 32]
+    content:
+      style: "$small"
+      color: "$mutedDark"
+      lineHeight: 1.5
+      text: 离场问卷好评率（N=8,432）
+
+  # 数据区分隔线
+  - elementId: stats-vrule
+    elementType: shape
+    bounds: [280, 152, 1, 270]
+    shapeName: rect
+    fill: { type: solid, color: "$lineDark" }
+  - elementId: stats-hrule
+    elementType: shape
+    bounds: [64, 296, 416, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$lineDark" }
+
+  # ---- 右：三年观众增长柱状图 ----
+  - elementId: chart-title
+    elementType: text
+    bounds: [560, 138, 336, 22]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 14
+      color: "$cream"
+      wrap: false
+      text: 近三年观众人次（万）
+  - elementId: chart
+    elementType: chart
+    bounds: [560, 164, 336, 284]
+    fill: "$night"
+    data:
+      cols: [year, visitors]
+      rows:
+        - ["2023", 2.8]
+        - ["2024", 4.5]
+        - ["2025", 6.2]
+    fontFamily: "LXGW Neo XiHei"
+    legend: false
+    xAxis:
+      type: category
+      gridLine: false
+      axisLine: { color: "$lineDark", width: 1 }
+      label: { fontSize: 10.5, color: "$cream" }
+    yAxis:
+      min: 0
+      gridLine: { color: "$lineDark", width: 0.75 }
+      label: { fontSize: 10.5, color: "$mutedDark", numberFormat: "0.0" }
+    barWidth: 0.45
+    series:
+      - type: bar
+        encode: { x: year, y: visitors }
+        fill: "$coral"
+        dataLabels: { show: true, fontSize: 11, color: "$peach", numberFormat: "0.0" }
+
+  # ---- 页脚 ----
+  - elementId: src-note
+    elementType: text
+    bounds: [64, 492, 700, 16]
+    content:
+      style: "$small"
+      color: "$mutedDark"
+      text: 数据来源：主办方票务系统与第三方传播监测（2025 届，示例数据）
+  - elementId: footer-page
+    elementType: text
+    bounds: [856, 492, 40, 16]
+    content:
+      style: "$small"
+      color: "$mutedDark"
+      align: [right, top]
+      text: 04 / 07

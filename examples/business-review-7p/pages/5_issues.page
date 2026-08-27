@@ -1,50 +1,47 @@
 pageType: content
 background:
   type: solid
-  color: "$bg"
+  color: "$paper"
 notes: |
-  讲解建议：不回避问题。每个问题按“根因—对策—目标”讲，明确这是可控、可改善的结构性问题。
+  讲解建议：不回避问题。三处险滩按“读数—成因—治理”讲：华东续约缺口（78% vs 警戒线 85%）、获客成本上涨（CAC 1.9 万，+32%）、项目制支流收窄（占比 -4pct）。强调均有明确根因与对策，按季度复测，Q2 末半年度复判。
 elements:
-  - elementId: page-marker
-    elementType: shape
-    bounds: [872, 36, 28, 28]
-    shapeName: ellipse
-    fill: { type: solid, color: "$primary" }
-
-  - elementId: page-number
-    elementType: text
-    bounds: [872, 36, 28, 28]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 11
-      bold: true
-      color: "#FFFFFF"
-      align: [center, middle]
-      text: "04"
-
   - elementId: eyebrow
     elementType: text
-    bounds: [60, 38, 500, 24]
+    bounds: [60, 40, 400, 18]
     content:
       style: "$eyebrow"
       align: [left, middle]
-      text: 04 · 问题与风险
+      text: 远川 2025 · 水文年报
 
-  - elementId: title
+  - elementId: meta-right
     elementType: text
-    bounds: [60, 66, 840, 46]
+    bounds: [600, 40, 300, 18]
     content:
-      style: "$title"
-      align: [left, middle]
-      text: 两个结构性问题，必须在上半年解决
+      style: "$small"
+      fontSize: 10
+      align: [right, middle]
+      text: 里程 K4 / K7
 
-  - elementId: subtitle
+  - elementId: station-title
     elementType: text
-    bounds: [60, 116, 840, 26]
+    bounds: [60, 62, 600, 46]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 30
+      bold: true
+      color: "$ink"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="color:$gold;">K4</span>　险滩勘测</p>
+
+  - elementId: conclusion
+    elementType: text
+    bounds: [60, 116, 840, 24]
     content:
       style: "$subtitle"
       align: [left, middle]
-      text: 问题均有明确根因与对策；建议以季度为节点跟踪关闭，Q2结束时进行半年度复判。
+      text: 三处险滩均已探明成因、备好治理方案；按季度复测，Q2 末进行半年度复判。
 
   - elementId: header-rule
     elementType: shape
@@ -52,106 +49,283 @@ elements:
     shapeName: rect
     fill: { type: solid, color: "$line" }
 
-  - elementId: zone-rule-1
-    elementType: shape
-    bounds: [60, 318, 840, 1]
-    shapeName: rect
-    fill: { type: solid, color: "$line" }
-
-  - elementId: zone-rule-2
-    elementType: shape
-    bounds: [60, 500, 840, 1]
-    shapeName: rect
-    fill: { type: solid, color: "$line" }
-
-  - elementId: issue-1-number
+  # —— 险滩壹 ——
+  - elementId: i1-mark
     elementType: text
-    bounds: [60, 170, 90, 120]
+    bounds: [60, 166, 80, 92]
     content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 44
-      bold: true
-      color: "$accent"
       align: [left, top]
-      text: "01"
-
-  - elementId: issue-1-title
-    elementType: text
-    bounds: [168, 172, 732, 38]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 20
-      bold: true
-      color: "$text"
-      align: [left, middle]
-      text: 华东续约率 78%，低于目标 7 个百分点
-
-  - elementId: issue-1-cause
-    elementType: text
-    bounds: [168, 216, 732, 28]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 14
-      color: "$text"
-      lineHeight: 1.5
-      align: [left, top]
+      lineHeight: 1.2
       text: |
-        <p><strong>根因</strong>：交付资源错配，客户成功覆盖率仅 42%；续约风险集中在年合同额 50 万元以下客户。</p>
+        <p><span style="font-size:10px; color:$rust; font-family:LXGW Neo XiHei; "><strong>险滩</strong></span></p>
+        <p><span style="font-size:40px; color:$rust; font-family:Source Han Serif CN;"><strong>壹</strong></span></p>
 
-  - elementId: issue-1-action
+  - elementId: i1-title
     elementType: text
-    bounds: [168, 252, 732, 56]
+    bounds: [150, 168, 500, 26]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 17
+      bold: true
+      color: "$ink"
+      align: [left, middle]
+      text: 华东河段续约缺口
+
+  - elementId: i1-reading
+    elementType: text
+    bounds: [640, 168, 260, 26]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 14
+      bold: true
+      color: "$rust"
+      align: [right, middle]
+      text: 78% vs 警戒线 85%
+
+  - elementId: i1-body
+    elementType: text
+    bounds: [150, 200, 750, 56]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 14
-      color: "$text"
+      fontSize: 11.5
+      color: "$ink"
       lineHeight: 1.6
       align: [left, top]
       text: |
-        <p><strong>对策</strong>：客户成功团队由 3 人扩至 8 人；6月底前完成 Top 40 客户健康度复盘，Q2 续约率目标 82%。</p>
+        <p><strong>成因</strong>　交付资源错配，客户成功覆盖率仅 42%；续约风险集中在年合同额 50 万元以下客户。</p>
+        <p><strong>治理</strong>　客户成功团队 3→8 人；6 月底前完成 Top 40 客户健康度复盘，Q2 续约率目标 82%。</p>
 
-  - elementId: issue-2-number
+  - elementId: i-rule-1
+    elementType: shape
+    bounds: [60, 268, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # —— 险滩贰 ——
+  - elementId: i2-mark
     elementType: text
-    bounds: [60, 340, 90, 120]
+    bounds: [60, 278, 80, 92]
     content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 44
-      bold: true
-      color: "$accent"
       align: [left, top]
-      text: "02"
-
-  - elementId: issue-2-title
-    elementType: text
-    bounds: [168, 342, 732, 38]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 20
-      bold: true
-      color: "$text"
-      align: [left, middle]
-      text: 新客获客成本 CAC 回升至 1.9 万元，同比 +32%
-
-  - elementId: issue-2-cause
-    elementType: text
-    bounds: [168, 386, 732, 28]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 14
-      color: "$text"
-      lineHeight: 1.5
-      align: [left, top]
+      lineHeight: 1.2
       text: |
-        <p><strong>根因</strong>：线索质量下降，付费渠道贡献过度集中在单一来源，自然线索占比持续走低。</p>
+        <p><span style="font-size:10px; color:$rust; font-family:LXGW Neo XiHei;"><strong>险滩</strong></span></p>
+        <p><span style="font-size:40px; color:$rust; font-family:Source Han Serif CN;"><strong>贰</strong></span></p>
 
-  - elementId: issue-2-action
+  - elementId: i2-title
     elementType: text
-    bounds: [168, 422, 732, 56]
+    bounds: [150, 280, 500, 26]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 17
+      bold: true
+      color: "$ink"
+      align: [left, middle]
+      text: 上游来水变贵：获客成本持续上涨
+
+  - elementId: i2-reading
+    elementType: text
+    bounds: [640, 280, 260, 26]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 14
+      bold: true
+      color: "$rust"
+      align: [right, middle]
+      text: CAC 1.9万 · +32%
+
+  - elementId: i2-body
+    elementType: text
+    bounds: [150, 312, 750, 56]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 14
-      color: "$text"
+      fontSize: 11.5
+      color: "$ink"
       lineHeight: 1.6
       align: [left, top]
       text: |
-        <p><strong>对策</strong>：重建内容获客与伙伴转介绍体系；Q2 单客户 CAC 目标 ≤1.6 万元，付费渠道占比压降至 60% 以下。</p>
+        <p><strong>成因</strong>　线索质量下降，付费渠道贡献过度集中于单一来源，自然线索占比持续走低。</p>
+        <p><strong>治理</strong>　重建内容获客与伙伴转介绍体系；Q2 单客户 CAC ≤1.6 万，付费渠道占比压至 60% 以下。</p>
+
+  - elementId: i-rule-2
+    elementType: shape
+    bounds: [60, 380, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # —— 险滩叁 ——
+  - elementId: i3-mark
+    elementType: text
+    bounds: [60, 390, 80, 92]
+    content:
+      align: [left, top]
+      lineHeight: 1.2
+      text: |
+        <p><span style="font-size:10px; color:$rust; font-family:LXGW Neo XiHei;"><strong>险滩</strong></span></p>
+        <p><span style="font-size:40px; color:$rust; font-family:Source Han Serif CN;"><strong>叁</strong></span></p>
+
+  - elementId: i3-title
+    elementType: text
+    bounds: [150, 392, 500, 26]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 17
+      bold: true
+      color: "$ink"
+      align: [left, middle]
+      text: 项目制支流收窄，短期流量缺口
+
+  - elementId: i3-reading
+    elementType: text
+    bounds: [640, 392, 260, 26]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 14
+      bold: true
+      color: "$rust"
+      align: [right, middle]
+      text: 占比 27% · -4pct
+
+  - elementId: i3-body
+    elementType: text
+    bounds: [150, 424, 750, 56]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11.5
+      color: "$ink"
+      lineHeight: 1.6
+      align: [left, top]
+      text: |
+        <p><strong>成因</strong>　低毛利项目制收入主动收缩，叠加大客户交付周期拉长，形成短期流量缺口。</p>
+        <p><strong>治理</strong>　以订阅产品承接溢出需求；项目制聚焦战略客户，毛利优先于规模，缺口由干流增量对冲。</p>
+
+  # —— 河流里程线 K0–K7 ——
+  - elementId: river-base
+    elementType: shape
+    bounds: [48, 501, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: river-tick-0
+    elementType: shape
+    bounds: [48, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-1
+    elementType: shape
+    bounds: [171, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-2
+    elementType: shape
+    bounds: [295, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-3
+    elementType: shape
+    bounds: [418, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-5
+    elementType: shape
+    bounds: [665, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-6
+    elementType: shape
+    bounds: [789, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-7
+    elementType: shape
+    bounds: [912, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+
+  - elementId: river-label-0
+    elementType: text
+    bounds: [28, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K0
+  - elementId: river-label-1
+    elementType: text
+    bounds: [151, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K1
+  - elementId: river-label-2
+    elementType: text
+    bounds: [275, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K2
+  - elementId: river-label-3
+    elementType: text
+    bounds: [398, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K3
+  - elementId: river-label-5
+    elementType: text
+    bounds: [645, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K5
+  - elementId: river-label-6
+    elementType: text
+    bounds: [769, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K6
+  - elementId: river-label-7
+    elementType: text
+    bounds: [892, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K7
+
+  - elementId: river-active
+    elementType: shape
+    bounds: [537, 496, 10, 10]
+    shapeName: diamond
+    fill: { type: solid, color: "$gold" }
+
+  - elementId: river-station
+    elementType: text
+    bounds: [472, 512, 140, 15]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      bold: true
+      color: "$gold"
+      align: [center, top]
+      text: K4 · 险滩勘测

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-08-15T05:25:30.973Z",
+  "generated": "2026-08-27T13:40:16.813Z",
   "entries": [
     {
       "id": "brand-mori-showcase-7p",
@@ -21,13 +21,13 @@
     },
     {
       "id": "business-review-7p",
-      "title": "远川科技 2025年度经营复盘与2026年增长策略",
-      "description": "管理汇报场景示例：深绿 × 金棕年度复盘配色，思源宋体标题配霞鹜新晰黑正文，净利润瀑布图、收入结构环形图、区域续约率三线表，以行动请求（asks）页收尾",
+      "title": "远川 2025 · 一条河的水文年报",
+      "description": "管理汇报场景示例：「一条河的水文年报」叙事——收入=流量、现金流=水位、续约缺口=险滩；深潭墨绿×鎏金，贯穿全篇的河流里程线 K0→K7 进度系统、思源宋体巨号读数、净利润瀑布图与流域环形图",
       "tags": [
         "管理汇报",
         "年度复盘",
+        "水文叙事",
         "瀑布图",
-        "环形图",
         "思源宋体"
       ],
       "pages": 7,
@@ -36,6 +36,25 @@
         "霞鹜新晰黑"
       ],
       "deck": "examples/business-review-7p/deck.pptd"
+    },
+    {
+      "id": "city-cycling-report-7p",
+      "title": "两轮上的城市脉搏 · 2025 城市骑行数据年报",
+      "description": "数据报告场景示例：编辑部数据新闻杂志风，米白纸底 × 深夜蓝 × 日落橙，数黑体巨号数据与图表矩阵（分时热力曲线、画像环形图、车辆生命旅程时间轴、城市榜单表格）",
+      "tags": [
+        "数据报告",
+        "数据新闻",
+        "杂志风",
+        "图表矩阵",
+        "阿里妈妈数黑体"
+      ],
+      "pages": 7,
+      "fonts": [
+        "阿里妈妈数黑体",
+        "霞鹜新晰黑",
+        "霞鹜铭心宋"
+      ],
+      "deck": "examples/city-cycling-report-7p/deck.pptd"
     },
     {
       "id": "ev-range",
@@ -123,6 +142,24 @@
         "MiSans"
       ],
       "deck": "examples/tech-architecture-review-7p/deck.pptd"
+    },
+    {
+      "id": "tide-festival-sponsorship-7p",
+      "title": "潮汐音乐节 TIDAL FEST 2026 · 招商合作方案",
+      "description": "活动策划 / 品牌招商场景：海边音乐节赞助提案，日落海报风，暮紫×珊瑚橙撞色，站酷庆科黄油体标题，深浅底色交替形成潮汐涨落节奏，覆盖日程矩阵、权益表格与数据图表",
+      "tags": [
+        "活动招商",
+        "海报风",
+        "表格",
+        "图表",
+        "深浅交替"
+      ],
+      "pages": 7,
+      "fonts": [
+        "站酷庆科黄油体",
+        "霞鹜新晰黑"
+      ],
+      "deck": "examples/tide-festival-sponsorship-7p/deck.pptd"
     }
   ]
 }

@@ -10,25 +10,36 @@
 
 ## 示例画廊
 
-仓库自带 7 套精选示例（`examples/`），点击标题直接在线打开编辑：
+仓库自带 9 套精选示例（`examples/`），点击标题直接在线打开编辑：
 
 | 示例 | 场景 | 亮点 |
 |---|---|---|
-| [远川科技经营复盘](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd) | 管理汇报 · 7 页 | 净利润瀑布图、收入结构环形图、续约率三线表、行动请求页 |
+| [远川 2025 · 一条河的水文年报](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd) | 管理汇报 · 7 页 | 水文叙事（流量/水位/险滩/入海口）、贯穿全篇的河流里程线 K0→K7、思源宋体巨号读数、瀑布图 |
 | [电动汽车续驶里程预测](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fev-range%2Fdeck.pptd) | 学术答辩 · 17 页 | LaTeX 公式混排、图片排版、章节结构 |
 | [屿光品牌手册](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fislelight-brand-book%2Fdeck.pptd) | 品牌创意 · 7 页 | 克莱因蓝瑞士海报风、黑白摄影构图 |
 | [MORI 森野品牌提案](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbrand-mori-showcase-7p%2Fdeck.pptd) | 品牌创意 · 7 页 | 纸白/墨黑/信号红三色纪律、超大字号排版 |
 | [秒排 A 轮商业计划](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fmiaopai-saas-bp%2Fdeck.pptd) | 融资 BP · 7 页 | 墨黑 × 荧光黄绿撞色、TAM/SAM/SOM 嵌套图、时间线 |
 | [山茗集品牌发布会](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fshanmingji-2026-launch%2Fdeck.pptd) | 新中式 · 7 页 | 表格、图片、中式装饰版式、三字体混排 |
 | [订单中台架构评审](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftech-architecture-review-7p%2Fdeck.pptd) | 技术评审 · 7 页 | 现状/目标架构链路对比、机制取舍、灰度迁移路线 |
+| [两轮上的城市脉搏 · 骑行数据年报](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fcity-cycling-report-7p%2Fdeck.pptd) | 数据报告 · 7 页 | 编辑部数据新闻杂志风、巨号数据换算注记、图表矩阵、城市榜单表格 |
+| [潮汐音乐节 · 招商合作方案](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftide-festival-sponsorship-7p%2Fdeck.pptd) | 活动招商 · 7 页 | 暮紫×珊瑚橙日落海报风、黄油体标题、深浅交替潮汐节奏、赞助权益表 |
 
 <p align="center">
-  <img src="docs/images/business-review.png" width="45%" alt="远川科技经营复盘"/>
-  <img src="docs/images/ev-range.png" width="45%" alt="电动汽车续驶里程预测"/>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd"><img src="docs/images/business-review.png" width="32%" alt="远川 2025 · 一条河的水文年报"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fcity-cycling-report-7p%2Fdeck.pptd"><img src="docs/images/city-cycling.png" width="32%" alt="两轮上的城市脉搏 · 骑行数据年报"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftide-festival-sponsorship-7p%2Fdeck.pptd"><img src="docs/images/tide-festival.png" width="32%" alt="潮汐音乐节 · 招商合作方案"/></a>
 </p>
 
 <p align="center">
-  <img src="docs/images/shanmingji.png" width="45%" alt="山茗集品牌发布会"/>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fmiaopai-saas-bp%2Fdeck.pptd"><img src="docs/images/miaopai.png" width="32%" alt="秒排 A 轮商业计划"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fislelight-brand-book%2Fdeck.pptd"><img src="docs/images/islelight.png" width="32%" alt="屿光品牌手册"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbrand-mori-showcase-7p%2Fdeck.pptd"><img src="docs/images/brand-mori.png" width="32%" alt="MORI 森野品牌提案"/></a>
+</p>
+
+<p align="center">
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fshanmingji-2026-launch%2Fdeck.pptd"><img src="docs/images/shanmingji.png" width="32%" alt="山茗集品牌发布会"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftech-architecture-review-7p%2Fdeck.pptd"><img src="docs/images/tech-architecture.png" width="32%" alt="订单中台架构评审"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fev-range%2Fdeck.pptd"><img src="docs/images/ev-range.png" width="32%" alt="电动汽车续驶里程预测"/></a>
 </p>
 
 ## 这是什么

@@ -1,0 +1,226 @@
+pageType: content
+background:
+  type: solid
+  color: "$paper"
+notes: |
+  年度总览页。四个巨号数字是全年报的锚点，讲述顺序建议：订单 → 里程 → 碳减排 → 用户。每个数字下方的"生活化换算"是这页的记忆点，可放慢语速。所有换算口径自洽：42亿公里 ÷ 4万公里 ≈ 10.5万圈；8.6亿单 ÷ 365天 ÷ 86400秒 ≈ 每秒27单；112万吨 ÷ 单树年固碳约18kg ≈ 6200万棵。
+elements:
+  - elementId: masthead-name
+    elementType: text
+    bounds: [60, 24, 420, 18]
+    content:
+      style: "$masthead"
+      align: [left, middle]
+      text: 两轮城市研究院 · URBAN CYCLING ANNUAL
+
+  - elementId: masthead-folio
+    elementType: text
+    bounds: [560, 24, 340, 18]
+    content:
+      style: "$masthead"
+      align: [right, middle]
+      text: VOL.2025 · No.02 / 07
+
+  - elementId: masthead-rule
+    elementType: shape
+    bounds: [60, 48, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$ink" }
+
+  - elementId: ch-num
+    elementType: text
+    bounds: [60, 66, 80, 56]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 44
+      color: "$orange"
+      align: [left, middle]
+      wrap: false
+      text: "01"
+
+  - elementId: page-kicker
+    elementType: text
+    bounds: [150, 72, 500, 18]
+    content:
+      style: "$kicker"
+      align: [left, middle]
+      wrap: false
+      text: 年度总览 · THE YEAR IN NUMBERS
+
+  - elementId: page-title
+    elementType: text
+    bounds: [150, 92, 750, 38]
+    content:
+      style: "$title"
+      align: [left, middle]
+      wrap: false
+      text: 一年 8.6 亿次出发，两轮成为城市的毛细血管
+
+  - elementId: stat1-label
+    elementType: text
+    bounds: [60, 190, 190, 18]
+    content:
+      style: "$kicker"
+      color: "$navy"
+      fontSize: 11
+      letterSpacing: 2
+      align: [left, middle]
+      wrap: false
+      text: 骑行订单
+
+  - elementId: stat1-num
+    elementType: text
+    bounds: [60, 212, 190, 58]
+    content:
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="font-size:44px; font-family:Alimama ShuHeiTi; color:$navy;">8.6</span><span style="font-size:16px; font-family:LXGW Neo XiHei; color:$ink;"> 亿次</span></p>
+
+  - elementId: stat1-note
+    elementType: text
+    bounds: [60, 280, 185, 66]
+    content:
+      style: "$serif-note"
+      align: [left, top]
+      text: 平均到每一秒，全国有 27 辆车被扫码解锁。
+
+  - elementId: stat-sep1
+    elementType: shape
+    bounds: [258, 196, 1, 150]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: stat2-label
+    elementType: text
+    bounds: [280, 190, 190, 18]
+    content:
+      style: "$kicker"
+      color: "$navy"
+      fontSize: 11
+      letterSpacing: 2
+      align: [left, middle]
+      wrap: false
+      text: 总里程
+
+  - elementId: stat2-num
+    elementType: text
+    bounds: [280, 212, 190, 58]
+    content:
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="font-size:44px; font-family:Alimama ShuHeiTi; color:$navy;">42</span><span style="font-size:16px; font-family:LXGW Neo XiHei; color:$ink;"> 亿公里</span></p>
+
+  - elementId: stat2-note
+    elementType: text
+    bounds: [280, 280, 185, 66]
+    content:
+      style: "$serif-note"
+      align: [left, top]
+      text: 首尾相接，约可绕地球 10.5 万圈。
+
+  - elementId: stat-sep2
+    elementType: shape
+    bounds: [478, 196, 1, 150]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: stat3-label
+    elementType: text
+    bounds: [500, 190, 190, 18]
+    content:
+      style: "$kicker"
+      color: "$navy"
+      fontSize: 11
+      letterSpacing: 2
+      align: [left, middle]
+      wrap: false
+      text: 碳减排
+
+  - elementId: stat3-num
+    elementType: text
+    bounds: [500, 212, 190, 58]
+    content:
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="font-size:44px; font-family:Alimama ShuHeiTi; color:$orange;">112</span><span style="font-size:16px; font-family:LXGW Neo XiHei; color:$ink;"> 万吨</span></p>
+
+  - elementId: stat3-note
+    elementType: text
+    bounds: [500, 280, 185, 66]
+    content:
+      style: "$serif-note"
+      align: [left, top]
+      text: 约等于 6,200 万棵树一整年的固碳量。
+
+  - elementId: stat-sep3
+    elementType: shape
+    bounds: [698, 196, 1, 150]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: stat4-label
+    elementType: text
+    bounds: [720, 190, 190, 18]
+    content:
+      style: "$kicker"
+      color: "$navy"
+      fontSize: 11
+      letterSpacing: 2
+      align: [left, middle]
+      wrap: false
+      text: 活跃用户
+
+  - elementId: stat4-num
+    elementType: text
+    bounds: [720, 212, 190, 58]
+    content:
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="font-size:44px; font-family:Alimama ShuHeiTi; color:$navy;">1.9</span><span style="font-size:16px; font-family:LXGW Neo XiHei; color:$ink;"> 亿人</span></p>
+
+  - elementId: stat4-note
+    elementType: text
+    bounds: [720, 280, 180, 66]
+    content:
+      style: "$serif-note"
+      align: [left, top]
+      text: 每 5 个城镇居民中，就有 1 位骑行者。
+
+  - elementId: editor-bar
+    elementType: shape
+    bounds: [60, 396, 36, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$orange" }
+
+  - elementId: editor-label
+    elementType: text
+    bounds: [60, 410, 200, 18]
+    content:
+      style: "$kicker"
+      align: [left, middle]
+      wrap: false
+      text: 编者按
+
+  - elementId: editor-text
+    elementType: text
+    bounds: [60, 432, 840, 56]
+    content:
+      fontFamily: "LXGW Heart Serif MN"
+      fontSize: 12
+      color: "$muted"
+      lineHeight: 1.7
+      align: [left, top]
+      text: 数字本身不会骑车。8.6 亿次订单背后，是 8.6 亿次"最后一公里"的具体人生：赶地铁的清晨、夜归的晚风，和不愿等公交的十分钟。我们试图用数据，把这些瞬间重新读出来。
+
+  - elementId: source-line
+    elementType: text
+    bounds: [60, 510, 700, 16]
+    content:
+      style: "$small"
+      align: [left, middle]
+      wrap: false
+      text: 数据来源：两轮城市研究院 · 2025 城市骑行监测样本（虚构演示数据）· 换算口径见本页注记

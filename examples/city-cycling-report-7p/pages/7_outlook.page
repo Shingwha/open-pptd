@@ -1,0 +1,181 @@
+pageType: final
+background:
+  type: solid
+  color: "$navy"
+notes: |
+  收尾页，深夜蓝封底与米白封面形成呼应。三条 2026 趋势判断：电单车占比 29% → 38%、通勤单次距离 2.4 → 3.2 公里、12 城碳积分试点（呼应第 2 页的 112 万吨碳减排）。刊语之后读出编辑部落款，结束全刊。
+elements:
+  - elementId: masthead-name
+    elementType: text
+    bounds: [60, 24, 420, 18]
+    content:
+      style: "$masthead"
+      color: "$mist"
+      align: [left, middle]
+      text: 两轮城市研究院 · URBAN CYCLING ANNUAL
+
+  - elementId: masthead-folio
+    elementType: text
+    bounds: [560, 24, 340, 18]
+    content:
+      style: "$masthead"
+      color: "$mist"
+      align: [right, middle]
+      text: VOL.2025 · No.07 / 07
+
+  - elementId: masthead-rule
+    elementType: shape
+    bounds: [60, 48, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$orange" }
+
+  - elementId: page-kicker
+    elementType: text
+    bounds: [60, 84, 500, 20]
+    content:
+      style: "$kicker"
+      align: [left, middle]
+      wrap: false
+      text: 2026 展望 · LOOKING AHEAD
+
+  - elementId: page-title
+    elementType: text
+    bounds: [60, 108, 700, 44]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 30
+      color: "$cream"
+      align: [left, middle]
+      wrap: false
+      text: 三个正在发生的趋势
+
+  - elementId: trend1-num
+    elementType: text
+    bounds: [60, 178, 80, 46]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 36
+      color: "$orange"
+      align: [left, middle]
+      wrap: false
+      text: "01"
+
+  - elementId: trend1-title
+    elementType: text
+    bounds: [150, 180, 640, 24]
+    content:
+      style: "$h3"
+      fontSize: 15
+      color: "$cream"
+      align: [left, middle]
+      wrap: false
+      text: 电单车订单占比向 38% 迈进
+
+  - elementId: trend1-body
+    elementType: text
+    bounds: [150, 208, 690, 40]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      color: "$navySoft"
+      align: [left, top]
+      text: 2025 年电单车订单占比 29%；长距离通勤电动化将推动其在 2026 年升至 38%，平均骑行时速提升至 16 公里。
+
+  - elementId: trend-rule1
+    elementType: shape
+    bounds: [60, 258, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$navyRule" }
+
+  - elementId: trend2-num
+    elementType: text
+    bounds: [60, 272, 80, 46]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 36
+      color: "$orange"
+      align: [left, middle]
+      wrap: false
+      text: "02"
+
+  - elementId: trend2-title
+    elementType: text
+    bounds: [150, 274, 640, 24]
+    content:
+      style: "$h3"
+      fontSize: 15
+      color: "$cream"
+      align: [left, middle]
+      wrap: false
+      text: 通勤半径继续扩大
+
+  - elementId: trend2-body
+    elementType: text
+    bounds: [150, 302, 690, 40]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      color: "$navySoft"
+      align: [left, top]
+      text: 通勤场景平均单次距离预计从 2.4 公里扩至 3.2 公里，"骑行 + 地铁"组合通勤的占比将升至 27%。
+
+  - elementId: trend-rule2
+    elementType: shape
+    bounds: [60, 352, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$navyRule" }
+
+  - elementId: trend3-num
+    elementType: text
+    bounds: [60, 366, 80, 46]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 36
+      color: "$orange"
+      align: [left, middle]
+      wrap: false
+      text: "03"
+
+  - elementId: trend3-title
+    elementType: text
+    bounds: [150, 368, 640, 24]
+    content:
+      style: "$h3"
+      fontSize: 15
+      color: "$cream"
+      align: [left, middle]
+      wrap: false
+      text: 碳积分走向制度化
+
+  - elementId: trend3-body
+    elementType: text
+    bounds: [150, 396, 690, 40]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      color: "$navySoft"
+      align: [left, top]
+      text: 预计 12 个城市试点将骑行碳减排计入个人碳账户——112 万吨的年度减排量，第一次有了"定价"。
+
+  - elementId: closing-quote
+    elementType: text
+    bounds: [60, 446, 840, 42]
+    content:
+      fontFamily: "LXGW Heart Serif MN"
+      fontSize: 13.5
+      color: "$cream"
+      lineHeight: 1.6
+      align: [left, top]
+      text: |
+        <p>"愿每一座城市的晚高峰，都有一辆好骑的车在等你。"</p>
+        <p style="text-align:right"><span style="font-size:11px; color:$mist;">—— 两轮城市研究院 · 编辑部</span></p>
+
+  - elementId: colophon
+    elementType: text
+    bounds: [60, 508, 840, 16]
+    content:
+      style: "$small"
+      color: "$mist"
+      align: [left, middle]
+      wrap: false
+      text: © 2025 两轮城市研究院 · URBAN CYCLING ANNUAL VOL.2025 · 本刊数据均为虚构演示 · 转载请注明出处

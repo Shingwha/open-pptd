@@ -1,0 +1,165 @@
+pageType: cover
+background:
+  type: solid
+  color: "$night"
+notes: 开场页（吸引）：潮汐音乐节 TIDAL FEST 2026 招商合作方案。日落海浪构图点题，先讲情绪——这是一场海边日落里的音乐节，再进入方案。
+elements:
+  # ---- 日落海浪构图（右下） ----
+  - elementId: sun-glow
+    elementType: shape
+    bounds: [578, 76, 280, 280]
+    shapeName: donut
+    adjustments: [400]
+    fill: { type: solid, color: "$peach" }
+    opacity: 0.35
+  - elementId: sun-top
+    elementType: shape
+    bounds: [598, 96, 240, 240]
+    shapeName: pie
+    adjustments: [10800000, 21600000]
+    fill: { type: solid, color: "$peach" }
+  - elementId: sun-bottom
+    elementType: shape
+    bounds: [598, 96, 240, 240]
+    shapeName: pie
+    adjustments: [0, 10800000]
+    fill: { type: solid, color: "$coral" }
+  - elementId: horizon-line
+    elementType: shape
+    bounds: [0, 336, 960, 1.5]
+    shapeName: rect
+    fill: { type: solid, color: "$peach" }
+    opacity: 0.45
+  - elementId: wave-back
+    elementType: shape
+    bounds: [-60, 330, 1080, 110]
+    shapeName: wave
+    fill: { type: solid, color: "$nightDeep" }
+    opacity: 0.95
+  - elementId: wave-mid
+    elementType: shape
+    bounds: [-60, 384, 1080, 100]
+    shapeName: wave
+    fill: { type: solid, color: "$peach" }
+    opacity: 0.16
+  - elementId: wave-front
+    elementType: shape
+    bounds: [-60, 436, 1080, 120]
+    shapeName: wave
+    fill: { type: solid, color: "$coral" }
+    opacity: 0.14
+  - elementId: glint-1
+    elementType: shape
+    bounds: [664, 396, 64, 7]
+    shapeName: ellipse
+    fill: { type: solid, color: "$coral" }
+    opacity: 0.55
+  - elementId: glint-2
+    elementType: shape
+    bounds: [688, 416, 40, 5]
+    shapeName: ellipse
+    fill: { type: solid, color: "$peach" }
+    opacity: 0.5
+  - elementId: star-1
+    elementType: shape
+    bounds: [872, 56, 8, 8]
+    shapeName: ellipse
+    fill: { type: solid, color: "$peach" }
+  - elementId: star-2
+    elementType: shape
+    bounds: [904, 96, 5, 5]
+    shapeName: ellipse
+    fill: { type: solid, color: "$cream" }
+    opacity: 0.7
+  - elementId: star-3
+    elementType: shape
+    bounds: [848, 122, 4, 4]
+    shapeName: ellipse
+    fill: { type: solid, color: "$coral" }
+
+  # ---- 左侧文字 ----
+  - elementId: kicker-dot
+    elementType: shape
+    bounds: [64, 55, 10, 10]
+    shapeName: ellipse
+    fill: { type: solid, color: "$coral" }
+  - elementId: kicker
+    elementType: text
+    bounds: [84, 50, 460, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      bold: true
+      letterSpacing: 4
+      color: "$peach"
+      text: TIDAL FEST 2026 · 澜屿市
+  - elementId: title
+    elementType: text
+    bounds: [60, 118, 520, 110]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 84
+      color: "$cream"
+      letterSpacing: 4
+      align: [left, middle]
+      wrap: false
+      text: 潮汐音乐节
+  - elementId: title-en
+    elementType: text
+    bounds: [64, 240, 520, 30]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 24
+      color: "$coral"
+      letterSpacing: 8
+      wrap: false
+      text: TIDAL FEST 2026
+  - elementId: title-rule
+    elementType: shape
+    bounds: [64, 292, 120, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$coral" }
+  - elementId: tag-pill
+    elementType: shape
+    bounds: [64, 316, 168, 36]
+    shapeName: roundRect
+    adjustments: [50000]
+    fill: { type: solid, color: "$coral" }
+  - elementId: tag-pill-text
+    elementType: text
+    bounds: [64, 316, 168, 36]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      bold: true
+      letterSpacing: 2
+      color: "$night"
+      align: [center, middle]
+      text: 招商合作方案
+  - elementId: info-line
+    elementType: text
+    bounds: [64, 372, 480, 22]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "$cream"
+      letterSpacing: 1
+      text: 2026.07.18 – 07.19 · 澜屿市滨海公园
+  - elementId: agenda-line
+    elementType: text
+    bounds: [64, 500, 560, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$mutedDark"
+      letterSpacing: 1
+      text: 年度主题 · 阵容日程 · 往届数据 · 赞助权益 · 品牌共创 · 联系方式
+  - elementId: page-num
+    elementType: text
+    bounds: [856, 500, 40, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$mutedDark"
+      align: [right, top]
+      text: 01 / 07

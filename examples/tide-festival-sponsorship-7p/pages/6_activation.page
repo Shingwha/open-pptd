@@ -1,0 +1,232 @@
+pageType: content
+background:
+  type: solid
+  color: "$cream"
+notes: 共创页（深化）：上半部分三种品牌共创玩法（冠名 / 快闪 / 周边），下半部分波浪形传播时间线——预热 4 月、爆发 7 月、长尾 9 月，说明品牌预算换来的不止露出而是一整套传播动作。
+elements:
+  # ---- 页眉 ----
+  - elementId: header-dot
+    elementType: shape
+    bounds: [64, 41, 10, 10]
+    shapeName: rect
+    fill: { type: solid, color: "$coral" }
+  - elementId: header-kicker
+    elementType: text
+    bounds: [84, 36, 460, 20]
+    content:
+      style: "$kicker"
+      text: 伍 · 品牌共创 CO-CREATION & MEDIA
+  - elementId: header-tag
+    elementType: text
+    bounds: [556, 36, 340, 20]
+    content:
+      style: "$small"
+      letterSpacing: 2
+      align: [right, top]
+      text: TIDAL FEST 2026 · 招商合作方案
+  - elementId: header-rule
+    elementType: shape
+    bounds: [64, 64, 832, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: page-title
+    elementType: text
+    bounds: [64, 82, 460, 36]
+    content:
+      style: "$disp"
+      fontSize: 26
+      wrap: false
+      text: 不止露出：和品牌一起造浪
+
+  # ---- 三种共创玩法 ----
+  - elementId: p1-num
+    elementType: text
+    bounds: [64, 132, 44, 28]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 20
+      color: "$coralDeep"
+      wrap: false
+      text: "01"
+  - elementId: p1-title
+    elementType: text
+    bounds: [116, 134, 220, 24]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 15
+      color: "$night"
+      wrap: false
+      text: 品牌舞台冠名
+  - elementId: p1-desc
+    elementType: text
+    bounds: [116, 162, 720, 20]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      wrap: false
+      text: 把品牌写进节目单：舞台命名、舞美主视觉融入品牌色，主持人口播与直播角标全程跟随。
+  - elementId: p-rule-1
+    elementType: shape
+    bounds: [64, 196, 832, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: p2-num
+    elementType: text
+    bounds: [64, 208, 44, 28]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 20
+      color: "$coralDeep"
+      wrap: false
+      text: "02"
+  - elementId: p2-title
+    elementType: text
+    bounds: [116, 210, 220, 24]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 15
+      color: "$night"
+      wrap: false
+      text: 联名快闪区
+  - elementId: p2-desc
+    elementType: text
+    bounds: [116, 238, 720, 20]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      wrap: false
+      text: 滨海步道 300㎡ 品牌快闪地带：限定饮品站、互动装置与打卡动线，把人流变成体验。
+  - elementId: p-rule-2
+    elementType: shape
+    bounds: [64, 272, 832, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: p3-num
+    elementType: text
+    bounds: [64, 284, 44, 28]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 20
+      color: "$coralDeep"
+      wrap: false
+      text: "03"
+  - elementId: p3-title
+    elementType: text
+    bounds: [116, 286, 220, 24]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 15
+      color: "$night"
+      wrap: false
+      text: 潮汐限定周边
+  - elementId: p3-desc
+    elementType: text
+    bounds: [116, 314, 720, 20]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      wrap: false
+      text: 联名速干毛巾、荧光手环与限定包装现场发售，让观众把音乐节（和品牌）带回家。
+
+  # ---- 传播节奏时间线 ----
+  - elementId: tl-label
+    elementType: text
+    bounds: [64, 350, 400, 22]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 15
+      color: "$night"
+      wrap: false
+      text: 传播节奏 · 三段式浪潮
+  - elementId: tl-wave
+    elementType: shape
+    bounds: [64, 422, 832, 20]
+    shapeName: wave
+    fill: { type: solid, color: "$coral" }
+    opacity: 0.9
+  - elementId: tl-node-1
+    elementType: shape
+    bounds: [193, 425, 14, 14]
+    shapeName: ellipse
+    fill: { type: solid, color: "$coral" }
+    border: { style: solid, width: 2, color: "$cream" }
+  - elementId: tl-node-2
+    elementType: shape
+    bounds: [473, 425, 14, 14]
+    shapeName: ellipse
+    fill: { type: solid, color: "$coral" }
+    border: { style: solid, width: 2, color: "$cream" }
+  - elementId: tl-node-3
+    elementType: shape
+    bounds: [753, 425, 14, 14]
+    shapeName: ellipse
+    fill: { type: solid, color: "$coral" }
+    border: { style: solid, width: 2, color: "$cream" }
+  - elementId: tl-t1
+    elementType: text
+    bounds: [120, 382, 160, 20]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 14
+      color: "$night"
+      align: [center, top]
+      wrap: false
+      text: 预热期 · 04–06 月
+  - elementId: tl-d1
+    elementType: text
+    bounds: [100, 458, 200, 34]
+    content:
+      style: "$small"
+      align: [center, top]
+      text: 官宣海报 + 阵容倒计时，品牌悬念联动
+  - elementId: tl-t2
+    elementType: text
+    bounds: [400, 382, 160, 20]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 14
+      color: "$night"
+      align: [center, top]
+      wrap: false
+      text: 爆发期 · 07 月
+  - elementId: tl-d2
+    elementType: text
+    bounds: [380, 458, 200, 34]
+    content:
+      style: "$small"
+      align: [center, top]
+      text: 现场直播、话题挑战、KOL 打卡集中引爆
+  - elementId: tl-t3
+    elementType: text
+    bounds: [680, 382, 160, 20]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 14
+      color: "$night"
+      align: [center, top]
+      wrap: false
+      text: 长尾期 · 08–09 月
+  - elementId: tl-d3
+    elementType: text
+    bounds: [660, 458, 200, 34]
+    content:
+      style: "$small"
+      align: [center, top]
+      text: 官方纪录片与回顾短片，持续二次传播
+
+  - elementId: footer-left
+    elementType: text
+    bounds: [64, 512, 340, 16]
+    content:
+      style: "$small"
+      text: 潮汐音乐节 TIDAL FEST 2026
+  - elementId: footer-page
+    elementType: text
+    bounds: [856, 512, 40, 16]
+    content:
+      style: "$small"
+      align: [right, top]
+      text: 06 / 07

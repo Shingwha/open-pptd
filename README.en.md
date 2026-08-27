@@ -10,25 +10,36 @@ No installation needed — open the online gallery in a browser: curated decks w
 
 ## Example Gallery
 
-The repo ships with 7 curated examples in `examples/` — click a title to open it in the online editor:
+The repo ships with 9 curated examples in `examples/` — click a title to open it in the online editor:
 
 | Example | Scenario | Highlights |
 |---|---|---|
-| [Yuanchuan Tech Business Review](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd) | Management review · 7 slides | Net-profit waterfall, revenue donut chart, renewal-rate tables, closing asks page |
+| [Yuanchuan Hydrology Annual Report](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd) | Management review · 7 slides | Hydrology narrative (flow/water level/rapids/estuary), K0→K7 river mileage progress line, giant serif readings, waterfall chart |
 | [EV Range Prediction](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fev-range%2Fdeck.pptd) | Academic defense · 17 slides | LaTeX formulas, image layout, chapter structure |
 | [Islelight Brand Book](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fislelight-brand-book%2Fdeck.pptd) | Brand creative · 7 slides | Klein-blue Swiss poster style, B&W photography grid |
 | [MORI Brand Proposal](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbrand-mori-showcase-7p%2Fdeck.pptd) | Brand creative · 7 slides | Paper-white / ink-black / signal-red three-color discipline, oversized type |
 | [MiaoPai Round-A Pitch](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fmiaopai-saas-bp%2Fdeck.pptd) | Startup BP · 7 slides | Ink-black × neon-green contrast, TAM/SAM/SOM, timeline |
 | [Shanmingji Brand Launch](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fshanmingji-2026-launch%2Fdeck.pptd) | New-Chinese style · 7 slides | Tables, images, Chinese-style layout, 3-font mixing |
 | [Order Platform Architecture Review](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftech-architecture-review-7p%2Fdeck.pptd) | Tech review · 7 slides | Current vs. target architecture, trade-off analysis, canary rollout plan |
+| [Urban Cycling Data Annual](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fcity-cycling-report-7p%2Fdeck.pptd) | Data report · 7 slides | Editorial data-journalism magazine style, giant figures with everyday analogies, chart matrix, city ranking table |
+| [Tidal Fest Sponsorship Proposal](https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftide-festival-sponsorship-7p%2Fdeck.pptd) | Event sponsorship · 7 slides | Dusk-purple × coral-orange sunset poster style, playful display type, alternating dark/light tidal rhythm, sponsorship tier table |
 
 <p align="center">
-  <img src="docs/images/business-review.png" width="45%" alt="Yuanchuan Tech Business Review"/>
-  <img src="docs/images/ev-range.png" width="45%" alt="EV Range Prediction"/>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd"><img src="docs/images/business-review.png" width="32%" alt="Yuanchuan Hydrology Annual Report"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fcity-cycling-report-7p%2Fdeck.pptd"><img src="docs/images/city-cycling.png" width="32%" alt="Urban Cycling Data Annual"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftide-festival-sponsorship-7p%2Fdeck.pptd"><img src="docs/images/tide-festival.png" width="32%" alt="Tidal Fest Sponsorship Proposal"/></a>
 </p>
 
 <p align="center">
-  <img src="docs/images/shanmingji.png" width="45%" alt="Shanmingji Brand Launch"/>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fmiaopai-saas-bp%2Fdeck.pptd"><img src="docs/images/miaopai.png" width="32%" alt="MiaoPai Round-A Pitch"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fislelight-brand-book%2Fdeck.pptd"><img src="docs/images/islelight.png" width="32%" alt="Islelight Brand Book"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbrand-mori-showcase-7p%2Fdeck.pptd"><img src="docs/images/brand-mori.png" width="32%" alt="MORI Brand Proposal"/></a>
+</p>
+
+<p align="center">
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fshanmingji-2026-launch%2Fdeck.pptd"><img src="docs/images/shanmingji.png" width="32%" alt="Shanmingji Brand Launch"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftech-architecture-review-7p%2Fdeck.pptd"><img src="docs/images/tech-architecture.png" width="32%" alt="Order Platform Architecture Review"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fev-range%2Fdeck.pptd"><img src="docs/images/ev-range.png" width="32%" alt="EV Range Prediction"/></a>
 </p>
 
 ## What It Is

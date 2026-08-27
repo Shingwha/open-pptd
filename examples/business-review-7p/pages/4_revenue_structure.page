@@ -1,50 +1,47 @@
 pageType: content
 background:
   type: solid
-  color: "$bg"
+  color: "$paper"
 notes: |
-  讲解建议：左图强调收入结构向订阅迁移；右表把“华东续约率”问题点透，为下一页问题分析做铺垫。
+  讲解建议：左图是流域图——干流（SaaS 订阅）承载 58% 的水量且仍在涨水（+9pct），两条支流主动收窄；右下分河段水位表把华东续约率 78% 的问题点透，为下一站险滩勘测做铺垫。
 elements:
-  - elementId: page-marker
-    elementType: shape
-    bounds: [872, 36, 28, 28]
-    shapeName: ellipse
-    fill: { type: solid, color: "$primary" }
-
-  - elementId: page-number
-    elementType: text
-    bounds: [872, 36, 28, 28]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 11
-      bold: true
-      color: "#FFFFFF"
-      align: [center, middle]
-      text: "03"
-
   - elementId: eyebrow
     elementType: text
-    bounds: [60, 38, 500, 24]
+    bounds: [60, 40, 400, 18]
     content:
       style: "$eyebrow"
       align: [left, middle]
-      text: 03 · 收入结构
+      text: 远川 2025 · 水文年报
 
-  - elementId: title
+  - elementId: meta-right
     elementType: text
-    bounds: [60, 66, 840, 46]
+    bounds: [600, 40, 300, 18]
     content:
-      style: "$title"
-      align: [left, middle]
-      text: 订阅占比过半，华东续约是最大短板
+      style: "$small"
+      fontSize: 10
+      align: [right, middle]
+      text: 里程 K3 / K7
 
-  - elementId: subtitle
+  - elementId: station-title
     elementType: text
-    bounds: [60, 116, 840, 26]
+    bounds: [60, 62, 600, 46]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 30
+      bold: true
+      color: "$ink"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="color:$gold;">K3</span>　干流与支流</p>
+
+  - elementId: conclusion
+    elementType: text
+    bounds: [60, 116, 840, 24]
     content:
       style: "$subtitle"
       align: [left, middle]
-      text: 收入结构持续向高毛利订阅业务迁移；区域续约率分化明显，华东区需要重点干预。
+      text: 干流（SaaS 订阅）承载 58% 水量且持续涨水；支流（项目制、专业服务）主动收窄，水质优于水量。
 
   - elementId: header-rule
     elementType: shape
@@ -52,109 +49,235 @@ elements:
     shapeName: rect
     fill: { type: solid, color: "$line" }
 
+  # —— 左：流域图（收入结构环形图）——
   - elementId: left-heading
     elementType: text
-    bounds: [60, 164, 420, 28]
+    bounds: [60, 164, 400, 26]
     content:
       fontFamily: "Source Han Serif CN"
-      fontSize: 16
+      fontSize: 15
       bold: true
-      color: "$text"
+      color: "$ink"
       align: [left, middle]
-      text: 收入结构：订阅已成主体
+      text: 流域图：水量构成（收入占比）
 
   - elementId: revenue-mix
     elementType: chart
-    bounds: [60, 198, 420, 278]
+    bounds: [60, 194, 400, 280]
+    fill: { type: solid, color: "$paper" }
     data:
       cols: [收入类型, 占比]
       rows:
-        - [SaaS订阅, 58]
-        - [项目交付, 27]
-        - [专业服务, 15]
+        - [干流 · SaaS订阅, 58]
+        - [支流 · 项目交付, 27]
+        - [支流 · 专业服务, 15]
     legend:
       show: true
       position: bottom
-      fontSize: 12
-      color: "$text"
+      fontSize: 11
+      color: "$ink"
     fontFamily: "LXGW Neo XiHei"
     series:
       - type: pie
         encode: { category: 收入类型, value: 占比 }
         innerRadius: 0.62
-        fill: ["$primary", "$accent3", "$accent4"]
-        border: { style: solid, width: 2, color: "$bg" }
-        dataLabels: { show: true, content: percentage, numberFormat: "0%", color: "$text", fontSize: 13 }
+        fill: ["$deep", "$aqua", "$gold"]
+        border: { style: solid, width: 2, color: "$paper" }
+        dataLabels: { show: true, content: percentage, numberFormat: "0%", color: "$ink", fontSize: 12 }
 
+  # —— 右：同比水位变化 + 分河段水位表 ——
   - elementId: right-heading
     elementType: text
-    bounds: [520, 164, 380, 28]
+    bounds: [500, 164, 400, 26]
     content:
       fontFamily: "Source Han Serif CN"
-      fontSize: 16
+      fontSize: 15
       bold: true
-      color: "$text"
+      color: "$ink"
       align: [left, middle]
-      text: 结构变化（同比）
+      text: 水文观测：同比水位变化
 
   - elementId: mix-detail
     elementType: text
-    bounds: [520, 200, 380, 152]
+    bounds: [500, 198, 400, 122]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 14
-      color: "$text"
-      lineHeight: 2.15
+      fontSize: 12
+      color: "$ink"
+      lineHeight: 1.9
       align: [left, top]
       text: |
-        <p><span style="color:$primary; font-size:20px;">58%</span>　SaaS 订阅　<span style="color:$success;">+9pct</span></p>
-        <p><span style="color:$accent3; font-size:20px;">27%</span>　项目交付　<span style="color:$muted;">-4pct</span></p>
-        <p><span style="color:$accent4; font-size:20px;">15%</span>　专业服务　<span style="color:$muted;">-5pct</span></p>
+        <p><span style="font-size:20px; color:$deep; font-family:Source Han Serif CN;">58%</span>　干流 · SaaS 订阅　<span style="color:$aqua;">+9pct</span></p>
+        <p><span style="font-size:20px; color:$aqua; font-family:Source Han Serif CN;">27%</span>　支流 · 项目交付　<span style="color:$muted;">-4pct</span></p>
+        <p><span style="font-size:20px; color:$gold; font-family:Source Han Serif CN;">15%</span>　支流 · 专业服务　<span style="color:$muted;">-5pct</span></p>
 
   - elementId: table-heading
     elementType: text
-    bounds: [520, 356, 380, 24]
+    bounds: [500, 336, 400, 24]
     content:
       fontFamily: "Source Han Serif CN"
-      fontSize: 14
+      fontSize: 15
       bold: true
-      color: "$text"
+      color: "$ink"
       align: [left, middle]
-      text: 区域续约率：华东明显落后
+      text: 分河段水位：区域续约率实测
 
   - elementId: renewal-table
     elementType: table
-    bounds: [520, 384, 380, 106]
+    bounds: [500, 366, 400, 108]
     columnWidths: [0.34, 0.33, 0.33]
     rowHeights: [0.25, 0.25, 0.25, 0.25]
     style: "$default"
     rows:
-      - - text: 区域
-        - text: 2025续约率
-        - text: 目标
+      - - text: 河段
+        - text: 实测水位
+        - text: 警戒线
       - - text: 华东
         - text: 78%
-          color: "$danger"
+          color: "$rust"
           bold: true
         - text: 85%
           color: "$muted"
       - - text: 华南
         - text: 86%
-          color: "$success"
+          color: "$deep"
           bold: true
         - text: 85%
           color: "$muted"
       - - text: 华北
         - text: 91%
-          color: "$success"
+          color: "$deep"
           bold: true
         - text: 85%
           color: "$muted"
 
-  - elementId: footnote
+  # —— 河流里程线 K0–K7 ——
+  - elementId: river-base
+    elementType: shape
+    bounds: [48, 501, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: river-tick-0
+    elementType: shape
+    bounds: [48, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-1
+    elementType: shape
+    bounds: [171, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-2
+    elementType: shape
+    bounds: [295, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-4
+    elementType: shape
+    bounds: [542, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-5
+    elementType: shape
+    bounds: [665, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-6
+    elementType: shape
+    bounds: [789, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-7
+    elementType: shape
+    bounds: [912, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+
+  - elementId: river-label-0
     elementType: text
-    bounds: [60, 498, 840, 22]
+    bounds: [28, 480, 40, 12]
     content:
-      style: "$small"
-      align: [left, middle]
-      text: 口径：收入占比按确认收入计；区域续约率为年度合同续约率。数据为演示占位。
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K0
+  - elementId: river-label-1
+    elementType: text
+    bounds: [151, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K1
+  - elementId: river-label-2
+    elementType: text
+    bounds: [275, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K2
+  - elementId: river-label-4
+    elementType: text
+    bounds: [522, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K4
+  - elementId: river-label-5
+    elementType: text
+    bounds: [645, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K5
+  - elementId: river-label-6
+    elementType: text
+    bounds: [769, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K6
+  - elementId: river-label-7
+    elementType: text
+    bounds: [892, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K7
+
+  - elementId: river-active
+    elementType: shape
+    bounds: [413, 496, 10, 10]
+    shapeName: diamond
+    fill: { type: solid, color: "$gold" }
+
+  - elementId: river-station
+    elementType: text
+    bounds: [348, 512, 140, 15]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      bold: true
+      color: "$gold"
+      align: [center, top]
+      text: K3 · 干流与支流

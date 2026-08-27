@@ -1,0 +1,182 @@
+pageType: content
+background:
+  type: solid
+  color: "$cream"
+notes: 阵容与日程页（证明）：两日 × 三舞台的矩阵排期，艺人均为占位名；强调「落日时刻」黄金时段（高亮行），口播提醒阵容以最终官宣为准。
+elements:
+  # ---- 页眉 ----
+  - elementId: header-dot
+    elementType: shape
+    bounds: [64, 41, 10, 10]
+    shapeName: rect
+    fill: { type: solid, color: "$coral" }
+  - elementId: header-kicker
+    elementType: text
+    bounds: [84, 36, 420, 20]
+    content:
+      style: "$kicker"
+      text: 贰 · 阵容与日程 LINEUP & SCHEDULE
+  - elementId: header-tag
+    elementType: text
+    bounds: [556, 36, 340, 20]
+    content:
+      style: "$small"
+      letterSpacing: 2
+      align: [right, top]
+      text: TIDAL FEST 2026 · 招商合作方案
+  - elementId: header-rule
+    elementType: shape
+    bounds: [64, 64, 832, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: page-title
+    elementType: text
+    bounds: [64, 82, 420, 36]
+    content:
+      style: "$disp"
+      fontSize: 26
+      wrap: false
+      text: 两日演出阵容与时刻表
+  - elementId: title-note
+    elementType: text
+    bounds: [496, 92, 400, 18]
+    content:
+      style: "$small"
+      align: [right, top]
+      text: "* 艺人为占位名，阵容以最终官宣为准"
+
+  # ---- DAY 1 ----
+  - elementId: d1-dot
+    elementType: shape
+    bounds: [64, 136, 8, 8]
+    shapeName: ellipse
+    fill: { type: solid, color: "$coral" }
+  - elementId: d1-label
+    elementType: text
+    bounds: [80, 130, 320, 22]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 15
+      color: "$night"
+      letterSpacing: 2
+      wrap: false
+      text: DAY 1 · 07.18 SAT
+  - elementId: d1-table
+    elementType: table
+    bounds: [64, 160, 406, 300]
+    columnWidths: [0.22, 0.26, 0.26, 0.26]
+    rowHeights: [0.14, 0.215, 0.215, 0.215, 0.215]
+    style: "$default"
+    rows:
+      - - text: 时段
+        - text: 潮声舞台
+        - text: 落日舞台
+        - text: 浪花舞台
+      - - text: "15:00–16:30"
+          bold: true
+          color: "$nightDeep"
+        - text: 独立乐团 E
+        - text: 电子制作人 D
+        - text: 校园新声 F
+      - - text: "17:00–18:30"
+          bold: true
+          color: "$nightDeep"
+        - text: 人气乐队 C
+        - text: DJ 组合 G
+        - text: 新锐唱作人 H
+      - - text: "19:00–20:30"
+          bold: true
+          color: "$coralDeep"
+          fill: { type: solid, color: "$peachTint" }
+        - text: 头部乐队 A
+          bold: true
+          fill: { type: solid, color: "$peachTint" }
+        - text: 特邀 DJ I
+          fill: { type: solid, color: "$peachTint" }
+        - text: 新声竞演决赛
+          fill: { type: solid, color: "$peachTint" }
+      - - text: "21:00–22:30"
+          bold: true
+          color: "$nightDeep"
+        - text: 压轴唱作人 B
+        - text: 电子制作人 D
+        - text: —
+
+  # ---- DAY 2 ----
+  - elementId: d2-dot
+    elementType: shape
+    bounds: [490, 136, 8, 8]
+    shapeName: ellipse
+    fill: { type: solid, color: "$coral" }
+  - elementId: d2-label
+    elementType: text
+    bounds: [506, 130, 320, 22]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 15
+      color: "$night"
+      letterSpacing: 2
+      wrap: false
+      text: DAY 2 · 07.19 SUN
+  - elementId: d2-table
+    elementType: table
+    bounds: [490, 160, 406, 300]
+    columnWidths: [0.22, 0.26, 0.26, 0.26]
+    rowHeights: [0.14, 0.215, 0.215, 0.215, 0.215]
+    style: "$default"
+    rows:
+      - - text: 时段
+        - text: 潮声舞台
+        - text: 落日舞台
+        - text: 浪花舞台
+      - - text: "15:00–16:30"
+          bold: true
+          color: "$nightDeep"
+        - text: 摇滚乐团 J
+        - text: DJ 组合 K
+        - text: 校园乐队 L
+      - - text: "17:00–18:30"
+          bold: true
+          color: "$nightDeep"
+        - text: 人气唱作人 M
+        - text: 电子制作人 N
+        - text: 说唱新声 O
+      - - text: "19:00–20:30"
+          bold: true
+          color: "$coralDeep"
+          fill: { type: solid, color: "$peachTint" }
+        - text: 头部乐队 P
+          bold: true
+          fill: { type: solid, color: "$peachTint" }
+        - text: 特邀 DJ Q
+          fill: { type: solid, color: "$peachTint" }
+        - text: 新声竞演颁奖
+          fill: { type: solid, color: "$peachTint" }
+      - - text: "21:00–22:30"
+          bold: true
+          color: "$nightDeep"
+        - text: 压轴乐团 R
+        - text: DJ 组合 K
+        - text: 烟火大合唱
+
+  # ---- 说明 ----
+  - elementId: slot-note
+    elementType: text
+    bounds: [64, 468, 832, 18]
+    content:
+      style: "$small"
+      text: 高亮行为「落日时刻」黄金时段（19:00 – 20:30）· 每日 14:30 开始入场 · 实际时段以现场执行为准
+  - elementId: footer-left
+    elementType: text
+    bounds: [64, 512, 340, 16]
+    content:
+      style: "$small"
+      text: 潮汐音乐节 TIDAL FEST 2026
+  - elementId: footer-page
+    elementType: text
+    bounds: [856, 512, 40, 16]
+    content:
+      style: "$small"
+      align: [right, top]
+      text: 03 / 07

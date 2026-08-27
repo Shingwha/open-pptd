@@ -1,0 +1,221 @@
+pageType: content
+background:
+  type: solid
+  color: "$paper"
+notes: |
+  人群画像页。三块内容：年龄分布条形图（25-40 岁合计 60%，是基本盘）、骑行场景环形图（通勤通学 58%）、右侧三个特征数字（高频用户 31%、女性 47%、单次 11.6 分钟）。底部数据注记给了一个反差视角：增长最快的反而是 50 岁以上人群。年龄五段占比 22+34+26+12+6 = 100，场景四块 58+24+12+6 = 100，均自洽。
+elements:
+  - elementId: masthead-name
+    elementType: text
+    bounds: [60, 24, 420, 18]
+    content:
+      style: "$masthead"
+      align: [left, middle]
+      text: 两轮城市研究院 · URBAN CYCLING ANNUAL
+
+  - elementId: masthead-folio
+    elementType: text
+    bounds: [560, 24, 340, 18]
+    content:
+      style: "$masthead"
+      align: [right, middle]
+      text: VOL.2025 · No.04 / 07
+
+  - elementId: masthead-rule
+    elementType: shape
+    bounds: [60, 48, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$ink" }
+
+  - elementId: ch-num
+    elementType: text
+    bounds: [60, 66, 80, 56]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 44
+      color: "$orange"
+      align: [left, middle]
+      wrap: false
+      text: "03"
+
+  - elementId: page-kicker
+    elementType: text
+    bounds: [150, 72, 500, 18]
+    content:
+      style: "$kicker"
+      align: [left, middle]
+      wrap: false
+      text: 人群画像 · WHO RIDES
+
+  - elementId: page-title
+    elementType: text
+    bounds: [150, 92, 750, 38]
+    content:
+      style: "$title"
+      align: [left, middle]
+      wrap: false
+      text: 25-40 岁的通勤者，是两轮出行的基本盘
+
+  - elementId: chart1-caption
+    elementType: text
+    bounds: [60, 158, 380, 20]
+    content:
+      style: "$h3"
+      fontSize: 13
+      align: [left, middle]
+      wrap: false
+      text: 年龄分布（占活跃用户比重，%）
+
+  - elementId: age-chart
+    elementType: chart
+    bounds: [60, 184, 380, 240]
+    fontFamily: "LXGW Neo XiHei"
+    legend: false
+    barWidth: 0.58
+    data:
+      cols: [age, share]
+      rows:
+        - ["18-24", 22]
+        - ["25-30", 34]
+        - ["31-40", 26]
+        - ["41-50", 12]
+        - ["50+", 6]
+    xAxis:
+      min: 0
+      max: 40
+      label: { fontSize: 10.5, color: "$muted" }
+      gridLine: { color: "$gridline", width: 0.75 }
+    yAxis:
+      label: { fontSize: 10.5, color: "$ink" }
+      axisLine: { color: "$ink", width: 1 }
+      gridLine: false
+    series:
+      - type: bar
+        encode: { x: share, y: age }
+        name: 占比
+        fill: "$navy"
+        dataLabels: { show: true, fontSize: 10.5, color: "$ink" }
+
+  - elementId: chart2-caption
+    elementType: text
+    bounds: [470, 158, 220, 20]
+    content:
+      style: "$h3"
+      fontSize: 13
+      align: [left, middle]
+      wrap: false
+      text: 骑行场景构成（占订单量比重）
+
+  - elementId: scene-chart
+    elementType: chart
+    bounds: [460, 184, 240, 240]
+    fontFamily: "LXGW Neo XiHei"
+    legend: { position: bottom, fontSize: 10.5, color: "$muted" }
+    data:
+      cols: [scene, share]
+      rows:
+        - ["通勤通学 58%", 58]
+        - ["休闲漫游 24%", 24]
+        - ["地铁接驳 12%", 12]
+        - ["其他 6%", 6]
+    series:
+      - type: pie
+        encode: { category: scene, value: share }
+        innerRadius: 0.58
+        fill: ["$navy", "$orange", "$mist", "#D8CFBC"]
+
+  - elementId: stat-sep
+    elementType: shape
+    bounds: [708, 164, 1, 260]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: fstat1-num
+    elementType: text
+    bounds: [730, 172, 170, 40]
+    content:
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="font-size:30px; font-family:Alimama ShuHeiTi; color:$orange;">31%</span></p>
+
+  - elementId: fstat1-label
+    elementType: text
+    bounds: [730, 214, 170, 34]
+    content:
+      style: "$small"
+      align: [left, top]
+      text: 高频用户占比（每周骑行 ≥5 次）
+
+  - elementId: fstat-sep1
+    elementType: shape
+    bounds: [730, 262, 60, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: fstat2-num
+    elementType: text
+    bounds: [730, 276, 170, 40]
+    content:
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="font-size:30px; font-family:Alimama ShuHeiTi; color:$navy;">47%</span></p>
+
+  - elementId: fstat2-label
+    elementType: text
+    bounds: [730, 318, 170, 34]
+    content:
+      style: "$small"
+      align: [left, top]
+      text: 女性用户占比，较去年上升 3 个百分点
+
+  - elementId: fstat-sep2
+    elementType: shape
+    bounds: [730, 366, 60, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: fstat3-num
+    elementType: text
+    bounds: [730, 380, 170, 40]
+    content:
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="font-size:30px; font-family:Alimama ShuHeiTi; color:$navy;">11.6</span><span style="font-size:14px; font-family:LXGW Neo XiHei; color:$ink;"> 分钟</span></p>
+
+  - elementId: fstat3-label
+    elementType: text
+    bounds: [730, 422, 170, 34]
+    content:
+      style: "$small"
+      align: [left, top]
+      text: 平均单次骑行时长
+
+  - elementId: note-label
+    elementType: text
+    bounds: [60, 452, 200, 18]
+    content:
+      style: "$kicker"
+      align: [left, middle]
+      wrap: false
+      text: 数据注记
+
+  - elementId: note-text
+    elementType: text
+    bounds: [60, 472, 840, 30]
+    content:
+      style: "$serif-note"
+      fontSize: 11.5
+      align: [left, top]
+      text: 通勤者贡献了基本盘，但增长最快的是 50 岁以上的"银发骑行者"——订单量同比上升 21%。两轮正在变得更宽。
+
+  - elementId: source-line
+    elementType: text
+    bounds: [60, 510, 700, 16]
+    content:
+      style: "$small"
+      align: [left, middle]
+      wrap: false
+      text: 数据来源：两轮城市研究院 · 2025 城市骑行监测样本（虚构演示数据）· 画像基于 1.9 亿活跃用户脱敏统计

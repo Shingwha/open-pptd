@@ -1,0 +1,228 @@
+pageType: content
+background:
+  type: solid
+  color: "$paper"
+notes: |
+  全篇最有人情味的一页，用一辆编号 ZH-0427 的虚构单车串起四个生命阶段：投放（第 0 天）→ 日常运营（日均 6.8 次）→ 维修（全周期 3.4 次）→ 退役（第 986 天，累计 5,800 公里）。口径自洽：6.8 次/日 × 365 天 × 2.7 年 ≈ 6,700 次骑行；5,800 公里 ÷ 6,700 次 ≈ 单次 0.87 公里；2.7 年 = 986 天。讲述时可把"统计里程其实是统计相遇"作为收尾情绪点。
+elements:
+  - elementId: masthead-name
+    elementType: text
+    bounds: [60, 24, 420, 18]
+    content:
+      style: "$masthead"
+      align: [left, middle]
+      text: 两轮城市研究院 · URBAN CYCLING ANNUAL
+
+  - elementId: masthead-folio
+    elementType: text
+    bounds: [560, 24, 340, 18]
+    content:
+      style: "$masthead"
+      align: [right, middle]
+      text: VOL.2025 · No.05 / 07
+
+  - elementId: masthead-rule
+    elementType: shape
+    bounds: [60, 48, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$ink" }
+
+  - elementId: ch-num
+    elementType: text
+    bounds: [60, 66, 80, 56]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 44
+      color: "$orange"
+      align: [left, middle]
+      wrap: false
+      text: "04"
+
+  - elementId: page-kicker
+    elementType: text
+    bounds: [150, 72, 500, 18]
+    content:
+      style: "$kicker"
+      align: [left, middle]
+      wrap: false
+      text: 一辆车的旅程 · LIFE OF A BIKE
+
+  - elementId: page-title
+    elementType: text
+    bounds: [150, 92, 750, 38]
+    content:
+      style: "$title"
+      align: [left, middle]
+      wrap: false
+      text: 编号 ZH-0427 的一生：2.7 年，5,800 公里，6,700 次相遇
+
+  - elementId: s1-label
+    elementType: text
+    bounds: [60, 162, 180, 18]
+    content:
+      style: "$kicker"
+      color: "$navy"
+      fontSize: 11
+      align: [left, middle]
+      wrap: false
+      text: 投放 · DAY 0
+
+  - elementId: s1-num
+    elementType: text
+    bounds: [60, 184, 180, 36]
+    content:
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="font-size:26px; font-family:Alimama ShuHeiTi; color:$ink;">0 公里</span></p>
+
+  - elementId: s1-desc
+    elementType: text
+    bounds: [60, 224, 175, 52]
+    content:
+      style: "$small"
+      align: [left, top]
+      text: 新车出厂，投放至杭州滨江区某地铁口，编入早高峰运力。
+
+  - elementId: s3-label
+    elementType: text
+    bounds: [500, 162, 180, 18]
+    content:
+      style: "$kicker"
+      color: "$navy"
+      fontSize: 11
+      align: [left, middle]
+      wrap: false
+      text: 途中维修
+
+  - elementId: s3-num
+    elementType: text
+    bounds: [500, 184, 180, 36]
+    content:
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="font-size:26px; font-family:Alimama ShuHeiTi; color:$navy;">3.4</span><span style="font-size:14px; font-family:LXGW Neo XiHei; color:$ink;"> 次</span></p>
+
+  - elementId: s3-desc
+    elementType: text
+    bounds: [500, 224, 175, 52]
+    content:
+      style: "$small"
+      align: [left, top]
+      text: 全生命周期维修 3.4 次：换过 2 条轮胎、1 把智能锁。
+
+  - elementId: timeline
+    elementType: line
+    bounds: [80, 296, 800, 8]
+    viewBox: [800, 8]
+    points: "0,4 800,4"
+    curve: sharp
+    arrow: [null, arrow]
+    border: { style: solid, width: 1.5, color: "$ink" }
+
+  - elementId: node1
+    elementType: shape
+    bounds: [132, 292, 16, 16]
+    shapeName: ellipse
+    fill: { type: solid, color: "$navy" }
+
+  - elementId: node2
+    elementType: shape
+    bounds: [352, 292, 16, 16]
+    shapeName: ellipse
+    fill: { type: solid, color: "$orange" }
+
+  - elementId: node3
+    elementType: shape
+    bounds: [572, 292, 16, 16]
+    shapeName: ellipse
+    fill: { type: solid, color: "$navy" }
+
+  - elementId: node4
+    elementType: shape
+    bounds: [792, 292, 16, 16]
+    shapeName: ellipse
+    fill: { type: solid, color: "$orange" }
+
+  - elementId: s2-label
+    elementType: text
+    bounds: [280, 326, 180, 18]
+    content:
+      style: "$kicker"
+      color: "$navy"
+      fontSize: 11
+      align: [left, middle]
+      wrap: false
+      text: 日常运营
+
+  - elementId: s2-num
+    elementType: text
+    bounds: [280, 348, 180, 36]
+    content:
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="font-size:26px; font-family:Alimama ShuHeiTi; color:$orange;">6.8</span><span style="font-size:14px; font-family:LXGW Neo XiHei; color:$ink;"> 次 / 日</span></p>
+
+  - elementId: s2-desc
+    elementType: text
+    bounds: [280, 388, 185, 52]
+    content:
+      style: "$small"
+      align: [left, top]
+      text: 早高峰它是通勤工具，深夜它是代驾司机回家的腿。
+
+  - elementId: s4-label
+    elementType: text
+    bounds: [720, 326, 180, 18]
+    content:
+      style: "$kicker"
+      color: "$navy"
+      fontSize: 11
+      align: [left, middle]
+      wrap: false
+      text: 退役 · DAY 986
+
+  - elementId: s4-num
+    elementType: text
+    bounds: [720, 348, 180, 36]
+    content:
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="font-size:26px; font-family:Alimama ShuHeiTi; color:$ink;">5,800</span><span style="font-size:14px; font-family:LXGW Neo XiHei; color:$ink;"> 公里</span></p>
+
+  - elementId: s4-desc
+    elementType: text
+    bounds: [720, 388, 180, 52]
+    content:
+      style: "$small"
+      align: [left, top]
+      text: 平均服役 2.7 年；累计里程约等于绕西湖 580 圈。
+
+  - elementId: editor-bar
+    elementType: shape
+    bounds: [60, 458, 36, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$orange" }
+
+  - elementId: editor-text
+    elementType: text
+    bounds: [110, 450, 790, 40]
+    content:
+      fontFamily: "LXGW Heart Serif MN"
+      fontSize: 12.5
+      color: "$muted"
+      lineHeight: 1.6
+      align: [left, middle]
+      text: 编者按：一辆共享单车的一生，会与大约 6,700 个人发生 10 分钟的交集。我们统计里程，其实是在统计相遇。
+
+  - elementId: source-line
+    elementType: text
+    bounds: [60, 510, 700, 16]
+    content:
+      style: "$small"
+      align: [left, middle]
+      wrap: false
+      text: 数据来源：两轮城市研究院 · 单车全生命周期抽样（n=12,000，虚构演示数据）

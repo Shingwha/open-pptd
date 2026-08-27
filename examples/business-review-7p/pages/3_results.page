@@ -1,50 +1,47 @@
 pageType: content
 background:
   type: solid
-  color: "$bg"
+  color: "$paper"
 notes: |
-  讲解建议：收入接近目标，利润和现金流改善更明显；右图解释净利润如何从毛利一路走到0.61亿元。
+  讲解建议：左边三个读数是全年水量总结——年径流量（收入）4.82 亿、入海余量（净利润）0.61 亿、水位（现金流）0.32 亿由负转正；右边瀑布图解释净利润如何从源头毛利一路汇到入海口。单位亿元，演示占位数据。
 elements:
-  - elementId: page-marker
-    elementType: shape
-    bounds: [872, 36, 28, 28]
-    shapeName: ellipse
-    fill: { type: solid, color: "$primary" }
-
-  - elementId: page-number
-    elementType: text
-    bounds: [872, 36, 28, 28]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 11
-      bold: true
-      color: "#FFFFFF"
-      align: [center, middle]
-      text: "02"
-
   - elementId: eyebrow
     elementType: text
-    bounds: [60, 38, 500, 24]
+    bounds: [60, 40, 400, 18]
     content:
       style: "$eyebrow"
       align: [left, middle]
-      text: 02 · 经营结果
+      text: 远川 2025 · 水文年报
 
-  - elementId: title
+  - elementId: meta-right
     elementType: text
-    bounds: [60, 66, 840, 46]
+    bounds: [600, 40, 300, 18]
     content:
-      style: "$title"
-      align: [left, middle]
-      text: 收入基本达标，利润与现金流明显改善
+      style: "$small"
+      fontSize: 10
+      align: [right, middle]
+      text: 里程 K2 / K7
 
-  - elementId: subtitle
+  - elementId: station-title
     elementType: text
-    bounds: [60, 116, 840, 26]
+    bounds: [60, 62, 600, 46]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 30
+      bold: true
+      color: "$ink"
+      align: [left, middle]
+      wrap: false
+      text: |
+        <p><span style="color:$gold;">K2</span>　流量实测</p>
+
+  - elementId: conclusion
+    elementType: text
+    bounds: [60, 116, 840, 24]
     content:
       style: "$subtitle"
       align: [left, middle]
-      text: 单位：亿元。本页为演示占位数据，正式汇报请替换为审计/管理口径。
+      text: 从源头（营业毛利）到入海口（净利润）的一笔水量账：流量基本达标，余量与水位明显改善。
 
   - elementId: header-rule
     elementType: shape
@@ -52,145 +49,288 @@ elements:
     shapeName: rect
     fill: { type: solid, color: "$line" }
 
-  - elementId: metric-1-value
+  # —— 左栏：三个水文读数 ——
+  - elementId: m1-label
     elementType: text
-    bounds: [60, 164, 190, 48]
-    content:
-      style: "$metric"
-      fontSize: 32
-      align: [left, middle]
-      text: "4.82"
-
-  - elementId: metric-1-delta
-    elementType: text
-    bounds: [60, 216, 190, 24]
+    bounds: [60, 166, 250, 16]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 13
+      fontSize: 10
       bold: true
-      color: "$success"
+      letterSpacing: 2
+      color: "$gold"
       align: [left, middle]
-      text: +14.2%
-
-  - elementId: metric-1-label
+      text: 年径流量 · 营业收入
+  - elementId: m1-value
     elementType: text
-    bounds: [60, 244, 220, 24]
+    bounds: [60, 186, 250, 44]
     content:
-      style: "$small"
-      color: "$text"
+      style: "$reading"
+      fontSize: 34
       align: [left, middle]
-      text: 营业收入（亿元）
+      wrap: false
+      text: |
+        <p>4.82<span style="font-size:14px; color:$muted;"> 亿元</span></p>
+  - elementId: m1-delta
+    elementType: text
+    bounds: [60, 234, 250, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11.5
+      bold: true
+      color: "$aqua"
+      align: [left, middle]
+      text: 同比 +14.2%
 
-  - elementId: metric-1-rule
+  - elementId: m-rule-1
     elementType: shape
-    bounds: [60, 286, 220, 1]
+    bounds: [60, 262, 250, 1]
     shapeName: rect
     fill: { type: solid, color: "$line" }
 
-  - elementId: metric-2-value
+  - elementId: m2-label
     elementType: text
-    bounds: [60, 302, 190, 48]
-    content:
-      style: "$metric"
-      fontSize: 32
-      align: [left, middle]
-      text: "0.61"
-
-  - elementId: metric-2-delta
-    elementType: text
-    bounds: [60, 354, 190, 24]
+    bounds: [60, 272, 250, 16]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 13
+      fontSize: 10
       bold: true
-      color: "$success"
+      letterSpacing: 2
+      color: "$gold"
       align: [left, middle]
-      text: +38.6%
-
-  - elementId: metric-2-label
+      text: 入海余量 · 净利润
+  - elementId: m2-value
     elementType: text
-    bounds: [60, 382, 220, 24]
+    bounds: [60, 292, 250, 44]
     content:
-      style: "$small"
-      color: "$text"
+      style: "$reading"
+      fontSize: 34
       align: [left, middle]
-      text: 净利润（亿元）
+      wrap: false
+      text: |
+        <p>0.61<span style="font-size:14px; color:$muted;"> 亿元</span></p>
+  - elementId: m2-delta
+    elementType: text
+    bounds: [60, 340, 250, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11.5
+      bold: true
+      color: "$aqua"
+      align: [left, middle]
+      text: 同比 +38.6%
 
-  - elementId: metric-2-rule
+  - elementId: m-rule-2
     elementType: shape
-    bounds: [60, 424, 220, 1]
+    bounds: [60, 368, 250, 1]
     shapeName: rect
     fill: { type: solid, color: "$line" }
 
-  - elementId: metric-3-value
+  - elementId: m3-label
     elementType: text
-    bounds: [60, 440, 190, 48]
-    content:
-      style: "$metric"
-      fontSize: 32
-      align: [left, middle]
-      text: "0.32"
-
-  - elementId: metric-3-delta
-    elementType: text
-    bounds: [60, 492, 190, 24]
+    bounds: [60, 378, 250, 16]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 13
+      fontSize: 10
       bold: true
-      color: "$success"
+      letterSpacing: 2
+      color: "$gold"
       align: [left, middle]
-      text: 由负转正
-
-  - elementId: metric-3-label
+      text: 水位 · 经营性现金流
+  - elementId: m3-value
     elementType: text
-    bounds: [60, 520, 220, 18]
+    bounds: [60, 398, 250, 44]
     content:
-      style: "$small"
-      color: "$text"
+      style: "$reading"
+      fontSize: 34
+      color: "$deep"
       align: [left, middle]
-      text: 经营性现金流（亿元）
+      wrap: false
+      text: |
+        <p>0.32<span style="font-size:14px; color:$muted;"> 亿元</span></p>
+  - elementId: m3-delta
+    elementType: text
+    bounds: [60, 446, 250, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11.5
+      bold: true
+      color: "$aqua"
+      align: [left, middle]
+      text: 由负转正 · 三年来首次
 
+  # —— 右栏：水量账瀑布图 ——
   - elementId: chart-heading
     elementType: text
-    bounds: [330, 160, 570, 28]
+    bounds: [350, 164, 550, 26]
     content:
       fontFamily: "Source Han Serif CN"
-      fontSize: 16
+      fontSize: 15
       bold: true
-      color: "$text"
+      color: "$ink"
       align: [left, middle]
-      text: 净利润桥：从营业毛利到净利润（亿元）
+      text: 水量账：从源头毛利到入海净利（亿元）
 
   - elementId: profit-bridge
     elementType: chart
-    bounds: [330, 194, 570, 320]
+    bounds: [350, 196, 550, 296]
+    fill: { type: solid, color: "$paper" }
     data:
       cols: [项目, 金额, 是否合计]
       rows:
-        - [营业毛利, 2.76, true]
-        - [销售及市场费用, -0.98, null]
+        - [源头·营业毛利, 2.76, true]
+        - [销售及市场, -0.98, null]
         - [研发费用, -0.66, null]
         - [管理费用, -0.31, null]
         - [财务及税费, -0.20, null]
-        - [净利润, 0.61, true]
+        - [入海·净利润, 0.61, true]
     xAxis:
       axisLine: false
       gridLine: false
-      label: { fontSize: 11, color: "$muted" }
+      label: { fontSize: 10.5, color: "$muted" }
     yAxis:
-      title: "亿元"
       min: 0
       max: 3.2
       axisLine: false
       gridLine: { color: "$line" }
-      label: { numberFormat: "0.0", fontSize: 11, color: "$muted" }
+      label: { numberFormat: "0.0", fontSize: 10.5, color: "$muted" }
     legend: false
     fontFamily: "LXGW Neo XiHei"
     series:
       - type: waterfall
         encode: { x: 项目, y: 金额, isTotal: 是否合计 }
-        totalBars: { fill: "$primary", border: { style: solid, width: 1, color: "$primary" } }
-        increaseBars: { fill: "$success", border: { style: solid, width: 1, color: "$success" } }
-        decreaseBars: { fill: "$danger", border: { style: solid, width: 1, color: "$danger" } }
-        dataLabels: { show: true, numberFormat: "0.00", color: "$text", fontSize: 10 }
+        totalBars: { fill: "$deep" }
+        increaseBars: { fill: "$aqua" }
+        decreaseBars: { fill: "$rust" }
+        dataLabels: { show: true, numberFormat: "0.00", color: "$ink", fontSize: 10 }
+
+  # —— 河流里程线 K0–K7 ——
+  - elementId: river-base
+    elementType: shape
+    bounds: [48, 501, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: river-tick-0
+    elementType: shape
+    bounds: [48, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-1
+    elementType: shape
+    bounds: [171, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-3
+    elementType: shape
+    bounds: [418, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-4
+    elementType: shape
+    bounds: [542, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-5
+    elementType: shape
+    bounds: [665, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-6
+    elementType: shape
+    bounds: [789, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+  - elementId: river-tick-7
+    elementType: shape
+    bounds: [912, 497, 1, 8]
+    shapeName: rect
+    fill: { type: solid, color: "$muted" }
+    opacity: 0.55
+
+  - elementId: river-label-0
+    elementType: text
+    bounds: [28, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K0
+  - elementId: river-label-1
+    elementType: text
+    bounds: [151, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K1
+  - elementId: river-label-3
+    elementType: text
+    bounds: [398, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K3
+  - elementId: river-label-4
+    elementType: text
+    bounds: [522, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K4
+  - elementId: river-label-5
+    elementType: text
+    bounds: [645, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K5
+  - elementId: river-label-6
+    elementType: text
+    bounds: [769, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K6
+  - elementId: river-label-7
+    elementType: text
+    bounds: [892, 480, 40, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [center, bottom]
+      text: K7
+
+  - elementId: river-active
+    elementType: shape
+    bounds: [290, 496, 10, 10]
+    shapeName: diamond
+    fill: { type: solid, color: "$gold" }
+
+  - elementId: river-station
+    elementType: text
+    bounds: [225, 512, 140, 15]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      bold: true
+      color: "$gold"
+      align: [center, top]
+      text: K2 · 流量实测

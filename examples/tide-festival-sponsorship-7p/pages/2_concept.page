@@ -1,0 +1,263 @@
+pageType: content
+background:
+  type: solid
+  color: "$cream"
+notes: 概念页（吸引）：年度主题「涨潮时刻」——天文大潮叠加音乐现场，把"峰值时刻"作为招商卖点；随后带出三大舞台定位。
+elements:
+  # ---- 页眉 ----
+  - elementId: header-dot
+    elementType: shape
+    bounds: [64, 41, 10, 10]
+    shapeName: rect
+    fill: { type: solid, color: "$coral" }
+  - elementId: header-kicker
+    elementType: text
+    bounds: [84, 36, 420, 20]
+    content:
+      style: "$kicker"
+      text: 壹 · 年度主题 ANNUAL THEME
+  - elementId: header-tag
+    elementType: text
+    bounds: [556, 36, 340, 20]
+    content:
+      style: "$small"
+      letterSpacing: 2
+      align: [right, top]
+      text: TIDAL FEST 2026 · 招商合作方案
+  - elementId: header-rule
+    elementType: shape
+    bounds: [64, 64, 832, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # ---- 主题阐释 ----
+  - elementId: theme-title
+    elementType: text
+    bounds: [64, 92, 400, 62]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 48
+      color: "$night"
+      letterSpacing: 6
+      wrap: false
+      align: [left, middle]
+      text: 涨潮时刻
+  - elementId: theme-en
+    elementType: text
+    bounds: [64, 160, 320, 24]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 18
+      color: "$coralDeep"
+      letterSpacing: 6
+      wrap: false
+      text: RISING TIDE
+  - elementId: theme-body
+    elementType: text
+    bounds: [64, 198, 420, 100]
+    content:
+      style: "$body"
+      fontSize: 12.5
+      lineHeight: 1.8
+      text: |
+        每年七月，澜屿迎来天文大潮。我们把音乐节安放在潮位最高的黄昏——音乐、人群与海浪同时抵达峰值。这就是「涨潮时刻」：一场关于释放与相聚的海边仪式，也是品牌与年轻人同频的最高水位线。
+  # 右上日落小景
+  - elementId: mini-sun-top
+    elementType: shape
+    bounds: [806, 92, 72, 72]
+    shapeName: pie
+    adjustments: [10800000, 21600000]
+    fill: { type: solid, color: "$peach" }
+  - elementId: mini-sun-bottom
+    elementType: shape
+    bounds: [806, 92, 72, 72]
+    shapeName: pie
+    adjustments: [0, 10800000]
+    fill: { type: solid, color: "$coral" }
+  - elementId: mini-wave
+    elementType: shape
+    bounds: [742, 152, 174, 32]
+    shapeName: wave
+    fill: { type: solid, color: "$nightDeep" }
+    opacity: 0.9
+
+  # ---- 三大舞台卡片 ----
+  - elementId: c1-bar
+    elementType: shape
+    bounds: [64, 320, 264, 4]
+    shapeName: rect
+    fill: { type: solid, color: "$coral" }
+  - elementId: c1-bg
+    elementType: shape
+    bounds: [64, 324, 264, 176]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 0.75, color: "$line" }
+  - elementId: c1-num
+    elementType: text
+    bounds: [84, 338, 60, 28]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 22
+      color: "$coral"
+      wrap: false
+      text: "01"
+  - elementId: c1-name
+    elementType: text
+    bounds: [84, 372, 224, 24]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 17
+      color: "$night"
+      wrap: false
+      text: 潮声主舞台
+  - elementId: c1-en
+    elementType: text
+    bounds: [84, 400, 224, 16]
+    content:
+      style: "$small"
+      letterSpacing: 2
+      wrap: false
+      text: TIDE MAIN STAGE
+  - elementId: c1-desc
+    elementType: text
+    bounds: [84, 424, 224, 42]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      lineHeight: 1.6
+      text: 压轴级乐队与唱作人主场，两天四组头部阵容，全场合唱发生地。
+  - elementId: c1-time
+    elementType: text
+    bounds: [84, 474, 224, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      bold: true
+      color: "$nightDeep"
+      text: 每日 19:00 – 22:30
+
+  - elementId: c2-bar
+    elementType: shape
+    bounds: [348, 320, 264, 4]
+    shapeName: rect
+    fill: { type: solid, color: "$nightDeep" }
+  - elementId: c2-bg
+    elementType: shape
+    bounds: [348, 324, 264, 176]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 0.75, color: "$line" }
+  - elementId: c2-num
+    elementType: text
+    bounds: [368, 338, 60, 28]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 22
+      color: "$nightDeep"
+      wrap: false
+      text: "02"
+  - elementId: c2-name
+    elementType: text
+    bounds: [368, 372, 224, 24]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 17
+      color: "$night"
+      wrap: false
+      text: 落日电子舞台
+  - elementId: c2-en
+    elementType: text
+    bounds: [368, 400, 224, 16]
+    content:
+      style: "$small"
+      letterSpacing: 2
+      wrap: false
+      text: SUNSET ELECTRONIC STAGE
+  - elementId: c2-desc
+    elementType: text
+    bounds: [368, 424, 224, 42]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      lineHeight: 1.6
+      text: 日落时分开启的电子现场，DJ 演出与海面光影秀同步进行。
+  - elementId: c2-time
+    elementType: text
+    bounds: [368, 474, 224, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      bold: true
+      color: "$nightDeep"
+      text: 每日 17:00 – 21:00
+
+  - elementId: c3-bar
+    elementType: shape
+    bounds: [632, 320, 264, 4]
+    shapeName: rect
+    fill: { type: solid, color: "$peach" }
+  - elementId: c3-bg
+    elementType: shape
+    bounds: [632, 324, 264, 176]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 0.75, color: "$line" }
+  - elementId: c3-num
+    elementType: text
+    bounds: [652, 338, 60, 28]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 22
+      color: "$coralDeep"
+      wrap: false
+      text: "03"
+  - elementId: c3-name
+    elementType: text
+    bounds: [652, 372, 224, 24]
+    content:
+      fontFamily: "zcoolqingkehuangyouti"
+      fontSize: 17
+      color: "$night"
+      wrap: false
+      text: 浪花新声舞台
+  - elementId: c3-en
+    elementType: text
+    bounds: [652, 400, 224, 16]
+    content:
+      style: "$small"
+      letterSpacing: 2
+      wrap: false
+      text: WAVE NEW VOICE STAGE
+  - elementId: c3-desc
+    elementType: text
+    bounds: [652, 424, 224, 42]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      lineHeight: 1.6
+      text: 新血乐队与校园唱作人竞演舞台，发现下一个浪头。
+  - elementId: c3-time
+    elementType: text
+    bounds: [652, 474, 224, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      bold: true
+      color: "$nightDeep"
+      text: 每日 15:00 – 19:00
+
+  # ---- 页脚 ----
+  - elementId: footer-left
+    elementType: text
+    bounds: [64, 512, 340, 16]
+    content:
+      style: "$small"
+      text: 潮汐音乐节 TIDAL FEST 2026
+  - elementId: footer-page
+    elementType: text
+    bounds: [856, 512, 40, 16]
+    content:
+      style: "$small"
+      align: [right, top]
+      text: 02 / 07

@@ -1,0 +1,86 @@
+version: v2
+title: 两轮上的城市脉搏 · 2025 城市骑行数据年报
+size: [960, 540]
+fonts:
+  阿里妈妈数黑体: { family: "Alimama ShuHeiTi" }
+  霞鹜新晰黑: { family: "LXGW Neo XiHei" }
+  霞鹜铭心宋: { family: "LXGW Heart Serif MN" }
+theme:
+  colors:
+    paper: "#FAF6EE"
+    ink: "#1D1A14"
+    navy: "#16324F"
+    orange: "#E8702A"
+    mist: "#9DB8C7"
+    muted: "#7A7161"
+    line: "#DDD4C2"
+    gridline: "#EAE3D3"
+    cream: "#F5EEDF"
+    navyRule: "#2A4A6B"
+    navySoft: "#C9D6DF"
+  textStyles:
+    masthead:
+      fontFamily: "LXGW Heart Serif MN"
+      fontSize: 10.5
+      color: "$muted"
+      letterSpacing: 2
+    kicker:
+      fontFamily: "LXGW Heart Serif MN"
+      fontSize: 12
+      color: "$orange"
+      letterSpacing: 3
+      bold: true
+    title:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 28
+      color: "$ink"
+      lineHeight: 1.25
+    bignum:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 44
+      color: "$navy"
+      lineHeight: 1.05
+    h3:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "$ink"
+      bold: true
+      lineHeight: 1.4
+    body:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 12
+      color: "$ink"
+      lineHeight: 1.6
+    small:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      lineHeight: 1.5
+    serif-note:
+      fontFamily: "LXGW Heart Serif MN"
+      fontSize: 11
+      color: "$muted"
+      lineHeight: 1.6
+  tableStyles:
+    ranking:
+      cellStyle:
+        fontFamily: "LXGW Neo XiHei"
+        fontSize: 11.5
+        color: "$ink"
+        fill: { type: solid, color: "$paper" }
+        border: [null, null, { style: solid, width: 0.75, color: "$line" }, null]
+        align: [center, middle]
+      firstRowStyle:
+        fill: { type: solid, color: "$navy" }
+        color: "#FAF6EE"
+        bold: true
+        fontSize: 11.5
+      rowOverColumn: true
+pages:
+  - pages/1_cover.page
+  - pages/2_overview.page
+  - pages/3_heat.page
+  - pages/4_demographics.page
+  - pages/5_bike_journey.page
+  - pages/6_city_ranking.page
+  - pages/7_outlook.page

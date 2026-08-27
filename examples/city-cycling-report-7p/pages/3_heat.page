@@ -1,0 +1,190 @@
+pageType: content
+background:
+  type: solid
+  color: "$paper"
+notes: |
+  骑行热力页。左图是全天 24 小时分时曲线，早 8 点与晚 6 点两座峰一目了然；右图把工作日与周末拆成四个时段对比——周末没有早高峰，但午间和夜间反而更热。解读要点：双峰（7-9 时、17-19 时）合计约 351/705 ≈ 全天 50% 的订单量，分时指数是把全天订单归一为 705 后的分布指数。
+elements:
+  - elementId: masthead-name
+    elementType: text
+    bounds: [60, 24, 420, 18]
+    content:
+      style: "$masthead"
+      align: [left, middle]
+      text: 两轮城市研究院 · URBAN CYCLING ANNUAL
+
+  - elementId: masthead-folio
+    elementType: text
+    bounds: [560, 24, 340, 18]
+    content:
+      style: "$masthead"
+      align: [right, middle]
+      text: VOL.2025 · No.03 / 07
+
+  - elementId: masthead-rule
+    elementType: shape
+    bounds: [60, 48, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$ink" }
+
+  - elementId: ch-num
+    elementType: text
+    bounds: [60, 66, 80, 56]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 44
+      color: "$orange"
+      align: [left, middle]
+      wrap: false
+      text: "02"
+
+  - elementId: page-kicker
+    elementType: text
+    bounds: [150, 72, 500, 18]
+    content:
+      style: "$kicker"
+      align: [left, middle]
+      wrap: false
+      text: 骑行热力 · RHYTHM OF THE DAY
+
+  - elementId: page-title
+    elementType: text
+    bounds: [150, 92, 750, 38]
+    content:
+      style: "$title"
+      align: [left, middle]
+      wrap: false
+      text: 清晨八点与傍晚六点，城市在两轮上完成两次心跳
+
+  - elementId: chart1-caption
+    elementType: text
+    bounds: [60, 158, 500, 20]
+    content:
+      style: "$h3"
+      fontSize: 13
+      align: [left, middle]
+      wrap: false
+      text: 24 小时分时骑行指数（全天合计 = 705）
+
+  - elementId: heat-chart
+    elementType: chart
+    bounds: [60, 184, 500, 236]
+    fontFamily: "LXGW Neo XiHei"
+    legend: false
+    data:
+      cols: [hour, idx]
+      rows:
+        - ["0时", 4]
+        - ["1时", 2]
+        - ["2时", 1]
+        - ["3时", 1]
+        - ["4时", 2]
+        - ["5时", 5]
+        - ["6时", 12]
+        - ["7时", 38]
+        - ["8时", 72]
+        - ["9时", 55]
+        - ["10时", 36]
+        - ["11时", 32]
+        - ["12时", 36]
+        - ["13时", 33]
+        - ["14时", 30]
+        - ["15时", 31]
+        - ["16时", 34]
+        - ["17时", 48]
+        - ["18时", 78]
+        - ["19时", 60]
+        - ["20时", 40]
+        - ["21时", 28]
+        - ["22时", 18]
+        - ["23时", 9]
+    xAxis:
+      label: { fontSize: 10.5, color: "$muted" }
+      axisLine: { color: "$ink", width: 1 }
+      gridLine: false
+    yAxis:
+      min: 0
+      max: 80
+      label: { fontSize: 10.5, color: "$muted" }
+      gridLine: { color: "$gridline", width: 0.75 }
+    series:
+      - type: area
+        encode: { x: hour, y: idx }
+        name: 骑行指数
+        smooth: true
+        width: 2.5
+        lineColor: "$navy"
+        areaColor: "#16324F24"
+
+  - elementId: chart1-note
+    elementType: text
+    bounds: [60, 428, 500, 56]
+    content:
+      style: "$body"
+      fontSize: 11.5
+      align: [left, top]
+      text: |
+        <p>早晚高峰（7-9 时、17-19 时）合计贡献全天约 <span style="color:$orange;"><strong>50%</strong></span> 的订单；最高峰不在清晨，而在 <span style="color:$orange;"><strong>18 时</strong></span>——下班的路比上班更依赖两轮。</p>
+
+  - elementId: chart-sep
+    elementType: shape
+    bounds: [582, 164, 1, 320]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: chart2-caption
+    elementType: text
+    bounds: [606, 158, 294, 20]
+    content:
+      style: "$h3"
+      fontSize: 13
+      align: [left, middle]
+      wrap: false
+      text: 工作日 vs 周末 · 分时段订单指数
+
+  - elementId: weekend-chart
+    elementType: chart
+    bounds: [606, 184, 294, 236]
+    fontFamily: "LXGW Neo XiHei"
+    barWidth: 0.62
+    data:
+      cols: [slot, weekday, weekend]
+      rows:
+        - ["早高峰", 100, 42]
+        - ["午间", 46, 68]
+        - ["晚高峰", 94, 76]
+        - ["夜间", 38, 61]
+    legend: { position: bottom, fontSize: 10.5, color: "$muted" }
+    xAxis:
+      label: { fontSize: 10.5, color: "$muted" }
+      axisLine: { color: "$ink", width: 1 }
+      gridLine: false
+    yAxis:
+      label: { fontSize: 10.5, color: "$muted" }
+      gridLine: { color: "$gridline", width: 0.75 }
+    series:
+      - type: bar
+        encode: { x: slot, y: weekday }
+        name: 工作日
+        fill: "$navy"
+      - type: bar
+        encode: { x: slot, y: weekend }
+        name: 周末
+        fill: "$orange"
+
+  - elementId: chart2-note
+    elementType: text
+    bounds: [606, 428, 294, 56]
+    content:
+      style: "$serif-note"
+      align: [left, top]
+      text: 数据注记：周末没有早高峰，但午间被休闲骑行填满——两轮在休息日换了一种角色。
+
+  - elementId: source-line
+    elementType: text
+    bounds: [60, 510, 700, 16]
+    content:
+      style: "$small"
+      align: [left, middle]
+      wrap: false
+      text: 数据来源：两轮城市研究院 · 2025 城市骑行监测样本（虚构演示数据）· 指数口径：工作日早高峰 = 100
