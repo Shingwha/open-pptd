@@ -60,7 +60,7 @@
 | Display name | Registered name (family) | Style & character | Best for |
 |---|---|---|---|
 | 站酷小薇LOGO体 | `xiaowei` | Logo art type, bold personality | Titles/brand marks |
-| 站酷庆科黄油体 | `zcoolqingkehuangyouti` | Rounded, thick butter-body | Titles/food/light brands |
+| 站酷庆科黄油体 | `ZCOOL QingKe HuangYou` | Rounded, thick butter-body | Titles/food/light brands |
 | Jersey15 | `Jersey 15` | Sports jersey style (Latin only) | Sports/tech display |
 
 ### Pixel (像素)

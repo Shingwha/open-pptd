@@ -44,7 +44,7 @@ elements:
     elementType: text
     bounds: [64, 132, 44, 28]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 20
       color: "$coralDeep"
       wrap: false
@@ -53,7 +53,7 @@ elements:
     elementType: text
     bounds: [116, 134, 220, 24]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 15
       color: "$night"
       wrap: false
@@ -76,7 +76,7 @@ elements:
     elementType: text
     bounds: [64, 208, 44, 28]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 20
       color: "$coralDeep"
       wrap: false
@@ -85,7 +85,7 @@ elements:
     elementType: text
     bounds: [116, 210, 220, 24]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 15
       color: "$night"
       wrap: false
@@ -108,7 +108,7 @@ elements:
     elementType: text
     bounds: [64, 284, 44, 28]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 20
       color: "$coralDeep"
       wrap: false
@@ -117,7 +117,7 @@ elements:
     elementType: text
     bounds: [116, 286, 220, 24]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 15
       color: "$night"
       wrap: false
@@ -136,7 +136,7 @@ elements:
     elementType: text
     bounds: [64, 350, 400, 22]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 15
       color: "$night"
       wrap: false
@@ -169,7 +169,7 @@ elements:
     elementType: text
     bounds: [120, 382, 160, 20]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 14
       color: "$night"
       align: [center, top]
@@ -186,7 +186,7 @@ elements:
     elementType: text
     bounds: [400, 382, 160, 20]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 14
       color: "$night"
       align: [center, top]
@@ -203,7 +203,7 @@ elements:
     elementType: text
     bounds: [680, 382, 160, 20]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 14
       color: "$night"
       align: [center, top]

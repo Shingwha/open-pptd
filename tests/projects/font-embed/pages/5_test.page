@@ -23,11 +23,11 @@ elements:
     elementType: text
     bounds: [56, 56, 400, 26]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 15
       bold: true
       color: "$text"
-      text: "站酷庆科黄油体  /  zcoolqingkehuangyouti"
+      text: "站酷庆科黄油体  /  ZCOOL QingKe HuangYou"
   - elementId: verdict-0
     elementType: text
     bounds: [56, 84, 400, 20]
@@ -41,7 +41,7 @@ elements:
     elementType: text
     bounds: [56, 108, 398, 56]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 12
       color: "$text"
       lineHeight: 1.4

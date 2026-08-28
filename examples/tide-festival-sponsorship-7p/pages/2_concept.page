@@ -35,7 +35,7 @@ elements:
     elementType: text
     bounds: [64, 92, 400, 62]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 48
       color: "$night"
       letterSpacing: 6
@@ -46,7 +46,7 @@ elements:
     elementType: text
     bounds: [64, 160, 320, 24]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 18
       color: "$coralDeep"
       letterSpacing: 6
@@ -97,7 +97,7 @@ elements:
     elementType: text
     bounds: [84, 338, 60, 28]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 22
       color: "$coral"
       wrap: false
@@ -106,7 +106,7 @@ elements:
     elementType: text
     bounds: [84, 372, 224, 24]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 17
       color: "$night"
       wrap: false
@@ -152,7 +152,7 @@ elements:
     elementType: text
     bounds: [368, 338, 60, 28]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 22
       color: "$nightDeep"
       wrap: false
@@ -161,7 +161,7 @@ elements:
     elementType: text
     bounds: [368, 372, 224, 24]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 17
       color: "$night"
       wrap: false
@@ -207,7 +207,7 @@ elements:
     elementType: text
     bounds: [652, 338, 60, 28]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 22
       color: "$coralDeep"
       wrap: false
@@ -216,7 +216,7 @@ elements:
     elementType: text
     bounds: [652, 372, 224, 24]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 17
       color: "$night"
       wrap: false

@@ -3,7 +3,7 @@ title: 潮汐音乐节 TIDAL FEST 2026 · 招商合作方案
 size: [960, 540]
 
 fonts:
-  站酷庆科黄油体: { family: "zcoolqingkehuangyouti" }
+  站酷庆科黄油体: { family: "ZCOOL QingKe HuangYou" }
   霞鹜新晰黑: { family: "LXGW Neo XiHei" }
 
 theme:
@@ -28,12 +28,12 @@ theme:
       letterSpacing: 3
       color: "$nightDeep"
     disp:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 28
       color: "$night"
       lineHeight: 1.25
     h3:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 15
       color: "$night"
       lineHeight: 1.35

@@ -47,7 +47,9 @@ export async function loadFontRegistry(options = {}) {
 }
 
 /**
- * 按 family（注册名，精确匹配）或 key（展示名，精确匹配）查注册表。
+ * 按 family（注册名，精确匹配）、key（展示名）或 aliases（字体内部本名，
+ * 用于字体内部名与注册名不一致的条目，如 zcoolqingkehuangyouti 的字节
+ * 来自 Google Fonts、内部名为 "ZCOOL QingKe HuangYou"）查注册表。
  * @param {object} registry loadFontRegistry 的返回值
  * @param {string} ref
  * @returns {object|undefined}
@@ -55,7 +57,7 @@ export async function loadFontRegistry(options = {}) {
 export function findFont(registry, ref) {
   if (!registry?.fonts?.length) return undefined;
   return registry.fonts.find(
-    (f) => f.family === ref || f.key === ref
+    (f) => f.family === ref || f.key === ref || f.aliases?.includes(ref)
   );
 }
 

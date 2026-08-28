@@ -194,22 +194,20 @@
   },
   {
    "key": "站酷庆科黄油体",
-   "family": "zcoolqingkehuangyouti",
+   "family": "ZCOOL QingKe HuangYou",
+   "aliases": ["zcoolqingkehuangyouti"],
    "file": "zcoolqingkehuangyou.ttf",
-   "url": "https://raw.githubusercontent.com/jaywcjlove/free-font/main/docs/fonts/站酷字体系列/站酷庆科黄油体.ttf",
-   "mirrors": ["https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/站酷字体系列/站酷庆科黄油体.ttf"],
+   "url": "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/zcoolqingkehuangyou/ZCOOLQingKeHuangYou-Regular.ttf",
+   "mirrors": ["https://raw.githubusercontent.com/google/fonts/main/ofl/zcoolqingkehuangyou/ZCOOLQingKeHuangYou-Regular.ttf"],
    "category": "display",
    "style": "黄油体,圆润厚实",
    "usage": "标题/食品/轻松品牌",
-   "license": "站酷 免费商用",
+   "license": "SIL OFL 1.1 免费商用",
    "subset": true,
    "weight": 400,
    "italic": false,
    "fsType": 8,
-   "size": 9745240,
-   "mirrors": [
-    "https://cdn.jsdelivr.net/gh/jaywcjlove/free-font@main/docs/fonts/站酷字体系列/站酷庆科黄油体.ttf"
-   ]
+   "size": 8328684
   },
   {
    "key": "精品点阵体",

@@ -82,7 +82,7 @@ elements:
     elementType: text
     bounds: [230, 108, 500, 92]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 72
       color: "$cream"
       letterSpacing: 6
@@ -93,7 +93,7 @@ elements:
     elementType: text
     bounds: [230, 208, 500, 26]
     content:
-      fontFamily: "zcoolqingkehuangyouti"
+      fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 16
       color: "$coral"
       letterSpacing: 6
