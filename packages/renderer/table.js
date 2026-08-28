@@ -9,6 +9,7 @@ import { resolveColor, resolveFont, resolveTableStyle, resolveTableCellStyle, re
 import { estimateTableLayout, tableGrid, TABLE_FONT_SIZE, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../model/table.js";
 import { parseRichText } from "../model/richtext.js";
 import { runSpan, applyParaStyle } from "./text.js";
+import { gradientCss } from "./gradient.js";
 import { createElementShell } from "./shell.js";
 
 const H_ALIGN = { left: "left", center: "center", right: "right", justify: "justify", distributed: "justify" };
@@ -122,13 +123,15 @@ export function renderTable(theme, el) {
 
 /** td 内联样式（预览；covered 位无文字不显示背景文字样式）。 */
 export function tdCss(theme, f, covered) {
-  // 严格官方形态：fill 字符串色或 {type: "solid", color}（与 writer 同源）
-  const fillColor = f.fill
+  // 填充：字符串色 / {type:"solid"} / {type:"gradient"}（与 writer buildFill 同源）
+  const fillCss = f.fill
     ? typeof f.fill === "string"
       ? resolveColor(theme, f.fill)
       : f.fill.type === "solid"
         ? resolveColor(theme, f.fill.color)
-        : null
+        : f.fill.type === "gradient"
+          ? gradientCss(theme, f.fill)
+          : null
     : null;
   const hAlign = H_ALIGN[f.align[0]] || "center";
   const vAlign = f.align[1] || "middle";
@@ -157,7 +160,7 @@ export function tdCss(theme, f, covered) {
       "white-space:normal",
     );
   }
-  parts.push(`background:${fillColor || "transparent"}`);
+  parts.push(`background:${fillCss || "transparent"}`);
   return parts.filter(Boolean).join(";");
 }
 /**

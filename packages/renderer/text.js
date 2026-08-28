@@ -13,20 +13,11 @@ import { parseRichText } from "../model/richtext.js";
 import { computeBaseStyle } from "../model/style.js";
 import { latexToMathml } from "../model/latex.js";
 import { resolveColor, resolveFont } from "../model/theme.js";
+import { gradientCss } from "./gradient.js";
 import { createElementShell } from "./shell.js";
 
 const DEFAULT_FONT_SIZE = 18;
 const DEFAULT_LINE_HEIGHT = 1;
-
-/** 文字渐变 → CSS linear-gradient 声明（官方 GradientFill：angle 0°=左→右，顺时针）。 */
-function gradientCss(theme, gradient) {
-  if (!gradient || gradient.gradientType === "radial" || !Array.isArray(gradient.stops) || gradient.stops.length < 2) return null;
-  const angle = Number(gradient.angle) || 0;
-  const stops = gradient.stops
-    .map((s) => `${resolveColor(theme, s.color) || s.color} ${Math.round((s.position ?? 0) * 100)}%`)
-    .join(", ");
-  return `linear-gradient(${angle}deg, ${stops})`;
-}
 
 /** 文字阴影 → CSS text-shadow（offset [x,y] 向下为正，与 OOXML dist/dir 同向）。 */
 function shadowCss(theme, shadow) {

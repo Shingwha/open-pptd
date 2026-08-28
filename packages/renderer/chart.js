@@ -13,6 +13,7 @@ import {
   darkenByLightness, toAxisArray, resolveChartDirection, seriesAxisIndex, hierarchyColor, seriesChannels,
 } from "../model/chart.js";
 import { resolveColor, resolveFont, themeChartPalette } from "../model/theme.js";
+import { gradientCss } from "./gradient.js";
 import { createElementShell } from "./shell.js";
 
 const AXIS_TEXT = { color: "#6b7280", fontSize: 11 };
@@ -73,16 +74,6 @@ function markerSymbol(theme, marker, color) {
     symbolSize: cfg.size || 8,
     itemStyle: { color: resolveColor(theme, cfg.fill) || color, borderColor: resolveColor(theme, cfg.border?.color), borderWidth: cfg.border?.width },
   };
-}
-
-/** 图表框渐变 → CSS linear-gradient。 */
-function gradientCss(theme, fill) {
-  if (fill?.type !== "gradient" || !Array.isArray(fill.stops) || fill.stops.length < 2) return null;
-  const stops = fill.stops
-    .map((s) => `${resolveColor(theme, s.color) || "#888"} ${Math.round((s.position ?? 0) * 100)}%`)
-    .join(", ");
-  const angle = fill.angle ?? 0;
-  return `linear-gradient(${angle}deg, ${stops})`;
 }
 
 /** 图表框（官方 Chart.fill/border/shadow → 容器样式，与 writer chartSpace spPr 对应）。 */

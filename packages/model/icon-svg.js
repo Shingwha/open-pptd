@@ -11,13 +11,14 @@
 
 import { resolveColor } from "./theme.js";
 
-/** 图标填充解析 → {type:'solid', color:hex} 或 {type:'gradient', stops:[{color,position}], angle}。 */
+/** 图标填充解析 → {type:'solid', color:hex} 或 {type:'gradient', gradientType, stops:[{color,position}], angle}。 */
 export function normalizeIconFill(theme, fill) {
   if (typeof fill === "string") return { type: "solid", color: resolveColor(theme, fill) || "#333333" };
   if (!fill) return { type: "solid", color: resolveColor(theme, "$text") || "#333333" };
   if (fill.type === "gradient" && Array.isArray(fill.stops) && fill.stops.length >= 2) {
     return {
       type: "gradient",
+      gradientType: fill.gradientType === "radial" ? "radial" : "linear",
       angle: fill.angle ?? 0,
       stops: fill.stops.map((s) => ({
         color: resolveColor(theme, s.color) || "#333333",
@@ -39,20 +40,26 @@ export function iconSvgBody(def, fill, gid = "ig") {
   const fr = def.fr ? ` fill-rule="${def.fr}"` : "";
   const d = escAttr(def.d);
   if (fill?.type === "gradient") {
-    const rad = ((fill.angle || 0) * Math.PI) / 180;
-    const dx = Math.sin(rad);
-    const dy = -Math.cos(rad);
     const stops = fill.stops
       .map(
         (s) =>
           `<stop offset="${Math.round((s.position ?? 0) * 100)}%" stop-color="${s.color}"/>`
       )
       .join("");
-    return (
-      `<defs><linearGradient id="${gid}" x1="${(0.5 - dx / 2).toFixed(4)}" y1="${(0.5 - dy / 2).toFixed(4)}" ` +
-      `x2="${(0.5 + dx / 2).toFixed(4)}" y2="${(0.5 + dy / 2).toFixed(4)}">${stops}</linearGradient></defs>` +
-      `<path${fr} d="${d}" fill="url(#${gid})"/>`
-    );
+    // 径向：圆心居中；线性：angle 0 = 左→右、顺时针（references/pptd.md），方向向量 (cos θ, sin θ)
+    const grad =
+      fill.gradientType === "radial"
+        ? `<radialGradient id="${gid}" cx="50%" cy="50%" r="50%">${stops}</radialGradient>`
+        : (() => {
+            const rad = ((fill.angle || 0) * Math.PI) / 180;
+            const dx = Math.cos(rad);
+            const dy = Math.sin(rad);
+            return (
+              `<linearGradient id="${gid}" x1="${(0.5 - dx / 2).toFixed(4)}" y1="${(0.5 - dy / 2).toFixed(4)}" ` +
+              `x2="${(0.5 + dx / 2).toFixed(4)}" y2="${(0.5 + dy / 2).toFixed(4)}">${stops}</linearGradient>`
+            );
+          })();
+    return `<defs>${grad}</defs><path${fr} d="${d}" fill="url(#${gid})"/>`;
   }
   const color = fill?.color || "#333333";
   return `<path${fr} d="${d}" fill="${color}"/>`;

@@ -8,6 +8,7 @@
 
 import { resolveColor } from "../model/theme.js";
 import { shapePaths } from "../model/preset-geometry.js";
+import { svgGradient } from "./gradient.js";
 import { createElementShell } from "./shell.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -18,16 +19,6 @@ function solidFill(theme, fill) {
   // 严格官方形态：对象必须 {type: "solid", color}；渐变/图片/旧 {color} 形态均不支持
   if (fill.type !== "solid") return null;
   return resolveColor(theme, fill.color);
-}
-
-/** 渐变填充 → CSS background（简化为线性渐变）。 */
-function gradientCss(theme, fill) {
-  if (fill?.type !== "gradient" || !Array.isArray(fill.stops) || fill.stops.length < 2) return null;
-  const stops = fill.stops
-    .map((s) => `${resolveColor(theme, s.color)} ${Math.round((s.position ?? 0) * 100)}%`)
-    .join(", ");
-  const angle = fill.angle ?? 0;
-  return `linear-gradient(${angle}deg, ${stops})`;
 }
 
 /** 明暗面调色（预览近似 PowerPoint 的 fill 修饰符）：向白/黑混合。 */
@@ -51,11 +42,19 @@ export function renderShape(theme, el) {
   svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
   svg.setAttribute("preserveAspectRatio", "none");
 
-  // 填充基色：规格 fill 默认不应用（透明，与 writer 无填充导出一致）；
-  // 渐变因 SVG path 不能直接用 CSS 渐变，暂保留灰底近似（后续改 SVG gradient）；无 fill 为透明
+  // 填充基色：规格 fill 默认不应用（透明，与 writer 无填充导出一致）；无 fill 为透明。
+  // 渐变 → SVG <defs> 渐变（gradient.js），全部填充路径统一 url(#id) 引用，
+  // 与 writer 单一 a:gradFill 导出一致（PowerPoint 预置几何整体一个渐变，不做明暗面调色）。
+  // 渐变坐标系：预置几何路径 = bounds 坐标；custom 路径带 viewBox 缩放变换 = viewBox 坐标
   const solid = solidFill(theme, el.fill);
-  const grad = gradientCss(theme, el.fill);
-  const base = solid || (grad ? "#cccccc" : null);
+  const [gw, gh] = el.shapeName === "custom" ? el.viewBox || [w, h] : [w, h];
+  const grad = svgGradient(theme, el.fill, gw, gh);
+  const base = solid || (grad ? `url(#${grad.id})` : null);
+  if (grad) {
+    const defs = document.createElementNS(SVG_NS, "defs");
+    defs.innerHTML = grad.def;
+    svg.appendChild(defs);
+  }
 
   // 自定义路径：SVG path 直接画（viewBox 拉伸）
   if (el.shapeName === "custom") {
@@ -101,12 +100,12 @@ export function renderShape(theme, el) {
     if (p.fill === "none") {
       geom.setAttribute("fill", "none");
     } else if (p.fill && p.fill !== "null") {
-      // 明暗面：填充色向黑/白混合（预览近似 PowerPoint 明暗效果）；无填充时不绘制
+      // 明暗面：填充色向黑/白混合（预览近似 PowerPoint 明暗效果）；无填充时不绘制；
+      // 渐变不做明暗面调色（与 writer 单一 gradFill 一致）
       if (!base) {
         geom.setAttribute("fill", "none");
       } else {
         geom.setAttribute("fill", grad ? base : shadeColor(base, p.fill));
-        geom.setAttribute("opacity", grad ? "0.5" : "1");
       }
     } else {
       geom.setAttribute("fill", base || "none");
@@ -120,7 +119,6 @@ export function renderShape(theme, el) {
     svg.appendChild(geom);
   }
 
-  if (grad && base) svg.style.background = grad;
   applyShadow(svg, theme, el.shadow);
   return svg;
 }
