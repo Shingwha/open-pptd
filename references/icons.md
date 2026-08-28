@@ -15,7 +15,7 @@
 
 > Prefer `bs:` direct references when generating (they always exist); when using `fas:`, check the mapping table below first — otherwise the icon is skipped during export.
 
-## Local Icon Library (192 icons, by category)
+## Local Icon Library (195 icons, by category)
 
 ### Direction / Arrow (20)
 
@@ -63,12 +63,13 @@
 | `bs:x-circle` |
 | `bs:x-lg` |
 
-### Concept / Symbol (26)
+### Concept / Symbol (28)
 
 | name |
 |---|
 | `bs:award` |
 | `bs:bullseye` |
+| `bs:circle-fill` |
 | `bs:cloud` |
 | `bs:cloud-fill` |
 | `bs:droplet` |
@@ -81,6 +82,7 @@
 | `bs:gem` |
 | `bs:heart` |
 | `bs:heart-fill` |
+| `bs:hexagon-fill` |
 | `bs:lightbulb` |
 | `bs:lightbulb-fill` |
 | `bs:moon` |
@@ -111,7 +113,7 @@
 | `bs:folder2-open` |
 | `bs:journal-text` |
 
-### Chart / Data (13)
+### Chart / Data (14)
 
 | name |
 |---|
@@ -126,6 +128,7 @@
 | `bs:infinity` |
 | `bs:lightning-charge` |
 | `bs:lightning-charge-fill` |
+| `bs:lightning-fill` |
 | `bs:pie-chart` |
 | `bs:speedometer` |
 

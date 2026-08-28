@@ -25,7 +25,8 @@ const OUT_LIB = join(ROOT, "packages", "model", "icon-library.js");
 const OUT_DOC = join(ROOT, "references", "icons.md");
 const CHECK = process.argv.includes("--check");
 
-/** 提取 <path d="..." fill-rule? />（Bootstrap 原始 SVG 固定格式，字符串解析即可）。 */
+/** 提取 <path d="..." fill-rule? />（Bootstrap 原始 SVG 固定格式，字符串解析即可）。
+ *  个别图标用 <circle cx cy r>（如 circle-fill）：无 path 时转换为等效圆弧 path。 */
 function extractPath(svg) {
   const paths = [];
   const re = /<path\b([^>]*)\bd="([^"]*)"([^>]*)\/?>/g;
@@ -34,6 +35,15 @@ function extractPath(svg) {
     const attrs = m[1] + m[3];
     const fr = /fill-rule="([^"]*)"/.exec(attrs)?.[1] ?? null;
     paths.push({ d: m[2], fr });
+  }
+  if (paths.length === 0) {
+    const cre = /<circle\b([^>]*)\/?>/g;
+    while ((m = cre.exec(svg))) {
+      const num = (k) => Number(new RegExp(`${k}="([\\d.]+)"`).exec(m[1])?.[1]);
+      const [cx, cy, r] = [num("cx"), num("cy"), num("r")];
+      if (!(r > 0)) throw new Error("circle 缺少 cx/cy/r");
+      paths.push({ d: `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0z`, fr: null });
+    }
   }
   if (paths.length === 0) throw new Error("无 path");
   return paths;

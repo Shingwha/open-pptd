@@ -187,6 +187,10 @@
     "label": "闪电实心",
     "cat": "图表"
   },
+  "lightning-fill": {
+    "label": "闪电实心（直形）",
+    "cat": "图表"
+  },
   "funnel": {
     "label": "漏斗",
     "cat": "图表"
@@ -485,6 +489,14 @@
   },
   "star-fill": {
     "label": "星形实心",
+    "cat": "概念"
+  },
+  "hexagon-fill": {
+    "label": "六边形实心",
+    "cat": "概念"
+  },
+  "circle-fill": {
+    "label": "圆形实心",
     "cat": "概念"
   },
   "star-half": {
