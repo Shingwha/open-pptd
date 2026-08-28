@@ -8,6 +8,7 @@
 
 import * as yaml from "./vendor/js-yaml.mjs";
 import { createDeck, createPage, PAGE_WIDTH, PAGE_HEIGHT } from "./model.js";
+import { normalizeCells } from "./table.js";
 
 /**
  * 解析 PPTD 项目（manifest + pages）→ 统一 deck 模型。
@@ -90,11 +91,7 @@ function normalizeElement(el, index) {
   el.extra = pickExtra(el, known);
   // 表格兼容：裸值单元格（字符串/数字）→ {text: 值}，统一消费方只读 cell.text
   if (el.elementType === "table" && Array.isArray(el.rows)) {
-    el.rows = el.rows.map((row) =>
-      (Array.isArray(row) ? row : []).map((cell) =>
-        cell && typeof cell === "object" && !Array.isArray(cell) ? cell : { text: cell == null ? "" : String(cell) }
-      )
-    );
+    el.rows = normalizeCells(el.rows);
   }
   return el;
 }

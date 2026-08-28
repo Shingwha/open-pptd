@@ -10,7 +10,7 @@
 //   - 被合并覆盖的位置**不省略**，输出空占位格 <a:tc vMerge="1">（被行合并
 //     覆盖）或 hMerge="1"（被列合并覆盖），斜向覆盖两者都写
 //   - 每行 tc 数量必须与 gridCol 数量一致（完整网格）
-//   PPTD YAML 层的省略规则由 tableGrid 展开还原（core/table.js）
+//   PPTD YAML 层的省略规则由 tableGrid 展开还原（packages/model/table.js）
 //
 // 边框：CT_TableCellProperties 的 lnL/lnR/lnT/lnB 直接承载 CT_LineProperties
 //   （w/cap/cmpd/algn 属性在 lnL 上，不能包 a:ln）
@@ -22,19 +22,10 @@ import { buildParagraph } from "./text.js";
 import { parseRichText } from "../model/richtext.js";
 import { resolveTableStyle, resolveTableCellStyle, resolveTextStyle } from "../model/theme.js";
 import { estimateTableLayout, tableGrid } from "../model/table.js";
+import { borderSides, dashSpec } from "../model/style-spec.js";
 import { colorElement, buildFill, buildShadow } from "./drawing.js";
 
 const V_ANCHOR = { top: "t", middle: "ctr", bottom: "b" };
-
-/** BorderSpec → [上, 右, 下, 左]（null = 无边框）。 */
-function parseBorderSpec(spec) {
-  if (spec == null) return [null, null, null, null]; // 顶层 null = 全部清除
-  if (Array.isArray(spec)) {
-    if (spec.length === 2) return [spec[0], spec[1], spec[0], spec[1]]; // [上下, 左右]
-    if (spec.length === 4) return [spec[0], spec[1], spec[2], spec[3]]; // [上, 右, 下, 左]
-  }
-  return [spec, spec, spec, spec]; // 单 Border = 四边相同
-}
 
 /**
  * 单边边框 XML：<a:lnX w cap cmpd algn>（CT_LineProperties 直接承载在线元素上）。
@@ -45,8 +36,8 @@ function lnSide(theme, side, b) {
   if (!b) return el(side);
   const w = Math.round((b.width ?? 1) * 12700);
   const kids = [el("a:solidFill", {}, colorElement(theme, b.color ?? "#000000"))];
-  if (b.style === "dash") kids.push(el("a:prstDash", { val: "dash" }));
-  else if (b.style === "dot") kids.push(el("a:prstDash", { val: "dot" }));
+  const dash = dashSpec(b.style)?.ooxml;
+  if (dash) kids.push(el("a:prstDash", { val: dash }));
   return el(side, { w, cap: "flat", cmpd: "sng", algn: "ctr" }, kids.join(""));
 }
 
@@ -111,13 +102,12 @@ function tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, cell, cellAlign
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
   const kids = [];
   // OOXML 严格顺序：tcPr 内 lnL/lnR/lnT/lnB 必须先于填充，否则 PowerPoint 忽略边框
-  // 边框解析：全链未设置（undefined）→ 文档默认 1px 黑；显式 null → 四边清除
-  const b = cell?.border ?? s.border;
-  const borders = parseBorderSpec(b === undefined ? { style: "solid", width: 1, color: "#000000" } : b);
-  // BorderSpec 数组顺序为 [上,右,下,左]（顺时针），映射到 lnT/lnR/lnB/lnL，
-  // 数组下标与 XML 边名不是直连关系（曾误用 [0,1,2,3]→lnL/lnR/lnT/lnB，边框整体旋转）
-  for (const [side, dir] of [["a:lnL", 3], ["a:lnR", 1], ["a:lnT", 0], ["a:lnB", 2]]) {
-    kids.push(lnSide(theme, side, borders[dir]));
+  // 边框解析（borderSides 内建默认语义）：全链未设置（undefined）→ 文档默认 1px 黑；
+  // 显式 null → 四边清除；数组 [上下,左右] / [上,右,下,左]；单 Border → 四边相同
+  const borders = borderSides(cell?.border ?? s.border);
+  // XML 边名直连命名边（曾误把 [上,右,下,左] 数组下标直连 lnL/lnR/lnT/lnB，边框整体旋转）
+  for (const [side, b] of [["a:lnL", borders.left], ["a:lnR", borders.right], ["a:lnT", borders.top], ["a:lnB", borders.bottom]]) {
+    kids.push(lnSide(theme, side, b));
   }
   // 填充：单元格内联 > 分类样式 > cellStyle > Table.fill > 透明
   const fill = cell?.fill ?? s.fill ?? (tableFill ? tableFill : null);

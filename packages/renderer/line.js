@@ -7,6 +7,7 @@
 // ============================================================================
 
 import { resolveColor } from "../model/theme.js";
+import { dashSpec } from "../model/style-spec.js";
 import { parsePoints, smoothSegments } from "../model/geometry.js";
 import { createElementShell } from "./shell.js";
 
@@ -25,7 +26,7 @@ export function renderLine(theme, el) {
 
   const color = resolveColor(theme, el.border?.color) || "#000000";
   const width = el.border?.width || 1;
-  const dash = el.border?.style === "dash" ? "6 4" : el.border?.style === "dot" ? "2 3" : null;
+  const dash = dashSpec(el.border?.style)?.css || null;
   const curve = el.curve || "round";
 
   // 曲线（多点）用 path；直线用 line

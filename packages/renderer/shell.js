@@ -11,7 +11,19 @@
 //     从右向左应用，scale 写在 rotate 之后）与 opacity
 // ============================================================================
 
+import { resolveColor } from "../model/theme.js";
+import { shadowOffset } from "../model/style-spec.js";
+
 const SVG_NS = "http://www.w3.org/2000/svg";
+
+/** ShadowSpec → CSS box-shadow 值；无阴影返回 null（图片 / 图表框共用）。 */
+export function boxShadowCss(theme, shadow) {
+  const offset = shadowOffset(shadow);
+  if (!offset) return null;
+  const [dx, dy] = offset;
+  const color = resolveColor(theme, shadow.color) || "rgba(0,0,0,0.3)";
+  return `${dx}px ${dy}px ${shadow.blur ?? 6}px ${color}`;
+}
 
 /**
  * @param {object} el 元素模型（bounds / elementId / elementType / rotation / flip / opacity）

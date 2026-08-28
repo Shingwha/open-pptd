@@ -13,16 +13,17 @@
 //
 // 类型出口（官方 13 类）：
 //   ✅ bar / line / area / scatter / bubble / candlestick / pie(含 innerRadius→
-//      doughnutChart) / radar —— 原生导出
-//   ⏳ waterfall / treemap / sunburst —— 结构需 PowerPoint 手工参考（树/瀑布
-//      父子数据在私有扩展，待用户手动创建后入库比对）
+//      doughnutChart) / radar —— 原生导出（c:chartSpace 体系）
+//   ✅ waterfall / treemap / sunburst —— chartEx 扩展体系导出（cx: 命名空间，
+//      mc:Fallback 占位预览图，PowerPoint 2016+ 原生可编辑）
 //   ⏳ heatmap / sankey —— PowerPoint 无原生类型，待定（图片化或近似）
 // ============================================================================
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "./xml.js";
 import { resolveChartSeries, chartDataTable, isNumericColumn, resolveDataLabels, toAxisArray, resolveChartDirection, seriesAxisIndex, seriesChannels, hierarchyColor } from "../model/chart.js";
-import { resolveColor, resolveFont, themeChartPalette } from "../model/theme.js";
-import { buildFill, buildLn, buildShadow } from "./drawing.js";
+import { resolveColor, resolveFont, themeChartPalette, DEFAULT_FONT } from "../model/theme.js";
+import { dashSpec } from "../model/style-spec.js";
+import { buildFill, buildLn, buildShadow, solidFillResolved } from "./drawing.js";
 import { ZipWriter } from "./zip.js";
 import { buildChartStyleXml, buildChartColorStyleXml } from "./chartex-style.js";
 
@@ -85,7 +86,7 @@ export function buildSheetOrder(el, series, horizontal = false) {
 }
 
 export function buildChartXlsx(chartEl, fonts, sheetOrder) {
-  const f = fonts?.latin || "Microsoft YaHei";
+  const f = fonts?.latin || DEFAULT_FONT;
   const table = chartDataTable(chartEl); // [表头行, 数据行...]
   // 列重排（candlestick 等）
   const order = sheetOrder || table[0].map((_, i) => i);
@@ -260,47 +261,29 @@ export function buildChartXlsx(chartEl, fonts, sheetOrder) {
 // ----------------------------------------------------------------------------
 // Chart XML 公共片段
 // ----------------------------------------------------------------------------
-/** 主题色解析 + HEX8 透明度 → a:solidFill。 */
+/** 系列填充 → a:solidFill（先 resolveColor 解析 $token 为具体色，再走 drawing.js
+ * 的 solidFillResolved——不能直接用 colorElement/buildFill 的字符串分支：
+ * 它们会把 $text/$bg/$primary/$accent 映射成 schemeClr，且 HEX8+显式 alpha 的
+ * 语义是"覆盖"而非"相乘"，见 drawing.js solidFillResolved 注释）。 */
 function fillXml(theme, color, alpha) {
   // 渐变对象（官方系列 fill 支持 GradientFill）→ buildFill；字符串色 → solidFill
   if (color && typeof color === "object") return buildFill(theme, color);
-  let c = resolveColor(theme, color);
-  if (!c) c = "#000000";
-  let rgb = c;
-  let a = alpha;
-  if (/^#[0-9a-fA-F]{8}$/.test(c)) {
-    rgb = c.slice(0, 7);
-    a = parseInt(c.slice(7), 16) / 255;
-  }
-  const inner =
-    a == null
-      ? el("a:srgbClr", { val: hexToRgbVal(rgb) })
-      : el("a:srgbClr", { val: hexToRgbVal(rgb) }, el("a:alpha", { val: Math.round(a * 100000) }));
-  return el("a:solidFill", {}, inner);
+  return solidFillResolved(resolveColor(theme, color) || "#000000", alpha);
 }
 
 /** 系列线条（a:ln，主题色解析 + HEX8 + lineStyle → prstDash）。 */
 function lnXml(theme, color, widthPt = 2, style = "solid") {
+  const dash = dashSpec(style)?.ooxml;
+  const lnAttrs = { w: Math.round(widthPt * 12700), cap: "flat", cmpd: "sng", algn: "ctr" };
   // 渐变对象（官方 lineColor/areaColor 支持 GradientFill）→ buildFill
   if (color && typeof color === "object") {
     const kids = [buildFill(theme, color)];
-    const dash = { dash: "dash", dot: "dot" }[style];
     if (dash) kids.push(el("a:prstDash", { val: dash }));
-    return el("a:ln", { w: Math.round(widthPt * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, kids.join(""));
+    return el("a:ln", lnAttrs, kids.join(""));
   }
-  let c = resolveColor(theme, color) || "#000000";
-  let a = null;
-  if (/^#[0-9a-fA-F]{8}$/.test(c)) {
-    c = c.slice(0, 7);
-    a = parseInt(c.slice(7), 16) / 255;
-  }
-  const inner = a == null
-    ? el("a:srgbClr", { val: hexToRgbVal(c) })
-    : el("a:srgbClr", { val: hexToRgbVal(c) }, el("a:alpha", { val: Math.round(a * 100000) }));
-  const kids = [el("a:solidFill", {}, inner)];
-  const dash = { dash: "dash", dot: "dot" }[style];
+  const kids = [solidFillResolved(resolveColor(theme, color) || "#000000")];
   if (dash) kids.push(el("a:prstDash", { val: dash }));
-  return el("a:ln", { w: Math.round(widthPt * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, kids.join(""));
+  return el("a:ln", lnAttrs, kids.join(""));
 }
 
 /** 文本框属性（c:txPr；label 配置 → 字号/颜色/字体覆盖）。 */
@@ -1415,7 +1398,7 @@ function buildChartExParts(theme, chartEl, chartIndex) {
 
 /** chartEx 专用 xlsx：瀑布图 [cat, val, 汇总列]；树/旭日 [级0..级N, size]（叶子路径）。 */
 function buildChartExXlsx(chartEl, s, type) {
-  const fonts = { latin: "Microsoft YaHei" };
+  const fonts = { latin: DEFAULT_FONT };
   const data = chartEl.data || { cols: [], rows: [] };
   const rows = data.rows || [];
   let table;

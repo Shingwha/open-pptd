@@ -1,25 +1,13 @@
 // ============================================================================
 // xml.js — XML 生成工具
+// ----------------------------------------------------------------------------
+// esc/escAttr 转义是全仓唯一实现（packages/model/escape.js，v3 #1 禁止第三份），
+// 此处 re-export 保持 writer 侧 import 路径不变。
 // ============================================================================
 
-/** XML 文本转义。 */
-export function esc(value) {
-  if (value == null) return "";
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+import { esc, escAttr } from "../model/escape.js";
 
-/** 属性值转义（只转义 & < "）。 */
-export function escAttr(value) {
-  if (value == null) return "";
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/"/g, "&quot;");
-}
+export { esc, escAttr };
 
 /** 生成 XML 声明头。 */
 export function xmlHeader(standalone = true) {

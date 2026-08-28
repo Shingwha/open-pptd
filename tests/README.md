@@ -32,7 +32,7 @@ tests/
     line/                线条：sharp / round / smooth + 箭头 + 颜色变体（2 页）
     image/               图片：crop → fit → cropShape 全管线（1 页）
     icon/                图标：bs:/fas:/far:/fab: + 颜色/渐变变体（2 页）
-    table/               表格：样式 / 边框 / 对齐 / 合并 / 填充 / 字体 / 颜色（8 页）
+    table/               表格：样式 / 边框 / 对齐 / 合并 / 填充 / 字体 / 颜色（9 页）
     chart/               图表：bar/pie/line/area/scatter 等 21 页全类型
     notes/               备注：演讲者备注 + 文本（5 页）
     font-embed/          字体嵌入：字库全字体卡片（7 页，缺字体只警告不嵌入）

@@ -66,20 +66,6 @@ function runXml(theme, s, hrefId) {
   return el("a:rPr", attrs, kids.join(""));
 }
 
-/** run 文本按 \n 拆分为 a:t + a:br。 */
-function runTextXml(theme, text, hrefId) {
-  const parts = String(text).split("\n");
-  const rPr = runXml(theme, {}, hrefId);
-  const chunks = [];
-  for (let i = 0; i < parts.length; i++) {
-    if (i > 0) chunks.push(el("a:br"));
-    const t = parts[i];
-    const preserve = t !== t.trim() || t === "" ? ' xml:space="preserve"' : "";
-    chunks.push(`<a:r>${rPr}<a:t${preserve}>${esc(t)}</a:t></a:r>`);
-  }
-  return chunks.join("");
-}
-
 /** 构建单个 run（含样式）。hrefId 由外部注册后传入。 */
 export function buildRun(theme, run, baseStyle, registerLink) {
   const style = { ...baseStyle, ...pickDefined(run.style) };
@@ -264,11 +250,6 @@ function buildFormulaRun(theme, run, baseStyle, { paraAlone = false, textAlign =
   return `<a14:m xmlns:a14="${A14_NS}">${styled}</a14:m>`;
 }
 
-/** 文本元素 → p:sp XML（txBox + txBody）。
- * spPr 与 PowerPoint 原生文本框一致：xfrm + prstGeom rect + noFill
- * （CT_ShapeProperties 要求必须含几何；缺几何在部分 Office 实现中会
- *  被套上默认填充/边框，导致导出文本框出现莫名色块）。
- */
 /** 文本框 → p:sp XML；含公式时按 PowerPoint 原生结构包 mc:AlternateContent
  * （Choice = 公式版，Fallback = 公式降级为 LaTeX 源码文本的老 Office 兼容版）。
  * spPr 与 PowerPoint 原生文本框一致：xfrm + prstGeom rect + noFill

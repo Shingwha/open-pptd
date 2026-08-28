@@ -7,6 +7,8 @@
 // 样式字段"未设置即省略"，继承链在消费端（渲染/导出）统一处理。
 // ============================================================================
 
+import { decodeEntities } from "./escape.js";
+
 const BLOCK_TAGS = new Set(["p", "li"]);
 const LIST_TAGS = new Set(["ul", "ol"]);
 const INLINE_TAGS = new Set(["span", "strong", "em", "u", "s", "sup", "sub", "a", "br"]);
@@ -19,14 +21,6 @@ const FORMULA_RE = /\\\(([\s\S]*?)\\\)/g;
 // 允许孤立 < 作为文本（后跟空格/\数字等非标签起始字符时，如公式里的比较符
 // "<"、普通文本 "a < b"）——否则 < 会被两个分支同时漏掉而静默丢失。
 const TOKEN_RE = /<\/?([a-zA-Z][\w-]*)((?:\s+[^<>]*?)?)\/?>|((?:[^<]|<(?![a-zA-Z\/]))+)/g;
-
-/** HTML 实体解码（编辑器 DOM 回写时 escText 会把 < > & 转义为 &lt; &gt; &amp;）。
- * 公式里 cases 的 & 列分隔符（非实体名形式）原样保留。 */
-function decodeEntities(s) {
-  return s.replace(/&(amp|lt|gt|quot|#39);/g, (m, name) =>
-    ({ amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'" })[name]
-  );
-}
 
 function extractAttr(attrStr, name) {
   const m = attrStr.match(new RegExp(`${name}\\s*=\\s*"([^"]*)"`, "i"));
@@ -321,118 +315,3 @@ export function parseRichText(input) {
   return { paragraphs };
 }
 
-/** 纯文本提取（公式以 \(...\) 源码形式保留，编辑/无障碍用）。 */
-export function richTextPlainText(input) {
-  return parseRichText(input)
-    .paragraphs.map((p) =>
-      p.runs.map((r) => (r.formula ? `\\(${r.latex}\\)` : r.text)).join("")
-    )
-    .join("\n");
-}
-
-// ============================================================================
-// DOM → DSL（contenteditable 编辑后反向序列化）
-// ============================================================================
-
-function escText(s) {
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-function escAttr(s) {
-  return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;");
-}
-
-/** 段落级内联样式（text-align / line-height / margin-top...）→ style 属性字符串。 */
-function pStyleAttr(el) {
-  const s = el.style || {};
-  const parts = [];
-  if (s.textAlign) parts.push(`text-align:${s.textAlign}`);
-  if (s.lineHeight && s.lineHeight !== "normal") {
-    const n = parseFloat(s.lineHeight);
-    if (s.lineHeight.endsWith("px")) parts.push(`line-height:${n}px`);
-    else if (Number.isFinite(n)) parts.push(`line-height:${n}`);
-  }
-  if (s.marginTop && parseFloat(s.marginTop) > 0) parts.push(`margin-top:${parseFloat(s.marginTop)}px`);
-  if (s.marginLeft && parseFloat(s.marginLeft) > 0) parts.push(`margin-left:${parseFloat(s.marginLeft)}px`);
-  if (s.letterSpacing) parts.push(`letter-spacing:${parseFloat(s.letterSpacing)}px`);
-  return parts.length ? ` style="${parts.join(";")}"` : "";
-}
-
-/** run 级内联样式 → style 属性字符串。 */
-function spanStyleAttr(el) {
-  const s = el.style || {};
-  const parts = [];
-  if (s.color) parts.push(`color:${s.color}`);
-  if (s.fontSize && s.fontSize !== "0.7em") parts.push(`font-size:${s.fontSize}`);
-  if (s.fontWeight && s.fontWeight !== "normal") parts.push(`font-weight:${s.fontWeight}`);
-  if (s.fontStyle && s.fontStyle !== "normal") parts.push(`font-style:${s.fontStyle}`);
-  if (s.backgroundColor) parts.push(`background-color:${s.backgroundColor}`);
-  if (s.textDecoration && s.textDecoration.includes("underline")) parts.push("text-decoration:underline");
-  if (s.textDecoration && s.textDecoration.includes("line-through")) parts.push("text-decoration:line-through");
-  return parts.length ? ` style="${parts.join(";")}"` : "";
-}
-
-/** <font> 标签（execCommand 产物）→ span style。 */
-function fontStyleAttr(el) {
-  const parts = [];
-  const color = el.getAttribute("color");
-  if (color) parts.push(`color:${color}`);
-  const size = el.getAttribute("size");
-  if (size) {
-    const px = { 1: 9, 2: 12, 3: 15, 4: 18, 5: 24, 6: 30, 7: 36 }[size];
-    if (px) parts.push(`font-size:${px}px`);
-  }
-  return parts.length ? ` style="${parts.join(";")}"` : "";
-}
-
-function nodeToDsl(node) {
-  if (node.nodeType === 3) return escText(node.textContent);
-  if (node.nodeType !== 1) return "";
-  const el = node;
-  const tag = el.tagName.toLowerCase();
-  const kids = Array.from(el.childNodes).map(nodeToDsl).join("");
-  switch (tag) {
-    case "div":
-    case "p":
-      return `<p${pStyleAttr(el)}>${kids}</p>`;
-    case "br":
-      return "<br/>";
-    case "ul":
-      return `<ul>${kids}</ul>`;
-    case "ol":
-      return `<ol>${kids}</ol>`;
-    case "li":
-      return `<li${pStyleAttr(el)}>${kids}</li>`;
-    case "strong":
-    case "b":
-      return `<strong>${kids}</strong>`;
-    case "em":
-    case "i":
-      return `<em>${kids}</em>`;
-    case "u":
-      return `<u>${kids}</u>`;
-    case "s":
-    case "strike":
-    case "del":
-      return `<s>${kids}</s>`;
-    case "a":
-      return `<a href="${escAttr(el.getAttribute("href") || "")}">${kids}</a>`;
-    case "span":
-      return `<span${spanStyleAttr(el)}>${kids}</span>`;
-    case "font":
-      return `<span${fontStyleAttr(el)}>${kids}</span>`;
-    default:
-      return kids;
-  }
-}
-
-/**
- * 把 contenteditable 的 DOM 转回富文本 DSL。
- * @param {HTMLElement} root contenteditable 容器
- * @returns {string} DSL 字符串
- */
-export function domToRichText(root) {
-  let out = "";
-  for (const node of root.childNodes) out += nodeToDsl(node);
-  return out;
-}

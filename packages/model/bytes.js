@@ -35,8 +35,3 @@ export function encodeUtf8(str) {
   return Buffer.from(str, "utf8"); // Node
 }
 
-/** UTF-8 字节 → 字符串。 */
-export function decodeUtf8(bytes) {
-  if (typeof TextDecoder !== "undefined") return new TextDecoder().decode(bytes);
-  return Buffer.from(bytes).toString("utf8"); // Node
-}

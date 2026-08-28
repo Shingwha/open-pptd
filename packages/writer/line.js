@@ -11,6 +11,7 @@
 import { el, escAttr, angleToOOXML } from "./xml.js";
 import { buildFill, buildXfrm } from "./drawing.js";
 import { parsePoints, smoothSegments } from "../model/geometry.js";
+import { dashSpec } from "../model/style-spec.js";
 import { svgPathToOoxml } from "./custgeom.js";
 
 /** 线条元素 → XML（多点曲线为 p:sp+custGeom，2 点直线为 p:cxnSp）。 */
@@ -89,8 +90,8 @@ export function lineXml(theme, element, ctx) {
 
   const border = element.border || { style: "solid", width: 1, color: "#000000" };
   const lnKids = [buildFill(theme, border.color ?? "#000000")];
-  if (border.style === "dash") lnKids.push(el("a:prstDash", { val: "dash" }));
-  else if (border.style === "dot") lnKids.push(el("a:prstDash", { val: "dot" }));
+  const dash = dashSpec(border.style)?.ooxml;
+  if (dash) lnKids.push(el("a:prstDash", { val: dash }));
   if (element.arrow) {
     const [start, end] = element.arrow;
     if (start) lnKids.push(headEnd(start));

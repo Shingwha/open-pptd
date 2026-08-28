@@ -7,6 +7,7 @@
 // ============================================================================
 
 import { resolveColor } from "../model/theme.js";
+import { normalizeFill, dashSpec } from "../model/style-spec.js";
 import { shapePaths } from "../model/preset-geometry.js";
 import { svgGradient } from "./gradient.js";
 import { createElementShell } from "./shell.js";
@@ -14,11 +15,10 @@ import { createElementShell } from "./shell.js";
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 function solidFill(theme, fill) {
-  if (!fill) return null;
-  if (typeof fill === "string") return resolveColor(theme, fill);
-  // 严格官方形态：对象必须 {type: "solid", color}；渐变/图片/旧 {color} 形态均不支持
-  if (fill.type !== "solid") return null;
-  return resolveColor(theme, fill.color);
+  // normalizeFill 容忍字符串与旧 {color} 形态（按纯色处理）；渐变/图片返回 null
+  const f = normalizeFill(fill);
+  if (f?.type !== "solid") return null;
+  return resolveColor(theme, f.color);
 }
 
 /** 明暗面调色（预览近似 PowerPoint 的 fill 修饰符）：向白/黑混合。 */
@@ -73,8 +73,8 @@ export function renderShape(theme, el) {
     if (el.border) {
       geom.setAttribute("stroke", resolveColor(theme, el.border.color) || "#000000");
       geom.setAttribute("stroke-width", el.border.width || 1);
-      if (el.border.style === "dash") geom.setAttribute("stroke-dasharray", "6 4");
-      else if (el.border.style === "dot") geom.setAttribute("stroke-dasharray", "2 3");
+      const ds = dashSpec(el.border.style);
+      if (ds) geom.setAttribute("stroke-dasharray", ds.css);
     }
     svg.appendChild(geom);
     applyShadow(svg, theme, el.shadow);
@@ -83,7 +83,7 @@ export function renderShape(theme, el) {
 
   const strokeColor = el.border ? resolveColor(theme, el.border.color) || "#000000" : null;
   const strokeWidth = el.border?.width || 1;
-  const strokeDash = el.border?.style === "dash" ? "6 4" : el.border?.style === "dot" ? "2 3" : null;
+  const strokeDash = dashSpec(el.border?.style)?.css || null;
   // 只描引导线/内线路径：无 border → 不描（与 writer 无 border 写 a:ln noFill 一致，
   // 不再用填充色暗化近似 PowerPoint 的 lnRef 回退线）
   const strokeFor = (p) => ((p.stroke || p.fill === "none") ? strokeColor : null);

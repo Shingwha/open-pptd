@@ -20,10 +20,12 @@ export const SUPPORTED_SHAPES = Object.fromEntries(
   ])
 );
 
-/** 形状菜单分组顺序（其余分组追加在后）。 */
-export const SHAPE_CATEGORIES = [...new Set(Object.values(SUPPORTED_SHAPES).map((s) => s.category))];
-
 export const PAGE_TYPES = ["cover", "table_of_contents", "chapter", "content", "final"];
+
+// ---- shot 无头渲染契约（editor/app/shot.js ↔ renderer/headless/cdp.js 共享）----
+// document.title 信号：就绪可截图 / 初始化失败。
+export const SHOT_READY_TITLE = "PPTD_READY";
+export const SHOT_ERROR_TITLE = "PPTD_ERROR";
 
 // ----------------------------------------------------------------------------
 // 创建与校验

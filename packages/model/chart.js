@@ -1,5 +1,5 @@
 // ============================================================================
-// core/chart.js — 图表模型归一化（渲染器与 writer 共享，唯一实现）
+// model/chart.js — 图表模型归一化（渲染器与 writer 共享，唯一实现）
 // ----------------------------------------------------------------------------
 // C3 对齐官方（references/pptd.md §Chart 1009-1500 行 + §5.2/5.3/5.4/5.5）：
 //   - 13 种系列类型，无顶层 type；pie.innerRadius > 0 = 环形（官方无 doughnut 类型）
@@ -46,6 +46,10 @@ const SEMANTIC_KEYS = {
   size: ["size"], high: ["high"], low: ["low"], close: ["close"], open: ["open"],
   isTotal: ["isTotal"], parent: ["parent"], source: ["source"], target: ["target"], flow: ["flow"],
 };
+
+// encode 读回退别名（resolveChartSeries 用）：SEMANTIC_KEYS 的严格子集——
+// 刻意不含 date（避免把名为 date 的列误判为 x 通道回退），两者语义不同勿合并。
+const ENCODE_ALIAS = { x: ["category"], category: ["x"], y: ["value"], value: ["y"] };
 
 /**
  * 按目标类型元数据重映射 encode（图表编辑器/属性面板共用）：
@@ -150,8 +154,7 @@ export function resolveChartSeries(theme, el) {
     const encode = merged.encode || {};
     const name = merged.name || "";
 
-    // 官方 encode 通道 → 列号 + 每行取值（读宽容：x↔category、y↔value 别名回退）
-    const ENCODE_ALIAS = { x: ["category"], category: ["x"], y: ["value"], value: ["y"] };
+    // 官方 encode 通道 → 列号 + 每行取值（读宽容：x↔category、y↔value 别名回退，见 ENCODE_ALIAS）
     const _cols = {};
     const _values = {};
     for (const ch of Object.keys(meta.encode)) {
@@ -163,14 +166,8 @@ export function resolveChartSeries(theme, el) {
     }
     // 数值通道（y/value/high/low/close/open/size/flow/x?）字符串 → 数字。
     // 方向规则（官方）：bar/waterfall 水平时 y 是分类通道（保留字符串），x 是数值通道
-    let horizontal = false;
-    if (type === "bar" || type === "waterfall") {
-      const xs = toAxisArray(el.xAxis);
-      const ys = toAxisArray(el.yAxis);
-      const xType = xs[0]?.type ?? inferAxisType(data, encode.x);
-      const yType = ys[0]?.type ?? inferAxisType(data, encode.y);
-      horizontal = yType === "category" && xType !== "category";
-    }
+    const horizontal =
+      (type === "bar" || type === "waterfall") && isHorizontalChart(el, data, encode);
     // dataFilter（scatter/bubble 长表分组，官方 §scatter/bubble）：保留 col===value 的行
     const df = merged.dataFilter;
     if (df && (type === "scatter" || type === "bubble") && df.col != null && df.value !== undefined) {
@@ -398,10 +395,15 @@ export function inferAxisType(data, colName) {
 export function resolveChartDirection(el, series) {
   const s = series.find((x) => x && (x.type === "bar" || x.type === "waterfall"));
   if (!s) return false;
+  return isHorizontalChart(el, el.data, s.encode);
+}
+
+/** bar/waterfall 方向判定：y 轴为分类轴且 x 轴非分类轴 → 水平（resolveChartSeries 与 resolveChartDirection 共用）。 */
+function isHorizontalChart(el, data, encode) {
   const xs = toAxisArray(el.xAxis);
   const ys = toAxisArray(el.yAxis);
-  const xType = xs[0]?.type ?? inferAxisType(el.data, s.encode.x);
-  const yType = ys[0]?.type ?? inferAxisType(el.data, s.encode.y);
+  const xType = xs[0]?.type ?? inferAxisType(data, encode?.x);
+  const yType = ys[0]?.type ?? inferAxisType(data, encode?.y);
   return yType === "category" && xType !== "category";
 }
 

@@ -52,7 +52,7 @@ function rad(angle60000) {
 }
 
 /** 按 ECMA-376 语义求单个公式。op 见文件头注释；角度一律 60000 分/度。 */
-export function evalFormula(op, args, g) {
+function evalFormula(op, args, g) {
   const x = ref(g, args[0]);
   const y = args[1] != null ? ref(g, args[1]) : 0;
   const z = args[2] != null ? ref(g, args[2]) : 0;

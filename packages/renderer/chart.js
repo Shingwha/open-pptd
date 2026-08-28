@@ -1,5 +1,5 @@
 // ============================================================================
-// renderer/chart.js — 图表预览（ECharts，数据模型来自 core/chart.js）
+// renderer/chart.js — 图表预览（ECharts，数据模型来自 packages/model/chart.js）
 // ----------------------------------------------------------------------------
 // C3 对齐官方：13 类型全部原生支持（ECharts）；与 writer 同源消费
 // resolveChartSeries 归一化输出 + resolveChartDirection（横向柱）/ seriesAxisIndex
@@ -13,8 +13,9 @@ import {
   darkenByLightness, toAxisArray, resolveChartDirection, seriesAxisIndex, hierarchyColor, seriesChannels,
 } from "../model/chart.js";
 import { resolveColor, resolveFont, themeChartPalette } from "../model/theme.js";
+import { normalizeFill, dashSpec } from "../model/style-spec.js";
 import { gradientCss } from "./gradient.js";
-import { createElementShell } from "./shell.js";
+import { createElementShell, boxShadowCss } from "./shell.js";
 
 const AXIS_TEXT = { color: "#6b7280", fontSize: 11 };
 
@@ -79,21 +80,18 @@ function markerSymbol(theme, marker, color) {
 /** 图表框（官方 Chart.fill/border/shadow → 容器样式，与 writer chartSpace spPr 对应）。 */
 function frameStyle(theme, el) {
   const st = {};
-  if (el.fill) {
-    if (typeof el.fill === "string") st.background = resolveColor(theme, el.fill) || "#ffffff";
-    else if (el.fill.type === "solid") st.background = resolveColor(theme, el.fill.color) || "#ffffff";
-    else if (el.fill.type === "gradient") st.background = gradientCss(theme, el.fill) || "#ffffff";
+  const fill = normalizeFill(el.fill);
+  if (fill) {
+    if (fill.type === "solid") st.background = resolveColor(theme, fill.color) || "#ffffff";
+    else if (fill.type === "gradient") st.background = gradientCss(theme, fill) || "#ffffff";
   }
   if (el.border) {
     st.border = `${el.border.width ?? 1}px solid ${resolveColor(theme, el.border.color) || "#000000"}`;
-    if (el.border.style === "dash") st.borderStyle = "dashed";
-    else if (el.border.style === "dot") st.borderStyle = "dotted";
+    const ds = dashSpec(el.border.style);
+    if (ds) st.borderStyle = ds.cssBorder;
   }
-  if (el.shadow) {
-    const [dx = 0, dy = 0] = el.shadow.offset || [0, 0];
-    const blur = el.shadow.blur ?? 6;
-    st.boxShadow = `${dx}px ${dy}px ${blur}px ${resolveColor(theme, el.shadow.color) || "rgba(0,0,0,0.3)"}`;
-  }
+  const boxShadow = boxShadowCss(theme, el.shadow);
+  if (boxShadow) st.boxShadow = boxShadow;
   return st;
 }
 
@@ -116,7 +114,7 @@ function cartesianAxes(theme, el, cats, series, { horizontal = false, percentMax
       name: typeof o.title === "string" ? o.title : o.title?.text,
       axisLine: { show: o.axisLine !== false, lineStyle: { color: o.axisLine && typeof o.axisLine === "object" && o.axisLine.color ? resolveColor(theme, o.axisLine.color) || axisColor : axisColor } },
       axisLabel: o.label === false ? { show: false } : { ...AXIS_TEXT, ...(typeof o.label === "object" ? { color: o.label.color ? resolveColor(theme, o.label.color) || AXIS_TEXT.color : AXIS_TEXT.color, fontSize: o.label.fontSize || AXIS_TEXT.fontSize, formatter: o.label.numberFormat ? (v) => fmtNum(v, o.label.numberFormat) : undefined } : {}) },
-      splitLine: o.gridLine === false || hideGridDefault ? { show: false } : { lineStyle: { color: typeof o.gridLine === "object" && o.gridLine.color ? resolveColor(theme, o.gridLine.color) || gridColor : gridColor, type: typeof o.gridLine === "object" ? (o.gridLine.style === "dash" ? "dashed" : o.gridLine.style === "dot" ? "dotted" : "solid") : "solid" } },
+      splitLine: o.gridLine === false || hideGridDefault ? { show: false } : { lineStyle: { color: typeof o.gridLine === "object" && o.gridLine.color ? resolveColor(theme, o.gridLine.color) || gridColor : gridColor, type: typeof o.gridLine === "object" ? dashSpec(o.gridLine.style)?.cssBorder || "solid" : "solid" } },
     };
   };
   const catAxis = (cfg = {}) => ({
@@ -233,8 +231,7 @@ function bubbleSizeFn(s) {
 }
 
 /** 图表数据 → ECharts option。 */
-export function buildChartOption(theme, el) {
-  el._theme = theme;
+function buildChartOption(theme, el) {
   const { series, cats, warn } = resolveChartSeries(theme, el);
   const fonts = resolveFont(theme, el.fontFamily || null);
   const { labelColor, legendColor } = chartStyleColors(theme);
@@ -294,9 +291,7 @@ export function buildChartOption(theme, el) {
   }
 
   if (primary === "radar") {
-    const s0 = series[0];
     const max = Math.max(1, ...series.flatMap((s) => s._values.y ?? []).filter((v) => v != null).map(Number));
-    const min = s0._theme?.spokeAxis?.min ?? 0;
     const spoke = el.spokeAxis && typeof el.spokeAxis === "object" ? el.spokeAxis : {};
     const { gridColor } = chartStyleColors(theme);
     return {
@@ -315,7 +310,7 @@ export function buildChartOption(theme, el) {
         data: series.map((s, i) => ({
           name: s.name,
           value: (s._values.y ?? []).map((v) => (v == null ? 0 : Number(v))),
-          lineStyle: { color: seriesColor(theme, s), width: s.width ?? 2, type: s.lineStyle === "dash" ? "dashed" : s.lineStyle === "dot" ? "dotted" : "solid" },
+          lineStyle: { color: seriesColor(theme, s), width: s.width ?? 2, type: dashSpec(s.lineStyle)?.cssBorder || "solid" },
           itemStyle: { color: seriesColor(theme, s) },
           symbol: s.marker ? markerSymbol(theme, s.marker, seriesColor(theme, s)).symbol : "none",
           areaStyle: s.areaColor ? { color: typeof s.areaColor === "string" ? resolveColor(theme, s.areaColor) || seriesColor(theme, s) : seriesColor(theme, s) } : undefined,
@@ -552,14 +547,14 @@ export function buildChartOption(theme, el) {
     if (s.type === "line") {
       return {
         type: "line", smooth: !!s.smooth, symbol: s.marker ? markerSymbol(theme, s.marker, color).symbol : "none",
-        lineStyle: { color, width: s.width ?? 2, type: s.lineStyle === "dash" ? "dashed" : s.lineStyle === "dot" ? "dotted" : "solid" },
+        lineStyle: { color, width: s.width ?? 2, type: dashSpec(s.lineStyle)?.cssBorder || "solid" },
         connectNulls: s.nullHandling === "connect", ...commonSer,
       };
     }
     if (s.type === "area") {
       return {
         type: "line", smooth: !!s.smooth, symbol: "none",
-        lineStyle: { color, width: s.width ?? 2, type: s.lineStyle === "dash" ? "dashed" : s.lineStyle === "dot" ? "dotted" : "solid" },
+        lineStyle: { color, width: s.width ?? 2, type: dashSpec(s.lineStyle)?.cssBorder || "solid" },
         connectNulls: s.nullHandling === "connect",
         areaStyle: { color: s.areaColor || hexA(color, 0.22) },
         ...commonSer,

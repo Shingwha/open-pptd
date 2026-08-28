@@ -13,7 +13,7 @@ import { createElementShell } from "./shell.js";
 /** 元素 → DOM（经注册表分派；未注册类型回退占位）。
  * @param {object} ctx 渲染上下文（{ imageMap: { [src]: dataUrl } }）
  */
-export function renderElement(theme, el, ctx = {}) {
+function renderElement(theme, el, ctx = {}) {
   const def = getType(el.elementType);
   if (def && def.render) return def.render(theme, el, ctx);
   return placeholder(el);

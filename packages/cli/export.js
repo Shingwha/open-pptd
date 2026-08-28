@@ -12,7 +12,7 @@ import * as yaml from "../model/vendor/js-yaml.mjs";
 import { parseDeck } from "../model/pptd-io.js";
 import { walkElements } from "../model/walk.js";
 import { validateDeck } from "../model/validate.js";
-import { normalizeTheme, mergeFonts, DEFAULT_THEME, THEME_PALETTES } from "../model/theme.js";
+import { THEME_PALETTES } from "../model/theme.js";
 import { buildPptx, magicMatches } from "../writer/pptx.js";
 import { skipReasonText } from "../writer/font.js";
 import { decodeDataUrl, imageSize } from "../writer/util.js";

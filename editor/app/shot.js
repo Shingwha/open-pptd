@@ -13,9 +13,9 @@
 import { createEditorState } from "./state.js";
 import { createIo } from "./project/io.js";
 import { renderPage } from "../../packages/renderer/page.js";
-import { PAGE_WIDTH, PAGE_HEIGHT } from "../../packages/model/model.js";
+import { PAGE_WIDTH, PAGE_HEIGHT, SHOT_READY_TITLE } from "../../packages/model/model.js";
 
-export const READY_TITLE = "PPTD_READY";
+export const READY_TITLE = SHOT_READY_TITLE;
 
 export async function initShot(deckUrl) {
   if (!deckUrl) throw new Error("shot 模式需要 ?deck= 参数");

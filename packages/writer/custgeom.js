@@ -10,9 +10,7 @@
 // 镂空：SVG 非零环绕规则与 PowerPoint 一致，内外环方向相反即镂空，原样透传。
 // ============================================================================
 
-import { el } from "./xml.js";
-
-const DEG = 60000; // OOXML 角度单位：60000 = 1°
+import { el, angleToOOXML } from "./xml.js";
 
 /** 数值 → 整数（OOXML pt/角度取整）。 */
 const n = (v) => Math.round(v);
@@ -230,8 +228,8 @@ export function svgArcToOoxml(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
   return {
     wR: c.rx,
     hR: c.ry,
-    stAng: c.theta1 * (180 / Math.PI) * DEG,
-    swAng: c.dTheta * (180 / Math.PI) * DEG,
+    stAng: angleToOOXML(c.theta1 * (180 / Math.PI)),
+    swAng: angleToOOXML(c.dTheta * (180 / Math.PI)),
   };
 }
 

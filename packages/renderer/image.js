@@ -8,7 +8,7 @@
 
 import { resolveColor } from "../model/theme.js";
 import { shapePaths } from "../model/preset-geometry.js";
-import { createElementShell } from "./shell.js";
+import { createElementShell, boxShadowCss } from "./shell.js";
 
 /** 图片元素 → 定位 DOM。 */
 export function renderImage(theme, el, ctx = {}) {
@@ -49,10 +49,8 @@ export function renderImage(theme, el, ctx = {}) {
   if (el.border) {
     box.style.border = `${el.border.width || 1}px ${el.border.style || "solid"} ${resolveColor(theme, el.border.color) || "#000"}`;
   }
-  if (el.shadow) {
-    const [dx = 0, dy = 0] = el.shadow.offset || [0, 0];
-    box.style.boxShadow = `${dx}px ${dy}px ${el.shadow.blur ?? 6}px ${resolveColor(theme, el.shadow.color) || "rgba(0,0,0,0.3)"}`;
-  }
+  const boxShadow = boxShadowCss(theme, el.shadow);
+  if (boxShadow) box.style.boxShadow = boxShadow;
   return box;
 }
 

@@ -4,6 +4,7 @@
 
 import { el } from "./xml.js";
 import { buildFill } from "./drawing.js";
+import { PAGE_WIDTH, PAGE_HEIGHT } from "../model/model.js";
 
 /** 页面背景 → p:bg XML（solid / gradient / image）。 */
 export function backgroundXml(theme, bg, ctx) {
@@ -15,7 +16,7 @@ export function backgroundXml(theme, bg, ctx) {
     if (loaded) {
       const mediaRef = ctx.addMedia(loaded.bytes, loaded.ext);
       mediaRef.size = loaded.size;
-      const [cw, ch] = ctx.pageSize || [960, 540];
+      const [cw, ch] = ctx.pageSize || [PAGE_WIDTH, PAGE_HEIGHT];
       fill = buildFill(theme, bg, { ...mediaRef, containerW: cw, containerH: ch });
     }
   } else {

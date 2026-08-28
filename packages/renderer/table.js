@@ -8,36 +8,16 @@
 import { resolveColor, resolveFont, resolveTableStyle, resolveTableCellStyle, resolveTextStyle } from "../model/theme.js";
 import { estimateTableLayout, tableGrid, TABLE_FONT_SIZE, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../model/table.js";
 import { parseRichText } from "../model/richtext.js";
+import { normalizeFill, dashSpec, borderSides, cssTextAlign, cssTextAlignLast } from "../model/style-spec.js";
 import { runSpan, applyParaStyle } from "./text.js";
 import { gradientCss } from "./gradient.js";
 import { createElementShell } from "./shell.js";
-
-const H_ALIGN = { left: "left", center: "center", right: "right", justify: "justify", distributed: "justify" };
-
-const DEFAULT_BORDER = { style: "solid", width: 1, color: "#000000" };
-
-/**
- * BorderSpec → 四边（与 writer/table.js parseBorderSpec 同规则）：
- *   undefined（全链未设置）→ 默认 1px 黑四边；null → 四边全无；
- *   两元素数组 [上下, 左右]；四元素数组 [上,右,下,左]；单 Border → 四边相同。
- */
-function borderSides(b) {
-  if (b === undefined) {
-    return { top: DEFAULT_BORDER, right: DEFAULT_BORDER, bottom: DEFAULT_BORDER, left: DEFAULT_BORDER };
-  }
-  if (b === null) return { top: null, right: null, bottom: null, left: null };
-  if (Array.isArray(b)) {
-    if (b.length === 2) return { top: b[0], bottom: b[0], left: b[1], right: b[1] }; // [上下, 左右]
-    if (b.length === 4) return { top: b[0], right: b[1], bottom: b[2], left: b[3] }; // [上,右,下,左]
-  }
-  return { top: b, right: b, bottom: b, left: b };
-}
 
 /** 单边 CSS（null = 无边框；$ 颜色引用在消费端 resolveColor）。 */
 function sideCss(theme, v) {
   if (!v) return "none";
   const color = resolveColor(theme, v.color ?? "#000000") || "#000000";
-  const style = v.style === "dash" ? "dashed" : v.style === "dot" ? "dotted" : "solid";
+  const style = dashSpec(v.style)?.cssBorder || "solid";
   return `${v.width ?? 1}px ${style} ${color}`;
 }
 
@@ -123,17 +103,16 @@ export function renderTable(theme, el) {
 
 /** td 内联样式（预览；covered 位无文字不显示背景文字样式）。 */
 export function tdCss(theme, f, covered) {
-  // 填充：字符串色 / {type:"solid"} / {type:"gradient"}（与 writer buildFill 同源）
-  const fillCss = f.fill
-    ? typeof f.fill === "string"
-      ? resolveColor(theme, f.fill)
-      : f.fill.type === "solid"
-        ? resolveColor(theme, f.fill.color)
-        : f.fill.type === "gradient"
-          ? gradientCss(theme, f.fill)
-          : null
+  // 填充：FillSpec 归一化（字符串色 / solid / gradient，与 writer buildFill 同源）
+  const fillSpec = normalizeFill(f.fill);
+  const fillCss = fillSpec
+    ? fillSpec.type === "solid"
+      ? resolveColor(theme, fillSpec.color)
+      : fillSpec.type === "gradient"
+        ? gradientCss(theme, fillSpec)
+        : null
     : null;
-  const hAlign = H_ALIGN[f.align[0]] || "center";
+  const hAlign = cssTextAlign(f.align[0]) || "center";
   const vAlign = f.align[1] || "middle";
   const parts = [
     // 逐边边框（BorderSpec 数组四边独立；预览与 writer 同源同序）
@@ -145,6 +124,9 @@ export function tdCss(theme, f, covered) {
     `text-align:${hAlign}`,
     `vertical-align:${vAlign}`,
   ];
+  // distributed → justify + 末行拉伸（与文本框 textAlignCss 一致）
+  const alignLast = cssTextAlignLast(f.align[0]);
+  if (alignLast) parts.push(`text-align-last:${alignLast}`);
   if (!covered) {
     parts.push(
       `font-weight:${f.bold ? "600" : "400"}`,
@@ -192,8 +174,10 @@ function renderCellContent(theme, text, f) {
   if (f.letterSpacing != null) css.push(`letter-spacing:${f.letterSpacing}px`);
   const font = resolveFont(theme, f.fontFamily);
   css.push(`font-family:"${font.latin}","${font.ea}",sans-serif`);
-  const hAlign = H_ALIGN[Array.isArray(f.align) ? f.align[0] : null] || "center";
-  css.push(`text-align:${hAlign}`);
+  const align0 = Array.isArray(f.align) ? f.align[0] : null;
+  css.push(`text-align:${cssTextAlign(align0) || "center"}`);
+  const alignLast = cssTextAlignLast(align0);
+  if (alignLast) css.push(`text-align-last:${alignLast}`); // distributed → 末行拉伸（与文本框一致）
   root.style.cssText = css.join(";");
 
   const hl = resolveColor(theme, f.backgroundColor);

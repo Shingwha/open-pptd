@@ -1,6 +1,7 @@
 // ============================================================================
 
 import { parseXml } from "./xml-parser.js";
+import { escText } from "./escape.js";
 // mathml2omml.js v2.2 — 纯 JS、零依赖：MathML → OMML（PowerPoint 原生公式）
 // ----------------------------------------------------------------------------
 // 输入：KaTeX 输出的 Presentation MathML（<math>...</math> 字符串）
@@ -19,7 +20,7 @@ import { parseXml } from "./xml-parser.js";
 // ============================================================================
 
 // ── 2. 工具 ─────────────────────────────────────────────────────────────────
-const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const esc = escText; // OMML 文本节点转义（& < >；引号无需转义），统一实现见 escape.js
 
 // XSLT 的字符串值：全部后代文本按文档序拼接（token 带子元素时官方直接压平成文本）
 function stringValue(node) {

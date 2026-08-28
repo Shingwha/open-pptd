@@ -17,10 +17,13 @@
 // writer 分片；渲染截图只引 renderer 分片。
 // ============================================================================
 
+import { ELEMENT_TYPES } from "./style-spec.js";
+
 const TYPES = new Map();
 
 export function registerType(def) {
   if (!def || typeof def.type !== "string") throw new Error("[types] registerType 需要 { type }");
+  if (!ELEMENT_TYPES.includes(def.type)) console.warn(`[types] 注册未知元素类型 ${def.type}（见 model/style-spec.js ELEMENT_TYPES）`);
   const prev = TYPES.get(def.type);
   if (!prev) {
     TYPES.set(def.type, def);

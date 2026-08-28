@@ -10,6 +10,7 @@
 // ============================================================================
 
 import { resolveColor } from "./theme.js";
+import { escAttr } from "./escape.js";
 
 /** 图标填充解析 → {type:'solid', color:hex} 或 {type:'gradient', gradientType, stops:[{color,position}], angle}。 */
 export function normalizeIconFill(theme, fill) {
@@ -70,11 +71,3 @@ export function iconToSvg(def, fill, gid = "ig") {
   return `<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">${iconSvgBody(def, fill, gid)}</svg>\n`;
 }
 
-/** XML 属性转义（d 与颜色属性）。model 侧唯一一份（与 writer/xml.js escAttr 同规则；
- *  分层禁止 model import writer，v3 #1：writer 单份 + model 单份，禁止第三份）。 */
-function escAttr(value) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/"/g, "&quot;");
-}

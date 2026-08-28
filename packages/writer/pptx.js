@@ -1,14 +1,17 @@
 // ============================================================================
 // pptx.js — buildPptx(deck) 总入口（浏览器 + Node 双环境）
 // ----------------------------------------------------------------------------
-// 输入：统一数据模型 deck（见 core/model.js + core/theme.js）
+// 输入：统一数据模型 deck（见 packages/model/model.js + packages/model/theme.js）
 // 输出：Uint8Array（完整 PPTX 包）
 // 图片：options.imageMap = { [src]: dataUrl }（浏览器预读缓存）
 //       options.root = 项目根目录（Node 下按相对路径读文件）
 // ============================================================================
 
 import { normalizeTheme, mergeFonts } from "../model/theme.js";
+import { PAGE_WIDTH, PAGE_HEIGHT } from "../model/model.js";
+import { walkElements } from "../model/walk.js";
 import { ZipWriter } from "./zip.js";
+import { xmlHeader } from "./xml.js";
 import { buildEmbeddedFonts } from "./font.js";
 import {
   buildContentTypes,
@@ -24,6 +27,8 @@ import {
   buildTheme,
   buildNotesMaster,
   buildNotesMasterRels,
+  NS_R,
+  NS_REL,
 } from "./parts.js";
 import { buildSlide } from "./slide.js";
 import { decodeDataUrl, imageSize } from "./util.js";
@@ -58,7 +63,7 @@ export function magicMatches(bytes, ext) {
  */
 export async function buildPptx(deck, options = {}) {
   const theme = mergeFonts(normalizeTheme(deck.theme), deck.fonts);
-  const size = Array.isArray(deck.size) && deck.size.length === 2 ? deck.size : [960, 540];
+  const size = Array.isArray(deck.size) && deck.size.length === 2 ? deck.size : [PAGE_WIDTH, PAGE_HEIGHT];
   const pages = Array.isArray(deck.pages) ? deck.pages : [];
   const slideCount = pages.length;
   if (slideCount === 0) throw new Error("deck 没有页面，无法导出");
@@ -88,14 +93,12 @@ export async function buildPptx(deck, options = {}) {
   const chartExIds = [];
   {
     let n = 0;
-    for (const page of pages) {
-      for (const el of page.elements || []) {
-        if (el.elementType !== "chart") continue;
-        n += 1;
-        const t = el.series?.[0]?.type;
-        if (t === "waterfall" || t === "treemap" || t === "sunburst") chartExIds.push(n);
-      }
-    }
+    walkElements(pages, (el) => {
+      if (el.elementType !== "chart") return;
+      n += 1;
+      const t = el.series?.[0]?.type;
+      if (t === "waterfall" || t === "treemap" || t === "sunburst") chartExIds.push(n);
+    });
   }
 
   // 演讲者备注（官方 Page.notes）：任意页有备注 → 生成 notesSlides + notesMaster + theme2
@@ -140,10 +143,10 @@ export async function buildPptx(deck, options = {}) {
       zip.add(`ppt/notesSlides/notesSlide${i + 1}.xml`, result.notesXml);
       // notesSlide rels：notesMaster（rId1）+ 所属 slide（rId2）
       const notesRels =
-        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
-        `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
-        `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesMaster" Target="../notesMasters/notesMaster1.xml"/>` +
-        `<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="../slides/slide${i + 1}.xml"/>` +
+        xmlHeader() +
+        `<Relationships xmlns="${NS_REL}">` +
+        `<Relationship Id="rId1" Type="${NS_R}/notesMaster" Target="../notesMasters/notesMaster1.xml"/>` +
+        `<Relationship Id="rId2" Type="${NS_R}/slide" Target="../slides/slide${i + 1}.xml"/>` +
         `</Relationships>`;
       zip.add(`ppt/notesSlides/_rels/notesSlide${i + 1}.xml.rels`, notesRels);
     }

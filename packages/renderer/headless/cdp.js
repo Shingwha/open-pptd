@@ -8,9 +8,10 @@
 
 import { get as httpGet } from "node:http";
 import { MiniWebSocket } from "./ws.js";
+import { SHOT_READY_TITLE, SHOT_ERROR_TITLE } from "../../model/model.js";
 
-export const READY_TITLE = "PPTD_READY";
-export const ERROR_TITLE = "PPTD_ERROR";
+export const READY_TITLE = SHOT_READY_TITLE;
+export const ERROR_TITLE = SHOT_ERROR_TITLE;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 

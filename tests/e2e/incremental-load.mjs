@@ -2,7 +2,7 @@
 // ============================================================================
 // incremental-load.mjs — 「有一页显示一页」渐进加载 E2E
 // ----------------------------------------------------------------------------
-// 用法: node tests/incremental-load.mjs [--project <目录>]（缺省用临时目录）
+// 用法: node tests/e2e/incremental-load.mjs [--project <目录>]（缺省用临时目录）
 // 验证 Agent 写入中的项目体验：
 //   1. manifest 引用 N 页但只写了 1 页 → 编辑器显示已有页（不整体失败），
 //      toast 提示缺失页数
@@ -13,25 +13,18 @@
 // ============================================================================
 
 import { spawn } from "node:child_process";
-import { existsSync, writeFileSync, rmSync, mkdirSync, mkdtempSync } from "node:fs";
+import { writeFileSync, rmSync, mkdirSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { startServer } from "../../packages/server/index.js";
+import { findBrowser } from "../../packages/renderer/headless/browser.js";
+import { connectCdp } from "../../packages/renderer/headless/cdp.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const CHROME_CANDIDATES = [
-  process.env.SMOKE_CHROME,
-  "C:/Program Files/Google/Chrome/Application/chrome.exe",
-  "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
-  "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
-  "/usr/bin/google-chrome",
-  "/usr/bin/chromium",
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-].filter(Boolean);
-const CHROME = CHROME_CANDIDATES.find((p) => existsSync(p));
-if (!CHROME) {
-  console.error("未找到 Chrome/Edge，请设置环境变量 SMOKE_CHROME=<浏览器路径>");
+let CHROME;
+try {
+  CHROME = findBrowser();
+} catch (err) {
+  console.error(err.message);
   process.exit(1);
 }
 
@@ -60,32 +53,9 @@ writeFileSync(join(PROJECT, "pages", "1.page"), pageYaml(1));
 const server = await startServer({ port: PORT, projectRoot: PROJECT });
 const URL = `http://127.0.0.1:${PORT}/editor/?deck=project/deck.pptd`;
 const chrome = spawn(CHROME, ["--headless=new", "--disable-gpu", "--no-first-run", `--remote-debugging-port=${9241}`, URL], { stdio: "ignore" });
-let wsUrl = null;
-for (let i = 0; i < 50 && !wsUrl; i++) {
-  await new Promise((r) => setTimeout(r, 200));
-  try {
-    wsUrl = (await fetch("http://127.0.0.1:9241/json").then((r) => r.json())).find((t) => t.type === "page")?.webSocketDebuggerUrl;
-  } catch {}
-}
-if (!wsUrl) {
-  console.error("无法连接 Chrome 调试端口");
-  process.exit(1);
-}
-const ws = new WebSocket(wsUrl);
-let msgId = 0;
-const pending = new Map();
-ws.onmessage = (ev) => {
-  const msg = JSON.parse(ev.data);
-  if (msg.id && pending.has(msg.id)) { pending.get(msg.id)(msg); pending.delete(msg.id); }
-};
-const send = (method, params = {}) => new Promise((res) => {
-  const id = ++msgId;
-  pending.set(id, res);
-  ws.send(JSON.stringify({ id, method, params }));
-});
-await new Promise((r) => (ws.onopen = r));
-const evalJs = async (expr) => (await send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true })).result?.result?.value;
-await send("Runtime.enable");
+const cdp = await connectCdp(9241, 10000);
+const evalJs = (expr) => cdp.evalJs(expr);
+await cdp.send("Runtime.enable");
 
 try {
   await new Promise((r) => setTimeout(r, 3000));
@@ -115,7 +85,7 @@ try {
 } catch (err) {
   console.error("测试异常:", err);
 } finally {
-  ws.close();
+  cdp.close();
   chrome.kill();
   server.close();
   if (ownTmp) try { rmSync(PROJECT, { recursive: true, force: true }); } catch { /* 清理失败不影响结果 */ }

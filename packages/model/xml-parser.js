@@ -2,28 +2,19 @@
 // xml-parser.js — 轻量 XML 解析器（零依赖，针对 MathML 子集）
 // ----------------------------------------------------------------------------
 // 从 mathml2omml.js 拆出（原内嵌实现）：通用 XML → 节点树。
-// 支持：元素/属性/文本/自闭合/注释跳过/实体解码（含数字实体）。
+// 支持：元素/属性/文本/自闭合/注释跳过/实体解码（含数字实体，见 escape.js）。
 // 不做：CDATA、处理指令、DTD、命名空间（前缀剥离，节点名取冒号后部分）。
 // 节点形态：{ name, attrs: {}, children: [], text: "", parent }
 // 使用方：packages/model/mathml2omml.js（KaTeX MathML 解析）。
 // ============================================================================
+
+import { decodeEntities } from "./escape.js";
 
 /** 解析 XML 字符串 → 根节点（#root，children 含顶层元素）。 */
 export function parseXml(str) {
   let pos = 0;
   const root = { name: "#root", attrs: {}, children: [], text: "", parent: null };
   const stack = [root];
-
-  const decodeEntities = (s) =>
-    s
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, '"')
-      .replace(/&apos;/g, "'")
-      .replace(/&nbsp;/g, "\u00a0")
-      .replace(/&amp;/g, "&")
-      .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(parseInt(n, 10)))
-      .replace(/&#x([0-9a-fA-F]+);/g, (_, n) => String.fromCodePoint(parseInt(n, 16)));
 
   while (pos < str.length) {
     const lt = str.indexOf("<", pos);

@@ -1,11 +1,12 @@
 // ============================================================================
 // drawing.js — 通用 OOXML 绘制片段（xfrm / fill / border / shadow）
 // ----------------------------------------------------------------------------
-// 形状、文本边框、图片边框、表格填充共用；统一来自 core 的 fill 模型。
+// 形状、文本边框、图片边框、表格填充共用；统一来自 packages/model 的 fill 模型。
 // ============================================================================
 
-import { el, hexToRgbVal } from "./xml.js";
+import { el, hexToRgbVal, angleToOOXML } from "./xml.js";
 import { resolveColor } from "../model/theme.js";
+import { dashSpec, shadowOffset } from "../model/style-spec.js";
 import { PRESET_SHAPES } from "../model/preset-geometry.data.js";
 import { SUPPORTED_SHAPES } from "../model/model.js";
 import { custGeomXml } from "./custgeom.js";
@@ -86,13 +87,32 @@ function solidRgb(hex, opacity) {
   return el("a:srgbClr", { val: rgb }, alphaVal(hex, opacity));
 }
 
+/**
+ * 已解析的具体色（hex/HEX8，不含 $token）→ a:solidFill（chart 系列色专用，
+ * 调用方需先 resolveColor）。与 colorElement/alphaVal 的语义差异（历史行为，勿合并）：
+ * alpha 为显式值时无条件写 a:alpha（含 100000）；HEX8 自带 alpha **覆盖** alpha 参数。
+ */
+export function solidFillResolved(hex, alpha = null) {
+  let rgb = hex;
+  let a = alpha;
+  if (/^#[0-9a-fA-F]{8}$/.test(hex)) {
+    rgb = hex.slice(0, 7);
+    a = parseInt(hex.slice(7), 16) / 255;
+  }
+  const inner =
+    a == null
+      ? el("a:srgbClr", { val: hexToRgbVal(rgb) })
+      : el("a:srgbClr", { val: hexToRgbVal(rgb) }, el("a:alpha", { val: Math.round(a * 100000) }));
+  return el("a:solidFill", {}, inner);
+}
+
 /** 位置与尺寸（bounds=[x,y,w,h]，pt → EMU）。rotation 为度；flip=[水平, 垂直]。 */
 export function buildXfrm(bounds, rotation, flip) {
   const [x, y, w, h] = bounds;
   const off = el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) });
   const ext = el("a:ext", { cx: Math.round(w * 12700), cy: Math.round(h * 12700) });
   const attrs = {};
-  if (rotation) attrs.rot = Math.round(rotation * 60000);
+  if (rotation) attrs.rot = angleToOOXML(rotation);
   if (Array.isArray(flip)) {
     if (flip[0]) attrs.flipH = "1";
     if (flip[1]) attrs.flipV = "1";
@@ -100,17 +120,24 @@ export function buildXfrm(bounds, rotation, flip) {
   return el("a:xfrm", attrs, off + ext);
 }
 
-/** 阴影 → a:effectLst（文字/形状阴影共用；offset [x,y] 向下为正 → dist/dir 顺时针）。 */
-export function shadowElement(theme, shadow) {
-  if (!shadow) return "";
-  const [dx = 0, dy = 0] = shadow.offset || [];
-  const attrs = {};
+/** 阴影 → a:effectLst 唯一实现（dist/dir/blurRad 只在此计算；
+ * offset [x,y] 向下为正 → dist/dir 顺时针，向下 = 5400000）。
+ * CT_OuterShadowEffect 子元素 = 颜色元素本身（包 solidFill 会判损修复）。 */
+function shadowEffectLst(theme, shadow, baseAttrs, color, opacity) {
+  const [dx, dy] = shadowOffset(shadow);
+  const attrs = { ...baseAttrs };
   if (shadow.blur) attrs.blurRad = Math.round(shadow.blur * 12700);
   if (dx || dy) {
     attrs.dist = Math.round(Math.hypot(dx, dy) * 12700);
-    attrs.dir = Math.round((Math.atan2(dy, dx) * 180) / Math.PI * 60000);
+    attrs.dir = angleToOOXML((Math.atan2(dy, dx) * 180) / Math.PI);
   }
-  return el("a:effectLst", {}, el("a:outerShdw", attrs, colorElement(theme, shadow.color)));
+  return el("a:effectLst", {}, el("a:outerShdw", attrs, colorElement(theme, color, opacity)));
+}
+
+/** 文字阴影 → a:effectLst（无 algn/rotWithShape 属性、无默认色；text.js 用）。 */
+export function shadowElement(theme, shadow) {
+  if (!shadow) return "";
+  return shadowEffectLst(theme, shadow, {}, shadow.color, null);
 }
 
 /**
@@ -209,23 +236,14 @@ export function buildLn(theme, border, opacity = null) {
   if (!border) return "";
   const w = Math.round((border.width ?? 1) * 12700);
   const kids = [solidFillElement(theme, border.color ?? "#000000", opacity)];
-  if (border.style === "dash") kids.push(el("a:prstDash", { val: "dash" }));
-  else if (border.style === "dot") kids.push(el("a:prstDash", { val: "dot" }));
+  const dash = dashSpec(border.style)?.ooxml;
+  if (dash) kids.push(el("a:prstDash", { val: dash }));
   return el("a:ln", { w, cap: "flat", cmpd: "sng", algn: "ctr" }, kids.join(""));
 }
 
-/** 阴影 → a:effectLst。shadow: {blur, color, offset:[x,y]}。
- * CT_OuterShadowEffect 子元素 = 颜色元素本身（包 solidFill 会判损修复）；
- * dir 为顺时针角度（向下 = 5400000），offset [x,y] 向下为正。 */
+/** 形状/表格阴影 → a:effectLst。shadow: {blur, color, offset:[x,y]}。
+ * algn="tl" 与 PowerPoint 官方输出一致（缺省 algn="b" 阴影方向不对）。 */
 export function buildShadow(theme, shadow, opacity = null) {
   if (!shadow) return "";
-  const [dx = 0, dy = 0] = shadow.offset || [0, 0];
-  // algn="tl" 与 PowerPoint 官方输出一致（缺省 algn="b" 阴影方向不对）
-  const attrs = { algn: "tl", rotWithShape: 0 };
-  if (shadow.blur) attrs.blurRad = Math.round(shadow.blur * 12700);
-  if (dx || dy) {
-    attrs.dist = Math.round(Math.hypot(dx, dy) * 12700);
-    attrs.dir = Math.round((Math.atan2(dy, dx) * 180) / Math.PI * 60000);
-  }
-  return el("a:effectLst", {}, el("a:outerShdw", attrs, colorElement(theme, shadow.color || "#000000", opacity)));
+  return shadowEffectLst(theme, shadow, { algn: "tl", rotWithShape: 0 }, shadow.color || "#000000", opacity);
 }

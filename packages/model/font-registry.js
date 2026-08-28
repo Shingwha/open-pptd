@@ -1,5 +1,5 @@
 // ============================================================================
-// core/font-registry.js — 内置字体库注册表（浏览器 + Node 双端）
+// model/font-registry.js — 内置字体库注册表（浏览器 + Node 双端）
 // ----------------------------------------------------------------------------
 // 数据源：assets/fonts/registry.json（技能资源文件夹，不上传 GitHub）。
 // 每个字体：key（展示名）/ family（嵌入注册名，ID16 优先）/ file（库内文件名）/
@@ -44,11 +44,6 @@ export async function loadFontRegistry(options = {}) {
     return cached;
   }
   throw new Error("无法加载字体注册表（需 registryUrl 或 fontDir）");
-}
-
-/** 清缓存（测试用）。 */
-export function resetFontRegistry() {
-  cached = null;
 }
 
 /**

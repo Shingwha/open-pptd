@@ -21,6 +21,7 @@ import { createPresent } from "./app/present.js";
 import { showToast } from "./app/toast.js";
 import { createCanvasController } from "./interaction/canvas.js";
 import { createStageController } from "./interaction/stage.js";
+import { SHOT_ERROR_TITLE } from "../packages/model/model.js";
 import { makeZoomCtlDraggable } from "./app/view/zoom-ctl.js";
 import { bindProperties } from "./interaction/properties.js";
 import { createDeck, createPage } from "../packages/model/model.js";
@@ -229,7 +230,7 @@ async function boot() {
       .then((m) => m.initShot(deckUrl))
       .catch((err) => {
         console.error("[shot] 初始化失败:", err);
-        document.title = "PPTD_ERROR";
+        document.title = SHOT_ERROR_TITLE;
       });
     return;
   }

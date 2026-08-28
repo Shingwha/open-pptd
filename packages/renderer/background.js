@@ -3,6 +3,7 @@
 // ============================================================================
 
 import { resolveColor } from "../model/theme.js";
+import { normalizeFill } from "../model/style-spec.js";
 import { gradientCss } from "./gradient.js";
 
 /** 页面背景 → DOM（solid / gradient / image）。 */
@@ -13,16 +14,17 @@ export function pageBackground(theme, background) {
     node.style.background = "#ffffff";
     return node;
   }
-  // 省略 type 的 {color} 对象按纯色处理（与 writer buildFill 旧形态兼容一致）
-  if (background.type === "solid" || typeof background === "string" || (!background.type && background.color)) {
-    node.style.background = resolveColor(theme, typeof background === "string" ? background : background.color) || "#ffffff";
-  } else if (background.type === "gradient") {
+  // FillSpec 归一化（normalizeFill 容忍字符串 / 旧 {color} 形态，与 writer buildFill 兼容一致）
+  const fill = normalizeFill(background);
+  if (fill?.type === "solid") {
+    node.style.background = resolveColor(theme, fill.color) || "#ffffff";
+  } else if (fill?.type === "gradient") {
     // linear / radial（gradient.js 统一角度换算）；无效渐变回退白底
-    node.style.background = gradientCss(theme, background) || "#ffffff";
-  } else if (background.type === "image") {
-    node.style.backgroundImage = `url(${background.src})`;
-    node.style.backgroundSize = background.fit?.mode || "cover";
-    if (background.opacity != null) node.style.opacity = background.opacity;
+    node.style.background = gradientCss(theme, fill) || "#ffffff";
+  } else if (fill?.type === "image") {
+    node.style.backgroundImage = `url(${fill.src})`;
+    node.style.backgroundSize = fill.fit?.mode || "cover";
+    if (fill.opacity != null) node.style.opacity = fill.opacity;
   }
   return node;
 }

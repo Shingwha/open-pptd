@@ -5,8 +5,10 @@
 // 本文件只负责：spTree 骨架、背景、rels、媒体/图表收集，以及分派到各元素实现。
 // ============================================================================
 
-import { el, esc, escAttr, xmlHeader } from "./xml.js";
+import { el, esc, xmlHeader } from "./xml.js";
 import { encodeUtf8 } from "./zip.js";
+import { NS_A, NS_R, NS_P, NS_REL } from "./parts.js";
+import { PAGE_WIDTH, PAGE_HEIGHT } from "../model/model.js";
 import { backgroundXml } from "./background.js";
 import { buildChartParts } from "./chart.js";
 import { getType } from "./types/index.js";
@@ -50,9 +52,9 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
       `<p:spPr/>${body ? `<p:txBody><a:bodyPr/><a:lstStyle/>${body}</p:txBody>` : ""}</p:sp>`;
     notesXml =
       xmlHeader() +
-      `<p:notes xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ` +
-      `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" ` +
-      `xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">` +
+      `<p:notes xmlns:a="${NS_A}" ` +
+      `xmlns:r="${NS_R}" ` +
+      `xmlns:p="${NS_P}">` +
       `<p:cSld><p:spTree>` +
       `<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>` +
       `<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>` +
@@ -67,7 +69,7 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
 
   const ctx = {
     // 页面尺寸（deck.size）：背景图 cover 裁剪等按实际页面计算，缺省 960×540
-    pageSize: Array.isArray(options.pageSize) ? options.pageSize : [960, 540],
+    pageSize: Array.isArray(options.pageSize) ? options.pageSize : [PAGE_WIDTH, PAGE_HEIGHT],
     nextId: () => idCounter++,
     registerLink(url) {
       if (links.has(url)) return links.get(url);
@@ -149,18 +151,18 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
     `</p:spTree>`;
 
   const xml =
-    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
-    `<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ` +
-    `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" ` +
-    `xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">` +
+    xmlHeader() +
+    `<p:sld xmlns:a="${NS_A}" ` +
+    `xmlns:r="${NS_R}" ` +
+    `xmlns:p="${NS_P}">` +
     `<p:cSld>${bg}${spTree}</p:cSld>` +
     `<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr>` +
     `<p:transition spd="fast" advClick="1"><p:fade/></p:transition>` +
     `</p:sld>`;
 
   const relsXml =
-    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
-    `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+    xmlHeader() +
+    `<Relationships xmlns="${NS_REL}">` +
     rels
       .map((r) =>
         r.external
@@ -176,6 +178,5 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
 function relType(type) {
   // 完整 URL（如 chartEx 关系类型）原样输出；相对名拼 officeDocument 前缀
   if (String(type).includes("://")) return type;
-  const base = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/";
-  return base + type;
+  return `${NS_R}/` + type;
 }

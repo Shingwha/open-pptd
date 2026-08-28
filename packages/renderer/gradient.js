@@ -14,7 +14,7 @@ function valid(fill) {
 }
 
 /** PPTD 渐变角度 → CSS linear-gradient 角度（度）。 */
-export function gradientCssAngle(angle) {
+function gradientCssAngle(angle) {
   return ((Number(angle) || 0) + 90) % 360;
 }
 

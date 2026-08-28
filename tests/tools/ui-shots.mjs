@@ -13,10 +13,12 @@
 // ============================================================================
 
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { startServer } from "../../packages/server/index.js";
+import { findBrowser } from "../../packages/renderer/headless/browser.js";
+import { connectCdp } from "../../packages/renderer/headless/cdp.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SKILL = join(__dirname, "../..");
@@ -24,20 +26,17 @@ const outIdx = process.argv.indexOf("--out");
 const OUT = outIdx > 0 ? process.argv[outIdx + 1] : join(SKILL, "tests", "ui-shots-out");
 mkdirSync(OUT, { recursive: true });
 
-const CHROME = [
-  process.env.SMOKE_CHROME,
-  "C:/Program Files/Google/Chrome/Application/chrome.exe",
-  "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
-  "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
-].filter(Boolean).find((p) => existsSync(p));
-if (!CHROME) {
-  console.error("未找到 Chrome/Edge，请设置 SMOKE_CHROME=<浏览器路径>");
+let CHROME;
+try {
+  CHROME = findBrowser();
+} catch (err) {
+  console.error(err.message);
   process.exit(1);
 }
 
 const PORT = 56199;
 const CDP_PORT = 9247;
-const DECK = "tests/projects/chart/deck.pptd"; // 14 页全图表类型，元素丰富
+const DECK = "tests/projects/chart/deck.pptd"; // 21 页全图表类型，元素丰富
 
 const server = await startServer({ port: PORT, projectRoot: SKILL });
 const chrome = spawn(CHROME, [
@@ -45,33 +44,11 @@ const chrome = spawn(CHROME, [
   `--remote-debugging-port=${CDP_PORT}`, "about:blank",
 ], { stdio: "ignore" });
 
-let wsUrl = null;
-for (let i = 0; i < 50 && !wsUrl; i++) {
-  await new Promise((r) => setTimeout(r, 200));
-  try {
-    wsUrl = (await fetch(`http://127.0.0.1:${CDP_PORT}/json`).then((r) => r.json())).find((t) => t.type === "page")?.webSocketDebuggerUrl;
-  } catch {}
-}
-if (!wsUrl) { console.error("无法连接 Chrome 调试端口"); process.exit(1); }
-
-const ws = new WebSocket(wsUrl);
-let msgId = 0;
-const pending = new Map();
-ws.onmessage = (ev) => {
-  const msg = JSON.parse(ev.data);
-  if (msg.id && pending.has(msg.id)) { pending.get(msg.id)(msg); pending.delete(msg.id); }
-};
-const send = (method, params = {}) => new Promise((res) => {
-  const id = ++msgId;
-  pending.set(id, res);
-  ws.send(JSON.stringify({ id, method, params }));
-});
-await new Promise((r) => (ws.onopen = r));
+const cdp = await connectCdp(CDP_PORT, 10000);
+const send = cdp.send;
+const evalJs = (expr) => cdp.evalJs(expr);
 await send("Runtime.enable");
 await send("Page.enable");
-
-const evalJs = async (expr) =>
-  (await send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true })).result?.result?.value;
 
 const shot = async (name) => {
   const { data } = (await send("Page.captureScreenshot", { format: "png" })).result;
@@ -119,7 +96,7 @@ try {
   await new Promise((r) => setTimeout(r, 400));
   await shot("gallery-narrow");
 } finally {
-  ws.close();
+  cdp.close();
   chrome.kill();
   server.close();
 }

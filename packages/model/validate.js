@@ -15,8 +15,10 @@ import { parseFontResources } from "./font.js";
 import { findFont, findSystemFont } from "./font-registry.js";
 import { resolveIconName } from "./icon-name.js";
 import { walkElements } from "./walk.js";
+import { PAGE_WIDTH, PAGE_HEIGHT } from "./model.js";
+import { ELEMENT_TYPES } from "./style-spec.js";
 
-const KNOWN_TYPES = new Set(["text", "shape", "line", "image", "icon", "table", "chart"]);
+const KNOWN_TYPES = new Set(ELEMENT_TYPES);
 
 // ---- 规则注册表（扩展点：新规则 registerRule 即接入 check 命令与导出闸门）----
 const RULES = [];
@@ -48,7 +50,7 @@ export function validateDeck(deck, opts = {}) {
   const ctx = {
     opts,
     theme: normalizeTheme(deck?.theme),
-    size: Array.isArray(deck?.size) && deck.size.length === 2 ? deck.size : [960, 540],
+    size: Array.isArray(deck?.size) && deck.size.length === 2 ? deck.size : [PAGE_WIDTH, PAGE_HEIGHT],
     fontResources: parseFontResources(deck?.fonts),
   };
   for (const rule of RULES) rule(deck, ctx, report);

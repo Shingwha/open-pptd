@@ -13,6 +13,7 @@ import { parseRichText } from "../model/richtext.js";
 import { computeBaseStyle } from "../model/style.js";
 import { latexToMathml } from "../model/latex.js";
 import { resolveColor, resolveFont } from "../model/theme.js";
+import { cssTextAlign, cssTextAlignLast, shadowOffset } from "../model/style-spec.js";
 import { gradientCss } from "./gradient.js";
 import { createElementShell } from "./shell.js";
 
@@ -22,7 +23,7 @@ const DEFAULT_LINE_HEIGHT = 1;
 /** 文字阴影 → CSS text-shadow（offset [x,y] 向下为正，与 OOXML dist/dir 同向）。 */
 function shadowCss(theme, shadow) {
   if (!shadow) return null;
-  const [dx = 0, dy = 0] = shadow.offset || [];
+  const [dx, dy] = shadowOffset(shadow);
   const color = resolveColor(theme, shadow.color) || shadow.color;
   return `${dx}px ${dy}px ${shadow.blur || 0}px ${color}`;
 }
@@ -92,8 +93,10 @@ function formulaSpan(theme, run, base) {
 
 /** 水平对齐 → CSS 值：distributed 无原生 CSS 等价，映射为 justify + 末行拉伸。 */
 function textAlignCss(v) {
-  if (v === "distributed") return "justify;text-align-last:justify";
-  return v; // left / center / right / justify
+  const align = cssTextAlign(v);
+  if (!align) return v; // 未知值原样透传
+  const last = cssTextAlignLast(v);
+  return last ? `${align};text-align-last:${last}` : align;
 }
 
 /** 段落层：只写段落显式样式（text-align / line-height / margin…）。 */
@@ -117,7 +120,7 @@ export function applyParaStyle(el, para) {
  * @param {object} content 文本元素 content
  * @returns {HTMLElement}
  */
-export function renderTextContent(theme, content) {
+function renderTextContent(theme, content) {
   const tree = parseRichText(content?.text || "");
   const base = computeBaseStyle(theme, content);
 
