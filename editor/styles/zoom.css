@@ -1,0 +1,39 @@
+/* ==== zoom — 画布缩放控件 ==== */
+
+/* 画布缩放控件：浮动在画布底部中央（双端统一，独立于右下角按钮组）。
+   可拖拽换位（app/zoom-ctl.js）：抓手 = 控件空白处与百分比标签，按钮除外 */
+.zoom-ctl {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-3);
+  transform: translateX(-50%);
+  z-index: var(--z-dropdown);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
+  cursor: grab;
+  touch-action: none; /* 触屏拖动换位，不经浏览器手势 */
+  transition: box-shadow var(--dur-fast) var(--ease);
+}
+.zoom-ctl button { cursor: pointer; }
+.zoom-ctl.dragging {
+  cursor: grabbing;
+  box-shadow: var(--shadow-lg);
+  user-select: none;
+}
+.zoom-ctl .icon-btn { width: 26px; height: 26px; }
+.zoom-ctl .icon-btn svg { width: 14px; height: 14px; }
+.zoom-label {
+  min-width: 42px;
+  text-align: center;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--sub);
+  user-select: none;
+}
+.zoom-sep { width: 1px; height: 15px; background: var(--line); margin: 0 3px; }

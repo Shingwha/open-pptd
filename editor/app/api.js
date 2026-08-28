@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 // 画布控制器 / 属性面板 / 快速条 / 工具栏共用同一 API：
 //   - 纯模型操作来自 ops（app/state.js）
-//   - 渲染编排来自 view（app/view.js）
+//   - 渲染编排来自 view（app/view/view.js）
 // controller / view 经 bind() 延迟注入：创建顺序为 api → controller → view
 // （controller/view 需要 api，而 api 的方法只在调用时访问它们），
 // 避免模块间循环依赖；main.js 只负责按顺序装配。
@@ -15,7 +15,7 @@ import { openIconPicker } from "../interaction/dialogs/icon-editor.js";
 
 export function createEditorApi({ state, page, selected, ops }) {
   let controller = null; // 画布交互控制器（interaction/canvas.js）
-  let view = null; // 渲染编排（app/view.js）
+  let view = null; // 渲染编排（app/view/view.js）
 
   return {
     state,

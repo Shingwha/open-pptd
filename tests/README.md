@@ -41,6 +41,7 @@ tests/
   tools/                 诊断工具（人工排障用，不进 npm test）
     isolate.mjs          逐组件逐页隔离导出（定位 PowerPoint 弹「修复」）
     dump-formula-mml.mjs 公式语料 → KaTeX MathML（npm run test:fixtures）
+    ui-shots.mjs         界面截图走查（编辑器/画廊 × 桌面/窄屏 → tests/ui-shots-out/）
   e2e/                   真实浏览器（需本机 Chrome/Edge，CDP 驱动）
     render.mjs           渲染冒烟：无头渲染逐页 PNG（npm run test:render）
     incremental-load.mjs 渐进加载：写入中的项目逐页显示（npm run test:incremental）

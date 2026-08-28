@@ -7,7 +7,7 @@
 // 关键设计：
 //   - 选中框渲染在 canvas-wrap 的不缩放图层（.sel-overlay）：几何按
 //     canvas._scale 换算，边框 / 手柄在任何缩放下恒定屏幕尺寸（行业惯例，
-//     否则放大后手柄巨大、缩小时点不中）。样式在 styles.css 的 .sel-* 体系。
+//     否则放大后手柄巨大、缩小时点不中）。样式在 editor/styles/ 的 .sel-* 体系。
 //   - 手柄 8 向（四角 + 四边中点），data-handle 值即缩放方向；
 //     旋转手柄带连接杆，随元素一起旋转；Shift = 角柄等比 / 旋转 15° 吸附。
 //   - 拖动期间直接改模型 + DOM，结束才全量重渲染（流畅 + 一致）。
@@ -16,6 +16,7 @@
 // ============================================================================
 
 import { overlayGeom } from "../coords.js";
+import { ICON_ROTATE } from "../icons.js";
 
 // 手柄方向 → 悬停光标（四角对角线 / 四边单轴）
 const HANDLE_CURSOR = {
@@ -83,10 +84,7 @@ export function createCanvasController(canvas, opts) {
       rotate.dataset.rotateHandle = "1";
       rotate.className = "sel-rotate";
       rotate.title = "拖动旋转（Shift 每 15° 吸附）";
-      rotate.innerHTML =
-        `<span class="sel-rotate-ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" ` +
-        `stroke-linecap="round"><path d="M4.5 12a7.5 7.5 0 0 1 13-5.2L20 9.3M19.5 12a7.5 7.5 0 0 1-13 5.2L4 14.7" ` +
-        `stroke="currentColor"/></svg></span>`;
+      rotate.innerHTML = `<span class="sel-rotate-ic">${ICON_ROTATE}</span>`;
       box.append(stem, rotate);
     }
 

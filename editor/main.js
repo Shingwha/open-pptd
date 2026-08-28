@@ -27,8 +27,9 @@ import { createDeck, createPage } from "../packages/model/model.js";
 import { normalizeTheme } from "../packages/model/theme.js";
 import { ensurePermission } from "./app/project/handle-io.js";
 import { getRecent, getPendingProjectId, clearPendingProject, addRecent, setPendingProject } from "./app/project/handle-store.js";
-
-const $ = (id) => document.getElementById(id);
+import { injectIcons } from "./icons.js";
+import { dom } from "./dom.js";
+import { showDialog } from "./interaction/dialogs/base.js";
 
 // 仓库根 URL（本文件位于 <root>/editor/，../ 即站点根）
 const ROOT = new URL("../", import.meta.url).href;
@@ -57,15 +58,15 @@ function initEditor(deckUrl, { blankToast = true } = {}) {
   const api = createEditorApi({ state, page, selected, ops });
 
   // 元素手势执行器（拖动/缩放/旋转；不含视口手势，见下方 stage 路由器）
-  const controller = createCanvasController($("canvas"), { ...api });
+  const controller = createCanvasController(dom.canvas, { ...api });
 
-  const props = bindProperties($("props"), api);
+  const props = bindProperties(dom.props, api);
   const view = createView({ state, page, selected, api, controller, props });
   api.bind({ controller, view });
 
   // 舞台手势路由器：视口平移/缩放（空白拖动、空格/中键、滚轮、捏合）
   // + 元素手势分发 + 点击空白取消选中 + 双击（元素进编辑 / 空白还原视图）
-  createStageController($("stage"), {
+  createStageController(dom.stage, {
     element: controller,
     select: api.select,
     getSelected: api.getSelected,
@@ -83,7 +84,7 @@ function initEditor(deckUrl, { blankToast = true } = {}) {
     zoomReset: () => view.zoomReset(),
   });
   // 缩放控件：拖拽换位（位置持久化，双击百分比归位）
-  makeZoomCtlDraggable($("stage"), $("zoom-ctl"));
+  makeZoomCtlDraggable(dom.stage, dom.zoomCtl);
 
   io = createIo({ state, view }); // 模块级 io：二次进入时复用（loadDeck）
   api.fontOptions = () => io.fontManager.fontOptions(); // 元素字体下拉选项（延迟绑定，运行时取）
@@ -167,25 +168,13 @@ async function restorePendingProject() {
   return true;
 }
 
-/** 恢复卡片：项目名 + [新建空白 / 打开项目]（打开在点击手势里请求授权）。 */
+/** 恢复卡片：项目名 + [新建空白 / 打开项目]（打开在点击手势里请求授权）。
+ * 走 showDialog 基础设施；无 ✕ / 遮罩关闭——必须显式二选一（误关会丢会话入口）。 */
 function showRestoreCard(entry) {
-  const overlay = document.createElement("div");
-  overlay.className = "dialog-overlay";
-  const panel = document.createElement("div");
-  panel.className = "dialog restore-card";
-  const head = document.createElement("div");
-  head.className = "dialog-head";
-  const title = document.createElement("strong");
-  title.textContent = "恢复本地项目";
-  head.appendChild(title);
-  const body = document.createElement("div");
-  body.className = "dialog-body";
   const hint = document.createElement("div");
   hint.className = "prop-hint";
   hint.textContent = `上次打开的「${entry.name}」。浏览器要求重新授权后才能访问该文件夹。`;
-  body.appendChild(hint);
-  const foot = document.createElement("div");
-  foot.className = "dialog-foot";
+
   const blankBtn = document.createElement("button");
   blankBtn.type = "button";
   blankBtn.className = "btn btn-sm";
@@ -194,12 +183,14 @@ function showRestoreCard(entry) {
   openBtn.type = "button";
   openBtn.className = "btn btn-primary btn-sm";
   openBtn.textContent = "打开项目";
-  foot.append(blankBtn, openBtn);
-  panel.append(head, body, foot);
-  overlay.appendChild(panel);
-  document.body.appendChild(overlay);
 
-  const close = () => overlay.remove();
+  const { close } = showDialog("恢复本地项目", hint, {
+    panelClass: "restore-card",
+    closeBtn: false,
+    overlayClose: false,
+    buttons: [blankBtn, openBtn],
+  });
+
   blankBtn.onclick = () => {
     clearPendingProject();
     close();
@@ -228,6 +219,7 @@ function showRestoreCard(entry) {
 // 启动：?deck= 加载指定项目；有会话恢复标记则续开本地项目；否则空白编辑器
 // ----------------------------------------------------------------------------
 async function boot() {
+  injectIcons(); // 顶栏图标占位（data-icon）注入实际 SVG（图标单一来源 icons.js）
   const params = new URLSearchParams(location.search);
   const deckParam = params.get("deck");
   const deckUrl = deckParam ? (/^https?:/.test(deckParam) ? deckParam : new URL(deckParam, ROOT).href) : null;

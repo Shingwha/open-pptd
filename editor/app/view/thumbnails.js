@@ -8,13 +8,14 @@
 import { PAGE_WIDTH } from "../../../packages/model/model.js";
 import { renderPage, disposeChartInstances } from "../../../packages/renderer/page.js";
 import { isNarrow } from "../../ui.js";
+import { dom } from "../../dom.js";
 
 const THUMB_W = 140;
-// 窄屏（≤900px）迷你缩略图宽度，与 styles.css 响应式块中的 .thumb 同步
+// 窄屏（≤BP_NARROW）迷你缩略图宽度，与 editor/styles/ 响应式块中的 .thumb 同步
 const thumbW = () => (isNarrow() ? 88 : THUMB_W);
 
 export function createThumbnails({ state, api, reload }) {
-  const bar = document.getElementById("page-thumbs");
+  const bar = dom.pageThumbs;
 
   // --------------------------------------------------------------------------
   // 拖拽滚动（页面多时横向拖动查看；自动跟随当前页）
@@ -93,7 +94,7 @@ export function createThumbnails({ state, api, reload }) {
       thumb.append(mini, num, del);
       bar.appendChild(thumb);
     });
-    document.getElementById("page-count").textContent = `${state.currentPage + 1} / ${state.deck.pages.length}`;
+    dom.pageCount.textContent = `${state.currentPage + 1} / ${state.deck.pages.length}`;
     // 当前页自动滚入视野（页面多时保持可见，不强制滚动已可见的）
     bar.querySelector(".thumb.active")?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }

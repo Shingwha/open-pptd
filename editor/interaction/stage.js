@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 // 所有指针 / 滚轮手势在此分类与仲裁，元素手势的执行委托给
 // interaction/canvas.js（选中框 / 拖动 / 缩放 / 旋转），视口状态（zoom/pan）
-// 的唯一持有者是 app/view.js，本模块只调用 panBy / setZoom / zoomReset。
+// 的唯一持有者是 app/view/viewport.js，本模块只调用 panBy / setZoom / zoomReset。
 //
 // 路由规则（pointerdown 于 #stage，捕获阶段先于元素内部控件）：
 //   1. 悬浮控件（缩放条 / 按钮组 / 添加菜单 / 快速条…）→ 放行，不接管

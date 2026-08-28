@@ -1,0 +1,79 @@
+/* ============================================================================
+   tokens.css — 设计令牌（单一来源）
+   ----------------------------------------------------------------------------
+   所有组件只引用令牌，不写死色值/字号/层级。改主题 = 改这里。
+   色板语义：
+   - 中性灰阶承载 90% 界面（bg/panel/ink/sub/faint/line）
+   - 唯一强调色 primary（蓝），危险 danger（红），成功/警告仅用于状态提示
+   断点约定：窄屏 = 900px（与 ui.js 的 BP_NARROW 常量一一对应，见 responsive.css）
+   ============================================================================ */
+
+:root {
+  /* ---- 中性色板 ---- */
+  --bg: #f5f6f8;            /* 应用底色 */
+  --panel: #ffffff;         /* 面板/浮层底 */
+  --ink: #1c2532;           /* 主文字 */
+  --sub: #5b6572;           /* 次要文字 */
+  --faint: #98a2af;         /* 弱化文字/占位 */
+  --line: #e7eaef;          /* 细分隔线 */
+  --line-strong: #d3d8e0;   /* 控件边框 */
+  --scrollbar: #d3d8e0;     /* 滚动条（同 line-strong，独立语义） */
+
+  /* ---- 强调色 ---- */
+  --primary: #2563eb;
+  --primary-strong: #1d4ed8;        /* hover/按下 */
+  --primary-soft: #eef4fd;          /* 选中底 */
+  --primary-tint: rgba(37, 99, 235, 0.1);
+
+  /* ---- 语义色 ---- */
+  --danger: #d64545;
+  --danger-soft: #fdf1f1;
+  --success: #2e9e5b;
+  --success-soft: #ecf7f0;
+  --warning: #9a6700;
+  --warning-soft: #fdf6e3;
+
+  /* ---- 字体 ---- */
+  --font-ui: "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --text-xs: 11px;   /* 辅助说明/角标 */
+  --text-sm: 12px;   /* 次要信息/缩略条 */
+  --text-md: 13px;   /* 正文基准 */
+  --text-lg: 14px;   /* 分组标题/品牌 */
+  --text-xl: 16px;   /* 对话框标题 */
+  --text-2xl: 24px;  /* 页面级大标题（画廊 hero） */
+
+  /* ---- 间距阶梯（4px 基网） ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  /* ---- 圆角 ---- */
+  --radius-sm: 6px;    /* 控件/小芯片 */
+  --radius: 8px;       /* 面板/卡片 */
+  --radius-lg: 12px;   /* 对话框/大浮层 */
+
+  /* ---- 控件尺寸 ---- */
+  --control-h: 28px;       /* 表单控件/按钮基准高 */
+  --control-h-lg: 32px;    /* 顶栏按钮 */
+  --topbar-h: 48px;
+
+  /* ---- 阴影（仅浮层使用，保持轻） ---- */
+  --shadow-sm: 0 1px 2px rgba(28, 37, 50, 0.06);
+  --shadow-md: 0 4px 16px rgba(28, 37, 50, 0.1);
+  --shadow-lg: 0 12px 32px rgba(28, 37, 50, 0.14);
+
+  /* ---- 层级（收敛原 20/85/100/9999/10000） ---- */
+  --z-sticky: 20;      /* 顶栏/缩略条等常驻层 */
+  --z-dropdown: 85;    /* 下拉菜单/浮层 */
+  --z-overlay: 100;    /* 遮罩/画布覆盖层 */
+  --z-modal: 1000;     /* 对话框/放映 */
+  --z-toast: 1100;     /* 提示，永远最上 */
+
+  /* ---- 动效 ---- */
+  --dur-fast: 120ms;
+  --dur-med: 180ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+}

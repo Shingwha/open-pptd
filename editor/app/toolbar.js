@@ -12,10 +12,10 @@ import { bindFontPanel } from "../interaction/font-panel.js";
 import { createFileMenu } from "./file-menu.js";
 import { removeRecent } from "./project/handle-store.js";
 import { showToast } from "./toast.js";
+import { isNarrow } from "../ui.js";
+import { dom } from "../dom.js";
 
 export function bindToolbar({ state, page, api, view, io, present }) {
-  const $ = (id) => document.getElementById(id);
-
   /** 添加元素到当前页并选中；图表/表格直接进数据编辑（图标刚选完，不再弹选择器）。 */
   function addElement(element) {
     api.beginChange();
@@ -30,8 +30,8 @@ export function bindToolbar({ state, page, api, view, io, present }) {
   // --------------------------------------------------------------------------
   function bindAddMenuUI() {
     bindAddMenu({
-      fab: $("btn-add"),
-      menu: $("add-menu"),
+      fab: dom.btnAdd,
+      menu: dom.addMenu,
       addApi: { addElement, rebuildImageMap: io.rebuildImageMap },
     });
   }
@@ -64,7 +64,7 @@ export function bindToolbar({ state, page, api, view, io, present }) {
       }
     }
 
-    createFileMenu($("btn-file"), async ({ menu, item, sep, appendRecents }) => {
+    createFileMenu(dom.btnFile, async ({ menu, item, sep, appendRecents }) => {
       // 新建空白演示自带 dirty 确认，不走 confirmDiscard
       menu.appendChild(item("新建空白演示", { onClick: () => io.newProject() }));
       const openItem = item("打开本地项目", { onClick: openLocal });
@@ -85,7 +85,7 @@ export function bindToolbar({ state, page, api, view, io, present }) {
   // 顶栏按钮
   // --------------------------------------------------------------------------
   function bindTopbar() {
-    $("btn-add-page").onclick = () => {
+    dom.btnAddPage.onclick = () => {
       api.beginChange();
       state.deck.pages.push(createPage({}));
       state.currentPage = state.deck.pages.length - 1;
@@ -93,21 +93,20 @@ export function bindToolbar({ state, page, api, view, io, present }) {
       view.render();
     };
 
-    $("btn-undo").onclick = () => io.applyHistory(state.history.undo(state.deck));
-    $("btn-redo").onclick = () => io.applyHistory(state.history.redo());
+    dom.btnUndo.onclick = () => io.applyHistory(state.history.undo(state.deck));
+    dom.btnRedo.onclick = () => io.applyHistory(state.history.redo());
 
     bindFileMenu();
-    bindFontPanel({ state, io, anchor: $("btn-fonts") });
-    $("btn-present").onclick = () => present.start();
+    bindFontPanel({ state, io, anchor: dom.btnFonts });
+    dom.btnPresent.onclick = () => present.start();
 
     // 配色浮层（预设色卡 + 语义色编辑）
-    bindThemePanel({ state, api, io, anchor: $("btn-theme") });
+    bindThemePanel({ state, api, io, anchor: dom.btnTheme });
 
     // 属性抽屉收起 / 展开（双端统一逻辑，行为随断点不同）：
     //   桌面（>900px）：右侧常驻面板，收起 = body.inspector-collapsed
     //   窄屏（≤900px）：底部弹起 sheet，展开 = body.inspector-open
     //   画布右上角入口按钮 + 面板头按钮 + 桌面悬浮把手共用同一 toggle
-    const isNarrow = () => window.matchMedia("(max-width: 900px)").matches;
     const toggleInspector = () => {
       if (isNarrow()) {
         document.body.classList.toggle("inspector-open");
@@ -118,15 +117,15 @@ export function bindToolbar({ state, page, api, view, io, present }) {
       }
       view.renderCanvas();
     };
-    $("btn-inspector-toggle").onclick = toggleInspector;
-    $("btn-inspector-open").onclick = toggleInspector;
+    dom.btnInspectorToggle.onclick = toggleInspector;
+    dom.btnInspectorOpen.onclick = toggleInspector;
     // 窄屏：遮罩点击关闭底部 sheet
-    $("inspector-mask").onclick = () => document.body.classList.remove("inspector-open");
+    dom.inspectorMask.onclick = () => document.body.classList.remove("inspector-open");
 
     // 画布缩放控件（双端统一：按钮 + 百分比显示）
-    $("btn-zoom-out").onclick = () => view.zoomOut();
-    $("btn-zoom-in").onclick = () => view.zoomIn();
-    $("btn-zoom-reset").onclick = () => view.zoomReset();
+    dom.btnZoomOut.onclick = () => view.zoomOut();
+    dom.btnZoomIn.onclick = () => view.zoomIn();
+    dom.btnZoomReset.onclick = () => view.zoomReset();
   }
 
   bindAddMenuUI();

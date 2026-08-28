@@ -1,5 +1,5 @@
 // ============================================================================
-// editor/dialogs/table-editor.js — 表格网格编辑器（Excel 式整体设计）
+// interaction/dialogs/table-editor.js — 表格网格编辑器（Excel 式整体设计）
 // ----------------------------------------------------------------------------
 // 布局：
 //   ┌ 工具条（常驻）：[＋行][＋列][删除行][删除列] | [合并][拆分] | [行高列宽…] ┐
@@ -345,7 +345,7 @@ function editDims(el, commit, rerender) {
       const r = document.createElement("div");
       r.style.cssText = "display:flex;align-items:center;gap:8px;margin-bottom:4px;";
       const idx = document.createElement("span");
-      idx.style.cssText = "width:44px;flex:none;font-size:12px;color:#6b7280;";
+      idx.style.cssText = "width:44px;flex:none;font-size:var(--text-sm);color:var(--sub);";
       idx.textContent = i === 0 ? "表头" : `第 ${i + 1} 项`;
       const range = document.createElement("input");
       range.type = "range";

@@ -16,19 +16,19 @@ import { relRect } from "../../coords.js";
 import { applyMeasurements } from "./measure.js";
 import { createViewport } from "./viewport.js";
 import { createThumbnails } from "./thumbnails.js";
+import { dom } from "../../dom.js";
 
 export function createView({ state, page, selected, api, controller, props }) {
-  const $ = (id) => document.getElementById(id);
   // 模块严格模式下裸调用 render() 时 this 为 undefined，统一经 viewObj 自引用
   const viewObj = {};
 
   // 视口：缩放/平移状态与 transform 应用。缩放后比例变了需重建画布，
   // 平移只改 transform —— repaint 回调由这里注入。
   const viewport = createViewport({
-    stage: $("stage"),
-    canvas: $("canvas"),
-    wrap: $("canvas-wrap"),
-    zoomLabel: $("zoom-label"),
+    stage: dom.stage,
+    canvas: dom.canvas,
+    wrap: dom.canvasWrap,
+    zoomLabel: dom.zoomLabel,
     controller,
     repaint: () => renderCanvas(),
   });
@@ -73,7 +73,7 @@ export function createView({ state, page, selected, api, controller, props }) {
   // --------------------------------------------------------------------------
   function renderCanvas() {
     if (!state.deck) return;
-    const canvas = $("canvas");
+    const canvas = dom.canvas;
     viewport.applyScale();
     // transform-origin 为 center：flex 居中 + 中心锚点缩放，视觉左右/上下对称，无需 margin 补偿
     const pg = page();
@@ -87,7 +87,7 @@ export function createView({ state, page, selected, api, controller, props }) {
   // --------------------------------------------------------------------------
   function renderProps() {
     const el = selected();
-    const badge = $("inspector-badge");
+    const badge = dom.inspectorBadge;
     const def = el ? getType(el.elementType) : null;
     if (el && def) {
       badge.hidden = false;
@@ -95,7 +95,7 @@ export function createView({ state, page, selected, api, controller, props }) {
     } else {
       badge.hidden = true;
     }
-    $("inspector-title").textContent = state.selectedId ? "元素属性" : "页面设置";
+    dom.inspectorTitle.textContent = state.selectedId ? "元素属性" : "页面设置";
     props.refresh();
   }
 
@@ -103,10 +103,10 @@ export function createView({ state, page, selected, api, controller, props }) {
   // 浮动快调条（选中元素时跟随显示的高频操作）
   // --------------------------------------------------------------------------
   function renderQuickbar() {
-    const qb = $("quickbar");
+    const qb = dom.quickbar;
     const el = selected();
-    const canvas = $("canvas");
-    const stage = $("stage");
+    const canvas = dom.canvas;
+    const stage = dom.stage;
     const node = el ? canvas.querySelector(`[data-element-id="${CSS.escape(el.elementId)}"]`) : null;
     if (!el || !node) {
       qb.classList.remove("show");
@@ -172,7 +172,7 @@ export function createView({ state, page, selected, api, controller, props }) {
     qb.style.top = topY >= 8 ? `${topY}px` : `${y + r.height + 52}px`;
     // 与底部中央缩放控件避让：矩形相交时上移到控件上方（元素恰好拖到画布底部时）。
     // 舞台坐标以 sRect 为基准换算（zoom-ctl 的 rect 是客户区坐标）
-    const zc = $("zoom-ctl");
+    const zc = dom.zoomCtl;
     if (zc) {
       const sRect = stage.getBoundingClientRect();
       const zr = zc.getBoundingClientRect();
@@ -187,8 +187,8 @@ export function createView({ state, page, selected, api, controller, props }) {
   // 按钮状态
   // --------------------------------------------------------------------------
   function updateButtons() {
-    $("btn-undo").disabled = !state.history.canUndo();
-    $("btn-redo").disabled = !state.history.canRedo();
+    dom.btnUndo.disabled = !state.history.canUndo();
+    dom.btnRedo.disabled = !state.history.canRedo();
   }
 
   return viewObj;

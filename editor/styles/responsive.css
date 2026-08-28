@@ -1,0 +1,138 @@
+/* ==== responsive — 响应式断点汇总；窄屏断点 900px 与 ui.js 的 BP_NARROW 常量对应 ==== */
+
+/* ============================================================================
+ * 响应式：统一骨架，窄屏变形（≤900px 手机 / 平板竖屏）
+ * ----------------------------------------------------------------------------
+ * 布局骨架两端一致：顶栏 / 画布 / 右侧属性抽屉 / 底部缩略条 / 右下角按钮组。
+ * 窄屏只做“变形”不换结构：
+ *   - 顶栏：按钮图标化（文字隐藏）、主题下拉收窄、品牌名省略只留文件名
+ *   - 属性抽屉：底部弹起 sheet（55vh，半屏）；入口为右下角“属性”圆形按钮（双端同一位置）
+ *   - 缩略条：96px → 64px，缩略图 140×79 → 88×50（view.js thumbW 同步）
+ *   - 快速条：吸底横滑；添加菜单 / 对话框：底部 sheet 化
+ *   - 画布：缩放控件固定画布底部中央（双端），另支持触屏捏合 / Ctrl+滚轮 / 双击空白还原
+ * ========================================================================== */
+@media (max-width: 900px) {
+  /* —— 顶栏：图标化 + 压缩 —— */
+  .topbar { padding: 0 8px; gap: 5px; overflow-x: auto; scrollbar-width: none; }
+  .topbar::-webkit-scrollbar { display: none; }
+  /* 顶栏子项禁止被 flex 挤压：内容超宽时整体横向滚动（不裁剪、按钮始终可点） */
+  .topbar > *, .topbar-actions > * { flex-shrink: 0; }
+  .brand { gap: 6px; }
+  .brand-file { display: none; } /* 窄屏只留 logo（回画廊入口），文件名省略给按钮腾空间 */
+  .status-hint, .status-dirty { display: none; } /* 窄屏只留【刷新】按钮（同原底部栏行为） */
+  .btn-label { display: none; }   /* 文字按钮图标化 */
+  .btn { width: 30px; padding: 0; }
+  .topbar-divider { margin: 0 1px; }
+  .icon-btn { width: 32px; height: 32px; }
+
+  /* —— 工作区：单列；属性抽屉窄屏改为底部弹起 sheet（55vh，半屏） —— */
+  .inspector {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    z-index: var(--z-overlay);
+    width: auto; /* 覆盖基类 300px：由 left/right 拉伸为全宽 */
+    height: 55vh;
+    height: 55dvh; /* 地址栏收起/展开时保持稳定（不支持 dvh 的浏览器自动忽略） */
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -8px 32px rgba(28, 37, 50, 0.16);
+    transform: translateY(102%);
+    transition: transform 0.22s ease;
+  }
+  body.inspector-open .inspector { transform: none; }
+  /* 兼容桌面收起态 class 残留（跨断点拖动窗口时）：
+     覆盖宽度/透明度动画为常显，统一为底部滑出方向 */
+  body.inspector-collapsed .inspector {
+    transform: translateY(102%);
+    width: auto;
+    opacity: 1;
+  }
+  /* 顶部 grabber：提示底部 sheet 可下滑关闭（纯装饰，不拦截点击） */
+  .inspector::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--line-strong);
+    z-index: 6;
+    pointer-events: none;
+  }
+  /* 关闭按钮图标：右侧抽屉的右箭头 → 底部 sheet 的下箭头 */
+  #btn-inspector-toggle svg { transform: rotate(90deg); }
+
+  /* —— 画布控件：操作组整体贴边 —— */
+  .fab-stack { right: 14px; bottom: 16px; }
+  .add-menu {
+    left: 10px;
+    right: 10px;
+    bottom: 130px; /* 操作组（46×2 + 间距 ≈ 102px）上方 */
+    width: auto;
+    max-height: 56vh;
+    border-radius: 14px;
+  }
+
+  /* —— 快速条：吸底横滑（JS 跳过 left/top 定位，见 view.js）
+       底部 64px 缩略条 + 12px 间距 + 46px：整体位于缩放控件上方，避免重叠 —— */
+  .quickbar {
+    position: fixed;
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: calc(64px + 12px + 46px);
+    max-width: 94vw;
+    overflow-x: auto;
+    z-index: var(--z-dropdown);
+  }
+  .quickbar::-webkit-scrollbar { display: none; }
+
+  /* —— 缩略条：迷你化 —— */
+  .thumbbar { height: 64px; padding: 0 var(--space-2); gap: 6px; }
+  .thumb { width: 88px; height: 50px; }
+  .thumb-num { font-size: 9px; padding: 0 5px; left: 2px; bottom: 2px; } /* 低于令牌阶梯的密集角标 */
+  .thumb-del { top: 2px; right: 2px; width: 16px; height: 16px; }
+  .thumb-add { width: 34px; height: 34px; font-size: var(--text-lg); }
+  .thumbbar-meta { font-size: 10px; padding-right: 2px; } /* 低于令牌阶梯的密集注释 */
+
+  /* —— 对话框：底部 sheet —— */
+  .dialog-overlay { align-items: flex-end; }
+  .dialog {
+    width: 100vw;
+    max-width: 100vw;
+    border-radius: 16px 16px 0 0;
+    max-height: 92vh;
+  }
+  .icon-grid { min-height: 40vh; }
+  .data-table input { font-size: var(--text-md); } /* 触屏输入更舒适 */
+}
+
+/* 小屏微调（≤480px）：进一步压缩顶栏，让 320px 宽度也放得下全部按钮 */
+@media (max-width: 480px) {
+  .topbar { gap: 4px; padding: 0 6px; }
+  .topbar-actions { gap: 4px; }
+  .icon-btn { width: 30px; height: 30px; }
+  .topbar-divider { margin: 0; }
+  .add-menu { max-height: 66vh; }
+  .fab-stack { right: 10px; bottom: 12px; }
+}
+
+@media (max-width: 480px) {
+  .theme-panel { width: min(320px, calc(100vw - 16px)); }
+}
+
+@media (max-width: 480px) {
+  .font-panel { width: min(400px, calc(100vw - 16px)); }
+}
+
+@media (max-width: 900px) {
+  .present-hint { display: none; }
+  .present-ui { padding: 20px 12px 10px; }
+}
+

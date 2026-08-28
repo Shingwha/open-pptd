@@ -15,6 +15,7 @@
 
 import { PAGE_WIDTH, PAGE_HEIGHT } from "../../packages/model/model.js";
 import { renderPage, disposeChartInstances } from "../../packages/renderer/page.js";
+import { ICON_FULLSCREEN } from "../icons.js";
 
 const FADE_MS = 260; // 与导出 PPTX 的 <p:fade/> 过渡节奏一致
 const UI_HIDE_MS = 1800; // 鼠标停止移动后隐藏底部工具条
@@ -58,7 +59,7 @@ export function createPresent({ state, view }) {
         <span class="present-counter">1 / 1</span>
         <div class="present-actions">
           <button type="button" class="present-btn present-btn-icon" data-act="fullscreen" title="全屏切换 (F)">
-            <svg viewBox="0 0 24 24"><path d="M8 4H4v4M16 4h4v4M8 20H4v-4M16 20h4v-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            ${ICON_FULLSCREEN}
           </button>
           <button type="button" class="present-btn" data-act="prev">‹ 上一页</button>
           <button type="button" class="present-btn" data-act="next">下一页 ›</button>

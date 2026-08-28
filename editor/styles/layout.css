@@ -1,0 +1,21 @@
+/* ==== layout — 布局骨架（.app / .workspace） ==== */
+
+/* ----------------------------------------------------------------------------
+   布局骨架
+   ---------------------------------------------------------------------------- */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  /* 编辑器 app 布局：整页不滚动，内部区域各自滚动（属性面板/缩略条/菜单） */
+  overflow: hidden;
+}
+
+.workspace {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  /* 左右分栏：画布（stage flex:1）+ 属性面板（固定宽） */
+  display: flex;
+}
+

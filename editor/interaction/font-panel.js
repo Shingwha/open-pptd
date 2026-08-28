@@ -12,6 +12,7 @@
 
 import { loadFontRegistry, fetchFontBytes } from "../../packages/model/font-registry.js";
 import { showToast } from "../app/toast.js";
+import { attachPopover } from "../popover.js";
 
 /** 内置库分类中文名（assets/fonts/registry.json 的 category）。 */
 const CAT_LABEL = { sans: "黑体", serif: "宋/衬线", handwriting: "手写/书法", display: "标题/艺术", pixel: "像素" };
@@ -493,19 +494,18 @@ export function bindFontPanel({ state, io, anchor }) {
   }
 
   // --------------------------------------------------------------------------
-  // 开关（外壳对齐 theme-panel.js）
+  // 开关（外壳对齐 theme-panel.js；定位/外点关闭/resize 重定位走 popover.js）
   // --------------------------------------------------------------------------
-  function position() {
-    const r = anchor.getBoundingClientRect();
-    panel.style.top = `${r.bottom + 8}px`;
-    panel.style.right = `${Math.max(8, Math.min(window.innerWidth - r.right, 24))}px`;
-  }
+  let popover = null;
 
   function open() {
-    if (!panel) build();
+    if (!panel) {
+      build();
+      popover = attachPopover(anchor, panel, { align: "right", isOpen, close });
+    }
     render();
-    position();
     panel.classList.add("open");
+    popover.position();
   }
 
   function close() {
@@ -520,14 +520,6 @@ export function bindFontPanel({ state, io, anchor }) {
   anchor.addEventListener("click", (e) => {
     e.stopPropagation();
     toggle();
-  });
-  document.addEventListener("click", (e) => {
-    if (!isOpen()) return;
-    if (panel.contains(e.target) || anchor.contains(e.target)) return;
-    close();
-  });
-  window.addEventListener("resize", () => {
-    if (isOpen()) position();
   });
 
   openPanel = open;

@@ -1,0 +1,151 @@
+/* ==== present — 放映模式 ==== */
+
+/* ============================================================================
+   放映模式（app/present.js）
+   ----------------------------------------------------------------------------
+   黑场覆盖层：幻灯片按视口等比缩放居中；底部工具条无操作自动隐藏；
+   B 黑屏时幻灯片淡出、工具条仍可唤起（移动鼠标）。
+   注：黑底与 rgba 白为投影面固有配色，不套界面令牌；仅层级/尺寸走令牌。
+   ============================================================================ */
+body.presenting { user-select: none; }
+body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免层叠/焦点干扰 */
+
+.present {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: #000;
+  overflow: hidden;
+  cursor: default;
+  touch-action: manipulation;
+  /* flex 居中：幻灯片（含 transform 缩放）始终以视口中心为锚 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 幻灯片视口：transform 等比缩放（960x540 → 视口适配），flex 子项居中 */
+.present-stage {
+  position: relative;
+  flex: none;
+  width: 960px;
+  height: 540px;
+  transform-origin: center;
+  transition: opacity 0.2s ease;
+}
+.present.blackout .present-stage { opacity: 0; }
+
+/* 双缓冲图层：交叉淡化切页 */
+.present-slide {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 960px;
+  height: 540px;
+  background: #fff;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.26s ease;
+  pointer-events: none;
+}
+.present-slide.on { opacity: 1; }
+.present-slide.no-anim { transition: none; }
+
+/* 顶部进度条 */
+.present-progress {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 3;
+}
+.present-progress i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #fff;
+  opacity: 0.85;
+  transition: width 0.25s ease;
+}
+
+/* 底部工具条（无操作自动隐藏） */
+.present-ui {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 26px 18px var(--space-3);
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+  color: #fff;
+  font-size: var(--text-sm);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+.present.ui-hidden .present-ui,
+.present.ui-hidden .present-hint {
+  opacity: 0;
+  pointer-events: none;
+}
+.present-counter { opacity: 0.85; white-space: nowrap; }
+.present-actions { display: flex; gap: var(--space-2); }
+.present-btn {
+  height: var(--control-h);
+  padding: 0 var(--space-3);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease);
+}
+.present-btn:hover { background: rgba(255, 255, 255, 0.2); }
+.present-btn:active { background: rgba(255, 255, 255, 0.28); }
+.present-btn:focus-visible {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 0 3px var(--primary-tint);
+}
+.present-btn-icon {
+  width: var(--control-h);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.present-btn-icon svg { width: 15px; height: 15px; }
+.present-btn-exit {
+  border-color: transparent;
+  background: rgba(214, 69, 69, 0.8);
+}
+.present-btn-exit:hover { background: rgba(214, 69, 69, 0.95); }
+
+/* 底部快捷键提示：深色胶囊底，浅色/深色背景上都清晰 */
+.present-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 56px;
+  transform: translateX(-50%);
+  z-index: 3;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: var(--text-sm);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+  background: rgba(15, 18, 24, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 6px var(--space-4);
+  backdrop-filter: blur(6px);
+  transition: opacity 0.3s ease;
+}

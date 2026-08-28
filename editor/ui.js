@@ -6,10 +6,9 @@
 // 快速条则不传钩子，直接在 onCommit 里包 change()。
 // ============================================================================
 
-/** 添加菜单图标（描边 SVG，继承 currentColor）。 */
-export function svgIcon(inner) {
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
-}
+// svgIcon 已迁至 icons.js（内联图标单一来源）；此处再导出，既有 import 路径不变
+export { svgIcon } from "./icons.js";
+import { attachPopover } from "./popover.js";
 
 /** 属性行：label + 控件。 */
 export function field(label, control) {
@@ -128,7 +127,7 @@ export function colorField(value, onCommit, { resolve, swatches = [], onFocus, o
   // 展示当前解析色：显式传入优先（取色器拖动），否则 hex 输入框（可能是 $key）
   const paint = (raw) => {
     const v = raw || hex.value.trim() || picker.value;
-    swatchBtn.style.background = hexOf(v) || "#ffffff";
+    swatchBtn.style.background = hexOf(v) || "var(--panel)";
   };
 
   const picker = colorInput(value, onCommit, { resolve, onFocus, onBlur });
@@ -151,21 +150,11 @@ export function colorField(value, onCommit, { resolve, swatches = [], onFocus, o
     }
   });
 
-  // 主题色弹层：fixed 定位（不依赖父容器 overflow，永不裁剪），打开时按按钮位置计算
+  // 主题色弹层：fixed 定位（不依赖父容器 overflow，永不裁剪），
+  // 定位/外点关闭/resize 重定位走 popover.js 通用件（gap 6，下方不足时向上弹出）
   const pop = document.createElement("div");
   pop.className = "color-pop";
   pop.hidden = true;
-  const positionPop = () => {
-    const r = swatchBtn.getBoundingClientRect();
-    const popH = pop.offsetHeight || 220;
-    const W = 224;
-    pop.style.left = `${Math.max(8, Math.min(r.left, window.innerWidth - W - 8))}px`;
-    if (window.innerHeight - r.bottom - 8 < popH && r.top > popH + 8) {
-      pop.style.top = `${Math.max(8, r.top - popH - 6)}px`; // 下方空间不足 → 向上弹出
-    } else {
-      pop.style.top = `${r.bottom + 6}px`;
-    }
-  };
   for (const s of swatches) {
     const dot = document.createElement("button");
     dot.type = "button";
@@ -173,7 +162,7 @@ export function colorField(value, onCommit, { resolve, swatches = [], onFocus, o
     dot.title = s.key;
     const chip = document.createElement("span");
     chip.className = "color-pop-chip";
-    chip.style.background = s.value || "#ccc";
+    chip.style.background = s.value || "var(--line-strong)";
     const name = document.createElement("span");
     name.className = "color-pop-name";
     name.textContent = s.key.replace("$", "");
@@ -189,14 +178,18 @@ export function colorField(value, onCommit, { resolve, swatches = [], onFocus, o
     pop.appendChild(dot);
   }
   if (swatches.length) {
+    const popover = attachPopover(swatchBtn, pop, {
+      gap: 6,
+      width: 224, // 隐藏态测量兜底（offsetWidth/Height 需可见才有值）
+      height: 220,
+      flip: true,
+      isOpen: () => !pop.hidden,
+      close: () => { pop.hidden = true; },
+    });
     swatchBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       pop.hidden = !pop.hidden;
-      if (!pop.hidden) positionPop(); // 显示后测量并定位（fixed，脱离父容器裁剪）
-    });
-    window.addEventListener("resize", () => { if (!pop.hidden) positionPop(); });
-    document.addEventListener("click", (e) => {
-      if (!pop.hidden && !pop.contains(e.target)) pop.hidden = true;
+      if (!pop.hidden) popover.position(); // 显示后测量并定位（fixed，脱离父容器裁剪）
     });
   } else {
     swatchBtn.hidden = true; // 无主题色数据时不显示色块按钮
@@ -256,8 +249,11 @@ export function button(label, onClick, { title = "", className = "btn btn-sm", a
 // 快速条专用控件（qb-* 样式）
 // ----------------------------------------------------------------------------
 
-/** 窄屏断点（≤900px）：缩略图缩窄、快速条吸底横滑共用（与 styles.css 响应式块同步）。 */
-export const isNarrow = () => window.matchMedia("(max-width: 900px)").matches;
+/** 窄屏断点（px）：缩略图缩窄、快速条吸底横滑、属性抽屉形态共用
+ * （与 editor/styles/ 响应式块的 max-width 媒体查询同步，改动需双侧一致）。 */
+export const BP_NARROW = 900;
+
+export const isNarrow = () => window.matchMedia(`(max-width: ${BP_NARROW}px)`).matches;
 
 export function quickbarColor(value, onCommit) {
   return colorInput(value, onCommit, { className: "qb-color", title: "颜色" });

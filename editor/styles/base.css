@@ -1,0 +1,27 @@
+/* ==== base — 全局重置（box-sizing / html,body）与触控优化 ==== */
+
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  /* 注意：不能在这里写 overflow: hidden —— 画廊是文档流滚动页，
+     只有编辑器 .app 是内部滚动的 app 布局（见下方 .app） */
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font-family: inherit; }
+select, input, textarea { font-family: inherit; }
+
+/* ----------------------------------------------------------------------------
+   触控优化（全局统一，不限断点）：禁双击缩放干扰、去点按灰色高亮
+   ---------------------------------------------------------------------------- */
+button, select, a.btn, .thumb, .add-thumb, .icon-cell, .theme-card {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}

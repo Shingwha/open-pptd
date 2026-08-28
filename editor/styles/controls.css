@@ -1,0 +1,103 @@
+/* ==== controls — 统一控件语言：按钮 / 图标按钮 / 分隔符 ====
+   控件公约（全站一致）：
+   - 高度只用 --control-h(28) / --control-h-lg(32)；字号只用 --text-* 令牌
+   - hover = 底色或边框变浅一档；:focus-visible = 主色细环（box-shadow，不占布局）
+   - 所有颜色过渡走 --dur-fast var(--ease)，不做过场动画
+   ============================================================================ */
+
+/* 按钮：button 与 <a> 链接按钮共用同一外观 —— inline-flex 让 a 的 height 生效
+   并垂直居中，去下划线消除 a 默认样式，无需为 a.btn 单独写规则 */
+.btn {
+  height: var(--control-h-lg);
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  color: var(--ink);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-md);
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease);
+}
+.btn:hover:not(:disabled) { border-color: var(--faint); background: var(--bg); }
+.btn:active:not(:disabled) { background: var(--line); }
+.btn:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-tint);
+}
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+.btn-primary:hover:not(:disabled) { background: var(--primary-strong); border-color: var(--primary-strong); }
+.btn-primary:active:not(:disabled) { background: var(--primary-strong); }
+
+.btn-sm { height: var(--control-h); padding: 0 var(--space-2); font-size: var(--text-sm); }
+
+/* 放映按钮：主色描边（区别于主色实底的导出按钮） */
+.btn-present {
+  background: transparent;
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+.btn-present:hover:not(:disabled) {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.btn-ghost { border-color: transparent; color: var(--sub); background: transparent; }
+.btn-ghost:hover:not(:disabled) { border-color: transparent; background: var(--bg); color: var(--ink); }
+
+.btn-danger { color: var(--danger); border-color: var(--line-strong); background: var(--panel); }
+.btn-danger:hover:not(:disabled) { background: var(--danger-soft); border-color: var(--danger); }
+
+/* 纯图标按钮：无框，hover 出底色 */
+.icon-btn {
+  width: var(--control-h-lg);
+  height: var(--control-h-lg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--sub);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease);
+}
+.icon-btn:hover:not(:disabled) { background: var(--bg); color: var(--ink); }
+.icon-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); color: var(--primary); }
+.icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+/* 链接按钮（画廊/编辑器顶栏的 GitHub 仓库跳转） */
+a.icon-btn { text-decoration: none; color: var(--sub); }
+.icon-btn svg { width: 16px; height: 16px; }
+
+/* 按钮图标 + 文字双元素（窄屏时文字隐藏，仅剩图标，两端同一套 DOM） */
+.btn-ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-ic svg { width: 15px; height: 15px; }
+
+.topbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--line);
+  margin: 0 3px;
+}

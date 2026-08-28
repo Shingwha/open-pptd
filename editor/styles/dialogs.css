@@ -1,0 +1,233 @@
+/* ==== dialogs — 对话框 / 数据编辑器（表格、图标选择器、滚动条） ==== */
+
+/* ----------------------------------------------------------------------------
+   对话框 / 数据编辑器
+   ---------------------------------------------------------------------------- */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 37, 50, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+}
+.dialog {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: min(680px, 92vw);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+.dialog-head strong { font-size: var(--text-xl); font-weight: 700; color: var(--ink); }
+.dialog-body { padding: var(--space-4); overflow-y: auto; }
+.dialog-foot {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* 恢复本地项目卡片（main.js showRestoreCard） */
+.restore-card { width: min(400px, 92vw); }
+
+/* 导出 PPTX 对话框选项区（saver.js openExportDialog） */
+.export-pptx-opts { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.editor-section { margin-bottom: 14px; }
+.editor-section-title {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: var(--space-2);
+}
+.editor-check {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--text-sm);
+  color: var(--sub);
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 10px;
+  transition: color var(--dur-fast) var(--ease);
+}
+.editor-check:hover { color: var(--ink); }
+.editor-check input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+.chart-editor .prop-field { margin-bottom: 10px; }
+
+/* —— 图标选择器 —— */
+.icon-picker { display: flex; flex-direction: column; gap: 10px; min-height: 320px; }
+.icon-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: var(--text-md);
+  color: var(--ink);
+  background: var(--panel);
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease),
+              box-shadow var(--dur-fast) var(--ease);
+}
+.icon-search:focus { border-color: var(--primary); }
+.icon-search:focus-visible { box-shadow: 0 0 0 3px var(--primary-tint); }
+.icon-grid { flex: 1; overflow-y: auto; min-height: 260px; }
+.icon-grid-cat {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--faint);
+  margin: 10px 2px 6px;
+}
+.icon-grid-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+  gap: 6px;
+}
+.icon-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  cursor: pointer;
+  color: var(--sub);
+  transition: background var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease);
+}
+.icon-cell:hover { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+.icon-cell:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.icon-cell.active { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+.icon-cell svg { width: 20px; height: 20px; }
+.icon-empty { padding: 30px 0; text-align: center; color: var(--faint); font-size: var(--text-md); }
+
+/* —— 类 Excel 数据表 —— */
+.table-editor { display: flex; flex-direction: column; gap: 10px; }
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-2) 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+.table-toolbar .btn { flex: 0 0 auto; }
+.toolbar-sep { width: 1px; height: 18px; background: var(--line-strong); margin: 0 var(--space-1); }
+.table-body { display: flex; gap: 10px; align-items: stretch; }
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.data-table th, .data-table td {
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  padding: 1px 2px;
+  vertical-align: middle;
+}
+.data-table thead th {
+  background: var(--bg);
+  border-bottom: 1px solid var(--line-strong);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table th:last-child, .data-table td:last-child { border-right: none; }
+
+.data-table th .cell-edit { display: flex; align-items: center; gap: 2px; }
+.data-table input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 0;
+  outline: none;
+  background: transparent;
+  padding: var(--space-1) 6px;
+  font: inherit; /* 继承 td 完整样式链（字号/粗细/斜体） */
+  color: inherit; /* 继承 td 文字颜色（表头白字/主题色等，所见即所得） */
+  text-align: inherit; /* 继承单元格对齐 */
+}
+.data-table thead input { font-weight: 600; color: var(--primary); }
+.data-table input:focus { background: var(--primary-soft); }
+
+/* —— Excel 式行头/列头（纯编号，点击选整行/列，拖拽多行/列） —— */
+.data-table td.row-head, .data-table th.col-head {
+  width: 18px;
+  min-width: 18px;
+  text-align: center;
+  padding: 0;
+  background: var(--bg);
+  color: var(--faint);
+  font-size: 10px;
+  user-select: none;
+  position: relative;
+  cursor: pointer;
+}
+.data-table th.col-head { border-bottom: 1px solid var(--line-strong); }
+.data-table td.row-head { border-right: 1px solid var(--line-strong); }
+.data-table .head-corner {
+  width: 18px;
+  min-width: 18px;
+  border-right: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--bg);
+  padding: 0;
+}
+.data-table td.row-head.head-active, .data-table th.col-head.head-active {
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 700;
+}
+.data-table td.row-head:hover, .data-table th.col-head:hover { background: var(--primary-soft); }
+
+/* —— 右侧样式面板（声明式字段，与属性面板同构：prop-group/prop-field/prop-cell） —— */
+.style-panel {
+  width: 244px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  overflow-y: auto;
+  max-height: min(52vh, 480px); /* 与网格等高：内容（hint/字段）变化不驱动对话框跳动 */
+}
+.style-panel .prop-group:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+.style-panel .prop-hint { margin: 10px; }
+
+.series-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.series-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px 90px 30px;
+  gap: 6px;
+  align-items: center;
+}
+.series-item input { padding: var(--space-1) 6px; font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.series-item input[type="color"] { width: 40px; height: 26px; padding: 1px; }
+.series-item select { padding: var(--space-1); font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--faint); }
+::-webkit-scrollbar-track { background: transparent; }

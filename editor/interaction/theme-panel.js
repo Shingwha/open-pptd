@@ -13,6 +13,7 @@
 import { THEME_PALETTES } from "../../packages/model/theme.js";
 import { resolveColor } from "../../packages/model/theme.js";
 import { showToast } from "../app/toast.js";
+import { attachPopover } from "../popover.js";
 
 /** 语义色中文名（17 键全集；accent1/2 = primary/accent，不单独列）。 */
 const KEY_LABELS = {
@@ -48,6 +49,7 @@ const HEX_RE = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
 export function bindThemePanel({ state, api, io, anchor }) {
   let panel = null;
+  let popover = null;
 
   const isOpen = () => panel?.classList.contains("open");
 
@@ -209,18 +211,19 @@ export function bindThemePanel({ state, api, io, anchor }) {
   }
 
   // --------------------------------------------------------------------------
-  // 开关
+  // 开关（定位/外点关闭/resize 重定位走 popover.js 通用件）
   // --------------------------------------------------------------------------
   function toggle() {
     if (isOpen()) {
       close();
       return;
     }
-    if (!panel) build();
-    const r = anchor.getBoundingClientRect();
-    panel.style.top = `${r.bottom + 8}px`;
-    panel.style.right = `${Math.max(8, Math.min(window.innerWidth - r.right, 24))}px`;
+    if (!panel) {
+      build();
+      popover = attachPopover(anchor, panel, { align: "right", isOpen, close });
+    }
     panel.classList.add("open");
+    popover.position(); // 先显示再定位（右缘对齐锚点，收进视口 24px 内）
     refreshPresetHighlight();
   }
 
@@ -231,16 +234,5 @@ export function bindThemePanel({ state, api, io, anchor }) {
   anchor.addEventListener("click", (e) => {
     e.stopPropagation();
     toggle();
-  });
-  document.addEventListener("click", (e) => {
-    if (!isOpen()) return;
-    if (panel.contains(e.target) || e.target === anchor) return;
-    close();
-  });
-  window.addEventListener("resize", () => {
-    if (!isOpen()) return;
-    const r = anchor.getBoundingClientRect();
-    panel.style.top = `${r.bottom + 8}px`;
-    panel.style.right = `${Math.max(8, Math.min(window.innerWidth - r.right, 24))}px`;
   });
 }

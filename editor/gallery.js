@@ -20,6 +20,9 @@ import { addRecent, setPendingProject } from "./app/project/handle-store.js";
 import { createFileMenu } from "./app/file-menu.js";
 import { showToast } from "./app/toast.js";
 import { loadFontRegistry, findFont, fetchFontBytes } from "../packages/model/font-registry.js";
+import { injectIcons } from "./icons.js";
+
+injectIcons(); // 顶栏图标占位（data-icon）注入实际 SVG（图标单一来源 icons.js）
 
 const PAGE_W = 960;
 const PAGE_H = 540;

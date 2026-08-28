@@ -3,11 +3,12 @@
 // ----------------------------------------------------------------------------
 // 桌面软件统一心智：文件操作入口 = 文件菜单。画廊（开始页角色）放
 // 打开编辑器/打开/最近；编辑器另加新建/保存/导出——同一外壳，内容按上下文渲染。
-// 外壳负责：浮层开合（锚点下方左对齐、外点关闭、resize 重定位）、
+// 外壳负责：浮层开合（定位/外点关闭/resize 重定位统一走 popover.js）、
 // 条目构建器（item/sep/label）与「最近打开」区段（IndexedDB 句柄列表）。
 // ============================================================================
 
 import { listRecent } from "./project/handle-store.js";
+import { attachPopover } from "../popover.js";
 
 /**
  * 绑定一个「文件」下拉菜单。
@@ -17,6 +18,7 @@ import { listRecent } from "./project/handle-store.js";
  */
 export function createFileMenu(anchor, renderBody) {
   let menu = null;
+  let popover = null;
   const isOpen = () => menu?.classList.contains("open");
 
   function item(text, { hint = "", onClick }) {
@@ -72,25 +74,18 @@ export function createFileMenu(anchor, renderBody) {
     return new Date(ts).toLocaleDateString();
   }
 
-  function position() {
-    const r = anchor.getBoundingClientRect();
-    menu.style.top = `${r.bottom + 8}px`;
-    // 左对齐锚点（标准下拉位）；窄屏右缘不溢出时收进来
-    const left = Math.max(8, Math.min(r.left, window.innerWidth - menu.offsetWidth - 8));
-    menu.style.left = `${left}px`;
-    menu.style.right = "auto";
-  }
-
   async function open() {
     if (!menu) {
       menu = document.createElement("div");
       menu.className = "file-menu";
       document.body.appendChild(menu);
+      // 浮层外壳（锚点下方左对齐定位 / 外点与 Esc 关闭 / resize 重定位）
+      popover = attachPopover(anchor, menu, { align: "left", isOpen, close });
     }
     menu.innerHTML = "";
     await renderBody({ menu, item, sep, label, appendRecents });
     menu.classList.add("open");
-    position(); // 先显示再定位：offsetWidth 需要可见才有值
+    popover.position(); // 先显示再定位：offsetWidth 需要可见才有值
   }
 
   function close() {
@@ -100,13 +95,5 @@ export function createFileMenu(anchor, renderBody) {
   anchor.addEventListener("click", (e) => {
     e.stopPropagation();
     isOpen() ? close() : open();
-  });
-  document.addEventListener("click", (e) => {
-    if (!isOpen()) return;
-    if (menu.contains(e.target) || e.target === anchor) return;
-    close();
-  });
-  window.addEventListener("resize", () => {
-    if (isOpen()) position();
   });
 }

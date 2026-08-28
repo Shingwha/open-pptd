@@ -1,0 +1,47 @@
+/* ==== fab — 右下角操作组（属性面板入口 / 添加元素） ==== */
+
+/* ----------------------------------------------------------------------------
+   右下角操作组（双端统一）：属性面板入口 / 添加元素
+   ---------------------------------------------------------------------------- */
+.fab-stack {
+  position: absolute;
+  right: 22px;
+  bottom: 22px;
+  z-index: var(--z-dropdown);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 属性 / 添加：圆形、纯图标（双端同一样式） */
+.fab {
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--primary-tint);
+  border-radius: 50%;
+  background: var(--primary-soft); /* 浅蓝底 */
+  color: var(--primary-strong); /* 深蓝图标 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: background var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease),
+              box-shadow var(--dur-fast) var(--ease);
+}
+.fab-ic { width: 20px; height: 20px; }
+.fab:hover { background: var(--primary-soft); border-color: var(--primary); }
+/* 按下时阴影收浅，模拟压下反馈（不动底色，避免与 .active 持久态混淆） */
+.fab:active { box-shadow: var(--shadow-sm); }
+.fab:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+/* 激活态（高亮 = 状态打开）：实心深蓝 + 白图标，与浅蓝闲置态对比鲜明 */
+.fab.active,
+body.inspector-open #btn-inspector-open,
+body:not(.inspector-collapsed) #btn-inspector-open {
+  background: var(--primary-strong);
+  border-color: var(--primary-strong);
+  color: #fff;
+}

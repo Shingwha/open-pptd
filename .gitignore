@@ -3,6 +3,8 @@ dist/
 *.log
 .DS_Store
 tests/projects/*/out/
+# 界面截图走查产物（tests/tools/ui-shots.mjs 重新生成）
+tests/ui-shots-out/
 # 字体嵌入测试项目的导出产物（open-pptd export 一键重建）
 tests/projects/font-embed/deck.pptx
 # 公式测试的 KaTeX 中间产物（npm run test:fixtures 重新生成）
