@@ -7,7 +7,7 @@
 //   fonts check <deck.pptd> 体检 deck 字体声明（嵌入/仅声明/缺失）
 // ============================================================================
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import * as yaml from "../model/vendor/js-yaml.mjs";
 import { parseFontResources } from "../model/font.js";
@@ -82,10 +82,14 @@ async function fontsDownload(name) {
     const out = join(FONT_LIB_DIR, f.file);
     if (existsSync(out)) {
       const magic = readFileSync(out).subarray(0, 4);
-      if (magic.toString("latin1") === "OTTO" || magic.equals(Buffer.from([0, 1, 0, 0]))) {
+      const validMagic = magic.toString("latin1") === "OTTO" || magic.equals(Buffer.from([0, 1, 0, 0]));
+      // 尺寸与注册表不一致 = 上游字节已更换（如修复坏字体），视为过期重新下载
+      const stale = typeof f.size === "number" && statSync(out).size !== f.size;
+      if (validMagic && !stale) {
         console.log(`  = ${f.key} 已存在（${f.file}），跳过`);
         return true;
       }
+      if (validMagic && stale) console.log(`  ↻ ${f.key} 本地文件与注册表尺寸不符，重新下载`);
     }
     // 回退链：主源 url（GitHub raw）→ mirrors 镜像（jsDelivr 等），逐个尝试直到成功
     const sources = [f.url, ...(f.mirrors || [])].filter(Boolean);

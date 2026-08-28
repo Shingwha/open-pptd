@@ -72,8 +72,10 @@ export function fontFileUrl(file) {
 //   - 线上 Pages：仓库未上传字体文件 → raw.githubusercontent / jsDelivr 拉取
 //     （两者均允许 CORS；FontFace 用字节注册，不受跨域限制）
 //   - 拉到的字节进 Cache API 跨会话缓存，重复访问不再网络请求
+//   - 缓存键带注册表 size 作指纹：上游字节更换（如 v1.3.3 黄油体换源）
+//     后旧缓存自动失效，避免坏字节被永久缓存（v1 缓存即因此废弃）
 // ----------------------------------------------------------------------------
-const FONT_CACHE_NAME = "open-pptd-fonts-v1";
+const FONT_CACHE_NAME = "open-pptd-fonts-v2";
 
 async function readCachedFont(key) {
   try {
@@ -101,12 +103,14 @@ async function writeFontCache(key, bytes) {
  */
 export async function fetchFontBytes(hit) {
   if (!hit?.file) return null;
-  // 缓存键 = 仓库根绝对 URL：画廊（/）与编辑器（/editor/）共享同一份缓存
-  const cacheKey = fontFileUrl(hit.file);
+  // 缓存键 = 仓库根绝对 URL + size 指纹：画廊（/）与编辑器（/editor/）共享同一份缓存；
+  // 本地拉取仍用纯文件 URL（?v= 只作缓存键，不进请求）
+  const fileUrl = fontFileUrl(hit.file);
+  const cacheKey = `${fileUrl}?v=${typeof hit.size === "number" ? hit.size : hit.file}`;
   const cached = await readCachedFont(cacheKey);
   if (cached) return cached;
   try {
-    const res = await fetch(cacheKey);
+    const res = await fetch(fileUrl);
     if (res.ok) {
       const bytes = new Uint8Array(await res.arrayBuffer());
       writeFontCache(cacheKey, bytes);
