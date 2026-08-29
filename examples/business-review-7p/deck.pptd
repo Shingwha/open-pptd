@@ -6,30 +6,30 @@ fonts:
   霞鹜新晰黑: { family: "LXGW Neo XiHei" }
 theme:
   colors:
-    deep: "#0B2921"        # 深潭墨绿：封面/收尾深底、强调块
-    paper: "#F5F0E3"       # 纸米：内容页底
-    ink: "#1C2B25"         # 墨色：正文
-    gold: "#C9A45C"        # 鎏金：高亮、里程桩、关键数字
-    aqua: "#6FA797"        # 水青：次级数据
-    rust: "#B5533A"        # 暗红：问题/缺口警示
+    primaryDeep: "#0B2921"        # 深潭墨绿：封面/收尾深底、强调块
+    bg: "#FCFCFA"       # 纸米：内容页底
+    text: "#1C2B25"         # 墨色：正文
+    primary: "#C9A45C"        # 鎏金：高亮、里程桩、关键数字
+    accent: "#6FA797"        # 水青：次级数据
+    accent3: "#B5533A"        # 暗红：问题/缺口警示
     muted: "#6E7D72"       # 纸米底上的次级文字
     line: "#DCD4BE"        # 纸米底上的细分隔线
-    paperSoft: "#EDE6D2"   # 表格隔行
-    foam: "#A9C3B4"        # 深潭底上的次级文字
+    primarySoft: "#F7F6F1"   # 表格隔行
+    primaryTint: "#A9C3B4"        # 深潭底上的次级文字
   textStyles:
-    eyebrow: { fontFamily: "LXGW Neo XiHei", fontSize: 11, color: "$gold", bold: true, letterSpacing: 3, lineHeight: 1.3 }
-    title: { fontFamily: "Source Han Serif CN", fontSize: 28, color: "$ink", bold: true, lineHeight: 1.25 }
+    eyebrow: { fontFamily: "LXGW Neo XiHei", fontSize: 11, color: "$primary", bold: true, letterSpacing: 3, lineHeight: 1.3 }
+    title: { fontFamily: "Source Han Serif CN", fontSize: 28, color: "$text", bold: true, lineHeight: 1.25 }
     subtitle: { fontFamily: "LXGW Neo XiHei", fontSize: 13, color: "$muted", lineHeight: 1.55 }
-    body: { fontFamily: "LXGW Neo XiHei", fontSize: 13, color: "$ink", lineHeight: 1.6 }
+    body: { fontFamily: "LXGW Neo XiHei", fontSize: 13, color: "$text", lineHeight: 1.6 }
     small: { fontFamily: "LXGW Neo XiHei", fontSize: 10.5, color: "$muted", lineHeight: 1.5 }
-    reading: { fontFamily: "Source Han Serif CN", fontSize: 56, color: "$ink", bold: true, lineHeight: 1.05 }
+    reading: { fontFamily: "Source Han Serif CN", fontSize: 56, color: "$text", bold: true, lineHeight: 1.05 }
   tableStyles:
     default:
-      cellStyle: { fontFamily: "LXGW Neo XiHei", fontSize: 11, color: "$ink", fill: { type: "solid", color: "$paper" }, border: [null, null, { style: "solid", width: 1, color: "$line" }, null], align: ["center", "middle"] }
-      firstRowStyle: { fill: { type: "solid", color: "$deep" }, color: "$paper", bold: true }
+      cellStyle: { fontFamily: "LXGW Neo XiHei", fontSize: 11, color: "$text", fill: { type: "solid", color: "$bg" }, border: [null, null, { style: "solid", width: 1, color: "$line" }, null], align: ["center", "middle"] }
+      firstRowStyle: { fill: { type: "solid", color: "$primaryDeep" }, color: "$bg", bold: true }
       bodyStyles:
-        - { fill: { type: "solid", color: "$paperSoft" } }
-        - { fill: { type: "solid", color: "$paper" } }
+        - { fill: { type: "solid", color: "$primarySoft" } }
+        - { fill: { type: "solid", color: "$bg" } }
       rowOverColumn: true
 pages:
   - pages/1_cover.page

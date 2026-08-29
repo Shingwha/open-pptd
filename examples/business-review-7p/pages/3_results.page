@@ -1,7 +1,7 @@
 pageType: content
 background:
   type: solid
-  color: "$paper"
+  color: "$bg"
 notes: |
   讲解建议：左边三个读数是全年水量总结——年径流量（收入）4.82 亿、入海余量（净利润）0.61 亿、水位（现金流）0.32 亿由负转正；右边瀑布图解释净利润如何从源头毛利一路汇到入海口。单位亿元，演示占位数据。
 elements:
@@ -29,11 +29,11 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 30
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="color:$gold;">K2</span>　流量实测</p>
+        <p><span style="color:$primary;">K2</span>　流量实测</p>
 
   - elementId: conclusion
     elementType: text
@@ -58,7 +58,7 @@ elements:
       fontSize: 10
       bold: true
       letterSpacing: 2
-      color: "$gold"
+      color: "$primary"
       align: [left, middle]
       text: 年径流量 · 营业收入
   - elementId: m1-value
@@ -78,7 +78,7 @@ elements:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 11.5
       bold: true
-      color: "$aqua"
+      color: "$accent"
       align: [left, middle]
       text: 同比 +14.2%
 
@@ -96,7 +96,7 @@ elements:
       fontSize: 10
       bold: true
       letterSpacing: 2
-      color: "$gold"
+      color: "$primary"
       align: [left, middle]
       text: 入海余量 · 净利润
   - elementId: m2-value
@@ -116,7 +116,7 @@ elements:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 11.5
       bold: true
-      color: "$aqua"
+      color: "$accent"
       align: [left, middle]
       text: 同比 +38.6%
 
@@ -134,7 +134,7 @@ elements:
       fontSize: 10
       bold: true
       letterSpacing: 2
-      color: "$gold"
+      color: "$primary"
       align: [left, middle]
       text: 水位 · 经营性现金流
   - elementId: m3-value
@@ -143,7 +143,7 @@ elements:
     content:
       style: "$reading"
       fontSize: 34
-      color: "$deep"
+      color: "$primaryDeep"
       align: [left, middle]
       wrap: false
       text: |
@@ -155,7 +155,7 @@ elements:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 11.5
       bold: true
-      color: "$aqua"
+      color: "$accent"
       align: [left, middle]
       text: 由负转正 · 三年来首次
 
@@ -167,14 +167,14 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 15
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       text: 水量账：从源头毛利到入海净利（亿元）
 
   - elementId: profit-bridge
     elementType: chart
     bounds: [350, 196, 550, 296]
-    fill: { type: solid, color: "$paper" }
+    fill: { type: solid, color: "$bg" }
     data:
       cols: [项目, 金额, 是否合计]
       rows:
@@ -199,10 +199,10 @@ elements:
     series:
       - type: waterfall
         encode: { x: 项目, y: 金额, isTotal: 是否合计 }
-        totalBars: { fill: "$deep" }
-        increaseBars: { fill: "$aqua" }
-        decreaseBars: { fill: "$rust" }
-        dataLabels: { show: true, numberFormat: "0.00", color: "$ink", fontSize: 10 }
+        totalBars: { fill: "$primaryDeep" }
+        increaseBars: { fill: "$accent" }
+        decreaseBars: { fill: "$accent3" }
+        dataLabels: { show: true, numberFormat: "0.00", color: "$text", fontSize: 10 }
 
   # —— 河流里程线 K0–K7 ——
   - elementId: river-base
@@ -322,7 +322,7 @@ elements:
     elementType: shape
     bounds: [290, 496, 10, 10]
     shapeName: diamond
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
 
   - elementId: river-station
     elementType: text
@@ -331,6 +331,6 @@ elements:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
       bold: true
-      color: "$gold"
+      color: "$primary"
       align: [center, top]
       text: K2 · 流量实测

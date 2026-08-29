@@ -1,7 +1,7 @@
 pageType: content
 background:
   type: solid
-  color: "$paper"
+  color: "$bg"
 notes: |
   讲解建议：左图是流域图——干流（SaaS 订阅）承载 58% 的水量且仍在涨水（+9pct），两条支流主动收窄；右下分河段水位表把华东续约率 78% 的问题点透，为下一站险滩勘测做铺垫。
 elements:
@@ -29,11 +29,11 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 30
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="color:$gold;">K3</span>　干流与支流</p>
+        <p><span style="color:$primary;">K3</span>　干流与支流</p>
 
   - elementId: conclusion
     elementType: text
@@ -57,14 +57,14 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 15
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       text: 流域图：水量构成（收入占比）
 
   - elementId: revenue-mix
     elementType: chart
     bounds: [60, 194, 400, 280]
-    fill: { type: solid, color: "$paper" }
+    fill: { type: solid, color: "$bg" }
     data:
       cols: [收入类型, 占比]
       rows:
@@ -75,15 +75,15 @@ elements:
       show: true
       position: bottom
       fontSize: 11
-      color: "$ink"
+      color: "$text"
     fontFamily: "LXGW Neo XiHei"
     series:
       - type: pie
         encode: { category: 收入类型, value: 占比 }
         innerRadius: 0.62
-        fill: ["$deep", "$aqua", "$gold"]
-        border: { style: solid, width: 2, color: "$paper" }
-        dataLabels: { show: true, content: percentage, numberFormat: "0%", color: "$ink", fontSize: 12 }
+        fill: ["$primaryDeep", "$accent", "$primary"]
+        border: { style: solid, width: 2, color: "$bg" }
+        dataLabels: { show: true, content: percentage, numberFormat: "0%", color: "$text", fontSize: 12 }
 
   # —— 右：同比水位变化 + 分河段水位表 ——
   - elementId: right-heading
@@ -93,7 +93,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 15
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       text: 水文观测：同比水位变化
 
@@ -103,13 +103,13 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 12
-      color: "$ink"
+      color: "$text"
       lineHeight: 1.9
       align: [left, top]
       text: |
-        <p><span style="font-size:20px; color:$deep; font-family:Source Han Serif CN;">58%</span>　干流 · SaaS 订阅　<span style="color:$aqua;">+9pct</span></p>
-        <p><span style="font-size:20px; color:$aqua; font-family:Source Han Serif CN;">27%</span>　支流 · 项目交付　<span style="color:$muted;">-4pct</span></p>
-        <p><span style="font-size:20px; color:$gold; font-family:Source Han Serif CN;">15%</span>　支流 · 专业服务　<span style="color:$muted;">-5pct</span></p>
+        <p><span style="font-size:20px; color:$primaryDeep; font-family:Source Han Serif CN;">58%</span>　干流 · SaaS 订阅　<span style="color:$accent;">+9pct</span></p>
+        <p><span style="font-size:20px; color:$accent; font-family:Source Han Serif CN;">27%</span>　支流 · 项目交付　<span style="color:$muted;">-4pct</span></p>
+        <p><span style="font-size:20px; color:$primary; font-family:Source Han Serif CN;">15%</span>　支流 · 专业服务　<span style="color:$muted;">-5pct</span></p>
 
   - elementId: table-heading
     elementType: text
@@ -118,7 +118,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 15
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       text: 分河段水位：区域续约率实测
 
@@ -134,19 +134,19 @@ elements:
         - text: 警戒线
       - - text: 华东
         - text: 78%
-          color: "$rust"
+          color: "$accent3"
           bold: true
         - text: 85%
           color: "$muted"
       - - text: 华南
         - text: 86%
-          color: "$deep"
+          color: "$primaryDeep"
           bold: true
         - text: 85%
           color: "$muted"
       - - text: 华北
         - text: 91%
-          color: "$deep"
+          color: "$primaryDeep"
           bold: true
         - text: 85%
           color: "$muted"
@@ -269,7 +269,7 @@ elements:
     elementType: shape
     bounds: [413, 496, 10, 10]
     shapeName: diamond
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
 
   - elementId: river-station
     elementType: text
@@ -278,6 +278,6 @@ elements:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
       bold: true
-      color: "$gold"
+      color: "$primary"
       align: [center, top]
       text: K3 · 干流与支流

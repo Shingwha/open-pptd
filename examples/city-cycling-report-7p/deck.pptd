@@ -7,17 +7,17 @@ fonts:
   霞鹜铭心宋: { family: "LXGW Heart Serif MN" }
 theme:
   colors:
-    paper: "#FAF6EE"
-    ink: "#1D1A14"
-    navy: "#16324F"
-    orange: "#E8702A"
-    mist: "#9DB8C7"
+    bg: "#FDFCFA"
+    text: "#1D1A14"
+    primary: "#16324F"
+    accent: "#E8702A"
+    accent3: "#9DB8C7"
     muted: "#7A7161"
     line: "#DDD4C2"
     gridline: "#EAE3D3"
-    cream: "#F5EEDF"
-    navyRule: "#2A4A6B"
-    navySoft: "#C9D6DF"
+    primaryTint: "#F8F7F2"
+    primaryDeep: "#2A4A6B"
+    primarySoft: "#C9D6DF"
   textStyles:
     masthead:
       fontFamily: "LXGW Heart Serif MN"
@@ -27,29 +27,29 @@ theme:
     kicker:
       fontFamily: "LXGW Heart Serif MN"
       fontSize: 12
-      color: "$orange"
+      color: "$accent"
       letterSpacing: 3
       bold: true
     title:
       fontFamily: "Alimama ShuHeiTi"
       fontSize: 28
-      color: "$ink"
+      color: "$text"
       lineHeight: 1.25
     bignum:
       fontFamily: "Alimama ShuHeiTi"
       fontSize: 44
-      color: "$navy"
+      color: "$primary"
       lineHeight: 1.05
     h3:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 14
-      color: "$ink"
+      color: "$text"
       bold: true
       lineHeight: 1.4
     body:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 12
-      color: "$ink"
+      color: "$text"
       lineHeight: 1.6
     small:
       fontFamily: "LXGW Neo XiHei"
@@ -66,12 +66,12 @@ theme:
       cellStyle:
         fontFamily: "LXGW Neo XiHei"
         fontSize: 11.5
-        color: "$ink"
-        fill: { type: solid, color: "$paper" }
+        color: "$text"
+        fill: { type: solid, color: "$bg" }
         border: [null, null, { style: solid, width: 0.75, color: "$line" }, null]
         align: [center, middle]
       firstRowStyle:
-        fill: { type: solid, color: "$navy" }
+        fill: { type: solid, color: "$primary" }
         color: "#FAF6EE"
         bold: true
         fontSize: 11.5

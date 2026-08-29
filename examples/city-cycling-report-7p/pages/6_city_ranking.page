@@ -1,7 +1,7 @@
 pageType: content
 background:
   type: solid
-  color: "$paper"
+  color: "$bg"
 notes: |
   城市骑行指数榜单页。TOP8 表格为主角，第一名杭州整行橙色高亮。解读两个要点：一是头部差距收窄（92.4 vs 74.8，首尾相差 17.6 分）；二是同比最高的是成都 +15.1%，新一线城市增速整体快于一线城市。骑行指数 = 订单密度、车均利用率、骑行友好设施加权合成（满分 100），虚构口径。
 elements:
@@ -25,7 +25,7 @@ elements:
     elementType: shape
     bounds: [60, 48, 840, 1]
     shapeName: rect
-    fill: { type: solid, color: "$ink" }
+    fill: { type: solid, color: "$text" }
 
   - elementId: ch-num
     elementType: text
@@ -33,7 +33,7 @@ elements:
     content:
       fontFamily: "Alimama ShuHeiTi"
       fontSize: 44
-      color: "$orange"
+      color: "$accent"
       align: [left, middle]
       wrap: false
       text: "05"
@@ -72,7 +72,7 @@ elements:
       - - text: "1"
           fill: { type: solid, color: "#FBE9DA" }
           bold: true
-          color: "$orange"
+          color: "$accent"
         - text: "杭州"
           fill: { type: solid, color: "#FBE9DA" }
           bold: true
@@ -85,7 +85,7 @@ elements:
           fill: { type: solid, color: "#FBE9DA" }
         - text: "+12.4%"
           fill: { type: solid, color: "#FBE9DA" }
-          color: "$orange"
+          color: "$accent"
           bold: true
       - - text: "2"
         - text: "成都"
@@ -94,7 +94,7 @@ elements:
         - text: "52"
         - text: "75%"
         - text: "+15.1%"
-          color: "$orange"
+          color: "$accent"
       - - text: "3"
         - text: "深圳"
           bold: true
@@ -161,8 +161,8 @@ elements:
       fontSize: 11.5
       align: [left, top]
       text: |
-        <p>头部差距正在收窄：榜首与第八名相差 <span style="color:$orange;"><strong>17.6 分</strong></span>，较去年缩小 4.2 分。</p>
-        <p style="margin-top:8px">同比增速最高的是成都（<span style="color:$orange;"><strong>+15.1%</strong></span>），新一线城市整体快于一线。</p>
+        <p>头部差距正在收窄：榜首与第八名相差 <span style="color:$accent;"><strong>17.6 分</strong></span>，较去年缩小 4.2 分。</p>
+        <p style="margin-top:8px">同比增速最高的是成都（<span style="color:$accent;"><strong>+15.1%</strong></span>），新一线城市整体快于一线。</p>
 
   - elementId: panel-rule
     elementType: shape

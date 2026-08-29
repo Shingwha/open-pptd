@@ -1,7 +1,7 @@
 pageType: content
 background:
   type: solid
-  color: "$paper"
+  color: "$bg"
 notes: |
   人群画像页。三块内容：年龄分布条形图（25-40 岁合计 60%，是基本盘）、骑行场景环形图（通勤通学 58%）、右侧三个特征数字（高频用户 31%、女性 47%、单次 11.6 分钟）。底部数据注记给了一个反差视角：增长最快的反而是 50 岁以上人群。年龄五段占比 22+34+26+12+6 = 100，场景四块 58+24+12+6 = 100，均自洽。
 elements:
@@ -25,7 +25,7 @@ elements:
     elementType: shape
     bounds: [60, 48, 840, 1]
     shapeName: rect
-    fill: { type: solid, color: "$ink" }
+    fill: { type: solid, color: "$text" }
 
   - elementId: ch-num
     elementType: text
@@ -33,7 +33,7 @@ elements:
     content:
       fontFamily: "Alimama ShuHeiTi"
       fontSize: 44
-      color: "$orange"
+      color: "$accent"
       align: [left, middle]
       wrap: false
       text: "03"
@@ -86,15 +86,15 @@ elements:
       label: { fontSize: 10.5, color: "$muted" }
       gridLine: { color: "$gridline", width: 0.75 }
     yAxis:
-      label: { fontSize: 10.5, color: "$ink" }
-      axisLine: { color: "$ink", width: 1 }
+      label: { fontSize: 10.5, color: "$text" }
+      axisLine: { color: "$text", width: 1 }
       gridLine: false
     series:
       - type: bar
         encode: { x: share, y: age }
         name: 占比
-        fill: "$navy"
-        dataLabels: { show: true, fontSize: 10.5, color: "$ink" }
+        fill: "$primary"
+        dataLabels: { show: true, fontSize: 10.5, color: "$text" }
 
   - elementId: chart2-caption
     elementType: text
@@ -122,7 +122,7 @@ elements:
       - type: pie
         encode: { category: scene, value: share }
         innerRadius: 0.58
-        fill: ["$navy", "$orange", "$mist", "#D8CFBC"]
+        fill: ["$primary", "$accent", "$accent3", "#D8CFBC"]
 
   - elementId: stat-sep
     elementType: shape
@@ -137,7 +137,7 @@ elements:
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="font-size:30px; font-family:Alimama ShuHeiTi; color:$orange;">31%</span></p>
+        <p><span style="font-size:30px; font-family:Alimama ShuHeiTi; color:$accent;">31%</span></p>
 
   - elementId: fstat1-label
     elementType: text
@@ -160,7 +160,7 @@ elements:
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="font-size:30px; font-family:Alimama ShuHeiTi; color:$navy;">47%</span></p>
+        <p><span style="font-size:30px; font-family:Alimama ShuHeiTi; color:$primary;">47%</span></p>
 
   - elementId: fstat2-label
     elementType: text
@@ -183,7 +183,7 @@ elements:
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="font-size:30px; font-family:Alimama ShuHeiTi; color:$navy;">11.6</span><span style="font-size:14px; font-family:LXGW Neo XiHei; color:$ink;"> 分钟</span></p>
+        <p><span style="font-size:30px; font-family:Alimama ShuHeiTi; color:$primary;">11.6</span><span style="font-size:14px; font-family:LXGW Neo XiHei; color:$text;"> 分钟</span></p>
 
   - elementId: fstat3-label
     elementType: text

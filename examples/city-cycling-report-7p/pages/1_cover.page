@@ -1,7 +1,7 @@
 pageType: cover
 background:
   type: solid
-  color: "$paper"
+  color: "$bg"
 notes: |
   开场：这是一本"数据杂志"的封面。强调刊号（VOL.2025 · ANNUAL ISSUE）与编辑部口吻——本年报到此为止的所有数字均为虚构演示，但结构自洽，可作为数据报告模板替换真实口径。
 elements:
@@ -10,7 +10,7 @@ elements:
     bounds: [60, 30, 500, 20]
     content:
       style: "$masthead"
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       text: 两轮城市研究院 · URBAN CYCLING ANNUAL
 
@@ -19,7 +19,7 @@ elements:
     bounds: [560, 30, 340, 20]
     content:
       style: "$masthead"
-      color: "$ink"
+      color: "$text"
       align: [right, middle]
       text: VOL.2025 · ANNUAL ISSUE
 
@@ -27,26 +27,26 @@ elements:
     elementType: shape
     bounds: [60, 58, 840, 2]
     shapeName: rect
-    fill: { type: solid, color: "$ink" }
+    fill: { type: solid, color: "$text" }
 
   - elementId: wheel-ring-outer
     elementType: shape
     bounds: [648, 126, 264, 264]
     shapeName: ellipse
-    border: { style: solid, width: 1, color: "$mist" }
+    border: { style: solid, width: 1, color: "$accent3" }
 
   - elementId: wheel-ring-main
     elementType: shape
     bounds: [664, 142, 232, 232]
     shapeName: ellipse
-    border: { style: solid, width: 2, color: "$ink" }
+    border: { style: solid, width: 2, color: "$text" }
 
   - elementId: wheel-arc
     elementType: shape
     bounds: [664, 142, 232, 232]
     shapeName: blockArc
     adjustments: [10800000, 0, 9000]
-    fill: { type: solid, color: "$orange" }
+    fill: { type: solid, color: "$accent" }
 
   - elementId: wheel-spoke-v
     elementType: line
@@ -84,7 +84,7 @@ elements:
     elementType: shape
     bounds: [768, 246, 24, 24]
     shapeName: ellipse
-    fill: { type: solid, color: "$orange" }
+    fill: { type: solid, color: "$accent" }
 
   - elementId: cover-kicker
     elementType: text
@@ -101,7 +101,7 @@ elements:
     content:
       fontFamily: "Alimama ShuHeiTi"
       fontSize: 60
-      color: "$ink"
+      color: "$text"
       letterSpacing: 2
       align: [left, middle]
       wrap: false
@@ -113,7 +113,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 20
-      color: "$navy"
+      color: "$primary"
       letterSpacing: 4
       align: [left, middle]
       wrap: false
@@ -123,7 +123,7 @@ elements:
     elementType: shape
     bounds: [60, 316, 40, 3]
     shapeName: rect
-    fill: { type: solid, color: "$orange" }
+    fill: { type: solid, color: "$accent" }
 
   - elementId: cover-editor-note
     elementType: text

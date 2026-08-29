@@ -1,7 +1,7 @@
 pageType: content
 background:
   type: solid
-  color: "$cream"
+  color: "$primaryTint"
 notes: 概念页（吸引）：年度主题「涨潮时刻」——天文大潮叠加音乐现场，把"峰值时刻"作为招商卖点；随后带出三大舞台定位。
 elements:
   # ---- 页眉 ----
@@ -9,7 +9,7 @@ elements:
     elementType: shape
     bounds: [64, 41, 10, 10]
     shapeName: rect
-    fill: { type: solid, color: "$coral" }
+    fill: { type: solid, color: "$primary" }
   - elementId: header-kicker
     elementType: text
     bounds: [84, 36, 420, 20]
@@ -37,7 +37,7 @@ elements:
     content:
       fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 48
-      color: "$night"
+      color: "$primaryDeep"
       letterSpacing: 6
       wrap: false
       align: [left, middle]
@@ -48,7 +48,7 @@ elements:
     content:
       fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 18
-      color: "$coralDeep"
+      color: "$accent"
       letterSpacing: 6
       wrap: false
       text: RISING TIDE
@@ -67,18 +67,18 @@ elements:
     bounds: [806, 92, 72, 72]
     shapeName: pie
     adjustments: [10800000, 21600000]
-    fill: { type: solid, color: "$peach" }
+    fill: { type: solid, color: "$primarySoft" }
   - elementId: mini-sun-bottom
     elementType: shape
     bounds: [806, 92, 72, 72]
     shapeName: pie
     adjustments: [0, 10800000]
-    fill: { type: solid, color: "$coral" }
+    fill: { type: solid, color: "$primary" }
   - elementId: mini-wave
     elementType: shape
     bounds: [742, 152, 174, 32]
     shapeName: wave
-    fill: { type: solid, color: "$nightDeep" }
+    fill: { type: solid, color: "$bg" }
     opacity: 0.9
 
   # ---- 三大舞台卡片 ----
@@ -86,7 +86,7 @@ elements:
     elementType: shape
     bounds: [64, 320, 264, 4]
     shapeName: rect
-    fill: { type: solid, color: "$coral" }
+    fill: { type: solid, color: "$primary" }
   - elementId: c1-bg
     elementType: shape
     bounds: [64, 324, 264, 176]
@@ -99,7 +99,7 @@ elements:
     content:
       fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 22
-      color: "$coral"
+      color: "$primary"
       wrap: false
       text: "01"
   - elementId: c1-name
@@ -108,7 +108,7 @@ elements:
     content:
       fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 17
-      color: "$night"
+      color: "$primaryDeep"
       wrap: false
       text: 潮声主舞台
   - elementId: c1-en
@@ -134,14 +134,14 @@ elements:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
       bold: true
-      color: "$nightDeep"
+      color: "$bg"
       text: 每日 19:00 – 22:30
 
   - elementId: c2-bar
     elementType: shape
     bounds: [348, 320, 264, 4]
     shapeName: rect
-    fill: { type: solid, color: "$nightDeep" }
+    fill: { type: solid, color: "$bg" }
   - elementId: c2-bg
     elementType: shape
     bounds: [348, 324, 264, 176]
@@ -154,7 +154,7 @@ elements:
     content:
       fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 22
-      color: "$nightDeep"
+      color: "$bg"
       wrap: false
       text: "02"
   - elementId: c2-name
@@ -163,7 +163,7 @@ elements:
     content:
       fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 17
-      color: "$night"
+      color: "$primaryDeep"
       wrap: false
       text: 落日电子舞台
   - elementId: c2-en
@@ -189,14 +189,14 @@ elements:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
       bold: true
-      color: "$nightDeep"
+      color: "$bg"
       text: 每日 17:00 – 21:00
 
   - elementId: c3-bar
     elementType: shape
     bounds: [632, 320, 264, 4]
     shapeName: rect
-    fill: { type: solid, color: "$peach" }
+    fill: { type: solid, color: "$primarySoft" }
   - elementId: c3-bg
     elementType: shape
     bounds: [632, 324, 264, 176]
@@ -209,7 +209,7 @@ elements:
     content:
       fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 22
-      color: "$coralDeep"
+      color: "$accent"
       wrap: false
       text: "03"
   - elementId: c3-name
@@ -218,7 +218,7 @@ elements:
     content:
       fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 17
-      color: "$night"
+      color: "$primaryDeep"
       wrap: false
       text: 浪花新声舞台
   - elementId: c3-en
@@ -244,7 +244,7 @@ elements:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
       bold: true
-      color: "$nightDeep"
+      color: "$bg"
       text: 每日 15:00 – 19:00
 
   # ---- 页脚 ----

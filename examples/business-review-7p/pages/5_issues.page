@@ -1,7 +1,7 @@
 pageType: content
 background:
   type: solid
-  color: "$paper"
+  color: "$bg"
 notes: |
   讲解建议：不回避问题。三处险滩按“读数—成因—治理”讲：华东续约缺口（78% vs 警戒线 85%）、获客成本上涨（CAC 1.9 万，+32%）、项目制支流收窄（占比 -4pct）。强调均有明确根因与对策，按季度复测，Q2 末半年度复判。
 elements:
@@ -29,11 +29,11 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 30
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="color:$gold;">K4</span>　险滩勘测</p>
+        <p><span style="color:$primary;">K4</span>　险滩勘测</p>
 
   - elementId: conclusion
     elementType: text
@@ -57,8 +57,8 @@ elements:
       align: [left, top]
       lineHeight: 1.2
       text: |
-        <p><span style="font-size:10px; color:$rust; font-family:LXGW Neo XiHei; "><strong>险滩</strong></span></p>
-        <p><span style="font-size:40px; color:$rust; font-family:Source Han Serif CN;"><strong>壹</strong></span></p>
+        <p><span style="font-size:10px; color:$accent3; font-family:LXGW Neo XiHei; "><strong>险滩</strong></span></p>
+        <p><span style="font-size:40px; color:$accent3; font-family:Source Han Serif CN;"><strong>壹</strong></span></p>
 
   - elementId: i1-title
     elementType: text
@@ -67,7 +67,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 17
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       text: 华东河段续约缺口
 
@@ -78,7 +78,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 14
       bold: true
-      color: "$rust"
+      color: "$accent3"
       align: [right, middle]
       text: 78% vs 警戒线 85%
 
@@ -88,7 +88,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 11.5
-      color: "$ink"
+      color: "$text"
       lineHeight: 1.6
       align: [left, top]
       text: |
@@ -109,8 +109,8 @@ elements:
       align: [left, top]
       lineHeight: 1.2
       text: |
-        <p><span style="font-size:10px; color:$rust; font-family:LXGW Neo XiHei;"><strong>险滩</strong></span></p>
-        <p><span style="font-size:40px; color:$rust; font-family:Source Han Serif CN;"><strong>贰</strong></span></p>
+        <p><span style="font-size:10px; color:$accent3; font-family:LXGW Neo XiHei;"><strong>险滩</strong></span></p>
+        <p><span style="font-size:40px; color:$accent3; font-family:Source Han Serif CN;"><strong>贰</strong></span></p>
 
   - elementId: i2-title
     elementType: text
@@ -119,7 +119,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 17
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       text: 上游来水变贵：获客成本持续上涨
 
@@ -130,7 +130,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 14
       bold: true
-      color: "$rust"
+      color: "$accent3"
       align: [right, middle]
       text: CAC 1.9万 · +32%
 
@@ -140,7 +140,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 11.5
-      color: "$ink"
+      color: "$text"
       lineHeight: 1.6
       align: [left, top]
       text: |
@@ -161,8 +161,8 @@ elements:
       align: [left, top]
       lineHeight: 1.2
       text: |
-        <p><span style="font-size:10px; color:$rust; font-family:LXGW Neo XiHei;"><strong>险滩</strong></span></p>
-        <p><span style="font-size:40px; color:$rust; font-family:Source Han Serif CN;"><strong>叁</strong></span></p>
+        <p><span style="font-size:10px; color:$accent3; font-family:LXGW Neo XiHei;"><strong>险滩</strong></span></p>
+        <p><span style="font-size:40px; color:$accent3; font-family:Source Han Serif CN;"><strong>叁</strong></span></p>
 
   - elementId: i3-title
     elementType: text
@@ -171,7 +171,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 17
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       text: 项目制支流收窄，短期流量缺口
 
@@ -182,7 +182,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 14
       bold: true
-      color: "$rust"
+      color: "$accent3"
       align: [right, middle]
       text: 占比 27% · -4pct
 
@@ -192,7 +192,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 11.5
-      color: "$ink"
+      color: "$text"
       lineHeight: 1.6
       align: [left, top]
       text: |
@@ -317,7 +317,7 @@ elements:
     elementType: shape
     bounds: [537, 496, 10, 10]
     shapeName: diamond
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
 
   - elementId: river-station
     elementType: text
@@ -326,6 +326,6 @@ elements:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
       bold: true
-      color: "$gold"
+      color: "$primary"
       align: [center, top]
       text: K4 · 险滩勘测

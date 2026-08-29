@@ -1,7 +1,7 @@
 pageType: content
 background:
   type: solid
-  color: "$paper"
+  color: "$bg"
 notes: |
   年度总览页。四个巨号数字是全年报的锚点，讲述顺序建议：订单 → 里程 → 碳减排 → 用户。每个数字下方的"生活化换算"是这页的记忆点，可放慢语速。所有换算口径自洽：42亿公里 ÷ 4万公里 ≈ 10.5万圈；8.6亿单 ÷ 365天 ÷ 86400秒 ≈ 每秒27单；112万吨 ÷ 单树年固碳约18kg ≈ 6200万棵。
 elements:
@@ -25,7 +25,7 @@ elements:
     elementType: shape
     bounds: [60, 48, 840, 1]
     shapeName: rect
-    fill: { type: solid, color: "$ink" }
+    fill: { type: solid, color: "$text" }
 
   - elementId: ch-num
     elementType: text
@@ -33,7 +33,7 @@ elements:
     content:
       fontFamily: "Alimama ShuHeiTi"
       fontSize: 44
-      color: "$orange"
+      color: "$accent"
       align: [left, middle]
       wrap: false
       text: "01"
@@ -61,7 +61,7 @@ elements:
     bounds: [60, 190, 190, 18]
     content:
       style: "$kicker"
-      color: "$navy"
+      color: "$primary"
       fontSize: 11
       letterSpacing: 2
       align: [left, middle]
@@ -75,7 +75,7 @@ elements:
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="font-size:44px; font-family:Alimama ShuHeiTi; color:$navy;">8.6</span><span style="font-size:16px; font-family:LXGW Neo XiHei; color:$ink;"> 亿次</span></p>
+        <p><span style="font-size:44px; font-family:Alimama ShuHeiTi; color:$primary;">8.6</span><span style="font-size:16px; font-family:LXGW Neo XiHei; color:$text;"> 亿次</span></p>
 
   - elementId: stat1-note
     elementType: text
@@ -96,7 +96,7 @@ elements:
     bounds: [280, 190, 190, 18]
     content:
       style: "$kicker"
-      color: "$navy"
+      color: "$primary"
       fontSize: 11
       letterSpacing: 2
       align: [left, middle]
@@ -110,7 +110,7 @@ elements:
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="font-size:44px; font-family:Alimama ShuHeiTi; color:$navy;">42</span><span style="font-size:16px; font-family:LXGW Neo XiHei; color:$ink;"> 亿公里</span></p>
+        <p><span style="font-size:44px; font-family:Alimama ShuHeiTi; color:$primary;">42</span><span style="font-size:16px; font-family:LXGW Neo XiHei; color:$text;"> 亿公里</span></p>
 
   - elementId: stat2-note
     elementType: text
@@ -131,7 +131,7 @@ elements:
     bounds: [500, 190, 190, 18]
     content:
       style: "$kicker"
-      color: "$navy"
+      color: "$primary"
       fontSize: 11
       letterSpacing: 2
       align: [left, middle]
@@ -145,7 +145,7 @@ elements:
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="font-size:44px; font-family:Alimama ShuHeiTi; color:$orange;">112</span><span style="font-size:16px; font-family:LXGW Neo XiHei; color:$ink;"> 万吨</span></p>
+        <p><span style="font-size:44px; font-family:Alimama ShuHeiTi; color:$accent;">112</span><span style="font-size:16px; font-family:LXGW Neo XiHei; color:$text;"> 万吨</span></p>
 
   - elementId: stat3-note
     elementType: text
@@ -166,7 +166,7 @@ elements:
     bounds: [720, 190, 190, 18]
     content:
       style: "$kicker"
-      color: "$navy"
+      color: "$primary"
       fontSize: 11
       letterSpacing: 2
       align: [left, middle]
@@ -180,7 +180,7 @@ elements:
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="font-size:44px; font-family:Alimama ShuHeiTi; color:$navy;">1.9</span><span style="font-size:16px; font-family:LXGW Neo XiHei; color:$ink;"> 亿人</span></p>
+        <p><span style="font-size:44px; font-family:Alimama ShuHeiTi; color:$primary;">1.9</span><span style="font-size:16px; font-family:LXGW Neo XiHei; color:$text;"> 亿人</span></p>
 
   - elementId: stat4-note
     elementType: text
@@ -194,7 +194,7 @@ elements:
     elementType: shape
     bounds: [60, 396, 36, 2]
     shapeName: rect
-    fill: { type: solid, color: "$orange" }
+    fill: { type: solid, color: "$accent" }
 
   - elementId: editor-label
     elementType: text

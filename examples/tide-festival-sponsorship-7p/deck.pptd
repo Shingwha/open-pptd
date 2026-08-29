@@ -8,34 +8,34 @@ fonts:
 
 theme:
   colors:
-    night: "#241436"        # 暮紫：深色底 / 夜空
-    nightDeep: "#3B2358"    # 深紫：辅助深 / 深底上的浅一层
-    coral: "#FF6B4A"        # 珊瑚橙：落日 / 高亮（深底文字、色块）
-    coralDeep: "#D94F2B"    # 珊瑚橙加深：浅底上的小字强调（保证对比度）
-    peach: "#FFC9B0"        # 蜜桃：过渡 / 深底次要文字
-    peachTint: "#FFE9DD"    # 蜜桃极浅：表格高亮列底色
-    cream: "#FFF4EA"        # 奶油：浅底 / 深底主文字
+    primaryDeep: "#241436"        # 暮紫：深色底 / 夜空
+    bg: "#3B2358"    # 深紫：辅助深 / 深底上的浅一层
+    primary: "#FF6B4A"        # 珊瑚橙：落日 / 高亮（深底文字、色块）
+    accent: "#D94F2B"    # 珊瑚橙加深：浅底上的小字强调（保证对比度）
+    primarySoft: "#FFC9B0"        # 蜜桃：过渡 / 深底次要文字
+    accent4: "#FFE9DD"    # 蜜桃极浅：表格高亮列底色
+    primaryTint: "#FFF4EA"        # 奶油：浅底 / 深底主文字
     text: "#2A1A3E"         # 浅底正文
     muted: "#7A6A8C"        # 浅底次要文字
-    mutedDark: "#B9A3D6"    # 深底次要文字（薰衣草紫）
+    accent5: "#B9A3D6"    # 深底次要文字（薰衣草紫）
     line: "#EADBCB"         # 浅底分隔细线
-    lineDark: "#4A3170"     # 深底分隔细线
+    accent6: "#4A3170"     # 深底分隔细线
   textStyles:
     kicker:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
       bold: true
       letterSpacing: 3
-      color: "$nightDeep"
+      color: "$bg"
     disp:
       fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 28
-      color: "$night"
+      color: "$primaryDeep"
       lineHeight: 1.25
     h3:
       fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 15
-      color: "$night"
+      color: "$primaryDeep"
       lineHeight: 1.35
     body:
       fontFamily: "LXGW Neo XiHei"
@@ -57,8 +57,8 @@ theme:
         border: [null, null, { style: solid, width: 0.75, color: "$line" }, null]
         align: [center, middle]
       firstRowStyle:
-        fill: { type: solid, color: "$night" }
-        color: "$cream"
+        fill: { type: solid, color: "$primaryDeep" }
+        color: "$primaryTint"
         bold: true
         fontSize: 11
       rowOverColumn: true

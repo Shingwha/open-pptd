@@ -1,7 +1,7 @@
 pageType: final
 background:
   type: solid
-  color: "$deep"
+  color: "$primaryDeep"
 notes: |
   收尾建议：河流抵达入海口，回到“需要管理层做什么”。三项请求逐项确认责任人与截止时间：扩编（2月10日）、研发预算追加 800 万（2月20日）、渠道佣金方案（3月1日），避免汇报结束但没有决策。下一次水文观测定在 7月8日 Q2 复盘会。
 elements:
@@ -24,7 +24,7 @@ elements:
     elementType: shape
     bounds: [28, 28, 904, 446]
     shapeName: rect
-    border: { style: solid, width: 1, color: "$gold" }
+    border: { style: solid, width: 1, color: "$primary" }
     opacity: 0.55
 
   - elementId: eyebrow
@@ -42,7 +42,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10
-      color: "$foam"
+      color: "$primaryTint"
       letterSpacing: 1
       align: [right, middle]
       text: 里程 K7 / K7 · 抵达入海口
@@ -54,11 +54,11 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 34
       bold: true
-      color: "$paper"
+      color: "$bg"
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="color:$gold;">K7</span>　入海口 · 灯塔下的请求</p>
+        <p><span style="color:$primary;">K7</span>　入海口 · 灯塔下的请求</p>
 
   - elementId: conclusion
     elementType: text
@@ -66,7 +66,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 13
-      color: "$foam"
+      color: "$primaryTint"
       align: [left, middle]
       text: 河流抵达入海口。请管理层为三项资源请求放行，让 2026 的水继续向前。
 
@@ -74,7 +74,7 @@ elements:
     elementType: shape
     bounds: [64, 192, 832, 1]
     shapeName: rect
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
     opacity: 0.5
 
   # —— 请求壹 ——
@@ -85,7 +85,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 24
       bold: true
-      color: "$gold"
+      color: "$primary"
       align: [left, middle]
       text: 壹
 
@@ -95,12 +95,12 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 14
-      color: "$paper"
+      color: "$bg"
       lineHeight: 1.5
       align: [left, top]
       text: |
         <p><strong>批准华东客户成功团队扩编（3 → 8 人）</strong></p>
-        <p style="margin-top:3px"><span style="font-size:11.5px; color:$foam;">新增年化成本约 240 万元，预计拉动续约率 +7 个百分点</span></p>
+        <p style="margin-top:3px"><span style="font-size:11.5px; color:$primaryTint;">新增年化成本约 240 万元，预计拉动续约率 +7 个百分点</span></p>
 
   - elementId: a1-owner
     elementType: text
@@ -108,18 +108,18 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 11.5
-      color: "$foam"
+      color: "$primaryTint"
       lineHeight: 1.6
       align: [right, top]
       text: |
-        <p style="text-align:right"><span style="color:$paper;"><strong>CEO · 决策</strong></span></p>
+        <p style="text-align:right"><span style="color:$bg;"><strong>CEO · 决策</strong></span></p>
         <p style="text-align:right">截止：2月10日</p>
 
   - elementId: a-rule-1
     elementType: shape
     bounds: [64, 282, 832, 1]
     shapeName: rect
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
     opacity: 0.25
 
   # —— 请求贰 ——
@@ -130,7 +130,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 24
       bold: true
-      color: "$gold"
+      color: "$primary"
       align: [left, middle]
       text: 贰
 
@@ -140,12 +140,12 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 14
-      color: "$paper"
+      color: "$bg"
       lineHeight: 1.5
       align: [left, top]
       text: |
         <p><strong>批准 2026 研发预算追加 800 万元</strong></p>
-        <p style="margin-top:3px"><span style="font-size:11.5px; color:$foam;">投入订阅产品线 V4.0 与客户成功系统建设</span></p>
+        <p style="margin-top:3px"><span style="font-size:11.5px; color:$primaryTint;">投入订阅产品线 V4.0 与客户成功系统建设</span></p>
 
   - elementId: a2-owner
     elementType: text
@@ -153,18 +153,18 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 11.5
-      color: "$foam"
+      color: "$primaryTint"
       lineHeight: 1.6
       align: [right, top]
       text: |
-        <p style="text-align:right"><span style="color:$paper;"><strong>董事会 · 决策</strong></span></p>
+        <p style="text-align:right"><span style="color:$bg;"><strong>董事会 · 决策</strong></span></p>
         <p style="text-align:right">截止：2月20日</p>
 
   - elementId: a-rule-2
     elementType: shape
     bounds: [64, 370, 832, 1]
     shapeName: rect
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
     opacity: 0.25
 
   # —— 请求叁 ——
@@ -175,7 +175,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 24
       bold: true
-      color: "$gold"
+      color: "$primary"
       align: [left, middle]
       text: 叁
 
@@ -185,12 +185,12 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 14
-      color: "$paper"
+      color: "$bg"
       lineHeight: 1.5
       align: [left, top]
       text: |
         <p><strong>确认渠道佣金政策调整方案</strong></p>
-        <p style="margin-top:3px"><span style="font-size:11.5px; color:$foam;">降低单一渠道依赖，支撑单客户 CAC ≤1.6 万元目标</span></p>
+        <p style="margin-top:3px"><span style="font-size:11.5px; color:$primaryTint;">降低单一渠道依赖，支撑单客户 CAC ≤1.6 万元目标</span></p>
 
   - elementId: a3-owner
     elementType: text
@@ -198,11 +198,11 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 11.5
-      color: "$foam"
+      color: "$primaryTint"
       lineHeight: 1.6
       align: [right, top]
       text: |
-        <p style="text-align:right"><span style="color:$paper;"><strong>经管会 · 决策</strong></span></p>
+        <p style="text-align:right"><span style="color:$bg;"><strong>经管会 · 决策</strong></span></p>
         <p style="text-align:right">截止：3月1日</p>
 
   - elementId: closing-note
@@ -211,7 +211,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10
-      color: "$foam"
+      color: "$primaryTint"
       align: [left, middle]
       text: 下一次水文观测：2026年7月8日 · Q2 经营复盘会｜本演示为占位数据，请替换为实际口径
 
@@ -222,7 +222,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 18
       bold: true
-      color: "$paper"
+      color: "$bg"
       align: [right, middle]
       text: 感谢审议
 
@@ -231,50 +231,50 @@ elements:
     elementType: shape
     bounds: [48, 501, 864, 1]
     shapeName: rect
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
     opacity: 0.35
 
   - elementId: river-tick-0
     elementType: shape
     bounds: [48, 497, 1, 8]
     shapeName: rect
-    fill: { type: solid, color: "$foam" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.6
   - elementId: river-tick-1
     elementType: shape
     bounds: [171, 497, 1, 8]
     shapeName: rect
-    fill: { type: solid, color: "$foam" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.6
   - elementId: river-tick-2
     elementType: shape
     bounds: [295, 497, 1, 8]
     shapeName: rect
-    fill: { type: solid, color: "$foam" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.6
   - elementId: river-tick-3
     elementType: shape
     bounds: [418, 497, 1, 8]
     shapeName: rect
-    fill: { type: solid, color: "$foam" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.6
   - elementId: river-tick-4
     elementType: shape
     bounds: [542, 497, 1, 8]
     shapeName: rect
-    fill: { type: solid, color: "$foam" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.6
   - elementId: river-tick-5
     elementType: shape
     bounds: [665, 497, 1, 8]
     shapeName: rect
-    fill: { type: solid, color: "$foam" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.6
   - elementId: river-tick-6
     elementType: shape
     bounds: [789, 497, 1, 8]
     shapeName: rect
-    fill: { type: solid, color: "$foam" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.6
 
   - elementId: river-label-0
@@ -283,7 +283,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "$foam"
+      color: "$primaryTint"
       align: [center, bottom]
       text: K0
   - elementId: river-label-1
@@ -292,7 +292,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "$foam"
+      color: "$primaryTint"
       align: [center, bottom]
       text: K1
   - elementId: river-label-2
@@ -301,7 +301,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "$foam"
+      color: "$primaryTint"
       align: [center, bottom]
       text: K2
   - elementId: river-label-3
@@ -310,7 +310,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "$foam"
+      color: "$primaryTint"
       align: [center, bottom]
       text: K3
   - elementId: river-label-4
@@ -319,7 +319,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "$foam"
+      color: "$primaryTint"
       align: [center, bottom]
       text: K4
   - elementId: river-label-5
@@ -328,7 +328,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "$foam"
+      color: "$primaryTint"
       align: [center, bottom]
       text: K5
   - elementId: river-label-6
@@ -337,7 +337,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "$foam"
+      color: "$primaryTint"
       align: [center, bottom]
       text: K6
 
@@ -345,7 +345,7 @@ elements:
     elementType: shape
     bounds: [907, 496, 10, 10]
     shapeName: diamond
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
 
   - elementId: river-station
     elementType: text
@@ -354,6 +354,6 @@ elements:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
       bold: true
-      color: "$gold"
+      color: "$primary"
       align: [right, top]
       text: K7 · 入海口

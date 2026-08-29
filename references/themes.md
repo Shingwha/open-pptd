@@ -47,7 +47,7 @@ Once a preset is chosen, write its **full 17-key color set** into `deck.theme.co
 | tech | Tech Teal | Deep sea teal #0F798A | Bright amber #EB9D1E | Rational, modern, energetic | Tech, internet, product launches, R&D reports |
 | orange | Vitality Orange | Burnt orange #B65020 | Deep teal #296C70 | Passionate, action-oriented | Marketing campaigns, e-commerce promos, sports, entrepreneurship |
 | green | Forest Green | Deep forest green #1D6744 | Honey gold #CCA133 | Natural, steady, growth | Agriculture, environmental, pharma/health, ESG |
-| red | Steady Red | Crimson #A32937 | Ink blue #2B4464 | Solemn, formal, alert | Party/government, SOEs, annual summaries, red themes |
+| red | Steady Red | Crimson #A32937 | Neutral steel blue #444E5A | Solemn, formal, alert | Party/government, SOEs, annual summaries, red themes |
 | purple | Elegant Purple | Deep violet #542B82 | Warm amber #C79738 | Noble, creative, mysterious | Brand launches, fashion, cultural creativity, women-oriented |
 | mono | Premium Gray | Charcoal #1F262D | Gold #C4943B | Minimal, restrained, premium | Designer portfolios, architecture, industry, photography |
 | brown | Earth Brown | Cocoa brown #654529 | Honey gold #C99B40 | Warm, rustic, vintage | Cultural tourism, dining, real estate, handicrafts, education |
@@ -60,16 +60,16 @@ Primary and chart series colors (chart series cycle = accent1-6, i.e. primary â†
 
 | Preset | primary | accent | accent3 | accent4 | accent5 | accent6 |
 |---|---|---|---|---|---|---|
-| consult | #18324E | #D19B2E | #37B2BE | #5A45C4 | #C15533 | #419F73 |
-| tech | #0F798A | #EB9D1E | #336FC1 | #36AB70 | #963DC2 | #BE4A2D |
-| orange | #B65020 | #296C70 | #D9B23A | #3AA65E | #3B5BBA | #BA3B85 |
-| green | #1D6744 | #CCA133 | #3AA643 | #3894B2 | #7B42BD | #AB5936 |
-| red | #A32937 | #2B4464 | #CF6530 | #39935F | #7542BD | #63863C |
-| purple | #542B82 | #C79738 | #BA3BBA | #3857B2 | #3FA294 | #B94831 |
-| mono | #1F262D | #C4943B | #3E9889 | #6F4EA6 | #AB593F | #418B4B |
-| brown | #654529 | #C99B40 | #3B9169 | #3F7EAB | #B3427A | #6B883A |
-| morandi | #5C6B57 | #B19B81 | #8FA06A | #64907C | #9B6F7D | #6B8094 |
-| sakura | #913052 | #61A35C | #974CBD | #4799C2 | #C9B240 | #C25E3D |
+| consult | #18324E | #D19B2E | #38996F | #3F45AB | #6BAF41 | #9C513A |
+| tech | #0F798A | #EB9D1E | #389955 | #3F6EAB | #7CAF41 | #9C4C3A |
+| orange | #B65020 | #296C70 | #80943D | #A7444F | #46AA54 | #3E6C98 |
+| green | #1D6744 | #CCA133 | #409938 | #3FABA7 | #8CAF41 | #9C563A |
+| red | #A32937 | #444E5A | #8E4386 | #A0664B | #6A4DA3 | #458892 |
+| purple | #542B82 | #C79738 | #993885 | #433FAB | #AF4148 | #939C3A |
+| mono | #1F262D | #C4943B | #49886C | #525798 | #719C54 | #8B594B |
+| brown | #654529 | #C99B40 | #944B3D | #A7445D | #AAA246 | #73983E |
+| morandi | #5C6B57 | #B19B81 | #788958 | #61986C | #9C9863 | #8C5F5A |
+| sakura | #913052 | #61A35C | #82644F | #915985 | #8B955B | #518564 |
 
 The remaining 11 keys (bg/text/muted/line/success/warning/danger + primarySoft/primaryTint/primaryDeep):
 

@@ -1,7 +1,7 @@
 pageType: final
 background:
   type: solid
-  color: "$night"
+  color: "$primaryDeep"
 notes: 收尾页（行动号召）：呼应封面的日落海浪构图，一句「一起涨潮」收束全案；给出招商热线、邮箱与截止日期 2026.03.31，强调席位稀缺，推动尽快签约。
 elements:
   # ---- 日落海浪收尾构图（底部居中） ----
@@ -10,61 +10,61 @@ elements:
     bounds: [372, 276, 216, 216]
     shapeName: donut
     adjustments: [500]
-    fill: { type: solid, color: "$peach" }
+    fill: { type: solid, color: "$primarySoft" }
     opacity: 0.3
   - elementId: sun-top
     elementType: shape
     bounds: [392, 296, 176, 176]
     shapeName: pie
     adjustments: [10800000, 21600000]
-    fill: { type: solid, color: "$peach" }
+    fill: { type: solid, color: "$primarySoft" }
   - elementId: sun-bottom
     elementType: shape
     bounds: [392, 296, 176, 176]
     shapeName: pie
     adjustments: [0, 10800000]
-    fill: { type: solid, color: "$coral" }
+    fill: { type: solid, color: "$primary" }
   - elementId: horizon-line
     elementType: shape
     bounds: [0, 470, 960, 1.5]
     shapeName: rect
-    fill: { type: solid, color: "$peach" }
+    fill: { type: solid, color: "$primarySoft" }
     opacity: 0.45
   - elementId: wave-back
     elementType: shape
     bounds: [-60, 462, 1080, 70]
     shapeName: wave
-    fill: { type: solid, color: "$nightDeep" }
+    fill: { type: solid, color: "$bg" }
     opacity: 0.95
   - elementId: wave-front
     elementType: shape
     bounds: [-60, 496, 1080, 70]
     shapeName: wave
-    fill: { type: solid, color: "$coral" }
+    fill: { type: solid, color: "$primary" }
     opacity: 0.14
   - elementId: glint-1
     elementType: shape
     bounds: [448, 496, 64, 6]
     shapeName: ellipse
-    fill: { type: solid, color: "$coral" }
+    fill: { type: solid, color: "$primary" }
     opacity: 0.5
   - elementId: star-1
     elementType: shape
     bounds: [152, 76, 6, 6]
     shapeName: ellipse
-    fill: { type: solid, color: "$peach" }
+    fill: { type: solid, color: "$primarySoft" }
     opacity: 0.8
   - elementId: star-2
     elementType: shape
     bounds: [812, 96, 5, 5]
     shapeName: ellipse
-    fill: { type: solid, color: "$cream" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.7
   - elementId: star-3
     elementType: shape
     bounds: [776, 52, 4, 4]
     shapeName: ellipse
-    fill: { type: solid, color: "$coral" }
+    fill: { type: solid, color: "$primary" }
 
   # ---- 行动号召文字 ----
   - elementId: kicker
@@ -75,7 +75,7 @@ elements:
       fontSize: 11
       bold: true
       letterSpacing: 4
-      color: "$peach"
+      color: "$primarySoft"
       align: [center, top]
       text: TIDAL FEST 2026 · 招商合作
   - elementId: cta
@@ -84,7 +84,7 @@ elements:
     content:
       fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 72
-      color: "$cream"
+      color: "$primaryTint"
       letterSpacing: 6
       align: [center, middle]
       wrap: false
@@ -95,7 +95,7 @@ elements:
     content:
       fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 16
-      color: "$coral"
+      color: "$primary"
       letterSpacing: 6
       align: [center, top]
       wrap: false
@@ -106,18 +106,18 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 13
-      color: "$cream"
+      color: "$primaryTint"
       lineHeight: 1.8
       align: [center, top]
       text: |
         <p>招商热线 400 - 820 - 2026 ｜ 合作邮箱 sponsor@tidal-fest.cn</p>
-        <p><span style="font-size:11.5px; color:$peach;">招商截止 </span><span style="font-size:11.5px; color:$coral;">2026.03.31</span><span style="font-size:11.5px; color:$peach;"> · 席位有限，先到先得</span></p>
+        <p><span style="font-size:11.5px; color:$primarySoft;">招商截止 </span><span style="font-size:11.5px; color:$primary;">2026.03.31</span><span style="font-size:11.5px; color:$primarySoft;"> · 席位有限，先到先得</span></p>
   - elementId: page-num
     elementType: text
     bounds: [856, 506, 40, 16]
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
-      color: "$mutedDark"
+      color: "$accent5"
       align: [right, top]
       text: 07 / 07

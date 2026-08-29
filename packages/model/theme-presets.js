@@ -19,8 +19,11 @@
 // 2026-08 配色重设计（量化规则生成，非目测）：
 //   - 主色 = 性格色相 + 深明度：白字压表头对比度全部 ≥ 4.5:1（WCAG AA）
 //   - 强调色与主色色相拉开 ≥ 25°（brown 例外：蜂蜜金靠明度差分离，见该套注释）
-//   - 图表 6 系列槽位色环均布（相邻色相 ≥ 25°）+ 明度相近（L 40-55）：
-//     多系列图表彼此可区分且与家族和谐（旧版系列色 0-4° 重叠是搭配不佳的主因）
+//   - 图表 6 系列槽位 = 家族色相阶梯（v2，替代旧「色环均布」）：4 个辅色取
+//     「主色↔点缀色短弧」的 1/3、2/3 内插 + 两端外延 ≥26°，统一饱和度带
+//     （贴主/缀较低者；morandi/mono/brown 另定低饱和带）+ 窄明度带 L41-47 交错
+//     ——系列色彼此可区分（色相差 ≥15° 或明度差 ≥8）且与品牌双色同族协调，
+//     不再出现游离于家族外的霓虹色
 //   - 中性色 text/muted/line 带家族色相（近黑 / 中灰 / 浅灰三档，非纯灰）
 //   - primarySoft/Tint/Deep 由主色 HSL 精确派生（L 95 / 88 / 主色 −10）
 //   - 语义色 success/warning/danger 跨套统一（用户直觉固定，不随主题漂移）
@@ -42,10 +45,10 @@ export const DEFAULT_THEME = {
     primaryTint: "#D7E0EA",
     primaryDeep: "#0A1929",
     // 图表系列色槽位（accent1-6 循环：1=primary、2=accent、3-6 如下）
-    accent3: "#37B2BE",
-    accent4: "#5A45C4",
-    accent5: "#C15533",
-    accent6: "#419F73",
+    accent3: "#38996F",
+    accent4: "#3F45AB",
+    accent5: "#6BAF41",
+    accent6: "#9C513A",
   },
   textStyles: {
     title: { fontSize: 32, color: "$text", bold: true, lineHeight: 1.3 },
@@ -92,7 +95,7 @@ const COMMON = {
 };
 
 export const THEME_PALETTES = {
-  // 1. 咨询蓝（默认主题同源）：深海军蓝 + 复古金；系列 = 蓝/金家族 + 青蓝/蓝紫/暖橙/灰绿
+  // 1. 咨询蓝（默认主题同源）：深海军蓝 + 复古金；系列 = 蓝↔金弧阶梯（青绿/蓝紫/橄榄/锈红）
   consult: {
     name: "咨询蓝",
     colors: {
@@ -101,10 +104,10 @@ export const THEME_PALETTES = {
       text: "#1F2428", muted: "#6E7A87", line: "#E8EBED",
       success: "#33A362", warning: "#B4872D", danger: "#BE392D",
       primarySoft: "#EFF2F5", primaryTint: "#D7E0EA", primaryDeep: "#0A1929",
-      accent3: "#37B2BE", accent4: "#5A45C4", accent5: "#C15533", accent6: "#419F73",
+      accent3: "#38996F", accent4: "#3F45AB", accent5: "#6BAF41", accent6: "#9C513A",
     },
   },
-  // 2. 科技青：深海青 + 亮琥珀；系列 = 青家族 + 蓝/绿/紫/橙红（含一记紫色提神）
+  // 2. 科技青：深海青 + 亮琥珀；系列 = 青↔琥珀弧阶梯（绿/钢蓝/黄绿/锈红）
   tech: {
     name: "科技青",
     colors: {
@@ -113,10 +116,10 @@ export const THEME_PALETTES = {
       text: "#1F2728", muted: "#6E8387", line: "#E8ECED",
       success: "#33A362", warning: "#B4872D", danger: "#BE392D",
       primarySoft: "#EFF4F5", primaryTint: "#D7E7EA", primaryDeep: "#0F4D57",
-      accent3: "#336FC1", accent4: "#36AB70", accent5: "#963DC2", accent6: "#BE4A2D",
+      accent3: "#389955", accent4: "#3F6EAB", accent5: "#7CAF41", accent6: "#9C4C3A",
     },
   },
-  // 3. 活力橙：焦橙 + 深青（互补点缀，亮橙为主色时用深青压场）；系列 = 橙/黄/绿/蓝/玫红
+  // 3. 活力橙：焦橙 + 深青（互补点缀，亮橙为主色时用深青压场）；系列 = 橙↔青弧阶梯（橄榄/砖红/绿/钢蓝）
   orange: {
     name: "活力橙",
     colors: {
@@ -125,10 +128,10 @@ export const THEME_PALETTES = {
       text: "#28221F", muted: "#87766E", line: "#EDEAE8",
       success: "#33A362", warning: "#B4872D", danger: "#BE392D",
       primarySoft: "#F5F1EF", primaryTint: "#EADDD7", primaryDeep: "#8B3D18",
-      accent3: "#D9B23A", accent4: "#3AA65E", accent5: "#3B5BBA", accent6: "#BA3B85",
+      accent3: "#80943D", accent4: "#A7444F", accent5: "#46AA54", accent6: "#3E6C98",
     },
   },
-  // 4. 森林绿：深林绿 + 蜜金；系列 = 绿家族 + 青蓝/紫/棕红
+  // 4. 森林绿：深林绿 + 蜜金；系列 = 绿↔金弧阶梯（叶绿/青/橄榄/锈红）
   green: {
     name: "森林绿",
     colors: {
@@ -137,22 +140,22 @@ export const THEME_PALETTES = {
       text: "#1F2824", muted: "#6E877B", line: "#E8EDEB",
       success: "#33A362", warning: "#B4872D", danger: "#BE392D",
       primarySoft: "#EFF5F2", primaryTint: "#D7EAE1", primaryDeep: "#0F432A",
-      accent3: "#3AA643", accent4: "#3894B2", accent5: "#7B42BD", accent6: "#AB5936",
+      accent3: "#409938", accent4: "#3FABA7", accent5: "#8CAF41", accent6: "#9C563A",
     },
   },
-  // 5. 沉稳红：绯红 + 墨蓝（商务正式感，红蓝配）；系列 = 红家族 + 珊瑚/绿/紫/橄榄
+  // 5. 沉稳红：绯红 + 中性钢蓝（商务正式感；点缀压至近中性——大面积色块与红并置不冲突，红蓝双色皆浓饱和时大块并置是灾难）；系列 = 红↔蓝弧阶梯（紫/赭/蓝紫/青）
   red: {
     name: "沉稳红",
     colors: {
       ...COMMON,
-      primary: "#A32937", accent: "#2B4464",
+      primary: "#A32937", accent: "#444E5A",
       text: "#281F20", muted: "#876E71", line: "#EDE8E9",
       success: "#33A362", warning: "#B4872D", danger: "#BE392D",
       primarySoft: "#F5EFF0", primaryTint: "#EAD7D9", primaryDeep: "#811825",
-      accent3: "#CF6530", accent4: "#39935F", accent5: "#7542BD", accent6: "#63863C",
+      accent3: "#8E4386", accent4: "#A0664B", accent5: "#6A4DA3", accent6: "#458892",
     },
   },
-  // 6. 优雅紫：深紫罗兰 + 暖琥珀（经典贵气组合）；系列 = 紫家族 + 蓝/青绿/暖红
+  // 6. 优雅紫：深紫罗兰 + 暖琥珀（经典贵气组合）；系列 = 紫↔金弧阶梯（品红/靛/绯/橄榄金）
   purple: {
     name: "优雅紫",
     colors: {
@@ -161,10 +164,10 @@ export const THEME_PALETTES = {
       text: "#231F28", muted: "#7A6E87", line: "#EAE8ED",
       success: "#33A362", warning: "#B4872D", danger: "#BE392D",
       primarySoft: "#F2EFF5", primaryTint: "#E0D7EA", primaryDeep: "#3B1A61",
-      accent3: "#BA3BBA", accent4: "#3857B2", accent5: "#3FA294", accent6: "#B94831",
+      accent3: "#993885", accent4: "#433FAB", accent5: "#AF4148", accent6: "#939C3A",
     },
   },
-  // 7. 高级灰：炭黑 + 金（极简高级感）；系列 = 灰家族 + 青/灰紫/棕红/灰绿
+  // 7. 高级灰：炭黑 + 金（极简高级感）；系列 = 炭↔金弧阶梯（鼠尾草/灰蓝/橄榄灰/暖褐，S30 低保和）
   mono: {
     name: "高级灰",
     colors: {
@@ -173,11 +176,11 @@ export const THEME_PALETTES = {
       text: "#1F2328", muted: "#6E7A87", line: "#E8EAED",
       success: "#33A362", warning: "#B4872D", danger: "#BE392D",
       primarySoft: "#EFF2F5", primaryTint: "#D7E0EA", primaryDeep: "#0F141A",
-      accent3: "#3E9889", accent4: "#6F4EA6", accent5: "#AB593F", accent6: "#418B4B",
+      accent3: "#49886C", accent4: "#525798", accent5: "#719C54", accent6: "#8B594B",
     },
   },
-  // 8. 大地棕：可可棕 + 蜂蜜金（温暖自然；两色色相仅差 12°，靠明度分离：
-  //    深棕 L28 vs 亮金 L52，图表中区分清晰，是棕+金的经典性格）
+  // 8. 大地棕：可可棕 + 蜂蜜金（温暖自然；棕金弧仅 12°，系列为手排大地家族
+  //    锈红/酒红/赭黄/橄榄，靠色相阶梯区分）
   brown: {
     name: "大地棕",
     colors: {
@@ -186,10 +189,10 @@ export const THEME_PALETTES = {
       text: "#28231F", muted: "#877A6E", line: "#EDEAE8",
       success: "#33A362", warning: "#B4872D", danger: "#BE392D",
       primarySoft: "#F5F2EF", primaryTint: "#EAE0D7", primaryDeep: "#452C17",
-      accent3: "#3B9169", accent4: "#3F7EAB", accent5: "#B3427A", accent6: "#6B883A",
+      accent3: "#944B3D", accent4: "#A7445D", accent5: "#AAA246", accent6: "#73983E",
     },
   },
-  // 9. 莫兰迪：灰调鼠尾草绿 + 亚麻米（低饱和高级感；主色保持深灰绿保证白字表头 5.7:1）
+  // 9. 莫兰迪：灰调鼠尾草绿 + 亚麻米（低饱和高级感，S22 家族带；主色深灰绿保白字表头 5.7:1）
   morandi: {
     name: "莫兰迪",
     colors: {
@@ -198,10 +201,10 @@ export const THEME_PALETTES = {
       text: "#22281F", muted: "#75876E", line: "#E9EDE8",
       success: "#33A362", warning: "#B4872D", danger: "#BE392D",
       primarySoft: "#F1F5EF", primaryTint: "#DCEAD7", primaryDeep: "#41543B",
-      accent3: "#8FA06A", accent4: "#64907C", accent5: "#9B6F7D", accent6: "#6B8094",
+      accent3: "#788958", accent4: "#61986C", accent5: "#9C9863", accent6: "#8C5F5A",
     },
   },
-  // 10. 樱花粉：深玫红 + 鼠尾草绿（柔美清透，粉绿互补；
+  // 10. 樱花粉：深玫红 + 鼠尾草绿（柔美清透，粉绿互补，S24 低饱和家族带；
   //     主色用深玫红而非浅粉 —— 浅粉留给 soft/tint，白字表头对比 7.6:1）
   sakura: {
     name: "樱花粉",
@@ -211,7 +214,7 @@ export const THEME_PALETTES = {
       text: "#281F22", muted: "#876E77", line: "#EDE8EA",
       success: "#33A362", warning: "#B4872D", danger: "#BE392D",
       primarySoft: "#F5EFF1", primaryTint: "#EAD7DE", primaryDeep: "#711E3B",
-      accent3: "#974CBD", accent4: "#4799C2", accent5: "#C9B240", accent6: "#C25E3D",
+      accent3: "#82644F", accent4: "#915985", accent5: "#8B955B", accent6: "#518564",
     },
   },
 };

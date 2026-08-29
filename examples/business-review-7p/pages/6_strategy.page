@@ -1,7 +1,7 @@
 pageType: content
 background:
   type: solid
-  color: "$paper"
+  color: "$bg"
 notes: |
   讲解建议：2026 年做三项航道治理工程——续约攻坚（险滩治理）、订阅深耕（干流拓宽）、获客提效（清源节流）。三项工程共享一个原则：先改善单位经济模型，再扩大流量规模。右侧工期表的目标为建议值，可按董事会意见调整。
 elements:
@@ -29,11 +29,11 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 30
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="color:$gold;">K5</span>　疏浚航道</p>
+        <p><span style="color:$primary;">K5</span>　疏浚航道</p>
 
   - elementId: conclusion
     elementType: text
@@ -58,7 +58,7 @@ elements:
       fontSize: 10
       bold: true
       letterSpacing: 2
-      color: "$gold"
+      color: "$primary"
       align: [left, middle]
       text: 工程壹 · 险滩治理
   - elementId: p1-title
@@ -68,7 +68,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 17
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       text: 续约攻坚：把华东河段拉回警戒线以上
   - elementId: p1-detail
@@ -96,7 +96,7 @@ elements:
       fontSize: 10
       bold: true
       letterSpacing: 2
-      color: "$gold"
+      color: "$primary"
       align: [left, middle]
       text: 工程贰 · 干流拓宽
   - elementId: p2-title
@@ -106,7 +106,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 17
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       text: 订阅深耕：让干流承载更多水量
   - elementId: p2-detail
@@ -134,7 +134,7 @@ elements:
       fontSize: 10
       bold: true
       letterSpacing: 2
-      color: "$gold"
+      color: "$primary"
       align: [left, middle]
       text: 工程叁 · 清源节流
   - elementId: p3-title
@@ -144,7 +144,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 17
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       text: 获客提效：降低上游来水成本
   - elementId: p3-detail
@@ -166,7 +166,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 15
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       text: 2026 航道治理工期表
 
@@ -319,7 +319,7 @@ elements:
     elementType: shape
     bounds: [660, 496, 10, 10]
     shapeName: diamond
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
 
   - elementId: river-station
     elementType: text
@@ -328,6 +328,6 @@ elements:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
       bold: true
-      color: "$gold"
+      color: "$primary"
       align: [center, top]
       text: K5 · 疏浚航道

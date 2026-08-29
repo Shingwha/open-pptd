@@ -1,7 +1,7 @@
 pageType: content
 background:
   type: solid
-  color: "$paper"
+  color: "$bg"
 notes: |
   这一页用四个读数回答“全年干得怎么样”：流量 96.8% 接近预期；增速 +14.2% 由订阅驱动；水位（经营性现金流）三年来首次回到警戒线以上；险滩是华东续约率 78%，距 85% 警戒线还差 7 个刻度，这是 2026 年最优先的结构性问题。
 elements:
@@ -29,11 +29,11 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 30
       bold: true
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="color:$gold;">K1</span>　水文快报</p>
+        <p><span style="color:$primary;">K1</span>　水文快报</p>
 
   - elementId: conclusion
     elementType: text
@@ -74,7 +74,7 @@ elements:
       fontSize: 10
       bold: true
       letterSpacing: 2
-      color: "$gold"
+      color: "$primary"
       align: [left, middle]
       text: 流量 · FLOW
   - elementId: r1-number
@@ -83,7 +83,7 @@ elements:
     content:
       style: "$reading"
       fontSize: 60
-      color: "$gold"
+      color: "$primary"
       align: [left, middle]
       wrap: false
       text: 96.8%
@@ -91,14 +91,14 @@ elements:
     elementType: shape
     bounds: [60, 288, 40, 3]
     shapeName: rect
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
   - elementId: r1-note
     elementType: text
     bounds: [60, 304, 187, 96]
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
-      color: "$ink"
+      color: "$text"
       lineHeight: 1.6
       align: [left, top]
       text: 全年收入目标达成率。距目标尚差 3.2 个刻度，缺口集中在华东河段的续约收入。
@@ -111,7 +111,7 @@ elements:
       fontSize: 10
       bold: true
       letterSpacing: 2
-      color: "$gold"
+      color: "$primary"
       align: [left, middle]
       text: 增速 · CURRENT
   - elementId: r2-number
@@ -120,7 +120,7 @@ elements:
     content:
       style: "$reading"
       fontSize: 54
-      color: "$ink"
+      color: "$text"
       align: [left, middle]
       wrap: false
       text: +14.2%
@@ -128,14 +128,14 @@ elements:
     elementType: shape
     bounds: [275, 288, 40, 3]
     shapeName: rect
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
   - elementId: r2-note
     elementType: text
     bounds: [275, 304, 187, 96]
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
-      color: "$ink"
+      color: "$text"
       lineHeight: 1.6
       align: [left, top]
       text: 营业收入同比增长。干流增速连续三年保持 10% 以上，高毛利 SaaS 订阅是主要推力。
@@ -148,7 +148,7 @@ elements:
       fontSize: 10
       bold: true
       letterSpacing: 2
-      color: "$gold"
+      color: "$primary"
       align: [left, middle]
       text: 水位 · LEVEL
   - elementId: r3-number
@@ -157,7 +157,7 @@ elements:
     content:
       style: "$reading"
       fontSize: 40
-      color: "$deep"
+      color: "$primaryDeep"
       align: [left, middle]
       wrap: false
       text: +3,200万
@@ -165,14 +165,14 @@ elements:
     elementType: shape
     bounds: [490, 288, 40, 3]
     shapeName: rect
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
   - elementId: r3-note
     elementType: text
     bounds: [490, 304, 187, 96]
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
-      color: "$ink"
+      color: "$text"
       lineHeight: 1.6
       align: [left, top]
       text: 经营性现金流由负转正，三年来水位首次回到警戒线以上；回款周期同比缩短 12 天。
@@ -185,7 +185,7 @@ elements:
       fontSize: 10
       bold: true
       letterSpacing: 2
-      color: "$rust"
+      color: "$accent3"
       align: [left, middle]
       text: 险滩 · RAPIDS
   - elementId: r4-number
@@ -194,7 +194,7 @@ elements:
     content:
       style: "$reading"
       fontSize: 60
-      color: "$rust"
+      color: "$accent3"
       align: [left, middle]
       wrap: false
       text: 78%
@@ -202,14 +202,14 @@ elements:
     elementType: shape
     bounds: [705, 288, 40, 3]
     shapeName: rect
-    fill: { type: solid, color: "$rust" }
+    fill: { type: solid, color: "$accent3" }
   - elementId: r4-note
     elementType: text
     bounds: [705, 304, 187, 96]
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
-      color: "$ink"
+      color: "$text"
       lineHeight: 1.6
       align: [left, top]
       text: 华东区续约率，距 85% 警戒线差 7 个刻度，是全流域最大险滩、2026 年首要治理对象。
@@ -341,7 +341,7 @@ elements:
     elementType: shape
     bounds: [166, 496, 10, 10]
     shapeName: diamond
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
 
   - elementId: river-station
     elementType: text
@@ -350,6 +350,6 @@ elements:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
       bold: true
-      color: "$gold"
+      color: "$primary"
       align: [center, top]
       text: K1 · 水文快报

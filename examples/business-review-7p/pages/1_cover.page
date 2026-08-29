@@ -1,7 +1,7 @@
 pageType: cover
 background:
   type: solid
-  color: "$deep"
+  color: "$primaryDeep"
 notes: |
   开场建议：把公司比作一条河，今天汇报的是它 2025 年的水文年报。先给三个读数：流量（收入）达成 96.8%，水位（经营性现金流）三年来首次回正 +3,200 万，险滩在华东——续约率 78%，距 85% 警戒线差 7 个刻度。底部这条线是河流里程线，从 K0 源头出发，到 K7 入海口结束，每一站对应一页。
 elements:
@@ -24,7 +24,7 @@ elements:
     elementType: shape
     bounds: [28, 28, 904, 446]
     shapeName: rect
-    border: { style: solid, width: 1, color: "$gold" }
+    border: { style: solid, width: 1, color: "$primary" }
     opacity: 0.55
 
   - elementId: eyebrow
@@ -42,7 +42,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10
-      color: "$foam"
+      color: "$primaryTint"
       letterSpacing: 1
       align: [right, middle]
       text: 水文观测期 2025.01 — 2025.12
@@ -51,7 +51,7 @@ elements:
     elementType: shape
     bounds: [64, 108, 56, 6]
     shapeName: rect
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
 
   - elementId: hero-title
     elementType: text
@@ -60,7 +60,7 @@ elements:
       fontFamily: "Source Han Serif CN"
       fontSize: 92
       bold: true
-      color: "$paper"
+      color: "$bg"
       letterSpacing: 10
       align: [left, middle]
       wrap: false
@@ -72,7 +72,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 17
-      color: "$foam"
+      color: "$primaryTint"
       align: [left, middle]
       text: 2025年度经营复盘与2026年增长策略
 
@@ -81,7 +81,7 @@ elements:
     elementType: shape
     bounds: [64, 332, 172, 44]
     shapeName: rect
-    border: { style: solid, width: 1, color: "$gold" }
+    border: { style: solid, width: 1, color: "$primary" }
 
   - elementId: tag-1-text
     elementType: text
@@ -90,14 +90,14 @@ elements:
       align: [center, middle]
       lineHeight: 1.3
       text: |
-        <p style="text-align:center"><span style="font-size:9px; color:$gold; font-family:LXGW Neo XiHei;">流量 · FLOW</span></p>
-        <p style="text-align:center"><span style="font-size:16px; color:$paper; font-family:Source Han Serif CN;">96.8%</span></p>
+        <p style="text-align:center"><span style="font-size:9px; color:$primary; font-family:LXGW Neo XiHei;">流量 · FLOW</span></p>
+        <p style="text-align:center"><span style="font-size:16px; color:$bg; font-family:Source Han Serif CN;">96.8%</span></p>
 
   - elementId: tag-2-frame
     elementType: shape
     bounds: [252, 332, 196, 44]
     shapeName: rect
-    border: { style: solid, width: 1, color: "$gold" }
+    border: { style: solid, width: 1, color: "$primary" }
 
   - elementId: tag-2-text
     elementType: text
@@ -106,14 +106,14 @@ elements:
       align: [center, middle]
       lineHeight: 1.3
       text: |
-        <p style="text-align:center"><span style="font-size:9px; color:$gold; font-family:LXGW Neo XiHei;">水位 · LEVEL</span></p>
-        <p style="text-align:center"><span style="font-size:16px; color:$paper; font-family:Source Han Serif CN;">+3,200万</span></p>
+        <p style="text-align:center"><span style="font-size:9px; color:$primary; font-family:LXGW Neo XiHei;">水位 · LEVEL</span></p>
+        <p style="text-align:center"><span style="font-size:16px; color:$bg; font-family:Source Han Serif CN;">+3,200万</span></p>
 
   - elementId: tag-3-frame
     elementType: shape
     bounds: [464, 332, 208, 44]
     shapeName: rect
-    border: { style: solid, width: 1, color: "$rust" }
+    border: { style: solid, width: 1, color: "$accent3" }
 
   - elementId: tag-3-text
     elementType: text
@@ -122,8 +122,8 @@ elements:
       align: [center, middle]
       lineHeight: 1.3
       text: |
-        <p style="text-align:center"><span style="font-size:9px; color:$rust; font-family:LXGW Neo XiHei;">险滩 · RAPIDS</span></p>
-        <p style="text-align:center"><span style="font-size:16px; color:$rust; font-family:Source Han Serif CN;">华东续约率 78%</span></p>
+        <p style="text-align:center"><span style="font-size:9px; color:$accent3; font-family:LXGW Neo XiHei;">险滩 · RAPIDS</span></p>
+        <p style="text-align:center"><span style="font-size:16px; color:$accent3; font-family:Source Han Serif CN;">华东续约率 78%</span></p>
 
   - elementId: footer-left
     elementType: text
@@ -131,7 +131,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10
-      color: "$foam"
+      color: "$primaryTint"
       align: [left, middle]
       text: 2026年1月 · 董事会 / 经营管理层简报
 
@@ -141,7 +141,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10
-      color: "$foam"
+      color: "$primaryTint"
       align: [right, middle]
       text: 演示占位数据 · 请替换为实际口径
 
@@ -150,50 +150,50 @@ elements:
     elementType: shape
     bounds: [48, 501, 864, 1]
     shapeName: rect
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
     opacity: 0.35
 
   - elementId: river-tick-1
     elementType: shape
     bounds: [171, 497, 1, 8]
     shapeName: rect
-    fill: { type: solid, color: "$foam" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.6
   - elementId: river-tick-2
     elementType: shape
     bounds: [295, 497, 1, 8]
     shapeName: rect
-    fill: { type: solid, color: "$foam" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.6
   - elementId: river-tick-3
     elementType: shape
     bounds: [418, 497, 1, 8]
     shapeName: rect
-    fill: { type: solid, color: "$foam" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.6
   - elementId: river-tick-4
     elementType: shape
     bounds: [542, 497, 1, 8]
     shapeName: rect
-    fill: { type: solid, color: "$foam" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.6
   - elementId: river-tick-5
     elementType: shape
     bounds: [665, 497, 1, 8]
     shapeName: rect
-    fill: { type: solid, color: "$foam" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.6
   - elementId: river-tick-6
     elementType: shape
     bounds: [789, 497, 1, 8]
     shapeName: rect
-    fill: { type: solid, color: "$foam" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.6
   - elementId: river-tick-7
     elementType: shape
     bounds: [912, 497, 1, 8]
     shapeName: rect
-    fill: { type: solid, color: "$foam" }
+    fill: { type: solid, color: "$primaryTint" }
     opacity: 0.6
 
   - elementId: river-label-1
@@ -202,7 +202,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "$foam"
+      color: "$primaryTint"
       align: [center, bottom]
       text: K1
   - elementId: river-label-2
@@ -211,7 +211,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "$foam"
+      color: "$primaryTint"
       align: [center, bottom]
       text: K2
   - elementId: river-label-3
@@ -220,7 +220,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "$foam"
+      color: "$primaryTint"
       align: [center, bottom]
       text: K3
   - elementId: river-label-4
@@ -229,7 +229,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "$foam"
+      color: "$primaryTint"
       align: [center, bottom]
       text: K4
   - elementId: river-label-5
@@ -238,7 +238,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "$foam"
+      color: "$primaryTint"
       align: [center, bottom]
       text: K5
   - elementId: river-label-6
@@ -247,7 +247,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "$foam"
+      color: "$primaryTint"
       align: [center, bottom]
       text: K6
   - elementId: river-label-7
@@ -256,7 +256,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "$foam"
+      color: "$primaryTint"
       align: [center, bottom]
       text: K7
 
@@ -264,7 +264,7 @@ elements:
     elementType: shape
     bounds: [43, 496, 10, 10]
     shapeName: diamond
-    fill: { type: solid, color: "$gold" }
+    fill: { type: solid, color: "$primary" }
 
   - elementId: river-station
     elementType: text
@@ -273,6 +273,6 @@ elements:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10.5
       bold: true
-      color: "$gold"
+      color: "$primary"
       align: [left, top]
       text: K0 · 源头

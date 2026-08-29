@@ -1,7 +1,7 @@
 pageType: content
 background:
   type: solid
-  color: "$paper"
+  color: "$bg"
 notes: |
   全篇最有人情味的一页，用一辆编号 ZH-0427 的虚构单车串起四个生命阶段：投放（第 0 天）→ 日常运营（日均 6.8 次）→ 维修（全周期 3.4 次）→ 退役（第 986 天，累计 5,800 公里）。口径自洽：6.8 次/日 × 365 天 × 2.7 年 ≈ 6,700 次骑行；5,800 公里 ÷ 6,700 次 ≈ 单次 0.87 公里；2.7 年 = 986 天。讲述时可把"统计里程其实是统计相遇"作为收尾情绪点。
 elements:
@@ -25,7 +25,7 @@ elements:
     elementType: shape
     bounds: [60, 48, 840, 1]
     shapeName: rect
-    fill: { type: solid, color: "$ink" }
+    fill: { type: solid, color: "$text" }
 
   - elementId: ch-num
     elementType: text
@@ -33,7 +33,7 @@ elements:
     content:
       fontFamily: "Alimama ShuHeiTi"
       fontSize: 44
-      color: "$orange"
+      color: "$accent"
       align: [left, middle]
       wrap: false
       text: "04"
@@ -61,7 +61,7 @@ elements:
     bounds: [60, 162, 180, 18]
     content:
       style: "$kicker"
-      color: "$navy"
+      color: "$primary"
       fontSize: 11
       align: [left, middle]
       wrap: false
@@ -74,7 +74,7 @@ elements:
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="font-size:26px; font-family:Alimama ShuHeiTi; color:$ink;">0 公里</span></p>
+        <p><span style="font-size:26px; font-family:Alimama ShuHeiTi; color:$text;">0 公里</span></p>
 
   - elementId: s1-desc
     elementType: text
@@ -89,7 +89,7 @@ elements:
     bounds: [500, 162, 180, 18]
     content:
       style: "$kicker"
-      color: "$navy"
+      color: "$primary"
       fontSize: 11
       align: [left, middle]
       wrap: false
@@ -102,7 +102,7 @@ elements:
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="font-size:26px; font-family:Alimama ShuHeiTi; color:$navy;">3.4</span><span style="font-size:14px; font-family:LXGW Neo XiHei; color:$ink;"> 次</span></p>
+        <p><span style="font-size:26px; font-family:Alimama ShuHeiTi; color:$primary;">3.4</span><span style="font-size:14px; font-family:LXGW Neo XiHei; color:$text;"> 次</span></p>
 
   - elementId: s3-desc
     elementType: text
@@ -119,38 +119,38 @@ elements:
     points: "0,4 800,4"
     curve: sharp
     arrow: [null, arrow]
-    border: { style: solid, width: 1.5, color: "$ink" }
+    border: { style: solid, width: 1.5, color: "$text" }
 
   - elementId: node1
     elementType: shape
     bounds: [132, 292, 16, 16]
     shapeName: ellipse
-    fill: { type: solid, color: "$navy" }
+    fill: { type: solid, color: "$primary" }
 
   - elementId: node2
     elementType: shape
     bounds: [352, 292, 16, 16]
     shapeName: ellipse
-    fill: { type: solid, color: "$orange" }
+    fill: { type: solid, color: "$accent" }
 
   - elementId: node3
     elementType: shape
     bounds: [572, 292, 16, 16]
     shapeName: ellipse
-    fill: { type: solid, color: "$navy" }
+    fill: { type: solid, color: "$primary" }
 
   - elementId: node4
     elementType: shape
     bounds: [792, 292, 16, 16]
     shapeName: ellipse
-    fill: { type: solid, color: "$orange" }
+    fill: { type: solid, color: "$accent" }
 
   - elementId: s2-label
     elementType: text
     bounds: [280, 326, 180, 18]
     content:
       style: "$kicker"
-      color: "$navy"
+      color: "$primary"
       fontSize: 11
       align: [left, middle]
       wrap: false
@@ -163,7 +163,7 @@ elements:
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="font-size:26px; font-family:Alimama ShuHeiTi; color:$orange;">6.8</span><span style="font-size:14px; font-family:LXGW Neo XiHei; color:$ink;"> 次 / 日</span></p>
+        <p><span style="font-size:26px; font-family:Alimama ShuHeiTi; color:$accent;">6.8</span><span style="font-size:14px; font-family:LXGW Neo XiHei; color:$text;"> 次 / 日</span></p>
 
   - elementId: s2-desc
     elementType: text
@@ -178,7 +178,7 @@ elements:
     bounds: [720, 326, 180, 18]
     content:
       style: "$kicker"
-      color: "$navy"
+      color: "$primary"
       fontSize: 11
       align: [left, middle]
       wrap: false
@@ -191,7 +191,7 @@ elements:
       align: [left, middle]
       wrap: false
       text: |
-        <p><span style="font-size:26px; font-family:Alimama ShuHeiTi; color:$ink;">5,800</span><span style="font-size:14px; font-family:LXGW Neo XiHei; color:$ink;"> 公里</span></p>
+        <p><span style="font-size:26px; font-family:Alimama ShuHeiTi; color:$text;">5,800</span><span style="font-size:14px; font-family:LXGW Neo XiHei; color:$text;"> 公里</span></p>
 
   - elementId: s4-desc
     elementType: text
@@ -205,7 +205,7 @@ elements:
     elementType: shape
     bounds: [60, 458, 36, 2]
     shapeName: rect
-    fill: { type: solid, color: "$orange" }
+    fill: { type: solid, color: "$accent" }
 
   - elementId: editor-text
     elementType: text

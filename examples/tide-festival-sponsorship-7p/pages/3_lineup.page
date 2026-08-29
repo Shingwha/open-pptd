@@ -1,7 +1,7 @@
 pageType: content
 background:
   type: solid
-  color: "$cream"
+  color: "$primaryTint"
 notes: 阵容与日程页（证明）：两日 × 三舞台的矩阵排期，艺人均为占位名；强调「落日时刻」黄金时段（高亮行），口播提醒阵容以最终官宣为准。
 elements:
   # ---- 页眉 ----
@@ -9,7 +9,7 @@ elements:
     elementType: shape
     bounds: [64, 41, 10, 10]
     shapeName: rect
-    fill: { type: solid, color: "$coral" }
+    fill: { type: solid, color: "$primary" }
   - elementId: header-kicker
     elementType: text
     bounds: [84, 36, 420, 20]
@@ -51,14 +51,14 @@ elements:
     elementType: shape
     bounds: [64, 136, 8, 8]
     shapeName: ellipse
-    fill: { type: solid, color: "$coral" }
+    fill: { type: solid, color: "$primary" }
   - elementId: d1-label
     elementType: text
     bounds: [80, 130, 320, 22]
     content:
       fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 15
-      color: "$night"
+      color: "$primaryDeep"
       letterSpacing: 2
       wrap: false
       text: DAY 1 · 07.18 SAT
@@ -75,30 +75,30 @@ elements:
         - text: 浪花舞台
       - - text: "15:00–16:30"
           bold: true
-          color: "$nightDeep"
+          color: "$bg"
         - text: 独立乐团 E
         - text: 电子制作人 D
         - text: 校园新声 F
       - - text: "17:00–18:30"
           bold: true
-          color: "$nightDeep"
+          color: "$bg"
         - text: 人气乐队 C
         - text: DJ 组合 G
         - text: 新锐唱作人 H
       - - text: "19:00–20:30"
           bold: true
-          color: "$coralDeep"
-          fill: { type: solid, color: "$peachTint" }
+          color: "$accent"
+          fill: { type: solid, color: "$accent4" }
         - text: 头部乐队 A
           bold: true
-          fill: { type: solid, color: "$peachTint" }
+          fill: { type: solid, color: "$accent4" }
         - text: 特邀 DJ I
-          fill: { type: solid, color: "$peachTint" }
+          fill: { type: solid, color: "$accent4" }
         - text: 新声竞演决赛
-          fill: { type: solid, color: "$peachTint" }
+          fill: { type: solid, color: "$accent4" }
       - - text: "21:00–22:30"
           bold: true
-          color: "$nightDeep"
+          color: "$bg"
         - text: 压轴唱作人 B
         - text: 电子制作人 D
         - text: —
@@ -108,14 +108,14 @@ elements:
     elementType: shape
     bounds: [490, 136, 8, 8]
     shapeName: ellipse
-    fill: { type: solid, color: "$coral" }
+    fill: { type: solid, color: "$primary" }
   - elementId: d2-label
     elementType: text
     bounds: [506, 130, 320, 22]
     content:
       fontFamily: "ZCOOL QingKe HuangYou"
       fontSize: 15
-      color: "$night"
+      color: "$primaryDeep"
       letterSpacing: 2
       wrap: false
       text: DAY 2 · 07.19 SUN
@@ -132,30 +132,30 @@ elements:
         - text: 浪花舞台
       - - text: "15:00–16:30"
           bold: true
-          color: "$nightDeep"
+          color: "$bg"
         - text: 摇滚乐团 J
         - text: DJ 组合 K
         - text: 校园乐队 L
       - - text: "17:00–18:30"
           bold: true
-          color: "$nightDeep"
+          color: "$bg"
         - text: 人气唱作人 M
         - text: 电子制作人 N
         - text: 说唱新声 O
       - - text: "19:00–20:30"
           bold: true
-          color: "$coralDeep"
-          fill: { type: solid, color: "$peachTint" }
+          color: "$accent"
+          fill: { type: solid, color: "$accent4" }
         - text: 头部乐队 P
           bold: true
-          fill: { type: solid, color: "$peachTint" }
+          fill: { type: solid, color: "$accent4" }
         - text: 特邀 DJ Q
-          fill: { type: solid, color: "$peachTint" }
+          fill: { type: solid, color: "$accent4" }
         - text: 新声竞演颁奖
-          fill: { type: solid, color: "$peachTint" }
+          fill: { type: solid, color: "$accent4" }
       - - text: "21:00–22:30"
           bold: true
-          color: "$nightDeep"
+          color: "$bg"
         - text: 压轴乐团 R
         - text: DJ 组合 K
         - text: 烟火大合唱

@@ -1,7 +1,7 @@
 pageType: content
 background:
   type: solid
-  color: "$cream"
+  color: "$primaryTint"
 notes: 权益页（清单）：四档赞助权益对比表，冠名档整列高亮。报价为单届参考价（示例），强调冠名仅 1 席、含排他，制造稀缺感。
 elements:
   # ---- 页眉 ----
@@ -9,7 +9,7 @@ elements:
     elementType: shape
     bounds: [64, 41, 10, 10]
     shapeName: rect
-    fill: { type: solid, color: "$coral" }
+    fill: { type: solid, color: "$primary" }
   - elementId: header-kicker
     elementType: text
     bounds: [84, 36, 420, 20]
@@ -58,8 +58,8 @@ elements:
         - text: |
             <p>冠名合作</p>
             <p><span style="font-size:10.5px;">¥800 万 · 1 席</span></p>
-          fill: { type: solid, color: "$coral" }
-          color: "$night"
+          fill: { type: solid, color: "$primary" }
+          color: "$primaryDeep"
         - text: |
             <p>联合呈现</p>
             <p><span style="font-size:10.5px;">¥400 万 · 2 席</span></p>
@@ -74,8 +74,8 @@ elements:
           align: [left, middle]
         - text: 主舞台独家冠名
           bold: true
-          color: "$coralDeep"
-          fill: { type: solid, color: "$peachTint" }
+          color: "$accent"
+          fill: { type: solid, color: "$accent4" }
         - text: 新声舞台冠名
         - text: —
         - text: —
@@ -84,8 +84,8 @@ elements:
           align: [left, middle]
         - text: 主视觉 + 全场物料
           bold: true
-          color: "$coralDeep"
-          fill: { type: solid, color: "$peachTint" }
+          color: "$accent"
+          fill: { type: solid, color: "$accent4" }
         - text: 舞台周边物料
         - text: 指定区域物料
         - text: 摊位招牌
@@ -94,8 +94,8 @@ elements:
           align: [left, middle]
         - text: VIP 票 200 张
           bold: true
-          color: "$coralDeep"
-          fill: { type: solid, color: "$peachTint" }
+          color: "$accent"
+          fill: { type: solid, color: "$accent4" }
         - text: VIP 票 80 张
         - text: 门票 40 张
         - text: 门票 8 张
@@ -104,8 +104,8 @@ elements:
           align: [left, middle]
         - text: 核心区快闪店 80㎡
           bold: true
-          color: "$coralDeep"
-          fill: { type: solid, color: "$peachTint" }
+          color: "$accent"
+          fill: { type: solid, color: "$accent4" }
         - text: 品牌展位 30㎡
         - text: 标准展位 9㎡
         - text: 市集摊位 3×3m
@@ -114,8 +114,8 @@ elements:
           align: [left, middle]
         - text: 全周期联合传播
           bold: true
-          color: "$coralDeep"
-          fill: { type: solid, color: "$peachTint" }
+          color: "$accent"
+          fill: { type: solid, color: "$accent4" }
         - text: 爆发期联合传播
         - text: 官方单条鸣谢
         - text: 官方合集鸣谢

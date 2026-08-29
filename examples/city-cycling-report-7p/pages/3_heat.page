@@ -1,7 +1,7 @@
 pageType: content
 background:
   type: solid
-  color: "$paper"
+  color: "$bg"
 notes: |
   骑行热力页。左图是全天 24 小时分时曲线，早 8 点与晚 6 点两座峰一目了然；右图把工作日与周末拆成四个时段对比——周末没有早高峰，但午间和夜间反而更热。解读要点：双峰（7-9 时、17-19 时）合计约 351/705 ≈ 全天 50% 的订单量，分时指数是把全天订单归一为 705 后的分布指数。
 elements:
@@ -25,7 +25,7 @@ elements:
     elementType: shape
     bounds: [60, 48, 840, 1]
     shapeName: rect
-    fill: { type: solid, color: "$ink" }
+    fill: { type: solid, color: "$text" }
 
   - elementId: ch-num
     elementType: text
@@ -33,7 +33,7 @@ elements:
     content:
       fontFamily: "Alimama ShuHeiTi"
       fontSize: 44
-      color: "$orange"
+      color: "$accent"
       align: [left, middle]
       wrap: false
       text: "02"
@@ -100,7 +100,7 @@ elements:
         - ["23时", 9]
     xAxis:
       label: { fontSize: 10.5, color: "$muted" }
-      axisLine: { color: "$ink", width: 1 }
+      axisLine: { color: "$text", width: 1 }
       gridLine: false
     yAxis:
       min: 0
@@ -113,7 +113,7 @@ elements:
         name: 骑行指数
         smooth: true
         width: 2.5
-        lineColor: "$navy"
+        lineColor: "$primary"
         areaColor: "#16324F24"
 
   - elementId: chart1-note
@@ -124,7 +124,7 @@ elements:
       fontSize: 11.5
       align: [left, top]
       text: |
-        <p>早晚高峰（7-9 时、17-19 时）合计贡献全天约 <span style="color:$orange;"><strong>50%</strong></span> 的订单；最高峰不在清晨，而在 <span style="color:$orange;"><strong>18 时</strong></span>——下班的路比上班更依赖两轮。</p>
+        <p>早晚高峰（7-9 时、17-19 时）合计贡献全天约 <span style="color:$accent;"><strong>50%</strong></span> 的订单；最高峰不在清晨，而在 <span style="color:$accent;"><strong>18 时</strong></span>——下班的路比上班更依赖两轮。</p>
 
   - elementId: chart-sep
     elementType: shape
@@ -157,7 +157,7 @@ elements:
     legend: { position: bottom, fontSize: 10.5, color: "$muted" }
     xAxis:
       label: { fontSize: 10.5, color: "$muted" }
-      axisLine: { color: "$ink", width: 1 }
+      axisLine: { color: "$text", width: 1 }
       gridLine: false
     yAxis:
       label: { fontSize: 10.5, color: "$muted" }
@@ -166,11 +166,11 @@ elements:
       - type: bar
         encode: { x: slot, y: weekday }
         name: 工作日
-        fill: "$navy"
+        fill: "$primary"
       - type: bar
         encode: { x: slot, y: weekend }
         name: 周末
-        fill: "$orange"
+        fill: "$accent"
 
   - elementId: chart2-note
     elementType: text
