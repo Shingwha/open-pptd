@@ -135,7 +135,7 @@ export async function buildPptx(deck, options = {}) {
   // 2. 每页 slide + 媒体 + 图表（媒体命名跨页全局唯一，避免同名覆盖）
   let mediaBase = 0;
   pages.forEach((page, i) => {
-    const result = buildSlide(theme, page, i + 1, registry, { chartBase: chartPrefix[i], mediaBase, pageSize: size });
+    const result = buildSlide(theme, page, i + 1, registry, { chartBase: chartPrefix[i], mediaBase, pageSize: size, fontMetrics: embeddedFonts.lineMetrics });
     mediaBase = result.mediaCount;
     zip.add(`ppt/slides/slide${i + 1}.xml`, result.xml);
     zip.add(`ppt/slides/_rels/slide${i + 1}.xml.rels`, result.relsXml);

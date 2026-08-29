@@ -68,6 +68,29 @@ export function parseFontInfo(buf) {
   };
 }
 
+/**
+ * 字体单倍行距系数 = (OS/2 usWinAscent + usWinDescent) / head.unitsPerEm。
+ * PowerPoint/WPS 的「单倍行距」按此字体度量渲染（微软雅黑 ≈1.32、宋体 1.00、
+ * Calibri ≈1.22 倍字号），并非字号 1 倍——导出百分比行距（a:spcPct）时用它
+ * 补偿基数差（writer/text.js 行距导出）。新字体进库即自适应（字节在手）。
+ * 解析失败返回 null（调用方回退静态表/默认值）。
+ */
+export function fontLineFactor(buf) {
+  try {
+    const tables = parseTables(buf);
+    if (!tables["OS/2"] || !tables.head) return null;
+    const upem = u16(table(buf, tables.head), 18);
+    if (!upem) return null;
+    const os2 = table(buf, tables["OS/2"]);
+    return (u16(os2, 74) + u16(os2, 76)) / upem;
+  } catch {
+    return null;
+  }
+}
+
+/** 字体名归一化（行距系数查表键）：小写 + 去空白。 */
+export const fontKey = (name) => String(name).toLowerCase().replace(/\s+/g, "");
+
 /** name 表取 Windows/UCS-2/en-US 记录（ID = nameID）。 */
 function nameString(buf, nameT, nameID) {
   const name = table(buf, nameT);

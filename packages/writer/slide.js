@@ -70,6 +70,8 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
   const ctx = {
     // 页面尺寸（deck.size）：背景图 cover 裁剪等按实际页面计算，缺省 960×540
     pageSize: Array.isArray(options.pageSize) ? options.pageSize : [PAGE_WIDTH, PAGE_HEIGHT],
+    // 嵌入字体实测单倍行距系数（fontKey(字体名) → 系数）：行距导出补偿用
+    fontMetrics: options.fontMetrics || null,
     nextId: () => idCounter++,
     registerLink(url) {
       if (links.has(url)) return links.get(url);

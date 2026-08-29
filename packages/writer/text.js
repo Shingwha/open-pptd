@@ -11,6 +11,7 @@ import { resolveFont, resolveColor } from "../model/theme.js";
 import { latexToMathml } from "../model/latex.js";
 import { mathmlToOmml } from "../model/mathml2omml.js";
 import { computeBaseStyle, pickDefined } from "../model/style.js";
+import { fontKey } from "../model/font.js";
 import { colorElement, solidFillElement, buildXfrm, buildFill, shadowElement } from "./drawing.js";
 
 const M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math";
@@ -24,6 +25,23 @@ const MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 const MATH_FONT = '<a:latin typeface="Cambria Math"/><a:ea typeface="Cambria Math"/>';
 
 const H_ALIGN = { left: "l", center: "ctr", right: "r", justify: "just", distributed: "dist" };
+
+// —— 行距补偿：字体单倍行距系数（PowerPoint spcPct 的基数，见 paragraphProps 注释）——
+// 全自适应：嵌入字体（含全部内置库字体）导出时从真实字节解析实测值
+// （buildEmbeddedFonts.lineMetrics，新字体零维护）；未嵌入字体（系统字体等，
+// 导出时无字节可测）兜底 1.2（中西文常见单倍系数）。
+const DEFAULT_LINE_FACTOR = 1.2;
+
+/** 段落字体 → 单倍行距系数：嵌入字体实测（ctx.fontMetrics）> 兜底 1.2。 */
+function lineFactorOf(theme, fontFamily, metrics) {
+  const font = resolveFont(theme, fontFamily) || {};
+  for (const name of [font.ea, font.latin]) {
+    if (!name) continue;
+    const key = fontKey(name);
+    if (metrics && metrics[key] != null) return metrics[key];
+  }
+  return DEFAULT_LINE_FACTOR;
+}
 
 function runAttrs(s) {
   const attrs = { lang: "zh-CN" };
@@ -85,17 +103,24 @@ export function buildRun(theme, run, baseStyle, registerLink) {
   return chunks.join("");
 }
 
-/** 段落级样式 → a:pPr。base 为段落继承到的样式。 */
-function paragraphProps(style) {
+/** 段落级样式 → a:pPr。base 为段落继承到的样式，factor 为段落字体的单倍行距系数。 */
+function paragraphProps(style, factor) {
   const attrs = {};
   if (style.textAlign && H_ALIGN[style.textAlign]) attrs.algn = H_ALIGN[style.textAlign];
   if (style.marginLeft) attrs.marL = Math.round(style.marginLeft * 12700);
   if (style.marginRight) attrs.marR = Math.round(style.marginRight * 12700);
   const kids = [];
+  // 行距按 PPTD 字段语义映射 PowerPoint 原生行距类型：lineHeightPx（固定 px）→
+  // a:spcPts（「固定值」），lineHeight（倍数）→ a:spcPct（「多倍行距」）。
+  // 两类"倍数"的基数不同：PPTD/CSS 是字号（渲染端 line-height:N = 字号×N），而
+  // spcPct 是字体自然单倍行距（OS/2 度量：微软雅黑 1.32、宋体 1.00、Calibri 1.22），
+  // 直接 N×100% 导出会让 PowerPoint 行距比预览宽 20~30%——倍数需除以字体单倍系数
+  // 补偿（factor 来源见 lineFactorOf）。无显式行距也写（默认 1 = 官方默认 lineHeight 1）。
   if (style.lineHeightPx) {
     kids.push(el("a:lnSpc", {}, el("a:spcPts", { val: Math.round(style.lineHeightPx * 100) })));
-  } else if (style.lineHeight) {
-    kids.push(el("a:lnSpc", {}, el("a:spcPct", { val: Math.round(style.lineHeight * 100000) })));
+  } else {
+    const lh = typeof style.lineHeight === "number" && style.lineHeight > 0 ? style.lineHeight : 1;
+    kids.push(el("a:lnSpc", {}, el("a:spcPct", { val: Math.round((lh / factor) * 100000) })));
   }
   if (style.marginTop) {
     kids.push(el("a:spcBef", {}, el("a:spcPts", { val: Math.round(style.marginTop * 100) })));
@@ -128,6 +153,7 @@ function paragraphProps(style) {
 export function buildParagraph(theme, para, base, registerLink, options = {}) {
   const style = { ...base, ...pickDefined(para.style) };
   if (para.listType) style.listType = para.listType; // 列表信息传给段落属性（buChar/缩进）
+  const factor = lineFactorOf(theme, style.fontFamily, options.fontMetrics);
   const onlyFormulas = para.runs.length > 0 && para.runs.every((r) => r.formula);
   const runs = para.runs
     .map((run) =>
@@ -136,8 +162,8 @@ export function buildParagraph(theme, para, base, registerLink, options = {}) {
         : buildRun(theme, run, style, registerLink)
     )
     .join("");
-  if (!runs) return `<a:p>${paragraphProps(style)}</a:p>`;
-  return `<a:p>${paragraphProps(style)}${runs}</a:p>`;
+  if (!runs) return `<a:p>${paragraphProps(style, factor)}</a:p>`;
+  return `<a:p>${paragraphProps(style, factor)}${runs}</a:p>`;
 }
 
 /** 给 OMML 每个 m:r 注入样式（a:rPr > solidFill / sz / Cambria Math 字体，PPT 官方 run 属性风格）。
@@ -273,9 +299,9 @@ export function textXml(theme, element, ctx) {
       el("p:txBody", {}, inner),
     ].join(""));
   // 元素级透明度（官方 Text.opacity）→ run 级填充 a:alpha（PowerPoint 存储结构）
-  const body = buildTextBody(theme, element.content, ctx.registerLink, { opacity: element.opacity });
+  const body = buildTextBody(theme, element.content, ctx.registerLink, { opacity: element.opacity, fontMetrics: ctx.fontMetrics });
   if (body.includes("<a14:m")) {
-    const fallbackBody = buildTextBody(theme, element.content, ctx.registerLink, { formulaFallback: true, opacity: element.opacity });
+    const fallbackBody = buildTextBody(theme, element.content, ctx.registerLink, { formulaFallback: true, opacity: element.opacity, fontMetrics: ctx.fontMetrics });
     const choice = el("mc:Choice", { "xmlns:a14": A14_NS, Requires: "a14" }, buildSp(body));
     const fallback = el("mc:Fallback", {}, buildSp(fallbackBody));
     return el("mc:AlternateContent", { "xmlns:mc": MC_NS }, choice + fallback);

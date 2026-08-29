@@ -62,7 +62,7 @@ export function tableXml(theme, tableEl, ctx) {
       const rh = rowHeights[r] != null ? rowHeights[r] : 26;
       const trAttrs = { h: Math.round(Math.max(0.01, rh) * 12700) };
       const tcs = gRow
-        .map((g, c) => (g.covered ? mergePlaceholderTc(theme, g, r, c, ts, rowCount, colCount) : tcXml(theme, g.cell, r, c, ts, rowCount, colCount, tableEl.fill)))
+        .map((g, c) => (g.covered ? mergePlaceholderTc(theme, g, r, c, ts, rowCount, colCount) : tcXml(theme, g.cell, r, c, ts, rowCount, colCount, tableEl.fill, ctx.fontMetrics)))
         .join("");
       return el("a:tr", trAttrs, tcs);
     })
@@ -120,7 +120,7 @@ function tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, cell, cellAlign
   return { xml: el("a:tcPr", attrs, kids.join("")), align, s };
 }
 
-function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill) {
+function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill, fontMetrics) {
   // 官方继承链合并 → 单元格最终样式（颜色保留 $ 引用）
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
   // Cell.textStyle 引用（theme.textStyles，只影响文字字段，不含 fill/border/align）
@@ -145,7 +145,7 @@ function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill) {
   const align = cell?.align ?? s.align ?? ["center", "middle"];
   base.textAlign = align[0];
   const paras = tree.paragraphs
-    .map((p) => buildParagraph(theme, p, base, () => null))
+    .map((p) => buildParagraph(theme, p, base, () => null, { fontMetrics }))
     .join("");
   const body =
     `<a:txBody><a:bodyPr anchor="${V_ANCHOR[align[1]] || "ctr"}"><a:noAutofit/></a:bodyPr>` +
