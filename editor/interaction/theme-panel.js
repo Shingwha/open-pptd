@@ -10,8 +10,7 @@
 // 事务：beginChange → applyTheme → endChange（全量渲染）。
 // ============================================================================
 
-import { THEME_PALETTES } from "../../packages/model/theme.js";
-import { resolveColor } from "../../packages/model/theme.js";
+import { THEME_PALETTES, resolveColor, mergePaletteColors } from "../../packages/model/theme.js";
 import { showToast } from "../app/toast.js";
 import { attachPopover } from "../popover.js";
 
@@ -53,10 +52,10 @@ export function bindThemePanel({ state, api, io, anchor }) {
 
   const isOpen = () => panel?.classList.contains("open");
 
-  /** 应用整套 colors（保留 deck 现有 textStyles/tableStyles）。 */
+  /** 应用整套 colors（预设键覆盖，自定义色键保留——AI deck 常带 $gold 等自有键被页面引用）。 */
   function applyColors(colors, name) {
     api.beginChange();
-    io.applyTheme({ ...(state.deck.theme || {}), colors: { ...colors } });
+    io.applyTheme({ ...(state.deck.theme || {}), colors: mergePaletteColors(state.theme.colors, colors) });
     api.endChange();
     if (name) showToast(`已应用配色「${name}」`, "info");
     refreshPresetHighlight();

@@ -12,7 +12,7 @@ import * as yaml from "../model/vendor/js-yaml.mjs";
 import { parseDeck } from "../model/pptd-io.js";
 import { walkElements } from "../model/walk.js";
 import { validateDeck } from "../model/validate.js";
-import { THEME_PALETTES } from "../model/theme.js";
+import { THEME_PALETTES, mergePaletteColors } from "../model/theme.js";
 import { buildPptx, magicMatches } from "../writer/pptx.js";
 import { skipReasonText } from "../writer/font.js";
 import { decodeDataUrl, imageSize } from "../writer/util.js";
@@ -143,7 +143,8 @@ export async function exportDeck({ manifest, outPath = null, embedFonts = true, 
     if (!preset) {
       throw new Error(`未知配色预设 "${theme}"，可用: ${Object.keys(THEME_PALETTES).join(" / ")}`);
     }
-    deck.theme = { ...(deck.theme || {}), colors: { ...preset.colors } };
+    // 预设键覆盖，deck 自定义色键保留（整套替换会令 $gold 等自有引用全部 unknown token）
+    deck.theme = { ...(deck.theme || {}), colors: mergePaletteColors(deck.theme?.colors, preset.colors) };
   }
   const skipped = [];
   const bytes = await buildPptx(deck, {

@@ -69,6 +69,22 @@ export function resolveColor(theme, color) {
 }
 
 /**
+ * 应用配色预设：预设键覆盖，deck 已有的其余自定义色键保留。
+ * AI 生成 deck 常在 theme.colors 里自定义 $gold/$paper 等键且被页面引用，
+ * 整套替换会令这些引用全部变 unknown color token 回退黑色。
+ * @param {object} currentColors 现有 colors（预设键以外的键保留）
+ * @param {object} presetColors  预设 colors（其键优先）
+ * @returns {object} 合成后的新 colors
+ */
+export function mergePaletteColors(currentColors, presetColors) {
+  const out = { ...(presetColors || {}) };
+  for (const [k, v] of Object.entries(currentColors || {})) {
+    if (!(k in out)) out[k] = v;
+  }
+  return out;
+}
+
+/**
  * 解析字体：字符串或 {latin, ea} → {latin, ea}（未指定侧回退默认 "Microsoft YaHei"）。
  * 字符串形式（如 "KaiTi"）= 中西文统一用该字体：latin+ea 双槽同写——
  * OOXML 中文字符走 ea 槽，只写 latin 会导致中文回退默认字体。
