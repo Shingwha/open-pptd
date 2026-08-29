@@ -1,6 +1,6 @@
 {
   "name": "open-pptd",
-  "version": "1.3.3",
+  "version": "1.3.5",
   "type": "module",
   "description": "PPTD 网页编辑器 + 自研零依赖 PPTX writer（skill 运行时不需 npm install）",
   "bin": { "open-pptd": "bin/open-pptd.js" },
