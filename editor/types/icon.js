@@ -34,9 +34,9 @@ function iconItem(key) {
   };
 }
 
-// 添加快捷项：高频图标直接插入，其余走选择器
-const QUICK = ["check", "arrow-right", "arrow-up-right", "bar-chart", "graph-up", "lightbulb", "people", "envelope", "calendar", "bullseye", "search", "gear"];
-
+// 全量注册（与 shape.js 的 187 种同款策略）：添加面板图标 Tab 从 ICONS 派生完整
+// 目录，按 `icon-${key}` 查条目——此前只注册 12 个快捷图标，点其余 180 个时
+// addItems[`icon-${key}`] 为 undefined，pick 崩（Cannot read properties of undefined）
 registerType({
   type: "icon",
   label: "图标",
@@ -55,7 +55,7 @@ registerType({
           });
         },
       },
-      ...QUICK.map(iconItem),
+      ...Object.entries(ICONS).map(([key]) => iconItem(key)),
     ],
   },
 
