@@ -28,6 +28,9 @@ export function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) 
   const fill = cell?.fill ?? s.fill ?? tableFill ?? null;
   const align = cell?.align ?? s.align ?? ["center", "middle"];
   const border = cell?.border ?? s.border;
+  // 固定行距（lineHeightPx，px 值）与倍数行距（lineHeight，无单位）分开带出：
+  // 混用会让 CSS line-height 丢 px 单位变"倍数"，行高放大 20 倍（如 22 → 22×字号）
+  const lineHeightPx = cell?.lineHeightPx ?? ref.lineHeightPx ?? s.lineHeightPx ?? null;
   return {
     s, ref, fill, align, borders: borderSides(border),
     color: cell?.color ?? ref.color ?? s.color ?? "#000000",
@@ -36,8 +39,8 @@ export function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) 
     bold: cell?.bold ?? ref.bold ?? s.bold,
     italic: cell?.italic ?? ref.italic ?? s.italic,
     backgroundColor: cell?.backgroundColor ?? ref.backgroundColor ?? s.backgroundColor,
-    lineHeight: cell?.lineHeightPx ?? ref.lineHeightPx ?? s.lineHeightPx
-      ?? (cell?.lineHeight ?? ref.lineHeight ?? s.lineHeight) ?? 1,
+    lineHeightPx,
+    lineHeight: lineHeightPx ?? (cell?.lineHeight ?? ref.lineHeight ?? s.lineHeight) ?? 1,
     letterSpacing: cell?.letterSpacing ?? ref.letterSpacing ?? s.letterSpacing,
     marginTop: cell?.marginTop ?? ref.marginTop ?? s.marginTop,
   };
@@ -134,7 +137,7 @@ export function tdCss(theme, f, covered) {
       `color:${resolveColor(theme, f.color) || "#000000"}`,
       `font-size:${f.fontSize}px`,
       f.fontFamily ? `font-family:"${f.fontFamily}",sans-serif` : "",
-      `line-height:${f.lineHeight}`,
+      `line-height:${f.lineHeightPx ? `${f.lineHeightPx}px` : f.lineHeight}`,
       f.letterSpacing ? `letter-spacing:${f.letterSpacing}px` : "",
       f.marginTop ? `padding-top:${TABLE_CELL_PAD + f.marginTop}px` : "",
       "overflow:hidden",
@@ -170,7 +173,7 @@ function renderCellContent(theme, text, f) {
   if (color) css.push(`color:${color}`);
   if (f.bold) css.push("font-weight:bold");
   if (f.italic) css.push("font-style:italic");
-  css.push(`line-height:${f.lineHeight ?? 1}`);
+  css.push(`line-height:${f.lineHeightPx ? `${f.lineHeightPx}px` : f.lineHeight ?? 1}`);
   if (f.letterSpacing != null) css.push(`letter-spacing:${f.letterSpacing}px`);
   const font = resolveFont(theme, f.fontFamily);
   css.push(`font-family:"${font.latin}","${font.ea}",sans-serif`);
