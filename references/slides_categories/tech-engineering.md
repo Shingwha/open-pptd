@@ -16,12 +16,7 @@ Readers may be fellow engineers, but they may also be product partners or custom
 
 ## 2. General Prohibitions
 
-The following are red lines running through the entire deck; they take effect before all layout and visual rules, and unless the user explicitly requests otherwise, none may be violated.
-
-- **No cards by default**: unless the user explicitly requests it, strictly forbid using rounded rectangles or rectangular cards to build hierarchy or alignment. Line segments, whitespace, and font-size/weight differences are better solutions.
-- **No evenly divided compositions**: unless no other layout is available, do not default to one-third splits, four-way splits, or 2×2 matrices — including formulaic patterns such as "title + three parallel blocks + conclusion."
-- **No mediocre, common, or AI-typical color schemes**: unless the user explicitly requests them, strictly forbid blue-and-white pairings, blue-purple gradients, cyan-purple neon, rainbow flares, glassmorphism cards, and glowing borders.
-- **No elements that clash with the overall style**: no styles from outside the chosen style may appear, such as using rounded icons or rounded rectangles within a sharp style.
+General prohibitions (cards / evenly divided compositions / AI-typical palettes / elements foreign to the chosen style) follow slides_categories.md step1 and are not repeated here.
 
 ## 3. How to Present Technical Content
 
@@ -168,7 +163,7 @@ When no better structure fits, start from "decision summary → goals and constr
 
 ## 9. Sample References
 
-Samples are only for extracting mechanisms; wholesale replication is forbidden. Organize the Style first according to the current readers, evidence, brand, and usage; precise color values, fonts, covers, section pages, and footers are not inherited by default.
+Samples are only for extracting mechanisms; wholesale replication is forbidden. Organize the Style first according to the current readers, evidence, brand, and usage; precise color values, fonts, covers, section pages, and footers are not inherited by default. Samples A–C are white-base engineering variants of `swiss-minimal` (the default pairing for this scenario, see `styles.md`); the interview may swap in any other entry.
 
 ### Sample A: Warm Orange & Cool Blue — White-Base Engineering Document Style
 

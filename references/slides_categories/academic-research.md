@@ -34,13 +34,14 @@ Academic presentations in different research fields have different emphases: thi
 
 ## Prohibitions
 
-1. **No cards by default**: unless the user explicitly requests it, strictly forbid using rounded rectangles or rectangular cards to build hierarchy or alignment: line segments, whitespace, and font/size differences are better solutions.
-2. **No evenly divided compositions**: unless no other layout is available, do not default to one-third splits, four-way splits, or 2×2 matrices — including three-part formulas such as "three columns + title + conclusion."
-3. **No mediocre, common, or AI-typical color schemes**: strictly forbid any blue-and-white pairing, blue-purple gradients, cyan-purple neon, rainbow flares, glassmorphism cards, or glowing borders — unless the user explicitly requests them.
-4. **No overly small font sizes**: unless the user requests it or the deliverable is a reading-type artifact (posters, etc.), body text must not use small font sizes.
-5. **No whitespace inside regions**: strictly forbid any case where the content cannot fill its planned region. It is not enough for the text box to be full — the actual text content, as seen in a screenshot, must fill the region. Failure to fill is the most serious kind of crudeness; it feels like no care went into the layout at all.
+General prohibitions (cards / evenly divided compositions / AI-typical palettes) follow slides_categories.md step1 and are not repeated here. Scenario-specific:
+
+1. **No overly small font sizes**: unless the user requests it or the deliverable is a reading-type artifact (posters, etc.), body text must not use small font sizes.
+2. **No whitespace inside regions**: strictly forbid any case where the content cannot fill its planned region. It is not enough for the text box to be full — the actual text content, as seen in a screenshot, must fill the region. Failure to fill is the most serious kind of crudeness; it feels like no care went into the layout at all.
 
 ## Visual References
+
+> The three worked examples below elaborate `styles.md` entries — ETH Swiss Lab Posters = `swiss-minimal` (the default pairing for this scenario), Tsinghua / MIT-Style defense = a formal identity-led variant, Humanities archival special issue = `editorial`. The interview may swap in any other style.
 
 ### ETH Swiss Lab Posters
 

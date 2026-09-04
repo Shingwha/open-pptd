@@ -20,12 +20,12 @@ Use strong font-size contrast and extreme asymmetric layouts to build an exagger
 3. **Have a visual rationale**: the visual language must come from the deck's subject, brand, industry, era, or material, and must help the audience understand the content.
 
 ## Prohibitions
-1. **No cards by default**: unless the user explicitly requests it, strictly forbid using rounded rectangles or rectangular cards to build hierarchy or alignment: line segments, whitespace, and font/size differences are better solutions.
-2. **No evenly divided compositions**: unless no other layout is available, do not default to one-third splits, four-way splits, or 2×2 matrices — including three-part formulas such as "three columns + title + conclusion."
-3. **No mediocre, common, or AI-typical color schemes**: strictly forbid any blue-and-white pairing, blue-purple gradients, cyan-purple neon, rainbow flares, glassmorphism cards, or glowing borders — unless the user explicitly requests them.
-4. **No elements that clash with the overall style**: no styles from outside the chosen style may appear, such as using rounded icons or rounded rectangles within a sharp style.
+
+General prohibitions (cards / evenly divided compositions / AI-typical palettes / elements foreign to the chosen style) follow slides_categories.md step1 and are not repeated here.
 
 ## Visual References
+
+> The four worked examples below elaborate `styles.md` entries — Klein Blue Swiss Posters = `swiss-minimal`, Stencil-Printed Indie Magazine = `hand-drawn`, Brutalist Newspaper = `brutalist`, Memphis Pop Posters = `poster-pop`; `editorial` is the default pairing for this scenario. Any entry (or a custom style contract) may be chosen at the interview instead; when a worked example is selected, it may be followed as a full recipe.
 
 Visual references are only "references": they show you something good so you know what good looks like — they are not directly usable. You should design visuals according to the user's actual needs, not directly apply templates.
 

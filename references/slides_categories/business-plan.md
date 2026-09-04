@@ -19,11 +19,12 @@
 - When the topic suits it, search for images generously and place well-chosen images at the right spots — one picture is worth a thousand words.
 
 ## Key Requirements
-1. Create a top-tier visual experience: treat every detail of typesetting, fonts, and colors with care, crafting it like a work of art — details determine success or failure.
-2. Unless the user explicitly requests it, **strictly forbid using rounded rectangles or rectangular cards** to build hierarchy or alignment: line segments, whitespace, and font/size differences are better solutions.
-3. Unless no other layout is available, forbid evenly divided compositions; do not default to one-third splits, four-way splits, or 2×2 matrices — including three-part formulas such as "three columns + title + conclusion."
+
+General prohibitions (cards / evenly divided compositions / AI-typical palettes) follow slides_categories.md step1 and are not repeated here.
 
 ## Visual References
+
+> This section pairs with the `editorial` entry of `styles.md` — the default pairing for this scenario (type-led hierarchy, display/body division of labor, recurring motifs). The interview may swap in any other style from `styles.md`.
 
 1. Type is attitude: display type (titles, manifesto lines, big numbers) and body type (body text, notes, sources) have a clear division of labor by family or weight; display type needs poster-level tension, daring extreme contrast in size, weight, and letter spacing — the title itself is a visual work.
 2. Fonts and the color scheme must be matched and harmonious; reference each other when designing.

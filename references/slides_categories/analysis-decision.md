@@ -16,12 +16,12 @@
 5. Encourage drawing and combining shapes to build complex charts and SmartArt, supported by text explanations — plain text alone is too flat.
 
 ## Key Requirements
-1. Create a top-tier visual experience: every detail of typesetting, fonts, colors, and alignment must be treated with care; accept no defaults — details determine success or failure.
-2. Unless explicitly requested, strictly forbid using rounded rectangles or rectangular cards to build hierarchy or alignment: line segments, whitespace, and font/size differences are better solutions.
-3. A single basic chart must not occupy half or more of the width; encourage laying out multiple charts or other content on one page.
-4. Unless no other layout is available, forbid evenly divided compositions; do not default to one-third splits, four-way splits, or 2×2 matrices — including three-part formulas such as "three columns + title + conclusion."
+1. A single basic chart must not occupy half or more of the width; encourage laying out multiple charts or other content on one page.
+2. General prohibitions (cards / evenly divided compositions / AI-typical palettes) follow slides_categories.md step1 and are not repeated here.
 
 ## Visual References
+
+> This section elaborates the `consulting-classic` entry of `styles.md` — the default pairing for this scenario. The interview may swap in any other style; when it does, keep this section's discipline items (stable axes, chart de-defaulting, table conventions, position discipline) and rebuild the look from the new style entry.
 
 1. White background + single primary-color skeleton: pure white pages, with only one primary color throughout the deck (e.g., navy, ink green, or another color common in financial-consulting style) carrying the structural skeleton — title emphasis, table headers, navigation highlights, main chart series, and numbered markers — supported by a 2–3-step light-tint ladder of the same hue and neutral grays.
 2. The title is the conclusion: each page's main title is a complete judgment sentence; the heading format (kicker → main title → subtitle, or title + conclusion-sentence subtitle) is fixed throughout; in typography, bold serif titles and sans-serif body text form two clearly divided roles, with a strictly consistent hierarchy.

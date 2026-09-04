@@ -19,12 +19,7 @@ Do not first decide "use blue, use rounded corners, use some Sample" and then cr
 
 ## 2. General Prohibitions
 
-The following are red lines running through the entire deck; they take effect before all layout and visual rules, and unless the user explicitly requests otherwise, none may be violated.
-
-- **No cards by default:** unless the user explicitly requests it, strictly forbid using rounded rectangles or rectangular cards to build hierarchy or alignment. Line segments, whitespace, and font-size/weight differences are better solutions.
-- **No evenly divided compositions:** unless no other layout is available, do not default to one-third splits, four-way splits, or 2×2 matrices — including formulaic patterns such as "title + three parallel blocks + conclusion."
-- **No mediocre, common, or AI-typical color schemes:** unless the user explicitly requests them, strictly forbid blue-and-white pairings, blue-purple gradients, cyan-purple neon, rainbow flares, glassmorphism cards, and glowing borders.
-- **No elements that clash with the overall style:** no styles from outside the chosen style may appear, such as using rounded icons or rounded rectangles within a sharp style.
+General prohibitions (cards / evenly divided compositions / AI-typical palettes / elements foreign to the chosen style) follow slides_categories.md step1 and are not repeated here.
 
 ## 3. The Teaching Loop: Every Chapter and Every Page Needs a Take-Away Action
 
@@ -107,7 +102,7 @@ One material borrows at most two or three mutually compatible features from a si
 
 ## 7. Reference Directions (Inspiration Only; New Directions May Be Generated)
 
-These directions help you understand design choices quickly; they are not fixed palettes, font tables, or page templates. Take only the parts that fit the task.
+These directions help you understand design choices quickly; they are not fixed palettes, font tables, or page templates. Take only the parts that fit the task. They map to `styles.md` entries — A ≈ `editorial` (the default pairing for this scenario), B ≈ structured infographics within `data-journalism` / `blueprint`, C ≈ the `hand-drawn` work-record mood, D ≈ `data-journalism` — and the interview may pick any other entry instead.
 
 ### Direction A: Editorial Study Handbook (May Reference Sample 1)
 

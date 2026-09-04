@@ -12,11 +12,12 @@
 **Progress, data, responsibilities, risks, and dependencies are the core relationships of a management report — extract the various relationships from the content and express them with structural diagrams and frameworks.**
 
 ## Key Requirements
-1. Create a top-tier visual experience: treat every detail of typesetting, fonts, and colors with care, crafting it like a work of art.
-2. Unless the user explicitly requests it, **strictly forbid using rounded rectangles or rectangular cards** to build hierarchy or alignment: line segments, whitespace, and font/size differences are better solutions.
-3. Unless no other layout is available, forbid evenly divided compositions; do not default to one-third splits, four-way splits, or 2×2 matrices — including three-part formulas such as "three columns + title + conclusion."
+
+General prohibitions (cards / evenly divided compositions / AI-typical palettes) follow slides_categories.md step1 and are not repeated here.
 
 ## Visual References
+
+> This section pairs with the `consulting-classic` entry of `styles.md` — the default pairing for this scenario. The interview may swap in any other style from `styles.md`.
 
 1. Fonts split into families: display type and body type have a clear division of labor (different weights of the same sans-serif family, or sans-serif titles paired with another family for body text); hierarchy is built on font-size and weight ratios; functional text such as numbering, labels, and footnotes is uniformly set small in caps / with added letter spacing; font sizes flex with content volume while the hierarchy ratios stay unchanged.
 2. Fonts and the color scheme must be matched and harmonious; reference each other when designing.

@@ -23,7 +23,7 @@ The .pptd format is a simplified abstraction layer over OOXML that follows basic
 
 ## Capability Scope (Important Constraints)
 
-0. **File reading boundary**: the whole workflow only needs to read the documents under `references/` (pptd.md / themes.md / slides_categories.md and its scenario docs / shapes.md / icons.md / fonts.md / general-poster.md); online browsing and PPTX export are done by running `node bin/open-pptd.js serve|export|check`. **Do not read any source code by default** (implementations and test cases under `editor/`, `packages/`, `bin/`, `scripts/`, `assets/`, `tests/`; `docs/` is developer documentation, also not read by default) — unless an unsolvable problem is hit (format doubts, export anomalies, editor anomalies, etc.); only then consult the relevant source to locate the root cause, and stop once fixed.
+0. **File reading boundary**: the whole workflow only needs to read the documents under `references/` (pptd.md / themes.md / styles.md / slides_categories.md and its scenario docs / shapes.md / icons.md / fonts.md / general-poster.md); online browsing and PPTX export are done by running `node bin/open-pptd.js serve|export|check`. **Do not read any source code by default** (implementations and test cases under `editor/`, `packages/`, `bin/`, `scripts/`, `assets/`, `tests/`; `docs/` is developer documentation, also not read by default) — unless an unsolvable problem is hit (format doubts, export anomalies, editor anomalies, etc.); only then consult the relevant source to locate the root cause, and stop once fixed.
 
 1. **Format baseline**: strictly implement per `references/pptd.md` (the complete PPTD v2 spec); the export target is a PPTX that opens in PowerPoint without repair and renders identically to the editor preview.
 2. **Export pipeline**: use the local exporter `node bin/open-pptd.js export <deck.pptd> [-o <out.pptx>]` (self-developed writer, no browser dependency).
@@ -69,7 +69,7 @@ Understand the user's requirements based on the context:
 ### Requirements interview — ask once, in one round
 Before generating, ask the user **in a single round** to confirm the four dimensions below. For each dimension: skip if the user already specified it; ask if it is not specified; if the user says "you decide", fall back to the best practice given.
 
-1. **Style**: visual direction — e.g. steady business, modern tech, minimal premium, warm friendly, creative bold; or a reference image/template/brand guide. Offer 1-3 suitable candidates from the built-in presets (`references/themes.md`) or font categories (`references/fonts.md`) as options.
+1. **Style**: visual direction. Offer 2-3 **named combinations** (scenario × visual style × light mode) from `references/styles.md` — e.g. "analysis-decision × `consulting-classic` × all-light" (the default pairing) vs "analysis-decision × `data-journalism` × all-dark" — instead of adjectives like "business" or "tech"; or follow a user-provided reference image/template/brand guide.
 2. **Page count**: expected number of pages. If the user is unsure, propose a count based on the content structure and confirm. Rules: user-specified count takes priority; a page-by-page outline/script matches its page count; with a complete structured document or a bare topic, decide yourself based on content/search results.
 3. **Layout**: structure preferences — canvas ratio (default 16:9), whether to include cover / table of contents / section dividers / summary pages, information density per page (sparse vs dense), and any required page types.
 4. **Content**: whether the provided material is complete or the model should expand (search for more material, cases, data), and whether sources/citations are required.
@@ -78,7 +78,7 @@ Rules:
 - The user's explicit requirements always take priority over any default.
 - Do not re-ask what the user already answered.
 - When the user says "you decide" or delegates, proceed with best practice: pick the style from the scenario guides, decide the page count from the content structure, follow the general rules in `references/slides_categories.md`, and expand content with search when the input type allows it.
-- After the interview, state the confirmed decisions in one short paragraph (style / page count / layout / content) before generating, so the deck stays aligned with expectations.
+- After the interview, state the confirmed decisions in one short paragraph before generating, so the deck stays aligned with expectations. It must cover: page count / layout / content expansion, plus the **design anchors** — visual style name (`references/styles.md` entry or a one-sentence custom contract), light mode (all-light / sandwich / all-dark), signature motif (a repeating element group; never a color bar/stripe or decorative title underline), font pairing (≤2 families from `references/fonts.md`), and a size scale of 5-8 anchors used across the whole deck.
 
 ### step3. Generate the presentation based on the user's requirements
 
@@ -102,6 +102,11 @@ Before generating, first read `references/pptd.md` to understand the pptd format
 2. **Presets only as backup**: use one of the 10 presets in `references/themes.md` (scenario mapping in the overview table) only when the user explicitly asks or after discussion; write that preset's full 17 keys into `theme.colors`.
 3. **Give palette advice at delivery**: explain the design rationale (primary/accent/chart-series selection logic) and proactively offer replaceable alternatives (e.g. "if you want a steadier business feel, switch to consult") — the user can re-skin later via the editor "Palette" panel or CLI `--theme <key>`.
 
+**Generation discipline (every deck)**:
+- Same-kind entry pages repeat the signature motif with only its state changing; distinct page kinds (cover, section dividers, closing, special pages) get their own composition instead of reusing the entry template.
+- Alternate text-driven, image-driven, and data-driven pages; every page keeps one focal point and at least one visual element (positive layout vocabulary: `references/slides_categories.md` step1).
+- `notes` is the speaker note, not a page annotation. Write what the presenter says while showing the page — the opening line, which numbers to read aloud (with their source years), the transition to the next page. Never page/design explanations, content summaries, or generation self-checks; omit the field entirely when there is nothing to present.
+
 #### Replicating a PPT
 - Analyze the images to estimate element positions, fonts and sizes, etc., and **replicate 1:1 as closely as possible**.
 - When an image contains elements that are hard to replicate directly and cannot be approximated with icons/shapes (e.g. photos, avatars), you may use tools such as bash or python to crop and screenshot the original image.
@@ -116,7 +121,7 @@ Before generating, first read `references/pptd.md` to understand the pptd format
 Adopt different production approaches for different user [design directions].
 
 ##### Self-directed design
-1. Read the design guide `references/slides_categories.md`, and read the scenario document corresponding to the user's query.
+1. Read the design guide `references/slides_categories.md` and the scenario document corresponding to the user's query; pick or confirm the visual style per the interview anchors in `references/styles.md`.
 2. Produce the presentation based on the above.
 
 ##### Generating content in other formats
