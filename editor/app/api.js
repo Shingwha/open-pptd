@@ -12,6 +12,7 @@
 import { openChartEditor } from "../interaction/dialogs/chart-editor.js";
 import { openTableEditor } from "../interaction/dialogs/table-editor.js";
 import { openIconPicker } from "../interaction/dialogs/icon-editor.js";
+import { ensureIcon } from "./project/icons.js";
 
 export function createEditorApi({ state, page, selected, ops }) {
   let controller = null; // 画布交互控制器（interaction/canvas.js）
@@ -58,10 +59,10 @@ export function createEditorApi({ state, page, selected, ops }) {
         openTableEditor(el, { onChange: () => view.render() });
       } else if (el.elementType === "icon") {
         openIconPicker({
-          current: el.icon,
-          onPick: (key) => {
-            el.icon = key;
-            view.render();
+          current: el.iconName,
+          onPick: (raw) => {
+            el.iconName = raw;
+            ensureIcon(raw).then(() => view.render()); // 选中图标预读后重渲染
           },
         });
       }

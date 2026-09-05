@@ -15,38 +15,38 @@ elements:
     bounds: [48, 84, 800, 30]
     content:
       style: "$caption"
-      text: "bs: = 本地 Bootstrap 图标库；fas:/far: = 官方 Font Awesome 格式（映射到近似图标）"
-  # —— bs: 命名空间图标（主题色）——
+      text: "Font Awesome Free 7：fas: 实心 / far: 描边 / fab: 品牌（CC BY 4.0，SVG 嵌入导出）"
+  # —— fas: 实心（主题色） ——
   - elementId: ic-1
     elementType: icon
     bounds: [48, 140, 56, 56]
-    iconName: "bs:lightbulb"
+    iconName: "fas:lightbulb"
     fill: {type: solid, color: "$primary"}
   - elementId: ic-2
     elementType: icon
     bounds: [130, 140, 56, 56]
-    iconName: "bs:graph-up"
+    iconName: "fas:chart-line"
     fill: {type: solid, color: "#059669"}
   - elementId: ic-3
     elementType: icon
     bounds: [212, 140, 56, 56]
-    iconName: "bs:people"
+    iconName: "fas:users"
     fill: {type: solid, color: "#F59E0B"}
   - elementId: ic-4
     elementType: icon
     bounds: [294, 140, 56, 56]
-    iconName: "bs:gear"
+    iconName: "fas:gear"
     fill: {type: solid, color: "#7C3AED"}
   - elementId: ic-5
     elementType: icon
     bounds: [376, 140, 56, 56]
-    iconName: "bs:check-circle"
+    iconName: "fas:circle-check"
     fill: {type: solid, color: "#DC2626"}
-  # —— bs: 渐变填充图标 ——
+  # —— 渐变填充图标 ——
   - elementId: ic-6
     elementType: icon
     bounds: [470, 130, 80, 80]
-    iconName: "bs:rocket-takeoff"
+    iconName: "fas:rocket"
     fill:
       type: gradient
       gradientType: linear
@@ -57,14 +57,14 @@ elements:
   - elementId: ic-7
     elementType: icon
     bounds: [580, 130, 80, 80]
-    iconName: "bs:star"
+    iconName: "fas:star"
     fill:
       type: gradient
       gradientType: radial
       stops:
         - {position: 0, color: "#FDE68A"}
         - {position: 1, color: "#F59E0B"}
-  # —— fas: 官方格式（FA → Bootstrap 映射）——
+  # —— fas:/far: 混排 ——
   - elementId: ic-8
     elementType: icon
     bounds: [700, 140, 56, 56]
@@ -73,7 +73,7 @@ elements:
   - elementId: ic-9
     elementType: icon
     bounds: [782, 140, 56, 56]
-    iconName: "fas:lightbulb"
+    iconName: "fas:bolt"
     fill: {type: solid, color: "#F59E0B"}
   - elementId: ic-10
     elementType: icon
@@ -88,8 +88,8 @@ elements:
       fontSize: 16
       align: [left, top]
       text: |
-        <p>第一行：<strong>bs:</strong> 命名空间，本地 Bootstrap 图标库（192 个，可搜索）</p>
+        <p>第一行：<strong>fas:</strong> 实心风格（最常用），far: 描边风格（免费子集）</p>
         <p>第二行：渐变填充（linear / radial，官方 Fill 类型）</p>
-        <p>第三行：<strong>fas:/far:</strong> 官方 Font Awesome 7 格式，映射表渲染近似 Bootstrap 图标</p>
-        <p>未知图标（如 fas:non-existent）预览显示占位框，导出自动跳过</p>
+        <p>第三行：<strong>fab:</strong> 品牌图标（免费库原生支持，约 570 个）</p>
+        <p>未知图标（如 fas:non-existent）预览显示占位框，导出自动跳过并告警</p>
         <p>导出为 PowerPoint 原生图标格式（SVG 图片，可改色 / 转换为形状）</p>

@@ -15,6 +15,7 @@ import { createHistory } from "../../interaction/history.js";
 import { showToast } from "../toast.js";
 import { fetchProjectTexts } from "./project-cache.js";
 import { readProject } from "./handle-io.js";
+import { preloadIcons } from "./icons.js";
 
 export function createLoader({ state, view, images, fontManager, connect, renderStatusBar }) {
   const $ = (id) => document.getElementById(id);
@@ -114,6 +115,7 @@ export function createLoader({ state, view, images, fontManager, connect, render
     if (keepPage) state.currentPage = Math.min(prevPage, Math.max(0, state.deck.pages.length - 1));
     if (viaHandle) await images.preloadHandleImages(state.projectHandle);
     else await images.preloadRemoteImages();
+    await preloadIcons(state.deck.pages); // 图标预读（iconMap 渲染/导出共用；live-reload 自动补新）
     await fontManager.restoreFromDeck(); // 资源表 url 字体自动拉取注册（file 字体待用户重选）
     view.render();
     connect(); // 项目就绪后订阅实时刷新（幂等；部署模式自动不启用）

@@ -84,6 +84,8 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
     loadImage(src) {
       return registry.loadImage ? registry.loadImage(src) : null;
     },
+    // 图标预载缓存（Map，loadIconDefs 产物）：iconXml 按 raw iconName 查 {inner,w,h}
+    iconDefs: registry.iconDefs || null,
     addMedia(bytes, ext) {
       mediaCounter += 1;
       const n = (options.mediaBase || 0) + mediaCounter;

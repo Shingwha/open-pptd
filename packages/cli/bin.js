@@ -17,6 +17,7 @@ import { runCheck } from "./check.js";
 import { runRender } from "./render.js";
 import { runGallery } from "./gallery.js";
 import { runFonts } from "./fonts.js";
+import { runIcons } from "./icons.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXAMPLES_DIR = join(__dirname, "..", "..", "examples");
@@ -41,7 +42,11 @@ function usage() {
       "  字体库（assets/fonts/，全部免费商用，默认子集化嵌入）：\n" +
       "  open-pptd fonts list                         查看内置字体库（状态 ✓/✗）\n" +
       "  open-pptd fonts download <名称|all>          按需/全量下载字体文件到字体库\n" +
-      "  open-pptd fonts check <deck.pptd>            体检 deck 字体声明（嵌入/仅声明/缺失）\n"
+      "  open-pptd fonts check <deck.pptd>            体检 deck 字体声明（嵌入/仅声明/缺失）\n" +
+  "\n" +
+  "  图标库（assets/icons/，Font Awesome Free，浏览器/导出有 CDN 兜底，下载仅供离线）：\n" +
+  "  open-pptd icons list                         查看图标库状态（fas/far/fab 本地/总数）\n" +
+  "  open-pptd icons download [--force]           全量下载三风格 SVG 到图标库\n"
   );
 }
 
@@ -66,6 +71,13 @@ async function main() {
   }
   if (command === "fonts") {
     if (!(await runFonts(args.slice(1)))) {
+      usage();
+      process.exit(1);
+    }
+    return;
+  }
+  if (command === "icons") {
+    if (!(await runIcons(args.slice(1)))) {
       usage();
       process.exit(1);
     }

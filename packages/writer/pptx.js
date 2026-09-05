@@ -31,6 +31,7 @@ import {
   NS_REL,
 } from "./parts.js";
 import { buildSlide } from "./slide.js";
+import { loadIconDefs } from "./icon.js";
 import { decodeDataUrl, imageSize } from "./util.js";
 
 function defaultLoadImage(src, options) {
@@ -78,6 +79,13 @@ export async function buildPptx(deck, options = {}) {
   const embeddedFonts = await buildEmbeddedFonts(deck, options);
   if (embeddedFonts.skipped?.length && typeof options.onFontSkipped === "function") {
     options.onFontSkipped(embeddedFonts.skipped);
+  }
+
+  // 图标预载：本地库/CDN/编辑器预读（iconDefs），未命中聚合告警（同字体语义）
+  const icons = await loadIconDefs(deck, options);
+  registry.iconDefs = icons.defs;
+  if (icons.skipped.length && typeof options.onIconSkipped === "function") {
+    options.onIconSkipped(icons.skipped);
   }
 
   // 图表全局编号：每页前缀和（slideN 内 registerChart 从 chartBase 继续）

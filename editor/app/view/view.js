@@ -77,7 +77,7 @@ export function createView({ state, page, selected, api, controller, props }) {
     viewport.applyScale();
     // transform-origin 为 center：flex 居中 + 中心锚点缩放，视觉左右/上下对称，无需 margin 补偿
     const pg = page();
-    renderPage(canvas, pg, state.deck, state.theme, { imageMap: state.imageMap });
+    renderPage(canvas, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
     applyMeasurements(pg, canvas);
     controller.refreshSelection();
   }

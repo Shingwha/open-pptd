@@ -90,7 +90,7 @@ elements:
   - elementId: item1-icon
     elementType: icon
     bounds: [400, 226, 20, 20]
-    iconName: "bs:fire"
+    iconName: "fas:fire"
     fill: {type: solid, color: "$accent"}
 
   - elementId: item1-name
@@ -118,7 +118,7 @@ elements:
   - elementId: item2-icon
     elementType: icon
     bounds: [400, 296, 20, 20]
-    iconName: "bs:heart"
+    iconName: "fas:heart"
     fill: {type: solid, color: "$accent"}
 
   - elementId: item2-name
@@ -146,7 +146,7 @@ elements:
   - elementId: item3-icon
     elementType: icon
     bounds: [400, 366, 20, 20]
-    iconName: "bs:sun"
+    iconName: "fas:sun"
     fill: {type: solid, color: "$accent"}
 
   - elementId: item3-name

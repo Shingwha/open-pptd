@@ -69,6 +69,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
         const skipped = [];
         const bytes = await buildPptx(state.deck, {
           imageMap: state.imageMap,
+          iconDefs: state.iconMap, // 图标预读缓存（icons.js；未预载项由 loadIconDefs 回源补齐）
           fontFiles: embedFonts ? fontManager.exportFontFiles() : null,
           embedFonts,
           onFontSkipped: (list) => skipped.push(...list),

@@ -15,6 +15,7 @@ import { parseDeck } from "../packages/model/pptd-io.js";
 import { normalizeTheme, mergeFonts } from "../packages/model/theme.js";
 import { renderPage, disposeChartInstances } from "../packages/renderer/page.js";
 import { fetchProjectTexts } from "./app/project/project-cache.js";
+import { preloadIcons } from "./app/project/icons.js";
 import { pickProjectFolder, hasDeck } from "./app/project/handle-io.js";
 import { addRecent, setPendingProject } from "./app/project/handle-store.js";
 import { createFileMenu } from "./app/file-menu.js";
@@ -90,13 +91,16 @@ export async function loadProject(entry) {
       }
     }
   }
-  const proj = { deck, theme, imageMap };
+  // 图标预读（封面页）：FA SVG 经本地/CDN + Cache API，渲染与图片同层缓存
+  const iconMap = {};
+  if (deck.pages[0]) await preloadIcons([deck.pages[0]], iconMap);
+  const proj = { deck, theme, imageMap, iconMap };
   projectCache.set(entry.id, proj);
   return proj;
 }
 
 /** 按容器实际宽度渲染一页封面（容器需已布局，16:9）。 */
-export function renderPageFit(container, page, deck, theme, imageMap) {
+export function renderPageFit(container, page, deck, theme, imageMap, iconMap = {}) {
   disposeChartInstances(container);
   container.innerHTML = "";
   const cw = container.clientWidth;
@@ -104,7 +108,7 @@ export function renderPageFit(container, page, deck, theme, imageMap) {
     // 容器尚未布局（宽度 0）：下一帧再试一次，避免 0.1 下限把封面缩成 96px 残影
     requestAnimationFrame(() => {
       if (document.contains(container) && container.clientWidth) {
-        renderPageFit(container, page, deck, theme, imageMap);
+        renderPageFit(container, page, deck, theme, imageMap, iconMap);
       }
     });
     return;
@@ -116,7 +120,7 @@ export function renderPageFit(container, page, deck, theme, imageMap) {
   stage.style.height = `${PAGE_H}px`;
   stage.style.transform = `scale(${scale})`;
   stage.style.transformOrigin = "top left";
-  renderPage(stage, page, deck, theme, { imageMap });
+  renderPage(stage, page, deck, theme, { imageMap, iconMap });
   container.appendChild(stage);
 }
 
@@ -134,7 +138,7 @@ const sizeObserver = new ResizeObserver((entries) => {
     const prev = thumbSizes.get(thumb);
     thumbSizes.set(thumb, cw);
     if (prev !== undefined && Math.abs(cw - prev) <= 1) continue;
-    renderPageFit(thumb, proj.deck.pages[0], proj.deck, proj.theme, proj.imageMap);
+    renderPageFit(thumb, proj.deck.pages[0], proj.deck, proj.theme, proj.imageMap, proj.iconMap);
   }
 });
 
@@ -155,7 +159,7 @@ const thumbObserver = new IntersectionObserver(
         .then((proj) => {
           if (!document.contains(thumb)) return; // 加载完成前已离开页面
           thumb.classList.remove("loading");
-          renderPageFit(thumb, proj.deck.pages[0], proj.deck, proj.theme, proj.imageMap);
+          renderPageFit(thumb, proj.deck.pages[0], proj.deck, proj.theme, proj.imageMap, proj.iconMap);
         })
         .catch((err) => {
           if (!document.contains(thumb)) return;

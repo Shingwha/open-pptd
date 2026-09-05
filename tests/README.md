@@ -31,7 +31,7 @@ tests/
     shape/               形状：ECMA-376 全部 187 种预置 + 自定义路径 custGeom（8 页）
     line/                线条：sharp / round / smooth + 箭头 + 颜色变体（2 页）
     image/               图片：crop → fit → cropShape 全管线（1 页）
-    icon/                图标：bs:/fas:/far:/fab: + 颜色/渐变变体（2 页）
+    icon/                图标：Font Awesome fas:/far:/fab: + 渐变/HEX8/宽图标（2 页）
     table/               表格：样式 / 边框 / 对齐 / 合并 / 填充 / 字体 / 颜色（9 页）
     chart/               图表：bar/pie/line/area/scatter 等 21 页全类型
     notes/               备注：演讲者备注 + 文本（5 页）
@@ -90,7 +90,7 @@ node bin/open-pptd.js serve --project tests/projects/table
 | | 06-fills | Table.fill 整表 / 单元格内联（含渐变）/ 主题引用填充 / 富文本单元格 |
 | | 07-fonts | cellStyle.fontFamily / {latin,ea} / 分类样式字体 / span 内联 |
 | | 08-colors | 主题色文字 / HEX6 / HEX8 / 背景高亮 / 装饰组合 |
-| icon | 01-icon | 四种图标库（bs/fas/far/fab）+ 渐变 |
+| icon | 01-icon | Font Awesome（fas/far/fab）+ 渐变 + 品牌图标 |
 | | 02-colors | 主题色引用 / HEX8 透明度 / 多渐变 / 深浅底叠放 |
 | line | 01-curve | 直线/斜线/箭头/sharp/round/smooth |
 | | 02-colors | 主题色 / 虚线点线 / 宽度 / 箭头颜色 / 折线颜色 / HEX8 |

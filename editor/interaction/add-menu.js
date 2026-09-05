@@ -5,16 +5,17 @@
 //   Tab 栏：基础 | 形状 | 图标 | 图表
 //   基础：文字/线条/图片/表格大卡片 + 最近使用（localStorage，上限 8）
 //   形状：左分类侧栏（全部 + 20 分类）+ 右紧凑网格（187 种小图标）+ 搜索
-//   图标：左分类侧栏（全部 + 分类）+ 右网格（192 个全量）+ 搜索
+//   图标：FA 图标浏览器（搜索 + 官方分类，约 2000 个，与选择器同构动态加载）
 //   图表：13 种网格（图标 + 名称）
-// 数据源全部来自类型注册表 / 内置库（SUPPORTED_SHAPES / ICONS / CHART_META），
+// 数据源全部来自类型注册表 / 内置库（SUPPORTED_SHAPES / FA registry / CHART_META），
 // 不重复声明；点击条目统一走 addElement（新增后选中，非 icon 自动进数据编辑）。
 // ============================================================================
 
 import { buildAddItems } from "../types/index.js";
 import { SUPPORTED_SHAPES } from "../../packages/model/model.js";
 import { shapeMenuIcon } from "../../packages/model/preset-geometry.js";
-import { ICONS } from "../../packages/model/icon-library.js";
+import { iconElement } from "../types/icon.js";
+import { getIconRegistry, ensureIcon, queryIconEntries } from "../app/project/icons.js";
 import { iconThumb } from "../../packages/renderer/icon.js";
 
 const RECENT_KEY = "pptd-add-recent";
@@ -69,7 +70,7 @@ export function bindAddMenu({ fab, menu, addApi }) {
   }
 
   // --------------------------------------------------------------------------
-  // 目录数据（形状/图标分类 + 条目）
+  // 目录数据（形状分类 + 条目；图标目录见 renderIconCatalog——registry 派生、懒加载）
   // --------------------------------------------------------------------------
   const shapeCats = [...new Set(Object.values(SUPPORTED_SHAPES).map((s) => s.category))];
   const shapeEntries = Object.entries(SUPPORTED_SHAPES).map(([key, def]) => ({
@@ -79,14 +80,6 @@ export function bindAddMenu({ fab, menu, addApi }) {
     svg: shapeMenuIcon(key, { size: 20 }),
   }));
   shapeEntries.push({ key: "custom", label: "自定义路径", cat: "基本", svg: shapeMenuIcon("rect", { size: 20 }) });
-
-  const iconCats = [...new Set(Object.values(ICONS).map((i) => i.cat))];
-  const iconEntries = Object.entries(ICONS).map(([key, def]) => ({
-    key,
-    label: def.label,
-    cat: def.cat,
-    svg: iconThumb(key, { size: 18 }),
-  }));
 
   // 图表项（复用注册表菜单声明）
   const chartEntries = Object.entries(addItems)
@@ -143,8 +136,67 @@ export function bindAddMenu({ fab, menu, addApi }) {
   function renderTab(body) {
     if (currentTab === "basic") renderBasic(body);
     else if (currentTab === "shape") renderCatalog(body, shapeCats, shapeEntries, (e) => makeThumb(e.svg, e.label, () => pick(addItems[`shape-${e.key}`])));
-    else if (currentTab === "icon") renderCatalog(body, iconCats, iconEntries, (e) => makeThumb(e.svg, e.label, () => pick(addItems[`icon-${e.key}`])));
+    else if (currentTab === "icon") renderIconCatalog(body);
     else renderChart(body);
+  }
+
+  // --------------------------------------------------------------------------
+  // 图标目录：Font Awesome registry（条目轻量、缩略图懒加载、搜索含别名/关键词）
+  // --------------------------------------------------------------------------
+  let iconCatalogReady = null; // { cats, entries } 单例
+  let iconCatalogSeq = 0; // 防竞态：加载期间切 Tab 则丢弃过期渲染
+  function iconCatalog() {
+    if (!iconCatalogReady) {
+      iconCatalogReady = getIconRegistry().then((registry) => {
+        const byName = new Map(registry.icons.map((i) => [i.name, i]));
+        const cats = [...new Set(Object.values(registry.cats))].sort((a, b) => a.localeCompare(b));
+        const { entries } = queryIconEntries(registry, {});
+        const list = entries.map((e) => {
+          const meta = byName.get(e.name);
+          const cat = (meta && meta.cat && registry.cats[meta.cat]) || "其他";
+          return {
+            key: e.raw,
+            raw: e.raw,
+            cat,
+            label: e.label,
+            // 搜索域：官方名 + 展示名 + 别名 + 官方搜索词（如 home → house）
+            haystack: [e.name, e.label, (meta?.aliases || []).join(" "), (meta?.terms || []).join(" ")].join(" ").toLowerCase(),
+          };
+        });
+        return { cats, entries: list };
+      });
+    }
+    return iconCatalogReady;
+  }
+
+  function renderIconCatalog(body) {
+    const seq = ++iconCatalogSeq;
+    body.classList.add("catalog");
+    const loading = document.createElement("div");
+    loading.className = "add-sub-title";
+    loading.textContent = "正在加载图标目录…";
+    body.appendChild(loading);
+    iconCatalog().then(({ cats, entries }) => {
+      if (seq !== iconCatalogSeq) return; // 期间切走了 Tab
+      body.innerHTML = "";
+      renderCatalog(
+        body,
+        cats,
+        entries,
+        (e) => {
+          const cell = document.createElement("button");
+          cell.type = "button";
+          cell.className = "add-thumb";
+          cell.title = e.raw;
+          cell.addEventListener("click", () => pick({ id: `icon-fa:${e.raw}`, create: () => iconElement(e.raw) }));
+          ensureIcon(e.raw).then((def) => {
+            if (def && cell.isConnected) cell.innerHTML = iconThumb(def, { size: 20 });
+          });
+          return cell;
+        },
+        { limit: 240 }
+      );
+    });
   }
 
   // --------------------------------------------------------------------------
@@ -177,16 +229,17 @@ export function bindAddMenu({ fab, menu, addApi }) {
       const rg = document.createElement("div");
       rg.className = "add-thumb-grid";
       for (const item of recents) {
-        rg.appendChild(makeThumb(item.icon || iconThumb("grid", { size: 18 }), item.label, () => pick(item)));
+        rg.appendChild(makeThumb(item.icon, item.label, () => pick(item)));
       }
       body.appendChild(rg);
     }
   }
 
   // --------------------------------------------------------------------------
-  // 形状/图标 Tab：搜索 + 分类侧栏 + 紧凑网格
+  // 形状/图标 Tab：搜索 + 分类侧栏 + 紧凑网格（同一组件；图标走懒加载缩略图）
   // --------------------------------------------------------------------------
-  function renderCatalog(body, cats, entries, nodeFn) {
+  function renderCatalog(body, cats, entries, nodeFn, opts = {}) {
+    const limit = opts.limit || Infinity;
     let q = "";
     let activeCat = "全部";
 
@@ -227,13 +280,20 @@ export function bindAddMenu({ fab, menu, addApi }) {
       return entries.filter((e) => {
         if (activeCat !== "全部" && e.cat !== activeCat) return false;
         if (!ql) return true;
-        return e.label.toLowerCase().includes(ql) || e.key.toLowerCase().includes(ql);
+        return e.label.toLowerCase().includes(ql) || e.key.toLowerCase().includes(ql) || (e.haystack && e.haystack.includes(ql));
       });
     };
 
     function renderGrid() {
       wrap.innerHTML = "";
-      const list = filtered();
+      const full = filtered();
+      const list = full.slice(0, limit);
+      if (full.length > limit) {
+        const hint = document.createElement("div");
+        hint.className = "add-sub-title";
+        hint.textContent = `共 ${full.length} 个匹配，显示前 ${limit} 个——输入关键词缩小范围`;
+        wrap.appendChild(hint);
+      }
       if (!list.length) {
         const empty = document.createElement("div");
         empty.className = "add-empty";

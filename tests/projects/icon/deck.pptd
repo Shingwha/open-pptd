@@ -1,5 +1,5 @@
 version: v2
-title: "图标组件测试（bs: / fas: / far: / fab:）"
+title: "图标组件测试（Font Awesome fas/far/fab）"
 size: [960, 540]
 theme:
   colors:

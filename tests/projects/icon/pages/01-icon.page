@@ -3,24 +3,29 @@ background: {type: solid, color: "#FFFFFF"}
 elements:
   - elementId: t1
     elementType: text
-    bounds: [60, 60, 400, 40]
+    bounds: [60, 60, 500, 40]
     content:
       style: "$title"
-      text: 图标
-  - elementId: i1
+      text: 图标（Font Awesome Free）
+  - elementId: i-solid
     elementType: icon
     bounds: [60, 140, 64, 64]
-    iconName: "bs:lightbulb"
+    iconName: "fas:lightbulb"
     fill: {type: solid, color: "$primary"}
-  - elementId: i2
+  - elementId: i-brand
     elementType: icon
     bounds: [150, 140, 64, 64]
-    iconName: "fas:house"
-    fill: {type: solid, color: "$accent"}
-  - elementId: i3
+    iconName: "fab:github"
+    fill: {type: solid, color: "$text"}
+  - elementId: i-regular
     elementType: icon
-    bounds: [240, 130, 80, 80]
-    iconName: "bs:rocket-takeoff"
+    bounds: [240, 140, 64, 64]
+    iconName: "far:heart"
+    fill: {type: solid, color: "$danger"}
+  - elementId: i-gradient
+    elementType: icon
+    bounds: [330, 130, 80, 80]
+    iconName: "fas:rocket"
     fill:
       type: gradient
       gradientType: linear
@@ -28,3 +33,8 @@ elements:
       stops:
         - {position: 0, color: "$primary"}
         - {position: 1, color: "$accent"}
+  - elementId: i-alias
+    elementType: icon
+    bounds: [440, 140, 64, 64]
+    iconName: "fas:home"
+    fill: {type: solid, color: "$success"}

@@ -79,7 +79,7 @@ export function createPresent({ state, view }) {
     disposeChartInstances(layer);
     layer.innerHTML = "";
     const pg = state.deck.pages[i];
-    renderPage(layer, pg, state.deck, state.theme, { imageMap: state.imageMap });
+    renderPage(layer, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
     autoGrowTexts(pg, layer);
   }
 

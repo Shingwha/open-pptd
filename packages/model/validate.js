@@ -8,12 +8,13 @@
 // 双端纯净（无 fs/fetch）：需要环境能力的检查走 opts 注入，缺省自动跳过：
 //   - opts.fileExists(rel)  相对路径资源存在性（CLI 传 fs 实现）
 //   - opts.fontRegistry     字体注册表对象（cli/fonts.js loadRegistry 的产物）
+//   - opts.iconRegistry     FA 图标注册表对象（assets/icons/registry.json）
 // ============================================================================
 
 import { normalizeTheme, resolveColor, resolveTextStyle } from "./theme.js";
 import { parseFontResources } from "./font.js";
 import { findFont, findSystemFont } from "./font-registry.js";
-import { resolveIconName } from "./icon-name.js";
+import { resolveIconName } from "./icon-fa.js";
 import { walkElements } from "./walk.js";
 import { PAGE_WIDTH, PAGE_HEIGHT } from "./model.js";
 import { ELEMENT_TYPES } from "./style-spec.js";
@@ -32,7 +33,7 @@ export function allRules() {
 /**
  * 校验 deck 模型。
  * @param {object} deck parseDeck 产物（{version,title,size,theme,fonts,pages}）
- * @param {object} [opts] { fileExists?, fontRegistry? }
+ * @param {object} [opts] { fileExists?, fontRegistry?, iconRegistry? }
  * @returns {{ errors: object[], warnings: object[], perPage: Map<number, object[]> }}
  */
 export function validateDeck(deck, opts = {}) {
@@ -199,8 +200,16 @@ registerRule((deck, ctx, report) => {
         }
       }
     }
-    if (el.elementType === "icon" && el.iconName && !resolveIconName(el.iconName)) {
-      report({ level: "warning", rule: "resource", page: pageNo, elementId: el.elementId, message: `iconName "${el.iconName}" 不在图标库（导出时该图标将被跳过）` });
+    if (el.elementType === "icon" && el.iconName && ctx.opts.iconRegistry) {
+      if (!resolveIconName(el.iconName, ctx.opts.iconRegistry)) {
+        report({
+          level: "warning",
+          rule: "resource",
+          page: pageNo,
+          elementId: el.elementId,
+          message: `iconName "${el.iconName}" 未命中 Font Awesome 免费图标库（导出时该图标将被跳过；命名以官方为准 fontawesome.com/search?ic=free，前缀 fas/far/fab）`,
+        });
+      }
     }
   });
 });

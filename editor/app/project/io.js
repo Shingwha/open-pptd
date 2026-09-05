@@ -12,6 +12,7 @@
 
 import { createFontManager } from "./font-manager.js";
 import { createImageStore } from "./images.js";
+import { bindIconMap } from "./icons.js";
 import { createLoader } from "./loader.js";
 import { createLiveReload } from "./live-reload.js";
 import { createProjectSaver } from "./saver.js";
@@ -25,6 +26,7 @@ import { showToast } from "../toast.js";
 export function createIo({ state, view }) {
   const fontManager = createFontManager(state);
   const images = createImageStore(state);
+  bindIconMap(state.iconMap); // 图标预读缓存绑定（icons.js 模块单例，渲染/导出共用）
 
   // 装配顺序：loader/saver 的回调闭包引用 live，直到首次加载/保存时才执行，
   // 彼时 live 已赋值（const live 会触发 TDZ，故用 let 声明）。

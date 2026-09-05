@@ -14,5 +14,10 @@ tests/fixtures/formula/mml/
 assets/fonts/*
 !assets/fonts/registry.json
 
+# 图标库：Font Awesome SVG 本体不入库（icons download），registry.json 元数据必须入库
+assets/icons/solid/
+assets/icons/regular/
+assets/icons/brands/
+
 # 本地工具运行痕迹（ZCode 会话目录）
 .zcode/

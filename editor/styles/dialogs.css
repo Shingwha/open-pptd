@@ -231,3 +231,45 @@
 ::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--faint); }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* —— 图标选择器浏览器（搜索 + FA 官方分类侧栏 + 懒加载网格） —— */
+.icon-browser { display: flex; gap: 10px; flex: 1; min-height: 340px; }
+.icon-cats {
+  width: 152px;
+  flex: none;
+  overflow-y: auto;
+  max-height: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 4px;
+  border-right: 1px solid var(--line);
+}
+.icon-cat {
+  flex: none; /* 同 .add-cat：防 flex 压缩 */
+  text-align: left;
+  padding: 5px 8px;
+  font-size: var(--text-sm);
+  color: var(--sub);
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.icon-cat:hover { background: var(--primary-soft); color: var(--ink); }
+.icon-cat.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
+.icon-grid-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.icon-count { font-size: var(--text-xs); color: var(--faint); }
+.icon-browser .icon-grid {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 300px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+  gap: 6px;
+  align-content: start;
+}

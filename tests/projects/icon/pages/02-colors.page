@@ -3,72 +3,57 @@ background: {type: solid, color: "#FFFFFF"}
 elements:
   - elementId: t1
     elementType: text
-    bounds: [60, 36, 500, 40]
+    bounds: [60, 36, 560, 40]
     content:
       style: "$title"
-      text: 图标颜色变体（主题引用 / HEX8 / 渐变）
+      text: 图标颜色变体（主题引用 / HEX8 / 渐变 / 宽图标）
   # ---- 主题色引用 ----
-  - elementId: i1
+  - elementId: c1
     elementType: icon
     bounds: [60, 100, 56, 56]
-    iconName: "bs:check-circle"
+    iconName: "fas:circle-check"
     fill: {type: solid, color: "$primary"}
-  - elementId: i2
+  - elementId: c2
     elementType: icon
     bounds: [140, 100, 56, 56]
-    iconName: "bs:exclamation-circle"
-    fill: {type: solid, color: "$accent"}
-  - elementId: i3
+    iconName: "fas:circle-exclamation"
+    fill: {type: solid, color: "$warning"}
+  - elementId: c3
     elementType: icon
     bounds: [220, 100, 56, 56]
-    iconName: "bs:check-circle"
-    fill: {type: solid, color: "$success"}
-  - elementId: i4
+    iconName: "fas:triangle-exclamation"
+    fill: {type: solid, color: "$danger"}
+  - elementId: c4
     elementType: icon
     bounds: [300, 100, 56, 56]
-    iconName: "bs:exclamation-triangle"
-    fill: {type: solid, color: "$warning"}
-  - elementId: i5
+    iconName: "fas:users"
+    fill: {type: solid, color: "$muted"}
+  - elementId: c5
     elementType: icon
     bounds: [380, 100, 56, 56]
-    iconName: "bs:x-circle"
-    fill: {type: solid, color: "$danger"}
-  - elementId: i6
+    iconName: "fas:gear"
+    fill: {type: solid, color: "$text"}
+  # ---- HEX8 透明度梯度（同图标三档） ----
+  - elementId: a1
     elementType: icon
-    bounds: [460, 100, 56, 56]
-    iconName: "bs:star-fill"
-    fill: {type: solid, color: "$muted"}
-  # ---- HEX8 透明度 ----
-  - elementId: i7
+    bounds: [60, 190, 56, 56]
+    iconName: "fas:heart"
+    fill: {type: solid, color: "#DC2626FF"}
+  - elementId: a2
     elementType: icon
-    bounds: [60, 180, 56, 56]
-    iconName: "bs:heart-fill"
+    bounds: [140, 190, 56, 56]
+    iconName: "fas:heart"
+    fill: {type: solid, color: "#DC262699"}
+  - elementId: a3
+    elementType: icon
+    bounds: [220, 190, 56, 56]
+    iconName: "far:heart"
     fill: {type: solid, color: "#DC262633"}
-  - elementId: i8
+  # ---- 线性渐变 ----
+  - elementId: g1
     elementType: icon
-    bounds: [140, 180, 56, 56]
-    iconName: "bs:heart-fill"
-    fill: {type: solid, color: "#DC262680"}
-  - elementId: i9
-    elementType: icon
-    bounds: [220, 180, 56, 56]
-    iconName: "bs:heart-fill"
-    fill: {type: solid, color: "#DC2626"}
-  - elementId: i10
-    elementType: icon
-    bounds: [300, 180, 56, 56]
-    iconName: "bs:hexagon-fill"
-    fill: {type: solid, color: "#2563EB80"}
-  - elementId: i11
-    elementType: icon
-    bounds: [380, 180, 56, 56]
-    iconName: "bs:shield-check"
-    fill: {type: solid, color: "#16A34A80"}
-  # ---- 渐变 ----
-  - elementId: i12
-    elementType: icon
-    bounds: [60, 260, 64, 64]
-    iconName: "bs:rocket-takeoff"
+    bounds: [310, 186, 64, 64]
+    iconName: "fas:rocket"
     fill:
       type: gradient
       gradientType: linear
@@ -76,54 +61,80 @@ elements:
       stops:
         - {position: 0, color: "$primary"}
         - {position: 1, color: "$accent"}
-  - elementId: i13
+  # ---- 径向渐变 ----
+  - elementId: g2
     elementType: icon
-    bounds: [150, 260, 64, 64]
-    iconName: "bs:lightning-fill"
+    bounds: [400, 186, 64, 64]
+    iconName: "fas:circle"
+    fill:
+      type: gradient
+      gradientType: radial
+      stops:
+        - {position: 0, color: "#FFFFFF"}
+        - {position: 1, color: "$primary"}
+  # ---- 三停线性渐变 ----
+  - elementId: g3
+    elementType: icon
+    bounds: [490, 186, 64, 64]
+    iconName: "fas:bolt"
     fill:
       type: gradient
       gradientType: linear
-      angle: 90
+      angle: 0
       stops:
-        - {position: 0, color: "#F59E0B"}
-        - {position: 0.5, color: "#FBBF24"}
-        - {position: 1, color: "#FDE68A"}
-  - elementId: i14
+        - {position: 0, color: "$warning"}
+        - {position: 0.5, color: "$danger"}
+        - {position: 1, color: "$primary"}
+  # ---- 宽 viewBox 图标（FA 576×512 / 640×512） ----
+  - elementId: w1
     elementType: icon
-    bounds: [240, 260, 64, 64]
-    iconName: "fas:globe"
-    fill:
-      type: gradient
-      gradientType: linear
-      angle: -45
-      stops:
-        - {position: 0, color: "#0EA5E9"}
-        - {position: 1, color: "#6366F1"}
-  # ---- 大尺寸 + 深浅底 ----
-  - elementId: i15
-    elementType: icon
-    bounds: [340, 250, 88, 88]
-    iconName: "bs:award"
-    fill: {type: solid, color: "$accent"}
-  # 浅底深箭头（圆在下面，箭头叠上面）
-  - elementId: i17
-    elementType: icon
-    bounds: [60, 350, 88, 88]
-    iconName: "bs:circle-fill"
-    fill: {type: solid, color: "$primarySoft"}
-  - elementId: i16
-    elementType: icon
-    bounds: [60, 350, 88, 88]
-    iconName: "bs:arrow-up"
+    bounds: [60, 300, 160, 80]
+    iconName: "fas:arrows-left-right"
     fill: {type: solid, color: "$primary"}
-  # 深底白箭头
-  - elementId: i19
+  - elementId: w2
     elementType: icon
-    bounds: [170, 350, 88, 88]
-    iconName: "bs:circle-fill"
-    fill: {type: solid, color: "#111827"}
-  - elementId: i20
+    bounds: [260, 300, 120, 80]
+    iconName: "fas:users"
+    fill: {type: solid, color: "$text"}
+  # ---- 叠放组合（两图标同位不同尺寸） ----
+  - elementId: s1
     elementType: icon
-    bounds: [170, 350, 88, 88]
-    iconName: "bs:arrow-up"
-    fill: {type: solid, color: "#FFFFFF"}
+    bounds: [430, 290, 90, 90]
+    iconName: "fas:circle"
+    fill: {type: solid, color: "$primarySoft"}
+  - elementId: s2
+    elementType: icon
+    bounds: [452, 312, 46, 46]
+    iconName: "fas:arrow-up"
+    fill: {type: solid, color: "$primary"}
+  # ---- 其余形态 ----
+  - elementId: x1
+    elementType: icon
+    bounds: [560, 300, 56, 56]
+    iconName: "fas:hexagon"
+    fill: {type: solid, color: "$success"}
+  - elementId: x2
+    elementType: icon
+    bounds: [640, 300, 56, 56]
+    iconName: "fas:shield-halved"
+    fill: {type: solid, color: "$warning"}
+  - elementId: x3
+    elementType: icon
+    bounds: [720, 300, 56, 56]
+    iconName: "fas:award"
+    fill: {type: solid, color: "$danger"}
+  - elementId: x4
+    elementType: icon
+    bounds: [800, 300, 56, 56]
+    iconName: "far:circle-check"
+    fill: {type: solid, color: "$text"}
+  - elementId: x5
+    elementType: icon
+    bounds: [60, 420, 56, 56]
+    iconName: "fas:star"
+    fill: {type: solid, color: "$accent"}
+  - elementId: x6
+    elementType: icon
+    bounds: [140, 420, 56, 56]
+    iconName: "fas:chart-line"
+    fill: {type: solid, color: "#2563EB80"}

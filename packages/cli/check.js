@@ -9,16 +9,18 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseDeck } from "../model/pptd-io.js";
 import { validateDeck } from "../model/validate.js";
-import { loadProjectFiles, FONT_LIB_DIR } from "./export.js";
+import { loadProjectFiles, FONT_LIB_DIR, ICON_LIB_DIR } from "./export.js";
 
 /** 加载 deck 并执行校验（export 闸门复用本函数）。 */
 export function checkDeck(manifest) {
   const { manifestText, deckDir, pageFiles } = loadProjectFiles(manifest);
   const deck = parseDeck(manifestText, pageFiles);
   const fontRegistry = JSON.parse(readFileSync(join(FONT_LIB_DIR, "registry.json"), "utf8"));
+  const iconRegistry = JSON.parse(readFileSync(join(ICON_LIB_DIR, "registry.json"), "utf8"));
   const report = validateDeck(deck, {
     fileExists: (rel) => existsSync(join(deckDir, rel)),
     fontRegistry,
+    iconRegistry,
   });
   return { deck, report };
 }

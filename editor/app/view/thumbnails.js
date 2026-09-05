@@ -68,7 +68,7 @@ export function createThumbnails({ state, api, reload }) {
       const mini = document.createElement("div");
       mini.className = "thumb-canvas";
       mini.style.transform = `scale(${thumbW() / PAGE_WIDTH})`;
-      renderPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap });
+      renderPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
 
       const num = document.createElement("span");
       num.className = "thumb-num";

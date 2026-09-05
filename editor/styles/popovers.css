@@ -91,6 +91,7 @@
   border-right: 1px solid var(--line);
 }
 .add-cat {
+  flex: none; /* 分类多时禁止 flex 压缩（overflow:hidden 使 min-size 归零，否则整栏被均匀压扁） */
   text-align: left;
   padding: 5px 10px;
   font-size: var(--text-sm);
@@ -463,3 +464,4 @@
 }
 .font-add-url input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
 .font-add-file { display: none; }
+

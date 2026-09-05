@@ -37,6 +37,7 @@ const WHITELIST = [
   "packages",
   "references",
   "assets/fonts/registry.json",
+  "assets/icons/registry.json",
 ];
 
 // 前置检查：白名单条目必须存在

@@ -16,6 +16,7 @@ export function createEditorState() {
     selectedId: null,
     history: createHistory(),
     imageMap: {},
+    iconMap: {}, // { [iconName]: {inner,w,h} }（icons.js 预读缓存，渲染/导出共用）
     fontLibrary: {}, // { [family]: { bytes, source: "local"|"url", url, file, subset, embed, size } }
     manifestPath: null, // 当前项目 URL（/project/xxx/deck.pptd；部署模式为远程 URL）
     projectHandle: null, // 本地项目 DirectoryHandle（官方文件夹选择器打开；经句柄读写）

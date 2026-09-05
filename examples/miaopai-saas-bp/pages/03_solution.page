@@ -126,7 +126,7 @@ elements:
   - elementId: p3-cap1i
     elementType: icon
     bounds: [64, 348, 30, 30]
-    iconName: "bs:graph-up"
+    iconName: "fas:chart-line"
     fill: { type: solid, color: "$accent" }
   - elementId: p3-cap1t
     elementType: text
@@ -147,7 +147,7 @@ elements:
   - elementId: p3-cap2i
     elementType: icon
     bounds: [360, 348, 30, 30]
-    iconName: "bs:bank"
+    iconName: "fas:landmark"
     fill: { type: solid, color: "$accent" }
   - elementId: p3-cap2t
     elementType: text
@@ -168,7 +168,7 @@ elements:
   - elementId: p3-cap3i
     elementType: icon
     bounds: [656, 348, 30, 30]
-    iconName: "bs:phone"
+    iconName: "fas:phone"
     fill: { type: solid, color: "$accent" }
   - elementId: p3-cap3t
     elementType: text

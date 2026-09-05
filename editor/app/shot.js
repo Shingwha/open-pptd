@@ -35,7 +35,7 @@ export async function initShot(deckUrl) {
   /** 渲染一页并等待画面稳定：字体就绪 + 图片解码 + 双 rAF（图表 animation:false 同步绘制）。 */
   async function render(index) {
     const page = state.deck.pages[index];
-    renderPage(root, page, state.deck, state.theme, { imageMap: state.imageMap });
+    renderPage(root, page, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
     const imgs = [...root.querySelectorAll("img")];
     await Promise.all([
       document.fonts.ready,

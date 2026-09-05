@@ -22,6 +22,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 /** 技能根目录（assets/fonts 内置字体库相对此定位）。 */
 export const SKILL_ROOT = join(__dirname, "..", "..");
 export const FONT_LIB_DIR = join(SKILL_ROOT, "assets", "fonts");
+export const ICON_LIB_DIR = join(SKILL_ROOT, "assets", "icons");
 
 const EXT_BY_EXTNAME = { ".png": "png", ".jpg": "jpg", ".jpeg": "jpg", ".gif": "gif" };
 
@@ -122,9 +123,11 @@ export async function exportDeck({ manifest, outPath = null, embedFonts = true, 
   const deck = parseDeck(manifestText, pageFiles);
   // 导出前置闸门（v3 §4.4）：error 阻断导出，warning 报告后继续
   const fontRegistry = JSON.parse(readFileSync(join(FONT_LIB_DIR, "registry.json"), "utf8"));
+  const iconRegistry = JSON.parse(readFileSync(join(ICON_LIB_DIR, "registry.json"), "utf8"));
   const report = validateDeck(deck, {
     fileExists: (rel) => existsSync(join(deckDir, rel)),
     fontRegistry,
+    iconRegistry,
   });
   for (const issue of report.warnings) {
     const at = [issue.page != null ? `第${issue.page}页` : null, issue.elementId].filter(Boolean).join(" ");
@@ -147,16 +150,24 @@ export async function exportDeck({ manifest, outPath = null, embedFonts = true, 
     deck.theme = { ...(deck.theme || {}), colors: mergePaletteColors(deck.theme?.colors, preset.colors) };
   }
   const skipped = [];
+  const skippedIcons = [];
   const bytes = await buildPptx(deck, {
     loadImage: createLoadImage(deckDir),
     embedFonts,
     fontDir: FONT_LIB_DIR,
     fs: { readFileSync },
+    iconRegistry,
+    iconDir: ICON_LIB_DIR,
     onFontSkipped: (list) => skipped.push(...list),
+    onIconSkipped: (list) => skippedIcons.push(...list),
   });
   if (skipped.length) {
     console.warn(`⚠ ${skipped.length} 个字体未嵌入（打开时可能回退系统字体）:`);
     for (const s of skipped) console.warn(`   - ${skipReasonText(s)}`);
+  }
+  if (skippedIcons.length) {
+    console.warn(`⚠ ${skippedIcons.length} 个图标未导出（名字未命中免费库或 SVG 获取失败）:`);
+    for (const s of skippedIcons) console.warn(`   - ${s.iconName}（${s.reason === "unknown-name" ? "未命中 FA 免费库" : "SVG 获取失败"}）`);
   }
   const finalPath = outPath || join(deckDir, (deck.title || "deck").replace(/[\\/:*?"<>|]/g, "_") + ".pptx");
   writeFileSync(finalPath, bytes);
