@@ -629,7 +629,7 @@ function axisTitleXml(theme, title) {
  * @param {object} p {theme, id, crossId, kind: "cat"|"val", pos, cfg, secondary, gridOnValOnly}
  *   secondary: 次轴——类别轴 delete=1（数据不重复，仅用于配轴）；数值轴换侧
  */
-function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, tickLabels = true }) {
+function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, tickLabels = true, crosses = "autoZero" }) {
   const show = cfg.show !== false;
   const kids = [
     el("c:axId", { val: id }),
@@ -663,7 +663,9 @@ function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, t
   // txPr（label 样式）
   kids.push(txPrXml(theme, 900, "tx1", cfg.label && typeof cfg.label === "object" ? cfg.label : null));
   kids.push(el("c:crossAx", { val: crossId }));
-  kids.push(el("c:crosses", { val: "autoZero" }));
+  // 次值轴必须 crosses=max（交叉在类目轴最大处=换侧成立）；autoZero 会让 PowerPoint 把次轴
+  // 交叉到类目 0 位置，与 axPos 冲突导致次轴布局错乱（刻度串位、折线映射失效）
+  kids.push(el("c:crosses", { val: crosses }));
   if (kind === "val") kids.push(el("c:crossBetween", { val: "between" }));
   else kids.push(el("c:auto", { val: "1" }), el("c:lblAlgn", { val: "ctr" }), el("c:lblOffset", { val: "100" }), el("c:noMultiLvlLbl", { val: "0" }));
   return el(`c:${kind === "cat" ? "catAx" : "valAx"}`, {}, kids.join(""));
@@ -692,8 +694,8 @@ function buildAxesXml(theme, el, series, horizontal, mode = "catVal") {
     out.push(axisXml(theme, { id: 2, crossId: 1, kind: "val", pos: "l", cfg: yAxes[0] }));
     for (let i = 1; i <= maxIdx; i++) {
       const id = 1 + i * 2;
-      out.push(axisXml(theme, { id, crossId: id + 1, kind: "val", pos: "t", cfg: xAxes[i] || {} }));
-      out.push(axisXml(theme, { id: id + 1, crossId: id, kind: "val", pos: "r", cfg: yAxes[i] || {} }));
+      out.push(axisXml(theme, { id, crossId: id + 1, kind: "val", pos: "t", cfg: xAxes[i] || {}, crosses: "max" }));
+      out.push(axisXml(theme, { id: id + 1, crossId: id, kind: "val", pos: "r", cfg: yAxes[i] || {}, crosses: "max" }));
     }
     return out.join("");
   }
@@ -701,10 +703,14 @@ function buildAxesXml(theme, el, series, horizontal, mode = "catVal") {
   out.push(axisXml(theme, { id: 1, crossId: 2, kind: "cat", pos: catPos, cfg: catCfg }));
   out.push(axisXml(theme, { id: 2, crossId: 1, kind: "val", pos: valPos, cfg: valCfg }));
   for (let i = 1; i <= maxIdx; i++) {
-    // 次轴：数值轴换侧 + 隐藏类别轴（配轴用，delete=1），对照用户参考 chart43/47/48
-    const id = 1 + i * 2;
-    out.push(axisXml(theme, { id, crossId: id + 1, kind: "val", pos: secValPos, cfg: horizontal ? xAxes[i] || {} : yAxes[i] || {}, secondary: false }));
-    out.push(axisXml(theme, { id: id + 1, crossId: id, kind: "cat", pos: catPos, cfg: horizontal ? yAxes[i] || {} : xAxes[i] || {}, secondary: true }));
+    // 次轴 ID 分配必须与 groupAxisId 的约定一致（类别轴=1+i*2、数值轴=2+i*2）：
+    // 图表组按"类别轴在前、数值轴在后"引用 [1+i*2, 2+i*2]，若 valAx 抢了 1+i*2，
+    // PowerPoint 会把数值轴当类别轴解析，次轴对方位整体翻转（刻度横排、折线映射失效）
+    const catId = 1 + i * 2;
+    const valId = 2 + i * 2;
+    // 次轴：数值轴换侧（crosses=max）+ 隐藏类别轴（配轴用，delete=1），对照原生 PowerPoint 结构
+    out.push(axisXml(theme, { id: valId, crossId: catId, kind: "val", pos: secValPos, cfg: horizontal ? xAxes[i] || {} : yAxes[i] || {}, secondary: false, crosses: "max" }));
+    out.push(axisXml(theme, { id: catId, crossId: valId, kind: "cat", pos: catPos, cfg: horizontal ? yAxes[i] || {} : xAxes[i] || {}, secondary: true }));
   }
   return out.join("");
 }
