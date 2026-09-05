@@ -35,9 +35,9 @@
 - **PPTD** 是人类可读的 YAML 演示格式：一个 manifest（`deck.pptd`）+ 每页一个 `pages/*.page` + `media/` 图片
 - 浏览器网页编辑器实时预览/共同修改（改文件刷新即生效），最终导出标准 `.pptx`
 - **预览（浏览器）= 导出（PowerPoint）**：单一定义、双消费者（writer / renderer 同源）
-- 能力覆盖：13 种图表、187 种预置形状 + 自定义路径、LaTeX 公式混排、字体嵌入、淡入淡出转场
+- 能力覆盖：13 种图表、187 种预置形状 + 自定义路径、约 2000 个 Font Awesome 图标（三风格）、LaTeX 公式混排、字体嵌入、淡入淡出转场
 
-> 本项目实现完全独立、全部自研（网页编辑器、PPTX writer、图标库、图表与 LaTeX 渲染、CLI 导出链路），未使用任何第三方编辑器代码或逆向实现。
+> 本项目实现完全独立、全部自研（网页编辑器、PPTX writer、图表与 LaTeX 渲染、CLI 导出链路），未使用任何第三方编辑器代码或逆向实现；图标采用 [Font Awesome Free](https://fontawesome.com/license/free)（CC BY 4.0）。
 
 ## 安装
 

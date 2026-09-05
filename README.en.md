@@ -35,9 +35,9 @@ The repo ships with 9 curated examples in `examples/` — click an image to open
 - **PPTD** is a human-readable YAML presentation format: one manifest (`deck.pptd`) + one `pages/*.page` per slide + `media/` images
 - A browser-based editor for live preview / collaborative editing (edit files, refresh to apply), exporting standard `.pptx`
 - **Preview (browser) = Export (PowerPoint)**: single definition, dual consumers (writer / renderer share the same source)
-- Capabilities: 13 chart types, 187 preset shapes + custom paths, LaTeX formula mixing, font embedding, fade slide transitions
+- Capabilities: 13 chart types, 187 preset shapes + custom paths, ~2000 Font Awesome icons (three styles), LaTeX formula mixing, font embedding, fade slide transitions
 
-> This project is fully self-developed (web editor, PPTX writer, icon library, chart & LaTeX rendering, CLI export pipeline) — no third-party editor code or reverse-engineered implementations.
+> This project is fully self-developed (web editor, PPTX writer, chart & LaTeX rendering, CLI export pipeline) — no third-party editor code or reverse-engineered implementations. Icons by [Font Awesome Free](https://fontawesome.com/license/free) (CC BY 4.0).
 
 ## Installation
 
