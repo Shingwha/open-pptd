@@ -36,15 +36,11 @@
         <div id="gallery-hero">
           <h1>作品画廊</h1>
           <p>精选 PPTD 示例作品，点击卡片在编辑器中打开——可预览、可修改、可导出 PPTX / 项目包</p>
+          <div id="gallery-tabs" class="gallery-tabs" hidden></div>
           <div id="gallery-mode" class="gallery-mode" hidden></div>
         </div>
         <div id="gallery-grid" class="gallery-grid" hidden></div>
       </div>
-
-      <footer class="gallery-foot">
-        <strong>如何添加自己的作品？</strong>
-        <span>把做好的 PPTD 项目文件夹（<code>deck.pptd</code> + <code>pages/</code> + <code>media/</code>）放进仓库的 <code>examples/</code> 目录——本地画廊立即显示；运行 <code>node bin/open-pptd.js gallery scan</code> 后提交，GitHub Pages 同步更新。</span>
-      </footer>
     </div>
 
     <script type="module" src="./editor/gallery.js"></script>

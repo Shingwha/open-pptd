@@ -72,11 +72,48 @@
   color: var(--warning);
 }
 
+/* 分类 tab（PPT / 海报）：分段式胶囊，激活态主色填充 */
+.gallery-tabs {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 4px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.gallery-tab {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  color: var(--sub);
+  padding: 5px 18px;
+  border-radius: 999px;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.gallery-tab:hover { color: var(--ink); }
+.gallery-tab.active {
+  background: var(--primary);
+  color: #fff;
+}
+.gallery-tab .cnt {
+  margin-left: 5px;
+  font-size: var(--text-xs);
+  opacity: 0.75;
+}
+
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 18px;
   margin-top: 22px;
+  /* 卡片保持自然高度：同行比例不同（如 16:9 混 4:3）时矮卡不被拉伸留白 */
+  align-items: start;
+}
+/* 海报 tab：竖版封面更窄的列宽，网格更密 */
+.gallery-grid.poster-grid {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 }
 
 .gallery-card {
@@ -103,7 +140,7 @@
 
 .gallery-card-cover {
   position: relative;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 16 / 9; /* 缺省兜底；卡片创建时内联 aspect-ratio 跟随作品实际画布（清单 size） */
   overflow: hidden;
   background: var(--bg);
 }
@@ -195,23 +232,4 @@
   border: 1px dashed var(--line-strong);
   border-radius: var(--radius);
   line-height: 1.8;
-}
-
-.gallery-foot {
-  border-top: 1px solid var(--line);
-  background: var(--panel);
-  padding: var(--space-4) var(--space-5);
-  font-size: var(--text-sm);
-  color: var(--sub);
-  text-align: center;
-  line-height: 1.8;
-}
-.gallery-foot strong { color: var(--ink); margin-right: 6px; }
-.gallery-foot code {
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  padding: 0 5px;
-  font-family: Consolas, Monaco, monospace;
-  font-size: var(--text-xs);
 }

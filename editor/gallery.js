@@ -99,7 +99,7 @@ export async function loadProject(entry) {
   return proj;
 }
 
-/** 按容器实际宽度渲染一页封面（容器需已布局，16:9）。 */
+/** 按容器实际宽度渲染一页封面（按 deck 自身尺寸缩放，PPT/海报比例均支持）。 */
 export function renderPageFit(container, page, deck, theme, imageMap, iconMap = {}) {
   disposeChartInstances(container);
   container.innerHTML = "";
@@ -113,11 +113,12 @@ export function renderPageFit(container, page, deck, theme, imageMap, iconMap = 
     });
     return;
   }
-  const scale = Math.max(0.1, Math.min(2, cw / PAGE_W));
+  const [pw, ph] = Array.isArray(deck.size) && deck.size.length === 2 ? deck.size : [PAGE_W, PAGE_H];
+  const scale = Math.max(0.1, Math.min(2, cw / pw));
   const stage = document.createElement("div");
   stage.className = "gallery-page";
-  stage.style.width = `${PAGE_W}px`;
-  stage.style.height = `${PAGE_H}px`;
+  stage.style.width = `${pw}px`;
+  stage.style.height = `${ph}px`;
   stage.style.transform = `scale(${scale})`;
   stage.style.transformOrigin = "top left";
   renderPage(stage, page, deck, theme, { imageMap, iconMap });
@@ -231,32 +232,71 @@ export async function showGallery() {
     return;
   }
 
-  for (const entry of entries) {
-    const card = document.createElement("div");
-    card.className = "gallery-card";
-    const thumb = document.createElement("div");
-    thumb.className = "gallery-card-cover loading";
-    const info = document.createElement("div");
-    info.className = "gallery-card-info";
-    const tags = (entry.tags || [])
-      .map((t) => `<span class="gallery-tag">${escapeHtml(t)}</span>`)
-      .join("");
-    info.innerHTML =
-      `<div class="gallery-card-title">${escapeHtml(entry.title)}` +
-      `<span class="gallery-page-badge">${entry.pages} 页</span></div>` +
-      (entry.description ? `<div class="gallery-card-desc">${escapeHtml(entry.description)}</div>` : "") +
-      (tags ? `<div class="gallery-card-tags">${tags}</div>` : "");
-    card.appendChild(thumb);
-    card.appendChild(info);
-    card.addEventListener("click", () => {
-      // 跳转到编辑器并加载该作品（本地可编辑写回；线上可编辑、保存下载 zip）
-      location.href = new URL("editor/?deck=" + encodeURIComponent(entry.deck), ROOT).href;
-    });
-    grid.appendChild(card);
-    thumbEntries.set(thumb, entry);
-    thumbObserver.observe(thumb);
-    sizeObserver.observe(thumb);
+  // 双 tab：PPT / 海报（条目由 meta.yaml 的 kind 显式指定，缺省 ppt）
+  const TABS = [
+    { kind: "ppt", label: "PPT" },
+    { kind: "poster", label: "海报" },
+  ];
+  const tabsEl = $("gallery-tabs");
+
+  function fillGrid(list) {
+    grid.innerHTML = "";
+    if (!list.length) {
+      grid.innerHTML =
+        `<div class="gallery-empty">此分类下暂无作品。<br>` +
+        `把项目放进 examples/ 并在 meta.yaml 写 kind: poster 即出现在这里。</div>`;
+      return;
+    }
+    for (const entry of list) {
+      const card = document.createElement("div");
+      card.className = "gallery-card";
+      const thumb = document.createElement("div");
+      thumb.className = "gallery-card-cover loading";
+      // 封面框跟随作品实际画布比例（PPT 16:9 / 海报 3:4 等）
+      if (Array.isArray(entry.size) && entry.size.length === 2) {
+        thumb.style.aspectRatio = `${entry.size[0]} / ${entry.size[1]}`;
+      }
+      const info = document.createElement("div");
+      info.className = "gallery-card-info";
+      const tags = (entry.tags || [])
+        .map((t) => `<span class="gallery-tag">${escapeHtml(t)}</span>`)
+        .join("");
+      info.innerHTML =
+        `<div class="gallery-card-title">${escapeHtml(entry.title)}` +
+        `<span class="gallery-page-badge">${entry.pages} 页</span></div>` +
+        (entry.description ? `<div class="gallery-card-desc">${escapeHtml(entry.description)}</div>` : "") +
+        (tags ? `<div class="gallery-card-tags">${tags}</div>` : "");
+      card.appendChild(thumb);
+      card.appendChild(info);
+      card.addEventListener("click", () => {
+        // 跳转到编辑器并加载该作品（本地可编辑写回；线上可编辑、保存下载 zip）
+        location.href = new URL("editor/?deck=" + encodeURIComponent(entry.deck), ROOT).href;
+      });
+      grid.appendChild(card);
+      thumbEntries.set(thumb, entry);
+      thumbObserver.observe(thumb);
+      sizeObserver.observe(thumb);
+    }
   }
+
+  function setTab(kind) {
+    tabsEl?.querySelectorAll(".gallery-tab").forEach((b) => b.classList.toggle("active", b.dataset.kind === kind));
+    grid.classList.toggle("poster-grid", kind === "poster");
+    fillGrid(entries.filter((e) => (e.kind || "ppt") === kind));
+  }
+
+  if (tabsEl) {
+    tabsEl.hidden = false;
+    tabsEl.innerHTML = TABS.map((t) => {
+      const n = entries.filter((e) => (e.kind || "ppt") === t.kind).length;
+      return `<button class="gallery-tab" data-kind="${t.kind}">${t.label}<span class="cnt">${n}</span></button>`;
+    }).join("");
+    tabsEl.addEventListener("click", (ev) => {
+      const btn = ev.target.closest(".gallery-tab");
+      if (btn && !btn.classList.contains("active")) setTab(btn.dataset.kind);
+    });
+  }
+  setTab("ppt");
 }
 
 /** 「打开本地项目」：原生选择器 → 校验 deck.pptd → 记最近 → 跳编辑器续开。 */

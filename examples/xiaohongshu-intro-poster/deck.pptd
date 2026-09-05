@@ -1,0 +1,30 @@
+version: v2
+title: open-pptd 小红书介绍海报
+size: [720, 960]
+fonts:
+  数黑体: {family: "Alimama ShuHeiTi"}
+  新晰黑: {family: "LXGW Neo XiHei"}
+theme:
+  colors:
+    primary: "#23705F"
+    accent: "#C98A2B"
+    bg: "#FFFFFF"
+    text: "#1F2824"
+    muted: "#6E877B"
+    line: "#E2ECE7"
+    success: "#33A362"
+    warning: "#B4872D"
+    danger: "#BE392D"
+    primarySoft: "#EEF5F2"
+    primaryTint: "#D8E8E2"
+    primaryDeep: "#143F35"
+    accent3: "#3E7CA6"
+    accent4: "#C96A4A"
+    accent5: "#6B9A46"
+    accent6: "#8A63A8"
+  textStyles:
+    display: {fontSize: 82, fontFamily: "Alimama ShuHeiTi", color: "$text"}
+    heading: {fontSize: 19, fontFamily: "Alimama ShuHeiTi", color: "$text"}
+    body: {fontSize: 12, fontFamily: "LXGW Neo XiHei", color: "$muted", lineHeight: 1.5}
+pages:
+  - pages/1_poster.page

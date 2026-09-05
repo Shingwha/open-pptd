@@ -1,0 +1,365 @@
+pageType: poster
+background: {type: solid, color: "$bg"}
+elements:
+  # ── 眉标 ──
+  - elementId: eyebrow-mark
+    elementType: shape
+    bounds: [48, 52, 14, 14]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: eyebrow
+    elementType: text
+    bounds: [72, 47, 500, 24]
+    content:
+      align: [left, middle]
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 13
+      color: "$muted"
+      letterSpacing: 1.5
+      wrap: false
+      text: "OPEN-PPTD · AI 原生演示文稿技能 · 免费开源"
+
+  # ── 主标题 ──
+  - elementId: title
+    elementType: text
+    bounds: [44, 82, 640, 190]
+    content:
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 82
+      color: "$text"
+      lineHeightPx: 94
+      text: |
+        <p><span style="color:$text;">一句话</span></p>
+        <p><span style="color:$primary;">做整套 PPT</span></p>
+
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 276, 580, 24]
+    content:
+      fontFamily: LXGW Neo XiHei
+      fontSize: 14.5
+      color: "$muted"
+      text: 把需求说给 AI，直接得到能编辑、能导出 PPTX 的成套演示文稿
+
+  # ── 作品拼贴（阶梯扇形：复盘居左下、屿光居中、音乐节居右上；后者依次压前者的右下角）──
+  - elementId: shot-review
+    elementType: image
+    bounds: [32, 324, 316, 178]
+    rotation: -5
+    src: media/business-review.png
+    fit: {mode: cover}
+    border: {style: solid, width: 3, color: "#FFFFFF"}
+    shadow: {blur: 16, color: "#1F282426", offset: [0, 8]}
+
+  - elementId: shot-islelight
+    elementType: image
+    bounds: [230, 366, 316, 178]
+    rotation: 1.5
+    src: media/islelight.png
+    fit: {mode: cover}
+    border: {style: solid, width: 3, color: "#FFFFFF"}
+    shadow: {blur: 16, color: "#1F282426", offset: [0, 8]}
+
+  - elementId: shot-tide
+    elementType: image
+    bounds: [370, 398, 316, 178]
+    rotation: 5
+    src: media/tide-festival.png
+    fit: {mode: cover}
+    border: {style: solid, width: 3, color: "#FFFFFF"}
+    shadow: {blur: 18, color: "#1F28242E", offset: [0, 10]}
+
+  - elementId: sticker
+    elementType: shape
+    bounds: [440, 338, 178, 42]
+    rotation: 3.5
+    shapeName: roundRect
+    adjustments: [30000]
+    fill: {type: solid, color: "$text"}
+    shadow: {blur: 10, color: "#1F282433", offset: [0, 4]}
+
+  - elementId: sticker-text
+    elementType: text
+    bounds: [440, 338, 178, 42]
+    rotation: 3.5
+    content:
+      align: [center, middle]
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 13.5
+      color: "#FFFFFF"
+      text: 这张海报也是它做的
+
+  # ── 拼贴注脚 ──
+  - elementId: cap-mark
+    elementType: shape
+    bounds: [48, 613, 10, 10]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: cap-text
+    elementType: text
+    bounds: [66, 607, 480, 22]
+    content:
+      align: [left, middle]
+      fontFamily: LXGW Neo XiHei
+      fontSize: 12.5
+      color: "$muted"
+      text: 内置 9 套风格示例 · 在线画廊点击即改
+
+  # ── 能力读数 ──
+  - elementId: stat-1-num
+    elementType: text
+    bounds: [48, 678, 156, 40]
+    content:
+      align: [center, middle]
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 32
+      color: "$primary"
+      wrap: false
+      text: "13"
+
+  - elementId: stat-1-label
+    elementType: text
+    bounds: [48, 718, 156, 18]
+    content:
+      align: [center, top]
+      fontFamily: LXGW Neo XiHei
+      fontSize: 12
+      color: "$muted"
+      text: 种原生图表类型
+
+  - elementId: stat-div-1
+    elementType: shape
+    bounds: [201, 684, 1, 44]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: stat-2-num
+    elementType: text
+    bounds: [204, 678, 156, 40]
+    content:
+      align: [center, middle]
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 32
+      color: "$primary"
+      wrap: false
+      text: "2000"
+
+  - elementId: stat-2-label
+    elementType: text
+    bounds: [204, 718, 156, 18]
+    content:
+      align: [center, top]
+      fontFamily: LXGW Neo XiHei
+      fontSize: 12
+      color: "$muted"
+      text: 个内置 FA 图标
+
+  - elementId: stat-div-2
+    elementType: shape
+    bounds: [357, 684, 1, 44]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: stat-3-num
+    elementType: text
+    bounds: [360, 678, 156, 40]
+    content:
+      align: [center, middle]
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 32
+      color: "$primary"
+      wrap: false
+      text: "27"
+
+  - elementId: stat-3-label
+    elementType: text
+    bounds: [360, 718, 156, 18]
+    content:
+      align: [center, top]
+      fontFamily: LXGW Neo XiHei
+      fontSize: 12
+      color: "$muted"
+      text: 款免费商用字体
+
+  - elementId: stat-div-3
+    elementType: shape
+    bounds: [513, 684, 1, 44]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: stat-4-num
+    elementType: text
+    bounds: [516, 678, 156, 40]
+    content:
+      align: [center, middle]
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 32
+      color: "$primary"
+      wrap: false
+      text: "0"
+
+  - elementId: stat-4-label
+    elementType: text
+    bounds: [516, 718, 156, 18]
+    content:
+      align: [center, top]
+      fontFamily: LXGW Neo XiHei
+      fontSize: 12
+      color: "$muted"
+      text: 依赖 · 全本地运行
+
+  # ── 使用方法 ──
+  - elementId: steps-mark
+    elementType: shape
+    bounds: [48, 759, 12, 12]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: steps-header
+    elementType: text
+    bounds: [68, 752, 400, 26]
+    content:
+      align: [left, middle]
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 19
+      color: "$text"
+      text: 使用方法 · 三步出片
+
+  - elementId: step-1-dot
+    elementType: shape
+    bounds: [48, 790, 30, 30]
+    shapeName: ellipse
+    fill: {type: solid, color: "$primary"}
+
+  - elementId: step-1-num
+    elementType: text
+    bounds: [48, 790, 30, 30]
+    content:
+      align: [center, middle]
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 15
+      color: "#FFFFFF"
+      text: "1"
+
+  - elementId: step-1-title
+    elementType: text
+    bounds: [88, 792, 168, 26]
+    content:
+      align: [left, middle]
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 17
+      color: "$text"
+      text: 说需求
+
+  - elementId: step-1-desc
+    elementType: text
+    bounds: [88, 820, 168, 40]
+    content:
+      fontFamily: LXGW Neo XiHei
+      fontSize: 11.5
+      color: "$muted"
+      lineHeight: 1.45
+      text: 对 AI 说主题、页数与风格
+
+  - elementId: step-2-dot
+    elementType: shape
+    bounds: [256, 790, 30, 30]
+    shapeName: ellipse
+    fill: {type: solid, color: "$primary"}
+
+  - elementId: step-2-num
+    elementType: text
+    bounds: [256, 790, 30, 30]
+    content:
+      align: [center, middle]
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 15
+      color: "#FFFFFF"
+      text: "2"
+
+  - elementId: step-2-title
+    elementType: text
+    bounds: [296, 792, 168, 26]
+    content:
+      align: [left, middle]
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 17
+      color: "$text"
+      text: 实时改
+
+  - elementId: step-2-desc
+    elementType: text
+    bounds: [296, 820, 168, 40]
+    content:
+      fontFamily: LXGW Neo XiHei
+      fontSize: 11.5
+      color: "$muted"
+      lineHeight: 1.45
+      text: 编辑器实时预览，所见即所得
+
+  - elementId: step-3-dot
+    elementType: shape
+    bounds: [464, 790, 30, 30]
+    shapeName: ellipse
+    fill: {type: solid, color: "$primary"}
+
+  - elementId: step-3-num
+    elementType: text
+    bounds: [464, 790, 30, 30]
+    content:
+      align: [center, middle]
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 15
+      color: "#FFFFFF"
+      text: "3"
+
+  - elementId: step-3-title
+    elementType: text
+    bounds: [504, 792, 168, 26]
+    content:
+      align: [left, middle]
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 17
+      color: "$text"
+      text: 一键出
+
+  - elementId: step-3-desc
+    elementType: text
+    bounds: [504, 820, 168, 40]
+    content:
+      fontFamily: LXGW Neo XiHei
+      fontSize: 11.5
+      color: "$muted"
+      lineHeight: 1.45
+      text: 导出 PPTX 或 PNG 图片
+
+  # ── CTA 与页脚 ──
+  - elementId: cta
+    elementType: shape
+    bounds: [48, 878, 624, 46]
+    shapeName: roundRect
+    adjustments: [24000]
+    fill: {type: solid, color: "$primary"}
+    shadow: {blur: 14, color: "#23705F33", offset: [0, 6]}
+
+  - elementId: cta-text
+    elementType: text
+    bounds: [48, 878, 624, 46]
+    content:
+      align: [center, middle]
+      fontFamily: Alimama ShuHeiTi
+      fontSize: 17
+      color: "#FFFFFF"
+      text: 免安装 · 在线画廊直接玩 → shingwha.github.io/open-pptd
+
+  - elementId: footer
+    elementType: text
+    bounds: [48, 932, 624, 16]
+    content:
+      align: [center, top]
+      fontFamily: LXGW Neo XiHei
+      fontSize: 10.5
+      color: "$muted"
+      text: GitHub 开源 · Shingwha/open-pptd · MIT · 装进 AI 工具的 skills 文件夹即用（需 Node.js 18+）

@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "generated": "2026-09-05T08:02:26.225Z",
+  "version": 2,
+  "generated": "2026-09-05T15:35:35.825Z",
   "entries": [
     {
       "id": "brand-mori-showcase-7p",
@@ -17,6 +17,11 @@
         "阿里妈妈数黑体",
         "霞鹜新晰黑"
       ],
+      "size": [
+        960,
+        540
+      ],
+      "kind": "ppt",
       "deck": "examples/brand-mori-showcase-7p/deck.pptd"
     },
     {
@@ -36,6 +41,11 @@
         "阿里妈妈数黑体",
         "霞鹜新晰黑"
       ],
+      "size": [
+        960,
+        540
+      ],
+      "kind": "ppt",
       "deck": "examples/business-review-7p/deck.pptd"
     },
     {
@@ -55,6 +65,11 @@
         "霞鹜新晰黑",
         "霞鹜铭心宋"
       ],
+      "size": [
+        960,
+        540
+      ],
+      "kind": "ppt",
       "deck": "examples/city-cycling-report-7p/deck.pptd"
     },
     {
@@ -72,6 +87,11 @@
         "阿里妈妈数黑体",
         "霞鹜新晰黑"
       ],
+      "size": [
+        960,
+        540
+      ],
+      "kind": "ppt",
       "deck": "examples/ev-range/deck.pptd"
     },
     {
@@ -89,6 +109,11 @@
         "得意黑",
         "霞鹜新晰黑"
       ],
+      "size": [
+        960,
+        540
+      ],
+      "kind": "ppt",
       "deck": "examples/islelight-brand-book/deck.pptd"
     },
     {
@@ -106,6 +131,11 @@
         "得意黑",
         "霞鹜新晰黑"
       ],
+      "size": [
+        960,
+        540
+      ],
+      "kind": "ppt",
       "deck": "examples/miaopai-saas-bp/deck.pptd"
     },
     {
@@ -124,6 +154,11 @@
         "站酷文艺体",
         "霞鹜新晰黑"
       ],
+      "size": [
+        960,
+        540
+      ],
+      "kind": "ppt",
       "deck": "examples/shanmingji-2026-launch/deck.pptd"
     },
     {
@@ -142,6 +177,11 @@
         "得意黑",
         "MiSans"
       ],
+      "size": [
+        960,
+        540
+      ],
+      "kind": "ppt",
       "deck": "examples/tech-architecture-review-7p/deck.pptd"
     },
     {
@@ -160,7 +200,34 @@
         "站酷庆科黄油体",
         "霞鹜新晰黑"
       ],
+      "size": [
+        960,
+        540
+      ],
+      "kind": "ppt",
       "deck": "examples/tide-festival-sponsorship-7p/deck.pptd"
+    },
+    {
+      "id": "xiaohongshu-intro-poster",
+      "title": "一句话，做整套 PPT · 小红书宣传海报",
+      "description": "3:4 竖版宣传海报示例：三张示例封面拼贴 + 能力读数 + 三步用法——这张海报本身即由 open-pptd 渲染导出 PNG",
+      "tags": [
+        "海报",
+        "小红书",
+        "3:4 竖版",
+        "自举示例"
+      ],
+      "pages": 1,
+      "fonts": [
+        "数黑体",
+        "新晰黑"
+      ],
+      "size": [
+        720,
+        960
+      ],
+      "kind": "poster",
+      "deck": "examples/xiaohongshu-intro-poster/deck.pptd"
     }
   ]
 }
