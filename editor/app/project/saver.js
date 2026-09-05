@@ -125,7 +125,9 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
   // --------------------------------------------------------------------------
   // 保存项目
   // --------------------------------------------------------------------------
-  async function saveProject() {
+  /** zipFallback=false：写回失败直接抛错（供导出图片等需要区分降级语义的调用方）。 */
+  async function saveProject(opts = {}) {
+    const zipFallback = opts.zipFallback !== false;
     fontManager.syncToDeck(); // 字体库（嵌入勾选）→ deck.fonts 资源表，随项目落盘
     // dataURL 图片先落盘化（重写 el.src 为 media/ 路径），序列化后的页面干净引用媒体文件
     const mediaFiles = images.persistDataUrlImages();
@@ -162,6 +164,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
       showToast(`已保存 ${data.count} 个文件到项目目录`, "success");
     } catch (err) {
       // 部署模式（无 /api/save）或写回失败：降级为下载项目 zip
+      if (!zipFallback) throw err;
       saveProjectAsZip(files);
     }
   }
@@ -184,5 +187,67 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     }
   }
 
-  return { exportPptx, exportProjectZip: doExportZip, saveProject };
+  // --------------------------------------------------------------------------
+  // 导出图片（本地 serve 的 /api/render，与 CLI render 同一无头渲染管线）
+  // --------------------------------------------------------------------------
+  /** scope："current" 当前页 PNG；"all" 全部页 zip。渲染对象是磁盘上的项目，
+   *  故导出前先把未保存修改写回（写回失败按最近保存版本导出并提示）。 */
+  async function exportImages(scope) {
+    // 渲染服务按项目路径寻址：本地文件夹模式（句柄）与空白项目无服务端路径
+    if (state.projectHandle || !state.manifestPath) {
+      showToast("导出图片需通过 serve 打开的 URL 项目使用（本地文件夹模式无渲染服务）", "danger", 6000);
+      return;
+    }
+    if (state.dirty) {
+      try {
+        await saveProject({ zipFallback: false });
+      } catch {
+        showToast("修改未能写回磁盘：按最近保存的版本导出", "info", 6000);
+      }
+    }
+    let deck;
+    try {
+      deck = decodeURIComponent(new URL(state.manifestPath).pathname).replace(/^\/+/, "");
+    } catch {
+      showToast(`无效的项目地址: ${state.manifestPath}`, "danger");
+      return;
+    }
+    showToast("正在渲染图片…（每页数秒，取决于页数与图表复杂度）", "info", 10_000);
+    try {
+      const res = await fetch("/api/render", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deck,
+          page: scope === "all" ? "all" : state.currentPage + 1,
+          scale: 2,
+        }),
+      });
+      if (res.status === 404) {
+        showToast("导出图片仅本地 serve 模式可用（线上部署无渲染服务）", "danger", 6000);
+        return;
+      }
+      if (!res.ok) throw new Error((await res.text()) || `HTTP ${res.status}`);
+      const dispo = res.headers.get("Content-Disposition") || "";
+      const name =
+        decodeURIComponent(
+          /filename\*=UTF-8''([^;]+)/i.exec(dispo)?.[1] || /filename="?([^";]+)"?/i.exec(dispo)?.[1] || ""
+        ) || "images.png";
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast(`已导出 ${name}（${(blob.size / 1024).toFixed(1)} KB）`, "success");
+    } catch (err) {
+      showToast(`导出图片失败: ${err.message}`, "danger");
+      console.error(err);
+    }
+  }
+
+  return { exportPptx, exportProjectZip: doExportZip, exportImages, saveProject };
 }

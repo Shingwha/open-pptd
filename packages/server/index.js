@@ -4,6 +4,7 @@
 // 零依赖（Node 内置 http）。职责拆分：
 //   static.js   静态文件服务（MIME + 防穿越解析）
 //   api.js      /api/save 写回、/api/ping 探活
+//   render.js   /api/render 图片导出（单页 PNG / 多页 zip，复用无头渲染管线）
 //   events.js   /events SSE 变更推送（目录指纹轮询）
 //   gallery.js  /examples/manifest.json 动态画廊索引
 // 对外接口（createServer/startServer 签名、端点、SSE 协议）与历史版本一致。
@@ -16,6 +17,7 @@ import { join, normalize, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveFile, sendFile } from "./static.js";
 import { handleSave, handlePing } from "./api.js";
+import { handleRender } from "./render.js";
 import { createSseHub } from "./events.js";
 import { buildManifest } from "./gallery.js";
 
@@ -45,6 +47,11 @@ export function createServer(options = {}) {
       // 写回 API：仅 --project 挂载时可用
       if (pathname === "/api/save" && req.method === "POST") {
         handleSave(req, res, projectRoot);
+        return;
+      }
+      // 图片导出 API：本地 serve 独有（无头渲染管线；deck 相对站点根或挂载根解析）
+      if (pathname === "/api/render" && req.method === "POST") {
+        handleRender(req, res, { base: projectRoot || root, projectRoot, startServer });
         return;
       }
       // 探活 API：本地 serve 独有（GitHub Pages 上 404）

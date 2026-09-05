@@ -118,6 +118,7 @@ export function createIo({ state, view }) {
     rebuildImageMap: images.rebuildImageMap,
     exportPptx: saver.exportPptx,
     exportProjectZip: saver.exportProjectZip,
+    exportImages: saver.exportImages,
     saveProject: saver.saveProject,
     preloadRemoteImages: images.preloadRemoteImages,
     renderStatusBar: live.renderStatusBar,
