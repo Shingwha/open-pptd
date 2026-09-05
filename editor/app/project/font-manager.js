@@ -21,7 +21,7 @@ import { parseFontResources } from "../../../packages/model/font.js";
 import { loadFontRegistry, findFont, fontFileUrl, fetchFontBytes } from "../../../packages/model/font-registry.js";
 import { showToast } from "../toast.js";
 
-/** 系统字体池（styles.md 0.5 节；元素 fontFamily 下拉兜底选项）。 */
+/** 系统字体池（design.md §4 系统字体；元素 fontFamily 下拉兜底选项）。 */
 export const SYSTEM_FONTS = ["Microsoft YaHei", "KaiTi", "SimSun", "SimHei", "FangSong", "YouYuan"];
 
 export function createFontManager(state) {

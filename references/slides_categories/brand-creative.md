@@ -21,11 +21,11 @@ Use strong font-size contrast and extreme asymmetric layouts to build an exagger
 
 ## Prohibitions
 
-General prohibitions (cards / evenly divided compositions / AI-typical palettes / elements foreign to the chosen style) follow slides_categories.md step1 and are not repeated here.
+General prohibitions (cards / evenly divided compositions / AI-typical palettes / elements foreign to the chosen style) follow design.md §1 step1 and are not repeated here.
 
 ## Visual References
 
-> The four worked examples below elaborate `styles.md` entries — Klein Blue Swiss Posters = `swiss-minimal`, Stencil-Printed Indie Magazine = `hand-drawn`, Brutalist Newspaper = `brutalist`, Memphis Pop Posters = `poster-pop`; `editorial` is the default pairing for this scenario. Any entry (or a custom style contract) may be chosen at the interview instead; when a worked example is selected, it may be followed as a full recipe.
+> The four worked examples below elaborate `design.md` §2 entries — Klein Blue Swiss Posters = `swiss-minimal`, Stencil-Printed Indie Magazine = `hand-drawn`, Brutalist Newspaper = `brutalist`, Memphis Pop Posters = `poster-pop`; `editorial` is the default pairing for this scenario. Any entry (or a custom style contract) may be chosen at the interview instead; when a worked example is selected, it may be followed as a full recipe.
 
 Visual references are only "references": they show you something good so you know what good looks like — they are not directly usable. You should design visuals according to the user's actual needs, not directly apply templates.
 

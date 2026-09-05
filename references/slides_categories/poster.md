@@ -36,7 +36,7 @@ Available grammars include but are not limited to typography-led, photography-le
 
 For a newly created poster/infographic, create a brief `style.md` in the PPTD project root before writing `.page` files. It is the design brief for the current task — not a new skill file, not a hard process gate, and not an extra deliverable.
 
-Review the user's assets, actual image candidates, and the fonts available in `reference/fonts.md` before finalizing `style.md`. Keep the content short, specific, and actionable; it typically includes:
+Review the user's assets, actual image candidates, and the fonts available in `design.md` §4 before finalizing `style.md`. Keep the content short, specific, and actionable; it typically includes:
 
 ```markdown
 # Style Brief

@@ -141,7 +141,7 @@ export function fontToFntdata(bytes, chars, wantSubset) {
 export function skipReasonText(r) {
   switch (r.reason) {
     case "not-in-registry":
-      return `「${r.family}」未命中内置字体库且无 url，视为系统字体声明（不嵌入）；如需嵌入，请核对 references/fonts.md 中的注册名`;
+      return `「${r.family}」未命中内置字体库且无 url，视为系统字体声明（不嵌入）；如需嵌入，请核对 references/design.md §4 中的注册名`;
     case "registry-unavailable":
       return `「${r.family}」无法解析（字体注册表不可用），未嵌入`;
     case "file-missing":

@@ -16,7 +16,7 @@ Readers may be fellow engineers, but they may also be product partners or custom
 
 ## 2. General Prohibitions
 
-General prohibitions (cards / evenly divided compositions / AI-typical palettes / elements foreign to the chosen style) follow slides_categories.md step1 and are not repeated here.
+General prohibitions (cards / evenly divided compositions / AI-typical palettes / elements foreign to the chosen style) follow design.md §1 step1 and are not repeated here.
 
 ## 3. How to Present Technical Content
 
@@ -163,7 +163,7 @@ When no better structure fits, start from "decision summary → goals and constr
 
 ## 9. Sample References
 
-Samples are only for extracting mechanisms; wholesale replication is forbidden. Organize the Style first according to the current readers, evidence, brand, and usage; precise color values, fonts, covers, section pages, and footers are not inherited by default. Samples A–C are white-base engineering variants of `swiss-minimal` (the default pairing for this scenario, see `styles.md`); the interview may swap in any other entry.
+Samples are only for extracting mechanisms; wholesale replication is forbidden. Organize the Style first according to the current readers, evidence, brand, and usage; precise color values, fonts, covers, section pages, and footers are not inherited by default. Samples A–C are white-base engineering variants of `swiss-minimal` (the default pairing for this scenario, see `design.md` §2); the interview may swap in any other entry.
 
 ### Sample A: Warm Orange & Cool Blue — White-Base Engineering Document Style
 

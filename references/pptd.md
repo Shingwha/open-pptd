@@ -177,7 +177,7 @@ type FontFamily = string | { latin: string; ea: string };
 | String | `"Microsoft YaHei"` | Chinese and English use the same font uniformly |
 | Object | `{latin: "Arial", ea: "Microsoft YaHei"}` | Explicitly specify Latin (latin) and East Asian (ea) fonts separately |
 
-See [fonts.md](./fonts.md) for the list of available fonts
+See the Font System (§4) in [design.md](./design.md) for the list of available fonts
 
 ### Alignment
 ```ts

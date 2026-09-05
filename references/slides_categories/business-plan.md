@@ -20,11 +20,11 @@
 
 ## Key Requirements
 
-General prohibitions (cards / evenly divided compositions / AI-typical palettes) follow slides_categories.md step1 and are not repeated here.
+General prohibitions (cards / evenly divided compositions / AI-typical palettes) follow design.md §1 step1 and are not repeated here.
 
 ## Visual References
 
-> This section pairs with the `editorial` entry of `styles.md` — the default pairing for this scenario (type-led hierarchy, display/body division of labor, recurring motifs). The interview may swap in any other style from `styles.md`.
+> This section pairs with the `editorial` entry of `design.md` §2 — the default pairing for this scenario (type-led hierarchy, display/body division of labor, recurring motifs). The interview may swap in any other style from `design.md` §2.
 
 1. Type is attitude: display type (titles, manifesto lines, big numbers) and body type (body text, notes, sources) have a clear division of labor by family or weight; display type needs poster-level tension, daring extreme contrast in size, weight, and letter spacing — the title itself is a visual work.
 2. Fonts and the color scheme must be matched and harmonious; reference each other when designing.

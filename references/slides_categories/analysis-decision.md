@@ -17,11 +17,11 @@
 
 ## Key Requirements
 1. A single basic chart must not occupy half or more of the width; encourage laying out multiple charts or other content on one page.
-2. General prohibitions (cards / evenly divided compositions / AI-typical palettes) follow slides_categories.md step1 and are not repeated here.
+2. General prohibitions (cards / evenly divided compositions / AI-typical palettes) follow design.md §1 step1 and are not repeated here.
 
 ## Visual References
 
-> This section elaborates the `consulting-classic` entry of `styles.md` — the default pairing for this scenario. The interview may swap in any other style; when it does, keep this section's discipline items (stable axes, chart de-defaulting, table conventions, position discipline) and rebuild the look from the new style entry.
+> This section elaborates the `consulting-classic` entry of `design.md` §2 — the default pairing for this scenario. The interview may swap in any other style; when it does, keep this section's discipline items (stable axes, chart de-defaulting, table conventions, position discipline) and rebuild the look from the new style entry.
 
 1. White background + single primary-color skeleton: pure white pages, with only one primary color throughout the deck (e.g., navy, ink green, or another color common in financial-consulting style) carrying the structural skeleton — title emphasis, table headers, navigation highlights, main chart series, and numbered markers — supported by a 2–3-step light-tint ladder of the same hue and neutral grays.
 2. The title is the conclusion: each page's main title is a complete judgment sentence; the heading format (kicker → main title → subtitle, or title + conclusion-sentence subtitle) is fixed throughout; in typography, bold serif titles and sans-serif body text form two clearly divided roles, with a strictly consistent hierarchy.

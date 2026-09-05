@@ -13,11 +13,11 @@
 
 ## Key Requirements
 
-General prohibitions (cards / evenly divided compositions / AI-typical palettes) follow slides_categories.md step1 and are not repeated here.
+General prohibitions (cards / evenly divided compositions / AI-typical palettes) follow design.md §1 step1 and are not repeated here.
 
 ## Visual References
 
-> This section pairs with the `consulting-classic` entry of `styles.md` — the default pairing for this scenario. The interview may swap in any other style from `styles.md`.
+> This section pairs with the `consulting-classic` entry of `design.md` §2 — the default pairing for this scenario. The interview may swap in any other style from `design.md` §2.
 
 1. Fonts split into families: display type and body type have a clear division of labor (different weights of the same sans-serif family, or sans-serif titles paired with another family for body text); hierarchy is built on font-size and weight ratios; functional text such as numbering, labels, and footnotes is uniformly set small in caps / with added letter spacing; font sizes flex with content volume while the hierarchy ratios stay unchanged.
 2. Fonts and the color scheme must be matched and harmonious; reference each other when designing.

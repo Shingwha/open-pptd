@@ -1,8 +1,8 @@
 // ============================================================================
 // tests/regression/theme-presets.mjs — 主题预设一致性回归
 // ----------------------------------------------------------------------------
-// 守护三处色值同步：packages/model/theme-presets.js（权威源）↔ references/themes.md
-// ↔ docs/editor-v2-ux.md §1.3；同时回归 normalizeTheme 字符串预设解析行为。
+// 守护两处色值同步：packages/model/theme-presets.js（权威源）↔ references/design.md
+// 同时回归 normalizeTheme 字符串预设解析行为。
 // 运行：node tests/regression/theme-presets.mjs
 // ============================================================================
 
@@ -32,13 +32,13 @@ for (const [k, p] of Object.entries(THEME_PALETTES)) {
 const consult = THEME_PALETTES.consult.colors;
 ok(KEYS.every((k) => DEFAULT_THEME.colors[k] === consult[k]), "DEFAULT_THEME.colors == consult（默认主题 = 第 1 套）");
 
-console.log("== 2. references/themes.md 色值表与代码一致 ==");
-const md = readFileSync(resolve("references/themes.md"), "utf8");
+console.log("== 2. references/design.md 色值表与代码一致 ==");
+const md = readFileSync(resolve("references/design.md"), "utf8");
 const mainTbl = md.split("Primary and chart series colors")[1].split("The remaining 11 keys")[0];
 for (const row of mainTbl.split("\n").filter((l) => /^\| (consult|tech|orange|green|red|purple|mono|brown|morandi|sakura) \|/.test(l))) {
   const c = row.split("|").map((s) => s.trim());
   const code = ["primary", "accent", "accent3", "accent4", "accent5", "accent6"].map((k) => THEME_PALETTES[c[1]].colors[k].toUpperCase());
-  ok(JSON.stringify(c.slice(2, 8)) === JSON.stringify(code), `themes.md 主色表 ${c[1]}`);
+  ok(JSON.stringify(c.slice(2, 8)) === JSON.stringify(code), `design.md 主色表 ${c[1]}`);
 }
 const restTbl = md.split("The remaining 11 keys")[1].split("> Usage:")[0];
 for (const row of restTbl.split("\n").filter((l) => /^\| (text|muted|line|success|warning|danger|primarySoft|primaryTint|primaryDeep) \|/.test(l))) {
@@ -46,9 +46,9 @@ for (const row of restTbl.split("\n").filter((l) => /^\| (text|muted|line|succes
   for (let i = 0; i < 10; i++) {
     const doc = c[i + 2].toUpperCase();
     const code = THEME_PALETTES[ORDER[i]].colors[c[1]].toUpperCase();
-    if (doc !== code) ok(false, `themes.md ${c[1]} ${ORDER[i]}: ${doc} vs ${code}`);
+    if (doc !== code) ok(false, `design.md ${c[1]} ${ORDER[i]}: ${doc} vs ${code}`);
   }
-  ok(true, `themes.md 扩展键表 ${c[1]} × 10 套`);
+  ok(true, `design.md 扩展键表 ${c[1]} × 10 套`);
 }
 
 console.log("== 3. normalizeTheme 字符串预设解析（不再静默回退）==");
