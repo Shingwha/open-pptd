@@ -1,8 +1,8 @@
 // ============================================================================
 // app/shot.js — 无头截图模式（?shot=1，open-pptd render 使用）
 // ----------------------------------------------------------------------------
-// 跳过全部编辑器 UI，把每页直接渲染进一个 960×540 的裸容器——与编辑器预览
-// 同一条渲染管线（renderer/page.js + 同一份字体文件 + 同一 imageMap）。
+// 跳过全部编辑器 UI，把每页直接渲染进一个 deck 自身尺寸的裸容器（size 缺省 960×540）——
+// 与编辑器预览同一条渲染管线（renderer/page.js + 同一份字体文件 + 同一 imageMap）。
 // 对外契约（供 packages/renderer/headless/shoot.js 的 CDP 驱动）：
 //   window.__pptdShot = { count, goto(index) }
 //   document.title === "PPTD_READY"  = 当前页渲染完成、画面稳定，可截图
@@ -28,9 +28,7 @@ export async function initShot(deckUrl) {
   const root = document.createElement("div");
   root.id = "shot-root";
   document.body.appendChild(root);
-  root.style.cssText =
-    `position:fixed;left:0;top:0;width:${PAGE_WIDTH}px;height:${PAGE_HEIGHT}px;` +
-    "overflow:hidden;background:#fff;";
+  root.style.cssText = "position:fixed;left:0;top:0;overflow:hidden;background:#fff;";
 
   /** 渲染一页并等待画面稳定：字体就绪 + 图片解码 + 双 rAF（图表 animation:false 同步绘制）。 */
   async function render(index) {
@@ -54,6 +52,10 @@ export async function initShot(deckUrl) {
   }
 
   await io.loadDeck(deckUrl, { silent: true });
-  window.__pptdShot = { count: state.deck.pages.length, goto };
+  // 容器 = deck 自身尺寸（size 缺省时回退 960×540），支持任意画布比例（如 3:4 海报）
+  const [deckW, deckH] = state.deck.size || [PAGE_WIDTH, PAGE_HEIGHT];
+  root.style.width = `${deckW}px`;
+  root.style.height = `${deckH}px`;
+  window.__pptdShot = { count: state.deck.pages.length, goto, width: deckW, height: deckH };
   await goto(0); // 首页就绪后 CDP 才开始逐页驱动
 }

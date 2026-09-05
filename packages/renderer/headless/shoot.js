@@ -13,7 +13,6 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync, rmSync, readdirSync, statSync, mkdtempSync } from "node:fs";
 import { join, dirname, basename, extname, resolve } from "node:path";
 import { tmpdir } from "node:os";
-import { PAGE_WIDTH, PAGE_HEIGHT } from "../../model/model.js";
 import { findBrowser, freePort } from "./browser.js";
 import { connectCdp, waitReady, withTimeout, sleep } from "./cdp.js";
 
@@ -102,24 +101,24 @@ export async function renderDeck({
     await cdp.send("Page.enable");
     await waitReady(cdp, timeoutMs); // 首页就绪
 
-    // 视口 = 画布原生尺寸 × scale（截图即页面像素）
-    // 视口 CSS 尺寸恒为画布尺寸（shot-root 固定 960×540），deviceScaleFactor 只放大
-    // 输出分辨率（截图 = 960*scale × 540*scale 设备像素）——若把 scale 乘进 width/height，
-    // CSS 视口会大于容器，内容缩在左上角、右下方出现大片白边（scale>1 时必现）
+    // 视口 = deck 自身尺寸（width/height 由 shot 契约带回），deviceScaleFactor 只放大
+    // 输出分辨率。若把 scale 乘进 width/height，CSS 视口会大于容器，内容缩在左上角、
+    // 右下方出现大片白边（scale>1 时必现）
+    const meta = await cdp.evalJs(
+      "({count: window.__pptdShot.count, width: window.__pptdShot.width, height: window.__pptdShot.height})"
+    );
+    if (!Number.isInteger(meta?.count) || meta.count < 1) throw new Error(`页面数异常: ${meta?.count}`);
     await cdp.send("Emulation.setDeviceMetricsOverride", {
-      width: PAGE_WIDTH,
-      height: PAGE_HEIGHT,
+      width: meta.width,
+      height: meta.height,
       deviceScaleFactor: scale,
       mobile: false,
     });
 
-    const count = await cdp.evalJs("window.__pptdShot.count");
-    if (!Number.isInteger(count) || count < 1) throw new Error(`页面数异常: ${count}`);
-
     const indices =
-      pageSpec === "all" ? Array.from({ length: count }, (_, i) => i) : [pageSpec - 1];
+      pageSpec === "all" ? Array.from({ length: meta.count }, (_, i) => i) : [pageSpec - 1];
     for (const i of indices) {
-      if (i < 0 || i >= count) throw new Error(`页码 ${i + 1} 超出范围（共 ${count} 页）`);
+      if (i < 0 || i >= meta.count) throw new Error(`页码 ${i + 1} 超出范围（共 ${meta.count} 页）`);
     }
 
     const files = [];
@@ -142,9 +141,9 @@ export async function renderDeck({
       }
       writeFileSync(filePath, buf);
       files.push(filePath);
-      log(`  ✓ 第 ${i + 1}/${count} 页 → ${filePath}（${(buf.length / 1024).toFixed(0)}KB）`);
+      log(`  ✓ 第 ${i + 1}/${meta.count} 页 → ${filePath}（${(buf.length / 1024).toFixed(0)}KB）`);
     }
-    return { files, count };
+    return { files, count: meta.count };
   } finally {
     // ---- 清理：关浏览器、删临时 profile、关 server ----
     try {
