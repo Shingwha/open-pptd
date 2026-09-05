@@ -1,7 +1,7 @@
 // ============================================================================
 // app/present.js — 放映模式（全屏演示）
 // ----------------------------------------------------------------------------
-// 一键进入放映：黑场覆盖层 + 16:9 页面按视口等比缩放，复用 renderer/page.js
+// 一键进入放映：黑场覆盖层 + 画布按 deck 实际尺寸等比缩放，复用 renderer/page.js
 // 渲染（背景/文字/形状/图表/表格/图标/图片与编辑器预览一致）。
 //
 // 操作：
@@ -24,7 +24,7 @@ const WHEEL_DEBOUNCE_MS = 600;
 export function createPresent({ state, view }) {
   let root = null; // 覆盖层
   let stage = null; // 幻灯片视口（等比缩放容器）
-  let layers = []; // 双缓冲图层（960x540，交叉淡化）
+  let layers = []; // 双缓冲图层（deck 实际画布尺寸，交叉淡化）
   let counterEl = null;
   let progressEl = null;
   let index = 0; // 当前放映页
@@ -38,6 +38,9 @@ export function createPresent({ state, view }) {
 
   const count = () => state.deck?.pages?.length || 0;
   const clamp = (i) => Math.max(0, Math.min(count() - 1, i));
+  // 画布尺寸（deck.size 缺省 960×540）：图层尺寸与适配缩放均按实际比例
+  const deckSize = () =>
+    Array.isArray(state.deck?.size) && state.deck.size.length === 2 ? state.deck.size : [PAGE_WIDTH, PAGE_HEIGHT];
 
   function isActive() {
     return active;
@@ -69,6 +72,14 @@ export function createPresent({ state, view }) {
       <div class="present-hint">← → 翻页 · 空格 下一页 · F 全屏 · B 黑屏 · Esc 退出</div>`;
     stage = root.querySelector(".present-stage");
     layers = [...root.querySelectorAll(".present-slide")];
+    // 图层尺寸跟随 deck 实际画布（内联覆盖 present.css 的 960×540 兜底）
+    const [pw, ph] = deckSize();
+    stage.style.width = `${pw}px`;
+    stage.style.height = `${ph}px`;
+    for (const layer of layers) {
+      layer.style.width = `${pw}px`;
+      layer.style.height = `${ph}px`;
+    }
     counterEl = root.querySelector(".present-counter");
     progressEl = root.querySelector(".present-progress i");
     document.body.appendChild(root);
@@ -136,7 +147,8 @@ export function createPresent({ state, view }) {
     if (!root) return;
     const vw = root.clientWidth;
     const vh = root.clientHeight;
-    const s = Math.min(vw / PAGE_WIDTH, vh / PAGE_HEIGHT);
+    const [pw, ph] = deckSize();
+    const s = Math.min(vw / pw, vh / ph);
     stage.style.transform = `scale(${s})`;
   }
 

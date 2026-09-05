@@ -173,6 +173,7 @@
 
 .canvas {
   position: relative;
+  /* 兜底尺寸：renderCanvas 按 deck.size 内联覆盖（海报等任意画布比例） */
   width: 960px;
   height: 540px;
   background: var(--panel);

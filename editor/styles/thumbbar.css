@@ -38,7 +38,7 @@
   background-clip: padding-box;
 }
 
-/* 缩略卡：宽 140/高 79 与 thumbnails.js 的 THUMB_W=140 及 960x540 缩放比一一对应，勿改 */
+/* 缩略卡固定框：thumbnails.js 按画布实际比例 contain 进 140x79（THUMB_W/THUMB_H），框尺寸勿改 */
 .thumb {
   position: relative;
   flex: 0 0 auto;
@@ -56,6 +56,7 @@
 .thumb:hover { box-shadow: var(--shadow-sm); }
 .thumb.active { border-color: var(--primary); background: var(--primary-soft); }
 .thumb .thumb-canvas {
+  /* 兜底尺寸：缩略图按 deck.size 内联覆盖并绝对定位居中 */
   width: 960px;
   height: 540px;
   position: relative;

@@ -24,7 +24,7 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   justify-content: center;
 }
 
-/* 幻灯片视口：transform 等比缩放（960x540 → 视口适配），flex 子项居中 */
+/* 幻灯片视口：transform 等比缩放（deck 实际画布 → 视口适配），flex 子项居中；尺寸为兜底，present.js 内联覆盖 */
 .present-stage {
   position: relative;
   flex: none;

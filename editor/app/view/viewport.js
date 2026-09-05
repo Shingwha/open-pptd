@@ -8,7 +8,12 @@
 
 import { PAGE_WIDTH, PAGE_HEIGHT } from "../../../packages/model/model.js";
 
-export function createViewport({ stage, canvas, wrap, zoomLabel, controller, repaint }) {
+/** deck 画布尺寸（size 缺省回退 960×540）；适配缩放/平移限位均按实际比例计算。 */
+export function deckSize(state) {
+  return Array.isArray(state.deck?.size) && state.deck.size.length === 2 ? state.deck.size : [PAGE_WIDTH, PAGE_HEIGHT];
+}
+
+export function createViewport({ stage, canvas, wrap, zoomLabel, controller, repaint, getSize }) {
   let zoom = 1;
   let panX = 0;
   let panY = 0;
@@ -54,18 +59,20 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
   }
 
   function fitScale() {
+    const [pw, ph] = getSize();
     const w = Math.max(320, stage.clientWidth - 64);
     const h = Math.max(200, stage.clientHeight - 64);
-    return Math.min(w / PAGE_WIDTH, h / PAGE_HEIGHT, 1.2);
+    return Math.min(w / pw, h / ph, 1.2);
   }
 
   // 计算并应用画布缩放（fitScale × zoom → transform + 控制器同步）
   // 平移 clamp 在此统一执行：画布超出舞台的部分可拖到边缘内，
   // 未超出（适配态）只允许 ±PAN_SLACK 的轻微挪动，画布永远不会拖离视野
   function applyScale() {
+    const [pw, ph] = getSize();
     const s = fitScale() * zoom;
-    const mx = Math.max(0, (PAGE_WIDTH * s - stage.clientWidth) / 2 + PAN_SLACK);
-    const my = Math.max(0, (PAGE_HEIGHT * s - stage.clientHeight) / 2 + PAN_SLACK);
+    const mx = Math.max(0, (pw * s - stage.clientWidth) / 2 + PAN_SLACK);
+    const my = Math.max(0, (ph * s - stage.clientHeight) / 2 + PAN_SLACK);
     panX = Math.min(mx, Math.max(-mx, panX));
     panY = Math.min(my, Math.max(-my, panY));
     canvas.style.transform = `scale(${s})`;

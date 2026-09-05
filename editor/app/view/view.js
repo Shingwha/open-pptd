@@ -14,7 +14,7 @@ import { getType } from "../../types/index.js";
 import { quickbarColor, quickbarSelect, quickbarBtn, quickbarTextBtn, isNarrow } from "../../ui.js";
 import { relRect } from "../../coords.js";
 import { applyMeasurements } from "./measure.js";
-import { createViewport } from "./viewport.js";
+import { createViewport, deckSize } from "./viewport.js";
 import { createThumbnails } from "./thumbnails.js";
 import { dom } from "../../dom.js";
 
@@ -31,6 +31,7 @@ export function createView({ state, page, selected, api, controller, props }) {
     zoomLabel: dom.zoomLabel,
     controller,
     repaint: () => renderCanvas(),
+    getSize: () => deckSize(state),
   });
   // 缩略条：页面切换/删除后需全量刷新，经 reload 回调回到 render()
   const thumbnails = createThumbnails({ state, api, reload: () => viewObj.render() });
@@ -74,6 +75,10 @@ export function createView({ state, page, selected, api, controller, props }) {
   function renderCanvas() {
     if (!state.deck) return;
     const canvas = dom.canvas;
+    // 画布尺寸跟随 deck 实际画布（内联覆盖 canvas.css 的 960×540 兜底）
+    const [pw, ph] = deckSize(state);
+    canvas.style.width = `${pw}px`;
+    canvas.style.height = `${ph}px`;
     viewport.applyScale();
     // transform-origin 为 center：flex 居中 + 中心锚点缩放，视觉左右/上下对称，无需 margin 补偿
     const pg = page();

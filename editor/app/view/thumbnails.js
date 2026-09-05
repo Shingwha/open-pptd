@@ -5,12 +5,13 @@
 // renderThumbnails 只重建缩略图内容；页面切换/删除经 reload 回调触发全量渲染。
 // ============================================================================
 
-import { PAGE_WIDTH } from "../../../packages/model/model.js";
 import { renderPage, disposeChartInstances } from "../../../packages/renderer/page.js";
 import { isNarrow } from "../../ui.js";
 import { dom } from "../../dom.js";
 
 const THUMB_W = 140;
+// 缩略卡框高：与 thumbbar.css 的 .thumb 高度对应（任意画布比例 contain 进此框）
+const THUMB_H = 79;
 // 窄屏（≤BP_NARROW）迷你缩略图宽度，与 editor/styles/ 响应式块中的 .thumb 同步
 const thumbW = () => (isNarrow() ? 88 : THUMB_W);
 
@@ -67,7 +68,15 @@ export function createThumbnails({ state, api, reload }) {
       thumb.className = "thumb" + (i === state.currentPage ? " active" : "");
       const mini = document.createElement("div");
       mini.className = "thumb-canvas";
-      mini.style.transform = `scale(${thumbW() / PAGE_WIDTH})`;
+      // 按画布实际比例 contain 进固定卡框（16:9 恰好铺满；竖版海报左右居中、上下留边）
+      const [pw, ph] = Array.isArray(state.deck.size) && state.deck.size.length === 2 ? state.deck.size : [960, 540];
+      const s = Math.min(thumbW() / pw, THUMB_H / ph);
+      mini.style.width = `${pw}px`;
+      mini.style.height = `${ph}px`;
+      mini.style.transform = `scale(${s})`;
+      mini.style.position = "absolute";
+      mini.style.left = `${Math.round((thumbW() - pw * s) / 2)}px`;
+      mini.style.top = `${Math.round((THUMB_H - ph * s) / 2)}px`;
       renderPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
 
       const num = document.createElement("span");
