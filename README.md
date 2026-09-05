@@ -13,7 +13,7 @@
 仓库自带 9 套精选示例（`examples/`），点击图片直接在线打开编辑：
 
 <p align="center">
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd"><img src="docs/images/business-review.png" width="32%" alt="远川 2025 · 一条河的水文年报"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd"><img src="docs/images/business-review.png" width="32%" alt="远川科技 · 2025 年度经营复盘"/></a>
   <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fcity-cycling-report-7p%2Fdeck.pptd"><img src="docs/images/city-cycling.png" width="32%" alt="两轮上的城市脉搏 · 骑行数据年报"/></a>
   <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftide-festival-sponsorship-7p%2Fdeck.pptd"><img src="docs/images/tide-festival.png" width="32%" alt="潮汐音乐节 · 招商合作方案"/></a>
 </p>

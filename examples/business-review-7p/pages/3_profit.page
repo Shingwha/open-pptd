@@ -1,0 +1,290 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  左边是利润桥:2.76 亿毛利,减去销售 0.98、研发 0.66、管理 0.31、财务及税费 0.20,落到 0.61 亿净利润,净利率 12.7%,同比 +2.2pct。右上三个比率:毛利率 57.3% 提升 1.6pct,费用率 44.6% 下降 0.7pct——增收更增利。右下是现金:经营性现金流从 2023 年 -0.28 亿、2024 年 -0.15 亿,到 2025 年 +0.32 亿,三年首次转正,回款周期缩短 12 天。
+elements:
+  # —— 页眉 ——
+  - elementId: eyebrow
+    elementType: text
+    bounds: [60, 40, 420, 18]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 远川科技 · 2025 年度经营复盘
+
+  - elementId: section-label
+    elementType: text
+    bounds: [640, 41, 222, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [right, middle]
+      text: 盈利拆解 · P&L BRIDGE
+
+  - elementId: badge-rect
+    elementType: shape
+    bounds: [874, 34, 26, 26]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: badge-num
+    elementType: text
+    bounds: [874, 34, 26, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 03
+
+  - elementId: page-title
+    elementType: text
+    bounds: [60, 62, 820, 40]
+    content:
+      style: "$title"
+      align: [left, middle]
+      wrap: false
+      text: 营收 4.82 亿、净利 0.61 亿,盈利质量显著改善
+
+  - elementId: page-subtitle
+    elementType: text
+    bounds: [60, 104, 840, 20]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 净利率 +2.2pct 至 12.7%;经营性现金流由 -0.15 亿转正至 +0.32 亿。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [60, 134, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # —— 左:利润桥瀑布图 ——
+  - elementId: left-heading
+    elementType: text
+    bounds: [60, 150, 460, 22]
+    content:
+      style: "$sectionTitle"
+      align: [left, middle]
+      text: 利润桥:从毛利到净利(亿元)
+
+  - elementId: profit-bridge
+    elementType: chart
+    bounds: [60, 178, 460, 292]
+    fill: { type: solid, color: "$bg" }
+    data:
+      cols: [项目, 金额, 是否合计]
+      rows:
+        - [毛利, 2.76, true]
+        - [销售, -0.98, null]
+        - [研发, -0.66, null]
+        - [管理, -0.31, null]
+        - [税费, -0.20, null]
+        - [净利, 0.61, true]
+    xAxis:
+      axisLine: false
+      gridLine: false
+      label: { fontSize: 9.5, color: "$muted" }
+    yAxis:
+      min: 0
+      max: 3.2
+      axisLine: false
+      gridLine: { color: "$line" }
+      label: { numberFormat: "0.0", fontSize: 9, color: "$muted" }
+    legend: false
+    fontFamily: "LXGW Neo XiHei"
+    series:
+      - type: waterfall
+        encode: { x: 项目, y: 金额, isTotal: 是否合计 }
+        totalBars: { fill: "$primary" }
+        decreaseBars: { fill: "$accent5" }
+        dataLabels: { show: true, numberFormat: "0.00", fontSize: 9, color: "$text" }
+
+  # —— 右上:三项比率读数 ——
+  - elementId: r1-label
+    elementType: text
+    bounds: [556, 150, 110, 13]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [left, middle]
+      text: 毛利率
+  - elementId: r1-value
+    elementType: text
+    bounds: [556, 166, 110, 34]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 24
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      wrap: false
+      text: 57.3%
+  - elementId: r1-delta
+    elementType: text
+    bounds: [556, 202, 110, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      color: "$success"
+      align: [left, middle]
+      text: +1.6pct
+
+  - elementId: ratio-rule-1
+    elementType: shape
+    bounds: [674, 150, 1, 66]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: r2-label
+    elementType: text
+    bounds: [690, 150, 110, 13]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [left, middle]
+      text: 净利率
+  - elementId: r2-value
+    elementType: text
+    bounds: [690, 166, 110, 34]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 24
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: 12.7%
+  - elementId: r2-delta
+    elementType: text
+    bounds: [690, 202, 110, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      color: "$success"
+      align: [left, middle]
+      text: +2.2pct
+
+  - elementId: ratio-rule-2
+    elementType: shape
+    bounds: [808, 150, 1, 66]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: r3-label
+    elementType: text
+    bounds: [824, 150, 80, 13]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [left, middle]
+      text: 费用率
+  - elementId: r3-value
+    elementType: text
+    bounds: [824, 166, 80, 34]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 24
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      wrap: false
+      text: 44.6%
+  - elementId: r3-delta
+    elementType: text
+    bounds: [824, 202, 80, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      color: "$success"
+      align: [left, middle]
+      text: -0.7pct
+
+  - elementId: ratio-bottom
+    elementType: shape
+    bounds: [556, 228, 344, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # —— 右下:经营现金流趋势 ——
+  - elementId: cf-heading
+    elementType: text
+    bounds: [556, 242, 344, 22]
+    content:
+      style: "$sectionTitle"
+      align: [left, middle]
+      text: 经营现金流:三年首次回正(亿元)
+
+  - elementId: cashflow-chart
+    elementType: chart
+    bounds: [556, 270, 344, 200]
+    fill: { type: solid, color: "$bg" }
+    data:
+      cols: [年度, 经营性现金流]
+      rows:
+        - [2023, -0.28]
+        - [2024, -0.15]
+        - [2025, 0.32]
+    xAxis:
+      axisLine: { color: "$line" }
+      gridLine: false
+      label: { fontSize: 9.5, color: "$text" }
+    yAxis:
+      min: -0.4
+      max: 0.5
+      axisLine: false
+      gridLine: { color: "$line" }
+      label: { numberFormat: "0.0", fontSize: 9, color: "$muted" }
+    legend: false
+    fontFamily: "LXGW Neo XiHei"
+    series:
+      - type: area
+        encode: { x: 年度, y: 经营性现金流 }
+        name: 经营性现金流
+        lineColor: "$primary"
+        width: 2.5
+        areaColor: "#0E7C7420"
+        marker: { shape: circle, size: 6, fill: "$primary" }
+        dataLabels: { show: true, numberFormat: "0.00", fontSize: 9, color: "$text" }
+
+  # —— 页脚 ——
+  - elementId: footer-rule
+    elementType: shape
+    bounds: [60, 478, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: footnote
+    elementType: text
+    bounds: [60, 484, 660, 14]
+    content:
+      style: "$small"
+      align: [left, middle]
+      text: 口径:期间费用率=四项费用/营业收入;DSO 98→86 天;演示占位数据。
+
+  - elementId: page-num
+    elementType: text
+    bounds: [780, 484, 120, 14]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: 03 / 07

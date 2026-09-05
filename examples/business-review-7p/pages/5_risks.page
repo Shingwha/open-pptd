@@ -1,0 +1,330 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  不回避问题,三个结构性风险逐项过:第一,华东续约缺口,78% 对警戒线 85%,根因是客户成功覆盖率只有 42%,治理是团队 3 到 8 人、Q2 拉回 82%;第二,获客成本涨了 32% 到 1.9 万,根因是付费渠道过度集中,治理是重建内容获客与转介绍,Q2 压到 1.6 万以内;第三,项目制主动收缩 4 个点,用订阅增量对冲,Q2 对冲过半。三项都按季度复测,7 月 8 日 Q2 复盘会做半年度复判。
+elements:
+  # —— 页眉 ——
+  - elementId: eyebrow
+    elementType: text
+    bounds: [60, 40, 420, 18]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 远川科技 · 2025 年度经营复盘
+
+  - elementId: section-label
+    elementType: text
+    bounds: [640, 41, 222, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [right, middle]
+      text: 风险清单 · RISKS
+
+  - elementId: badge-rect
+    elementType: shape
+    bounds: [874, 34, 26, 26]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: badge-num
+    elementType: text
+    bounds: [874, 34, 26, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 05
+
+  - elementId: page-title
+    elementType: text
+    bounds: [60, 62, 820, 40]
+    content:
+      style: "$title"
+      align: [left, middle]
+      wrap: false
+      text: 三个结构性问题已定位,治理与季度目标均已锁定
+
+  - elementId: page-subtitle
+    elementType: text
+    bounds: [60, 104, 840, 20]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 按"读数—根因—治理"逐项部署;按季度复测,7 月 8 日 Q2 复盘会半年度复判。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [60, 134, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # —— 风险 01 ——
+  - elementId: r1-number
+    elementType: text
+    bounds: [60, 148, 44, 30]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      bold: true
+      color: "$danger"
+      align: [left, top]
+      text: 01
+
+  - elementId: r1-icon
+    elementType: icon
+    bounds: [112, 152, 18, 18]
+    iconName: "fas:arrows-rotate"
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: r1-title
+    elementType: text
+    bounds: [138, 150, 380, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14.5
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 华东续约缺口
+
+  - elementId: r1-reading
+    elementType: text
+    bounds: [520, 148, 380, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 18
+      bold: true
+      color: "$danger"
+      align: [right, middle]
+      wrap: false
+      text: 78% vs 警戒线 85%
+
+  - elementId: r1-body
+    elementType: text
+    bounds: [60, 182, 660, 48]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$text"
+      lineHeight: 1.55
+      align: [left, top]
+      text: |
+        <p><strong>根因</strong>　交付资源错配,客户成功覆盖率仅 42%,续约风险集中在年合同额 50 万元以下客户。</p>
+        <p><strong>治理</strong>　客户成功团队 3→8 人;6 月底前完成 Top 40 客户健康度复盘。</p>
+
+  - elementId: r1-target-label
+    elementType: text
+    bounds: [744, 182, 156, 13]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [left, top]
+      text: Q2 目标
+  - elementId: r1-target
+    elementType: text
+    bounds: [744, 196, 156, 34]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13.5
+      bold: true
+      color: "$primary"
+      align: [left, top]
+      text: 续约率 ≥82%
+
+  - elementId: sep-1
+    elementType: shape
+    bounds: [60, 244, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # —— 风险 02 ——
+  - elementId: r2-number
+    elementType: text
+    bounds: [60, 256, 44, 30]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      bold: true
+      color: "$danger"
+      align: [left, top]
+      text: 02
+
+  - elementId: r2-icon
+    elementType: icon
+    bounds: [112, 260, 18, 18]
+    iconName: "fas:magnifying-glass-dollar"
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: r2-title
+    elementType: text
+    bounds: [138, 258, 380, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14.5
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 获客成本持续上涨
+
+  - elementId: r2-reading
+    elementType: text
+    bounds: [520, 256, 380, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 18
+      bold: true
+      color: "$danger"
+      align: [right, middle]
+      wrap: false
+      text: CAC 1.9 万 · 同比 +32%
+
+  - elementId: r2-body
+    elementType: text
+    bounds: [60, 290, 660, 48]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$text"
+      lineHeight: 1.55
+      align: [left, top]
+      text: |
+        <p><strong>根因</strong>　线索质量下降,付费渠道贡献过度集中于单一来源,自然线索占比持续走低。</p>
+        <p><strong>治理</strong>　重建内容获客与伙伴转介绍体系,付费渠道占比压至 60% 以下。</p>
+
+  - elementId: r2-target-label
+    elementType: text
+    bounds: [744, 290, 156, 13]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [left, top]
+      text: Q2 目标
+  - elementId: r2-target
+    elementType: text
+    bounds: [744, 304, 156, 34]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13.5
+      bold: true
+      color: "$primary"
+      align: [left, top]
+      text: 单客户 CAC ≤1.6 万
+
+  - elementId: sep-2
+    elementType: shape
+    bounds: [60, 352, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # —— 风险 03 ——
+  - elementId: r3-number
+    elementType: text
+    bounds: [60, 364, 44, 30]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      bold: true
+      color: "$danger"
+      align: [left, top]
+      text: 03
+
+  - elementId: r3-icon
+    elementType: icon
+    bounds: [112, 368, 18, 18]
+    iconName: "fas:compress"
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: r3-title
+    elementType: text
+    bounds: [138, 366, 380, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14.5
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 项目制收入收缩
+
+  - elementId: r3-reading
+    elementType: text
+    bounds: [520, 364, 380, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 18
+      bold: true
+      color: "$danger"
+      align: [right, middle]
+      wrap: false
+      text: 占比 27% · 同比 -4pct
+
+  - elementId: r3-body
+    elementType: text
+    bounds: [60, 398, 660, 48]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$text"
+      lineHeight: 1.55
+      align: [left, top]
+      text: |
+        <p><strong>根因</strong>　低毛利项目制收入主动收缩,叠加大客户交付周期拉长,形成短期收入缺口。</p>
+        <p><strong>治理</strong>　订阅产品承接溢出需求;项目制聚焦战略客户,毛利优先于规模。</p>
+
+  - elementId: r3-target-label
+    elementType: text
+    bounds: [744, 398, 156, 13]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [left, top]
+      text: Q2 目标
+  - elementId: r3-target
+    elementType: text
+    bounds: [744, 412, 156, 34]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13.5
+      bold: true
+      color: "$primary"
+      align: [left, top]
+      text: 缺口对冲 ≥50%
+
+  # —— 页脚 ——
+  - elementId: footer-rule
+    elementType: shape
+    bounds: [60, 478, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: footnote
+    elementType: text
+    bounds: [60, 484, 660, 14]
+    content:
+      style: "$small"
+      align: [left, middle]
+      text: 口径:CAC=单客户获取成本(全年口径);复测节奏:每季度末;演示占位数据。
+
+  - elementId: page-num
+    elementType: text
+    bounds: [780, 484, 120, 14]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: 05 / 07

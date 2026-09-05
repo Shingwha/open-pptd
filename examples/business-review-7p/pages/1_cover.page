@@ -1,278 +1,281 @@
 pageType: cover
 background:
   type: solid
-  color: "$primaryDeep"
+  color: "$bg"
 notes: |
-  开场建议：把公司比作一条河，今天汇报的是它 2025 年的水文年报。先给三个读数：流量（收入）达成 96.8%，水位（经营性现金流）三年来首次回正 +3,200 万，险滩在华东——续约率 78%，距 85% 警戒线差 7 个刻度。底部这条线是河流里程线，从 K0 源头出发，到 K7 入海口结束，每一站对应一页。
+  开场:今天用一份高密度简报向各位汇报远川 2025。先给四个读数——收入达成 96.8%、增速 +14.2%、经营性现金流三年来首次转正 +3,200 万,以及唯一低于警戒线的读数:华东续约率 78%。全篇七页,先讲清全年怎么样,再讲三个结构性问题和 2026 怎么打,最后一页是三项待决议事项。
 elements:
-  # —— 背景层次：巨型「川」字 ——
-  - elementId: bg-chuan
+  # —— 背景层次:巨号 2025(浅青水印) ——
+  - elementId: bg-year
     elementType: text
-    bounds: [524, 18, 420, 440]
-    opacity: 0.55
+    bounds: [470, 96, 430, 360]
     content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 330
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 185
       bold: true
-      color: "#1B4A3E"
-      align: [center, middle]
+      color: "#E8F3F0"
+      align: [right, middle]
       wrap: false
-      text: 川
+      text: 2025
 
-  # —— 水文站铭牌框 ——
-  - elementId: plate-frame
-    elementType: shape
-    bounds: [28, 28, 904, 446]
-    shapeName: rect
-    border: { style: solid, width: 1, color: "$primary" }
-    opacity: 0.55
-
+  # —— 页眉 ——
   - elementId: eyebrow
     elementType: text
-    bounds: [64, 56, 520, 20]
+    bounds: [60, 40, 420, 18]
     content:
       style: "$eyebrow"
-      letterSpacing: 4
       align: [left, middle]
-      text: 远川科技 · 2025 水文年报
+      text: 远川科技 · YUANCHUAN TECH
 
   - elementId: meta-right
     elementType: text
-    bounds: [560, 56, 336, 20]
+    bounds: [560, 41, 300, 14]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 10
-      color: "$primaryTint"
-      letterSpacing: 1
+      fontSize: 9.5
+      color: "$muted"
+      letterSpacing: 2
       align: [right, middle]
-      text: 水文观测期 2025.01 — 2025.12
+      text: 董事会简报 · BOARD BRIEF
 
-  - elementId: gold-bar
+  - elementId: badge-rect
     elementType: shape
-    bounds: [64, 108, 56, 6]
+    bounds: [874, 34, 26, 26]
     shapeName: rect
     fill: { type: solid, color: "$primary" }
+
+  - elementId: badge-num
+    elementType: text
+    bounds: [874, 34, 26, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 01
+
+  # —— 主标题区 ——
+  - elementId: gold-rule
+    elementType: shape
+    bounds: [60, 96, 48, 4]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
 
   - elementId: hero-title
     elementType: text
-    bounds: [60, 128, 640, 128]
+    bounds: [56, 118, 720, 92]
     content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 92
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 62
       bold: true
-      color: "$bg"
-      letterSpacing: 10
+      color: "$primary"
+      letterSpacing: 2
       align: [left, middle]
       wrap: false
-      text: 川流不息
+      text: 2025 年度经营复盘
 
   - elementId: hero-subtitle
     elementType: text
-    bounds: [64, 276, 640, 26]
+    bounds: [60, 216, 480, 30]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 17
-      color: "$primaryTint"
+      fontSize: 18
+      color: "$text"
+      letterSpacing: 1
       align: [left, middle]
-      text: 2025年度经营复盘与2026年增长策略
+      text: 与 2026 年增长策略
 
-  # —— 水文读数小签 ×3 ——
-  - elementId: tag-1-frame
-    elementType: shape
-    bounds: [64, 332, 172, 44]
-    shapeName: rect
-    border: { style: solid, width: 1, color: "$primary" }
-
-  - elementId: tag-1-text
+  - elementId: hero-note
     elementType: text
-    bounds: [64, 336, 172, 36]
+    bounds: [60, 248, 480, 18]
     content:
-      align: [center, middle]
-      lineHeight: 1.3
-      text: |
-        <p style="text-align:center"><span style="font-size:9px; color:$primary; font-family:LXGW Neo XiHei;">流量 · FLOW</span></p>
-        <p style="text-align:center"><span style="font-size:16px; color:$bg; font-family:Source Han Serif CN;">96.8%</span></p>
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 11
+      color: "$accent"
+      align: [left, middle]
+      text: 经营管理层汇报 · 报告期 2025.01 — 2025.12
 
-  - elementId: tag-2-frame
+  # —— 关键读数带 ×4 ——
+  - elementId: strip-top
     elementType: shape
-    bounds: [252, 332, 196, 44]
+    bounds: [60, 292, 840, 1]
     shapeName: rect
-    border: { style: solid, width: 1, color: "$primary" }
+    fill: { type: solid, color: "$line" }
 
-  - elementId: tag-2-text
-    elementType: text
-    bounds: [252, 336, 196, 36]
-    content:
-      align: [center, middle]
-      lineHeight: 1.3
-      text: |
-        <p style="text-align:center"><span style="font-size:9px; color:$primary; font-family:LXGW Neo XiHei;">水位 · LEVEL</span></p>
-        <p style="text-align:center"><span style="font-size:16px; color:$bg; font-family:Source Han Serif CN;">+3,200万</span></p>
-
-  - elementId: tag-3-frame
+  - elementId: strip-line-1
     elementType: shape
-    bounds: [464, 332, 208, 44]
+    bounds: [273, 306, 1, 68]
     shapeName: rect
-    border: { style: solid, width: 1, color: "$accent3" }
+    fill: { type: solid, color: "$line" }
+  - elementId: strip-line-2
+    elementType: shape
+    bounds: [493, 306, 1, 68]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: strip-line-3
+    elementType: shape
+    bounds: [713, 306, 1, 68]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
 
-  - elementId: tag-3-text
+  - elementId: s1-label
     elementType: text
-    bounds: [464, 336, 208, 36]
+    bounds: [60, 304, 200, 14]
     content:
-      align: [center, middle]
-      lineHeight: 1.3
-      text: |
-        <p style="text-align:center"><span style="font-size:9px; color:$accent3; font-family:LXGW Neo XiHei;">险滩 · RAPIDS</span></p>
-        <p style="text-align:center"><span style="font-size:16px; color:$accent3; font-family:Source Han Serif CN;">华东续约率 78%</span></p>
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [left, middle]
+      text: 收入达成 · TARGET
+  - elementId: s1-value
+    elementType: text
+    bounds: [60, 320, 200, 42]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 30
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: 96.8%
+  - elementId: s1-note
+    elementType: text
+    bounds: [60, 362, 200, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [left, middle]
+      text: 距目标差 3.2pct,缺口集中华东
+
+  - elementId: s2-label
+    elementType: text
+    bounds: [293, 304, 200, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [left, middle]
+      text: 营收增速 · GROWTH
+  - elementId: s2-value
+    elementType: text
+    bounds: [293, 320, 200, 42]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 30
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      wrap: false
+      text: +14.2%
+  - elementId: s2-note
+    elementType: text
+    bounds: [293, 362, 200, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [left, middle]
+      text: 连续三年保持 10% 以上
+
+  - elementId: s3-label
+    elementType: text
+    bounds: [513, 304, 200, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [left, middle]
+      text: 经营现金流 · OCF
+  - elementId: s3-value
+    elementType: text
+    bounds: [513, 320, 200, 42]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 30
+      bold: true
+      color: "$success"
+      align: [left, middle]
+      wrap: false
+      text: +3,200万
+  - elementId: s3-note
+    elementType: text
+    bounds: [513, 362, 200, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [left, middle]
+      text: 三年来首次转正 · 回款 -12 天
+
+  - elementId: s4-label
+    elementType: text
+    bounds: [733, 304, 170, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      letterSpacing: 2
+      color: "$danger"
+      align: [left, middle]
+      text: 华东续约 · RENEWAL
+  - elementId: s4-value
+    elementType: text
+    bounds: [733, 320, 170, 42]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 30
+      bold: true
+      color: "$danger"
+      align: [left, middle]
+      wrap: false
+      text: 78%
+  - elementId: s4-note
+    elementType: text
+    bounds: [733, 362, 170, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [left, middle]
+      text: 低于 85% 警戒线 7pct
+
+  - elementId: strip-bottom
+    elementType: shape
+    bounds: [60, 388, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # —— 页脚 ——
+  - elementId: footer-line
+    elementType: shape
+    bounds: [60, 468, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
 
   - elementId: footer-left
     elementType: text
-    bounds: [64, 446, 440, 18]
+    bounds: [60, 478, 500, 16]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 10
-      color: "$primaryTint"
+      fontSize: 9.5
+      color: "$muted"
       align: [left, middle]
-      text: 2026年1月 · 董事会 / 经营管理层简报
+      text: 汇报人:CEO 办公室 · 2026 年 1 月
 
   - elementId: footer-right
     elementType: text
-    bounds: [520, 446, 376, 18]
+    bounds: [460, 478, 440, 16]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 10
-      color: "$primaryTint"
+      fontSize: 9.5
+      color: "$accent"
       align: [right, middle]
       text: 演示占位数据 · 请替换为实际口径
-
-  # —— 河流里程线 K0–K7（签名元素，每页位置一致）——
-  - elementId: river-base
-    elementType: shape
-    bounds: [48, 501, 864, 1]
-    shapeName: rect
-    fill: { type: solid, color: "$primary" }
-    opacity: 0.35
-
-  - elementId: river-tick-1
-    elementType: shape
-    bounds: [171, 497, 1, 8]
-    shapeName: rect
-    fill: { type: solid, color: "$primaryTint" }
-    opacity: 0.6
-  - elementId: river-tick-2
-    elementType: shape
-    bounds: [295, 497, 1, 8]
-    shapeName: rect
-    fill: { type: solid, color: "$primaryTint" }
-    opacity: 0.6
-  - elementId: river-tick-3
-    elementType: shape
-    bounds: [418, 497, 1, 8]
-    shapeName: rect
-    fill: { type: solid, color: "$primaryTint" }
-    opacity: 0.6
-  - elementId: river-tick-4
-    elementType: shape
-    bounds: [542, 497, 1, 8]
-    shapeName: rect
-    fill: { type: solid, color: "$primaryTint" }
-    opacity: 0.6
-  - elementId: river-tick-5
-    elementType: shape
-    bounds: [665, 497, 1, 8]
-    shapeName: rect
-    fill: { type: solid, color: "$primaryTint" }
-    opacity: 0.6
-  - elementId: river-tick-6
-    elementType: shape
-    bounds: [789, 497, 1, 8]
-    shapeName: rect
-    fill: { type: solid, color: "$primaryTint" }
-    opacity: 0.6
-  - elementId: river-tick-7
-    elementType: shape
-    bounds: [912, 497, 1, 8]
-    shapeName: rect
-    fill: { type: solid, color: "$primaryTint" }
-    opacity: 0.6
-
-  - elementId: river-label-1
-    elementType: text
-    bounds: [151, 480, 40, 12]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$primaryTint"
-      align: [center, bottom]
-      text: K1
-  - elementId: river-label-2
-    elementType: text
-    bounds: [275, 480, 40, 12]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$primaryTint"
-      align: [center, bottom]
-      text: K2
-  - elementId: river-label-3
-    elementType: text
-    bounds: [398, 480, 40, 12]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$primaryTint"
-      align: [center, bottom]
-      text: K3
-  - elementId: river-label-4
-    elementType: text
-    bounds: [522, 480, 40, 12]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$primaryTint"
-      align: [center, bottom]
-      text: K4
-  - elementId: river-label-5
-    elementType: text
-    bounds: [645, 480, 40, 12]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$primaryTint"
-      align: [center, bottom]
-      text: K5
-  - elementId: river-label-6
-    elementType: text
-    bounds: [769, 480, 40, 12]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$primaryTint"
-      align: [center, bottom]
-      text: K6
-  - elementId: river-label-7
-    elementType: text
-    bounds: [892, 480, 40, 12]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$primaryTint"
-      align: [center, bottom]
-      text: K7
-
-  - elementId: river-active
-    elementType: shape
-    bounds: [43, 496, 10, 10]
-    shapeName: diamond
-    fill: { type: solid, color: "$primary" }
-
-  - elementId: river-station
-    elementType: text
-    bounds: [48, 512, 140, 15]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 10.5
-      bold: true
-      color: "$primary"
-      align: [left, top]
-      text: K0 · 源头

@@ -1,0 +1,223 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  结构上讲三件事:左边环形图,订阅 58%、项目交付 27%、专业服务 15%;中间看迁移节奏,订阅占比从 2024 上半年 48% 一路到 2025 下半年 61%,全年同比 +9pct;右边区域表,华东占收入 31% 但续约率只有 78%,低于 85% 警戒线,全国整体 85% 刚好压线——这就是下一页要展开的头号风险。
+elements:
+  # —— 页眉 ——
+  - elementId: eyebrow
+    elementType: text
+    bounds: [60, 40, 420, 18]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 远川科技 · 2025 年度经营复盘
+
+  - elementId: section-label
+    elementType: text
+    bounds: [640, 41, 222, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [right, middle]
+      text: 结构与区域 · MIX & REGION
+
+  - elementId: badge-rect
+    elementType: shape
+    bounds: [874, 34, 26, 26]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: badge-num
+    elementType: text
+    bounds: [874, 34, 26, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 04
+
+  - elementId: page-title
+    elementType: text
+    bounds: [60, 62, 820, 40]
+    content:
+      style: "$title"
+      align: [left, middle]
+      wrap: false
+      text: 订阅占比升至 58%,结构持续向高毛利迁移
+
+  - elementId: page-subtitle
+    elementType: text
+    bounds: [60, 104, 840, 20]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 订阅干流扩张、项目与服务主动收缩;华东续约率 78% 低于警戒线,是最大结构性风险。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [60, 134, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # —— 左:收入构成环形图 ——
+  - elementId: left-heading
+    elementType: text
+    bounds: [60, 150, 270, 22]
+    content:
+      style: "$sectionTitle"
+      align: [left, middle]
+      text: 收入构成 · 2025
+
+  - elementId: mix-donut
+    elementType: chart
+    bounds: [60, 178, 270, 292]
+    fill: { type: solid, color: "$bg" }
+    data:
+      cols: [收入类型, 占比]
+      rows:
+        - [SaaS 订阅, 58]
+        - [项目交付, 27]
+        - [专业服务, 15]
+    legend:
+      show: true
+      position: bottom
+      fontSize: 9.5
+      color: "$text"
+    fontFamily: "LXGW Neo XiHei"
+    series:
+      - type: pie
+        encode: { category: 收入类型, value: 占比 }
+        innerRadius: 0.62
+        fill: ["$primary", "$accent3", "$accent"]
+        border: { style: solid, width: 2, color: "$bg" }
+        dataLabels: { show: true, content: percentage, numberFormat: "0%", fontSize: 10, color: "$text" }
+
+  # —— 环心主读数 ——
+  - elementId: donut-center
+    elementType: text
+    bounds: [140, 282, 110, 48]
+    content:
+      align: [center, middle]
+      lineHeight: 1.2
+      text: |
+        <p style="text-align:center"><span style="font-size:22px; color:$primary; font-family:Alimama ShuHeiTi;"><strong>58%</strong></span></p>
+        <p style="text-align:center"><span style="font-size:9.5px; color:$muted; font-family:LXGW Neo XiHei;">SaaS 订阅占比</span></p>
+
+  # —— 中:订阅占比半年度迁移 ——
+  - elementId: mid-heading
+    elementType: text
+    bounds: [360, 150, 280, 22]
+    content:
+      style: "$sectionTitle"
+      align: [left, middle]
+      text: 订阅占比迁移(半年度)
+
+  - elementId: mix-trend
+    elementType: chart
+    bounds: [360, 178, 280, 292]
+    fill: { type: solid, color: "$bg" }
+    data:
+      cols: [半年, 订阅占比]
+      rows:
+        - ["24H1", 0.48]
+        - ["24H2", 0.50]
+        - ["25H1", 0.55]
+        - ["25H2", 0.61]
+    xAxis:
+      axisLine: { color: "$line" }
+      gridLine: false
+      label: { fontSize: 9.5, color: "$text" }
+    yAxis:
+      min: 0
+      max: 0.7
+      axisLine: false
+      gridLine: { color: "$line" }
+      label: { numberFormat: "0%", fontSize: 9, color: "$muted" }
+    legend: false
+    fontFamily: "LXGW Neo XiHei"
+    series:
+      - type: bar
+        encode: { x: 半年, y: 订阅占比 }
+        name: 订阅占比
+        fill: "$primary"
+        dataLabels: { show: true, numberFormat: "0%", fontSize: 9.5, color: "$text" }
+
+  # —— 右:区域续约率表 ——
+  - elementId: right-heading
+    elementType: text
+    bounds: [664, 150, 236, 22]
+    content:
+      style: "$sectionTitle"
+      align: [left, middle]
+      text: 区域续约率 × 警戒线
+
+  - elementId: region-table
+    elementType: table
+    bounds: [664, 178, 236, 292]
+    columnWidths: [0.44, 0.28, 0.28]
+    rowHeights: [0.18, 0.164, 0.164, 0.164, 0.164, 0.164]
+    style: "$default"
+    rows:
+      - - text: 区域(收入占比)
+          align: ["left", "middle"]
+        - text: 续约率
+        - text: 警戒线
+      - - text: 华东 · 31%
+          align: ["left", "middle"]
+        - text: 78%
+          color: "$danger"
+          bold: true
+        - text: 85%
+          color: "$muted"
+      - - text: 华南 · 38%
+          align: ["left", "middle"]
+        - text: 86%
+        - text: 85%
+          color: "$muted"
+      - - text: 华北 · 24%
+          align: ["left", "middle"]
+        - text: 91%
+        - text: 85%
+          color: "$muted"
+      - - text: 其他 · 7%
+          align: ["left", "middle"]
+        - text: 88%
+        - text: —
+          color: "$muted"
+      - - text: 全国
+          align: ["left", "middle"]
+          bold: true
+        - text: 85%
+          bold: true
+        - text: 85%
+          color: "$muted"
+
+  # —— 页脚 ——
+  - elementId: footer-rule
+    elementType: shape
+    bounds: [60, 478, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: footnote
+    elementType: text
+    bounds: [60, 484, 660, 14]
+    content:
+      style: "$small"
+      align: [left, middle]
+      text: 口径:收入结构按全年确认收入;续约率=年度合同续约率,警戒线 85%;演示占位数据。
+
+  - elementId: page-num
+    elementType: text
+    bounds: [780, 484, 120, 14]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: 04 / 07

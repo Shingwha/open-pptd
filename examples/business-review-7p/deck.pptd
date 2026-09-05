@@ -1,41 +1,48 @@
 version: v2
-title: "远川 2025 · 一条河的水文年报"
+title: "远川科技 2025 年度经营复盘 · 董事会简报"
 size: [960, 540]
 fonts:
-  思源宋体: { family: "Source Han Serif CN" }
+  阿里妈妈数黑体: { family: "Alimama ShuHeiTi" }
   霞鹜新晰黑: { family: "LXGW Neo XiHei" }
 theme:
   colors:
-    primaryDeep: "#0B2921"        # 深潭墨绿：封面/收尾深底、强调块
-    bg: "#FCFCFA"       # 纸米：内容页底
-    text: "#1C2B25"         # 墨色：正文
-    primary: "#C9A45C"        # 鎏金：高亮、里程桩、关键数字
-    accent: "#6FA797"        # 水青：次级数据
-    accent3: "#B5533A"        # 暗红：问题/缺口警示
-    muted: "#6E7D72"       # 纸米底上的次级文字
-    line: "#DCD4BE"        # 纸米底上的细分隔线
-    primarySoft: "#F7F6F1"   # 表格隔行
-    primaryTint: "#A9C3B4"        # 深潭底上的次级文字
+    primary: "#0E7C74"       # 青瓷绿:主强调、表头、图首系列
+    accent: "#C4841D"        # 琥珀:标签、关键数字、次系列
+    bg: "#FFFFFF"            # 纯白:内容页底
+    text: "#1F2D2B"          # 墨青近黑:正文
+    muted: "#6B7F7C"         # 青灰:次级文字
+    line: "#E3EBE9"          # 浅青细线
+    success: "#2F9966"
+    warning: "#C08A2E"
+    danger: "#C05B50"
+    primarySoft: "#EEF6F4"   # 表格隔行/浅青底
+    primaryTint: "#BFE0DA"   # 浅青强调、图表辅色
+    primaryDeep: "#0A4A44"   # 深青:大标题文字(小面积)
+    accent3: "#4E9DD4"       # 天青蓝:系列3
+    accent4: "#67A97C"       # 叶绿:系列4
+    accent5: "#D4756B"       # 珊瑚:系列5
+    accent6: "#7A8CA0"       # 灰蓝:系列6
   textStyles:
-    eyebrow: { fontFamily: "LXGW Neo XiHei", fontSize: 11, color: "$primary", bold: true, letterSpacing: 3, lineHeight: 1.3 }
-    title: { fontFamily: "Source Han Serif CN", fontSize: 28, color: "$text", bold: true, lineHeight: 1.25 }
-    subtitle: { fontFamily: "LXGW Neo XiHei", fontSize: 13, color: "$muted", lineHeight: 1.55 }
-    body: { fontFamily: "LXGW Neo XiHei", fontSize: 13, color: "$text", lineHeight: 1.6 }
-    small: { fontFamily: "LXGW Neo XiHei", fontSize: 10.5, color: "$muted", lineHeight: 1.5 }
-    reading: { fontFamily: "Source Han Serif CN", fontSize: 56, color: "$text", bold: true, lineHeight: 1.05 }
+    eyebrow: { fontFamily: "LXGW Neo XiHei", fontSize: 9.5, color: "$accent", bold: true, letterSpacing: 3, lineHeight: 1.3 }
+    title: { fontFamily: "Alimama ShuHeiTi", fontSize: 26, color: "$text", bold: true, lineHeight: 1.2 }
+    subtitle: { fontFamily: "LXGW Neo XiHei", fontSize: 12, color: "$muted", lineHeight: 1.5 }
+    sectionTitle: { fontFamily: "LXGW Neo XiHei", fontSize: 13, color: "$text", bold: true, lineHeight: 1.3 }
+    body: { fontFamily: "LXGW Neo XiHei", fontSize: 11.5, color: "$text", lineHeight: 1.55 }
+    small: { fontFamily: "LXGW Neo XiHei", fontSize: 9, color: "$muted", lineHeight: 1.4 }
+    reading: { fontFamily: "Alimama ShuHeiTi", fontSize: 27, color: "$text", bold: true, lineHeight: 1.1 }
   tableStyles:
     default:
-      cellStyle: { fontFamily: "LXGW Neo XiHei", fontSize: 11, color: "$text", fill: { type: "solid", color: "$bg" }, border: [null, null, { style: "solid", width: 1, color: "$line" }, null], align: ["center", "middle"] }
-      firstRowStyle: { fill: { type: "solid", color: "$primaryDeep" }, color: "$bg", bold: true }
+      cellStyle: { fontFamily: "LXGW Neo XiHei", fontSize: 10, color: "$text", fill: { type: "solid", color: "$bg" }, border: [null, null, { style: "solid", width: 1, color: "$line" }, null], align: ["center", "middle"] }
+      firstRowStyle: { fill: { type: "solid", color: "$primary" }, color: "#FFFFFF", bold: true }
       bodyStyles:
         - { fill: { type: "solid", color: "$primarySoft" } }
         - { fill: { type: "solid", color: "$bg" } }
       rowOverColumn: true
 pages:
   - pages/1_cover.page
-  - pages/2_conclusions.page
-  - pages/3_results.page
-  - pages/4_revenue_structure.page
-  - pages/5_issues.page
+  - pages/2_overview.page
+  - pages/3_profit.page
+  - pages/4_mix.page
+  - pages/5_risks.page
   - pages/6_strategy.page
-  - pages/7_actions.page
+  - pages/7_decisions.page

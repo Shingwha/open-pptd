@@ -3,331 +3,407 @@ background:
   type: solid
   color: "$bg"
 notes: |
-  讲解建议：2026 年做三项航道治理工程——续约攻坚（险滩治理）、订阅深耕（干流拓宽）、获客提效（清源节流）。三项工程共享一个原则：先改善单位经济模型，再扩大流量规模。右侧工期表的目标为建议值，可按董事会意见调整。
+  2026 年怎么打:三项工程共享一个原则——先把单位经济模型做实,再扩大规模。续约攻坚,把华东从 78% 拉回 88%;订阅深耕,ARR 增长 35%、订阅占比到 65%;获客提效,CAC 降 20%、人效提 15%。这三个目标支撑全年收入 5.90 亿、净利率 15%。右边的季度里程碑表是节奏:Q1 到位团队和定价,Q2 见中期读数,Q4 交全年答卷。目标值为管理层建议值,待董事会审议后锁定。
 elements:
+  # —— 页眉 ——
   - elementId: eyebrow
     elementType: text
-    bounds: [60, 40, 400, 18]
+    bounds: [60, 40, 420, 18]
     content:
       style: "$eyebrow"
       align: [left, middle]
-      text: 远川 2025 · 水文年报
+      text: 远川科技 · 2025 年度经营复盘
 
-  - elementId: meta-right
+  - elementId: section-label
     elementType: text
-    bounds: [600, 40, 300, 18]
+    bounds: [640, 41, 222, 14]
     content:
-      style: "$small"
-      fontSize: 10
-      align: [right, middle]
-      text: 里程 K5 / K7
-
-  - elementId: station-title
-    elementType: text
-    bounds: [60, 62, 600, 46]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 30
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
       bold: true
-      color: "$text"
+      letterSpacing: 2
+      color: "$accent"
+      align: [right, middle]
+      text: 2026 策略 · STRATEGY
+
+  - elementId: badge-rect
+    elementType: shape
+    bounds: [874, 34, 26, 26]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: badge-num
+    elementType: text
+    bounds: [874, 34, 26, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 06
+
+  - elementId: page-title
+    elementType: text
+    bounds: [60, 62, 820, 40]
+    content:
+      style: "$title"
       align: [left, middle]
       wrap: false
-      text: |
-        <p><span style="color:$primary;">K5</span>　疏浚航道</p>
+      text: 2026 三大工程:先做实单位经济,再扩大规模
 
-  - elementId: conclusion
+  - elementId: page-subtitle
     elementType: text
-    bounds: [60, 116, 840, 24]
+    bounds: [60, 104, 840, 20]
     content:
       style: "$subtitle"
       align: [left, middle]
-      text: 2026 三项航道治理工程共享一个原则：先改善单位经济模型，再扩大流量规模。
+      text: 以续约攻坚、订阅深耕、获客提效三项工程,支撑年度目标落地。
 
   - elementId: header-rule
     elementType: shape
-    bounds: [60, 152, 840, 1]
+    bounds: [60, 134, 840, 1]
     shapeName: rect
     fill: { type: solid, color: "$line" }
 
-  # —— 左栏：三项治理工程 ——
-  - elementId: p1-label
+  # —— 2026 目标读数带 ×3 ——
+  - elementId: g1-icon
+    elementType: icon
+    bounds: [60, 156, 20, 20]
+    iconName: "fas:chart-column"
+    fill: { type: solid, color: "$accent" }
+  - elementId: g1-label
     elementType: text
-    bounds: [60, 168, 400, 16]
+    bounds: [88, 158, 220, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [left, middle]
+      text: 收入目标
+  - elementId: g1-value
+    elementType: text
+    bounds: [60, 176, 240, 36]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 26
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: 5.90亿
+  - elementId: g1-note
+    elementType: text
+    bounds: [200, 182, 140, 26]
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10
+      color: "$muted"
+      lineHeight: 1.4
+      align: [left, middle]
+      text: |
+        <p>同比 +22%</p>
+
+  - elementId: goal-rule-1
+    elementType: shape
+    bounds: [330, 152, 1, 62]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: g2-icon
+    elementType: icon
+    bounds: [356, 156, 20, 20]
+    iconName: "fas:cubes"
+    fill: { type: solid, color: "$accent" }
+  - elementId: g2-label
+    elementType: text
+    bounds: [384, 158, 220, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
       bold: true
       letterSpacing: 2
+      color: "$accent"
+      align: [left, middle]
+      text: 订阅收入占比
+  - elementId: g2-value
+    elementType: text
+    bounds: [356, 176, 240, 36]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 26
+      bold: true
       color: "$primary"
       align: [left, middle]
-      text: 工程壹 · 险滩治理
+      wrap: false
+      text: 65%
+  - elementId: g2-note
+    elementType: text
+    bounds: [452, 182, 140, 26]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "$muted"
+      lineHeight: 1.4
+      align: [left, middle]
+      text: |
+        <p>同比 +7pct</p>
+
+  - elementId: goal-rule-2
+    elementType: shape
+    bounds: [626, 152, 1, 62]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: g3-icon
+    elementType: icon
+    bounds: [652, 156, 20, 20]
+    iconName: "fas:percent"
+    fill: { type: solid, color: "$accent" }
+  - elementId: g3-label
+    elementType: text
+    bounds: [680, 158, 200, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [left, middle]
+      text: 净利率
+  - elementId: g3-value
+    elementType: text
+    bounds: [652, 176, 200, 36]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 26
+      bold: true
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: 15%
+  - elementId: g3-note
+    elementType: text
+    bounds: [748, 182, 140, 26]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10
+      color: "$muted"
+      lineHeight: 1.4
+      align: [left, middle]
+      text: |
+        <p>同比 +2.3pct</p>
+
+  - elementId: goal-bottom
+    elementType: shape
+    bounds: [60, 224, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # —— 左:三大工程 ——
+  - elementId: p1-number
+    elementType: shape
+    bounds: [60, 238, 26, 26]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+  - elementId: p1-number-text
+    elementType: text
+    bounds: [60, 238, 26, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 01
+  - elementId: p1-icon
+    elementType: icon
+    bounds: [96, 242, 18, 18]
+    iconName: "fas:arrows-rotate"
+    fill: { type: solid, color: "$accent" }
   - elementId: p1-title
     elementType: text
-    bounds: [60, 188, 400, 26]
+    bounds: [122, 240, 360, 24]
     content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 17
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
       bold: true
       color: "$text"
       align: [left, middle]
-      text: 续约攻坚：把华东河段拉回警戒线以上
+      text: 续约攻坚 · 把华东拉回警戒线以上
   - elementId: p1-detail
     elementType: text
-    bounds: [60, 218, 400, 36]
+    bounds: [60, 268, 420, 20]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 12
+      fontSize: 11.5
       color: "$muted"
       lineHeight: 1.5
       align: [left, top]
-      text: 华东续约率 78% → 88%；重点客户覆盖率 42% → 100%。
+      text: |
+        <p>华东续约率 78% → 88%;重点客户健康度覆盖率 42% → 100%。</p>
 
-  - elementId: p-rule-1
+  - elementId: p1-rule
     elementType: shape
-    bounds: [60, 270, 400, 1]
+    bounds: [60, 296, 420, 1]
     shapeName: rect
     fill: { type: solid, color: "$line" }
 
-  - elementId: p2-label
+  - elementId: p2-number
+    elementType: shape
+    bounds: [60, 318, 26, 26]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+  - elementId: p2-number-text
     elementType: text
-    bounds: [60, 286, 400, 16]
+    bounds: [60, 318, 26, 26]
     content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 10
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
       bold: true
-      letterSpacing: 2
-      color: "$primary"
-      align: [left, middle]
-      text: 工程贰 · 干流拓宽
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 02
+  - elementId: p2-icon
+    elementType: icon
+    bounds: [96, 322, 18, 18]
+    iconName: "fas:layer-group"
+    fill: { type: solid, color: "$accent" }
   - elementId: p2-title
     elementType: text
-    bounds: [60, 306, 400, 26]
+    bounds: [122, 320, 360, 24]
     content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 17
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
       bold: true
       color: "$text"
       align: [left, middle]
-      text: 订阅深耕：让干流承载更多水量
+      text: 订阅深耕 · 让高毛利干流承载更多
   - elementId: p2-detail
     elementType: text
-    bounds: [60, 336, 400, 36]
+    bounds: [60, 348, 420, 20]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 12
+      fontSize: 11.5
       color: "$muted"
       lineHeight: 1.5
       align: [left, top]
-      text: SaaS ARR 增长 35%；订阅收入占比 58% → 65%。
+      text: |
+        <p>SaaS ARR 增长 +35%;订阅收入占比 58% → 65%。</p>
 
-  - elementId: p-rule-2
+  - elementId: p2-rule
     elementType: shape
-    bounds: [60, 388, 400, 1]
+    bounds: [60, 376, 420, 1]
     shapeName: rect
     fill: { type: solid, color: "$line" }
 
-  - elementId: p3-label
+  - elementId: p3-number
+    elementType: shape
+    bounds: [60, 398, 26, 26]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+  - elementId: p3-number-text
     elementType: text
-    bounds: [60, 404, 400, 16]
+    bounds: [60, 398, 26, 26]
     content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 10
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
       bold: true
-      letterSpacing: 2
-      color: "$primary"
-      align: [left, middle]
-      text: 工程叁 · 清源节流
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 03
+  - elementId: p3-icon
+    elementType: icon
+    bounds: [96, 402, 18, 18]
+    iconName: "fas:bullseye"
+    fill: { type: solid, color: "$accent" }
   - elementId: p3-title
     elementType: text
-    bounds: [60, 424, 400, 26]
+    bounds: [122, 400, 360, 24]
     content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 17
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
       bold: true
       color: "$text"
       align: [left, middle]
-      text: 获客提效：降低上游来水成本
+      text: 获客提效 · 降低上游来水成本
   - elementId: p3-detail
     elementType: text
-    bounds: [60, 454, 400, 18]
+    bounds: [60, 428, 420, 20]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 12
+      fontSize: 11.5
       color: "$muted"
       lineHeight: 1.5
       align: [left, top]
-      text: 单客户 CAC 下降 20%；人均确认收入提升 15%。
+      text: |
+        <p>单客户 CAC 下降 20%;人均确认收入提升 15%。</p>
 
-  # —— 右栏：治理工期表 ——
-  - elementId: roadmap-heading
+  # —— 右:季度里程碑表 ——
+  - elementId: right-heading
     elementType: text
-    bounds: [500, 164, 400, 26]
+    bounds: [520, 240, 380, 22]
     content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 15
-      bold: true
-      color: "$text"
+      style: "$sectionTitle"
       align: [left, middle]
-      text: 2026 航道治理工期表
+      text: 全年路线:季度里程碑
 
   - elementId: roadmap-table
     elementType: table
-    bounds: [500, 196, 400, 268]
+    bounds: [520, 266, 380, 202]
     columnWidths: [0.24, 0.19, 0.19, 0.19, 0.19]
-    rowHeights: [0.22, 0.26, 0.26, 0.26]
+    rowHeights: [0.2, 0.2666, 0.2666, 0.2666]
     style: "$default"
     rows:
       - - text: 工程
+          align: ["left", "middle"]
         - text: Q1
         - text: Q2
         - text: Q3
         - text: Q4
       - - text: 续约攻坚
+          align: ["left", "middle"]
           bold: true
         - text: 团队 3→8 到位
         - text: 续约率 82%
         - text: 续约率 85%
         - text: 续约率 88%
       - - text: 订阅深耕
+          align: ["left", "middle"]
           bold: true
         - text: 新定价上线
         - text: V4.0 发布
         - text: ARR +20%
         - text: ARR +35%
       - - text: 获客提效
+          align: ["left", "middle"]
           bold: true
         - text: 渠道结构审计
         - text: CAC ≤1.6万
         - text: 人效 +10%
         - text: 人效 +15%
 
-  # —— 河流里程线 K0–K7 ——
-  - elementId: river-base
+  # —— 页脚 ——
+  - elementId: footer-rule
     elementType: shape
-    bounds: [48, 501, 864, 1]
+    bounds: [60, 478, 840, 1]
     shapeName: rect
     fill: { type: solid, color: "$line" }
 
-  - elementId: river-tick-0
-    elementType: shape
-    bounds: [48, 497, 1, 8]
-    shapeName: rect
-    fill: { type: solid, color: "$muted" }
-    opacity: 0.55
-  - elementId: river-tick-1
-    elementType: shape
-    bounds: [171, 497, 1, 8]
-    shapeName: rect
-    fill: { type: solid, color: "$muted" }
-    opacity: 0.55
-  - elementId: river-tick-2
-    elementType: shape
-    bounds: [295, 497, 1, 8]
-    shapeName: rect
-    fill: { type: solid, color: "$muted" }
-    opacity: 0.55
-  - elementId: river-tick-3
-    elementType: shape
-    bounds: [418, 497, 1, 8]
-    shapeName: rect
-    fill: { type: solid, color: "$muted" }
-    opacity: 0.55
-  - elementId: river-tick-4
-    elementType: shape
-    bounds: [542, 497, 1, 8]
-    shapeName: rect
-    fill: { type: solid, color: "$muted" }
-    opacity: 0.55
-  - elementId: river-tick-6
-    elementType: shape
-    bounds: [789, 497, 1, 8]
-    shapeName: rect
-    fill: { type: solid, color: "$muted" }
-    opacity: 0.55
-  - elementId: river-tick-7
-    elementType: shape
-    bounds: [912, 497, 1, 8]
-    shapeName: rect
-    fill: { type: solid, color: "$muted" }
-    opacity: 0.55
+  - elementId: footnote
+    elementType: text
+    bounds: [60, 484, 660, 14]
+    content:
+      style: "$small"
+      align: [left, middle]
+      text: 目标值为管理层建议值,待董事会审议后锁定;演示占位数据。
 
-  - elementId: river-label-0
+  - elementId: page-num
     elementType: text
-    bounds: [28, 480, 40, 12]
+    bounds: [780, 484, 120, 14]
     content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$muted"
-      align: [center, bottom]
-      text: K0
-  - elementId: river-label-1
-    elementType: text
-    bounds: [151, 480, 40, 12]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$muted"
-      align: [center, bottom]
-      text: K1
-  - elementId: river-label-2
-    elementType: text
-    bounds: [275, 480, 40, 12]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$muted"
-      align: [center, bottom]
-      text: K2
-  - elementId: river-label-3
-    elementType: text
-    bounds: [398, 480, 40, 12]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$muted"
-      align: [center, bottom]
-      text: K3
-  - elementId: river-label-4
-    elementType: text
-    bounds: [522, 480, 40, 12]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$muted"
-      align: [center, bottom]
-      text: K4
-  - elementId: river-label-6
-    elementType: text
-    bounds: [769, 480, 40, 12]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$muted"
-      align: [center, bottom]
-      text: K6
-  - elementId: river-label-7
-    elementType: text
-    bounds: [892, 480, 40, 12]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$muted"
-      align: [center, bottom]
-      text: K7
-
-  - elementId: river-active
-    elementType: shape
-    bounds: [660, 496, 10, 10]
-    shapeName: diamond
-    fill: { type: solid, color: "$primary" }
-
-  - elementId: river-station
-    elementType: text
-    bounds: [595, 512, 140, 15]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 10.5
-      bold: true
-      color: "$primary"
-      align: [center, top]
-      text: K5 · 疏浚航道
+      style: "$small"
+      align: [right, middle]
+      text: 06 / 07

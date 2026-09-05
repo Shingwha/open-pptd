@@ -1,0 +1,371 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  这一页回答"全年干得怎么样"。四个读数:达成率 96.8%,缺口集中在华东续约;增速 +14.2%,连续三年 10% 以上;经营性现金流 +3,200 万,三年来首次转正,回款周期缩短 12 天;唯一低于警戒线的是华东续约率 78%。左下角看季度节奏:收入逐季爬坡,Q4 达成率回到 100% 以上;右表是全年对照,规模与质量指标同步改善。下一页拆利润。
+elements:
+  # —— 页眉 ——
+  - elementId: eyebrow
+    elementType: text
+    bounds: [60, 40, 420, 18]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 远川科技 · 2025 年度经营复盘
+
+  - elementId: section-label
+    elementType: text
+    bounds: [640, 41, 222, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [right, middle]
+      text: 数据速览 · OVERVIEW
+
+  - elementId: badge-rect
+    elementType: shape
+    bounds: [874, 34, 26, 26]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: badge-num
+    elementType: text
+    bounds: [874, 34, 26, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 02
+
+  - elementId: page-title
+    elementType: text
+    bounds: [60, 62, 820, 40]
+    content:
+      style: "$title"
+      align: [left, middle]
+      wrap: false
+      text: 收入达成 96.8%,经营现金流三年来首次转正
+
+  - elementId: page-subtitle
+    elementType: text
+    bounds: [60, 104, 840, 20]
+    content:
+      style: "$subtitle"
+      align: [left, middle]
+      text: 全年四个关键读数与经营对照——流量接近预期,风险集中于华东续约。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [60, 134, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # —— KPI 读数带 ×4 ——
+  - elementId: kpi-rule-1
+    elementType: shape
+    bounds: [266, 152, 1, 72]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: kpi-rule-2
+    elementType: shape
+    bounds: [486, 152, 1, 72]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: kpi-rule-3
+    elementType: shape
+    bounds: [706, 152, 1, 72]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: k1-icon
+    elementType: icon
+    bounds: [60, 158, 18, 18]
+    iconName: "fas:gauge-high"
+    fill: { type: solid, color: "$accent" }
+  - elementId: k1-label
+    elementType: text
+    bounds: [86, 160, 174, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [left, middle]
+      text: 收入达成率
+  - elementId: k1-value
+    elementType: text
+    bounds: [60, 178, 200, 38]
+    content:
+      style: "$reading"
+      color: "$primary"
+      align: [left, middle]
+      wrap: false
+      text: 96.8%
+  - elementId: k1-note
+    elementType: text
+    bounds: [60, 216, 200, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [left, middle]
+      text: 距目标差 3.2pct · 缺口在华东
+
+  - elementId: k2-icon
+    elementType: icon
+    bounds: [280, 158, 18, 18]
+    iconName: "fas:arrow-trend-up"
+    fill: { type: solid, color: "$accent" }
+  - elementId: k2-label
+    elementType: text
+    bounds: [306, 160, 174, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [left, middle]
+      text: 营收增速
+  - elementId: k2-value
+    elementType: text
+    bounds: [280, 178, 200, 38]
+    content:
+      style: "$reading"
+      align: [left, middle]
+      wrap: false
+      text: +14.2%
+  - elementId: k2-note
+    elementType: text
+    bounds: [280, 216, 200, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [left, middle]
+      text: 连续三年保持 10% 以上
+
+  - elementId: k3-icon
+    elementType: icon
+    bounds: [500, 158, 18, 18]
+    iconName: "fas:coins"
+    fill: { type: solid, color: "$accent" }
+  - elementId: k3-label
+    elementType: text
+    bounds: [526, 160, 174, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      letterSpacing: 2
+      color: "$accent"
+      align: [left, middle]
+      text: 经营性现金流
+  - elementId: k3-value
+    elementType: text
+    bounds: [500, 178, 200, 38]
+    content:
+      style: "$reading"
+      fontSize: 24
+      color: "$success"
+      align: [left, middle]
+      wrap: false
+      text: +3,200万
+  - elementId: k3-note
+    elementType: text
+    bounds: [500, 216, 200, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [left, middle]
+      text: 三年首次转正 · 回款 -12 天
+
+  - elementId: k4-icon
+    elementType: icon
+    bounds: [720, 158, 18, 18]
+    iconName: "fas:triangle-exclamation"
+    fill: { type: solid, color: "$danger" }
+  - elementId: k4-label
+    elementType: text
+    bounds: [746, 160, 154, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      bold: true
+      letterSpacing: 2
+      color: "$danger"
+      align: [left, middle]
+      text: 华东续约率
+  - elementId: k4-value
+    elementType: text
+    bounds: [720, 178, 180, 38]
+    content:
+      style: "$reading"
+      color: "$danger"
+      align: [left, middle]
+      wrap: false
+      text: 78%
+  - elementId: k4-note
+    elementType: text
+    bounds: [720, 216, 180, 12]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$muted"
+      align: [left, middle]
+      text: 低于 85% 警戒线 7pct
+
+  - elementId: kpi-bottom
+    elementType: shape
+    bounds: [60, 230, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # —— 左:季度节奏组合图 ——
+  - elementId: left-heading
+    elementType: text
+    bounds: [60, 242, 430, 22]
+    content:
+      style: "$sectionTitle"
+      align: [left, middle]
+      text: 季度节奏:收入逐季爬坡,Q4 达成率重回 100%
+
+  - elementId: quarter-chart
+    elementType: chart
+    bounds: [60, 268, 430, 190]
+    fill: { type: solid, color: "$bg" }
+    data:
+      cols: [季度, 确认收入, 达成率]
+      rows:
+        - [Q1, 1.02, 0.91]
+        - [Q2, 1.18, 0.95]
+        - [Q3, 1.24, 0.98]
+        - [Q4, 1.38, 1.02]
+    xAxis:
+      axisLine: { color: "$line" }
+      gridLine: false
+      label: { fontSize: 9.5, color: "$text" }
+    yAxis:
+      - { min: 0, max: 1.6, axisLine: false, gridLine: { color: "$line" }, label: { numberFormat: "0.0", fontSize: 9, color: "$muted" } }
+      - { min: 0.8, max: 1.1, axisLine: false, gridLine: false, label: { numberFormat: "0%", fontSize: 9, color: "$muted" } }
+    legend:
+      show: true
+      position: bottom
+      fontSize: 9.5
+      color: "$muted"
+    fontFamily: "LXGW Neo XiHei"
+    series:
+      - type: bar
+        encode: { x: 季度, y: 确认收入 }
+        name: 确认收入(亿元)
+        fill: "$primary"
+        dataLabels: { show: true, numberFormat: "0.00", fontSize: 8.5, color: "$text" }
+      - type: line
+        encode: { x: 季度, y: 达成率 }
+        name: 季度达成率
+        yAxisIndex: 1
+        lineColor: "$accent"
+        width: 2
+        marker: { shape: circle, size: 6, fill: "$accent" }
+
+  # —— 右:全年指标对照表 ——
+  - elementId: right-heading
+    elementType: text
+    bounds: [520, 242, 380, 22]
+    content:
+      style: "$sectionTitle"
+      align: [left, middle]
+      text: 全年对照:规模与质量指标同步改善
+
+  - elementId: compare-table
+    elementType: table
+    bounds: [520, 268, 380, 190]
+    columnWidths: [0.34, 0.20, 0.20, 0.26]
+    rowHeights: [0.16, 0.12, 0.12, 0.12, 0.12, 0.12, 0.12, 0.12]
+    style: "$default"
+    rows:
+      - - text: 指标
+          align: ["left", "middle"]
+        - text: 2024
+        - text: 2025
+        - text: 同比
+      - - text: 营业收入(亿元)
+          align: ["left", "middle"]
+        - text: 4.22
+        - text: 4.82
+        - text: +14.2%
+          color: "$success"
+          bold: true
+      - - text: 净利润(亿元)
+          align: ["left", "middle"]
+        - text: 0.44
+        - text: 0.61
+        - text: +38.6%
+          color: "$success"
+          bold: true
+      - - text: 毛利率
+          align: ["left", "middle"]
+        - text: 55.7%
+        - text: 57.3%
+        - text: +1.6pct
+          color: "$success"
+          bold: true
+      - - text: 净利率
+          align: ["left", "middle"]
+        - text: 10.4%
+        - text: 12.7%
+        - text: +2.2pct
+          color: "$success"
+          bold: true
+      - - text: 净收入留存 NRR
+          align: ["left", "middle"]
+        - text: 104%
+        - text: 108%
+        - text: +4pct
+          color: "$success"
+          bold: true
+      - - text: 期末 ARR(亿元)
+          align: ["left", "middle"]
+        - text: 2.30
+        - text: 3.10
+        - text: +34.8%
+          color: "$success"
+          bold: true
+      - - text: 付费客户数(家)
+          align: ["left", "middle"]
+        - text: 412
+        - text: 486
+        - text: +18.0%
+          color: "$success"
+          bold: true
+
+  # —— 页脚 ——
+  - elementId: footer-rule
+    elementType: shape
+    bounds: [60, 478, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: footnote
+    elementType: text
+    bounds: [60, 484, 660, 14]
+    content:
+      style: "$small"
+      align: [left, middle]
+      text: 口径:年度确认收入 / 期末 ARR(年化经常性收入)/ 净收入留存;均为演示占位数据。
+
+  - elementId: page-num
+    elementType: text
+    bounds: [780, 484, 120, 14]
+    content:
+      style: "$small"
+      align: [right, middle]
+      text: 02 / 07

@@ -1,0 +1,289 @@
+pageType: final
+background:
+  type: solid
+  color: "$bg"
+notes: |
+  收尾回到"需要各位做什么"。三项请求逐项请决议:第一,批准华东客户成功团队扩编 3 到 8 人,年化成本约 240 万,预计拉动续约率 7 个百分点,2 月 10 日前;第二,批准 2026 研发预算追加 800 万,投入 V4.0 与客户成功系统,2 月 20 日前;第三,确认渠道佣金政策调整,支撑 CAC 降到 1.6 万以内,3 月 1 日前。避免汇报结束但没有决策。下一次复盘 7 月 8 日 Q2 经营复盘会。
+elements:
+  # —— 背景层次:巨号 2026(浅青水印,呼应封面) ——
+  - elementId: bg-year
+    elementType: text
+    bounds: [470, 96, 430, 360]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 185
+      bold: true
+      color: "#E8F3F0"
+      align: [right, middle]
+      wrap: false
+      text: 2026
+
+  # —— 页眉 ——
+  - elementId: eyebrow
+    elementType: text
+    bounds: [60, 40, 420, 18]
+    content:
+      style: "$eyebrow"
+      align: [left, middle]
+      text: 远川科技 · 2025 年度经营复盘
+
+  - elementId: meta-right
+    elementType: text
+    bounds: [560, 41, 300, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      color: "$muted"
+      letterSpacing: 2
+      align: [right, middle]
+      text: 决议请求 · DECISIONS
+
+  - elementId: badge-rect
+    elementType: shape
+    bounds: [874, 34, 26, 26]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+
+  - elementId: badge-num
+    elementType: text
+    bounds: [874, 34, 26, 26]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 11
+      bold: true
+      color: "#FFFFFF"
+      align: [center, middle]
+      text: 07
+
+  # —— 标题区 ——
+  - elementId: gold-rule
+    elementType: shape
+    bounds: [60, 88, 48, 4]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: page-title
+    elementType: text
+    bounds: [56, 108, 760, 56]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 36
+      bold: true
+      color: "$primary"
+      letterSpacing: 1
+      align: [left, middle]
+      wrap: false
+      text: 提请审议:三项决策请求
+
+  - elementId: page-subtitle
+    elementType: text
+    bounds: [60, 170, 760, 22]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 12.5
+      color: "$muted"
+      align: [left, middle]
+      text: 请就以下三项资源请求作出决议,让 2026 年的增长计划如期落地。
+
+  - elementId: header-rule
+    elementType: shape
+    bounds: [60, 202, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$accent" }
+    opacity: 0.5
+
+  # —— 请求 01 ——
+  - elementId: a1-number
+    elementType: text
+    bounds: [60, 220, 44, 28]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      bold: true
+      color: "$accent"
+      align: [left, top]
+      text: 01
+
+  - elementId: a1-icon
+    elementType: icon
+    bounds: [110, 224, 18, 18]
+    iconName: "fas:users"
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: a1-title
+    elementType: text
+    bounds: [138, 222, 500, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 15
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 批准华东客户成功团队扩编(3 → 8 人)
+
+  - elementId: a1-desc
+    elementType: text
+    bounds: [138, 248, 520, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      align: [left, top]
+      text: 新增年化成本约 240 万元,预计拉动续约率 +7 个百分点
+
+  - elementId: a1-owner
+    elementType: text
+    bounds: [680, 222, 220, 42]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      lineHeight: 1.6
+      align: [right, top]
+      text: |
+        <p style="text-align:right"><span style="color:$text;"><strong>决策:CEO</strong></span></p>
+        <p style="text-align:right">截止:2 月 10 日</p>
+
+  - elementId: sep-1
+    elementType: shape
+    bounds: [60, 288, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # —— 请求 02 ——
+  - elementId: a2-number
+    elementType: text
+    bounds: [60, 304, 44, 28]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      bold: true
+      color: "$accent"
+      align: [left, top]
+      text: 02
+
+  - elementId: a2-icon
+    elementType: icon
+    bounds: [110, 308, 18, 18]
+    iconName: "fas:code"
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: a2-title
+    elementType: text
+    bounds: [138, 306, 500, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 15
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 批准 2026 年研发预算追加 800 万元
+
+  - elementId: a2-desc
+    elementType: text
+    bounds: [138, 332, 520, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      align: [left, top]
+      text: 投入订阅产品线 V4.0 与客户成功系统建设
+
+  - elementId: a2-owner
+    elementType: text
+    bounds: [680, 306, 220, 42]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      lineHeight: 1.6
+      align: [right, top]
+      text: |
+        <p style="text-align:right"><span style="color:$text;"><strong>决策:董事会</strong></span></p>
+        <p style="text-align:right">截止:2 月 20 日</p>
+
+  - elementId: sep-2
+    elementType: shape
+    bounds: [60, 372, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  # —— 请求 03 ——
+  - elementId: a3-number
+    elementType: text
+    bounds: [60, 388, 44, 28]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 22
+      bold: true
+      color: "$accent"
+      align: [left, top]
+      text: 03
+
+  - elementId: a3-icon
+    elementType: icon
+    bounds: [110, 392, 18, 18]
+    iconName: "fas:handshake"
+    fill: { type: solid, color: "$accent" }
+
+  - elementId: a3-title
+    elementType: text
+    bounds: [138, 390, 500, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 15
+      bold: true
+      color: "$text"
+      align: [left, middle]
+      text: 确认渠道佣金政策调整方案
+
+  - elementId: a3-desc
+    elementType: text
+    bounds: [138, 416, 520, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      align: [left, top]
+      text: 降低单一渠道依赖,支撑单客户 CAC ≤1.6 万元目标
+
+  - elementId: a3-owner
+    elementType: text
+    bounds: [680, 390, 220, 42]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.5
+      color: "$muted"
+      lineHeight: 1.6
+      align: [right, top]
+      text: |
+        <p style="text-align:right"><span style="color:$text;"><strong>决策:经管会</strong></span></p>
+        <p style="text-align:right">截止:3 月 1 日</p>
+
+  # —— 页脚 ——
+  - elementId: footer-line
+    elementType: shape
+    bounds: [60, 462, 840, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+
+  - elementId: footer-left
+    elementType: text
+    bounds: [60, 474, 560, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      color: "$muted"
+      align: [left, middle]
+      text: 下一次复盘:2026 年 7 月 8 日 · Q2 经营复盘会|演示占位数据 · 请替换为实际口径
+
+  - elementId: thanks
+    elementType: text
+    bounds: [640, 470, 260, 24]
+    content:
+      fontFamily: "Alimama ShuHeiTi"
+      fontSize: 16
+      bold: true
+      color: "$primary"
+      align: [right, middle]
+      text: 感谢审议 · THANK YOU
