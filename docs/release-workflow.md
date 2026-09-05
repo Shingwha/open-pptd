@@ -78,7 +78,7 @@ git tag -a v1.1.0 -F notes.md --cleanup=verbatim
 
 ```
 README.md / README.en.md / SKILL.md / index.html / package.json
-bin/ / lib/ / editor/ / references/ / assets/fonts/registry.json
+bin/ / packages/ / editor/ / references/ / assets/fonts/registry.json
 ```
 
 - **不含**：tests、docs、examples、.github、scripts、.gitignore、图标源（assets/icons）——发布包只装 skill 运行时
