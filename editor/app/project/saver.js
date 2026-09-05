@@ -190,12 +190,30 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
   // --------------------------------------------------------------------------
   // 导出图片（本地 serve 的 /api/render，与 CLI render 同一无头渲染管线）
   // --------------------------------------------------------------------------
+  /** 本地 serve 探测（缓存）：GitHub Pages 等静态部署无 API——
+   *  部署网关对不存在路径的 POST 可能回 405 而非 404，故提前 ping 而不是靠状态码猜。 */
+  let localServe = null;
+  async function isLocalServe() {
+    if (localServe == null) {
+      try {
+        localServe = (await fetch("/api/ping", { cache: "no-store" })).ok;
+      } catch {
+        localServe = false;
+      }
+    }
+    return localServe;
+  }
+
   /** scope："current" 当前页 PNG；"all" 全部页 zip。渲染对象是磁盘上的项目，
    *  故导出前先把未保存修改写回（写回失败按最近保存版本导出并提示）。 */
   async function exportImages(scope) {
     // 渲染服务按项目路径寻址：本地文件夹模式（句柄）与空白项目无服务端路径
     if (state.projectHandle || !state.manifestPath) {
       showToast("导出图片需通过 serve 打开的 URL 项目使用（本地文件夹模式无渲染服务）", "danger", 6000);
+      return;
+    }
+    if (!(await isLocalServe())) {
+      showToast("导出图片仅本地 serve 模式可用（线上部署无渲染服务）", "danger", 6000);
       return;
     }
     if (state.dirty) {
@@ -223,7 +241,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
           scale: 2,
         }),
       });
-      if (res.status === 404) {
+      if (res.status === 404 || res.status === 405) {
         showToast("导出图片仅本地 serve 模式可用（线上部署无渲染服务）", "danger", 6000);
         return;
       }
