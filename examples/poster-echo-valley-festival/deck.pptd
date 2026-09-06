@@ -1,0 +1,31 @@
+version: v2
+title: 山谷回声音乐节 2026 演出海报
+size: [720, 1080]
+fonts:
+  得意黑: {family: "Smiley Sans"}
+  MiSans: {family: "MiSans"}
+theme:
+  colors:
+    primary: "#3DE8C8"
+    accent: "#FF5C8A"
+    bg: "#12151C"
+    text: "#F2F5F3"
+    muted: "#93A29D"
+    line: "#2A323B"
+    success: "#33A362"
+    warning: "#B4872D"
+    danger: "#BE392D"
+    primarySoft: "#182522"
+    primaryTint: "#1E3831"
+    primaryDeep: "#071012"
+    accent3: "#FFC53D"
+    accent4: "#6FA8FF"
+    accent5: "#B58CFF"
+    accent6: "#FF8A5C"
+  textStyles:
+    display: {fontSize: 96, fontFamily: "Smiley Sans", color: "$primary", lineHeight: 1.04}
+    title: {fontSize: 40, fontFamily: "Smiley Sans", color: "$text", lineHeight: 1.2}
+    body: {fontSize: 15, fontFamily: "MiSans", color: "$muted", lineHeight: 1.6}
+    caption: {fontSize: 12, fontFamily: "MiSans", color: "$muted", lineHeight: 1.5}
+pages:
+  - pages/1_poster.page

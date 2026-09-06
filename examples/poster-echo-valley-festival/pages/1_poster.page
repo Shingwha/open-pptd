@@ -1,0 +1,355 @@
+pageType: poster
+background: {type: solid, color: "$primaryDeep"}
+elements:
+  # ── 全幅现场照（暗场中的唯一亮源；图源见 media/SOURCE.md）──
+  - elementId: hero-photo
+    elementType: image
+    bounds: [0, 0, 720, 1080]
+    src: media/crowd.jpg
+    fit: {mode: cover}
+
+  # ── 渐变遮罩：上下压暗保文字，中段透出舞台光束 ──
+  - elementId: hero-shade
+    elementType: shape
+    bounds: [0, 0, 720, 1080]
+    shapeName: rect
+    fill:
+      type: gradient
+      gradientType: linear
+      angle: 90
+      stops:
+        - {position: 0, color: "#0D1016F5"}
+        - {position: 0.35, color: "#12151C8C"}
+        - {position: 0.58, color: "#12151CCC"}
+        - {position: 1, color: "#0D1016FA"}
+
+  # ── 信号线（最底层几何）──
+  - elementId: signal-1
+    elementType: line
+    bounds: [40, 300, 640, 240]
+    viewBox: [640, 240]
+    points: "0,200 170,60 390,110 640,0"
+    curve: smooth
+    opacity: 0.5
+    border: {style: solid, width: 1.5, color: "$primary"}
+
+  # ── 声场圆环（右上，标题将压过其左缘）──
+  - elementId: ring-a
+    elementType: shape
+    bounds: [210, 50, 500, 500]
+    shapeName: donut
+    adjustments: [8000]
+    fill: {type: solid, color: "$primary"}
+    opacity: 0.65
+
+  - elementId: satellite
+    elementType: shape
+    bounds: [203, 293, 14, 14]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent3"}
+
+  - elementId: ring-b
+    elementType: shape
+    bounds: [290, 130, 340, 340]
+    shapeName: donut
+    adjustments: [10000]
+    fill: {type: solid, color: "$accent"}
+    opacity: 0.85
+
+  - elementId: arc-c
+    elementType: shape
+    bounds: [330, 170, 260, 260]
+    shapeName: blockArc
+    adjustments: [10800000, 21600000, 14000]
+    fill: {type: solid, color: "$accent3"}
+    opacity: 0.9
+
+  - elementId: core
+    elementType: shape
+    bounds: [446, 286, 28, 28]
+    shapeName: ellipse
+    fill: {type: solid, color: "$primary"}
+
+  - elementId: orbit
+    elementType: shape
+    bounds: [406, 246, 108, 108]
+    shapeName: ellipse
+    border: {style: dash, width: 1.5, color: "$accent3"}
+
+  # ── 信号节点（落在各信息块起点）──
+  - elementId: node-1
+    elementType: shape
+    bounds: [36, 496, 9, 9]
+    shapeName: ellipse
+    fill: {type: solid, color: "$primary"}
+
+  - elementId: node-2
+    elementType: shape
+    bounds: [206, 356, 9, 9]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: node-3
+    elementType: shape
+    bounds: [426, 406, 9, 9]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent3"}
+
+  - elementId: node-4
+    elementType: shape
+    bounds: [676, 296, 9, 9]
+    shapeName: ellipse
+    fill: {type: solid, color: "$primary"}
+
+  # ── 眉标 ──
+  - elementId: eyebrow-mark
+    elementType: shape
+    bounds: [48, 46, 12, 12]
+    shapeName: rect
+    fill: {type: solid, color: "$primary"}
+
+  - elementId: eyebrow
+    elementType: text
+    bounds: [70, 40, 360, 24]
+    content:
+      align: [left, middle]
+      fontFamily: MiSans
+      fontSize: 12
+      color: "$muted"
+      letterSpacing: 1.5
+      wrap: false
+      text: "山谷回声文化 呈现 · 第五届"
+
+  - elementId: vol
+    elementType: text
+    bounds: [520, 40, 152, 24]
+    content:
+      align: [right, middle]
+      fontFamily: Smiley Sans
+      fontSize: 14
+      color: "$muted"
+      letterSpacing: 2
+      wrap: false
+      text: "ECHO VALLEY · VOL.05"
+
+  # ── 主标题（压过圆环左缘）──
+  - elementId: title
+    elementType: text
+    bounds: [44, 96, 470, 220]
+    content:
+      fontFamily: Smiley Sans
+      fontSize: 96
+      lineHeight: 1.04
+      text: |
+        <p><span style="color:$text;">山谷</span></p>
+        <p><span style="color:$primary;">回声</span></p>
+
+  - elementId: title-en
+    elementType: text
+    bounds: [48, 324, 440, 22]
+    content:
+      fontFamily: MiSans
+      fontSize: 13
+      color: "$muted"
+      letterSpacing: 4.2
+      wrap: false
+      text: "ECHO VALLEY MUSIC FESTIVAL 2026"
+
+  # ── 日期与地点 ──
+  - elementId: date
+    elementType: text
+    bounds: [48, 412, 420, 76]
+    content:
+      fontFamily: Smiley Sans
+      fontSize: 56
+      color: "$text"
+      wrap: false
+      text: "10.17 - 10.18"
+
+  - elementId: venue-icon
+    elementType: icon
+    bounds: [48, 498, 16, 16]
+    iconName: "fas:location-dot"
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: venue
+    elementType: text
+    bounds: [72, 492, 430, 26]
+    content:
+      align: [left, middle]
+      fontFamily: MiSans
+      fontSize: 15
+      color: "$text"
+      wrap: false
+      text: "青野河谷 · 高山草坪 · 露营友好"
+
+  # ── 阵容 ──
+  - elementId: lineup-dot
+    elementType: shape
+    bounds: [48, 566, 10, 10]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: lineup-header
+    elementType: text
+    bounds: [68, 558, 240, 26]
+    content:
+      align: [left, middle]
+      fontFamily: Smiley Sans
+      fontSize: 20
+      color: "$text"
+      wrap: false
+      text: "阵容 LINE-UP"
+
+  - elementId: lineup-rule
+    elementType: shape
+    bounds: [48, 598, 624, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: day1-tag
+    elementType: text
+    bounds: [48, 606, 160, 18]
+    content:
+      fontFamily: MiSans
+      fontSize: 11
+      color: "$muted"
+      letterSpacing: 1.2
+      wrap: false
+      text: "10.17 · DAY 1"
+
+  - elementId: day2-tag
+    elementType: text
+    bounds: [384, 606, 160, 18]
+    content:
+      fontFamily: MiSans
+      fontSize: 11
+      color: "$muted"
+      letterSpacing: 1.2
+      wrap: false
+      text: "10.18 · DAY 2"
+
+  - elementId: act-1
+    elementType: text
+    bounds: [48, 630, 300, 46]
+    content:
+      fontFamily: Smiley Sans
+      fontSize: 36
+      color: "$text"
+      wrap: false
+      text: 昼夜电台
+
+  - elementId: act-2
+    elementType: text
+    bounds: [48, 684, 300, 38]
+    content:
+      fontFamily: Smiley Sans
+      fontSize: 28
+      color: "$primary"
+      wrap: false
+      text: 河流转向
+
+  - elementId: act-3
+    elementType: text
+    bounds: [48, 730, 300, 46]
+    content:
+      fontFamily: Smiley Sans
+      fontSize: 36
+      color: "$text"
+      wrap: false
+      text: 雾岛信号
+
+  - elementId: act-4
+    elementType: text
+    bounds: [48, 784, 300, 38]
+    content:
+      fontFamily: Smiley Sans
+      fontSize: 28
+      color: "$primary"
+      wrap: false
+      text: 萤火计划
+
+  - elementId: act-5
+    elementType: text
+    bounds: [384, 630, 288, 46]
+    content:
+      fontFamily: Smiley Sans
+      fontSize: 36
+      color: "$text"
+      wrap: false
+      text: 野莓起义
+
+  - elementId: act-6
+    elementType: text
+    bounds: [384, 684, 288, 38]
+    content:
+      fontFamily: Smiley Sans
+      fontSize: 28
+      color: "$accent"
+      wrap: false
+      text: 白噪音俱乐部
+
+  - elementId: act-7
+    elementType: text
+    bounds: [384, 730, 288, 46]
+    content:
+      fontFamily: Smiley Sans
+      fontSize: 36
+      color: "$text"
+      wrap: false
+      text: 低空飞行
+
+  - elementId: act-8
+    elementType: text
+    bounds: [384, 784, 288, 38]
+    content:
+      fontFamily: Smiley Sans
+      fontSize: 28
+      color: "$primary"
+      wrap: false
+      text: 十月潮汐
+
+  # ── 早鸟票 CTA ──
+  - elementId: cta
+    elementType: shape
+    bounds: [48, 856, 624, 58]
+    shapeName: roundRect
+    adjustments: [24000]
+    fill: {type: solid, color: "$primary"}
+    shadow: {blur: 24, color: "#3DE8C833", offset: [0, 6]}
+
+  - elementId: cta-text
+    elementType: text
+    bounds: [48, 856, 624, 58]
+    content:
+      align: [center, middle]
+      fontFamily: Smiley Sans
+      fontSize: 20
+      color: "$primaryDeep"
+      wrap: false
+      text: "早鸟票 单日 ¥180 · 双日 ¥299 → echovalley.live"
+
+  - elementId: fine-print
+    elementType: text
+    bounds: [48, 928, 624, 20]
+    content:
+      fontFamily: MiSans
+      fontSize: 11.5
+      color: "$muted"
+      text: 含露营区准入 · 雨天照常 · 免费接驳巴士 · 全年龄段
+
+  # ── 页脚 ──
+  - elementId: footer-rule
+    elementType: shape
+    bounds: [48, 1006, 624, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: footer
+    elementType: text
+    bounds: [48, 1016, 624, 20]
+    content:
+      fontFamily: MiSans
+      fontSize: 11
+      color: "$muted"
+      text: 主办：山谷回声文化 · 示例海报，由 open-pptd 生成
