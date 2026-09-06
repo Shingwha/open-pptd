@@ -36,7 +36,7 @@ const projectCache = new Map();
 
 const $ = (id) => document.getElementById(id);
 
-export async function loadManifest() {
+async function loadManifest() {
   if (manifestCache) return manifestCache;
   const res = await fetch(new URL("examples/manifest.json", ROOT));
   if (!res.ok) {
@@ -75,7 +75,7 @@ async function loadProjectFonts(entry) {
 }
 
 /** 加载项目（manifest + pages → 模型 + 主题 + 字体），带会话内缓存 + Cache API 跨会话缓存。 */
-export async function loadProject(entry) {
+async function loadProject(entry) {
   if (projectCache.has(entry.id)) return projectCache.get(entry.id);
   const manifestUrl = new URL(entry.deck, ROOT).href;
   const { manifestText, pageTexts } = await fetchProjectTexts(manifestUrl, yaml.load);
@@ -100,7 +100,7 @@ export async function loadProject(entry) {
 }
 
 /** 按容器实际宽度渲染一页封面（按 deck 自身尺寸缩放，PPT/海报比例均支持）。 */
-export function renderPageFit(container, page, deck, theme, imageMap, iconMap = {}) {
+function renderPageFit(container, page, deck, theme, imageMap, iconMap = {}) {
   disposeChartInstances(container);
   container.innerHTML = "";
   const cw = container.clientWidth;
@@ -130,16 +130,16 @@ export function renderPageFit(container, page, deck, theme, imageMap, iconMap = 
 const thumbSizes = new WeakMap();
 const sizeObserver = new ResizeObserver((entries) => {
   for (const ent of entries) {
-    const thumb = ent.target;
-    const entry = thumbEntries.get(thumb);
-    if (!entry || thumb.classList.contains("loading")) continue;
+    const canvas = ent.target;
+    const entry = thumbEntries.get(canvas);
+    if (!entry || canvas.parentElement.classList.contains("loading")) continue;
     const proj = projectCache.get(entry.id);
     if (!proj) continue;
     const cw = ent.contentRect.width;
-    const prev = thumbSizes.get(thumb);
-    thumbSizes.set(thumb, cw);
+    const prev = thumbSizes.get(canvas);
+    thumbSizes.set(canvas, cw);
     if (prev !== undefined && Math.abs(cw - prev) <= 1) continue;
-    renderPageFit(thumb, proj.deck.pages[0], proj.deck, proj.theme, proj.imageMap, proj.iconMap);
+    renderPageFit(canvas, proj.deck.pages[0], proj.deck, proj.theme, proj.imageMap, proj.iconMap);
   }
 });
 
@@ -153,19 +153,20 @@ const thumbObserver = new IntersectionObserver(
     for (const ent of entries) {
       if (!ent.isIntersecting) continue;
       thumbObserver.unobserve(ent.target);
-      const thumb = ent.target;
-      const entry = thumbEntries.get(thumb);
+      const canvas = ent.target;
+      const entry = thumbEntries.get(canvas);
       if (!entry) return;
+      const cover = canvas.parentElement;
       loadProject(entry)
         .then((proj) => {
-          if (!document.contains(thumb)) return; // 加载完成前已离开页面
-          thumb.classList.remove("loading");
-          renderPageFit(thumb, proj.deck.pages[0], proj.deck, proj.theme, proj.imageMap, proj.iconMap);
+          if (!document.contains(canvas)) return; // 加载完成前已离开页面
+          cover.classList.remove("loading");
+          renderPageFit(canvas, proj.deck.pages[0], proj.deck, proj.theme, proj.imageMap, proj.iconMap);
         })
         .catch((err) => {
-          if (!document.contains(thumb)) return;
-          thumb.classList.remove("loading");
-          thumb.innerHTML = `<div class="gallery-card-err">加载失败</div>`;
+          if (!document.contains(canvas)) return;
+          cover.classList.remove("loading");
+          canvas.innerHTML = `<div class="gallery-card-err">加载失败</div>`;
           console.error(`[gallery] ${entry.id} 加载失败:`, err);
         });
     }
@@ -201,9 +202,9 @@ export async function showGallery() {
     modeEl.hidden = false;
     modeEl.className = "gallery-mode " + mode;
     modeEl.innerHTML =
-      mode === "local"
-        ? `<span class="mode-dot"></span>本地模式：作品可编辑并写回项目目录`
-        : `<span class="mode-dot"></span>线上模式：可编辑预览，保存将下载项目包（zip）`;
+      mode === "local" ? `<span class="mode-dot"></span>本地模式` : `<span class="mode-dot"></span>线上模式`;
+    modeEl.title =
+      mode === "local" ? "作品可编辑并写回项目目录" : "可编辑预览，保存将下载项目包（zip）";
   }
 
   // 「文件」菜单（与编辑器同一外壳）：画廊=开始页角色，放 打开编辑器 / 打开 / 最近
@@ -256,14 +257,21 @@ export async function showGallery() {
       if (Array.isArray(entry.size) && entry.size.length === 2) {
         thumb.style.aspectRatio = `${entry.size[0]} / ${entry.size[1]}`;
       }
+      // 渲染目标 canvas 与页数角标平级：重渲染清空 canvas 不带走角标
+      const canvas = document.createElement("div");
+      canvas.className = "gallery-card-canvas";
+      const badge = document.createElement("span");
+      badge.className = "gallery-page-badge";
+      badge.textContent = `${entry.pages} 页`;
+      thumb.appendChild(canvas);
+      thumb.appendChild(badge);
       const info = document.createElement("div");
       info.className = "gallery-card-info";
       const tags = (entry.tags || [])
         .map((t) => `<span class="gallery-tag">${escapeHtml(t)}</span>`)
         .join("");
       info.innerHTML =
-        `<div class="gallery-card-title">${escapeHtml(entry.title)}` +
-        `<span class="gallery-page-badge">${entry.pages} 页</span></div>` +
+        `<div class="gallery-card-title">${escapeHtml(entry.title)}</div>` +
         (entry.description ? `<div class="gallery-card-desc">${escapeHtml(entry.description)}</div>` : "") +
         (tags ? `<div class="gallery-card-tags">${tags}</div>` : "");
       card.appendChild(thumb);
@@ -273,9 +281,9 @@ export async function showGallery() {
         location.href = new URL("editor/?deck=" + encodeURIComponent(entry.deck), ROOT).href;
       });
       grid.appendChild(card);
-      thumbEntries.set(thumb, entry);
-      thumbObserver.observe(thumb);
-      sizeObserver.observe(thumb);
+      thumbEntries.set(canvas, entry);
+      thumbObserver.observe(canvas);
+      sizeObserver.observe(canvas);
     }
   }
 

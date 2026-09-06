@@ -1,8 +1,4 @@
-/* ==== gallery — 画廊（站点根 index.html） ==== */
-
-/* ============================================================================
-   画廊（站点根 index.html）——文档流滚动页，与编辑器共用品牌/按钮样式
-   ============================================================================ */
+/* ==== gallery — 画廊（站点根 index.html）：文档流滚动页，与编辑器共用品牌/按钮样式 ==== */
 .gallery-view {
   min-height: 100vh;
   display: flex;
@@ -34,27 +30,22 @@
   width: 100%;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 28px var(--space-5) 40px;
+  padding: 18px var(--space-5) 40px;
 }
 
-#gallery-hero h1 {
-  margin: 0 0 6px;
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-#gallery-hero p {
-  margin: 0;
-  font-size: var(--text-lg);
-  color: var(--sub);
+/* 工具栏单行：左 tab 分类、右运行模式徽标（窄屏折行） */
+.gallery-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
 }
 
 .gallery-mode {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  margin-top: 14px;
   padding: 5px var(--space-3);
   border-radius: 999px;
   font-size: var(--text-sm);
@@ -76,7 +67,6 @@
 .gallery-tabs {
   display: inline-flex;
   gap: 4px;
-  margin-top: 16px;
   padding: 4px;
   background: var(--bg);
   border: 1px solid var(--line);
@@ -107,7 +97,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 18px;
-  margin-top: 22px;
+  margin-top: 14px;
   /* 卡片保持自然高度：同行比例不同（如 16:9 混 4:3）时矮卡不被拉伸留白 */
   align-items: start;
 }
@@ -144,6 +134,11 @@
   overflow: hidden;
   background: var(--bg);
 }
+/* 渲染目标：与页数角标平级，重渲染清空时不带走角标 */
+.gallery-card-canvas {
+  position: absolute;
+  inset: 0;
+}
 /* 加载占位 shimmer：功能性扫光动画，颜色取自令牌灰阶 */
 .gallery-card-cover.loading {
   background:
@@ -172,38 +167,35 @@
 }
 
 .gallery-card-info {
-  padding: var(--space-3) 14px 13px;
-  border-top: 1px solid var(--line);
+  padding: 10px 12px 11px;
 }
 
 .gallery-card-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
   font-size: var(--text-lg);
   font-weight: 600;
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
+/* 页数角标：覆盖在封面右下角（视频时长式），任意封面底色均可读 */
 .gallery-page-badge {
-  flex: 0 0 auto;
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 1;
   font-size: var(--text-xs);
-  font-weight: 400;
-  color: var(--sub);
-  background: var(--bg);
-  border: 1px solid var(--line);
+  color: #fff;
+  background: rgba(17, 24, 39, 0.62);
   border-radius: 999px;
-  padding: 1px var(--space-2);
+  padding: 2px 8px;
 }
 
 .gallery-card-desc {
-  margin-top: 5px;
+  margin-top: 3px;
   font-size: var(--text-sm);
   color: var(--sub);
-  line-height: 1.55;
+  line-height: 1.5;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -212,7 +204,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 9px;
+  margin-top: 7px;
 }
 
 .gallery-tag {
