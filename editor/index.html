@@ -73,6 +73,8 @@
         <main id="stage" class="stage">
           <div id="canvas-wrap" class="canvas-wrap">
             <div id="canvas" class="canvas"></div>
+            <!-- 渐进加载遮罩：盖住启动空白与未就绪页的失败占位（renderCanvas 按需显隐） -->
+            <div id="canvas-loading" class="canvas-loading"></div>
           </div>
 
           <!-- 选中元素时的浮动快调条 -->

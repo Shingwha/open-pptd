@@ -48,6 +48,7 @@ function initEditor(deckUrl, { blankToast = true } = {}) {
       io.loadDeck(deckUrl).catch((err) => {
         showToast(`加载失败: ${err.message}`, "danger");
         console.error(err);
+        dom.canvasLoading.hidden = true; // 撤掉启动遮罩，露出错误态
       });
     }
     return;
@@ -125,6 +126,7 @@ function initEditor(deckUrl, { blankToast = true } = {}) {
     io.loadDeck(deckUrl).catch((err) => {
       showToast(`加载失败: ${err.message}`, "danger");
       console.error(err);
+      dom.canvasLoading.hidden = true; // 撤掉启动遮罩，露出错误态
     });
   } else {
     // 空白编辑器：新建空白项目（一页空白 content），用户从零开始

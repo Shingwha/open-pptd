@@ -6,14 +6,11 @@
 // ============================================================================
 
 import { renderPage, disposeChartInstances } from "../../../packages/renderer/page.js";
-import { isNarrow } from "../../ui.js";
 import { dom } from "../../dom.js";
 
+// 兜底卡框：仅元素不可测（如隐藏态渲染）时使用；实际尺寸由 CSS 断点决定、渲染时实测
 const THUMB_W = 140;
-// 缩略卡框高：与 thumbbar.css 的 .thumb 高度对应（任意画布比例 contain 进此框）
 const THUMB_H = 79;
-// 窄屏（≤BP_NARROW）迷你缩略图宽度，与 editor/styles/ 响应式块中的 .thumb 同步
-const thumbW = () => (isNarrow() ? 88 : THUMB_W);
 
 export function createThumbnails({ state, api, reload }) {
   const bar = dom.pageThumbs;
@@ -66,18 +63,25 @@ export function createThumbnails({ state, api, reload }) {
     state.deck.pages.forEach((pg, i) => {
       const thumb = document.createElement("div");
       thumb.className = "thumb" + (i === state.currentPage ? " active" : "");
+      bar.appendChild(thumb); // 先入条再测：卡框尺寸由 CSS 断点决定，运行时实测（含边框内容盒）
       const mini = document.createElement("div");
       mini.className = "thumb-canvas";
-      // 按画布实际比例 contain 进固定卡框（16:9 恰好铺满；竖版海报左右居中、上下留边）
+      // 按画布实际比例 contain 进卡框实测内容盒（16:9 恰好铺满；竖版海报左右居中、上下留边）。
+      // 不能用常量：窄屏卡框 88×50，若按桌面 140×79 定位 mini 会下坠溢出、底部三分之一被裁
       const [pw, ph] = Array.isArray(state.deck.size) && state.deck.size.length === 2 ? state.deck.size : [960, 540];
-      const s = Math.min(thumbW() / pw, THUMB_H / ph);
+      const bw = thumb.clientWidth || THUMB_W;
+      const bh = thumb.clientHeight || THUMB_H;
+      const s = Math.min(bw / pw, bh / ph);
       mini.style.width = `${pw}px`;
       mini.style.height = `${ph}px`;
       mini.style.transform = `scale(${s})`;
       mini.style.position = "absolute";
-      mini.style.left = `${Math.round((thumbW() - pw * s) / 2)}px`;
-      mini.style.top = `${Math.round((THUMB_H - ph * s) / 2)}px`;
-      renderPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
+      mini.style.left = `${Math.round((bw - pw * s) / 2)}px`;
+      mini.style.top = `${Math.round((bh - ph * s) / 2)}px`;
+      // 渐进加载中：骨架屏占位（页码/删除/点击照常；资产到位后 refreshThumb 定点替换）
+      const skeleton = state.pagesPending?.has(pg) ? document.createElement("div") : null;
+      if (skeleton) skeleton.className = "thumb-skeleton";
+      else renderPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
 
       const num = document.createElement("span");
       num.className = "thumb-num";
@@ -100,13 +104,25 @@ export function createThumbnails({ state, api, reload }) {
         state.selectedId = null;
         reload();
       });
-      thumb.append(mini, num, del);
-      bar.appendChild(thumb);
+      thumb.append(mini, ...(skeleton ? [skeleton] : []), num, del);
     });
     dom.pageCount.textContent = `${state.currentPage + 1} / ${state.deck.pages.length}`;
     // 当前页自动滚入视野（页面多时保持可见，不强制滚动已可见的）
     bar.querySelector(".thumb.active")?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
 
-  return { renderThumbnails };
+  /** 渐进加载定点刷新：单页资产就绪后替换该页缩略图（骨架 → 实渲染）。 */
+  function refreshThumb(pg) {
+    if (!state.deck) return;
+    const i = state.deck.pages.indexOf(pg);
+    if (i < 0) return; // 加载中被删除/换 deck
+    const thumb = bar.children[i];
+    if (!thumb?.classList.contains("thumb")) return;
+    disposeChartInstances(thumb);
+    thumb.querySelector(".thumb-skeleton")?.remove();
+    const mini = thumb.querySelector(".thumb-canvas");
+    if (mini) renderPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
+  }
+
+  return { renderThumbnails, refreshThumb };
 }

@@ -52,6 +52,7 @@ export function createView({ state, page, selected, api, controller, props }) {
     zoomReset: viewport.zoomReset,
     getZoom: viewport.getZoom,
     renderThumbnails: thumbnails.renderThumbnails,
+    refreshPage,
   });
 
   // --------------------------------------------------------------------------
@@ -70,6 +71,15 @@ export function createView({ state, page, selected, api, controller, props }) {
   }
 
   // --------------------------------------------------------------------------
+  // 渐进加载：单页资产就绪后的定向刷新（该页缩略图骨架→实渲染；当前页连画布）
+  // --------------------------------------------------------------------------
+  function refreshPage(pg) {
+    if (!state.deck) return;
+    thumbnails.refreshThumb(pg);
+    if (state.deck.pages[state.currentPage] === pg) renderCanvas();
+  }
+
+  // --------------------------------------------------------------------------
   // 画布
   // --------------------------------------------------------------------------
   function renderCanvas() {
@@ -85,6 +95,8 @@ export function createView({ state, page, selected, api, controller, props }) {
     renderPage(canvas, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
     applyMeasurements(pg, canvas);
     controller.refreshSelection();
+    // 渐进加载遮罩：当前页资产未就绪时盖住失败占位（资产到位经 refreshPage 重渲染移除）
+    if (dom.canvasLoading) dom.canvasLoading.hidden = !state.pagesPending?.has(pg);
   }
 
   // --------------------------------------------------------------------------

@@ -60,13 +60,14 @@ export function createImageStore(state) {
     return `data:${mime};base64,${bytesToBase64(new Uint8Array(buf))}`; // fetch 返回 ArrayBuffer，需先包装
   }
 
-  /** 把项目内相对路径图片预读为 dataURL 进 imageMap。 */
-  async function preloadRemoteImages() {
-    if (!state.manifestPath) return;
+  /** 把项目内相对路径图片预读为 dataURL 进 imageMap（pages 限定子集：渐进加载按页预读用）。 */
+  async function preloadRemoteImages(pages) {
+    const list = Array.isArray(pages) ? pages : state.deck?.pages;
+    if (!state.manifestPath || !list) return;
     const base = state.manifestPath.replace(/[^/]*$/, "");
     const todo = [];
     const seen = new Set();
-    walkElements(state.deck.pages, (el) => {
+    walkElements(list, (el) => {
       if (el.elementType !== "image" || !el.src || el.src.startsWith("data:")) return;
       if (state.imageMap[el.src] || seen.has(el.src)) return;
       seen.add(el.src);
@@ -87,12 +88,14 @@ export function createImageStore(state) {
     );
   }
 
-  /** 把项目内相对路径图片预读为 dataURL 进 imageMap（句柄模式，不经 HTTP）。 */
-  async function preloadHandleImages(handle) {
+  /** 把项目内相对路径图片预读为 dataURL 进 imageMap（句柄模式，不经 HTTP；pages 限定子集）。 */
+  async function preloadHandleImages(handle, pages) {
     if (!handle) return;
+    const list = Array.isArray(pages) ? pages : state.deck?.pages;
+    if (!list) return;
     const seen = new Set();
     const todo = [];
-    walkElements(state.deck.pages, (el) => {
+    walkElements(list, (el) => {
       if (el.elementType !== "image" || !el.src || el.src.startsWith("data:")) return;
       if (state.imageMap[el.src] || seen.has(el.src)) return;
       seen.add(el.src);

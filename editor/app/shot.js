@@ -21,9 +21,10 @@ export async function initShot(deckUrl) {
   if (!deckUrl) throw new Error("shot 模式需要 ?deck= 参数");
   document.documentElement.classList.add("shot-mode");
 
-  // 最小装配：state + io（仅用加载/字体/图片管线；view 用空桩，UI 全部隐藏）
+  // 最小装配：state + io（仅用加载/字体/图片管线；view 用空桩，UI 全部隐藏。
+  // refreshPage 为 finishLoad 渐进加载所调用，桩上必须存在）
   const { state } = createEditorState();
-  const io = createIo({ state, view: { render() {} } });
+  const io = createIo({ state, view: { render() {}, refreshPage() {} } });
 
   const root = document.createElement("div");
   root.id = "shot-root";

@@ -85,19 +85,23 @@ export async function fetchProjectTexts(manifestUrl, parseManifest) {
 }
 
 async function fetchPages(base, manifest) {
+  const rels = manifest.pages || [];
+  // 并行拉取（串行逐页累计 RTT 是冷启动空白的大头）；404 = 写入中跳过
+  // （交给 parseDeck 宽容处理，「有一页显示一页」），其余失败整体抛错
+  const fetched = await Promise.all(
+    rels.map(async (rel) => {
+      const url = base + rel;
+      const res = await fetch(url);
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`加载失败 ${url}: ${res.status}`);
+      return [rel, await res.text()];
+    })
+  );
   const pageTexts = new Map();
   let missing = 0;
-  for (const rel of manifest.pages || []) {
-    const url = base + rel;
-    const res = await fetch(url);
-    if (res.status === 404) {
-      // 页面文件尚未创建（Agent 写入中）：跳过，交给 parseDeck 宽容处理——
-      // 保证「有一页显示一页」，而不是整个项目加载失败
-      missing += 1;
-      continue;
-    }
-    if (!res.ok) throw new Error(`加载失败 ${url}: ${res.status}`);
-    pageTexts.set(rel, await res.text());
+  for (const item of fetched) {
+    if (item) pageTexts.set(item[0], item[1]);
+    else missing += 1;
   }
   return { pageTexts, missing };
 }

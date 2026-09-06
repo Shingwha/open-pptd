@@ -235,3 +235,19 @@
   padding: var(--space-6);
   white-space: pre-line;
 }
+
+/* ==== 渐进加载：画布遮罩（启动空白 + 当前页资产未就绪期间盖住失败占位） ==== */
+.canvas-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  background-color: var(--bg);
+  background-image: linear-gradient(100deg, var(--bg) 40%, var(--panel) 50%, var(--bg) 60%);
+  background-size: 200% 100%;
+  animation: pptd-shimmer 1.2s infinite linear;
+}
+
+/* 扫光动画（thumbbar.css 骨架与画布遮罩共用，编辑器样式内唯一定义） */
+@keyframes pptd-shimmer {
+  to { background-position: -200% 0; }
+}

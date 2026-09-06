@@ -19,6 +19,7 @@ const IDS = {
   stage: "stage",
   canvas: "canvas",
   canvasWrap: "canvas-wrap",
+  canvasLoading: "canvas-loading",
   quickbar: "quickbar",
   props: "props",
   inspectorBadge: "inspector-badge",

@@ -110,14 +110,55 @@ export function createLoader({ state, view, images, fontManager, connect, render
     await finishLoad(prevPage, { keepPage, silent, missing, viaHandle: true });
   }
 
-  /** 加载收尾（两种来源共用）：保留页码/图片预载/字体恢复/渲染/实时刷新。 */
+  /** 加载收尾（两种来源共用）：渐进加载——当前页资产先行首渲染，其余页后台
+   *  逐页转正（缩略图骨架→实渲染），字体并行恢复（期间回退字体）后整体重渲染。
+   *  渲染层对未就绪图片显示「加载失败」占位，故首渲染前只等当前页资产。 */
   async function finishLoad(prevPage, { keepPage, silent, missing, viaHandle }) {
     if (keepPage) state.currentPage = Math.min(prevPage, Math.max(0, state.deck.pages.length - 1));
-    if (viaHandle) await images.preloadHandleImages(state.projectHandle);
-    else await images.preloadRemoteImages();
-    await preloadIcons(state.deck.pages); // 图标预读（iconMap 渲染/导出共用；live-reload 自动补新）
-    await fontManager.restoreFromDeck(); // 资源表 url 字体自动拉取注册（file 字体待用户重选）
-    view.render();
+    const preloadPage = (pg) =>
+      viaHandle ? images.preloadHandleImages(state.projectHandle, [pg]) : images.preloadRemoteImages([pg]);
+
+    // 字体先行启动（不阻塞渲染；期间文本以回退字体显示，全部到位后统一重渲染）
+    const fontsDone = fontManager.restoreFromDeck().catch((err) => {
+      console.warn("[io] 字体恢复失败:", err?.message || err);
+    });
+
+    const cur = state.deck.pages[state.currentPage];
+    const pending = new Set(cur ? state.deck.pages.filter((pg) => pg !== cur) : []);
+    state.pagesPending = pending;
+    if (cur) {
+      await preloadPage(cur);
+      await preloadIcons([cur]);
+    }
+    view.render(); // 首屏：当前页完整 + 其余页缩略骨架
+
+    // 其余页资产网络层全部并行启动；UI 按页序逐页转正（保留「一张张出现」节奏，
+    // 当前页优先——加载中切到未就绪页时下一轮先补它）
+    const rest = [...pending];
+    const jobs = new Map(
+      rest.map((pg) => [
+        pg,
+        (async () => {
+          try {
+            await preloadPage(pg);
+            await preloadIcons([pg]);
+          } catch (err) {
+            console.warn("[io] 页面资产预载失败:", err?.message || err);
+          }
+        })(),
+      ])
+    );
+    while (pending.size) {
+      const curPg = state.deck.pages[state.currentPage];
+      const pg = curPg && pending.has(curPg) ? curPg : rest.find((p) => pending.has(p));
+      if (!pg) break; // 并发换 deck 后残留引用：本轮无对应页，收尾退出
+      await jobs.get(pg);
+      pending.delete(pg);
+      view.refreshPage?.(pg); // 渐进定点刷新（空桩 view 如 shot 模式自动跳过）
+    }
+
+    await fontsDone;
+    view.render(); // 字体注册完毕：回退字形换真字体，整体重渲染
     connect(); // 项目就绪后订阅实时刷新（幂等；部署模式自动不启用）
     if (!silent) {
       // 缺失页面提示：Agent 写入中的项目「有一页显示一页」，不阻断预览
