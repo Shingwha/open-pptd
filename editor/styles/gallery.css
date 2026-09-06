@@ -1,4 +1,10 @@
 /* ==== gallery — 画廊（站点根 index.html）：文档流滚动页，与编辑器共用品牌/按钮样式 ==== */
+/* 常驻滚动条槽位：切 tab 时竖版海报页出现/消失滚动条不再挤宽带抖动
+   （仅画廊文档流页；编辑器页 html 不滚动，不受影响） */
+html:has(.gallery-view) {
+  scrollbar-gutter: stable;
+}
+
 .gallery-view {
   min-height: 100vh;
   display: flex;
@@ -63,7 +69,7 @@
   color: var(--warning);
 }
 
-/* 分类 tab（PPT / 海报）：分段式胶囊，激活态主色填充 */
+/* 分类 tab（PPT / 海报）：分段式胶囊，滑块指示器滑到激活项底下 */
 .gallery-tabs {
   display: inline-flex;
   gap: 4px;
@@ -71,6 +77,7 @@
   background: var(--bg);
   border: 1px solid var(--line);
   border-radius: 999px;
+  position: relative;
 }
 .gallery-tab {
   border: none;
@@ -80,17 +87,30 @@
   color: var(--sub);
   padding: 5px 18px;
   border-radius: 999px;
+  position: relative; /* 令按钮绘制在指示器之上（指示器为其前面的定位元素） */
   transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 .gallery-tab:hover { color: var(--ink); }
 .gallery-tab.active {
-  background: var(--primary);
-  color: #fff;
+  color: #fff; /* 背景由 .gallery-tab-indicator 滑块提供 */
 }
 .gallery-tab .cnt {
   margin-left: 5px;
   font-size: var(--text-xs);
   opacity: 0.75;
+}
+/* 滑块指示器：left/width 由 JS 瞬时设置（不参与过渡），
+   位移通过 transform: translateX 补偿滑动（合成器动画，主线程忙也不掉帧） */
+.gallery-tab-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: 0;
+  border-radius: 999px;
+  background: var(--primary);
+  will-change: transform;
+  transition: transform var(--dur-med) var(--ease);
 }
 
 .gallery-grid {
@@ -116,6 +136,22 @@
               box-shadow var(--dur-med) var(--ease),
               transform var(--dur-med) var(--ease);
 }
+
+/* 【试验项】切 tab 卡片错落浮入：删掉本块 + gallery.js 里的 --card-i 一行即可移除。
+   fill-mode 用 backwards（结束即释放样式），不干扰上方 hover 的 transform 过渡 */
+@keyframes gallery-card-in {
+  from { opacity: 0; transform: translateY(8px); }
+}
+.gallery-grid > .gallery-card {
+  animation: gallery-card-in 0.32s var(--ease) backwards;
+  animation-delay: calc(var(--card-i, 0) * 25ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-tab-indicator { transition: none; }
+  .gallery-grid > .gallery-card { animation: none; }
+}
+
 .gallery-card:hover {
   border-color: var(--line-strong);
   box-shadow: var(--shadow-md);

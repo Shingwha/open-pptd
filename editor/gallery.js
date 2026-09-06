@@ -237,9 +237,10 @@ export async function showGallery() {
         `把项目放进 examples/ 并在 meta.yaml 写 kind: poster 即出现在这里。</div>`;
       return;
     }
-    for (const entry of list) {
+    for (const [i, entry] of list.entries()) {
       const card = document.createElement("div");
       card.className = "gallery-card";
+      card.style.setProperty("--card-i", i); // 【试验项】错落浮入的序号（配 gallery.css 的 gallery-card-in）
       const thumb = document.createElement("div");
       thumb.className = "gallery-card-cover loading";
       // 封面框跟随作品实际画布比例（PPT 16:9 / 海报 3:4 等）
@@ -276,22 +277,56 @@ export async function showGallery() {
     }
   }
 
+  /** 把滑块指示器对齐到激活 tab。FLIP：left/width 瞬时设为目标值，
+      视觉位移用 transform 补偿——起点与终点都用视口坐标（getBoundingClientRect）
+      测量且包含进行中的动画，快速连点时从"看起来所在的位置"续滑不瞬移。
+      instant=true（resize/字体就绪）直接归位。 */
+  function moveTabIndicator(instant = false) {
+    const active = tabsEl?.querySelector(".gallery-tab.active");
+    const bar = $("gallery-tab-indicator");
+    if (!active || !bar) return;
+    const startLeft = bar.getBoundingClientRect().left; // 当前视觉位置（视口坐标）
+    bar.style.transition = "none";
+    bar.style.transform = "";
+    bar.style.left = `${active.offsetLeft}px`;
+    bar.style.width = `${active.offsetWidth}px`;
+    const dx = instant ? 0 : startLeft - bar.getBoundingClientRect().left; // 同坐标系求差
+    if (!dx) {
+      bar.style.transition = "";
+      return;
+    }
+    bar.style.transform = `translateX(${dx}px)`;
+    bar.getBoundingClientRect(); // 强制回流，让起始位移先生效
+    bar.style.transition = "";
+    bar.style.transform = ""; // 从 dx 过渡回 0，滑到目标位
+  }
+
   function setTab(kind) {
     tabsEl?.querySelectorAll(".gallery-tab").forEach((b) => b.classList.toggle("active", b.dataset.kind === kind));
+    moveTabIndicator();
     grid.classList.toggle("poster-grid", kind === "poster");
-    fillGrid(entries.filter((e) => (e.kind || "ppt") === kind));
+    // 网格重建推迟一帧：滑块动画先在干净的主线程上起步
+    requestAnimationFrame(() => fillGrid(entries.filter((e) => (e.kind || "ppt") === kind)));
   }
 
   if (tabsEl) {
     tabsEl.hidden = false;
-    tabsEl.innerHTML = TABS.map((t) => {
-      const n = entries.filter((e) => (e.kind || "ppt") === t.kind).length;
-      return `<button class="gallery-tab" data-kind="${t.kind}">${t.label}<span class="cnt">${n}</span></button>`;
-    }).join("");
+    tabsEl.innerHTML =
+      `<span class="gallery-tab-indicator" id="gallery-tab-indicator"></span>` +
+      TABS.map((t) => {
+        const n = entries.filter((e) => (e.kind || "ppt") === t.kind).length;
+        return `<button class="gallery-tab" data-kind="${t.kind}">${t.label}<span class="cnt">${n}</span></button>`;
+      }).join("");
     tabsEl.addEventListener("click", (ev) => {
       const btn = ev.target.closest(".gallery-tab");
-      if (btn && !btn.classList.contains("active")) setTab(btn.dataset.kind);
+      if (btn && !btn.classList.contains("active")) {
+        setTab(btn.dataset.kind);
+        // 平滑回顶：配合滑块与浮入动画，并避免停留在页面下方时 scrollTop 超出新内容高度被强拉的纵跳
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     });
+    window.addEventListener("resize", () => moveTabIndicator(true));
+    document.fonts?.ready.then(() => moveTabIndicator(true)); // 字体加载完成后 tab 宽度可能变化，直接归位
   }
   setTab("ppt");
 }

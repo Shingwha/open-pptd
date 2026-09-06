@@ -15,6 +15,13 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* 纤细滚动条（Chrome 121+/FF 原生，旧浏览器自动忽略）：
+   滚动条纤细化并统一全站（含编辑器内部滚动区），配画廊的 gutter stable 消除切 tab 抖动 */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar) transparent;
+}
+
 button { font-family: inherit; }
 select, input, textarea { font-family: inherit; }
 
