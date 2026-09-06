@@ -61,6 +61,8 @@ export function renderLine(theme, el) {
   shape.setAttribute("stroke", color);
   shape.setAttribute("stroke-width", width);
   if (dash) shape.setAttribute("stroke-dasharray", dash);
+  // SVG 默认 fill 黑色会把开放路径隐式闭合填充（预览出"阴影区"），须与导出端 <a:noFill/> 对齐
+  shape.setAttribute("fill", "none");
   svg.appendChild(shape);
 
   // 箭头方向 = 路径端点切线（曲线取最后一段方向，折线取末段方向）
