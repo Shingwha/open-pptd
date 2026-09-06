@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-09-06T05:48:19.929Z",
+  "generated": "2026-09-06T14:23:04.404Z",
   "entries": [
     {
       "id": "brand-mori-showcase-7p",
@@ -128,6 +128,48 @@
       ],
       "kind": "ppt",
       "deck": "examples/miaopai-saas-bp/deck.pptd"
+    },
+    {
+      "id": "poster-bailu-solar-term",
+      "title": "白露 · 节气文化手机海报",
+      "description": "留白国风节气海报：竖排「白露」隶书巨字与诗句相衬，印章点睛，9:16 手机幅",
+      "tags": [
+        "海报",
+        "节气",
+        "国风留白"
+      ],
+      "pages": 1,
+      "fonts": [
+        "刀隶体",
+        "霞鹜文楷"
+      ],
+      "size": [
+        540,
+        960
+      ],
+      "kind": "poster",
+      "deck": "examples/poster-bailu-solar-term/deck.pptd"
+    },
+    {
+      "id": "poster-echo-valley-festival",
+      "title": "山谷回声音乐节 · 演出活动海报",
+      "description": "暗场信号风音乐节海报：同心声场圆环叠巨字，信号线串联日期、阵容与票务节点",
+      "tags": [
+        "海报",
+        "演出活动",
+        "暗场信号"
+      ],
+      "pages": 1,
+      "fonts": [
+        "得意黑",
+        "MiSans"
+      ],
+      "size": [
+        720,
+        1080
+      ],
+      "kind": "poster",
+      "deck": "examples/poster-echo-valley-festival/deck.pptd"
     },
     {
       "id": "shanmingji-2026-launch",
