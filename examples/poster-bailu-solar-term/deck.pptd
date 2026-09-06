@@ -1,0 +1,30 @@
+version: v2
+title: 白露 · 二十四节气文化海报
+size: [540, 960]
+fonts:
+  刀隶体: {family: "Alimama DaoLiTi"}
+  霞鹜文楷: {family: "LXGW WenKai"}
+theme:
+  colors:
+    primary: "#3F6257"
+    accent: "#A63D2C"
+    bg: "#F7F5EF"
+    text: "#2C3A40"
+    muted: "#6E7A72"
+    line: "#DCD8CB"
+    success: "#33A362"
+    warning: "#B4872D"
+    danger: "#BE392D"
+    primarySoft: "#EFF2ED"
+    primaryTint: "#DCE5DD"
+    primaryDeep: "#26443B"
+    accent3: "#7FA08C"
+    accent4: "#B0894D"
+    accent5: "#5B7A99"
+    accent6: "#9C6B4F"
+  textStyles:
+    display: {fontSize: 120, fontFamily: "Alimama DaoLiTi", color: "$text", lineHeight: 1.1}
+    body: {fontSize: 14, fontFamily: "LXGW WenKai", color: "$text", lineHeight: 1.8}
+    caption: {fontSize: 11, fontFamily: "LXGW WenKai", color: "$muted", lineHeight: 1.6}
+pages:
+  - pages/1_poster.page

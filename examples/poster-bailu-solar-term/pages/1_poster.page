@@ -1,0 +1,218 @@
+pageType: poster
+background: {type: solid, color: "$bg"}
+elements:
+  # ── 淡月（唯一的装饰圆）──
+  - elementId: moon
+    elementType: shape
+    bounds: [52, 72, 68, 68]
+    shapeName: ellipse
+    fill: {type: solid, color: "$primarySoft"}
+    opacity: 0.9
+
+  # ── 竖排诗句（右起左行）──
+  - elementId: poem-col-1
+    elementType: text
+    bounds: [252, 128, 52, 280]
+    content:
+      textDirection: vertical
+      fontFamily: LXGW WenKai
+      fontSize: 28
+      color: "$text"
+      letterSpacing: 8
+      wrap: false
+      text: 蒹葭苍苍
+
+  - elementId: poem-col-2
+    elementType: text
+    bounds: [188, 128, 52, 280]
+    content:
+      textDirection: vertical
+      fontFamily: LXGW WenKai
+      fontSize: 28
+      color: "$text"
+      letterSpacing: 8
+      wrap: false
+      text: 白露为霜
+
+  - elementId: poem-source
+    elementType: text
+    bounds: [128, 148, 40, 230]
+    content:
+      textDirection: vertical
+      fontFamily: LXGW WenKai
+      fontSize: 15
+      color: "$muted"
+      letterSpacing: 6
+      wrap: false
+      text: 诗经·秦风
+
+  # ── 竖排巨字「白」「露」──
+  - elementId: char-bai
+    elementType: text
+    bounds: [340, 108, 170, 172]
+    content:
+      align: [center, middle]
+      fontFamily: Alimama DaoLiTi
+      fontSize: 155
+      color: "$text"
+      wrap: false
+      text: 白
+
+  - elementId: char-lu
+    elementType: text
+    bounds: [340, 292, 170, 172]
+    content:
+      align: [center, middle]
+      fontFamily: Alimama DaoLiTi
+      fontSize: 155
+      color: "$text"
+      wrap: false
+      text: 露
+
+  # ── 印章 ──
+  - elementId: seal
+    elementType: shape
+    bounds: [398, 486, 62, 62]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: seal-text
+    elementType: text
+    bounds: [398, 486, 62, 62]
+    content:
+      align: [center, middle]
+      textDirection: vertical
+      fontFamily: Alimama DaoLiTi
+      fontSize: 24
+      color: "$bg"
+      letterSpacing: 4
+      wrap: false
+      text: 白露
+
+  # ── 节气小注（横排区）──
+  - elementId: note-rule
+    elementType: shape
+    bounds: [48, 584, 444, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: note-lead
+    elementType: text
+    bounds: [48, 604, 444, 30]
+    content:
+      fontFamily: LXGW WenKai
+      fontSize: 18
+      color: "$text"
+      wrap: false
+      text: 露凝而白，落叶知秋。
+
+  - elementId: note-body
+    elementType: text
+    bounds: [48, 644, 444, 80]
+    content:
+      fontFamily: LXGW WenKai
+      fontSize: 13
+      color: "$muted"
+      lineHeight: 1.8
+      text: 白露，八月节。此时节暑气尽、天高云淡，夜间水汽凝于草叶，晨起见白，故名白露。
+
+  # ── 白露三候 ──
+  - elementId: hou-label
+    elementType: text
+    bounds: [48, 748, 200, 20]
+    content:
+      fontFamily: LXGW WenKai
+      fontSize: 12
+      color: "$muted"
+      letterSpacing: 3
+      wrap: false
+      text: 白露三候
+
+  - elementId: hou-1-mark
+    elementType: shape
+    bounds: [48, 782, 8, 8]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: hou-1
+    elementType: text
+    bounds: [64, 774, 130, 24]
+    content:
+      align: [left, middle]
+      fontFamily: LXGW WenKai
+      fontSize: 16
+      color: "$text"
+      wrap: false
+      text: 一候 · 鸿雁来
+
+  - elementId: hou-2-mark
+    elementType: shape
+    bounds: [210, 782, 8, 8]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: hou-2
+    elementType: text
+    bounds: [226, 774, 130, 24]
+    content:
+      align: [left, middle]
+      fontFamily: LXGW WenKai
+      fontSize: 16
+      color: "$text"
+      wrap: false
+      text: 二候 · 玄鸟归
+
+  - elementId: hou-3-mark
+    elementType: shape
+    bounds: [372, 782, 8, 8]
+    shapeName: rect
+    fill: {type: solid, color: "$accent"}
+
+  - elementId: hou-3
+    elementType: text
+    bounds: [388, 774, 120, 24]
+    content:
+      align: [left, middle]
+      fontFamily: LXGW WenKai
+      fontSize: 16
+      color: "$text"
+      wrap: false
+      text: 三候 · 群鸟养羞
+
+  # ── 交节日期 ──
+  - elementId: date
+    elementType: text
+    bounds: [48, 836, 320, 44]
+    content:
+      fontFamily: Alimama DaoLiTi
+      fontSize: 30
+      color: "$text"
+      wrap: false
+      text: "2026 · 09 · 07"
+
+  - elementId: date-sub
+    elementType: text
+    bounds: [48, 884, 380, 18]
+    content:
+      fontFamily: LXGW WenKai
+      fontSize: 11.5
+      color: "$muted"
+      wrap: false
+      text: 太阳到达黄经 165° · 夜暖，露始白
+
+  # ── 页脚 ──
+  - elementId: footer-rule
+    elementType: shape
+    bounds: [48, 912, 444, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+
+  - elementId: footer
+    elementType: text
+    bounds: [48, 922, 444, 18]
+    content:
+      fontFamily: LXGW WenKai
+      fontSize: 11
+      color: "$muted"
+      wrap: false
+      text: 二十四节气 · 示例海报，由 open-pptd 生成
