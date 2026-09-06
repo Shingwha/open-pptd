@@ -587,13 +587,17 @@ function buildChartOption(theme, el) {
   return { ...common, xAxis: axes.xAxis, yAxis: axes.yAxis, series: seriesOptions };
 }
 
-/** 图表元素 → 定位 DOM（ECharts 实例；图表框 fill/border/shadow 与导出 chartSpace spPr 对应）。 */
-export function renderChart(theme, el) {
+/** 图表元素 → 定位 DOM（ECharts 实例；图表框 fill/border/shadow 与导出 chartSpace spPr 对应）。
+ * ctx.pixelRatio：显式画布像素比（图片导出传 2，截图即 2x 位图；缺省跟屏幕 DPR）。 */
+export function renderChart(theme, el, ctx = {}) {
   const box = createElementShell(el, { css: "background:#fff;" });
   box.dataset.chartEl = "1";
   Object.assign(box.style, frameStyle(theme, el));
   const option = buildChartOption(theme, el);
-  const chart = echarts.init(box, null, { renderer: "canvas" });
+  const chart = echarts.init(box, null, {
+    renderer: "canvas",
+    ...(ctx.pixelRatio ? { devicePixelRatio: ctx.pixelRatio } : {}),
+  });
   chart.setOption(option, true);
   box._chartInstance = chart;
   return box;

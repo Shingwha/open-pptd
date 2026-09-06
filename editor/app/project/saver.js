@@ -17,6 +17,7 @@ import { showToast } from "../toast.js";
 import { showDialog } from "../../interaction/dialogs/base.js";
 import { openFontPanel } from "../../interaction/font-panel.js";
 import { writeFiles } from "./handle-io.js";
+import { createImageExporter } from "../export-image.js";
 import { mediaFilesOfDeck } from "./images.js";
 
 export function createProjectSaver({ state, images, fontManager, renderStatusBar, onSaved }) {
@@ -184,5 +185,116 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     }
   }
 
-  return { exportPptx, exportProjectZip: doExportZip, saveProject };
+  // 图片导出（纯前端，独立模块：离屏渲染 → foreignObject → 按倍率 PNG）
+  const imageExporter = createImageExporter({ state });
+
+  /** 导出图片对话框：任意勾选页面（多选）+ 倍率（1x/2x/3x，默认 2x，按画布尺寸显示输出像素）。 */
+  function openImageExportDialog() {
+    const [dw, dh] = Array.isArray(state.deck?.size) && state.deck.size.length === 2 ? state.deck.size : [960, 540];
+    const wrap = document.createElement("div");
+    wrap.className = "export-img-opts";
+
+    // —— 范围：页面 chips 多选（默认当前页），全选/清空快捷钮 + 已选计数 ——
+    const selected = new Set([state.currentPage]);
+    const pagesHead = document.createElement("div");
+    pagesHead.className = "export-img-head";
+    const toggleAll = document.createElement("button");
+    toggleAll.type = "button";
+    toggleAll.className = "btn btn-sm";
+    const countEl = document.createElement("span");
+    countEl.className = "export-img-count";
+    const renderHead = () => {
+      countEl.textContent = `已选 ${selected.size} / ${state.deck.pages.length} 页`;
+      toggleAll.textContent = selected.size === state.deck.pages.length ? "清空" : "全选";
+    };
+    toggleAll.onclick = () => {
+      selected.size === state.deck.pages.length ? selected.clear() : state.deck.pages.forEach((_, i) => selected.add(i));
+      chips.forEach((c, i) => c.classList.toggle("on", selected.has(i)));
+      renderHead();
+    };
+    pagesHead.append(toggleAll, countEl);
+
+    const chipsBox = document.createElement("div");
+    chipsBox.className = "export-img-chips";
+    const chips = state.deck.pages.map((_, i) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "export-chip" + (selected.has(i) ? " on" : "");
+      chip.textContent = i + 1;
+      chip.onclick = () => {
+        selected.has(i) ? selected.delete(i) : selected.add(i);
+        chip.classList.toggle("on", selected.has(i));
+        renderHead();
+      };
+      chipsBox.appendChild(chip);
+      return chip;
+    });
+    renderHead();
+
+    // —— 打包方式：zip 打包（缺省）/ 逐张下载 ——
+    let mode = "zip";
+    const modeBox = document.createElement("div");
+    modeBox.className = "export-img-chips";
+    const modeChips = [
+      ["zip", "zip 打包"],
+      ["files", "逐张下载"],
+    ].map(([val, text]) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "export-chip" + (val === mode ? " on" : "");
+      chip.textContent = text;
+      chip.onclick = () => {
+        mode = val;
+        modeChips.forEach((c) => c.classList.toggle("on", c === chip));
+      };
+      modeBox.appendChild(chip);
+      return chip;
+    });
+
+    // —— 倍率：单选 chips，标注输出像素 ——
+    let scale = 2;
+    const scaleBox = document.createElement("div");
+    scaleBox.className = "export-img-chips";
+    const scaleChips = [1, 2, 3].map((n) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "export-chip" + (n === scale ? " on" : "");
+      chip.textContent = `${n}x · ${dw * n}×${dh * n}`;
+      chip.onclick = () => {
+        scale = n;
+        scaleChips.forEach((c, m) => c.classList.toggle("on", [1, 2, 3][m] === n));
+      };
+      scaleBox.appendChild(chip);
+      return chip;
+    });
+
+    const hint = document.createElement("div");
+    hint.className = "prop-hint";
+    hint.textContent = `倍率是输出图片相对画布尺寸的放大倍数，越大越清晰、文件也越大；分享场景 2x 已足够。所选页面按当前编辑现场渲染，多页可 zip 打包或逐张下载。`;
+
+    wrap.append(
+      Object.assign(document.createElement("div"), { className: "export-img-label", textContent: "导出页面" }),
+      pagesHead,
+      chipsBox,
+      Object.assign(document.createElement("div"), { className: "export-img-label", textContent: "倍率" }),
+      scaleBox,
+      Object.assign(document.createElement("div"), { className: "export-img-label", textContent: "打包方式" }),
+      modeBox,
+      hint
+    );
+
+    const { close } = showDialog("导出图片", wrap, {
+      doneText: "导出",
+      onDone() {
+        if (!selected.size) {
+          showToast("请至少选择一页", "danger");
+          return;
+        }
+        close();
+        imageExporter.exportImages({ pages: [...selected].sort((a, b) => a - b), scale, mode });
+      },
+    });
+  }
+
+  return { exportPptx, exportProjectZip: doExportZip, exportImages: openImageExportDialog, saveProject };
 }

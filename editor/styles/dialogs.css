@@ -46,6 +46,44 @@
 /* 导出 PPTX 对话框选项区（saver.js openExportDialog） */
 .export-pptx-opts { display: flex; flex-direction: column; gap: var(--space-2); }
 
+/* 导出图片对话框（saver.js openImageExportDialog）：页面多选 chips + 倍率单选 chips */
+.export-img-opts { display: flex; flex-direction: column; gap: var(--space-2); }
+.export-img-label {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--ink);
+  margin-top: 4px;
+}
+.export-img-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.export-img-count {
+  font-size: var(--text-sm);
+  color: var(--sub);
+}
+.export-img-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.export-chip {
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  color: var(--sub);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease);
+}
+.export-chip:hover { border-color: var(--primary); color: var(--primary); }
+.export-chip.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.export-chip:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+
 .editor-section { margin-bottom: 14px; }
 .editor-section-title {
   font-size: var(--text-sm);

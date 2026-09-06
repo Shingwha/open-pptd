@@ -76,7 +76,8 @@ export function bindToolbar({ state, page, api, view, io, present }) {
         item("保存项目", { hint: "Ctrl+S", onClick: () => io.saveProject() }),
         sep(),
         item("导出幻灯片（pptx）", { onClick: () => io.exportPptx() }),
-        item("导出项目文件（zip）", { onClick: () => io.exportProjectZip() })
+        item("导出项目文件（zip）", { onClick: () => io.exportProjectZip() }),
+        item("导出图片（png）", { onClick: () => io.exportImages() })
       );
     });
   }
