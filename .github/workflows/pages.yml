@@ -56,7 +56,7 @@ jobs:
 
       # ④ 部署产物瘦身：站点只需 index.html + editor/ + assets/ + examples/
       - name: 清理产物
-        run: rm -rf .git tests scripts docs references lib bin
+        run: rm -rf .git tests scripts docs references bin
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
