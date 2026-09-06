@@ -14,6 +14,7 @@ import * as yaml from "../packages/model/vendor/js-yaml.mjs";
 import { parseDeck } from "../packages/model/pptd-io.js";
 import { resolveTheme } from "../packages/model/theme.js";
 import { deckSize } from "../packages/model/model.js";
+import { parseFontResources } from "../packages/model/font.js";
 import { renderPage, disposeChartInstances } from "../packages/renderer/page.js";
 import { fetchProjectTexts } from "./app/project/project-cache.js";
 import { preloadIcons } from "./app/project/icons.js";
@@ -48,12 +49,14 @@ async function loadManifest() {
   return manifestCache;
 }
 
-/** 注册项目声明字体（deck.fonts 的 key）：本地库文件优先，线上源回退；失败回退系统字体。 */
-async function loadProjectFonts(entry) {
-  if (!entry.fonts?.length) return;
-  for (const key of entry.fonts) {
+/** 注册项目声明字体（deck.fonts 资源表）：按条目的 family 注册名命中注册表，与编辑器
+ *  restoreFromDeck 同管线。槽位 key 只是 deck 作者起的任意名，不保证等于注册表 key/family
+ *  （如「刀隶体」vs 注册表「阿里妈妈刀隶体」），拿它查表会静默脱靶回退系统字体。 */
+async function loadProjectFonts(deck) {
+  const resources = parseFontResources(deck?.fonts);
+  for (const [key, res] of Object.entries(resources)) {
     try {
-      await registerRegistryFontFace(key);
+      await registerRegistryFontFace(res.family || key);
     } catch {
       /* 单字体失败不影响整体 */
     }
@@ -67,7 +70,7 @@ async function loadProject(entry) {
   const { manifestText, pageTexts } = await fetchProjectTexts(manifestUrl, yaml.load);
   const deck = parseDeck(manifestText, pageTexts);
   const theme = resolveTheme(deck);
-  await loadProjectFonts(entry);
+  await loadProjectFonts(deck);
   // 相对路径图片 → 以项目 manifest 为基准解析为绝对 URL（页面内 img.src 直接用）
   const imageMap = {};
   for (const page of deck.pages) {
