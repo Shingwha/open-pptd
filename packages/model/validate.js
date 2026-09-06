@@ -16,7 +16,7 @@ import { parseFontResources } from "./font.js";
 import { findFont, findSystemFont } from "./font-registry.js";
 import { resolveIconName } from "./icon-fa.js";
 import { walkElements } from "./walk.js";
-import { PAGE_WIDTH, PAGE_HEIGHT } from "./model.js";
+import { deckSize } from "./model.js";
 import { ELEMENT_TYPES } from "./style-spec.js";
 
 const KNOWN_TYPES = new Set(ELEMENT_TYPES);
@@ -25,9 +25,6 @@ const KNOWN_TYPES = new Set(ELEMENT_TYPES);
 const RULES = [];
 export function registerRule(fn) {
   RULES.push(fn);
-}
-export function allRules() {
-  return [...RULES];
 }
 
 /**
@@ -51,7 +48,7 @@ export function validateDeck(deck, opts = {}) {
   const ctx = {
     opts,
     theme: normalizeTheme(deck?.theme),
-    size: Array.isArray(deck?.size) && deck.size.length === 2 ? deck.size : [PAGE_WIDTH, PAGE_HEIGHT],
+    size: deckSize(deck),
     fontResources: parseFontResources(deck?.fonts),
   };
   for (const rule of RULES) rule(deck, ctx, report);

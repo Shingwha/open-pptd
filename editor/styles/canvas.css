@@ -246,8 +246,3 @@
   background-size: 200% 100%;
   animation: pptd-shimmer 1.2s infinite linear;
 }
-
-/* 扫光动画（thumbbar.css 骨架与画布遮罩共用，编辑器样式内唯一定义） */
-@keyframes pptd-shimmer {
-  to { background-position: -200% 0; }
-}

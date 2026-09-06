@@ -15,37 +15,17 @@
 // 字体：fontLibrary 有字节的全部内嵌 @font-face；系统字体由本机渲染无需内嵌。
 // ============================================================================
 
-import { renderPage, disposeChartInstances } from "../../packages/renderer/page.js";
+import { renderPage, disposeChartInstances, autoGrowTexts } from "../../packages/renderer/page.js";
 import { ZipWriter } from "../../packages/writer/zip.js";
+import { downloadBlob } from "../../packages/writer/pptx.js";
+import { bytesToBase64 } from "../../packages/model/bytes.js";
+import { deckSize } from "../../packages/model/model.js";
+import { safeFileName, dataUrlOf } from "../../packages/writer/util.js";
 import { showToast } from "./toast.js";
 
 const DEFAULT_SCALE = 2; // 输出倍率缺省（1|2|3；倍率含义 = 画布逻辑尺寸 × N 像素）
 
-/** Uint8Array → base64（分块，避免 apply 栈溢出）。 */
-function bytesToBase64(bytes) {
-  let bin = "";
-  const CHUNK = 0x8000;
-  for (let i = 0; i < bytes.length; i += CHUNK) {
-    bin += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
-  }
-  return btoa(bin);
-}
-
-function downloadBlob(bytes, name, mime) {
-  const url = URL.createObjectURL(new Blob([bytes], { type: mime }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
 export function createImageExporter({ state }) {
-  const deckSize = () =>
-    Array.isArray(state.deck?.size) && state.deck.size.length === 2 ? state.deck.size : [960, 540];
-
   /** 内嵌字体 @font-face（结果缓存；deck 切换后 fontLibrary 变化由导出时机自然刷新——同项目内字体集稳定）。 */
   let fontFaceCache = null;
   function fontFaceCss() {
@@ -60,19 +40,11 @@ export function createImageExporter({ state }) {
   }
 
   /** 任意 URL → dataURL（同源 / 允许 CORS 的外链可转；否则抛错由调用方计数）。 */
-  function urlToDataUrl(url) {
-    return fetch(url).then((res) => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.blob();
-    }).then(
-      (blob) =>
-        new Promise((ok, err) => {
-          const r = new FileReader();
-          r.onload = () => ok(r.result);
-          r.onerror = err;
-          r.readAsDataURL(blob);
-        })
-    );
+  async function urlToDataUrl(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    return dataUrlOf(await blob.arrayBuffer(), blob.type || "application/octet-stream");
   }
 
   /** <img>/<canvas> → div 背景图载体（保留原内联尺寸样式；object-fit → background-size）。 */
@@ -124,18 +96,6 @@ export function createImageExporter({ state }) {
     return failed;
   }
 
-  /** 文本框可视自适应高度（与 present.js 同规则，但不写回模型——导出只调显示）。 */
-  function autoGrowTexts(page, container) {
-    for (const el of page.elements || []) {
-      if (el.elementType !== "text") continue;
-      const node = container.querySelector(`[data-element-id="${CSS.escape(el.elementId)}"]`);
-      const inner = node?.firstElementChild;
-      if (!inner) continue;
-      const need = inner.scrollHeight;
-      if (need > el.bounds[3] + 1) node.style.height = `${need}px`;
-    }
-  }
-
   /** 整页 DOM → PNG Blob（data URL SVG → foreignObject → N 倍 canvas 栅格化）。 */
   async function rasterize(container, w, h, scale) {
     const xml = new XMLSerializer().serializeToString(container);
@@ -161,7 +121,7 @@ export function createImageExporter({ state }) {
 
   /** 渲染一页并栅格化；返回 { blob, failed }。 */
   async function pageToPng(page, scale) {
-    const [w, h] = deckSize();
+    const [w, h] = deckSize(state.deck);
     // 视口外但不 display:none（保证布局、字体与图表的正常渲染）
     const clipper = document.createElement("div");
     clipper.style.cssText = "position:fixed;left:-10000px;top:0;";
@@ -197,7 +157,7 @@ export function createImageExporter({ state }) {
     const indices = (Array.isArray(opts.pages) && opts.pages.length ? opts.pages : [state.currentPage])
       .filter((i) => Number.isInteger(i) && i >= 0 && i < total);
     if (!indices.length) return;
-    const base = (state.deck.title || "deck").replace(/[\\/:*?"<>|]/g, "_");
+    const base = safeFileName(state.deck.title || "deck");
     showToast(indices.length > 1 ? `正在导出 ${indices.length} 页图片…` : "正在导出图片…", "info", 8000);
     try {
       const pngs = [];

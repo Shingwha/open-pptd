@@ -12,21 +12,19 @@
 
 import * as yaml from "../packages/model/vendor/js-yaml.mjs";
 import { parseDeck } from "../packages/model/pptd-io.js";
-import { normalizeTheme, mergeFonts } from "../packages/model/theme.js";
+import { resolveTheme } from "../packages/model/theme.js";
+import { deckSize } from "../packages/model/model.js";
 import { renderPage, disposeChartInstances } from "../packages/renderer/page.js";
 import { fetchProjectTexts } from "./app/project/project-cache.js";
 import { preloadIcons } from "./app/project/icons.js";
 import { pickProjectFolder, hasDeck } from "./app/project/handle-io.js";
 import { addRecent, setPendingProject } from "./app/project/handle-store.js";
+import { registerRegistryFontFace } from "./app/project/font-manager.js";
 import { createFileMenu } from "./app/file-menu.js";
 import { showToast } from "./app/toast.js";
-import { loadFontRegistry, findFont, fetchFontBytes } from "../packages/model/font-registry.js";
 import { injectIcons } from "./icons.js";
 
 injectIcons(); // 顶栏图标占位（data-icon）注入实际 SVG（图标单一来源 icons.js）
-
-const PAGE_W = 960;
-const PAGE_H = 540;
 
 // 仓库根 URL（本文件位于 <root>/editor/，../ 即站点根——兼容本地与 GitHub Pages 子路径）
 const ROOT = new URL("../", import.meta.url).href;
@@ -53,21 +51,9 @@ async function loadManifest() {
 /** 注册项目声明字体（deck.fonts 的 key）：本地库文件优先，线上源回退；失败回退系统字体。 */
 async function loadProjectFonts(entry) {
   if (!entry.fonts?.length) return;
-  let registry = null;
-  try {
-    registry = await loadFontRegistry();
-  } catch {
-    return;
-  }
   for (const key of entry.fonts) {
-    const hit = findFont(registry, key);
-    if (!hit) continue;
     try {
-      const bytes = await fetchFontBytes(hit);
-      if (!bytes) continue;
-      const face = new FontFace(hit.family, bytes);
-      await face.load();
-      document.fonts.add(face);
+      await registerRegistryFontFace(key);
     } catch {
       /* 单字体失败不影响整体 */
     }
@@ -80,7 +66,7 @@ async function loadProject(entry) {
   const manifestUrl = new URL(entry.deck, ROOT).href;
   const { manifestText, pageTexts } = await fetchProjectTexts(manifestUrl, yaml.load);
   const deck = parseDeck(manifestText, pageTexts);
-  const theme = mergeFonts(normalizeTheme(deck.theme), deck.fonts);
+  const theme = resolveTheme(deck);
   await loadProjectFonts(entry);
   // 相对路径图片 → 以项目 manifest 为基准解析为绝对 URL（页面内 img.src 直接用）
   const imageMap = {};
@@ -113,7 +99,7 @@ function renderPageFit(container, page, deck, theme, imageMap, iconMap = {}) {
     });
     return;
   }
-  const [pw, ph] = Array.isArray(deck.size) && deck.size.length === 2 ? deck.size : [PAGE_W, PAGE_H];
+  const [pw, ph] = deckSize(deck);
   const scale = Math.max(0.1, Math.min(2, cw / pw));
   const stage = document.createElement("div");
   stage.className = "gallery-page";

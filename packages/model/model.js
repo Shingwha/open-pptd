@@ -12,6 +12,11 @@ import { PRESET_SHAPES } from "./preset-geometry.data.js";
 export const PAGE_WIDTH = 960;
 export const PAGE_HEIGHT = 540;
 
+/** deck 画布尺寸（size 缺省/非法回退 960×540）；渲染/导出/缩略图/画廊统一走这里。 */
+export function deckSize(deck) {
+  return Array.isArray(deck?.size) && deck.size.length === 2 ? deck.size : [PAGE_WIDTH, PAGE_HEIGHT];
+}
+
 /** 支持形状清单（key=shapeName）：全部来自 ECMA-376 预置几何数据（187 种，含基础 5 种）。 */
 export const SUPPORTED_SHAPES = Object.fromEntries(
   Object.entries(PRESET_SHAPES).map(([name, def]) => [

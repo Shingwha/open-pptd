@@ -9,7 +9,7 @@
 
 import * as yaml from "../../../packages/model/vendor/js-yaml.mjs";
 import { parseDeck } from "../../../packages/model/pptd-io.js";
-import { normalizeTheme, mergeFonts, DEFAULT_THEME } from "../../../packages/model/theme.js";
+import { resolveTheme, DEFAULT_THEME } from "../../../packages/model/theme.js";
 import { syncElementId } from "../../../packages/model/model.js";
 import { createHistory } from "../../interaction/history.js";
 import { showToast } from "../toast.js";
@@ -29,14 +29,14 @@ export function createLoader({ state, view, images, fontManager, connect, render
       ? JSON.parse(JSON.stringify(themeInput))
       : JSON.parse(JSON.stringify(DEFAULT_THEME));
     // deck 级字体声明覆盖主题字体（无声明则用主题默认，如微软雅黑）
-    state.theme = mergeFonts(normalizeTheme(state.deck.theme), state.deck.fonts);
+    state.theme = resolveTheme(state.deck);
   }
 
   /** 把撤销/重做快照应用到当前状态。 */
   function applyHistory(deckSnapshot) {
     if (!deckSnapshot) return;
     state.deck = deckSnapshot;
-    state.theme = mergeFonts(normalizeTheme(state.deck.theme), state.deck.fonts);
+    state.theme = resolveTheme(state.deck);
     if (state.currentPage >= state.deck.pages.length) state.currentPage = state.deck.pages.length - 1;
     state.selectedId = null;
     // 撤销/重做落地：先视为修改，渲染钩子再按保存基线等值比较精确化
@@ -65,13 +65,9 @@ export function createLoader({ state, view, images, fontManager, connect, render
   }
 
   /**
-   * 应用一份已解析的 PPTD 项目到编辑器状态：
-   * 重置历史/选中/页面/图片映射/id 计数器并渲染（loadDeck 与手动刷新共用）。
-   */
-  /**
-   * 应用一份已解析的 PPTD 项目到编辑器状态：
-   * 重置历史/选中/页面/图片映射/id 计数器并渲染（loadDeck 与手动刷新共用）。
-   * handle：本地项目句柄模式（官方文件夹选择器打开），None = URL 模式。
+   * 应用一份已解析的 PPTD 项目到编辑器状态：重置历史/选中/页面/图片映射/
+   * id 计数器并渲染（loadDeck 与手动刷新共用）。handle：本地项目句柄模式
+   * （官方文件夹选择器打开），None = URL 模式。
    */
   function applyDeck(manifestText, pageFiles, { manifestPath = "", handle = null, projectName = "" } = {}) {
     state.deck = parseDeck(manifestText, pageFiles);
@@ -163,7 +159,7 @@ export function createLoader({ state, view, images, fontManager, connect, render
     if (!silent) {
       // 缺失页面提示：Agent 写入中的项目「有一页显示一页」，不阻断预览
       const suffix = missing > 0 ? ` · ${missing} 页缺失（写入中？）` : "";
-      showToast(`已加载 · ${state.deck.pages.length} 页 · 主题已应用${suffix}`, missing > 0 ? "info" : "info");
+      showToast(`已加载 · ${state.deck.pages.length} 页 · 主题已应用${suffix}`, "info");
     }
   }
 

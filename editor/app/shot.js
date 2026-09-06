@@ -13,7 +13,7 @@
 import { createEditorState } from "./state.js";
 import { createIo } from "./project/io.js";
 import { renderPage } from "../../packages/renderer/page.js";
-import { PAGE_WIDTH, PAGE_HEIGHT, SHOT_READY_TITLE } from "../../packages/model/model.js";
+import { deckSize, SHOT_READY_TITLE } from "../../packages/model/model.js";
 
 export const READY_TITLE = SHOT_READY_TITLE;
 
@@ -53,8 +53,8 @@ export async function initShot(deckUrl) {
   }
 
   await io.loadDeck(deckUrl, { silent: true });
-  // 容器 = deck 自身尺寸（size 缺省时回退 960×540），支持任意画布比例（如 3:4 海报）
-  const [deckW, deckH] = state.deck.size || [PAGE_WIDTH, PAGE_HEIGHT];
+  // 容器 = deck 自身尺寸（size 缺省/非法时回退 960×540），支持任意画布比例（如 3:4 海报）
+  const [deckW, deckH] = deckSize(state.deck);
   root.style.width = `${deckW}px`;
   root.style.height = `${deckH}px`;
   window.__pptdShot = { count: state.deck.pages.length, goto, width: deckW, height: deckH };

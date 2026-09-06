@@ -6,6 +6,7 @@
 // ============================================================================
 
 import { renderPage, disposeChartInstances } from "../../../packages/renderer/page.js";
+import { deckSize } from "../../../packages/model/model.js";
 import { dom } from "../../dom.js";
 
 // 兜底卡框：仅元素不可测（如隐藏态渲染）时使用；实际尺寸由 CSS 断点决定、渲染时实测
@@ -68,7 +69,7 @@ export function createThumbnails({ state, api, reload }) {
       mini.className = "thumb-canvas";
       // 按画布实际比例 contain 进卡框实测内容盒（16:9 恰好铺满；竖版海报左右居中、上下留边）。
       // 不能用常量：窄屏卡框 88×50，若按桌面 140×79 定位 mini 会下坠溢出、底部三分之一被裁
-      const [pw, ph] = Array.isArray(state.deck.size) && state.deck.size.length === 2 ? state.deck.size : [960, 540];
+      const [pw, ph] = deckSize(state.deck);
       const bw = thumb.clientWidth || THUMB_W;
       const bh = thumb.clientHeight || THUMB_H;
       const s = Math.min(bw / pw, bh / ph);

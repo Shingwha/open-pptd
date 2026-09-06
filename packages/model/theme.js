@@ -148,6 +148,14 @@ export function mergeFonts(theme, fonts) {
 }
 
 /**
+ * deck → 渲染用主题（normalizeTheme + deck.fonts 合成的组合入口）：
+ * 编辑器加载/撤销快照、画廊加载共用的唯一表达式。
+ */
+export function resolveTheme(deck) {
+  return mergeFonts(normalizeTheme(deck?.theme), deck?.fonts);
+}
+
+/**
  * 解析文字样式：接受 "$key" 引用、TextStyleConfig 对象或 null。
  * 返回"已解析为具体值"的样式对象（color 保留主题引用，渲染器/writer 各自解析）。
  */

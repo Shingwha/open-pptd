@@ -25,3 +25,11 @@ button, select, a.btn, .thumb, .add-thumb, .icon-cell, .theme-card {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ----------------------------------------------------------------------------
+   骨架屏扫光动画（画廊封面 / 编辑器画布遮罩 / 缩略图骨架共用；
+   定义在 base.css —— 画廊页与编辑器页都加载的公共样式内）
+   ---------------------------------------------------------------------------- */
+@keyframes pptd-shimmer {
+  to { background-position: -200% 0; }
+}

@@ -60,3 +60,22 @@ export function renderPage(container, page, deck, theme, opts = {}) {
 }
 
 export { disposeChartInstances } from "./chart.js";
+
+/**
+ * 文本框内容自适应高度：内容超出框高时按 scrollHeight 增高。
+ * writeBack=true 写回模型（放映：与导出高度一致）；false 仅调显示（导出图片：
+ * 不改编辑现场）。同一实现保证放映/导出/预览量高一致。
+ */
+export function autoGrowTexts(page, container, { writeBack = false } = {}) {
+  for (const el of page.elements || []) {
+    if (el.elementType !== "text") continue;
+    const node = container.querySelector(`[data-element-id="${CSS.escape(el.elementId)}"]`);
+    const inner = node?.firstElementChild;
+    if (!inner) continue;
+    const need = inner.scrollHeight;
+    if (need > el.bounds[3] + 1) {
+      if (writeBack) el.bounds[3] = need;
+      node.style.height = `${need}px`;
+    }
+  }
+}

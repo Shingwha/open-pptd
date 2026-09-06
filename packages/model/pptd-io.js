@@ -7,7 +7,7 @@
 // ============================================================================
 
 import * as yaml from "./vendor/js-yaml.mjs";
-import { createDeck, createPage, PAGE_WIDTH, PAGE_HEIGHT } from "./model.js";
+import { createDeck, createPage, deckSize } from "./model.js";
 import { normalizeCells } from "./table.js";
 
 /**
@@ -27,7 +27,7 @@ export function parseDeck(manifestYaml, pageFiles = new Map(), options = {}) {
 
   const deck = createDeck({
     title: manifest.title,
-    size: Array.isArray(manifest.size) && manifest.size.length === 2 ? manifest.size : [PAGE_WIDTH, PAGE_HEIGHT],
+    size: deckSize(manifest),
     theme: manifest.theme || null,
     fonts: manifest.fonts || null,
   });

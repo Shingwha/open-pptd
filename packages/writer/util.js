@@ -2,7 +2,7 @@
 // util.js — 图片尺寸解析 / dataURL 解码（零依赖）
 // ============================================================================
 
-import { base64ToBytes, encodeUtf8 } from "../model/bytes.js";
+import { base64ToBytes, bytesToBase64, encodeUtf8 } from "../model/bytes.js";
 
 /** 解析 PNG/JPEG/GIF 图片字节的像素尺寸 [w, h]。失败返回 null。 */
 export function imageSize(bytes) {
@@ -83,4 +83,14 @@ function mimeToExt(mime) {
 export function extToMime(ext) {
   const e = String(ext || "").toLowerCase().replace(/^\./, "");
   return { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif" }[e] || null;
+}
+
+/** 字节 + MIME → data URL（decodeDataUrl 的逆；编辑器图片预读/句柄读取共用）。 */
+export function dataUrlOf(buf, mime) {
+  return `data:${mime};base64,${bytesToBase64(new Uint8Array(buf))}`;
+}
+
+/** 文件名非法字符替换为下划线（Windows 保留字符 + 引号/尖括号；导出命名共用）。 */
+export function safeFileName(name) {
+  return String(name ?? "").replace(/[\\/:*?"<>|]/g, "_");
 }

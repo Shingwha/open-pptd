@@ -19,10 +19,28 @@
 import { parseFontInfo } from "../../../packages/model/font.js";
 import { parseFontResources } from "../../../packages/model/font.js";
 import { loadFontRegistry, findFont, fontFileUrl, fetchFontBytes } from "../../../packages/model/font-registry.js";
+import { safeFileName } from "../../../packages/writer/util.js";
 import { showToast } from "../toast.js";
 
 /** 系统字体池（design.md §4 系统字体；元素 fontFamily 下拉兜底选项）。 */
 export const SYSTEM_FONTS = ["Microsoft YaHei", "KaiTi", "SimSun", "SimHei", "FangSong", "YouYuan"];
+
+/**
+ * 注册表字体 → 拉字节 + FontFace 注册（无状态，画廊/编辑器共用）：
+ * 本地库文件优先、线上源回退。返回 { hit, bytes }；未命中注册表或字节不可用
+ * 返回 null（调用方自行降级到系统字体）。
+ */
+export async function registerRegistryFontFace(keyOrFamily) {
+  const registry = await loadFontRegistry();
+  const hit = findFont(registry, keyOrFamily);
+  if (!hit) return null;
+  const bytes = await fetchFontBytes(hit);
+  if (!bytes) return null;
+  const face = new FontFace(hit.family, bytes);
+  await face.load();
+  document.fonts.add(face);
+  return { hit, bytes };
+}
 
 export function createFontManager(state) {
   /** FontFace 注册：family 必须与渲染器 CSS font-family 完全一致（parseFontInfo 取 name 表）。 */
@@ -126,7 +144,7 @@ export function createFontManager(state) {
       if (!f.embed) continue;
       const entry = { family, subset: !!f.subset };
       if (f.source === "url" && f.url) entry.url = f.url;
-      else if (f.source === "local") entry.file = f.file || `fonts/${family.replace(/[\\/:*?"<>|]/g, "_")}.ttf`;
+      else if (f.source === "local") entry.file = f.file || `fonts/${safeFileName(family)}.ttf`;
       fonts[family] = entry;
     }
   }
@@ -154,10 +172,11 @@ export function createFontManager(state) {
         } catch {
           showToast(`网络字体加载失败: ${family}`, "danger");
         }
-      } else if (registry && findFont(registry, family)) {
+      } else if (registry) {
         // 注册表引用（{family: <注册名>}）：从内置字体库自动加载预览（本地缺失时线上回退）
+        const hit = findFont(registry, family);
+        if (!hit) continue; // 非注册表引用（file 字体）：待用户重新选择本地文件
         try {
-          const hit = findFont(registry, family);
           const bytes = await fetchFontBytes(hit);
           if (!bytes) throw new Error("字体字节不可用");
           await registerFace(family, bytes);

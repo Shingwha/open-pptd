@@ -28,10 +28,10 @@ import { ZipWriter } from "./zip.js";
 import { buildChartStyleXml, buildChartColorStyleXml } from "./chartex-style.js";
 
 /** 原生可导出的类型（经典 c:chartSpace 体系）。 */
-export const EXPORTABLE_CHART_TYPES = ["bar", "line", "area", "scatter", "bubble", "candlestick", "pie", "radar"];
+const EXPORTABLE_CHART_TYPES = ["bar", "line", "area", "scatter", "bubble", "candlestick", "pie", "radar"];
 
 /** chartEx 扩展体系类型（PowerPoint 2016+ 新图表，cx: 命名空间）。 */
-export const CHARTEX_TYPES = ["waterfall", "treemap", "sunburst"];
+const CHARTEX_TYPES = ["waterfall", "treemap", "sunburst"];
 
 /** 1×1 透明 PNG（chartEx mc:Fallback 占位预览图）。 */
 const TINY_PNG = (() => {
@@ -63,7 +63,7 @@ function colLetter(n) {
  *   A 列 = 分类列；candlestick 列组连续；其余系列引用列按系列顺序；未引用列尾随。
  * @returns {number[]} 新列序（原列索引数组）
  */
-export function buildSheetOrder(el, series, horizontal = false) {
+function buildSheetOrder(el, series, horizontal = false) {
   const cols = el.data?.cols || [];
   const order = [];
   const push = (ci) => { if (ci >= 0 && !order.includes(ci)) order.push(ci); };
@@ -85,7 +85,7 @@ export function buildSheetOrder(el, series, horizontal = false) {
   return order;
 }
 
-export function buildChartXlsx(chartEl, fonts, sheetOrder) {
+function buildChartXlsx(chartEl, fonts, sheetOrder) {
   const f = fonts?.latin || DEFAULT_FONT;
   const table = chartDataTable(chartEl); // [表头行, 数据行...]
   // 列重排（candlestick 等）

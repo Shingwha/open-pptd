@@ -50,11 +50,6 @@ export async function loadIconRegistry(options = {}) {
   return cachedRegistry;
 }
 
-/** 置空单例（测试用）。 */
-export function resetIconRegistryCache() {
-  cachedRegistry = null;
-}
-
 // ---------------------------------------------------------------------------
 // 名字解析（含别名归一化；索引按 registry 实例缓存）
 // ---------------------------------------------------------------------------

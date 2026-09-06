@@ -16,6 +16,7 @@
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import * as yaml from "../model/vendor/js-yaml.mjs";
+import { PAGE_WIDTH, PAGE_HEIGHT, deckSize } from "../model/model.js";
 
 const GALLERY_VERSION = 2;
 
@@ -43,7 +44,7 @@ export function scanExamples(examplesDir) {
     if (!existsSync(deckPath)) continue; // 无 manifest 的目录不算画廊项目
 
     const deckObj = loadYaml(readFileSync(deckPath, "utf8"));
-    const size = Array.isArray(deckObj?.size) && deckObj.size.length === 2 ? deckObj.size : [960, 540];
+    const size = deckSize(deckObj);
     const entry = {
       id: id.name,
       title: (typeof deckObj?.title === "string" && deckObj.title) || id.name,
@@ -51,7 +52,7 @@ export function scanExamples(examplesDir) {
       tags: [],
       pages: 0,
       fonts: deckObj?.fonts && typeof deckObj.fonts === "object" ? Object.keys(deckObj.fonts) : [],
-      size: [Number(size[0]) || 960, Number(size[1]) || 540],
+      size: [Number(size[0]) || PAGE_WIDTH, Number(size[1]) || PAGE_HEIGHT],
       kind: "ppt",
       deck: `examples/${id.name}/deck.pptd`,
     };

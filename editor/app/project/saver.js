@@ -11,7 +11,9 @@
 
 import { serializeDeck } from "../../../packages/model/pptd-io.js";
 import { base64ToBytes } from "../../../packages/model/bytes.js";
-import { buildPptx, downloadPptx } from "../../../packages/writer/pptx.js";
+import { deckSize } from "../../../packages/model/model.js";
+import { buildPptx, downloadPptx, downloadBlob } from "../../../packages/writer/pptx.js";
+import { safeFileName } from "../../../packages/writer/util.js";
 import { ZipWriter } from "../../../packages/writer/zip.js";
 import { showToast } from "../toast.js";
 import { showDialog } from "../../interaction/dialogs/base.js";
@@ -75,7 +77,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
           embedFonts,
           onFontSkipped: (list) => skipped.push(...list),
         });
-        const name = (state.deck.title || "deck").replace(/[\\/:*?"<>|]/g, "_") + ".pptx";
+        const name = safeFileName(state.deck.title || "deck") + ".pptx";
         downloadPptx(bytes, name);
         showToast(`已导出 ${name}（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
         if (skipped.length) {
@@ -110,8 +112,8 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
       for (const f of files) zip.add(f.path, f.content);
       for (const m of mediaFiles) zip.add(m.path, base64ToBytes(m.b64));
       const bytes = zip.build();
-      const name = (state.deck.title || "deck").replace(/[\\/:*?"<>|]/g, "_") + "-project.zip";
-      downloadPptx(bytes, name);
+      const name = safeFileName(state.deck.title || "deck") + "-project.zip";
+      downloadBlob(bytes, name, "application/zip");
       showToast(`项目包已导出 ${name}（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
     } catch (err) {
       showToast(`导出项目包失败: ${err.message}`, "danger");
@@ -175,7 +177,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
         zip.add(f.path, f.b64 ? base64ToBytes(f.b64) : f.content);
       }
       const bytes = zip.build();
-      downloadPptx(bytes, "project.zip");
+      downloadBlob(bytes, "project.zip", "application/zip");
       markSaved();
       renderStatusBar();
       showToast(`项目已打包下载（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
@@ -190,7 +192,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
 
   /** 导出图片对话框：任意勾选页面（多选）+ 倍率（1x/2x/3x，默认 2x，按画布尺寸显示输出像素）。 */
   function openImageExportDialog() {
-    const [dw, dh] = Array.isArray(state.deck?.size) && state.deck.size.length === 2 ? state.deck.size : [960, 540];
+    const [dw, dh] = deckSize(state.deck);
     const wrap = document.createElement("div");
     wrap.className = "export-img-opts";
 

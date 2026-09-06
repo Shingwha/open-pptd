@@ -10,6 +10,8 @@
 // ============================================================================
 
 import * as yaml from "../../../packages/model/vendor/js-yaml.mjs";
+import { base64ToBytes } from "../../../packages/model/bytes.js";
+import { dataUrlOf } from "../../../packages/writer/util.js";
 
 /** 调起系统文件夹选择框（需用户手势）。取消返回 null。 */
 export async function pickProjectFolder() {
@@ -77,24 +79,10 @@ export async function readImageAsDataUrl(dirHandle, src, mime) {
   try {
     const fh = await fileHandleAt(dirHandle, src);
     const buf = await (await fh.getFile()).arrayBuffer();
-    let bin = "";
-    const bytes = new Uint8Array(buf);
-    const chunk = 0x8000;
-    for (let i = 0; i < bytes.length; i += chunk) {
-      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
-    }
-    return `data:${mime};base64,${btoa(bin)}`;
+    return dataUrlOf(buf, mime);
   } catch {
     return null; // 渲染层有占位提示
   }
-}
-
-/** base64 → Uint8Array（媒体文件落盘用）。 */
-function b64ToBytes(b64) {
-  const bin = atob(b64);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return bytes;
 }
 
 /** 批量写文件（{path, content|b64}，自动建子目录）→ 写入数。 */
@@ -103,7 +91,7 @@ export async function writeFiles(dirHandle, files) {
   for (const f of files) {
     const fh = await fileHandleAt(dirHandle, f.path, { create: true });
     const writable = await fh.createWritable();
-    await writable.write(f.b64 ? b64ToBytes(f.b64) : String(f.content ?? ""));
+    await writable.write(f.b64 ? base64ToBytes(f.b64) : String(f.content ?? ""));
     await writable.close();
     count += 1;
   }

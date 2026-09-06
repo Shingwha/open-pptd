@@ -1,7 +1,8 @@
 # PPTX 注入器设计（open-pptd inject）
 
-> 状态：设计定稿 ｜ 日期：2026-08 ｜ 范围：**仅元素级注入（语义 A）**
-> 前置阅读：`references/pptd.md`（元素模型）、`editor/writer/*`（elementToXml 复用点）、`docs/pptx-import-design.md`（独立能力，本文不依赖它）
+> 状态：设计定稿（**未实现**，历史存档） ｜ 日期：2026-08 ｜ 范围：**仅元素级注入（语义 A）**
+> 文中 `editor/writer/*`、`lib/*` 等路径为 v3 重构前的旧布局（现并入 `packages/writer/`），仅作设计参考。
+> 前置阅读：`references/pptd.md`（元素模型）
 
 ---
 

@@ -10,12 +10,12 @@ import { join, dirname, extname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as yaml from "../model/vendor/js-yaml.mjs";
 import { parseDeck } from "../model/pptd-io.js";
-import { walkElements } from "../model/walk.js";
+import { collectImageSrcs } from "../model/walk.js";
 import { validateDeck } from "../model/validate.js";
 import { THEME_PALETTES, mergePaletteColors } from "../model/theme.js";
 import { buildPptx, magicMatches } from "../writer/pptx.js";
 import { skipReasonText } from "../writer/font.js";
-import { decodeDataUrl, imageSize } from "../writer/util.js";
+import { decodeDataUrl, imageSize, safeFileName } from "../writer/util.js";
 import { ZipWriter } from "../writer/zip.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -89,29 +89,25 @@ export async function exportProject({ manifest, outPath = null }) {
   }
 
   // 3. 图片（页面 image 元素引用的相对路径文件；dataURL 内嵌无需处理，远程 URL 跳过）
-  const seen = new Set();
+  // 页面逐个解析（失败仍打包原文件，仅跳过图片扫描），图片收集统一走 walk.js
+  const pageObjs = [];
   for (const rel of pageRels) {
-    let pageObj = null;
     try {
-      pageObj = yaml.load(pageFiles.get(rel));
+      pageObjs.push(yaml.load(pageFiles.get(rel)));
     } catch {
       continue; // 页面解析失败仍打包原文件，仅跳过图片扫描
     }
-    walkElements([pageObj], (el) => {
-      const src = el?.src;
-      if (el?.elementType !== "image" || typeof src !== "string") return;
-      if (src.startsWith("data:") || /^https?:/.test(src) || seen.has(src)) return;
-      seen.add(src);
-      try {
-        zip.add(src, readFileSync(join(deckDir, src)));
-      } catch (err) {
-        console.warn(`[export-project] 图片缺失，已跳过: ${src}`);
-      }
-    });
+  }
+  for (const src of collectImageSrcs(pageObjs)) {
+    try {
+      zip.add(src, readFileSync(join(deckDir, src)));
+    } catch {
+      console.warn(`[export-project] 图片缺失，已跳过: ${src}`);
+    }
   }
 
   const bytes = zip.build();
-  const finalPath = outPath || join(deckDir, (manifestObj?.title || "deck").replace(/[\\/:*?"<>|]/g, "_") + "-project.zip");
+  const finalPath = outPath || join(deckDir, safeFileName(manifestObj?.title || "deck") + "-project.zip");
   writeFileSync(finalPath, bytes);
   return { bytes, outPath: finalPath };
 }
@@ -169,7 +165,7 @@ export async function exportDeck({ manifest, outPath = null, embedFonts = true, 
     console.warn(`⚠ ${skippedIcons.length} 个图标未导出（名字未命中免费库或 SVG 获取失败）:`);
     for (const s of skippedIcons) console.warn(`   - ${s.iconName}（${s.reason === "unknown-name" ? "未命中 FA 免费库" : "SVG 获取失败"}）`);
   }
-  const finalPath = outPath || join(deckDir, (deck.title || "deck").replace(/[\\/:*?"<>|]/g, "_") + ".pptx");
+  const finalPath = outPath || join(deckDir, safeFileName(deck.title || "deck") + ".pptx");
   writeFileSync(finalPath, bytes);
   return { bytes, outPath: finalPath };
 }

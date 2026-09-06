@@ -77,10 +77,11 @@ export function createIo({ state, view }) {
   }
 
   /**
-   * 新建空白演示（应用菜单「＋ 新建空白」）：dirty 确认后重置为空白项目，
-   * 断开实时通道、清会话恢复标记（刷新页面回到空白而不是旧项目）。
+   * 新建空白演示（应用菜单「＋ 新建空白」与编辑器空白启动共用）：
+   * dirty 确认后重置为空白项目，断开实时通道、清会话恢复标记（刷新页面回到
+   * 空白而不是旧项目）。toast:false 供编辑器首次空白启动复用（不弹提示）。
    */
-  function newProject() {
+  function newProject({ toast = true } = {}) {
     if (state.dirty && !window.confirm("编辑器有未保存的修改，新建将放弃这些修改。确定继续？")) return false;
     state.deck = createDeck({ title: "未命名演示文稿" });
     state.deck.pages.push(createPage({ pageType: "content" }));
@@ -100,7 +101,7 @@ export function createIo({ state, view }) {
     history.replaceState(null, "", location.pathname);
     view.render();
     live.connectLiveReload(); // 空白项目：断开旧实时通道（内部按无项目处理）
-    showToast("已新建空白演示", "info");
+    if (toast) showToast("已新建空白演示", "info");
     return true;
   }
 

@@ -63,7 +63,6 @@ export function borderSides(spec) {
 
 // ---- 水平对齐（align[0]，references/pptd.md §TextContent）----
 const H_ALIGN_CSS = { left: "left", center: "center", right: "right", justify: "justify", distributed: "justify" };
-const H_ALIGN_OOXML = { left: "l", center: "ctr", right: "r", justify: "just", distributed: "dist" };
 
 /** 水平对齐 → CSS text-align 值；未知 → null。distributed 无原生 CSS 等价，
  *  映射为 justify，消费端需自行追加 text-align-last:justify（见 cssTextAlignLast）。 */
@@ -74,11 +73,6 @@ export function cssTextAlign(align) {
 /** distributed 对齐需要同时声明 text-align-last:justify（否则末行不拉伸）。 */
 export function cssTextAlignLast(align) {
   return align === "distributed" ? "justify" : null;
-}
-
-/** 水平对齐 → OOXML algn 属性值；未知 → null。 */
-export function ooxmlAlign(align) {
-  return H_ALIGN_OOXML[align] || null;
 }
 
 // ---- 阴影（ShadowSpec：{ color?, blur?, offset?: [x, y] }，offset 向下为正）----

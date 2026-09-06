@@ -24,8 +24,6 @@ import { createStageController } from "./interaction/stage.js";
 import { SHOT_ERROR_TITLE } from "../packages/model/model.js";
 import { makeZoomCtlDraggable } from "./app/view/zoom-ctl.js";
 import { bindProperties } from "./interaction/properties.js";
-import { createDeck, createPage } from "../packages/model/model.js";
-import { normalizeTheme } from "../packages/model/theme.js";
 import { ensurePermission } from "./app/project/handle-io.js";
 import { getRecent, getPendingProjectId, clearPendingProject, addRecent, setPendingProject } from "./app/project/handle-store.js";
 import { injectIcons } from "./icons.js";
@@ -129,14 +127,8 @@ function initEditor(deckUrl, { blankToast = true } = {}) {
       dom.canvasLoading.hidden = true; // 撤掉启动遮罩，露出错误态
     });
   } else {
-    // 空白编辑器：新建空白项目（一页空白 content），用户从零开始
-    state.deck = createDeck({ title: "未命名演示文稿" });
-    state.deck.pages.push(createPage({ pageType: "content" }));
-    state.theme = normalizeTheme(null);
-    io.setBrandFile(""); // 顶栏显示「未命名」
-    ops.markSaved(); // 空白项目基线（无未保存修改，撤销/重做等值比较的起点）
-    view.render();
-    if (blankToast) showToast("已新建空白演示", "info");
+    // 空白编辑器：与「文件 → 新建空白」同一路径（一页空白 content，用户从零开始）
+    io.newProject({ toast: Boolean(blankToast) });
   }
 }
 

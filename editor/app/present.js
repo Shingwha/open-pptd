@@ -13,8 +13,8 @@
 // 实时刷新（SSE）触发编辑器重渲染时，当前放映页自动同步（present.sync）。
 // ============================================================================
 
-import { PAGE_WIDTH, PAGE_HEIGHT } from "../../packages/model/model.js";
-import { renderPage, disposeChartInstances } from "../../packages/renderer/page.js";
+import { deckSize } from "../../packages/model/model.js";
+import { renderPage, disposeChartInstances, autoGrowTexts } from "../../packages/renderer/page.js";
 import { ICON_FULLSCREEN } from "../icons.js";
 
 const FADE_MS = 260; // 与导出 PPTX 的 <p:fade/> 过渡节奏一致
@@ -38,9 +38,6 @@ export function createPresent({ state, view }) {
 
   const count = () => state.deck?.pages?.length || 0;
   const clamp = (i) => Math.max(0, Math.min(count() - 1, i));
-  // 画布尺寸（deck.size 缺省 960×540）：图层尺寸与适配缩放均按实际比例
-  const deckSize = () =>
-    Array.isArray(state.deck?.size) && state.deck.size.length === 2 ? state.deck.size : [PAGE_WIDTH, PAGE_HEIGHT];
 
   function isActive() {
     return active;
@@ -73,7 +70,7 @@ export function createPresent({ state, view }) {
     stage = root.querySelector(".present-stage");
     layers = [...root.querySelectorAll(".present-slide")];
     // 图层尺寸跟随 deck 实际画布（内联覆盖 present.css 的 960×540 兜底）
-    const [pw, ph] = deckSize();
+    const [pw, ph] = deckSize(state.deck);
     stage.style.width = `${pw}px`;
     stage.style.height = `${ph}px`;
     for (const layer of layers) {
@@ -91,25 +88,7 @@ export function createPresent({ state, view }) {
     layer.innerHTML = "";
     const pg = state.deck.pages[i];
     renderPage(layer, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
-    autoGrowTexts(pg, layer);
-  }
-
-  /**
-   * 文本框内容自适应高度（与 view.js 预览同一规则）：
-   * 内容超出框高时增高并写回模型，放映与预览/导出高度一致。
-   */
-  function autoGrowTexts(page, container) {
-    for (const el of page.elements || []) {
-      if (el.elementType !== "text") continue;
-      const node = container.querySelector(`[data-element-id="${CSS.escape(el.elementId)}"]`);
-      const inner = node?.firstElementChild;
-      if (!inner) continue;
-      const need = inner.scrollHeight;
-      if (need > el.bounds[3] + 1) {
-        el.bounds[3] = need;
-        node.style.height = `${need}px`;
-      }
-    }
+    autoGrowTexts(pg, layer, { writeBack: true }); // 写回模型：放映与导出高度一致
   }
 
   /** 切页：新页渲染进空闲图层 → 交叉淡化 → 清理旧图层。 */
@@ -147,7 +126,7 @@ export function createPresent({ state, view }) {
     if (!root) return;
     const vw = root.clientWidth;
     const vh = root.clientHeight;
-    const [pw, ph] = deckSize();
+    const [pw, ph] = deckSize(state.deck);
     const s = Math.min(vw / pw, vh / ph);
     stage.style.transform = `scale(${s})`;
   }

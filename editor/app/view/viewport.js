@@ -6,11 +6,11 @@
 // 不影响元素命中与导出。1 = 适配视口。
 // ============================================================================
 
-import { PAGE_WIDTH, PAGE_HEIGHT } from "../../../packages/model/model.js";
+import { deckSize as deckSizeOf } from "../../../packages/model/model.js";
 
 /** deck 画布尺寸（size 缺省回退 960×540）；适配缩放/平移限位均按实际比例计算。 */
 export function deckSize(state) {
-  return Array.isArray(state.deck?.size) && state.deck.size.length === 2 ? state.deck.size : [PAGE_WIDTH, PAGE_HEIGHT];
+  return deckSizeOf(state.deck);
 }
 
 export function createViewport({ stage, canvas, wrap, zoomLabel, controller, repaint, getSize }) {

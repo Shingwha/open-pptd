@@ -6,7 +6,7 @@
 // dataURL 内嵌图片无需预读；保存时落为 media/ 文件并重写 el.src。
 // ============================================================================
 
-import { decodeDataUrl, extToMime } from "../../../packages/writer/util.js";
+import { decodeDataUrl, extToMime, dataUrlOf } from "../../../packages/writer/util.js";
 import { bytesToBase64 } from "../../../packages/model/bytes.js";
 import { walkElements } from "../../../packages/model/walk.js";
 import { readImageAsDataUrl } from "./handle-io.js";
@@ -56,10 +56,6 @@ function collectMediaFiles(pages, imageMap, onRelPath = null) {
 }
 
 export function createImageStore(state) {
-  function dataUrlOf(buf, mime) {
-    return `data:${mime};base64,${bytesToBase64(new Uint8Array(buf))}`; // fetch 返回 ArrayBuffer，需先包装
-  }
-
   /** 把项目内相对路径图片预读为 dataURL 进 imageMap（pages 限定子集：渐进加载按页预读用）。 */
   async function preloadRemoteImages(pages) {
     const list = Array.isArray(pages) ? pages : state.deck?.pages;

@@ -7,8 +7,8 @@
 //       options.root = 项目根目录（Node 下按相对路径读文件）
 // ============================================================================
 
-import { normalizeTheme, mergeFonts } from "../model/theme.js";
-import { PAGE_WIDTH, PAGE_HEIGHT } from "../model/model.js";
+import { resolveTheme } from "../model/theme.js";
+import { deckSize } from "../model/model.js";
 import { walkElements } from "../model/walk.js";
 import { ZipWriter } from "./zip.js";
 import { xmlHeader } from "./xml.js";
@@ -63,8 +63,8 @@ export function magicMatches(bytes, ext) {
  * @returns {Promise<Uint8Array>}
  */
 export async function buildPptx(deck, options = {}) {
-  const theme = mergeFonts(normalizeTheme(deck.theme), deck.fonts);
-  const size = Array.isArray(deck.size) && deck.size.length === 2 ? deck.size : [PAGE_WIDTH, PAGE_HEIGHT];
+  const theme = resolveTheme(deck);
+  const size = deckSize(deck);
   const pages = Array.isArray(deck.pages) ? deck.pages : [];
   const slideCount = pages.length;
   if (slideCount === 0) throw new Error("deck 没有页面，无法导出");
@@ -174,17 +174,22 @@ export async function buildPptx(deck, options = {}) {
   return zip.build();
 }
 
-/** 浏览器下载助手。 */
-export function downloadPptx(bytes, filename) {
-  const blob = new Blob([bytes], {
-    type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  });
+/** 浏览器下载助手（pptx / zip / png 等任意字节）。 */
+export function downloadBlob(bytes, filename, mime = "application/octet-stream") {
+  const blob = new Blob([bytes], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = filename || "deck.pptx";
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+const PPTX_MIME = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+
+/** 下载 .pptx。 */
+export function downloadPptx(bytes, filename) {
+  downloadBlob(bytes, filename || "deck.pptx", PPTX_MIME);
 }

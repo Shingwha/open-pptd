@@ -139,14 +139,11 @@
   position: absolute;
   inset: 0;
 }
-/* 加载占位 shimmer：功能性扫光动画，颜色取自令牌灰阶 */
+/* 加载占位 shimmer：功能性扫光动画，颜色取自令牌灰阶（keyframes 在 base.css 公共定义） */
 .gallery-card-cover.loading {
   background:
     linear-gradient(100deg, var(--bg) 40%, var(--panel) 50%, var(--bg) 60%) 0 0 / 200% 100%;
-  animation: gallery-shimmer 1.2s infinite linear;
-}
-@keyframes gallery-shimmer {
-  to { background-position: -200% 0; }
+  animation: pptd-shimmer 1.2s infinite linear;
 }
 
 .gallery-page {
