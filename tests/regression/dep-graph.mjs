@@ -25,6 +25,12 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 // ---- 既存有意豁免（逐一登记，新增豁免须附理由）----
 const ALLOWLIST = [
   {
+    file: "packages/writer/chart/image.js",
+    pattern: /renderer\/vendor\/echarts\.mjs/,
+    kind: "import",
+    reason: "heatmap/sankey 图片化导出复用仓库内 vendor ECharts 做 SSR（零新增依赖的唯一受控出口；vendor 构建为无 DOM 依赖的纯 ESM，dep-graph 的 vendor 环境豁免同样覆盖其内部）",
+  },
+  {
     file: "packages/writer/pptx.js",
     pattern: /\bdocument\./,
     reason: "downloadPptx 浏览器下载助手（仅浏览器端调用，Node 导出链路不触达）",
@@ -142,7 +148,7 @@ for (const abs of files) {
       const targetPkg = pkgOf(targetRel);
       if (pkg === "model" && targetPkg && targetPkg !== "model") {
         violations.push(`${r}:${line}  model 不得 import 兄弟包 packages/${targetPkg}（${source}）`);
-      } else if ((pkg === "writer" || pkg === "renderer") && targetPkg && targetPkg !== pkg && targetPkg !== "model") {
+      } else if ((pkg === "writer" || pkg === "renderer") && targetPkg && targetPkg !== pkg && targetPkg !== "model" && !allowlisted(r, lineText, line, source)) {
         violations.push(`${r}:${line}  packages/${pkg} 只允许 import ../model（实际指向 packages/${targetPkg}：${source}）`);
       } else if (!pkg && r.startsWith("editor/") && (targetRel.startsWith("packages/server/") || targetRel.startsWith("packages/cli/") || targetRel === "packages/server" || targetRel === "packages/cli")) {
         violations.push(`${r}:${line}  editor 不得 import packages/server、packages/cli（${source}）`);

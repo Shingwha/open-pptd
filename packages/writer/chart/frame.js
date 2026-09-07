@@ -5,9 +5,35 @@
 import { el, escAttr } from "../xml.js";
 import { CHARTEX_TYPES, TINY_PNG } from "./types.js";
 
-/** 图表元素 → slide 内 graphicFrame（引用 chart part，媒体/部件由 pptx.js 汇总）。 */
-export function chartXml(theme, chartEl, ctx, chartId) {
+/** 图表元素 → slide 内 graphicFrame（引用 chart part，媒体/部件由 pptx.js 汇总）。
+ * heatmap/sankey 图片化（ctx.chartImageRefs 有记录）→ p:pic（PNG 占位 + svgBlip 矢量，
+ * PowerPoint 2016+/WPS 新版/LibreOffice 显示矢量，旧版显示占位图）。 */
+export function chartXml(theme, chartEl, ctx, chartId, imgRef = null) {
   const [x, y, w, h] = chartEl.bounds;
+  if (imgRef) {
+    const frameId = ctx.nextId();
+    const name = escAttr(chartEl.elementId);
+    const xfrm =
+      el("a:xfrm", {}, [
+        el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) }),
+        el("a:ext", { cx: Math.round(w * 12700), cy: Math.round(h * 12700) }),
+      ].join(""));
+    return el("p:pic", {}, [
+      el("p:nvPicPr", {}, [
+        el("p:cNvPr", { id: frameId, name }),
+        el("p:cNvPicPr", {}, el("a:picLocks", { noChangeAspect: "1" })),
+        el("p:nvPr"),
+      ]),
+      el("p:blipFill", {}, [
+        el("a:blip", { "r:embed": imgRef.pngId }, el("a:extLst", {}, el("a:ext", { uri: "{96DAC541-7B7A-43D3-8B79-37D633B846F1}" }, el("asvg:svgBlip", {
+          "r:embed": imgRef.svgId,
+          "xmlns:asvg": "http://schemas.microsoft.com/office/drawing/2016/SVG/main",
+        })))),
+        el("a:stretch", {}, el("a:fillRect")),
+      ].join("")),
+      el("p:spPr", {}, xfrm + el("a:prstGeom", { prst: "rect" }, el("a:avLst"))),
+    ].join(""));
+  }
   const isChartEx = CHARTEX_TYPES.includes(chartEl.series?.[0]?.type);
   const rId = ctx.chartRef ? ctx.chartRef(chartId, isChartEx ? "chartEx" : "chart") : "rIdChart1";
   const uri = isChartEx
@@ -19,8 +45,10 @@ export function chartXml(theme, chartEl, ctx, chartId) {
   const frameId = ctx.nextId();
   const name = escAttr(chartEl.elementId);
   const xfrm =
-    el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) }) +
-    el("a:ext", { cx: Math.round(w * 12700), cy: Math.round(h * 12700) });
+    el("a:xfrm", {}, [
+      el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) }),
+      el("a:ext", { cx: Math.round(w * 12700), cy: Math.round(h * 12700) }),
+    ].join(""));
   const graphicFrame = el("p:graphicFrame", {}, [
     el("p:nvGraphicFramePr", {}, [
       el("p:cNvPr", { id: frameId, name }),

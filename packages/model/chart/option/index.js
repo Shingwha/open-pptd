@@ -33,7 +33,7 @@ export function buildChartOption(theme, el) {
     base.title = {
       text: titleText,
       left: "center", top: 0,
-      textStyle: { color: titleColor, fontSize: titleSize, fontFamily: `"${fonts.latin}","${fonts.ea}",sans-serif` },
+      textStyle: { color: titleColor, fontSize: titleSize, fontFamily: `${fonts.latin},${fonts.ea},sans-serif` },
     };
   }
 

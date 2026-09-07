@@ -30,6 +30,9 @@ registerType({
       console.warn(`[writer] 图表 ${el.elementId} 缺少图表部件上下文，已跳过`);
       return "";
     }
+    // heatmap/sankey 图片化先行（不消耗图表编号，见 slide.js collectChartImage）
+    const imgRef = ctx.collectChartImage ? ctx.collectChartImage(theme, el) : null;
+    if (imgRef) return chartXml(theme, el, ctx, null, imgRef);
     const chartId = ctx.registerChart();
     const ok = ctx.collectChart(theme, el, chartId);
     if (!ok) return ""; // 类型暂不支持原生导出（预览正常，导出跳过该元素）

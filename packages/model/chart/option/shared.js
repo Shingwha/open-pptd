@@ -76,11 +76,14 @@ export function markerSymbol(theme, marker, color) {
   };
 }
 
-/** 图表顶层公共 option（字体/tooltip 触发/无动画）。 */
+/** 图表顶层公共 option（字体/tooltip 触发/无动画）。
+ * 字体族名不加内层引号：SSR 序列化（writer/chart/image.js）会把该串原样插进
+ * style="..." 属性，内层双引号无法转义会产出非法 XML（PowerPoint 拒渲染）；
+ * CSS 未引号族名（含空格）同样合法，canvas/svg 两端解析一致。 */
 export function baseOption(theme, el) {
   const fonts = resolveFont(theme, el.fontFamily || null);
   return {
-    textStyle: { fontFamily: `"${fonts.latin}","${fonts.ea}",sans-serif` },
+    textStyle: { fontFamily: `${fonts.latin},${fonts.ea},sans-serif` },
     tooltip: { trigger: "axis" },
     animation: false,
   };
