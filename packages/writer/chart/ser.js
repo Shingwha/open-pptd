@@ -149,15 +149,18 @@ export function bubbleSerXml(theme, s, sheetRange, idx, labels) {
  * 股价图系列（对照用户 PowerPoint 手工文件 chart45/46：**1 个 candlestick 系列
  * 展开为 3/4 个 c:ser**——HLC（无 open）或 OHLC 每列一个 ser，cat 共享）：
  *   ser: idx/order + tx(列头) + spPr(ln noFill) + marker(symbol none) + cat + val + smooth 0
+ * colHeaders：图例显示名用各通道列头（开盘/最高/最低/收盘），若用系列名会
+ * K线×N 污染图例（07/21 页实测，原生股价图即按列头显示）。
  */
-export function candlestickSerXml(theme, s, sheetRange, serIdx, labels) {
+export function candlestickSerXml(theme, s, sheetRange, serIdx, labels, colHeaders = []) {
   const chs = s._cols.open != null ? ["open", "high", "low", "close"] : ["high", "low", "close"];
   return chs.map((ch, i) => {
     const idx = serIdx + i;
+    const displayName = colHeaders[s._cols[ch]] || s.name;
     const kids = [
       el("c:idx", { val: idx }),
       el("c:order", { val: idx }),
-      seriesNameXml(s.name, sheetRange.colHeader(s._cols[ch])),
+      seriesNameXml(displayName, sheetRange.colHeader(s._cols[ch])),
       el("c:spPr", {}, el("a:ln", { w: "38100", cap: "rnd" }, el("a:noFill"), el("a:round"))),
       el("c:marker", {}, el("c:symbol", { val: "none" })),
     ];

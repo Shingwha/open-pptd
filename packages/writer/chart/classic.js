@@ -167,10 +167,11 @@ export function buildChartParts(theme, chartEl, chartIndex) {
       // PowerPoint 原生 = c:stockChart：1 系列展开 3/4 个 c:ser + hiLowLines
       // + upDownBars（仅 OHLC）。overlay 系列（line 均线）走各自 chart 元素共享轴。
       const isOHLC = groupSeries[0]._cols.open != null;
+      const colHeaders = chartEl.data?.cols || [];
       const kids = [];
       for (const s of groupSeries) {
         const n = s._cols.open != null ? 4 : 3;
-        kids.push(candlestickSerXml(theme, s, sheetRange, serCounter, labelsOf(s, "candlestick")));
+        kids.push(candlestickSerXml(theme, s, sheetRange, serCounter, labelsOf(s, "candlestick"), colHeaders));
         serCounter += n;
       }
       const wick = series.find((s) => s.wickStyle)?.wickStyle;
