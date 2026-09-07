@@ -185,6 +185,9 @@ export function buildCartesian(ctx) {
       const down = s.downBars || {};
       return {
         type: "candlestick",
+        // K 线柱宽走 resolveBarLayout 投影（writer 端 stock gapWidth 150 同一缺省，
+        // 两端柱宽收敛——此前 ECharts 默认 ~80% 槽宽 vs PPT 40%）
+        barWidth: `${barLayout.echarts.barWidthPct}%`,
         itemStyle: {
           color: resolveColor(theme, up.fill) || "#FFFFFF",
           color0: resolveColor(theme, down.fill) || "#000000",

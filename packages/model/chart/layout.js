@@ -53,9 +53,18 @@ export function resolvePlotLayout(el, series) {
   }
 
   const polar = primary === "pie" || primary === "radar";
-  const grid = polar
-    ? { ...CHART_GRID, left: 24, top: CHART_GRID.top + (titleText ? 24 : 0) }
-    : { ...CHART_GRID, top: CHART_GRID.top + (titleText ? 24 : 0), bottom: CHART_GRID.bottom + (xTitle ? 18 : 0) };
+  // treemap/sunburst 无轴无图例（默认关），PPT 端铺满标题/图例带以下的全部空间
+  //（I26：此前 ECharts treemap 默认 80% 宽高居中，预览四周留白而 PPT 铺满）
+  const treeLike = primary === "treemap" || primary === "sunburst";
+  const grid = treeLike
+    ? {
+        left: 2, right: 2,
+        top: titleText ? CHART_GRID.top + 24 : 4,
+        bottom: legendOn && legendPos === "bottom" ? 40 : 4,
+      }
+    : polar
+      ? { ...CHART_GRID, left: 24, top: CHART_GRID.top + (titleText ? 24 : 0) }
+      : { ...CHART_GRID, top: CHART_GRID.top + (titleText ? 24 : 0), bottom: CHART_GRID.bottom + (xTitle ? 18 : 0) };
 
   const bw = Math.max(1, W - grid.left - grid.right);
   const bh = Math.max(1, H - grid.top - grid.bottom);

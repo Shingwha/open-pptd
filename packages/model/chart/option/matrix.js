@@ -56,7 +56,7 @@ function buildEchartsTree(theme, el, s) {
 }
 
 export function buildMatrix(ctx) {
-  const { theme, el, series, cats, primary, common } = ctx;
+  const { theme, el, series, cats, primary, common, layout } = ctx;
 
   if (primary === "treemap" || primary === "sunburst") {
     const s = series[0];
@@ -64,6 +64,14 @@ export function buildMatrix(ctx) {
     const labelCfg = resolveDataLabels(el, s, primary);
     const showValue = labelCfg?.content === "value";
     const showName = labelCfg?.content === "category" || labelCfg == null;
+    // treemap 铺满布局模型矩形（I26：ECharts 默认 80% 宽高居中留白，PPT 端铺满）
+    const [, , bw, bh] = el.bounds || [0, 0, 0, 0];
+    const treemapRect = {
+      left: layout.grid.left,
+      top: layout.grid.top,
+      width: Math.max(1, Number(bw) - layout.grid.left - layout.grid.right),
+      height: Math.max(1, Number(bh) - layout.grid.top - layout.grid.bottom),
+    };
     return {
       ...common,
       tooltip: { trigger: "item", formatter: (p) => `${p.name}<br/>${p.value ?? ""}` },
@@ -71,7 +79,7 @@ export function buildMatrix(ctx) {
         type: primary === "treemap" ? "treemap" : "sunburst",
         data: tree,
         ...(primary === "treemap"
-          ? { roam: false, nodeClick: false, breadcrumb: { show: false }, label: { show: showName, formatter: (p) => (showValue ? String(p.value ?? "") : p.name) }, upperLabel: { show: false } }
+          ? { ...treemapRect, roam: false, nodeClick: false, breadcrumb: { show: false }, label: { show: showName, formatter: (p) => (showValue ? String(p.value ?? "") : p.name) }, upperLabel: { show: false } }
           : { radius: ["12%", "85%"], label: { show: showName, rotate: "radial", formatter: (p) => (showValue ? String(p.value ?? "") : p.name) } }),
       }],
     };
