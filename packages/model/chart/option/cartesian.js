@@ -6,7 +6,6 @@
 import { resolveColor } from "../../theme.js";
 import { dashSpec } from "../../style-spec.js";
 import { resolveBarLayout } from "../layout.js";
-import { toAxisArray } from "../axes.js";
 import { resolveChartDirection, seriesAxisIndex, seriesChannels } from "../axes.js";
 import { hexA } from "../colors.js";
 import { resolveDataLabels } from "../labels.js";
@@ -95,13 +94,7 @@ export function buildCartesian(ctx) {
   const stackedPercent = series.some((s) => s.stack === "percent");
   const horizontal = resolveChartDirection(el, series);
   const axes = cartesianAxes(theme, el, cats, series, { horizontal, percentMax: stackedPercent, scatter: primary === "scatter" || primary === "bubble" });
-
-  // 类目轴带标题时绘图区底部让位（轴标题 nameGap 排在 grid 之外，不留位会压到图例）
-  if (!horizontal && primary !== "scatter" && primary !== "bubble") {
-    const xCfg = toAxisArray(el.xAxis)[0] || {};
-    const xt = typeof xCfg.title === "string" ? xCfg.title : xCfg.title?.text;
-    if (xt) common.grid = { ...common.grid, bottom: common.grid.bottom + 18 };
-  }
+  // 类目轴标题的底部让位由布局模型 resolvePlotLayout 统一处理（common.grid 已含）
 
   if (primary === "scatter" || primary === "bubble") {
     return {

@@ -13,8 +13,9 @@ import { resolveDataLabels } from "../labels.js";
 /** 主题轴/文字缺省样式（字号来自官方 CHART_DEFAULTS 单源）。 */
 export const AXIS_TEXT = { color: "#6b7280", fontSize: CHART_DEFAULTS.axisSize };
 
-/** 笛卡尔图 grid 边距（px；ECharts 布局与类目标签拥挤估算共用一份）。 */
-export const CHART_GRID = { left: 48, right: 24, top: 28, bottom: 36 };
+/** 笛卡尔图 grid 边距（px；ECharts 布局与类目标签拥挤估算共用一份）。
+ * 唯一定义在 model/chart/layout.js（与导出 manualLayout 同一基底），此处转 re-export。 */
+export { CHART_GRID } from "../layout.js";
 
 /** 主题图表样式（网格/轴/文字色跟随主题 colors 键，缺省用内置默认）。 */
 export function chartStyleColors(theme) {

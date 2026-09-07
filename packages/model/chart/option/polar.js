@@ -8,7 +8,7 @@ import { themeChartPalette } from "../../theme.js";
 import { chartStyleColors, echartsLabel, markerSymbol, seriesColor } from "./shared.js";
 
 export function buildPolar(ctx) {
-  const { theme, el, series, cats, primary, common } = ctx;
+  const { theme, el, series, cats, primary, common, layout } = ctx;
   if (primary === "pie") {
     const s = series[0];
     const inner = s.innerRadius || 0;
@@ -19,8 +19,10 @@ export function buildPolar(ctx) {
       tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
       series: [{
         type: "pie",
-        radius: [inner * 100 + "%", "72%"],
-        center: ["50%", "46%"],
+        // 半径/中心由布局模型投影（manualLayout inner 矩形内接），此前写死
+        // 72%/center 46% 与 PowerPoint 自动布局背离（02 页 PPT 饼显著更大）
+        radius: [inner * 100 + "%", `${layout.pie.radiusPct}%`],
+        center: [`${layout.pie.centerX}%`, `${layout.pie.centerY}%`],
         startAngle: 90 + (s.startAngle || 0), // 官方 0 = 12 点；ECharts 90 = 3 点
         avoidLabelOverlap: true,
         label: echartsLabel(theme, el, s, { position: "outside", pie: true }),
@@ -42,7 +44,7 @@ export function buildPolar(ctx) {
       ...common,
       radar: {
         indicator: cats.map((c) => ({ name: c, max: spoke.max ?? Math.ceil(max * 1.2), min: spoke.min ?? 0 })),
-        radius: "62%",
+        radius: `${layout.radar.radiusPct}%`,
         splitNumber: 4,
         axisName: { color: labelColor, fontSize: 11 },
         axisLine: { show: spoke.axisLine !== false, lineStyle: { color: spoke.axisLine && typeof spoke.axisLine === "object" && spoke.axisLine.color ? resolveColor(theme, spoke.axisLine.color) || gridColor : gridColor, width: 1 } },

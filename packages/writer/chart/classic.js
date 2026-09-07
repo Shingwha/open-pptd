@@ -10,7 +10,7 @@
 // ============================================================================
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "../xml.js";
-import { resolveChartSeries, resolveBarLayout, chartDataTable, resolveDataLabels, toAxisArray, resolveChartDirection, seriesAxisIndex, seriesChannels, CHART_DEFAULTS } from "../../model/chart.js";
+import { resolveChartSeries, resolveBarLayout, resolvePlotLayout, chartDataTable, resolveDataLabels, toAxisArray, resolveChartDirection, seriesAxisIndex, seriesChannels, CHART_DEFAULTS } from "../../model/chart.js";
 import { resolveColor, resolveFont, themeChartPalette } from "../../model/theme.js";
 import { buildFill, buildLn, buildShadow } from "../drawing.js";
 import { buildChartXlsx, buildSheetOrder, colLetter } from "./xlsx.js";
@@ -279,6 +279,18 @@ export function buildChartParts(theme, chartEl, chartIndex) {
     ].join(""))
     : "";
 
+  // 绘图区几何单源（I19）：与预览同一布局模型投影 manualLayout（layoutTarget=inner，
+  // x/y/w/h 为 chartSpace 0-1 分数）。此前写 <c:layout/> 让 PowerPoint 自动布局，
+  // 绘图区几何与预览固定网格两套体系（01 页 PPT 绘图区更高更满、02 页饼显著更大）
+  const layout = resolvePlotLayout(chartEl, series);
+  const frac5 = (v) => String(Number(v.toFixed(5)));
+  const plotAreaLayoutXml =
+    `<c:layout><c:manualLayout>` +
+    `<c:layoutTarget val="inner"/><c:xMode val="edge"/><c:yMode val="edge"/>` +
+    `<c:x val="${frac5(layout.plot.x)}"/><c:y val="${frac5(layout.plot.y)}"/>` +
+    `<c:w val="${frac5(layout.plot.w)}"/><c:h val="${frac5(layout.plot.h)}"/>` +
+    `</c:manualLayout></c:layout>`;
+
   const xml =
     xmlHeader() +
     `<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" ` +
@@ -287,7 +299,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
     `<c:date1904 val="0"/><c:lang val="zh-CN"/><c:roundedCorners val="0"/>` +
     `<c:chart>` +
     titleXml +
-    `<c:plotArea><c:layout/>${chartElems.join("")}${axes}</c:plotArea>` +
+    `<c:plotArea>${plotAreaLayoutXml}${chartElems.join("")}${axes}</c:plotArea>` +
     legendXml +
     `<c:plotVisOnly val="1"/><c:dispBlanksAs val="${disp}"/>` +
     `</c:chart>` +

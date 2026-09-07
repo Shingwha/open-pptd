@@ -10,7 +10,8 @@
 
 import { resolveChartSeries } from "../resolve.js";
 import { resolveColor, resolveFont } from "../../theme.js";
-import { baseOption, legendState, CHART_GRID } from "./shared.js";
+import { resolvePlotLayout } from "../layout.js";
+import { baseOption, legendState } from "./shared.js";
 import { buildPolar } from "./polar.js";
 import { buildCartesian } from "./cartesian.js";
 import { buildMatrix } from "./matrix.js";
@@ -46,15 +47,16 @@ export function buildChartOption(theme, el) {
 
   // 图例（官方默认：waterfall/treemap/sunburst/sankey/heatmap 关，其余开；样式消费）
   const { legendOpt } = legendState(theme, el, types);
-  // 有标题时绘图区顶部让位（PowerPoint 自动布局同样为标题压缩绘图区）
-  const grid = titleText ? { ...CHART_GRID, top: CHART_GRID.top + 24 } : CHART_GRID;
+  // 绘图区几何单源（I19）：grid 由布局模型投影（含标题/轴标题让位），导出端
+  // manualLayout 从同一模型取分数矩形——两端绘图区几何不再各一套体系
+  const layout = resolvePlotLayout(el, series);
   const common = {
     ...base,
     legend: legendOpt,
-    grid,
+    grid: layout.grid,
     tooltip: { trigger: [...types].some((t) => ["pie", "radar", "treemap", "sunburst", "sankey"].includes(t)) ? "item" : "axis" },
   };
 
-  const ctx = { theme, el, series, cats, types, primary, common };
+  const ctx = { theme, el, series, cats, types, primary, common, layout };
   return buildPolar(ctx) ?? buildMatrix(ctx) ?? buildCartesian(ctx);
 }
