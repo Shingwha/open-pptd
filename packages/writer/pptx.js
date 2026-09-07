@@ -31,6 +31,7 @@ import {
   NS_REL,
 } from "./parts.js";
 import { buildSlide } from "./slide.js";
+import { IMAGE_CHART_TYPES } from "./chart/image.js";
 import { loadIconDefs } from "./icon.js";
 import { decodeDataUrl, imageSize } from "./util.js";
 
@@ -89,12 +90,18 @@ export async function buildPptx(deck, options = {}) {
     options.onIconSkipped(icons.skipped);
   }
 
-  // 图表全局编号：每页前缀和（slideN 内 registerChart 从 chartBase 继续）
+  // 图表全局编号：每页前缀和（slideN 内 registerChart 从 chartBase 继续）。
+  // heatmap/sankey 走图片化（collectChartImage 先于 registerChart，不消耗编号），
+  // 计数必须同步排除，否则后续图表编号整体错位、slide 引用悬空（PowerPoint 空白）
+  const isNumberedChart = (el) => {
+    if (el.elementType !== "chart") return false;
+    return !IMAGE_CHART_TYPES.includes(el.series?.[0]?.type);
+  };
   const chartPrefix = [];
   let running = 0;
   for (const page of pages) {
     chartPrefix.push(running);
-    running += (page.elements || []).filter((el) => el.elementType === "chart").length;
+    running += (page.elements || []).filter(isNumberedChart).length;
   }
   const chartTotal = running;
 
@@ -103,7 +110,7 @@ export async function buildPptx(deck, options = {}) {
   {
     let n = 0;
     walkElements(pages, (el) => {
-      if (el.elementType !== "chart") return;
+      if (!isNumberedChart(el)) return;
       n += 1;
       const t = el.series?.[0]?.type;
       if (t === "waterfall" || t === "treemap" || t === "sunburst") chartExIds.push(n);

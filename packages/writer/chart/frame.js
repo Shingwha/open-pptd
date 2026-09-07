@@ -44,11 +44,11 @@ export function chartXml(theme, chartEl, ctx, chartId, imgRef = null) {
     : el("c:chart", { "r:id": rId, "xmlns:c": "http://schemas.openxmlformats.org/drawingml/2006/chart" });
   const frameId = ctx.nextId();
   const name = escAttr(chartEl.elementId);
+  // graphicFrame 的 p:xfrm 内直接放 off/ext（pic 的 spPr 才需要 a:xfrm 包裹——
+  // 双层包裹是非法结构，PowerPoint 忽略变换致图表零尺寸不可见）
   const xfrm =
-    el("a:xfrm", {}, [
-      el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) }),
-      el("a:ext", { cx: Math.round(w * 12700), cy: Math.round(h * 12700) }),
-    ].join(""));
+    el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) }) +
+    el("a:ext", { cx: Math.round(w * 12700), cy: Math.round(h * 12700) });
   const graphicFrame = el("p:graphicFrame", {}, [
     el("p:nvGraphicFramePr", {}, [
       el("p:cNvPr", { id: frameId, name }),

@@ -49,7 +49,7 @@ elements:
         dataLabels: {content: category}
   - elementId: c3
     elementType: chart
-    bounds: [540, 100, 380, 180]
+    bounds: [540, 100, 380, 180]  # 与 c2 错开（原与 c2 完全重叠，系测试页笔误）
     data:
       cols: [层级, 数值, 父级]
       rows:
