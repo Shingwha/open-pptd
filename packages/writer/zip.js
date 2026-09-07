@@ -2,13 +2,10 @@
 // zip.js — 最小 ZIP 写入器（零依赖，store 无压缩方法）
 // ----------------------------------------------------------------------------
 // PPTX 允许 method 0（stored），无需压缩库。CRC32 用标准查表法。
-// 文件名一律 UTF-8 编码（设置 flag bit 11）。
-// encodeUtf8 单源在 model/bytes.js（v3 #2），此处 re-export 兼容既有引用。
+// 文件名一律 UTF-8 编码（设置 flag bit 11；encodeUtf8 单源在 model/bytes.js）。
 // ============================================================================
 
 import { encodeUtf8 } from "../model/bytes.js";
-
-export { encodeUtf8 };
 
 const CRC_TABLE = (() => {
   const table = new Uint32Array(256);

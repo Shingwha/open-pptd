@@ -6,7 +6,7 @@
 // ============================================================================
 
 import { el, esc, xmlHeader } from "./xml.js";
-import { encodeUtf8 } from "./zip.js";
+import { encodeUtf8 } from "../model/bytes.js";
 import { NS_A, NS_R, NS_P, NS_REL } from "./parts.js";
 import { PAGE_WIDTH, PAGE_HEIGHT } from "../model/model.js";
 import { backgroundXml } from "./background.js";

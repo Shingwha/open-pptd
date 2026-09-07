@@ -15,7 +15,7 @@
 // ============================================================================
 
 import { el, escAttr } from "./xml.js";
-import { encodeUtf8 } from "./zip.js";
+import { encodeUtf8 } from "../model/bytes.js";
 import { buildXfrm } from "./drawing.js";
 import { walkElements } from "../model/walk.js";
 import { loadIconRegistry, resolveIconName, fetchIconSvg, loadIconSvgNode, normalizeIconSvg } from "../model/icon-fa.js";
