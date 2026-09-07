@@ -107,7 +107,8 @@ export function legendState(theme, el, types) {
     show: legendOn,
     ...posOpt,
     textStyle: { color: legendCfg.color ? resolveColor(theme, legendCfg.color) || legendColor : legendColor, fontSize: legendCfg.fontSize || CHART_DEFAULTS.legendSize },
-    icon: "roundRect", itemWidth: 14, itemHeight: 8,
+    // 图例 marker 收敛 PowerPoint 小方块观感（此前 roundRect 14×8 大圆角色块，I25）
+    icon: "rect", itemWidth: 10, itemHeight: 8,
   };
   return { legendOn, legendOpt };
 }
