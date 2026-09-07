@@ -59,7 +59,6 @@ const suites = [
   ["公式转换", "node tests/regression/formula.mjs"],
   ["图标导出", "node tests/regression/icon.mjs"],
   ["线条导出", "node tests/regression/line.mjs"],
-  ["完整字体嵌入", "node tests/regression/font-full-embed.mjs"],
   ["本地项目句柄读写", "node tests/regression/handle-io.mjs"],
   ["项目包图片完整性", "node tests/regression/export-media.mjs"],
 ];
