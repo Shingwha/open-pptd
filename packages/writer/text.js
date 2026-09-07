@@ -10,9 +10,10 @@ import { parseRichText } from "../model/richtext.js";
 import { resolveFont, resolveColor } from "../model/theme.js";
 import { latexToMathml } from "../model/latex.js";
 import { mathmlToOmml } from "../model/mathml2omml.js";
-import { computeBaseStyle, pickDefined } from "../model/style.js";
+import { computeBaseStyle, mergeRunStyle } from "../model/style.js";
 import { fontKey } from "../model/font.js";
 import { colorElement, solidFillElement, buildXfrm, buildFill, shadowElement } from "./drawing.js";
+import { ooxmlTextAlign, ooxmlAnchor, LIST_INDENT } from "../model/style-spec.js";
 
 const M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math";
 const A14_NS = "http://schemas.microsoft.com/office/drawing/2010/main";
@@ -23,8 +24,6 @@ const MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 // 变微软雅黑的问题根因。仅声明 typeface（渲染只依赖 typeface，panose 等
 // 字体元数据为 PowerPoint 自写信息，不写更通用））
 const MATH_FONT = '<a:latin typeface="Cambria Math"/><a:ea typeface="Cambria Math"/>';
-
-const H_ALIGN = { left: "l", center: "ctr", right: "r", justify: "just", distributed: "dist" };
 
 // —— 行距补偿：字体单倍行距系数（PowerPoint spcPct 的基数，见 paragraphProps 注释）——
 // 全自适应：嵌入字体（含全部内置库字体）导出时从真实字节解析实测值
@@ -86,7 +85,8 @@ function runXml(theme, s, hrefId) {
 
 /** 构建单个 run（含样式）。hrefId 由外部注册后传入。 */
 export function buildRun(theme, run, baseStyle, registerLink) {
-  const style = { ...baseStyle, ...pickDefined(run.style) };
+  // 有效样式 = 基线（含段落并入）+ run 内联，与渲染端 runSpan 同一条 mergeRunStyle 链
+  const style = mergeRunStyle(baseStyle, null, run.style);
   let hrefId = null;
   if (run.href && registerLink) {
     hrefId = registerLink(run.href);
@@ -106,7 +106,8 @@ export function buildRun(theme, run, baseStyle, registerLink) {
 /** 段落级样式 → a:pPr。base 为段落继承到的样式，factor 为段落字体的单倍行距系数。 */
 function paragraphProps(style, factor) {
   const attrs = {};
-  if (style.textAlign && H_ALIGN[style.textAlign]) attrs.algn = H_ALIGN[style.textAlign];
+  const algn = ooxmlTextAlign(style.textAlign);
+  if (algn) attrs.algn = algn;
   if (style.marginLeft) attrs.marL = Math.round(style.marginLeft * 12700);
   if (style.marginRight) attrs.marR = Math.round(style.marginRight * 12700);
   const kids = [];
@@ -128,13 +129,13 @@ function paragraphProps(style, factor) {
   if (style.listType === "ul") {
     kids.push(el("a:buFont", { typeface: "Arial" }));
     kids.push(el("a:buChar", { char: "•" }));
-    if (!attrs.marL) attrs.marL = Math.round(18 * 12700);
-    attrs.indent = Math.round(-18 * 12700);
+    if (!attrs.marL) attrs.marL = LIST_INDENT * 12700;
+    attrs.indent = -LIST_INDENT * 12700;
   } else if (style.listType === "ol") {
     kids.push(el("a:buFont", { typeface: "Arial" }));
     kids.push(el("a:buAutoNum", { type: "arabicPeriod" }));
-    if (!attrs.marL) attrs.marL = Math.round(18 * 12700);
-    attrs.indent = Math.round(-18 * 12700);
+    if (!attrs.marL) attrs.marL = LIST_INDENT * 12700;
+    attrs.indent = -LIST_INDENT * 12700;
   }
   if (!attrs.algn) attrs.algn = "l";
   return el("a:pPr", attrs, kids.join(""));
@@ -151,7 +152,8 @@ function paragraphProps(style, factor) {
  * @param {object} [options] { formulaFallback } 公式降级为纯文本（老 Office Fallback 副本）
  */
 export function buildParagraph(theme, para, base, registerLink, options = {}) {
-  const style = { ...base, ...pickDefined(para.style) };
+  // 段落样式并入 run 基线（mergeRunStyle 单源，渲染端 runSpan 同链）
+  const style = mergeRunStyle(base, para.style);
   if (para.listType) style.listType = para.listType; // 列表信息传给段落属性（buChar/缩进）
   const factor = lineFactorOf(theme, style.fontFamily, options.fontMetrics);
   const onlyFormulas = para.runs.length > 0 && para.runs.every((r) => r.formula);
@@ -258,7 +260,7 @@ function buildFormulaRun(theme, run, baseStyle, { paraAlone = false, textAlign =
   const opacity = baseStyle.opacity; // 元素级透明度（官方：颜色元素内 a:alpha）
   const mml = latexToMathml(run.latex);
   if (!mml || fallback) {
-    const rPr = runXml(theme, { ...baseStyle, ...pickDefined(run.style) }, null);
+    const rPr = runXml(theme, mergeRunStyle(baseStyle, null, run.style), null);
     return `<a:r>${rPr}<a:t>${esc(run.latex)}</a:t></a:r>`;
   }
   // mathmlToOmml 输出已含 <m:oMath> 根（与官方 XSLT 字节一致），命名空间声明在根上
@@ -324,9 +326,8 @@ export function buildTextBody(theme, content, registerLink, options = {}) {
   if (content?.wrap === false) bodyAttrs.wrap = "none";
   if (content?.textDirection === "vertical") bodyAttrs.vert = "eaVert";
   // 垂直对齐（官方缺省 [left, top] → anchor "t"）
-  const vAlignMap = { top: "t", middle: "ctr", bottom: "b" };
   const v = Array.isArray(content?.align) ? content.align[1] : "top";
-  bodyAttrs.anchor = vAlignMap[v] || "t";
+  bodyAttrs.anchor = ooxmlAnchor(v) || "t";
   // 自动调整：spAutoFit（PowerPoint 文本框原生默认，与编辑器「框随内容增高」一致）。
   // 编辑器渲染后会把 bounds 高度同步为内容实际高度（app/view.js autoGrowTexts），
   // 因此导出框高 = 内容高，打开 PPT 不缩字、不裁剪；编辑时 PowerPoint 按内容重新适配。

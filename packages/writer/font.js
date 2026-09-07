@@ -242,15 +242,21 @@ export async function buildEmbeddedFonts(deck, options = {}) {
       );
     }
     const n = parts.length + 1;
-    const slot = result.info.weight >= 700 ? "bold" : result.info.italic ? "italic" : "regular"; // weight→bold / italic→italic / 否则 regular
     parts.push({ path: `ppt/fonts/font${n}.fntdata`, bytes: result.bytes });
     rels.push({ id: `rIdFont${n}`, target: `fonts/font${n}.fntdata` });
+    // 单文件族 = 该族唯一字面 → 注册到全部四个样式槽（同一 rId，零重复字节）。
+    // 按 OS/2 元数据只挑一个槽会让其余槽缺席：查看机未装字体时，对应 (bold, italic)
+    // 组合的 run 查不到槽即静默替换字体——得意黑（400 斜体）的全 bold deck 曾因此
+    // 整段替换成默认黑体。子元素顺序为 CT_EmbeddedFontListEntry 固定序列，不可乱。
     lstItems.push(
       `<p:embeddedFont><p:font typeface="${escAttr(result.info.family)}"/>` +
-      `<p:${slot} r:id="rIdFont${n}"/></p:embeddedFont>`
+      ["regular", "bold", "italic", "boldItalic"]
+        .map((s) => `<p:${s} r:id="rIdFont${n}"/>`)
+        .join("") +
+      `</p:embeddedFont>`
     );
     if (result.subset) subsetMode = true;
-    console.log(`[font] 嵌入 ${result.info.family}（${slot}）: ${bytes.length}B → ${result.bytes.length}B${result.subset ? "（子集化）" : ""}`);
+    console.log(`[font] 嵌入 ${result.info.family}（全样式槽）: ${bytes.length}B → ${result.bytes.length}B${result.subset ? "（子集化）" : ""}`);
   }
   return {
     parts,

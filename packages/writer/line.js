@@ -92,6 +92,9 @@ export function lineXml(theme, element, ctx) {
   const lnKids = [buildFill(theme, border.color ?? "#000000")];
   const dash = dashSpec(border.style)?.ooxml;
   if (dash) lnKids.push(el("a:prstDash", { val: dash }));
+  // 拐角连接与预览 stroke-linejoin 一致（round=圆角，其余=尖角）。OOXML 缺省是
+  // round，多点 sharp 折线不显式写 miter 会被 PowerPoint 画成圆角（预览≠导出）
+  if (rel.length > 2) lnKids.push(curve === "round" ? el("a:round") : el("a:miter"));
   if (element.arrow) {
     const [start, end] = element.arrow;
     if (start) lnKids.push(headEnd(start));

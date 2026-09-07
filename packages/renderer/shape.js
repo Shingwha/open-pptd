@@ -10,7 +10,7 @@ import { resolveColor } from "../model/theme.js";
 import { normalizeFill, dashSpec } from "../model/style-spec.js";
 import { shapePaths } from "../model/preset-geometry.js";
 import { svgGradient } from "./gradient.js";
-import { createElementShell } from "./shell.js";
+import { createElementShell, boxShadowCss } from "./shell.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -123,9 +123,8 @@ export function renderShape(theme, el) {
   return svg;
 }
 
+/** 形状阴影 → SVG drop-shadow（boxShadowCss 单源，与导出 outerShdw 缺省一致）。 */
 function applyShadow(svg, theme, shadow) {
-  if (!shadow) return;
-  const [dx = 0, dy = 0] = shadow.offset || [0, 0];
-  const color = resolveColor(theme, shadow.color) || "rgba(0,0,0,0.3)";
-  svg.style.filter = `drop-shadow(${dx}px ${dy}px ${shadow.blur ?? 6}px ${color})`;
+  const sh = boxShadowCss(theme, shadow);
+  if (sh) svg.style.filter = `drop-shadow(${sh})`;
 }

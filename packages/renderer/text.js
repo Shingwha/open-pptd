@@ -13,19 +13,20 @@ import { parseRichText } from "../model/richtext.js";
 import { computeBaseStyle, mergeRunStyle } from "../model/style.js";
 import { latexToMathml } from "../model/latex.js";
 import { resolveColor, resolveFont } from "../model/theme.js";
-import { cssTextAlign, cssTextAlignLast, shadowOffset } from "../model/style-spec.js";
+import { cssTextAlign, cssTextAlignLast, effectiveShadow, LIST_INDENT } from "../model/style-spec.js";
 import { gradientCss } from "./gradient.js";
 import { createElementShell } from "./shell.js";
 
 const DEFAULT_FONT_SIZE = 18;
 const DEFAULT_LINE_HEIGHT = 1;
 
-/** 文字阴影 → CSS text-shadow（offset [x,y] 向下为正，与 OOXML dist/dir 同向）。 */
+/** 文字阴影 → CSS text-shadow（offset [x,y] 向下为正，与 OOXML dist/dir 同向；
+ * 缺省值走 effectiveShadow 单源——无 color 曾生成非法 CSS 致整条阴影被丢弃）。 */
 function shadowCss(theme, shadow) {
-  if (!shadow) return null;
-  const [dx, dy] = shadowOffset(shadow);
-  const color = resolveColor(theme, shadow.color) || shadow.color;
-  return `${dx}px ${dy}px ${shadow.blur || 0}px ${color}`;
+  const eff = effectiveShadow(shadow);
+  if (!eff) return null;
+  const color = resolveColor(theme, eff.color) || eff.color;
+  return `${eff.dx}px ${eff.dy}px ${eff.blur}px ${color}`;
 }
 
 /**
@@ -173,7 +174,7 @@ function renderTextContent(theme, content) {
       if (!listBuffer || listBuffer.dataset.list !== para.listType) {
         listBuffer = document.createElement(para.listType === "ol" ? "ol" : "ul");
         listBuffer.dataset.list = para.listType;
-        listBuffer.style.cssText = "margin:0;padding-left:22px;";
+        listBuffer.style.cssText = `margin:0;padding-left:${LIST_INDENT}px;`;
         root.appendChild(listBuffer);
       }
       const li = document.createElement("li");

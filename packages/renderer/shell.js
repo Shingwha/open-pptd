@@ -12,17 +12,17 @@
 // ============================================================================
 
 import { resolveColor } from "../model/theme.js";
-import { shadowOffset } from "../model/style-spec.js";
+import { effectiveShadow } from "../model/style-spec.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-/** ShadowSpec → CSS box-shadow 值；无阴影返回 null（图片 / 图表框共用）。 */
+/** ShadowSpec → CSS box-shadow 值；无阴影返回 null（图片 / 图表框 / 表格共用；
+ * 缺省值走 effectiveShadow 单源，与导出端 outerShdw 一致）。 */
 export function boxShadowCss(theme, shadow) {
-  const offset = shadowOffset(shadow);
-  if (!offset) return null;
-  const [dx, dy] = offset;
-  const color = resolveColor(theme, shadow.color) || "rgba(0,0,0,0.3)";
-  return `${dx}px ${dy}px ${shadow.blur ?? 6}px ${color}`;
+  const eff = effectiveShadow(shadow);
+  if (!eff) return null;
+  const color = resolveColor(theme, eff.color) || eff.color;
+  return `${eff.dx}px ${eff.dy}px ${eff.blur}px ${color}`;
 }
 
 /**

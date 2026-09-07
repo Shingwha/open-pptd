@@ -11,7 +11,7 @@ import { parseRichText } from "../model/richtext.js";
 import { normalizeFill, dashSpec, borderSides, cssTextAlign, cssTextAlignLast } from "../model/style-spec.js";
 import { runSpan, applyParaStyle } from "./text.js";
 import { gradientCss } from "./gradient.js";
-import { createElementShell } from "./shell.js";
+import { createElementShell, boxShadowCss } from "./shell.js";
 
 /** 单边 CSS（null = 无边框；$ 颜色引用在消费端 resolveColor）。 */
 function sideCss(theme, v) {
@@ -50,6 +50,9 @@ export function renderTable(theme, el) {
   const { rowHeights, columnWidths } = estimateTableLayout(el);
   // 高度不预设：由内容决定（含边框线），避免底部边框被 overflow:hidden 裁剪
   const box = createElementShell(el, { height: false });
+  // 官方 Table.shadow → 导出 a:tblPr > a:effectLst，预览 box-shadow 同源投影
+  const shadow = boxShadowCss(theme, el.shadow);
+  if (shadow) box.style.boxShadow = shadow;
 
   const ts = resolveTableStyle(theme, el.style);
   const rows = el.rows || [];
@@ -132,7 +135,8 @@ export function tdCss(theme, f, covered) {
   if (alignLast) parts.push(`text-align-last:${alignLast}`);
   if (!covered) {
     parts.push(
-      `font-weight:${f.bold ? "600" : "400"}`,
+      // 加粗与导出 b="1"（700）同值：曾用 600，预览比导出轻一档
+      `font-weight:${f.bold ? "bold" : "400"}`,
       f.italic ? "font-style:italic" : "",
       `color:${resolveColor(theme, f.color) || "#000000"}`,
       `font-size:${f.fontSize}px`,
@@ -140,10 +144,11 @@ export function tdCss(theme, f, covered) {
       `line-height:${f.lineHeightPx ? `${f.lineHeightPx}px` : f.lineHeight}`,
       f.letterSpacing ? `letter-spacing:${f.letterSpacing}px` : "",
       f.marginTop ? `padding-top:${TABLE_CELL_PAD + f.marginTop}px` : "",
-      "overflow:hidden",
-      "text-overflow:ellipsis",
-      "white-space:normal",
-    );
+    "overflow:hidden",
+    "text-overflow:ellipsis",
+    // \n/<br> 硬断行（与导出 <a:br/> 同语义）：曾按 normal 折叠成空格致预览一行导出两行
+    "white-space:pre-line",
+  );
   }
   parts.push(`background:${fillCss || "transparent"}`);
   return parts.filter(Boolean).join(";");

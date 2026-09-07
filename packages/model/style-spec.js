@@ -75,10 +75,45 @@ export function cssTextAlignLast(align) {
   return align === "distributed" ? "justify" : null;
 }
 
+// ---- 水平对齐 / 垂直锚点 → OOXML（a:pPr@algn、a:bodyPr/tcPr@anchor 同源单表）----
+const H_ALIGN_OOXML = { left: "l", center: "ctr", right: "r", justify: "just", distributed: "dist" };
+const V_ANCHOR_OOXML = { top: "t", middle: "ctr", bottom: "b" };
+
+/** 水平对齐 → a:pPr@algn 值；未知 → null。 */
+export function ooxmlTextAlign(align) {
+  return H_ALIGN_OOXML[align] || null;
+}
+
+/** 垂直对齐 → anchor 值；未知 → null（消费端决定自己的缺省）。 */
+export function ooxmlAnchor(align) {
+  return V_ANCHOR_OOXML[align] || null;
+}
+
+// ---- 列表缩进（ol/ul：文字左缘 = 一级缩进，bullet 悬挂在缩进带内）----
+// 预览 padding-left 与导出 marL/indent=-marL 同源（曾两端各写一个值且不等）。
+export const LIST_INDENT = 18; // pt/px
+
 // ---- 阴影（ShadowSpec：{ color?, blur?, offset?: [x, y] }，offset 向下为正）----
 /** 阴影偏移 → [dx, dy]（缺省 [0, 0]）；无阴影返回 null。 */
 export function shadowOffset(shadow) {
   if (!shadow) return null;
   const [dx = 0, dy = 0] = shadow.offset || [0, 0];
   return [dx, dy];
+}
+
+// 缺省值单源（两端唯一默认）：黑、无模糊、零偏移。此前三套默认并存
+// （预览 box/drop 0.3 透明黑 + 6px 模糊、预览文字无默认、导出黑 + 0 模糊），
+// 同一阴影预览≠导出，且预览文字阴影无 color 时整条 CSS 非法被浏览器丢弃。
+export const SHADOW_DEFAULTS = { color: "#000000", blur: 0, offset: [0, 0] };
+
+/** ShadowSpec 补齐缺省 → { dx, dy, blur, color }；无阴影返回 null。 */
+export function effectiveShadow(shadow) {
+  const offset = shadowOffset(shadow);
+  if (!offset) return null;
+  return {
+    dx: offset[0],
+    dy: offset[1],
+    blur: shadow.blur ?? SHADOW_DEFAULTS.blur,
+    color: shadow.color || SHADOW_DEFAULTS.color,
+  };
 }

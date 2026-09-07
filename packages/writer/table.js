@@ -21,11 +21,9 @@ import { el, escAttr } from "./xml.js";
 import { buildParagraph } from "./text.js";
 import { parseRichText } from "../model/richtext.js";
 import { resolveTableStyle, resolveTableCellStyle, resolveTextStyle } from "../model/theme.js";
-import { estimateTableLayout, tableGrid } from "../model/table.js";
-import { borderSides, dashSpec } from "../model/style-spec.js";
+import { estimateTableLayout, tableGrid, TABLE_FONT_SIZE, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../model/table.js";
+import { borderSides, dashSpec, normalizeFill, ooxmlAnchor } from "../model/style-spec.js";
 import { colorElement, buildFill, buildShadow } from "./drawing.js";
-
-const V_ANCHOR = { top: "t", middle: "ctr", bottom: "b" };
 
 /**
  * 单边边框 XML：<a:lnX w cap cmpd algn>（CT_LineProperties 直接承载在线元素上）。
@@ -109,14 +107,18 @@ function tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, cell, cellAlign
   for (const [side, b] of [["a:lnL", borders.left], ["a:lnR", borders.right], ["a:lnT", borders.top], ["a:lnB", borders.bottom]]) {
     kids.push(lnSide(theme, side, b));
   }
-  // 填充：单元格内联 > 分类样式 > cellStyle > Table.fill > 透明
-  const fill = cell?.fill ?? s.fill ?? (tableFill ? tableFill : null);
-  if (fill) {
-    if (fill.type === "solid" || fill.type === "gradient" || fill.type === "image") kids.push(buildFill(theme, fill));
-    else kids.push(el("a:solidFill", {}, colorElement(theme, fill)));
-  }
+  // 填充：单元格内联 > 分类样式 > cellStyle > Table.fill > 透明（normalizeFill 单源归一化）
+  const fill = normalizeFill(cell?.fill ?? s.fill ?? tableFill ?? null);
+  if (fill) kids.push(buildFill(theme, fill));
   const align = cellAlign ?? s.align ?? ["center", "middle"];
-  const attrs = { marL: 45720, marR: 45720, marT: 0, marB: 0, anchor: V_ANCHOR[align[1]] || "ctr" };
+  // 内边距与预览同一常量（model/table.js，pt → EMU）；此前硬编码 3.6pt/0 与预览 9/5px 漂移
+  const attrs = {
+    marL: TABLE_CELL_PAD_X * 12700,
+    marR: TABLE_CELL_PAD_X * 12700,
+    marT: TABLE_CELL_PAD * 12700,
+    marB: TABLE_CELL_PAD * 12700,
+    anchor: ooxmlAnchor(align[1]) || "ctr",
+  };
   return { xml: el("a:tcPr", attrs, kids.join("")), align, s };
 }
 
@@ -131,7 +133,7 @@ function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill, fontMetrics
   // 文字基线（低 → 高：分类样式 < Cell.textStyle < Cell 内联）
   const base = {
     color: cell?.color ?? ref.color ?? s.color ?? "#000000",
-    fontSize: cell?.fontSize ?? ref.fontSize ?? s.fontSize ?? 13,
+    fontSize: cell?.fontSize ?? ref.fontSize ?? s.fontSize ?? TABLE_FONT_SIZE,
     bold: !!(cell?.bold ?? ref.bold ?? s.bold),
     italic: !!(cell?.italic ?? ref.italic ?? s.italic),
     backgroundColor: cell?.backgroundColor ?? ref.backgroundColor ?? s.backgroundColor,
@@ -148,7 +150,7 @@ function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill, fontMetrics
     .map((p) => buildParagraph(theme, p, base, () => null, { fontMetrics }))
     .join("");
   const body =
-    `<a:txBody><a:bodyPr anchor="${V_ANCHOR[align[1]] || "ctr"}"><a:noAutofit/></a:bodyPr>` +
+    `<a:txBody><a:bodyPr anchor="${ooxmlAnchor(align[1]) || "ctr"}"><a:noAutofit/></a:bodyPr>` +
     `<a:lstStyle/>${paras}</a:txBody>`;
 
   const tcPr = tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, cell, align).xml;

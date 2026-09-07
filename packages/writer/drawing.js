@@ -6,7 +6,7 @@
 
 import { el, hexToRgbVal, angleToOOXML } from "./xml.js";
 import { resolveColor } from "../model/theme.js";
-import { dashSpec, shadowOffset } from "../model/style-spec.js";
+import { dashSpec, normalizeFill, effectiveShadow } from "../model/style-spec.js";
 import { PRESET_SHAPES } from "../model/preset-geometry.data.js";
 import { SUPPORTED_SHAPES } from "../model/model.js";
 import { custGeomXml } from "./custgeom.js";
@@ -120,40 +120,37 @@ export function buildXfrm(bounds, rotation, flip) {
   return el("a:xfrm", attrs, off + ext);
 }
 
-/** 阴影 → a:effectLst 唯一实现（dist/dir/blurRad 只在此计算；
- * offset [x,y] 向下为正 → dist/dir 顺时针，向下 = 5400000）。
+/** 阴影 → a:effectLst 唯一实现（dist/dir/blurRad 只在此计算，缺省值统一来自
+ * effectiveShadow；offset [x,y] 向下为正 → dist/dir 顺时针，向下 = 5400000）。
  * CT_OuterShadowEffect 子元素 = 颜色元素本身（包 solidFill 会判损修复）。 */
-function shadowEffectLst(theme, shadow, baseAttrs, color, opacity) {
-  const [dx, dy] = shadowOffset(shadow);
+function shadowEffectLst(theme, shadow, baseAttrs, opacity) {
+  const eff = effectiveShadow(shadow);
+  if (!eff) return "";
   const attrs = { ...baseAttrs };
-  if (shadow.blur) attrs.blurRad = Math.round(shadow.blur * 12700);
-  if (dx || dy) {
-    attrs.dist = Math.round(Math.hypot(dx, dy) * 12700);
-    attrs.dir = angleToOOXML((Math.atan2(dy, dx) * 180) / Math.PI);
+  if (eff.blur) attrs.blurRad = Math.round(eff.blur * 12700);
+  if (eff.dx || eff.dy) {
+    attrs.dist = Math.round(Math.hypot(eff.dx, eff.dy) * 12700);
+    attrs.dir = angleToOOXML((Math.atan2(eff.dy, eff.dx) * 180) / Math.PI);
   }
-  return el("a:effectLst", {}, el("a:outerShdw", attrs, colorElement(theme, color, opacity)));
+  return el("a:effectLst", {}, el("a:outerShdw", attrs, colorElement(theme, eff.color, opacity)));
 }
 
-/** 文字阴影 → a:effectLst（无 algn/rotWithShape 属性、无默认色；text.js 用）。 */
+/** 文字阴影 → a:effectLst（无 algn/rotWithShape 属性；text.js 用）。 */
 export function shadowElement(theme, shadow) {
-  if (!shadow) return "";
-  return shadowEffectLst(theme, shadow, {}, shadow.color, null);
+  return shadowEffectLst(theme, shadow, {}, null);
 }
 
 /**
- * 填充 → OOXML。支持：
- *  - string（hex / $token）→ solid
+ * 填充 → OOXML。入参经 normalizeFill 单源归一化（model/style-spec）：
+ *  - string（hex / $token）/ 旧 { color } 形态 → solid
  *  - { type:"solid", color }
  *  - { type:"gradient", gradientType, stops, angle }
  *  - { type:"image", src, fit, crop, opacity }（媒体由调用方注册）
  * @param {number} [opacity] 元素级透明度（0~1）：solid/gradient 颜色内注入 a:alpha
  */
 export function buildFill(theme, fill, mediaRef = null, opacity = null) {
+  fill = normalizeFill(fill);
   if (!fill) return "";
-  if (typeof fill === "string") {
-    return el("a:solidFill", {}, colorElement(theme, fill, opacity));
-  }
-  if (typeof fill !== "object") return "";
   if (fill.type === "solid") {
     // 官方 SolidFill（{type: "solid", color}）——此前依赖旧 fill.color 兼容分支，
     // 清理后一度丢失（表格填充/页面背景全空，2026-08-10 回归）
@@ -244,6 +241,5 @@ export function buildLn(theme, border, opacity = null) {
 /** 形状/表格阴影 → a:effectLst。shadow: {blur, color, offset:[x,y]}。
  * algn="tl" 与 PowerPoint 官方输出一致（缺省 algn="b" 阴影方向不对）。 */
 export function buildShadow(theme, shadow, opacity = null) {
-  if (!shadow) return "";
-  return shadowEffectLst(theme, shadow, { algn: "tl", rotWithShape: 0 }, shadow.color || "#000000", opacity);
+  return shadowEffectLst(theme, shadow, { algn: "tl", rotWithShape: 0 }, opacity);
 }
