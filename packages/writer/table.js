@@ -20,8 +20,8 @@
 import { el, escAttr } from "./xml.js";
 import { buildParagraph } from "./text.js";
 import { parseRichText } from "../model/richtext.js";
-import { resolveTableStyle, resolveTableCellStyle, resolveTextStyle } from "../model/theme.js";
-import { estimateTableLayout, tableGrid, TABLE_FONT_SIZE, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../model/table.js";
+import { resolveTableStyle, resolveTableCellStyle, cellTextStyle } from "../model/theme.js";
+import { estimateTableLayout, tableGrid, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../model/table.js";
 import { borderSides, dashSpec, normalizeFill, ooxmlAnchor } from "../model/style-spec.js";
 import { colorElement, buildFill, buildShadow } from "./drawing.js";
 
@@ -123,27 +123,13 @@ function tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, cell, cellAlign
 }
 
 function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill, fontMetrics) {
-  // 官方继承链合并 → 单元格最终样式（颜色保留 $ 引用）
+  // 单元格文字样式合并 → model 单源 cellTextStyle（与预览 cellFinal 同一实现）
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
-  // Cell.textStyle 引用（theme.textStyles，只影响文字字段，不含 fill/border/align）
-  const ref = resolveTextStyle(theme, cell?.textStyle);
   const text = cell?.text ?? "";
   const tree = parseRichText(text);
 
-  // 文字基线（低 → 高：分类样式 < Cell.textStyle < Cell 内联）
-  const base = {
-    color: cell?.color ?? ref.color ?? s.color ?? "#000000",
-    fontSize: cell?.fontSize ?? ref.fontSize ?? s.fontSize ?? TABLE_FONT_SIZE,
-    bold: !!(cell?.bold ?? ref.bold ?? s.bold),
-    italic: !!(cell?.italic ?? ref.italic ?? s.italic),
-    backgroundColor: cell?.backgroundColor ?? ref.backgroundColor ?? s.backgroundColor,
-    lineHeight: cell?.lineHeight ?? ref.lineHeight ?? s.lineHeight ?? 1,
-    lineHeightPx: cell?.lineHeightPx ?? ref.lineHeightPx ?? s.lineHeightPx,
-    letterSpacing: cell?.letterSpacing ?? ref.letterSpacing ?? s.letterSpacing,
-    marginTop: cell?.marginTop ?? ref.marginTop ?? s.marginTop,
-    fontFamily: cell?.fontFamily ?? ref.fontFamily ?? s.fontFamily,
-  };
-  // 对齐：cell.align > 分类 align > 官方默认 [center, middle]
+  // 文字基线（对齐：cell.align > 分类 align > 官方默认 [center, middle]）
+  const base = cellTextStyle(theme, ts, r, c, rowCount, colCount, cell);
   const align = cell?.align ?? s.align ?? ["center", "middle"];
   base.textAlign = align[0];
   const paras = tree.paragraphs

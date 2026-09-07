@@ -13,6 +13,7 @@
 // ============================================================================
 
 import { DEFAULT_THEME, THEME_PALETTES } from "./theme-presets.js";
+import { TABLE_FONT_SIZE } from "./table.js";
 import { parseFontResources } from "./font.js";
 export { DEFAULT_THEME, THEME_PALETTES } from "./theme-presets.js";
 
@@ -196,6 +197,29 @@ export function resolveTableStyle(theme, styleRef) {
  * 返回合并后的 CellStyle 具体字段（颜色保留 $ 引用，消费端 resolveColor）。
  * 单元格内联字段（C2 Cell 对象）优先级最高，本函数不涉及。
  */
+/**
+ * 单元格文字样式合并（官方继承链单源，预览 cellFinal 与导出 tcXml 共用同一实现）：
+ * Cell 内联字段 > Cell.textStyle 引用 > 位置分类（resolveTableCellStyle）> 默认。
+ * lineHeightPx（固定 px）与 lineHeight（倍数）分字段返回，lineHeightPx 优先，
+ * 两端各自投影（CSS line-height / a:lnSpc）。合并逻辑此前两端各写一份易漂移。
+ */
+export function cellTextStyle(theme, ts, r, c, rowCount, colCount, cell) {
+  const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
+  const ref = resolveTextStyle(theme, cell?.textStyle);
+  return {
+    color: cell?.color ?? ref.color ?? s.color ?? "#000000",
+    fontFamily: cell?.fontFamily ?? ref.fontFamily ?? s.fontFamily,
+    fontSize: cell?.fontSize ?? ref.fontSize ?? s.fontSize ?? TABLE_FONT_SIZE,
+    bold: !!(cell?.bold ?? ref.bold ?? s.bold),
+    italic: !!(cell?.italic ?? ref.italic ?? s.italic),
+    backgroundColor: cell?.backgroundColor ?? ref.backgroundColor ?? s.backgroundColor,
+    lineHeightPx: cell?.lineHeightPx ?? ref.lineHeightPx ?? s.lineHeightPx ?? null,
+    lineHeight: cell?.lineHeight ?? ref.lineHeight ?? s.lineHeight ?? 1,
+    letterSpacing: cell?.letterSpacing ?? ref.letterSpacing ?? s.letterSpacing,
+    marginTop: cell?.marginTop ?? ref.marginTop ?? s.marginTop,
+  };
+}
+
 export function resolveTableCellStyle(ts, r, c, rowCount, colCount) {
   const merged = {};
   const apply = (style) => {

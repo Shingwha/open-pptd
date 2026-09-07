@@ -5,7 +5,7 @@
 //   Cell 内联字段 > Cell.textStyle 引用 > 位置分类 > bodyStyles > cellStyle > 默认
 // ============================================================================
 
-import { resolveColor, resolveFont, resolveTableStyle, resolveTableCellStyle, resolveTextStyle } from "../model/theme.js";
+import { resolveColor, resolveFont, resolveTableStyle, resolveTableCellStyle, resolveTextStyle, cellTextStyle } from "../model/theme.js";
 import { estimateTableLayout, tableGrid, TABLE_FONT_SIZE, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../model/table.js";
 import { parseRichText } from "../model/richtext.js";
 import { normalizeFill, dashSpec, borderSides, cssTextAlign, cssTextAlignLast } from "../model/style-spec.js";
@@ -21,28 +21,18 @@ function sideCss(theme, v) {
   return `${v.width ?? 1}px ${style} ${color}`;
 }
 
-/** 展开网格 → 单元格最终样式（与 writer 同源；covered 位返回 {covered:true}）。 */
+/** 展开网格 → 单元格最终样式（文字样式合并走 model 单源；covered 位返回 {covered:true}）。 */
 export function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) {
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
-  const ref = resolveTextStyle(theme, cell?.textStyle);
   const fill = cell?.fill ?? s.fill ?? tableFill ?? null;
   const align = cell?.align ?? s.align ?? ["center", "middle"];
-  const border = cell?.border ?? s.border;
-  // 固定行距（lineHeightPx，px 值）与倍数行距（lineHeight，无单位）分开带出：
-  // 混用会让 CSS line-height 丢 px 单位变"倍数"，行高放大 20 倍（如 22 → 22×字号）
-  const lineHeightPx = cell?.lineHeightPx ?? ref.lineHeightPx ?? s.lineHeightPx ?? null;
   return {
-    s, ref, fill, align, borders: borderSides(border),
-    color: cell?.color ?? ref.color ?? s.color ?? "#000000",
-    fontFamily: cell?.fontFamily ?? ref.fontFamily ?? s.fontFamily,
-    fontSize: cell?.fontSize ?? ref.fontSize ?? s.fontSize ?? TABLE_FONT_SIZE,
-    bold: cell?.bold ?? ref.bold ?? s.bold,
-    italic: cell?.italic ?? ref.italic ?? s.italic,
-    backgroundColor: cell?.backgroundColor ?? ref.backgroundColor ?? s.backgroundColor,
-    lineHeightPx,
-    lineHeight: lineHeightPx ?? (cell?.lineHeight ?? ref.lineHeight ?? s.lineHeight) ?? 1,
-    letterSpacing: cell?.letterSpacing ?? ref.letterSpacing ?? s.letterSpacing,
-    marginTop: cell?.marginTop ?? ref.marginTop ?? s.marginTop,
+    s,
+    ref: resolveTextStyle(theme, cell?.textStyle),
+    fill,
+    align,
+    borders: borderSides(cell?.border ?? s.border),
+    ...cellTextStyle(theme, ts, r, c, rowCount, colCount, cell),
   };
 }
 
