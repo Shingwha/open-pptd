@@ -135,7 +135,8 @@ export function buildCartesian(ctx) {
       data,
       stack: s.stack === "percent" ? "total" : s.stack || undefined,
       itemStyle: { color },
-      label: echartsLabel(theme, el, s, { position: "top" }),
+      // 堆叠柱标签内嵌（与 PowerPoint 堆叠图默认 inside 一致；top 会飘到整柱顶端）
+      label: echartsLabel(theme, el, s, { position: s.stack ? "inside" : "top" }),
       xAxisIndex: seriesAxisIndex(s, true),
       yAxisIndex: seriesAxisIndex(s, false),
     };
@@ -149,10 +150,18 @@ export function buildCartesian(ctx) {
       };
     }
     if (s.type === "line") {
+      const label = echartsLabel(theme, el, s, { position: "top" });
+      // symbol "none" ≈ showSymbol:false，ECharts 不渲染数据标签；配了标签但未配
+      // marker 时用 1px 透明圆点承托标签（渲染不可见，标签位置与导出一致）
+      const hasLabel = label != null;
       return {
-        type: "line", smooth: !!s.smooth, symbol: s.marker ? markerSymbol(theme, s.marker, color).symbol : "none",
+        type: "line",
+        smooth: !!s.smooth,
+        symbol: s.marker ? markerSymbol(theme, s.marker, color).symbol : hasLabel ? "circle" : "none",
+        ...(hasLabel && !s.marker ? { symbolSize: 1, itemStyle: { color: "transparent" } } : {}),
         lineStyle: { color, width: s.width ?? 2, type: dashSpec(s.lineStyle)?.cssBorder || "solid" },
         connectNulls: s.nullHandling === "connect", ...commonSer,
+        label,
       };
     }
     if (s.type === "area") {

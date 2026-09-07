@@ -25,7 +25,7 @@ export function cartesianAxes(theme, el, cats, series, { horizontal = false, per
       inverse: o.reverse,
       name: typeof o.title === "string" ? o.title : o.title?.text,
       axisLine: { show: o.axisLine !== false, lineStyle: { color: o.axisLine && typeof o.axisLine === "object" && o.axisLine.color ? resolveColor(theme, o.axisLine.color) || axisColor : axisColor } },
-      axisLabel: o.label === false ? { show: false } : { ...AXIS_TEXT, ...(typeof o.label === "object" ? { color: o.label.color ? resolveColor(theme, o.label.color) || AXIS_TEXT.color : AXIS_TEXT.color, fontSize: o.label.fontSize || AXIS_TEXT.fontSize, formatter: o.label.numberFormat ? (v) => fmtNum(v, o.label.numberFormat) : undefined } : {}) },
+      axisLabel: o.label === false ? { show: false } : { ...AXIS_TEXT, ...(typeof o.label === "object" ? { color: o.label.color ? resolveColor(theme, o.label.color) || AXIS_TEXT.color : AXIS_TEXT.color, fontSize: o.label.fontSize || AXIS_TEXT.fontSize, formatter: o.label.numberFormat ? (v) => fmtNum(v, o.label.numberFormat) : (v) => `${v}` } : { formatter: (v) => `${v}` }) },
       splitLine: o.gridLine === false || hideGridDefault ? { show: false } : { lineStyle: { color: typeof o.gridLine === "object" && o.gridLine.color ? resolveColor(theme, o.gridLine.color) || gridColor : gridColor, type: typeof o.gridLine === "object" ? dashSpec(o.gridLine.style)?.cssBorder || "solid" : "solid" } },
     };
   };

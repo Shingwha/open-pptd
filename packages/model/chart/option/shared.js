@@ -26,15 +26,17 @@ export function chartStyleColors(theme) {
   };
 }
 
-/** 官方 dataLabels → ECharts label 配置（含样式 color/fontSize）。 */
+/** 官方 dataLabels → ECharts label 配置（含样式 color/fontSize）。
+ * 散点/气泡的 p.value 是 [x,y(,size)] 数组，显示值取 y 通道（与导出端 showVal 一致）。 */
 export function echartsLabel(theme, el, s, { position = "top", pie = false } = {}) {
   const cfg = resolveDataLabels(el, s, s.type);
   if (!cfg) return undefined;
   const { labelColor } = chartStyleColors(theme);
+  const displayValue = (p) => (Array.isArray(p.value) ? p.value[1] : p.value);
   let formatter;
   if (cfg.content === "percentage") formatter = pie ? "{d}%" : (p) => `${(p.percent ?? 0).toFixed(1)}%`;
   else if (cfg.content === "category") formatter = pie ? "{b}" : (p) => p.name;
-  else formatter = (p) => (cfg.numberFormat ? fmtNum(p.value, cfg.numberFormat) : String(p.value));
+  else formatter = (p) => (cfg.numberFormat ? fmtNum(displayValue(p), cfg.numberFormat) : String(displayValue(p)));
   return {
     show: true,
     position,
@@ -84,16 +86,22 @@ export function baseOption(theme, el) {
   };
 }
 
-/** 图例开关判定（官方默认表 CHART_DEFAULTS.legendOffTypes 单源）。 */
+/** 图例开关判定（官方默认表 CHART_DEFAULTS.legendOffTypes 单源）。
+ * 四方位完整映射（top/bottom 水平居中，left/right 垂直居中竖排）——此前只写
+ * 单边 {pos:0}，right 会落到顶部横排，与导出端 legendPos 背离。 */
 export function legendState(theme, el, types) {
   const { legendColor } = chartStyleColors(theme);
   const legendDefaultOff = new Set(CHART_DEFAULTS.legendOffTypes);
   const legendOn = el.legend !== false && !(el.legend === undefined && [...types].every((t) => legendDefaultOff.has(t)));
   const legendPos = typeof el.legend === "object" && el.legend.position ? el.legend.position : "bottom";
   const legendCfg = typeof el.legend === "object" ? el.legend : {};
+  const posOpt = legendPos === "top" ? { top: 0, left: "center" }
+    : legendPos === "left" ? { left: 0, top: "middle", orient: "vertical" }
+    : legendPos === "right" ? { right: 0, top: "middle", orient: "vertical" }
+    : { bottom: 0, left: "center" };
   const legendOpt = {
     show: legendOn,
-    ...(legendPos !== "bottom" ? { [legendPos]: 0 } : { bottom: 0 }),
+    ...posOpt,
     textStyle: { color: legendCfg.color ? resolveColor(theme, legendCfg.color) || legendColor : legendColor, fontSize: legendCfg.fontSize || CHART_DEFAULTS.legendSize },
     icon: "roundRect", itemWidth: 14, itemHeight: 8,
   };
