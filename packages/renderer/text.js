@@ -10,7 +10,7 @@
 // ============================================================================
 
 import { parseRichText } from "../model/richtext.js";
-import { computeBaseStyle } from "../model/style.js";
+import { computeBaseStyle, mergeRunStyle } from "../model/style.js";
 import { latexToMathml } from "../model/latex.js";
 import { resolveColor, resolveFont } from "../model/theme.js";
 import { cssTextAlign, cssTextAlignLast, shadowOffset } from "../model/style-spec.js";
@@ -28,10 +28,15 @@ function shadowCss(theme, shadow) {
   return `${dx}px ${dy}px ${shadow.blur || 0}px ${color}`;
 }
 
-/** run 层：只写 run 显式设置的样式（相对 base 的差异）。公式 run → KaTeX MathML。 */
-export function runSpan(theme, run, base) {
-  if (run.formula) return formulaSpan(theme, run, base);
-  const s = run.style || {};
+/**
+ * run 层：有效样式 = 基线 + 段落样式 + run 内联（mergeRunStyle 统一合并，
+ * 与 writer buildParagraph→buildRun 同一条链），只写相对基线的显式差异；
+ * 段落级复位（如 bold:false 关元素加粗）也落在 span 上阻断容器继承。
+ * 公式 run → KaTeX MathML。
+ */
+export function runSpan(theme, run, base, paraStyle) {
+  const s = mergeRunStyle(base, paraStyle, run.style);
+  if (run.formula) return formulaSpan(theme, run, s);
   const node = run.href ? document.createElement("a") : document.createElement("span");
   if (run.href) node.href = run.href;
   node.textContent = run.text;
@@ -99,7 +104,8 @@ function textAlignCss(v) {
   return last ? `${align};text-align-last:${last}` : align;
 }
 
-/** 段落层：只写段落显式样式（text-align / line-height / margin…）。 */
+/** 段落层：只写段落盒布局样式（text-align / line-height / margin…，即 writer 的
+ * a:pPr 范畴）；文字属性一律经 runSpan 的合并链逐 run 落地。 */
 export function applyParaStyle(el, para) {
   const s = para.style || {};
   const css = [];
@@ -172,13 +178,13 @@ function renderTextContent(theme, content) {
       }
       const li = document.createElement("li");
       applyParaStyle(li, para);
-      for (const run of para.runs) li.appendChild(runSpan(theme, run, base));
+      for (const run of para.runs) li.appendChild(runSpan(theme, run, base, para.style));
       listBuffer.appendChild(li);
     } else {
       listBuffer = null;
       const p = document.createElement("div");
       applyParaStyle(p, para);
-      for (const run of para.runs) p.appendChild(runSpan(theme, run, base));
+      for (const run of para.runs) p.appendChild(runSpan(theme, run, base, para.style));
       root.appendChild(p);
     }
   }

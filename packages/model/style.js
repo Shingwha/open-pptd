@@ -49,7 +49,7 @@ export function computeBaseStyle(theme, content) {
   return { ...fromTheme, ...pickDefined(direct) };
 }
 
-/** run 最终样式 = 基线 + 段落样式 + run 内联样式（后者覆盖前者）。 */
+/** run 最终样式 = 基线 + 段落样式 + run 内联样式（后者覆盖前者）；任一层可省略。 */
 export function mergeRunStyle(base, paraStyle, runStyle) {
-  return { ...base, ...pickDefined(paraStyle), ...pickDefined(runStyle) };
+  return { ...base, ...pickDefined(paraStyle ?? {}), ...pickDefined(runStyle ?? {}) };
 }

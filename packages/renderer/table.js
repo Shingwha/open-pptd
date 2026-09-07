@@ -190,10 +190,10 @@ function renderCellContent(theme, text, f) {
     if (hl) {
       const inner = document.createElement("span");
       inner.style.background = hl;
-      for (const run of para.runs) inner.appendChild(runSpan(theme, run, base));
+      for (const run of para.runs) inner.appendChild(runSpan(theme, run, base, para.style));
       p.appendChild(inner);
     } else {
-      for (const run of para.runs) p.appendChild(runSpan(theme, run, base));
+      for (const run of para.runs) p.appendChild(runSpan(theme, run, base, para.style));
     }
     root.appendChild(p);
   }
