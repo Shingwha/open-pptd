@@ -85,7 +85,6 @@ export function buildChartParts(theme, chartEl, chartIndex) {
   const isStacked = barLayout.stacked;
   const isPercent = barLayout.percent;
   const isStream = series.some((s) => s.stack === "stream");
-  const hasSmooth = series.some((s) => s.smooth && (s.type === "line" || s.type === "area" || s.type === "radar"));
   // 组轴索引（官方 §5.3：垂直图 yAxisIndex / 水平图 xAxisIndex）
   const groupAxisId = (s) => {
     const i = seriesAxisIndex(s, horizontal);
@@ -133,7 +132,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
           return ss.join("");
         })(),
       ];
-      if (hasSmooth && type === "line") kids.push(el("c:smooth", { val: "1" }));
+      // smooth 已逐系列显式写（c:smooth 0/1），组级不再写——「任一系列平滑→全组连带平滑」废止
       kids.push(el("c:axId", { val: catId }), el("c:axId", { val: valId }));
       chartElems.push(el(`c:${type === "area" ? "areaChart" : "lineChart"}`, {}, kids.join("")));
     } else if (type === "scatter") {

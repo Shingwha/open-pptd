@@ -81,7 +81,8 @@ export function lineSerXml(theme, s, sheetRange, idx, labels, chs) {
   if (marker) kids.push(marker);
   if (labels) kids.push(dLblsXml(theme, labels));
   kids.push(catRefXml(chs.cat, sheetRange), valRefXml(chs.val, sheetRange));
-  if (s.smooth) kids.push(el("c:smooth", { val: "1" }));
+  // 每系列显式 smooth 0/1（此前非平滑系列不写元素，会继承组级 smooth=1 被连带平滑）
+  kids.push(el("c:smooth", { val: s.smooth ? "1" : "0" }));
   return el("c:ser", {}, kids.join(""));
 }
 
@@ -99,6 +100,8 @@ export function areaSerXml(theme, s, sheetRange, idx, labels, chs) {
   if (spPr.length) kids.push(el("c:spPr", {}, spPr.join("")));
   if (labels) kids.push(dLblsXml(theme, labels));
   kids.push(catRefXml(chs.cat, sheetRange), valRefXml(chs.val, sheetRange));
+  // 面积图 smooth 同折线：显式写（此前 areaSerXml 不写 c:smooth，平滑导出静默丢失）
+  kids.push(el("c:smooth", { val: s.smooth ? "1" : "0" }));
   return el("c:ser", {}, kids.join(""));
 }
 
@@ -242,6 +245,6 @@ export function radarSerXml(theme, s, sheetRange, idx, labels, chs) {
   if (marker) kids.push(marker);
   if (labels) kids.push(dLblsXml(theme, labels));
   kids.push(catRefXml(chs.cat, sheetRange), valRefXml(chs.val, sheetRange));
-  if (s.smooth) kids.push(el("c:smooth", { val: "1" }));
+  kids.push(el("c:smooth", { val: s.smooth ? "1" : "0" }));
   return el("c:ser", {}, kids.join(""));
 }
