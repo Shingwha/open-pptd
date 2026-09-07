@@ -9,7 +9,7 @@
 
 import * as echarts from "./vendor/echarts.mjs";
 import {
-  resolveChartSeries, CHART_META, CHART_DEFAULTS, resolveDataLabels, hexA,
+  resolveChartSeries, resolveBarLayout, CHART_META, CHART_DEFAULTS, resolveDataLabels, hexA,
   darkenByLightness, toAxisArray, resolveChartDirection, seriesAxisIndex, hierarchyColor, seriesChannels,
 } from "../model/chart.js";
 import { resolveColor, resolveFont, themeChartPalette } from "../model/theme.js";
@@ -519,6 +519,8 @@ function buildChartOption(theme, el) {
   }
 
   // bar / line / area / candlestick
+  // 柱宽/组内间隙：model resolveBarLayout 单源投影（与 writer 导出同一结果）
+  const barLayout = resolveBarLayout(el, series);
   const seriesOptions = series.map((s) => {
     const color = seriesColor(theme, s);
     // 数值通道按方向取（横向柱：数值在 x；其余：数值在 y）——与 writer seriesChannels 同源
@@ -537,9 +539,8 @@ function buildChartOption(theme, el) {
     if (s.type === "bar") {
       return {
         type: "bar",
-        barWidth: el.barWidth != null ? `${el.barWidth * 100}%` : undefined,
-        barGap: el.barGap != null ? `${el.barGap * 100}%` : undefined,
-        barCategoryGap: el.categoryGap != null ? `${el.categoryGap * 100}%` : undefined,
+        barWidth: `${barLayout.echarts.barWidthPct}%`,
+        barGap: `${barLayout.echarts.barGapPct}%`,
         ...commonSer,
         itemStyle: { color, borderColor: resolveColor(theme, s.border?.color), borderWidth: s.border?.width },
       };

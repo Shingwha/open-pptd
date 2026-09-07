@@ -20,7 +20,7 @@
 // ============================================================================
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "./xml.js";
-import { resolveChartSeries, chartDataTable, isNumericColumn, resolveDataLabels, toAxisArray, resolveChartDirection, seriesAxisIndex, seriesChannels, hierarchyColor, CHART_DEFAULTS } from "../model/chart.js";
+import { resolveChartSeries, resolveBarLayout, chartDataTable, isNumericColumn, resolveDataLabels, toAxisArray, resolveChartDirection, seriesAxisIndex, seriesChannels, hierarchyColor, CHART_DEFAULTS } from "../model/chart.js";
 import { resolveColor, resolveFont, themeChartPalette, DEFAULT_FONT } from "../model/theme.js";
 import { dashSpec } from "../model/style-spec.js";
 import { buildFill, buildLn, buildShadow, solidFillResolved } from "./drawing.js";
@@ -774,15 +774,13 @@ export function buildChartParts(theme, chartEl, chartIndex) {
 
   const chartElems = [];
   let serCounter = 0;
-  const isStacked = series.some((s) => s.stack && s.stack !== "percent" && (s.type === "bar" || s.type === "area"));
-  const isPercent = series.some((s) => s.stack === "percent");
+  // 柱宽/槽宽语义单源（model resolveBarLayout：gapWidth/overlap/堆叠判定的唯一定义处，
+  // renderer 预览投影同一结果）
+  const barLayout = resolveBarLayout(chartEl, series);
+  const isStacked = barLayout.stacked;
+  const isPercent = barLayout.percent;
   const isStream = series.some((s) => s.stack === "stream");
   const hasSmooth = series.some((s) => s.smooth && (s.type === "line" || s.type === "area" || s.type === "radar"));
-  // 柱宽/槽宽（官方 barWidth → gapWidth；categoryGap 保持 ×750 校准约定）
-  const gapWidthVal = chartEl.barWidth != null
-    ? Math.round((1 - chartEl.barWidth) / chartEl.barWidth * 100)
-    : chartEl.categoryGap != null ? Math.round(chartEl.categoryGap * 750) : 150;
-  const hasBarWidth = chartEl.barWidth != null || chartEl.categoryGap != null;
   // 组轴索引（官方 §5.3：垂直图 yAxisIndex / 水平图 xAxisIndex）
   const groupAxisId = (s) => {
     const i = seriesAxisIndex(s, horizontal);
@@ -808,9 +806,8 @@ export function buildChartParts(theme, chartEl, chartIndex) {
       ];
       // ECMA-376 CT_BarChart 顺序：… ser* → dLbls? → gapWidth? → overlap? → serLines? → axId×2
       // gapWidth 必须先于 overlap（PowerPoint 严格按 schema 解析，顺序颠倒会弹「修复」）
-      if (hasBarWidth) kids.push(el("c:gapWidth", { val: gapWidthVal }));
-      if (isStacked || isPercent) kids.push(el("c:overlap", { val: "100" }));
-      else if (chartEl.barGap != null) kids.push(el("c:overlap", { val: -Math.round(chartEl.barGap * 100) }));
+      if (barLayout.hasGapWidthConfig) kids.push(el("c:gapWidth", { val: barLayout.gapWidth }));
+      if (barLayout.overlap != null) kids.push(el("c:overlap", { val: barLayout.overlap }));
       kids.push(el("c:axId", { val: catId }), el("c:axId", { val: valId }));
       chartElems.push(el("c:barChart", {}, kids.join("")));
     } else if (type === "line" || type === "area") {
