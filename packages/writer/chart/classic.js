@@ -22,6 +22,7 @@ import {
 import { buildAxesXml, buildRadarAxesXml } from "./axes.js";
 import { buildChartExParts } from "./chartex.js";
 import { EXPORTABLE_CHART_TYPES, CHARTEX_TYPES } from "./types.js";
+import { IMAGE_CHART_TYPES } from "./image.js";
 
 /**
  * 构建图表部件（chartN.xml + rels + xlsx）。
@@ -31,7 +32,9 @@ import { EXPORTABLE_CHART_TYPES, CHARTEX_TYPES } from "./types.js";
 export function buildChartParts(theme, chartEl, chartIndex) {
   const { series, cats, warn } = resolveChartSeries(theme, chartEl);
   const types = [...new Set(series.map((s) => s.type))];
-  const unsupported = types.filter((t) => !EXPORTABLE_CHART_TYPES.includes(t) && !CHARTEX_TYPES.includes(t));
+  // heatmap/sankey 不告警——slide.js collectChart 会走 SSR 图片化回退（image.js），
+  // 此前按"暂不支持原生导出，已跳过"告警系文案过时
+  const unsupported = types.filter((t) => !EXPORTABLE_CHART_TYPES.includes(t) && !CHARTEX_TYPES.includes(t) && !IMAGE_CHART_TYPES.includes(t));
   if (unsupported.length) {
     console.warn(`[writer] 图表 ${chartEl.elementId} 类型 ${unsupported.join("/")} 暂不支持原生导出（待官方参考比对），已跳过`);
     return null;

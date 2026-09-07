@@ -11,12 +11,32 @@
 //     xlsx 命名 Microsoft_Excel_WorksheetN.xlsx
 // ============================================================================
 
-import { el, esc, xmlHeader } from "../xml.js";
-import { resolveChartSeries, resolveDataLabels, hierarchyColor } from "../../model/chart.js";
-import { resolveColor, DEFAULT_FONT } from "../../model/theme.js";
+import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "../xml.js";
+import { resolveChartSeries, resolveDataLabels, hierarchyColor, CHART_DEFAULTS } from "../../model/chart.js";
+import { resolveColor, resolveFont, DEFAULT_FONT } from "../../model/theme.js";
 import { buildFill, buildLn, buildShadow } from "../drawing.js";
 import { buildChartXlsx } from "./xlsx.js";
 import { buildChartStyleXml, buildChartColorStyleXml } from "../chartex-style.js";
+
+/** cx 富文本字符样式（字号/颜色/字体；a: 段与经典 c:title 的 rich 同构。
+ * 参考文件里 chartEx 全是默认样式无实例可抄，结构按 chartex schema 写，
+ * 由 COM 打开无修复弹窗 + 渲染生效验证。 */
+function cxCharStyleXml(theme, { fontSize, color, fontFamily, defaultSize }) {
+  const fonts = resolveFont(theme, fontFamily || null);
+  const sz = Math.round((fontSize != null ? fontSize : defaultSize) * 100);
+  const fill = color
+    ? `<a:solidFill><a:srgbClr val="${hexToRgbVal(resolveColor(theme, color) || color)}"/></a:solidFill>`
+    : `<a:solidFill><a:schemeClr val="tx1"/></a:solidFill>`;
+  return { sz, inner: `${fill}<a:latin typeface="${escAttr(fonts.latin)}"/><a:ea typeface="${escAttr(fonts.ea)}"/>` };
+}
+
+/** cx:tx > cx:rich 富文本块（标题/轴标题样式承载，I27；有文本才调用——空元素泄漏占位）。 */
+function cxRichXml(theme, text, style) {
+  const { sz, inner } = cxCharStyleXml(theme, style);
+  return `<cx:rich><a:bodyPr/><a:lstStyle/>` +
+    `<a:p><a:pPr><a:defRPr sz="${sz}" b="0" i="0" u="none" strike="noStrike">${inner}</a:defRPr></a:pPr>` +
+    `<a:r><a:rPr lang="zh-CN" sz="${sz}">${inner}</a:rPr><a:t>${esc(text)}</a:t></a:r></a:p></cx:rich>`;
+}
 
 /** 父子表 → 叶子路径行（[最深...最浅] 每级一列，浅层列用最浅值补齐）。
  *  levels: 官方 Treemap/Sunburst.levels——显示层级数；超出部分聚合到边界层。 */
@@ -265,24 +285,62 @@ export function buildChartExParts(theme, chartEl, chartIndex) {
     return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   })}}`;
 
-  const titleText = typeof chartEl.title === "string" ? chartEl.title : chartEl.title?.text || "";
+  const titleCfg = chartEl.title;
+  const titleText = typeof titleCfg === "string" ? titleCfg : titleCfg?.text || "";
   // 无标题时省略 cx:title——空元素 `<cx:title/>` 会让 PowerPoint 渲染「图表标题」
   // 占位文字（09/11/12/17/19/21 页实测；cx:title 在 cx:chart 下可省略，省略不触发修复）
+  // 样式消费（I27）：cx:tx > cx:rich 承载字号/颜色/字体；此前 cx:txData 纯文本，
+  // 样式全落 PowerPoint 默认
   const titleXml = titleText
-    ? `<cx:title pos="t" align="ctr" overlay="0"><cx:tx><cx:txData><cx:v>${esc(titleText)}</cx:v></cx:txData></cx:tx></cx:title>`
+    ? `<cx:title pos="t" align="ctr" overlay="0"><cx:tx>${cxRichXml(theme, titleText, {
+      fontSize: titleCfg && typeof titleCfg === "object" ? titleCfg.fontSize : null,
+      color: titleCfg && typeof titleCfg === "object" ? titleCfg.color : null,
+      fontFamily: (titleCfg && typeof titleCfg === "object" ? titleCfg.fontFamily : null) || chartEl.fontFamily,
+      defaultSize: 14,
+    })}</cx:tx></cx:title>`
     : "";
+  // 图例（I27）：pos 必须是 t/b/l/r 枚举（此前直传 "bottom" 等拼写值，枚举外）；
+  // 配了字号/颜色/字体时以 cx:txPr 缺省字符样式承载（同经典 c:txPr 思路）
   const legendCfg = chartEl.legend;
-  const legendXml = legendCfg === true || typeof legendCfg === "object"
-    ? `<cx:legend pos="${typeof legendCfg === "object" && legendCfg.position ? legendCfg.position : "t"}" align="ctr" overlay="0"/>`
-    : "";
+  let legendXml = "";
+  if (legendCfg === true || typeof legendCfg === "object") {
+    const lc = typeof legendCfg === "object" ? legendCfg : {};
+    const posVal = { top: "t", bottom: "b", left: "l", right: "r" }[lc.position] || "t";
+    let legendTxPr = "";
+    if (lc.fontSize != null || lc.color || lc.fontFamily) {
+      const { sz, inner } = cxCharStyleXml(theme, {
+        fontSize: lc.fontSize, color: lc.color,
+        fontFamily: lc.fontFamily || chartEl.fontFamily, defaultSize: CHART_DEFAULTS.legendSize,
+      });
+      legendTxPr = `<cx:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="${sz}" b="0" i="0" u="none" strike="noStrike">${inner}</a:defRPr></a:pPr><a:endParaRPr lang="zh-CN"/></a:p></cx:txPr>`;
+    }
+    legendXml = `<cx:legend pos="${posVal}" align="ctr" overlay="0">${legendTxPr}</cx:legend>`;
+  }
 
-  // 轴（waterfall：分类 + 数值）。无轴标题时同样省略 cx:title（空元素泄漏
-  // 「坐标轴标题」占位文字）
+  // 轴（waterfall：分类 + 数值）。轴标题映射（I28）：xAxis→类目轴、yAxis→数值轴，
+  // 语义与预览 cartesianAxes 一致；有文本才写 cx:title（空元素泄漏「坐标轴标题」
+  // 占位文字，坑 3）。schema（MS-ODRAWXML CT_Axis）：title 紧跟 scaling、在
+  // gridlines/tickLabels 之前；CT_AxisTitle 无 pos/align/overlay 属性（带属性
+  // PowerPoint 直接拒开），位置由平台沿轴自动排布
   let axes = "";
   if (type === "waterfall") {
+    const cxAxisTitleXml = (axisCfg) => {
+      const c = axisCfg && typeof axisCfg === "object" ? axisCfg : null;
+      const tCfg = c ? (typeof c.title === "string" ? { text: c.title } : c.title || null) : null;
+      const t = tCfg?.text;
+      if (!t) return "";
+      return `<cx:title><cx:tx>${cxRichXml(theme, t, {
+        fontSize: tCfg.fontSize,
+        color: tCfg.color,
+        fontFamily: tCfg.fontFamily || chartEl.fontFamily,
+        defaultSize: CHART_DEFAULTS.axisSize,
+      })}</cx:tx></cx:title>`;
+    };
+    const xCfg = (Array.isArray(chartEl.xAxis) ? chartEl.xAxis[0] : chartEl.xAxis) || null;
+    const yCfg = (Array.isArray(chartEl.yAxis) ? chartEl.yAxis[0] : chartEl.yAxis) || null;
     axes =
-      `<cx:axis id="0"><cx:catScaling gapWidth="0.5"/><cx:tickLabels/></cx:axis>` +
-      `<cx:axis id="1"><cx:valScaling/><cx:majorGridlines/><cx:tickLabels/></cx:axis>`;
+      `<cx:axis id="0"><cx:catScaling gapWidth="0.5"/>${cxAxisTitleXml(xCfg)}<cx:tickLabels/></cx:axis>` +
+      `<cx:axis id="1"><cx:valScaling/>${cxAxisTitleXml(yCfg)}<cx:majorGridlines/><cx:tickLabels/></cx:axis>`;
   }
 
   // 系列默认格式覆盖（官方结构：cx:fmtOvrs > fmtOvr idx=0 → accent1，
