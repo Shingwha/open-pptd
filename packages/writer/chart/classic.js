@@ -101,7 +101,10 @@ export function buildChartParts(theme, chartEl, chartIndex) {
         el("c:varyColors", { val: "0" }),
         (() => {
           const ss = [];
-          for (const s of groupSeries) {
+          // 横向柱（barDir=bar）PowerPoint 自下而上绘制、图例倒序显示（Excel 经典行为），
+          // 反转发射顺序可同时修正组内柱序与图例序（此前与预览双双相反，15 页实测）
+          const ordered = horizontal ? [...groupSeries].reverse() : groupSeries;
+          for (const s of ordered) {
             const chs = seriesChannels(s, horizontal);
             ss.push(barSerXml(theme, s, sheetRange, serCounter++, labelsOf(s, "bar"), chs));
           }
