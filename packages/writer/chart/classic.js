@@ -192,9 +192,13 @@ export function buildChartParts(theme, chartEl, chartIndex) {
       if (isDonut) kids.push(el("c:holeSize", { val: Math.max(1, Math.min(90, Math.round(innerRadius * 100))) }));
       chartElems.push(el(`c:${isDonut ? "doughnutChart" : "pieChart"}`, {}, kids.join("")));
     } else if (type === "radar") {
+      // radarStyle：marker=线+点，filled=带填充。PowerPoint 无 per-series 混合样式
+      // （ filled 时全部系列填充），任一系列声明 areaColor（模型层缺省派生 lineColor
+      // 半透明，与预览一致）即整图 filled；此前写死 marker 致填充丢失（08/20 页实测）
+      const hasFill = groupSeries.some((s) => s.areaColor);
       chartElems.push(
         el("c:radarChart", {}, [
-          el("c:radarStyle", { val: "marker" }),
+          el("c:radarStyle", { val: hasFill ? "filled" : "marker" }),
           el("c:varyColors", { val: "0" }),
           (() => {
             const ss = [];
