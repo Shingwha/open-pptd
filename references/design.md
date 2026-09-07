@@ -385,6 +385,8 @@ Missing fonts do not block export: they are skipped with a warning, the PPTX is 
 
 By default, export embeds fonts in the `deck.fonts` resource table that **hit the built-in library or carry a `url`** (disable with `--no-embed-fonts`). The embedded PPTX carries its fonts, so any machine opens without missing glyphs.
 
+Embedded fonts are **subsets** by default (only the glyphs used in the deck + the ASCII baseline): tiny files, faithful viewing, but **editing the exported PPTX with new text falls back to system fonts** for glyphs the subset lacks. Keep this default. Re-export with `--full-fonts` — every embedded font ships complete (viewing *and* editing anywhere) — only when the user reports missing fonts after editing an exported file, or explicitly needs edit-after-export; CJK fonts add ~3–25 MB each. The browser editor's export dialog exposes the same choice as a pair of subset/complete chips (embedding scope).
+
 ### 1. deck.fonts declaration syntax
 
 ```yaml

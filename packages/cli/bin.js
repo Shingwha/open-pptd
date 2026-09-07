@@ -30,6 +30,7 @@ function usage() {
       "      --project: 挂载任意项目目录到浏览器（?deck=project/deck.pptd），端口占用自动顺延\n" +
       "  open-pptd export <deck.pptd> [-o <out.pptx>]  命令行导出 PPTX\n" +
       "                           [--no-embed-fonts]   不嵌入字体（默认嵌入）\n" +
+      "                           [--full-fonts]       嵌入完整字体（默认子集化；导出后可继续编辑，文件更大）\n" +
       "  open-pptd export-project <deck.pptd> [-o <out.zip>]  导出项目包（pptd+pages+media，原样打包）\n" +
       "  open-pptd check <deck.pptd>                   结构自查（schema/token/资源/字体/几何/对比度）\n" +
       "  open-pptd render <deck.pptd> [-o <目录>] [--page <n|all>] [--scale <1|2|3>]\n" +
@@ -160,6 +161,7 @@ async function main() {
         outPath: outArg(args),
         theme: opt(args, "--theme"),
         embedFonts: !args.includes("--no-embed-fonts"),
+        fullFonts: args.includes("--full-fonts"),
       });
       console.log(`✓ 已导出 → ${finalPath}`);
     } catch (err) {

@@ -45,6 +45,13 @@
 
 /* 导出 PPTX 对话框选项区（saver.js openExportDialog） */
 .export-pptx-opts { display: flex; flex-direction: column; gap: var(--space-2); }
+.export-pptx-scope {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.export-pptx-scope.off { opacity: 0.45; pointer-events: none; }
 
 /* 导出图片对话框（saver.js openImageExportDialog）：页面多选 chips + 倍率单选 chips */
 .export-img-opts { display: flex; flex-direction: column; gap: var(--space-2); }

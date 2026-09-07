@@ -113,8 +113,9 @@ export async function exportProject({ manifest, outPath = null }) {
 }
 
 /** 导出 PPTX。字体嵌入统一由 writer 处理：deck.fonts 的 file/url 或注册表引用
- *  （{family: <注册名>}）→ 从内置字体库（FONT_LIB_DIR）取字 → 子集化 → EOT 嵌入。 */
-export async function exportDeck({ manifest, outPath = null, embedFonts = true, theme = null }) {
+ *  （{family: <注册名>}）→ 从内置字体库（FONT_LIB_DIR）取字 → 子集化 → EOT 嵌入。
+ *  fullFonts=true 时全量嵌入（跳过子集化，导出后可继续编辑，对应 --full-fonts）。 */
+export async function exportDeck({ manifest, outPath = null, embedFonts = true, fullFonts = false, theme = null }) {
   const { manifestText, deckDir, pageFiles } = loadProjectFiles(manifest);
   const deck = parseDeck(manifestText, pageFiles);
   // 导出前置闸门（v3 §4.4）：error 阻断导出，warning 报告后继续
@@ -150,6 +151,7 @@ export async function exportDeck({ manifest, outPath = null, embedFonts = true, 
   const bytes = await buildPptx(deck, {
     loadImage: createLoadImage(deckDir),
     embedFonts,
+    fullFonts,
     fontDir: FONT_LIB_DIR,
     fs: { readFileSync },
     iconRegistry,

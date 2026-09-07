@@ -60,6 +60,7 @@ export function magicMatches(bytes, ext) {
  * @param {object} [options]
  *   - loadImage / imageMap / root：图片（同旧版）
  *   - fontFiles: { [family]: Uint8Array } 预读字体字节（浏览器/Node 均可）
+ *   - fullFonts: boolean 嵌入字体全量嵌入（跳过子集化，导出后可继续编辑）
  * @returns {Promise<Uint8Array>}
  */
 export async function buildPptx(deck, options = {}) {

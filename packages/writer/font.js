@@ -157,7 +157,9 @@ export function skipReasonText(r) {
 
 /**
  * 装配嵌入字体：收集 → 加载 → 校验 → 子集化/EOT → 部件 + XML 片段。
- * @param {object} options embedFonts=false 时跳过嵌入（声明保留，仅本次导出不嵌）
+ * @param {object} options embedFonts=false 时跳过嵌入（声明保留，仅本次导出不嵌）；
+ *   fullFonts=true 时所有嵌入字体全量嵌入（覆盖 deck.fonts / 注册表的 subset 建议，
+ *   仅本次导出生效，不回写声明——对应 PowerPoint「嵌入所有字符（便于编辑）」）
  * @returns {Promise<{ parts: {path,bytes}[], lstXml: string, rels: {id,target}[],
  *                     subsetMode: boolean, skipped: {family,reason,detail?}[],
  *                     lineMetrics: Record<string, number> }>}}
@@ -212,7 +214,7 @@ export async function buildEmbeddedFonts(deck, options = {}) {
     }
     let result;
     try {
-      result = fontToFntdata(bytes, charText, spec.subset);
+      result = fontToFntdata(bytes, charText, options.fullFonts ? false : spec.subset);
     } catch (e) {
       console.warn(`[font] 字体「${spec.family}」嵌入失败: ${e.message}`);
       skipped.push({ family: spec.family, reason: "embed-failed", detail: e.message });

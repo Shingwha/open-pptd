@@ -4,7 +4,7 @@
 // 保存项目（统一入口 saveProject）：
 //   - 本地挂载模式：POST /api/save 批量写回磁盘（文本 utf8 / 图片 base64）
 //   - 部署模式（/api/save 不存在）：降级打包下载项目 zip 备份
-// 导出 PPTX（exportPptx）：对话框勾选字体嵌入 → buildPptx → 下载。
+// 导出 PPTX（exportPptx）：对话框勾选字体嵌入 + 嵌入范围（子集/完整）→ buildPptx → 下载。
 // 依赖注入：images（dataURL 图片落盘）、fontManager（字体库同步/嵌入）、
 // onSaved（保存成功后抑制 SSE 刷新回环）、renderStatusBar。
 // ============================================================================
@@ -22,6 +22,9 @@ import { writeFiles } from "./handle-io.js";
 import { createImageExporter } from "../export-image.js";
 import { mediaFilesOfDeck } from "./images.js";
 
+/** 字节数 → 人类可读（MB 一位小数 / KB 取整）。 */
+const fmtSize = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`);
+
 export function createProjectSaver({ state, images, fontManager, renderStatusBar, onSaved }) {
   /** 保存成功：当前 deck 记为已落盘基线（撤销回它即恢复干净，不再一律标脏）。 */
   const markSaved = () => {
@@ -31,7 +34,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
   // --------------------------------------------------------------------------
   // 导出（PPTX 对话框 / 项目包 zip 直达，入口在顶栏「文件」菜单）
   // --------------------------------------------------------------------------
-  /** 导出 PPTX 对话框：嵌入字体勾选（默认开）+ 字体管理入口。 */
+  /** 导出 PPTX 对话框：嵌入字体勾选（默认开）+ 嵌入范围（子集/完整）+ 字体管理入口。 */
   function openExportDialog() {
     const wrap = document.createElement("div");
     wrap.className = "export-pptx-opts";
@@ -40,14 +43,53 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     embedCb.checked = true;
     const label = document.createElement("label");
     label.className = "prop-check";
-    label.append(embedCb, document.createTextNode("嵌入字体（文件更大，换机打开不丢字体；子集化后体积可控）"));
+    label.append(embedCb, document.createTextNode("嵌入字体（文件更大，换机打开不丢字体）"));
     wrap.appendChild(label);
+
+    // —— 嵌入范围：子集（缺省，仅已用字形）/ 完整（全量，导出后可继续编辑新文字）——
+    let fullFonts = false;
+    const scope = document.createElement("div");
+    scope.className = "export-pptx-scope";
+    const scopeLabel = document.createElement("div");
+    scopeLabel.className = "export-img-label";
+    scopeLabel.textContent = "嵌入范围";
+    const scopeBox = document.createElement("div");
+    scopeBox.className = "export-img-chips";
+    const scopeChips = [
+      [false, "子集（体积小）"],
+      [true, "完整（可编辑）"],
+    ].map(([val, text]) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "export-chip" + (val === fullFonts ? " on" : "");
+      chip.textContent = text;
+      chip.onclick = () => {
+        fullFonts = val;
+        scopeChips.forEach((c) => c.classList.toggle("on", c === chip));
+        renderHint();
+      };
+      scopeBox.appendChild(chip);
+      return chip;
+    });
+    scope.append(scopeLabel, scopeBox);
+    wrap.appendChild(scope);
+    embedCb.addEventListener("change", () => scope.classList.toggle("off", !embedCb.checked));
+
     const hint = document.createElement("div");
     hint.className = "prop-hint";
-    const embedded = Object.keys(state.fontLibrary).filter((k) => state.fontLibrary[k].embed);
-    hint.textContent = embedded.length
-      ? `当前 ${embedded.length} 个字体将嵌入（${embedded.join(" / ")}）`
-      : "当前没有待嵌入字体；可在「字体管理」中添加本地或网络字体。";
+    const renderHint = () => {
+      const embedded = Object.keys(state.fontLibrary).filter((k) => state.fontLibrary[k].embed);
+      let text = embedded.length
+        ? `当前 ${embedded.length} 个字体将嵌入（${embedded.join(" / ")}）`
+        : "当前没有待嵌入字体；可在「字体管理」中添加本地或网络字体。";
+      if (fullFonts && embedded.length) {
+        // 全量增量按字体库字节估算（个别字体字节未预载时为下限）
+        const bytes = embedded.reduce((n, k) => n + (state.fontLibrary[k].bytes?.length || 0), 0);
+        if (bytes) text += `；完整模式预计 +${fmtSize(bytes)}`;
+      }
+      hint.textContent = text;
+    };
+    renderHint();
     wrap.appendChild(hint);
     const mgrBtn = document.createElement("button");
     mgrBtn.className = "btn btn-sm";
@@ -61,12 +103,12 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
       doneText: "导出",
       onDone() {
         close();
-        doExport(embedCb.checked);
+        doExport(embedCb.checked, fullFonts);
       },
     });
   }
 
-  function doExport(embedFonts) {
+  function doExport(embedFonts, fullFonts = false) {
     (async () => {
       try {
         const skipped = [];
@@ -75,6 +117,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
           iconDefs: state.iconMap, // 图标预读缓存（icons.js；未预载项由 loadIconDefs 回源补齐）
           fontFiles: embedFonts ? fontManager.exportFontFiles() : null,
           embedFonts,
+          fullFonts,
           onFontSkipped: (list) => skipped.push(...list),
         });
         const name = safeFileName(state.deck.title || "deck") + ".pptx";
