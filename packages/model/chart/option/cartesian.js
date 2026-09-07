@@ -66,9 +66,12 @@ function waterfallOption(ctx) {
   return {
     ...common,
     series: [
+      // 双 bar stack 模拟：透明基座 = 段起点 start，彩色段 = 段高 y（不是累计 end——
+      // ECharts stack 会把两段相加，若彩段用 end 顶端变 2×start+y，柱体成倍拉高），
+      // 叠加后顶端 = start + y = end，与 writer chartEx 导出的 PowerPoint 重算结果一致
       { type: "bar", stack: "wf", silent: true, barWidth, data: data.map((d) => d.start), itemStyle: { color: "transparent" }, tooltip: { show: false } },
       {
-        type: "bar", stack: "wf", barWidth, data: data.map((d) => d.end),
+        type: "bar", stack: "wf", barWidth, data: data.map((d) => d.y),
         itemStyle: { color: (p) => colorOf(data[p.dataIndex]) },
         label: label ? { ...label, formatter: fmt } : undefined,
       },
