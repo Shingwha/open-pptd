@@ -109,8 +109,14 @@ export function scatterSerXml(theme, s, sheetRange, idx, labels, chs) {
     seriesNameXml(s.name, sheetRange.nameCol(s)),
   ];
   // s.color = fill || 主题色循环默认（模型解析）——不配 fill 也要写 spPr，
-  // 否则 PowerPoint 对 bubbleChart 等不自动区分系列色（06 页实测只有一种气泡）
-  if (s.color) kids.push(el("c:spPr", {}, fillXml(theme, s.color)));
+  // 否则 PowerPoint 对 bubbleChart 等不自动区分系列色（06 页实测只有一种气泡）。
+  // 散点语义 = 仅 marker 不连线：scatterStyle 虽为 lineMarker（OOXML 无纯散点值），
+  // 原生「仅带数据标记的散点图」即靠 ser 级 ln noFill 抑制连线，缺省会被连线（05 页实测）。
+  // CT_ScatterSer 只允许一个 spPr（fill + ln 同元素，写两个会触发 PowerPoint 修复）。
+  const spPrKids = [];
+  if (s.color) spPrKids.push(fillXml(theme, s.color));
+  spPrKids.push(el("a:ln", {}, el("a:noFill")));
+  kids.push(el("c:spPr", {}, spPrKids.join("")));
   const marker = markerXml(theme, s.marker, s.color);
   if (marker) kids.push(marker);
   if (labels) kids.push(dLblsXml(theme, labels));
