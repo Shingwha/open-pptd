@@ -116,8 +116,11 @@ export function buildChartParts(theme, chartEl, chartIndex) {
       kids.push(el("c:axId", { val: catId }), el("c:axId", { val: valId }));
       chartElems.push(el("c:barChart", {}, kids.join("")));
     } else if (type === "line" || type === "area") {
+      // grouping 与 bar 同源（model resolveBarLayout 判定 stack/percent）：
+      // 此前写死 "standard"，stack: value/percent 导出丢失，叠积图变从 0 重叠绘制（04 页实测）
+      const grouping = isPercent ? "percentStacked" : isStacked ? "stacked" : "standard";
       const kids = [
-        el("c:grouping", { val: "standard" }),
+        el("c:grouping", { val: grouping }),
         el("c:varyColors", { val: "0" }),
         (() => {
           const ss = [];
