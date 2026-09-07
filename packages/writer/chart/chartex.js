@@ -266,21 +266,23 @@ export function buildChartExParts(theme, chartEl, chartIndex) {
   })}}`;
 
   const titleText = typeof chartEl.title === "string" ? chartEl.title : chartEl.title?.text || "";
-  // 官方结构：cx:title 始终存在（无标题时空元素带定位属性，对照 waterfall-color.pptx）
+  // 无标题时省略 cx:title——空元素 `<cx:title/>` 会让 PowerPoint 渲染「图表标题」
+  // 占位文字（09/11/12/17/19/21 页实测；cx:title 在 cx:chart 下可省略，省略不触发修复）
   const titleXml = titleText
     ? `<cx:title pos="t" align="ctr" overlay="0"><cx:tx><cx:txData><cx:v>${esc(titleText)}</cx:v></cx:txData></cx:tx></cx:title>`
-    : `<cx:title pos="t" align="ctr" overlay="0"/>`;
+    : "";
   const legendCfg = chartEl.legend;
   const legendXml = legendCfg === true || typeof legendCfg === "object"
     ? `<cx:legend pos="${typeof legendCfg === "object" && legendCfg.position ? legendCfg.position : "t"}" align="ctr" overlay="0"/>`
     : "";
 
-  // 轴（waterfall：分类 + 数值；官方结构 axis 内带空 cx:title）
+  // 轴（waterfall：分类 + 数值）。无轴标题时同样省略 cx:title（空元素泄漏
+  // 「坐标轴标题」占位文字）
   let axes = "";
   if (type === "waterfall") {
     axes =
-      `<cx:axis id="0"><cx:catScaling gapWidth="0.5"/><cx:title/><cx:tickLabels/></cx:axis>` +
-      `<cx:axis id="1"><cx:valScaling/><cx:title/><cx:majorGridlines/><cx:tickLabels/></cx:axis>`;
+      `<cx:axis id="0"><cx:catScaling gapWidth="0.5"/><cx:tickLabels/></cx:axis>` +
+      `<cx:axis id="1"><cx:valScaling/><cx:majorGridlines/><cx:tickLabels/></cx:axis>`;
   }
 
   // 系列默认格式覆盖（官方结构：cx:fmtOvrs > fmtOvr idx=0 → accent1，
