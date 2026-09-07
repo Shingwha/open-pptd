@@ -1,0 +1,103 @@
+// ============================================================================
+// model/chart/option/shared.js — ECharts option 组装的公共样式片段（纯函数，无 DOM）
+// ----------------------------------------------------------------------------
+// 本目录（model/chart/option/）是预览渲染与导出图片化（SSR）共享的 option 单源。
+// 纯数据组装：禁止 import echarts / 触碰 window/document（dep-graph 强制）。
+// ============================================================================
+
+import { resolveColor, resolveFont } from "../../theme.js";
+import { dashSpec } from "../../style-spec.js";
+import { CHART_DEFAULTS } from "../meta.js";
+import { resolveDataLabels } from "../labels.js";
+
+/** 主题轴/文字缺省样式（字号来自官方 CHART_DEFAULTS 单源）。 */
+export const AXIS_TEXT = { color: "#6b7280", fontSize: CHART_DEFAULTS.axisSize };
+
+/** 笛卡尔图 grid 边距（px；ECharts 布局与类目标签拥挤估算共用一份）。 */
+export const CHART_GRID = { left: 48, right: 24, top: 28, bottom: 36 };
+
+/** 主题图表样式（网格/轴/文字色跟随主题 colors 键，缺省用内置默认）。 */
+export function chartStyleColors(theme) {
+  return {
+    labelColor: resolveColor(theme, theme.colors?.text) || "#1f2937",
+    axisColor: resolveColor(theme, theme.colors?.line) || "#d8dce1",
+    gridColor: resolveColor(theme, theme.colors?.line) || "#f0f2f5",
+    legendColor: resolveColor(theme, theme.colors?.text) || "#1f2937",
+  };
+}
+
+/** 官方 dataLabels → ECharts label 配置（含样式 color/fontSize）。 */
+export function echartsLabel(theme, el, s, { position = "top", pie = false } = {}) {
+  const cfg = resolveDataLabels(el, s, s.type);
+  if (!cfg) return undefined;
+  const { labelColor } = chartStyleColors(theme);
+  let formatter;
+  if (cfg.content === "percentage") formatter = pie ? "{d}%" : (p) => `${(p.percent ?? 0).toFixed(1)}%`;
+  else if (cfg.content === "category") formatter = pie ? "{b}" : (p) => p.name;
+  else formatter = (p) => (cfg.numberFormat ? fmtNum(p.value, cfg.numberFormat) : String(p.value));
+  return {
+    show: true,
+    position,
+    fontSize: cfg.fontSize || CHART_DEFAULTS.labelSize,
+    color: cfg.color ? resolveColor(theme, cfg.color) || labelColor : labelColor,
+    formatter,
+  };
+}
+
+export function fmtNum(v, format) {
+  const n = Number(v);
+  if (Number.isNaN(n)) return String(v ?? "");
+  if (format === "0%") return `${Math.round(n * 100)}%`;
+  if (format === "0.0%") return `${(n * 100).toFixed(1)}%`;
+  if (/^0\.0+$/.test(format)) return n.toFixed(format.length - 2);
+  if (format === "0.0E+00") return n.toExponential(1);
+  if (format === "#,##0") return n.toLocaleString("en-US");
+  return String(Math.round(n));
+}
+
+/** 系列主体色（与 writer 同源；$key 主题引用 → 解析为具体色）。 */
+export function seriesColor(theme, s) {
+  if (s.type === "line" || s.type === "area" || s.type === "radar") return resolveColor(theme, s.lineColor) || resolveColor(theme, s.color);
+  return resolveColor(theme, s.color);
+}
+
+/** 官方 marker → ECharts symbol（fill/border 主题引用解析）。 */
+export function markerSymbol(theme, marker, color) {
+  if (!marker || marker === false) return { show: false };
+  const cfg = typeof marker === "object" ? marker : {};
+  const shape = { circle: "circle", rect: "rect", diamond: "diamond", triangle: "triangle" }[cfg.shape] || "circle";
+  return {
+    show: true,
+    symbol: shape,
+    symbolSize: cfg.size || 8,
+    itemStyle: { color: resolveColor(theme, cfg.fill) || color, borderColor: resolveColor(theme, cfg.border?.color), borderWidth: cfg.border?.width },
+  };
+}
+
+/** 图表顶层公共 option（字体/tooltip 触发/无动画）。 */
+export function baseOption(theme, el) {
+  const fonts = resolveFont(theme, el.fontFamily || null);
+  return {
+    textStyle: { fontFamily: `"${fonts.latin}","${fonts.ea}",sans-serif` },
+    tooltip: { trigger: "axis" },
+    animation: false,
+  };
+}
+
+/** 图例开关判定（官方默认表 CHART_DEFAULTS.legendOffTypes 单源）。 */
+export function legendState(theme, el, types) {
+  const { legendColor } = chartStyleColors(theme);
+  const legendDefaultOff = new Set(CHART_DEFAULTS.legendOffTypes);
+  const legendOn = el.legend !== false && !(el.legend === undefined && [...types].every((t) => legendDefaultOff.has(t)));
+  const legendPos = typeof el.legend === "object" && el.legend.position ? el.legend.position : "bottom";
+  const legendCfg = typeof el.legend === "object" ? el.legend : {};
+  const legendOpt = {
+    show: legendOn,
+    ...(legendPos !== "bottom" ? { [legendPos]: 0 } : { bottom: 0 }),
+    textStyle: { color: legendCfg.color ? resolveColor(theme, legendCfg.color) || legendColor : legendColor, fontSize: legendCfg.fontSize || CHART_DEFAULTS.legendSize },
+    icon: "roundRect", itemWidth: 14, itemHeight: 8,
+  };
+  return { legendOn, legendOpt };
+}
+
+export { dashSpec, resolveColor };
