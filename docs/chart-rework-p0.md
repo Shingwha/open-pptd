@@ -107,6 +107,14 @@
 - 16 页次轴组合图（bar+line 双 Y 轴）两端高度一致——组合图管线现状可用。
 - 20 页 nullHandling+reverse、21 页 HLC 股价线、15 页横向柱类目序：行为一致。
 
+## 执行进度（v1.5.0，2026-09-08）
+
+- ✅ P0-P3 结构阶段：model/chart 分域 barrel、writer/chart 八模块、option 下沉 model（提交 ca7da4d..17a392b）
+- ✅ P4 已销项：I1-I13、I15-I18(预览侧)、I21、I23、I24、I28(预览侧)；过程中发现并修复 xfrm 双层包裹回归（93060c9）
+- ✅ P5：SSR 矢量图回退落地，SKILL.md 更新（bddfd55）；发现并修复 pptx.js 编号口径（93060c9）
+- ✅ P6：design.md 决策边界收紧（5f0d82e）
+- ⏳ 待办：I19 manualLayout 单源、I27 chartEx 样式透传（writer 半）、I28 cx:axis title 映射、I14/I22 文档化、回归页 23-props3、examples 全量导出回归
+
 ## 修复阶段映射
 
 | 阶段 | 项目 |
