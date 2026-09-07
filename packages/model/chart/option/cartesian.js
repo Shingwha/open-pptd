@@ -6,6 +6,7 @@
 import { resolveColor } from "../../theme.js";
 import { dashSpec } from "../../style-spec.js";
 import { resolveBarLayout } from "../layout.js";
+import { toAxisArray } from "../axes.js";
 import { resolveChartDirection, seriesAxisIndex, seriesChannels } from "../axes.js";
 import { hexA } from "../colors.js";
 import { resolveDataLabels } from "../labels.js";
@@ -30,7 +31,8 @@ function bubbleSizeFn(s) {
   return (v) => minR + t(v) * (maxR - minR);
 }
 
-/** waterfall：双 bar stack 模拟（透明基座 + 彩色段）。自拼轴（暂不消费轴配置）。 */
+/** waterfall：双 bar stack 模拟（透明基座 + 彩色段）。轴走共用 cartesianAxes
+ * （此前自拼硬编码轴、忽略 xAxis/yAxis 配置——I28）。 */
 function waterfallOption(ctx) {
   const { theme, el, series, cats, common } = ctx;
   const s = series[0];
@@ -63,6 +65,7 @@ function waterfallOption(ctx) {
     const v = data[p.dataIndex].y;
     return wfLabelCfg?.numberFormat ? fmtNum(v, wfLabelCfg.numberFormat) : String(v);
   };
+  const axes = cartesianAxes(theme, el, cats, series, { horizontal: false });
   return {
     ...common,
     series: [
@@ -76,8 +79,8 @@ function waterfallOption(ctx) {
         label: label ? { ...label, formatter: fmt } : undefined,
       },
     ],
-    xAxis: { type: "category", data: cats, axisLine: { lineStyle: { color: chartStyleColors(theme).axisColor } }, axisLabel: AXIS_TEXT },
-    yAxis: { type: "value", axisLine: { lineStyle: { color: chartStyleColors(theme).axisColor } }, splitLine: { lineStyle: { color: chartStyleColors(theme).gridColor } }, axisLabel: AXIS_TEXT },
+    xAxis: axes.xAxis,
+    yAxis: axes.yAxis,
   };
 }
 
@@ -92,6 +95,13 @@ export function buildCartesian(ctx) {
   const stackedPercent = series.some((s) => s.stack === "percent");
   const horizontal = resolveChartDirection(el, series);
   const axes = cartesianAxes(theme, el, cats, series, { horizontal, percentMax: stackedPercent, scatter: primary === "scatter" || primary === "bubble" });
+
+  // 类目轴带标题时绘图区底部让位（轴标题 nameGap 排在 grid 之外，不留位会压到图例）
+  if (!horizontal && primary !== "scatter" && primary !== "bubble") {
+    const xCfg = toAxisArray(el.xAxis)[0] || {};
+    const xt = typeof xCfg.title === "string" ? xCfg.title : xCfg.title?.text;
+    if (xt) common.grid = { ...common.grid, bottom: common.grid.bottom + 18 };
+  }
 
   if (primary === "scatter" || primary === "bubble") {
     return {

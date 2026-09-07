@@ -12,19 +12,31 @@ import { AXIS_TEXT, CHART_GRID, chartStyleColors, fmtNum } from "./shared.js";
  * 水平图 xAxis 数组 + xAxisIndex；次轴换侧 right/top）。
  */
 export function cartesianAxes(theme, el, cats, series, { horizontal = false, percentMax = false, scatter = false } = {}) {
-  const { axisColor, gridColor } = chartStyleColors(theme);
+  const { axisColor, gridColor, labelColor } = chartStyleColors(theme);
   const xAxes = toAxisArray(el.xAxis);
   const yAxes = toAxisArray(el.yAxis);
-  const mkAxis = (cfg, def, { hideGridDefault = false } = {}) => {
+  const mkAxis = (cfg, def, { hideGridDefault = false, vertical = false } = {}) => {
     if (cfg === false) return { show: false, type: def.type };
     const o = typeof cfg === "object" ? cfg : {};
+    // 轴标题：居中沿轴排布（PowerPoint 约定），竖轴旋转 90°——此前用 ECharts 默认
+    // name（渲染在轴端外侧），竖轴标题跑到左上角、横轴标题不可见
+    const titleCfg = typeof o.title === "string" ? { text: o.title } : o.title || null;
+    // 轴线箭头（官方 axisLine.arrow → ECharts symbol 对）
+    const arrow = o.axisLine && typeof o.axisLine === "object" ? o.axisLine.arrow : null;
+    const arrowSym = arrow === "end" || arrow === true ? ["none", "arrow"] : arrow === "start" ? ["arrow", "none"] : arrow === "both" ? ["arrow", "arrow"] : null;
     return {
       type: o.type || def.type,
       min: o.min,
       max: o.max,
       inverse: o.reverse,
-      name: typeof o.title === "string" ? o.title : o.title?.text,
-      axisLine: { show: o.axisLine !== false, lineStyle: { color: o.axisLine && typeof o.axisLine === "object" && o.axisLine.color ? resolveColor(theme, o.axisLine.color) || axisColor : axisColor } },
+      ...(titleCfg?.text ? {
+        name: titleCfg.text,
+        nameLocation: "middle",
+        nameGap: vertical ? 34 : 22,
+        nameRotate: vertical ? 90 : 0,
+        nameTextStyle: { color: titleCfg.color ? resolveColor(theme, titleCfg.color) || labelColor : labelColor, fontSize: titleCfg.fontSize || AXIS_TEXT.fontSize },
+      } : {}),
+      axisLine: { show: o.axisLine !== false, ...(arrowSym ? { symbol: arrowSym } : {}), lineStyle: { color: o.axisLine && typeof o.axisLine === "object" && o.axisLine.color ? resolveColor(theme, o.axisLine.color) || axisColor : axisColor } },
       axisLabel: o.label === false ? { show: false } : { ...AXIS_TEXT, ...(typeof o.label === "object" ? { color: o.label.color ? resolveColor(theme, o.label.color) || AXIS_TEXT.color : AXIS_TEXT.color, fontSize: o.label.fontSize || AXIS_TEXT.fontSize, formatter: o.label.numberFormat ? (v) => fmtNum(v, o.label.numberFormat) : (v) => `${v}` } : { formatter: (v) => `${v}` }) },
       splitLine: o.gridLine === false || hideGridDefault ? { show: false } : { lineStyle: { color: typeof o.gridLine === "object" && o.gridLine.color ? resolveColor(theme, o.gridLine.color) || gridColor : gridColor, type: typeof o.gridLine === "object" ? dashSpec(o.gridLine.style)?.cssBorder || "solid" : "solid" } },
     };
@@ -39,10 +51,18 @@ export function cartesianAxes(theme, el, cats, series, { horizontal = false, per
     const crowded = cats.length > 0 && (vertical
       ? cats.reduce((w, c) => w + textWidth(c, fs), 0) > axisLength * 0.8
       : cats.length * fs * 1.4 > axisLength * 0.8);
+    // 类目轴标题（与 mkAxis 同款居中排布；此前 catAxis 不消费 title，横轴标题缺失）
+    const titleCfg = typeof cfg.title === "string" ? { text: cfg.title } : cfg.title || null;
     return {
       type: "category",
       data: cats,
       axisLine: { lineStyle: { color: axisColor } },
+      ...(titleCfg?.text ? {
+        name: titleCfg.text,
+        nameLocation: "middle",
+        nameGap: vertical ? 26 : 22,
+        nameTextStyle: { color: titleCfg.color ? resolveColor(theme, titleCfg.color) || labelColor : labelColor, fontSize: titleCfg.fontSize || AXIS_TEXT.fontSize },
+      } : {}),
       axisLabel: cfg.label === false ? { show: false } : {
         ...AXIS_TEXT,
         color: lc.color ? resolveColor(theme, lc.color) || AXIS_TEXT.color : AXIS_TEXT.color,
@@ -65,7 +85,7 @@ export function cartesianAxes(theme, el, cats, series, { horizontal = false, per
     }
     const ys = [];
     for (let i = 0; i <= maxY; i++) {
-      const a = mkAxis(yAxes[i], { type: "value" });
+      const a = mkAxis(yAxes[i], { type: "value" }, { vertical: true });
       if (i > 0) a.position = "right";
       ys.push(a);
     }
@@ -84,7 +104,7 @@ export function cartesianAxes(theme, el, cats, series, { horizontal = false, per
   // 垂直：x = 分类轴，y = 数值轴数组（次轴 right）
   const ys = [];
   for (let i = 0; i <= maxY; i++) {
-    const a = mkAxis(yAxes[i], { type: "value" });
+    const a = mkAxis(yAxes[i], { type: "value" }, { vertical: true });
     if (percentMax && i === 0) {
       a.max = 100;
       a.axisLabel = { ...(a.axisLabel || {}), formatter: "{value}%" };
