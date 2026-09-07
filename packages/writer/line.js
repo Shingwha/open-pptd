@@ -11,7 +11,7 @@
 import { el, escAttr, angleToOOXML } from "./xml.js";
 import { buildFill, buildXfrm } from "./drawing.js";
 import { parsePoints, smoothSegments } from "../model/geometry.js";
-import { dashSpec } from "../model/style-spec.js";
+import { dashSpec, ooxmlArrow } from "../model/style-spec.js";
 import { svgPathToOoxml } from "./custgeom.js";
 
 /** 线条元素 → XML（多点曲线为 p:sp+custGeom，2 点直线为 p:cxnSp）。 */
@@ -127,12 +127,8 @@ export function lineXml(theme, element, ctx) {
 }
 
 function headEnd(type) {
-  return el("a:headEnd", { type: arrowType(type), w: "med", len: "med" });
+  return el("a:headEnd", { type: ooxmlArrow(type), w: "med", len: "med" });
 }
 function tailEnd(type) {
-  return el("a:tailEnd", { type: arrowType(type), w: "med", len: "med" });
-}
-function arrowType(type) {
-  const map = { arrow: "triangle", stealth: "stealth", diamond: "diamond", oval: "oval" };
-  return map[type] || "triangle";
+  return el("a:tailEnd", { type: ooxmlArrow(type), w: "med", len: "med" });
 }

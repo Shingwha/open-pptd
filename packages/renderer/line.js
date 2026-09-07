@@ -7,7 +7,7 @@
 // ============================================================================
 
 import { resolveColor } from "../model/theme.js";
-import { dashSpec } from "../model/style-spec.js";
+import { dashSpec, ooxmlArrow } from "../model/style-spec.js";
 import { parsePoints, smoothSegments } from "../model/geometry.js";
 import { createElementShell } from "./shell.js";
 
@@ -70,21 +70,52 @@ export function renderLine(theme, el) {
   const startAngle = Math.atan2(rel[1][1] - y1, rel[1][0] - x1);
   const endArrow = el.arrow?.[1];
   if (endArrow) {
-    svg.appendChild(arrowHead(x2, y2, endAngle, color, Math.max(8, width * 5)));
+    svg.appendChild(arrowHead(ooxmlArrow(endArrow), x2, y2, endAngle, color, Math.max(8, width * 5)));
   }
   const startArrow = el.arrow?.[0];
   if (startArrow) {
-    svg.appendChild(arrowHead(x1, y1, startAngle, color, Math.max(8, width * 5)));
+    svg.appendChild(arrowHead(ooxmlArrow(startArrow), x1, y1, startAngle, color, Math.max(8, width * 5)));
   }
   return svg;
 }
 
-function arrowHead(x, y, angle, color, size) {
+/** 箭头 SVG（triangle/stealth/diamond 多边形 + oval 椭圆），与导出端
+ * a:headEnd/tailEnd 的四种 type 同名同向（尖端落在端点、沿端点切线方向）。 */
+function arrowHead(kind, x, y, angle, color, size) {
+  if (kind === "oval") {
+    const node = document.createElementNS(SVG_NS, "ellipse");
+    const cx = x - (size / 2) * Math.cos(angle);
+    const cy = y - (size / 2) * Math.sin(angle);
+    node.setAttribute("cx", cx);
+    node.setAttribute("cy", cy);
+    node.setAttribute("rx", size / 2);
+    node.setAttribute("ry", size * 0.3);
+    node.setAttribute("transform", `rotate(${(angle * 180) / Math.PI} ${cx} ${cy})`);
+    node.setAttribute("fill", color);
+    return node;
+  }
   const p = document.createElementNS(SVG_NS, "polygon");
-  const tip = [x, y];
-  const base1 = [x - size * Math.cos(angle - 0.45), y - size * Math.sin(angle - 0.45)];
-  const base2 = [x - size * Math.cos(angle + 0.45), y - size * Math.sin(angle + 0.45)];
-  p.setAttribute("points", `${tip[0]},${tip[1]} ${base1[0]},${base1[1]} ${base2[0]},${base2[1]}`);
+  const wing = (a) => [x - size * Math.cos(angle + a), y - size * Math.sin(angle + a)];
+  let pts;
+  if (kind === "stealth") {
+    // 尖三角 + 底边内凹（凹点在中心线上回退一半）
+    pts = [[x, y], wing(-0.45), [x - (size / 2) * Math.cos(angle), y - (size / 2) * Math.sin(angle)], wing(0.45)];
+  } else if (kind === "diamond") {
+    // 菱形：尖端、两侧腰（半长处 ±0.35size）、尾
+    const midX = x - (size / 2) * Math.cos(angle);
+    const midY = y - (size / 2) * Math.sin(angle);
+    const perp = angle + Math.PI / 2;
+    pts = [
+      [x, y],
+      [midX - 0.35 * size * Math.cos(perp), midY - 0.35 * size * Math.sin(perp)],
+      [x - size * Math.cos(angle), y - size * Math.sin(angle)],
+      [midX + 0.35 * size * Math.cos(perp), midY + 0.35 * size * Math.sin(perp)],
+    ];
+  } else {
+    // triangle（默认）
+    pts = [[x, y], wing(-0.45), wing(0.45)];
+  }
+  p.setAttribute("points", pts.map(([px, py]) => `${px},${py}`).join(" "));
   p.setAttribute("fill", color);
   return p;
 }

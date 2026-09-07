@@ -23,6 +23,20 @@ export function dashSpec(style) {
   return DASH_STYLES[style] || null;
 }
 
+// ---- 箭头类型（Line.arrow，references/pptd.md）----
+// 单表两端投影：ooxml = a:headEnd/tailEnd@type 值；renderer 按同名形状画 SVG。
+export const ARROW_TYPES = {
+  arrow: "triangle",
+  stealth: "stealth",
+  diamond: "diamond",
+  oval: "oval",
+};
+
+/** 箭头类型 → OOXML headEnd/tailEnd type 值；未知回退 triangle。 */
+export function ooxmlArrow(type) {
+  return ARROW_TYPES[type] || "triangle";
+}
+
 // ---- 填充（FillSpec：string 色 / {type:solid} / {type:gradient} / {type:image}）----
 /**
  * FillSpec 归一化 → 判别联合：
