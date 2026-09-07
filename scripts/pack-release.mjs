@@ -21,7 +21,8 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "no
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { deflateRawSync } from "node:zlib";
-import { crc32, encodeUtf8 } from "../packages/writer/zip.js";
+import { crc32 } from "../packages/writer/zip.js";
+import { encodeUtf8 } from "../packages/model/bytes.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
