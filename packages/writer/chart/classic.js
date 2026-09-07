@@ -230,7 +230,8 @@ export function buildChartParts(theme, chartEl, chartIndex) {
     const valCfg = { min: spoke.min, max: spoke.max, label: spoke.label, axisLine: spoke.axisLine, gridLine: spoke.gridLine, ...(spoke.show === false ? { show: false } : {}) };
     axes = buildRadarAxesXml(theme, catCfg, valCfg);
   } else {
-    axes = buildAxesXml(theme, chartEl, series, horizontal);
+    // percentStacked 数值轴缺省格式 0%（预览渲染 0%-100%，General 会显示 0.2 小数）
+    axes = buildAxesXml(theme, chartEl, series, horizontal, "catVal", { valNumFmt: isPercent ? "0%" : null });
   }
 
   // 标题（官方 string | TitleConfig；样式 color/fontSize/fontFamily 全消费）

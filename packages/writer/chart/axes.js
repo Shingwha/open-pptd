@@ -52,7 +52,7 @@ function axisTitleXml(theme, title) {
  * @param {object} p {theme, id, crossId, kind: "cat"|"val", pos, cfg, secondary, tickLabels, crosses}
  *   secondary: 次轴——类别轴 delete=1（数据不重复，仅用于配轴）；数值轴换侧
  */
-function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, tickLabels = true, crosses = "autoZero" }) {
+function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, tickLabels = true, crosses = "autoZero", valNumFmt = null }) {
   const show = cfg.show !== false;
   const kids = [
     el("c:axId", { val: id }),
@@ -72,9 +72,11 @@ function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, t
     const ln = axisLnXml(theme, gridCfg, theme.colors?.line || "#e5e7eb", 0.5);
     kids.push(el("c:majorGridlines", {}, ln ? el("c:spPr", {}, ln) : ""));
   }
-  // numFmt（数值轴 label.numberFormat）
-  const numFmt = kind === "val" && cfg.label && typeof cfg.label === "object" && cfg.label.numberFormat
+  // numFmt（数值轴 label.numberFormat；percentStacked 堆叠时数值轴为 0-1 占比，
+  // 缺省 General 会显示 0.2 小数，写 0% 与预览/原生 PowerPoint 一致）
+  const numFmt = (kind === "val" && cfg.label && typeof cfg.label === "object" && cfg.label.numberFormat)
     ? cfg.label.numberFormat
+    : kind === "val" && valNumFmt ? valNumFmt
     : null;
   kids.push(el("c:numFmt", { formatCode: numFmt || "General", sourceLinked: numFmt ? "0" : "0" }));
   kids.push(el("c:majorTickMark", { val: "none" }), el("c:minorTickMark", { val: "none" }));
@@ -105,9 +107,10 @@ export function buildRadarAxesXml(theme, catCfg, valCfg) {
 /**
  * 整图轴组（官方 §5.3 轴数组规则）：主轴 (1,2)；有系列用 index>0 →
  * 次轴 (3,4)（数值轴换侧 + 隐藏类别轴），与用户参考 chart43/47/48 结构一致。
- * @param {object} p {theme, el, series, horizontal, axes: "catVal"|"valVal"|"radar"}
+ * @param {object} p {theme, el, series, horizontal, axes: "catVal"|"valVal", valNumFmt}
+ *   valNumFmt: 主数值轴缺省格式（percentStacked → "0%"），用户 label.numberFormat 优先
  */
-export function buildAxesXml(theme, el, series, horizontal, mode = "catVal") {
+export function buildAxesXml(theme, el, series, horizontal, mode = "catVal", { valNumFmt = null } = {}) {
   const maxIdx = Math.max(0, ...series.map((s) => seriesAxisIndex(s, horizontal)));
   // 轴配置：垂直图 = xAxis→类别 / yAxis→数值；水平图 = yAxis→类别 / xAxis→数值
   const xAxes = toAxisArray(el.xAxis);
@@ -131,7 +134,7 @@ export function buildAxesXml(theme, el, series, horizontal, mode = "catVal") {
   }
   // catVal（bar/line/area/candlestick/radar 等）
   out.push(axisXml(theme, { id: 1, crossId: 2, kind: "cat", pos: catPos, cfg: catCfg }));
-  out.push(axisXml(theme, { id: 2, crossId: 1, kind: "val", pos: valPos, cfg: valCfg }));
+  out.push(axisXml(theme, { id: 2, crossId: 1, kind: "val", pos: valPos, cfg: valCfg, valNumFmt }));
   for (let i = 1; i <= maxIdx; i++) {
     // 次轴 ID 分配必须与 groupAxisId 的约定一致（类别轴=1+i*2、数值轴=2+i*2）：
     // 图表组按"类别轴在前、数值轴在后"引用 [1+i*2, 2+i*2]，若 valAx 抢了 1+i*2，
