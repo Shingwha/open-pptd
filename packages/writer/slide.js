@@ -145,12 +145,14 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
   };
 
   const elements = (page.elements || []).map((e) => elementToXml(theme, e, ctx)).join("");
-  const bg = page.background ? backgroundXml(theme, page.background, ctx) : "";
+  // 背景图 contain 时 underlay 非空：垫在 spTree 最底层（z 序最低）
+  const { bg: bgXml, underlay } = page.background ? backgroundXml(theme, page.background, ctx) : { bg: "", underlay: "" };
 
   const spTree =
     `<p:spTree>` +
     `<p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>` +
     `<p:grpSpPr/>` +
+    underlay +
     elements +
     `</p:spTree>`;
 
@@ -159,7 +161,7 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
     `<p:sld xmlns:a="${NS_A}" ` +
     `xmlns:r="${NS_R}" ` +
     `xmlns:p="${NS_P}">` +
-    `<p:cSld>${bg}${spTree}</p:cSld>` +
+    `<p:cSld>${bgXml}${spTree}</p:cSld>` +
     `<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr>` +
     `<p:transition spd="fast" advClick="1"><p:fade/></p:transition>` +
     `</p:sld>`;

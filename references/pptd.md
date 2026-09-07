@@ -461,6 +461,9 @@ interface TableStyleConfig {
 interface Page {
   pageType?: "cover" | "table_of_contents" | "chapter" | "content" | "final" | string;  // default: none; category label (does not affect rendering); preset values are recognized as the corresponding page type, arbitrary custom strings are also allowed
   background?: Fill;               // default: {type: solid, color: "#FFFFFF"} (white solid fill)
+                                   // ImageFill with mode="contain": the image shows centered and complete,
+                                   // blank areas are white (exported as a white page background plus a
+                                   // bottom-most centered picture — OOXML page backgrounds cannot letterbox)
   notes?: string;                  // default: none; speaker notes; plain text
   elements: Element[];             // the later an element, the higher its layer
 }

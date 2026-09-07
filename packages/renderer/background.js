@@ -22,8 +22,11 @@ export function pageBackground(theme, background) {
     // linear / radial（gradient.js 统一角度换算）；无效渐变回退白底
     node.style.background = gradientCss(theme, fill) || "#ffffff";
   } else if (fill?.type === "image") {
+    // contain 留白居中、露白底（与导出端"白底 p:bg + contain 居中底层图"同语义）
+    node.style.backgroundColor = "#ffffff";
     node.style.backgroundImage = `url(${fill.src})`;
     node.style.backgroundSize = fill.fit?.mode || "cover";
+    node.style.backgroundPosition = "center";
     if (fill.opacity != null) node.style.opacity = fill.opacity;
   }
   return node;
