@@ -222,7 +222,9 @@ export function pieSerXml(theme, s, sheetRange, idx, labels, palette) {
     el("c:spPr", {}, fillXml(theme, s.color)),
     pts,
   ];
-  if (labels) kids.push(dLblsXml(theme, labels));
+  // 饼图标签外置（对齐预览 outside+引导线）；环形图（doughnut）不支持 dLblPos
+  // （PowerPoint UI 灰置，写入触发修复），回退默认 bestFit
+  if (labels) kids.push(dLblsXml(theme, labels, null, (s.innerRadius || 0) > 0 ? null : "outEnd"));
   const chs = { cat: { col: s._cols.category, vals: s._cats }, val: { col: s._cols.value, vals: s._values.value } };
   kids.push(catRefXml(chs.cat, sheetRange), valRefXml(chs.val, sheetRange));
   return el("c:ser", {}, kids.join(""));

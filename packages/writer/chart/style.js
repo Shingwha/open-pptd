@@ -65,14 +65,20 @@ export function txPrXml(theme, size = 900, color = "tx1", label = null) {
   );
 }
 
-/** 官方 dataLabels → c:dLbls（content: value/percentage/category + numberFormat + 样式）。 */
-export function dLblsXml(theme, cfg, globalFamily) {
+/** 官方 dataLabels → c:dLbls（content: value/percentage/category + numberFormat + 样式）。
+ * pos：标签位置（OOXML dLblPos，如饼图 "outEnd" 对齐预览的外置+引导线；省略 = PowerPoint
+ * 按图表类型默认——柱内/饼内 bestFit）。 */
+export function dLblsXml(theme, cfg, globalFamily, pos = null) {
   const content = cfg?.content || "value";
   const kids = [];
   if (cfg?.numberFormat) kids.push(el("c:numFmt", { formatCode: cfg.numberFormat, sourceLinked: "0" }));
   kids.push(
     el("c:spPr", {}, el("a:noFill")),
     txPrXml(theme, cfg?.fontSize ? Math.round(cfg.fontSize * 100) : CHART_DEFAULTS.labelSize * 100, "tx1", { ...(cfg?.color ? { color: cfg.color } : {}), ...(cfg?.fontFamily || globalFamily ? { fontFamily: cfg?.fontFamily || globalFamily } : {}) }),
+  );
+  // CT_DLbls 顺序：numFmt → spPr → txPr → dLblPos → show*
+  if (pos) kids.push(el("c:dLblPos", { val: pos }));
+  kids.push(
     el("c:showLegendKey", { val: "0" }),
     el("c:showVal", { val: content === "value" ? "1" : "0" }),
     el("c:showCatName", { val: content === "category" ? "1" : "0" }),
