@@ -53,9 +53,26 @@ packages/writer/chart/         OOXML 投影
 | bddfd55 | P5 heatmap/sankey SSR 矢量图回退（image.js + svgBlip）+ SKILL.md 改「13 类全导出」 |
 | 93060c9 | 修复 xfrm 双层包裹回归 + pptx.js 编号排除图片化类型 + 22-combo 回归页 |
 | 5f0d82e | P6 design.md §1 第 7 条硬性决策边界 |
-| 2219d21 | P7 部分：v3.md 标记完成、P0 清单执行进度、版本 bump 1.5.0 |
+| 2219d21 → **505be05** | P7 收尾：v3.md 立项标记完成、P0 清单执行进度、清理 tmp 调试项目。⚠️ 原提交 2219d21 含 1.5.0 bump，已应求重写撤回（§6），该 hash 只剩悬空对象，勿引用 |
+| 5cf398e | 本文档（交接文档） |
 
-## 3. 遗留任务（按优先级，均带验收标准）
+### 2.1 第二轮销项（2026-09-08，遗留任务全部完成）
+
+| 提交 | 内容 |
+|---|---|
+| d5ff540 | I19 绘图区布局单源 resolvePlotLayout：导出写 manualLayout(layoutTarget=inner)，预览 grid/饼雷达半径同源投影；CHART_GRID 上移 layout.js 唯一定义 |
+| 6e97a8d | I25 预览图例 marker 收敛 PowerPoint 小方块（roundRect 14×8 → rect 10×8） |
+| 85ade4a | I26 预览半：K 线柱宽走 resolveBarLayout 投影（与 stock gapWidth 150 同源）+ treemap 铺满布局模型矩形 |
+| a14d396 | I27 chartEx 标题/图例样式透传（cx:rich 富文本 / cx:txPr / pos t-b-l-r 枚举）+ I28 瀑布轴标题映射（⚠️ CT_AxisTitle 无属性、cx:title 紧跟 scaling，带属性/顺序错 PowerPoint 拒开）+ classic.js 跳过警告文案修正 |
+| 7233812 | 回归页 23-props3（chartEx styled 标题/图例 + 瀑布双轴标题锁形态，deck.pptd 已登记） |
+| f9e6290 | docs/chart-architecture.md 三层架构手册（布局模型说明/新增类型操作路径/chartEx 平台限制/**已知两端差异清单 §5**——I14/I20/I22 及残留项定案） |
+| 9c8b2cf | examples 12 deck 全量导出 + COM 打开 69 页无修复弹窗 + README 九图重渲（三张刷新，六张字节级一致） |
+
+## 3. 遗留任务（✅ 2026-09-08 全部销项，第二轮 commit d5ff540..9c8b2cf；下列各节保留作定位记录）
+
+> 3.4/3.7 的差异清单与平台限制落地于 `docs/chart-architecture.md`（§4/§5）；
+> I19 落地为 `model/chart/layout.js` 的 resolvePlotLayout（§2.1）；3.6 的
+> "已跳过"警告文案随 a14d396 一并修正。
 
 ### 3.1 I19 绘图区 manualLayout 单源（最大项，对齐问题的根修）
 
@@ -108,7 +125,7 @@ packages/writer/chart/         OOXML 投影
 
 - **回归**：`npm test`（20/20，**单独跑、亲眼看退出码**，管道会吞码）；`npm run test:deps`（依赖方向，writer→renderer/vendor/echarts.mjs 已有受控豁免登记在 dep-graph.mjs ALLOWLIST）。
 - **双端对照**：
-  1. 导出：`node bin/open-pptd.js export tests/projects/chart/deck.pptd -o <out>.pptx`（会打「已跳过」警告属正常——heatmap/sankey 现走图片化，警告文案待顺手更新）。
+  1. 导出：`node bin/open-pptd.js export tests/projects/chart/deck.pptd -o <out>.pptx`（heatmap/sankey 图片化不再告警——文案已随 a14d396 修正）。
   2. COM 截图（⚠️ PowerShell 5.1 按 ANSI 读 UTF-8 无 BOM 脚本，中文路径会乱码 → **一律用 ASCII 工作区** `C:\pptd-p0\`，已建好；pptx 先复制为 baseline.pptx 再开）：
      ```powershell
      $pp = New-Object -ComObject PowerPoint.Application

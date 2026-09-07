@@ -113,7 +113,11 @@
 - ✅ P4 已销项：I1-I13、I15-I18(预览侧)、I21、I23、I24、I28(预览侧)；过程中发现并修复 xfrm 双层包裹回归（93060c9）
 - ✅ P5：SSR 矢量图回退落地，SKILL.md 更新（bddfd55）；发现并修复 pptx.js 编号口径（93060c9）
 - ✅ P6：design.md 决策边界收紧（5f0d82e）
-- ⏳ 待办：I19 manualLayout 单源、I27 chartEx 样式透传（writer 半）、I28 cx:axis title 映射、I14/I22 文档化、回归页 23-props3、examples 全量导出回归
+- ✅ 第二轮（2026-09-08，d5ff540..9c8b2cf）：I19 manualLayout 布局单源（resolvePlotLayout）、I25 图例 marker、
+  I26（缺省柱宽收敛 + treemap 铺满；stock gapWidth 未透传 barWidth 配置的缺口已文档化）、I27 chartEx 样式透传、
+  I28 cx:axis title 映射、回归页 23-props3、examples 12 deck 全量导出回归 + README 九图重渲、
+  架构手册 docs/chart-architecture.md（I14/I20/I22 及残留差异定案入册 §5）
+- 32 项清单全部闭环；**遗留均为接受项/候选打磨**（见 chart-architecture.md §5），无未定位 bug
 
 ## 修复阶段映射
 
