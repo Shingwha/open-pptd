@@ -10,6 +10,7 @@
 // ============================================================================
 
 import { resolveColor } from "./theme.js";
+import { svgGradientDef } from "./svg-gradient.js";
 
 /** 图标填充解析 → {type:'solid', color:hex} 或 {type:'gradient', gradientType, stops:[{color,position}], angle}。 */
 export function normalizeIconFill(theme, fill) {
@@ -33,23 +34,6 @@ export function normalizeIconFill(theme, fill) {
 /** FA inner 里的形状开标签（normalize 后无任何 fill 属性，可安全注入）。 */
 const SHAPE_OPEN = /<(path|circle|ellipse|rect|polygon|polyline)(?=[\s/>])/g;
 
-/** 渐变 <defs>（径向圆心居中；线性 angle 0 = 左→右、顺时针，方向向量 (cos θ, sin θ)）。 */
-function gradientDefs(fill, gid) {
-  const stops = fill.stops
-    .map((s) => `<stop offset="${Math.round((s.position ?? 0) * 100)}%" stop-color="${s.color}"/>`)
-    .join("");
-  if (fill.gradientType === "radial") {
-    return `<radialGradient id="${gid}" cx="50%" cy="50%" r="50%">${stops}</radialGradient>`;
-  }
-  const rad = ((fill.angle || 0) * Math.PI) / 180;
-  const dx = Math.cos(rad);
-  const dy = Math.sin(rad);
-  return (
-    `<linearGradient id="${gid}" x1="${(0.5 - dx / 2).toFixed(4)}" y1="${(0.5 - dy / 2).toFixed(4)}" ` +
-    `x2="${(0.5 + dx / 2).toFixed(4)}" y2="${(0.5 + dy / 2).toFixed(4)}">${stops}</linearGradient>`
-  );
-}
-
 /**
  * 图标 SVG 内部内容（<defs> + 带注入 fill 的 FA inner）。预览端与导出端共用。
  * @param {object} def normalizeIconSvg 产物（{inner, w, h}）
@@ -58,8 +42,11 @@ function gradientDefs(fill, gid) {
  */
 export function iconSvgBody(def, fill, gid = "ig") {
   if (fill?.type === "gradient") {
+    // 与形状同一渐变生成器（model/svg-gradient.js）：矩形全长投影，非正方形上
+    // 角度不畸变——此前 icon 自带半向量实现，与形状渐变方向不一致
+    const g = svgGradientDef({ fill, id: gid, w: def.w, h: def.h, x: def.vx || 0, y: def.vy || 0 });
     const paint = `url(#${gid})`;
-    return `<defs>${gradientDefs(fill, gid)}</defs>${def.inner.replace(SHAPE_OPEN, `<$1 fill="${paint}"`)}`;
+    return `<defs>${g.def}</defs>${def.inner.replace(SHAPE_OPEN, `<$1 fill="${paint}"`)}`;
   }
   const color = fill?.color || "#333333";
   return def.inner.replace(SHAPE_OPEN, `<$1 fill="${color}"`);

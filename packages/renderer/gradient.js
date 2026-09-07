@@ -8,6 +8,7 @@
 // ============================================================================
 
 import { resolveColor } from "../model/theme.js";
+import { svgGradientDef } from "../model/svg-gradient.js";
 
 function valid(fill) {
   return fill?.type === "gradient" && Array.isArray(fill.stops) && fill.stops.length >= 2;
@@ -30,42 +31,13 @@ export function gradientCss(theme, fill) {
 
 let uid = 0;
 
-/** 色标 → SVG <stop>（#RRGGBBAA 拆成 stop-color + stop-opacity）。 */
-function stopXml(theme, s) {
-  let color = resolveColor(theme, s.color) || s.color;
-  let opacity = "";
-  const m = /^#([0-9a-fA-F]{6})([0-9a-fA-F]{2})$/.exec(color || "");
-  if (m) {
-    color = `#${m[1]}`;
-    opacity = ` stop-opacity="${(parseInt(m[2], 16) / 255).toFixed(3)}"`;
-  }
-  return `<stop offset="${Math.round((s.position ?? 0) * 100)}%" stop-color="${color}"${opacity}/>`;
-}
-
 /**
- * GradientFill → SVG 渐变定义。返回 { id, def }：def 由调用方放进 <defs>，
- * 路径用 fill="url(#id)" 引用；无效渐变返回 null。
- * linear：userSpaceOnUse，按角度在 (w,h) 坐标系内取矩形投影全长作渐变向量
- * （w,h 取路径所在用户坐标系：预置几何 = bounds，custom = viewBox）；
- * radial：objectBoundingBox 圆（随形状拉伸，近似 OOXML path="circle"）。
+ * GradientFill → SVG 渐变定义（形状 path 用）。返回 { id, def }：def 由调用方放进
+ * <defs>，路径用 fill="url(#id)" 引用；无效渐变返回 null。生成逻辑统一在
+ * model/svg-gradient.js（与图标同源）：linear userSpaceOnUse 矩形全长投影，
+ * radial objectBoundingBox 圆。
  */
 export function svgGradient(theme, fill, w, h) {
-  if (!valid(fill)) return null;
   const id = `pptd-grad-${++uid}`;
-  const stops = fill.stops.map((s) => stopXml(theme, s)).join("");
-  if (fill.gradientType === "radial") {
-    return { id, def: `<radialGradient id="${id}" cx="50%" cy="50%" r="50%">${stops}</radialGradient>` };
-  }
-  const rad = ((Number(fill.angle) || 0) * Math.PI) / 180;
-  const cos = Math.cos(rad);
-  const sin = Math.sin(rad);
-  const cx = w / 2;
-  const cy = h / 2;
-  const half = (Math.abs(w * cos) + Math.abs(h * sin)) / 2;
-  const f = (v) => Math.round(v * 100) / 100;
-  const def =
-    `<linearGradient id="${id}" gradientUnits="userSpaceOnUse" ` +
-    `x1="${f(cx - half * cos)}" y1="${f(cy - half * sin)}" x2="${f(cx + half * cos)}" y2="${f(cy + half * sin)}">` +
-    `${stops}</linearGradient>`;
-  return { id, def };
+  return svgGradientDef({ theme, fill, id, w, h });
 }
