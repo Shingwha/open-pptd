@@ -37,6 +37,16 @@ export const CHART_META = {
 
 export const CHART_TYPE_ORDER = Object.keys(CHART_META);
 
+// —— 预览/导出共享默认值（单源；字号单位 pt，导出 sz = pt×100，预览 px 与 pt 1:1）——
+// 此前三类文字的默认字号两端各写一份且已漂移（标签 10/9、轴 11/9、图例 11/9）。
+export const CHART_DEFAULTS = {
+  labelSize: 9,  // dataLabels 字号
+  axisSize: 9,   // 坐标轴刻度文字
+  legendSize: 9, // 图例文字
+  // 这些类型默认不显示图例（legend 未配置时）
+  legendOffTypes: ["waterfall", "treemap", "sunburst", "sankey", "heatmap"],
+};
+
 /** encode 语义键别名表（类型切换时保留已有列引用，自动对齐默认列名）。 */
 const SEMANTIC_KEYS = {
   x: ["x", "category", "date"],

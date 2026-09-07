@@ -20,7 +20,7 @@
 // ============================================================================
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "./xml.js";
-import { resolveChartSeries, chartDataTable, isNumericColumn, resolveDataLabels, toAxisArray, resolveChartDirection, seriesAxisIndex, seriesChannels, hierarchyColor } from "../model/chart.js";
+import { resolveChartSeries, chartDataTable, isNumericColumn, resolveDataLabels, toAxisArray, resolveChartDirection, seriesAxisIndex, seriesChannels, hierarchyColor, CHART_DEFAULTS } from "../model/chart.js";
 import { resolveColor, resolveFont, themeChartPalette, DEFAULT_FONT } from "../model/theme.js";
 import { dashSpec } from "../model/style-spec.js";
 import { buildFill, buildLn, buildShadow, solidFillResolved } from "./drawing.js";
@@ -347,7 +347,7 @@ function dLblsXml(theme, cfg, globalFamily) {
   if (cfg?.numberFormat) kids.push(el("c:numFmt", { formatCode: cfg.numberFormat, sourceLinked: "0" }));
   kids.push(
     el("c:spPr", {}, el("a:noFill")),
-    txPrXml(theme, cfg?.fontSize ? Math.round(cfg.fontSize * 100) : 900, "tx1", { ...(cfg?.color ? { color: cfg.color } : {}), ...(cfg?.fontFamily || globalFamily ? { fontFamily: cfg?.fontFamily || globalFamily } : {}) }),
+    txPrXml(theme, cfg?.fontSize ? Math.round(cfg.fontSize * 100) : CHART_DEFAULTS.labelSize * 100, "tx1", { ...(cfg?.color ? { color: cfg.color } : {}), ...(cfg?.fontFamily || globalFamily ? { fontFamily: cfg?.fontFamily || globalFamily } : {}) }),
     el("c:showLegendKey", { val: "0" }),
     el("c:showVal", { val: content === "value" ? "1" : "0" }),
     el("c:showCatName", { val: content === "category" ? "1" : "0" }),
@@ -661,7 +661,7 @@ function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, t
   const axisLn = cfg.axisLine === false ? el("a:ln", {}, el("a:noFill")) : axisLnXml(theme, cfg.axisLine, theme.colors?.line || "#d8dce1", 0.75);
   if (axisLn) kids.push(el("c:spPr", {}, axisLn));
   // txPr（label 样式）
-  kids.push(txPrXml(theme, 900, "tx1", cfg.label && typeof cfg.label === "object" ? cfg.label : null));
+  kids.push(txPrXml(theme, CHART_DEFAULTS.axisSize * 100, "tx1", cfg.label && typeof cfg.label === "object" ? cfg.label : null));
   kids.push(el("c:crossAx", { val: crossId }));
   // 次值轴必须 crosses=max（交叉在类目轴最大处=换侧成立）；autoZero 会让 PowerPoint 把次轴
   // 交叉到类目 0 位置，与 axPos 冲突导致次轴布局错乱（刻度串位、折线映射失效）
@@ -942,7 +942,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
     : `<c:autoTitleDeleted val="1"/>`;
 
   // 图例（官方 LegendConfig：默认按类型表；legend:false 全局关；样式消费）
-  const legendDefaultOff = new Set(["waterfall", "treemap", "sunburst", "sankey", "heatmap"]);
+  const legendDefaultOff = new Set(CHART_DEFAULTS.legendOffTypes);
   const legendCfg = chartEl.legend;
   let legendXml = "";
   if (legendCfg !== false && !(legendCfg === undefined && types.every((t) => legendDefaultOff.has(t)))) {
@@ -950,7 +950,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
     const posVal = { top: "t", bottom: "b", left: "l", right: "r" }[pos] || "b";
     const legendLabel = typeof legendCfg === "object" ? legendCfg : null;
     const legendFontFamily = legendLabel?.fontFamily || chartEl.fontFamily;
-    legendXml = `<c:legend><c:legendPos val="${posVal}"/><c:overlay val="0"/>${txPrXml(theme, legendLabel?.fontSize ? Math.round(legendLabel.fontSize * 100) : 900, "tx1", { ...(legendLabel?.color ? { color: legendLabel.color } : {}), ...(legendFontFamily ? { fontFamily: legendFontFamily } : {}) })}</c:legend>`;
+    legendXml = `<c:legend><c:legendPos val="${posVal}"/><c:overlay val="0"/>${txPrXml(theme, legendLabel?.fontSize ? Math.round(legendLabel.fontSize * 100) : CHART_DEFAULTS.legendSize * 100, "tx1", { ...(legendLabel?.color ? { color: legendLabel.color } : {}), ...(legendFontFamily ? { fontFamily: legendFontFamily } : {}) })}</c:legend>`;
   }
 
   // nullHandling（多系列取第一个非空；官方 radar 默认 connect）

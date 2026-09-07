@@ -9,7 +9,7 @@
 
 import * as echarts from "./vendor/echarts.mjs";
 import {
-  resolveChartSeries, CHART_META, resolveDataLabels, hexA,
+  resolveChartSeries, CHART_META, CHART_DEFAULTS, resolveDataLabels, hexA,
   darkenByLightness, toAxisArray, resolveChartDirection, seriesAxisIndex, hierarchyColor, seriesChannels,
 } from "../model/chart.js";
 import { resolveColor, resolveFont, themeChartPalette } from "../model/theme.js";
@@ -17,7 +17,7 @@ import { normalizeFill, dashSpec } from "../model/style-spec.js";
 import { gradientCss } from "./gradient.js";
 import { createElementShell, boxShadowCss } from "./shell.js";
 
-const AXIS_TEXT = { color: "#6b7280", fontSize: 11 };
+const AXIS_TEXT = { color: "#6b7280", fontSize: CHART_DEFAULTS.axisSize };
 
 /** 主题图表样式（网格/轴/文字色跟随主题 colors 键，缺省用内置默认）。 */
 function chartStyleColors(theme) {
@@ -41,7 +41,7 @@ function echartsLabel(theme, el, s, { position = "top", pie = false } = {}) {
   return {
     show: true,
     position,
-    fontSize: cfg.fontSize || 10,
+    fontSize: cfg.fontSize || CHART_DEFAULTS.labelSize,
     color: cfg.color ? resolveColor(theme, cfg.color) || labelColor : labelColor,
     formatter,
   };
@@ -250,14 +250,14 @@ function buildChartOption(theme, el) {
   const primary = series[0].type;
 
   // 图例（官方默认：waterfall/treemap/sunburst/sankey/heatmap 关，其余开；样式消费）
-  const legendDefaultOff = new Set(["waterfall", "treemap", "sunburst", "sankey", "heatmap"]);
+  const legendDefaultOff = new Set(CHART_DEFAULTS.legendOffTypes);
   const legendOn = el.legend !== false && !(el.legend === undefined && [...types].every((t) => legendDefaultOff.has(t)));
   const legendPos = typeof el.legend === "object" && el.legend.position ? el.legend.position : "bottom";
   const legendCfg = typeof el.legend === "object" ? el.legend : {};
   const legendOpt = {
     show: legendOn,
     ...(legendPos !== "bottom" ? { [legendPos]: 0 } : { bottom: 0 }),
-    textStyle: { color: legendCfg.color ? resolveColor(theme, legendCfg.color) || legendColor : legendColor, fontSize: legendCfg.fontSize || 11 },
+    textStyle: { color: legendCfg.color ? resolveColor(theme, legendCfg.color) || legendColor : legendColor, fontSize: legendCfg.fontSize || CHART_DEFAULTS.legendSize },
     icon: "roundRect", itemWidth: 14, itemHeight: 8,
   };
 
