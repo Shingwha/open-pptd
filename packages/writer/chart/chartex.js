@@ -30,6 +30,19 @@ function cxCharStyleXml(theme, { fontSize, color, fontFamily, defaultSize }) {
   return { sz, inner: `${fill}<a:latin typeface="${escAttr(fonts.latin)}"/><a:ea typeface="${escAttr(fonts.ea)}"/>` };
 }
 
+/** cx:txPr —— dataLabels 的字号/颜色/字体透传（treemap/sunburst 瓦片标签）。
+ * schema 允许（COM 实测打开 + 渲染生效），须位于 cx:visibility 之后；
+ * 不配置时省略，走 chartStyle part 默认字。 */
+function dataLabelsTxPrXml(theme, labels) {
+  if (labels.fontSize == null && !labels.color && !labels.fontFamily) return "";
+  const fonts = resolveFont(theme, labels.fontFamily || null);
+  const sz = Math.round((labels.fontSize ?? CHART_DEFAULTS.labelSize) * 100);
+  const fill = labels.color
+    ? `<a:solidFill><a:srgbClr val="${hexToRgbVal(resolveColor(theme, labels.color) || labels.color)}"/></a:solidFill>`
+    : "";
+  return `<cx:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="${sz}">${fill}<a:latin typeface="${escAttr(fonts.latin)}"/><a:ea typeface="${escAttr(fonts.ea)}"/></a:defRPr></a:pPr><a:endParaRPr lang="zh-CN"/></a:p></cx:txPr>`;
+}
+
 /** cx:tx > cx:rich 富文本块（标题/轴标题样式承载，I27；有文本才调用——空元素泄漏占位）。 */
 function cxRichXml(theme, text, style) {
   const { sz, inner } = cxCharStyleXml(theme, style);
@@ -273,7 +286,7 @@ export function buildChartExParts(theme, chartEl, chartIndex) {
     };
     layoutPr = type === "treemap" ? `<cx:layoutPr><cx:parentLabelLayout val="overlapping"/></cx:layoutPr>` : "";
     dataLabels = labels
-      ? `<cx:dataLabels pos="${type === "sunburst" ? "ctr" : "inEnd"}"><cx:visibility seriesName="0" categoryName="${labels.content === "category" ? "1" : "0"}" value="${labels.content === "value" ? "1" : "0"}"/></cx:dataLabels>`
+      ? `<cx:dataLabels pos="${type === "sunburst" ? "ctr" : "inEnd"}"><cx:visibility seriesName="0" categoryName="${labels.content === "category" ? "1" : "0"}" value="${labels.content === "value" ? "1" : "0"}"/>${dataLabelsTxPrXml(theme, labels)}</cx:dataLabels>`
       : "";
     // fill 颜色（官方派生规则 → cx:dataPoint 逐叶色）：
     //   单值/1D 数组按根节点循环，子节点沿 HSL.L 每级 -10；2D 数组外层按根、内层按级
@@ -417,7 +430,13 @@ export function buildChartExParts(theme, chartEl, chartIndex) {
     xml,
     relsXml,
     xlsx: buildChartExXlsx(chartEl, s, type),
-    styleXml: buildChartStyleXml(),
+    // 瓦片标签文字色源在 chartStyle part（cx:dataLabels 的 txPr 被 PowerPoint
+    // 忽略）——labels 配了 color/fontSize 时覆盖 cs:dataLabel 槽
+    styleXml: buildChartStyleXml(
+      (type === "treemap" || type === "sunburst") && labels && (labels.color || labels.fontSize != null)
+        ? { colorHex: labels.color ? hexToRgbVal(resolveColor(theme, labels.color) || labels.color) : null, fontSize: labels.fontSize }
+        : null
+    ),
     colorsXml: buildChartColorStyleXml(),
   };
 }
