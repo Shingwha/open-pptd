@@ -116,8 +116,8 @@
 - ✅ 第二轮（2026-09-08，d5ff540..9c8b2cf）：I19 manualLayout 布局单源（resolvePlotLayout）、I25 图例 marker、
   I26（缺省柱宽收敛 + treemap 铺满；stock gapWidth 未透传 barWidth 配置的缺口已文档化）、I27 chartEx 样式透传、
   I28 cx:axis title 映射、回归页 23-props3、examples 12 deck 全量导出回归 + README 九图重渲、
-  架构手册 docs/chart-architecture.md（I14/I20/I22 及残留差异定案入册 §5）
-- 32 项清单全部闭环；**遗留均为接受项/候选打磨**（见 chart-architecture.md §5），无未定位 bug
+  架构手册 已知差异定案表（现居 tests/projects/chart/README.md）
+- 32 项清单全部闭环；**遗留均为接受项/候选打磨**（见 tests/projects/chart/README.md），无未定位 bug
 
 ## 修复阶段映射
 

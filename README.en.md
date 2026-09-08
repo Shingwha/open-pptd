@@ -8,23 +8,23 @@ A "content → editable project → live preview → PPTX" presentation pipeline
 
 ## Example Gallery
 
-<p align="center">
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd"><img src="docs/images/business-review.png" width="32%" alt="Yuanchuan Hydrology Annual Report"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fcity-cycling-report-7p%2Fdeck.pptd"><img src="docs/images/city-cycling.png" width="32%" alt="Urban Cycling Data Annual"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftide-festival-sponsorship-7p%2Fdeck.pptd"><img src="docs/images/tide-festival.png" width="32%" alt="Tidal Fest Sponsorship Proposal"/></a>
-</p>
+**Presentations (16:9)**
 
 <p align="center">
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fmiaopai-saas-bp%2Fdeck.pptd"><img src="docs/images/miaopai.png" width="32%" alt="MiaoPai Round-A Pitch"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fislelight-brand-book%2Fdeck.pptd"><img src="docs/images/islelight.png" width="32%" alt="Islelight Brand Book"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fqingshan-coffee-review-12p%2Fdeck.pptd"><img src="docs/images/qingshan.png" width="32%" alt="Qingshan Coffee · H1 2026 Business Review (all 13 chart types)"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd"><img src="docs/images/business-review.png" width="32%" alt="Yuanchuan Hydrology Annual Report"/></a>
   <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbrand-mori-showcase-7p%2Fdeck.pptd"><img src="docs/images/brand-mori.png" width="32%" alt="MORI Brand Proposal"/></a>
 </p>
 
+**Posters (vertical, `kind: poster`)**
+
 <p align="center">
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fshanmingji-2026-launch%2Fdeck.pptd"><img src="docs/images/shanmingji.png" width="32%" alt="Shanmingji Brand Launch"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftech-architecture-review-7p%2Fdeck.pptd"><img src="docs/images/tech-architecture.png" width="32%" alt="Order Platform Architecture Review"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fev-range%2Fdeck.pptd"><img src="docs/images/ev-range.png" width="32%" alt="EV Range Prediction"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fxiaohongshu-intro-poster%2Fdeck.pptd"><img src="docs/images/xiaohongshu.png" width="23%" alt="open-pptd Xiaohongshu Intro Poster"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-bailu-solar-term%2Fdeck.pptd"><img src="docs/images/poster-bailu.png" width="23%" alt="Bailu Solar Term Cultural Poster"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-echo-valley-festival%2Fdeck.pptd"><img src="docs/images/poster-echo.png" width="23%" alt="Echo Valley Festival 2026 Poster"/></a>
 </p>
+
+More examples (consulting decks, data annuals, pitch decks, architecture reviews) live in the online gallery and the `examples/` directory.
 
 ## What It Is
 
@@ -34,7 +34,9 @@ A "content → editable project → live preview → PPTX" presentation pipeline
 
 > Fully self-developed (web editor, PPTX writer, chart & LaTeX rendering, CLI export pipeline) — zero dependencies, no npm install, no network; icons by [Font Awesome Free](https://fontawesome.com/license/free) (CC BY 4.0).
 
-## Installation
+## Quick Start
+
+### 1. Install
 
 The only prerequisite is **Node.js v18+** (Node 21+ recommended for the render command); Chrome / Edge recommended (needed for the "Open Folder" save feature).
 
@@ -54,7 +56,33 @@ node bin/open-pptd.js fonts download all          # one-time full download, work
 node bin/open-pptd.js fonts download Smiley Sans  # on demand, run before export
 ```
 
-Then hand it to your AI assistant (`SKILL.md` is the full workflow entry point); CLI usage (serve / export / render / check / fonts) via `node bin/open-pptd.js --help`.
+### 2. Use It Through Conversation
+
+Once installed, no extra configuration is needed — just describe the task to your AI assistant (Claude Code, pi, etc.), for example:
+
+- "Make me a 7-page annual business review deck; tell the story with charts"
+- "Turn this outline into a presentation" + paste the outline
+- "Design a Bailu solar-term poster"
+
+Following the `SKILL.md` workflow, the AI delivers **two things**: an editable PPTD project directory (manifest + pages + media), and a ready-to-send `.pptx` (fonts embedded, transitions applied).
+
+To watch the deck being built live, have the AI start a local preview server (or run it yourself):
+
+```bash
+node bin/open-pptd.js serve --project <project-dir>   # open in browser; every page shows up as it's written
+```
+
+Other CLI commands: `export` (PPTX) / `render` (PNG) / `check` (validate a project) / `fonts` — see `node bin/open-pptd.js --help`.
+
+### 3. What the Web Editor Does
+
+Click any card in the online gallery to edit it (no installation); local projects get the same feature set via `serve`:
+
+- **Live preview**: refreshes on every file change (SSE), WYSIWYG
+- **Element editing**: click-to-edit text/shapes/images/tables with a property panel
+- **Chart editor**: Excel-style data grid + 13 chart types with style panels
+- **Export**: PPTX (fonts embedded, opens in PowerPoint without repair) and PNG images
+- **Project round-trip**: download a project bundle, or "Open Folder" to edit local projects directly
 
 ## License
 

@@ -5,6 +5,16 @@
 //   - 13 种系列类型，无顶层 type；pie.innerRadius > 0 = 环形（官方无 doughnut 类型）
 //   - 类型共存约束（§5.4）由 CHART_META.coexist 表达，validateChartSeries（resolve.js）消费
 //   - encode 语义键别名表供类型切换重映射（remapEncode，编辑器/属性面板共用）
+//
+// 新增图表类型的操作路径：
+//   1. 本文件注册 CHART_META（route 导出路由 + encode + coexist）与 CHART_DEFAULTS；
+//      需要语义默认值时在 spec.js 落定，勿写进投影层
+//   2. resolve.js 确认 encode 通道；新通道改 axes.js seriesChannels
+//   3. model/chart/option/ 对应家族加 builder（cartesian/polar/matrix）
+//   4. writer 侧投影：classic 体系进 writer/chart/classic.js + ser.js；chartEx 体系进
+//      chartex.js；无原生类型走 image.js SSR 图片化（route: "image"）
+//   5. 编辑器面板字段（editor/types/chart.js + chart-editor.js）
+//   6. tests/projects/chart/pages/ 加回归页并在 deck.pptd pages: 清单登记，双端截图锁形态
 // ============================================================================
 
 /**

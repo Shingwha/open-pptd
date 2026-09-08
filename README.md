@@ -8,23 +8,23 @@
 
 ## 示例画廊
 
-<p align="center">
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd"><img src="docs/images/business-review.png" width="32%" alt="远川科技 · 2025 年度经营复盘"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fcity-cycling-report-7p%2Fdeck.pptd"><img src="docs/images/city-cycling.png" width="32%" alt="两轮上的城市脉搏 · 骑行数据年报"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftide-festival-sponsorship-7p%2Fdeck.pptd"><img src="docs/images/tide-festival.png" width="32%" alt="潮汐音乐节 · 招商合作方案"/></a>
-</p>
+**演示文稿（16:9）**
 
 <p align="center">
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fmiaopai-saas-bp%2Fdeck.pptd"><img src="docs/images/miaopai.png" width="32%" alt="秒排 A 轮商业计划"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fislelight-brand-book%2Fdeck.pptd"><img src="docs/images/islelight.png" width="32%" alt="屿光品牌手册"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fqingshan-coffee-review-12p%2Fdeck.pptd"><img src="docs/images/qingshan.png" width="32%" alt="青山咖啡 · 2026 上半年经营复盘（13 类图表全类型）"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd"><img src="docs/images/business-review.png" width="32%" alt="远川科技 · 2025 年度经营复盘"/></a>
   <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbrand-mori-showcase-7p%2Fdeck.pptd"><img src="docs/images/brand-mori.png" width="32%" alt="MORI 森野品牌提案"/></a>
 </p>
 
+**海报（竖版，`kind: poster`）**
+
 <p align="center">
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fshanmingji-2026-launch%2Fdeck.pptd"><img src="docs/images/shanmingji.png" width="32%" alt="山茗集品牌发布会"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Ftech-architecture-review-7p%2Fdeck.pptd"><img src="docs/images/tech-architecture.png" width="32%" alt="订单中台架构评审"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fev-range%2Fdeck.pptd"><img src="docs/images/ev-range.png" width="32%" alt="电动汽车续驶里程预测"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fxiaohongshu-intro-poster%2Fdeck.pptd"><img src="docs/images/xiaohongshu.png" width="23%" alt="open-pptd 小红书介绍海报"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-bailu-solar-term%2Fdeck.pptd"><img src="docs/images/poster-bailu.png" width="23%" alt="白露 · 二十四节气文化海报"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-echo-valley-festival%2Fdeck.pptd"><img src="docs/images/poster-echo.png" width="23%" alt="山谷回声音乐节 2026 演出海报"/></a>
 </p>
+
+更多示例（咨询简报、数据年报、BP、架构评审等）见线上画廊与 `examples/` 目录。
 
 ## 这是什么
 
@@ -34,7 +34,9 @@
 
 > 编辑器、PPTX writer、图表与 LaTeX 渲染、CLI 导出全部自研，零依赖、无需 npm install、无需联网；图标采用 [Font Awesome Free](https://fontawesome.com/license/free)（CC BY 4.0）。
 
-## 安装
+## 快速开始
+
+### 1. 安装
 
 前置仅 **Node.js v18+**（render 命令推荐 21+）；浏览器推荐 Chrome / Edge（「打开文件夹」保存功能需要）。
 
@@ -54,7 +56,33 @@ node bin/open-pptd.js fonts download all      # 全量，一劳永逸，离线�
 node bin/open-pptd.js fonts download 得意黑   # 按需，导出前跑
 ```
 
-装好后交给 AI 助手即可（`SKILL.md` 是完整工作流入口）；CLI 用法（serve / export / render / check / fonts）见 `node bin/open-pptd.js --help`。
+### 2. 和 AI 对话使用
+
+装好后无需任何配置，直接对 AI 助手（Claude Code、pi 等）说需求就行，例如：
+
+- 「帮我做一份 7 页的年度经营复盘 PPT，数据用图表讲」
+- 「把这份大纲做成演示文稿」+ 粘贴大纲
+- 「做一张白露节气主题海报」
+
+AI 会按 `SKILL.md` 的工作流交付**两样东西**：可编辑的 PPTD 项目目录（manifest + pages + media），以及直接可发的 `.pptx`（字体嵌入、转场就绪）。
+
+想实时围观生成过程，让 AI 起本地预览服务（或自己跑）：
+
+```bash
+node bin/open-pptd.js serve --project <项目目录>   # 浏览器打开，AI 每写一页你就能看到
+```
+
+其他 CLI：`export`（导出 PPTX）/ `render`（渲染 PNG）/ `check`（校验项目）/ `fonts`（字体管理），见 `node bin/open-pptd.js --help`。
+
+### 3. 网页编辑器能做什么
+
+线上画廊点任意卡片即可编辑（无需安装）；本地项目用 `serve` 起服务后功能相同：
+
+- **实时预览**：改文件即刷新（SSE），所见即所得
+- **元素编辑**：文字/形状/图片/表格点选即改，属性面板调样式
+- **图表编辑器**：Excel 式数据网格 + 13 种图表类型切换与样式面板
+- **导出**：PPTX（字体嵌入、PowerPoint 打开零修复）与 PNG 图片
+- **项目互通**：下载项目包带回本地，或「打开文件夹」直接编辑本地项目
 
 ## License
 
