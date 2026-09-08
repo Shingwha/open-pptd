@@ -43,6 +43,9 @@ export function buildMatrix(ctx) {
     const tree = buildEchartsTree(theme, el, s, labelCfg);
     const showValue = labelCfg?.content === "value";
     const showName = labelCfg?.content === "category" || labelCfg == null;
+    // content: value 时标签同样显示（显示数值）——此前 show 只看 showName，
+    // 配 value 会让预览整图无标签，与导出端 value=1 不一致
+    const showLabel = showName || showValue;
     // treemap 铺满布局模型矩形（I26：ECharts 默认 80% 宽高居中留白，PPT 端铺满）
     const [, , bw, bh] = el.bounds || [0, 0, 0, 0];
     const treemapRect = {
@@ -58,8 +61,8 @@ export function buildMatrix(ctx) {
         type: primary === "treemap" ? "treemap" : "sunburst",
         data: tree,
         ...(primary === "treemap"
-          ? { ...treemapRect, roam: false, nodeClick: false, breadcrumb: { show: false }, label: { show: showName, formatter: (p) => (showValue ? String(p.value ?? "") : p.name) }, upperLabel: { show: false } }
-          : { radius: ["12%", "85%"], label: { show: showName, rotate: "radial", formatter: (p) => (showValue ? String(p.value ?? "") : p.name) } }),
+          ? { ...treemapRect, roam: false, nodeClick: false, breadcrumb: { show: false }, label: { show: showLabel, formatter: (p) => (showValue ? String(p.value ?? "") : p.name) }, upperLabel: { show: false } }
+          : { radius: ["12%", "85%"], label: { show: showLabel, rotate: "radial", formatter: (p) => (showValue ? String(p.value ?? "") : p.name) } }),
       }],
     };
   }

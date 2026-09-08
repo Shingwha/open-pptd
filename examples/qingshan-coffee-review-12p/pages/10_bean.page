@@ -44,7 +44,7 @@ elements:
     bounds: [60, 124, 840, 352]
     fontFamily: "LXGW Neo XiHei"
     legend: {position: top, fontSize: 10.5}
-    yAxis: {title: 元/公斤, min: 32, max: 38, gridLine: {color: "$line"}}
+    yAxis: {title: 元/公斤, min: 33, max: 38, gridLine: {color: "$line"}}
     data:
       cols: [日期, 开盘, 收盘, 最低, 最高, MA5]
       rows:

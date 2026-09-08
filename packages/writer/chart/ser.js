@@ -69,13 +69,16 @@ export function barSerXml(theme, s, sheetRange, idx, labels, chs) {
   return el("c:ser", {}, kids.join(""));
 }
 
-export function lineSerXml(theme, s, sheetRange, idx, labels, chs) {
+export function lineSerXml(theme, s, sheetRange, idx, labels, chs, opts = null) {
   const kids = serPreludeXml(s.name, idx, sheetRange.nameCol(s));
   const spPr = [];
   if (s.lineColor) spPr.push(lnXml(theme, s.lineColor, s.width ?? 2, s.lineStyle));
   if (spPr.length) kids.push(el("c:spPr", {}, spPr.join("")));
   const marker = markerXml(theme, s.marker, s.color);
   if (marker) kids.push(marker);
+  // suppressMarker：股价图叠加线未配 marker 时显式写 none——省略元素 PowerPoint
+  // 会落平台默认 ✕ 标记（与预览无标记不一致）
+  else if (opts?.suppressMarker) kids.push(el("c:marker", {}, el("c:symbol", { val: "none" })));
   if (labels) kids.push(dLblsXml(theme, labels));
   kids.push(catRefXml(chs.cat, sheetRange), valRefXml(chs.val, sheetRange));
   // 每系列显式 smooth 0/1（此前非平滑系列不写元素，会继承组级 smooth=1 被连带平滑）

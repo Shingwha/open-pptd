@@ -164,6 +164,7 @@ export function buildCartesian(ctx) {
       const down = s.downBars || {};
       const cs = CHART_DEFAULTS.candlestick;
       return {
+        ...commonSer,
         type: "candlestick",
         // K 线柱宽走 resolveBarLayout 投影（writer 端 stock gapWidth 150 同一缺省，
         // 两端柱宽收敛——此前 ECharts 默认 ~80% 槽宽 vs PPT 40%）
@@ -184,5 +185,33 @@ export function buildCartesian(ctx) {
     return commonSer;
   });
 
-  return { ...common, xAxis: axes.xAxis, yAxis: axes.yAxis, series: seriesOptions };
+  // 股价图图例与 PowerPoint 对齐：原生股价图把 1 个系列展开为 开盘/最高/最低/收盘
+  // 图例条目（此前预览只显示系列名，两端不一致）。追加空数据 helper 系列承载图例
+  // 条目（不参与交互），真身经 legend.data 排除；最高/最低用涨跌色点题
+  const csSeries = series.find((s) => s.type === "candlestick");
+  let legendData = null;
+  if (csSeries) {
+    const cols = el.data?.cols || [];
+    const channels = csSeries._cols.open != null ? ["open", "high", "low", "close"] : ["high", "low", "close"];
+    const csUp = resolveColor(theme, (csSeries.upBars || {}).fill) || CHART_DEFAULTS.candlestick.upFill;
+    const csDown = resolveColor(theme, (csSeries.downBars || {}).fill) || CHART_DEFAULTS.candlestick.downFill;
+    const hiName = String(cols[csSeries._cols.high] ?? "最高");
+    const loName = String(cols[csSeries._cols.low] ?? "最低");
+    const helperNames = channels.map((ch) => String(cols[csSeries._cols[ch]] ?? ch));
+    seriesOptions.push(...helperNames.map((name) => ({
+      type: "line", name, data: [],
+      silent: true, legendHoverLink: false, tooltip: { show: false }, emphasis: { disabled: true },
+      lineStyle: { opacity: 0 },
+      itemStyle: { color: name === hiName ? csUp : name === loName ? csDown : "#9ca3af" },
+    })));
+    legendData = [...helperNames, ...series.filter((s) => s.type !== "candlestick").map((s) => s.name)];
+  }
+
+  return {
+    ...common,
+    xAxis: axes.xAxis,
+    yAxis: axes.yAxis,
+    series: seriesOptions,
+    ...(legendData ? { legend: { ...common.legend, data: legendData } } : {}),
+  };
 }

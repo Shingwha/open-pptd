@@ -25,7 +25,10 @@ export function buildPolar(ctx) {
         center: [`${layout.pie.centerX}%`, `${layout.pie.centerY}%`],
         startAngle: 90 + (s.startAngle || 0), // 官方 0 = 12 点；ECharts 90 = 3 点
         avoidLabelOverlap: true,
-        label: echartsLabel(theme, el, s, { position: "outside", pie: true }),
+        // 环形图 PowerPoint 缺省把标签放环带内（doughnut 不支持 dLblPos，导出端
+        // 也省略元素），预览同步 inside——浅色标签（如白字）在深色环带上才可读，
+        // 外置会落在页面背景上隐形；实心饼保持外置 + 引导线（对齐导出 outEnd）
+        label: echartsLabel(theme, el, s, { position: inner > 0 ? "inside" : "outside", pie: true }),
         itemStyle: { borderColor: s.border?.color ? resolveColor(theme, s.border.color) : undefined, borderWidth: s.border?.width },
         data: cats.map((c, i) => ({
           name: c,

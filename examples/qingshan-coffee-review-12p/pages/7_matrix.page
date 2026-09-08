@@ -41,11 +41,11 @@ elements:
       text: 三家旗舰店坪效领跑：标准店人效分化最大
   - elementId: chart
     elementType: chart
-    bounds: [60, 124, 840, 352]
+    bounds: [60, 118, 840, 326]
     fontFamily: "LXGW Neo XiHei"
     legend: {position: top, fontSize: 10.5}
-    xAxis: {title: 人效（万元/人·年）}
-    yAxis: {title: 坪效（元/㎡·月）}
+    xAxis: {title: 人效（万元/人·年）, min: 3.5, max: 5.5}
+    yAxis: {title: 坪效（元/㎡·月）, min: 800, max: 2400}
     seriesDefaults:
       bubble: {sizeScale: sqrt, sizeRange: [10, 46]}
     data:
@@ -87,7 +87,7 @@ elements:
         marker: {shape: diamond, size: 16, fill: "$accent3", border: {style: solid, width: 2, color: "$text"}}
   - elementId: f1-title
     elementType: text
-    bounds: [60, 434, 840, 24]
+    bounds: [60, 452, 840, 22]
     content:
       style: "$sectionTitle"
       text: 江宁金鹰、天一广场双指标低于行业基准——H2 进驻调改名单

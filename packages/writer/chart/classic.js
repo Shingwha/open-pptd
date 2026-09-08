@@ -125,16 +125,18 @@ export function buildChartParts(theme, chartEl, chartIndex) {
       const kids = [
         el("c:grouping", { val: grouping }),
         el("c:varyColors", { val: "0" }),
-        (() => {
-          const ss = [];
-          for (const s of groupSeries) {
-            const chs = seriesChannels(s, false);
-            ss.push(type === "line"
-              ? lineSerXml(theme, s, sheetRange, serCounter++, labelsOf(s, "line"), chs)
-              : areaSerXml(theme, s, sheetRange, serCounter++, labelsOf(s, "area"), chs));
-          }
-          return ss.join("");
-        })(),
+          (() => {
+            const ss = [];
+            for (const s of groupSeries) {
+              const chs = seriesChannels(s, false);
+              // 股价图叠加线（均线）：未配 marker 时显式写 symbol none——省略元素会让
+              // PowerPoint 落平台默认 ✕ 标记，与预览无标记不一致
+              ss.push(type === "line"
+                ? lineSerXml(theme, s, sheetRange, serCounter++, labelsOf(s, "line"), chs, { suppressMarker: spec.primary === "candlestick" })
+                : areaSerXml(theme, s, sheetRange, serCounter++, labelsOf(s, "area"), chs));
+            }
+            return ss.join("");
+          })(),
       ];
       // smooth 已逐系列显式写（c:smooth 0/1），组级不再写——「任一系列平滑→全组连带平滑」废止
       kids.push(el("c:axId", { val: catId }), el("c:axId", { val: valId }));

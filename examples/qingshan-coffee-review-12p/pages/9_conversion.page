@@ -41,7 +41,7 @@ elements:
       text: 进店到消费 74%，注册后 90 天复购 63%：漏斗后段健康
   - elementId: chart
     elementType: chart
-    bounds: [60, 122, 840, 354]
+    bounds: [60, 116, 840, 306]
     fontFamily: "LXGW Neo XiHei"
     data:
       cols: [来源, 去向, 万人]
@@ -104,7 +104,7 @@ elements:
       text: 注册会员 90 天复购率
   - elementId: pageno
     elementType: text
-    bounds: [820, 508, 80, 20]
+    bounds: [820, 480, 80, 24]
     content:
       style: "$caption"
       align: [right, top]

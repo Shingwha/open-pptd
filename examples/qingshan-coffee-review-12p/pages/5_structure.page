@@ -103,7 +103,7 @@ elements:
         encode: {category: 节点, value: 销售额, parent: 父}
         levels: 2
         fill: ["$primary", "$accent", "$accent3", "$accent4", "$accent5"]
-        dataLabels: {show: true, content: value}
+        dataLabels: {show: true, content: value, fontSize: 10}
   - elementId: insight
     elementType: text
     bounds: [60, 480, 700, 24]
