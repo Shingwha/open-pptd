@@ -177,7 +177,8 @@ export function buildMatrix(ctx) {
         nodeWidth: 14,
         nodeGap: 10,
         label: { show: true, color: labelColor, fontSize: 11 },
-        lineStyle: { color: "gradient", opacity: 0.45 },
+        // 透明度压低：漏斗类数据跨层交叉流多，0.45 时叠色发闷
+        lineStyle: { color: "gradient", opacity: 0.3 },
       }],
     };
   }
