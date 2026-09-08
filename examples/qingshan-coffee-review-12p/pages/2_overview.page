@@ -96,7 +96,7 @@ elements:
     barWidth: 0.55
     yAxis:
       - {title: 营收（万元）, gridLine: {color: "$line"}}
-      - {title: 毛利率, min: 0.6, max: 0.72, label: {numberFormat: "0%"}, gridLine: {show: false}}
+      - {min: 0.6, max: 0.72, label: {numberFormat: "0%"}, gridLine: {show: false}}
     data:
       cols: [月份, 营收, 毛利率]
       rows:

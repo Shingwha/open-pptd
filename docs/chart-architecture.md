@@ -97,6 +97,7 @@ PIE_FILL/RADAR_FILL 是 COM 截图校准的约定值，改动需 02/08 页双端
 | 5 | **I18 残留**：深色瓦片上预览标签默认深色文字对比度不足（标签已渲染；PPT 端用白字） | 待办候选：按瓦片亮度选标签色 |
 | 6 | **瀑布色板**：chartEx style part 语义色（绿/蓝/橙）vs 预览主题色板（蓝/橙/绿） | 接受；用户配 totalBars/increaseBars/decreaseBars fill 时两端同色 |
 | 7 | **股价图图例**：OHLC 展开的图例条目（开盘/最高/最低/收盘）为 PowerPoint 股价图固有行为 | 接受（I4 修复后取列头名，不再污染为系列名×N） |
+| 8 | **图例底部 + manualLayout**：inner 矩形固定后，PowerPoint 图例带与类目标签/轴标题共用底部让位带，内容多时互相挤（青山咖啡 deck P3/P10/P12 实测） | 页面层规避：图例挪 top；模型级修法（布局模型给 legend-bottom 追加底部让位）列为候选，改动会波及全部 legend-bottom 图表的预览像素 |
 
 ## 6. 验证
 

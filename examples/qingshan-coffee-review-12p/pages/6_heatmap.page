@@ -91,9 +91,9 @@ elements:
     series:
       - type: heatmap
         encode: {x: 时段, y: 星期, value: 订单}
-        colorScheme: ["#EFE9DB", "#1E3B33"]
+        colorScheme: ["#EFE9DB", "#8FA88A"]
         colorScale: {domain: [60, 260]}
-        dataLabels: {show: true, fontSize: 8.5, color: "$muted"}
+        dataLabels: {show: true, fontSize: 8.5, color: "$text"}
   - elementId: insight
     elementType: text
     bounds: [60, 480, 700, 24]

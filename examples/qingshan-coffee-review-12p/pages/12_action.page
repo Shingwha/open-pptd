@@ -127,7 +127,7 @@ elements:
     elementType: chart
     bounds: [460, 128, 440, 348]
     fontFamily: "LXGW Neo XiHei"
-    legend: {position: bottom, fontSize: 10.5}
+    legend: {position: top, fontSize: 10.5}
     xAxis: {title: 预期增量（万元）, label: {numberFormat: "#,##0"}, gridLine: {color: "$line"}}
     yAxis: {label: {fontSize: 11}}
     data:

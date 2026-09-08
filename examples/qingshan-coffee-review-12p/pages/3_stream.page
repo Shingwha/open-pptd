@@ -43,7 +43,7 @@ elements:
     elementType: chart
     bounds: [60, 124, 840, 288]
     fontFamily: "LXGW Neo XiHei"
-    legend: {position: bottom, fontSize: 10.5}
+    legend: {position: top, fontSize: 10.5}
     seriesDefaults:
       area: {stack: value}
     data:
