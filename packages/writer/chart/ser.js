@@ -3,10 +3,9 @@
 // ----------------------------------------------------------------------------
 
 import { el, esc } from "../xml.js";
-import { hexA } from "../../model/chart.js";
+import { hexA, colLetter } from "../../model/chart.js";
 import { buildFill } from "../drawing.js";
 import { fillXml, lnXml, dLblsXml, markerXml } from "./style.js";
-import { colLetter } from "./xlsx.js";
 
 export function strRefXml(sheetRef, values) {
   return el("c:strRef", {}, [

@@ -12,7 +12,7 @@
 // ============================================================================
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "../xml.js";
-import { resolveChartSeries, resolveDataLabels, hierarchyColor, CHART_DEFAULTS } from "../../model/chart.js";
+import { resolveChartSeries, resolveDataLabels, hierarchyColor, parseHexColor, parseHierarchy, resolveTreeLevels, CHART_DEFAULTS } from "../../model/chart.js";
 import { resolveColor, resolveFont, DEFAULT_FONT } from "../../model/theme.js";
 import { buildFill, buildLn, buildShadow } from "../drawing.js";
 import { buildChartXlsx } from "./xlsx.js";
@@ -52,38 +52,10 @@ function cxRichXml(theme, text, style) {
 }
 
 /** 父子表 → 叶子路径行（[最深...最浅] 每级一列，浅层列用最浅值补齐）。
- *  levels: 官方 Treemap/Sunburst.levels——显示层级数；超出部分聚合到边界层。 */
+ *  levels: 官方 Treemap/Sunburst.levels——显示层级数；超出部分聚合到边界层。
+ *  节点解析/子树求和与预览 ECharts 树同源（model parseHierarchy）。 */
 export function buildHierarchyRows(el, s, maxLevels = null) {
-  const data = el.data || {};
-  const catCol = s._cols.category;
-  const valCol = s._cols.value;
-  const parentCol = s._cols.parent;
-  const rows = data.rows || [];
-  const nodes = new Map();
-  const childrenOf = new Map();
-  const roots = [];
-  for (const r of rows) {
-    const name = String(r[catCol] ?? "").trim();
-    if (!name) continue;
-    nodes.set(name, { name, value: r[valCol] ?? null, parent: parentCol != null ? r[parentCol] : null });
-    if (!childrenOf.has(name)) childrenOf.set(name, []);
-  }
-  for (const node of nodes.values()) {
-    const p = node.parent == null || node.parent === "" ? null : String(node.parent);
-    if (p == null || !nodes.has(p)) roots.push(node);
-    else childrenOf.get(p).push(node);
-  }
-  // 子树值合计（叶子 value；中间节点 = 子节点和，供 levels 裁剪后的聚合）
-  const sumCache = new Map();
-  const subtreeSum = (node) => {
-    if (sumCache.has(node.name)) return sumCache.get(node.name);
-    const kids = childrenOf.get(node.name) || [];
-    const v = kids.length === 0
-      ? (Number.isFinite(Number(node.value)) ? Number(node.value) : 0)
-      : kids.reduce((acc, k) => acc + subtreeSum(k), 0);
-    sumCache.set(node.name, v);
-    return v;
-  };
+  const { childrenOf, roots, subtreeSum } = parseHierarchy(el, s);
   const paths = [];
   const walk = (node, path) => {
     const p = [...path, node.name];
@@ -137,14 +109,15 @@ function cxNumDimXml(dimType, colLetter, values, formatCode, rowCount) {
 }
 
 /** 逐点色 cx:dataPt（对照用户 treemap-color.pptx 实测）：
- *  <cx:dataPt idx="N"><cx:spPr><a:solidFill><a:srgbClr …/></a:solidFill></cx:spPr></cx:dataPt> */
+ *  <cx:dataPt idx="N"><cx:spPr><a:solidFill><a:srgbClr …/></a:solidFill></cx:spPr></cx:dataPt>
+ *  HEX 解析走 model parseHexColor（与经典 srgbClrXml 同源；HEX8 透明同样生效——
+ *  此前本函数只认 HEX6，HEX8 静默丢色）。 */
 function cxDataPtXml(idx, color) {
-  const rgb = /^#[0-9a-fA-F]{6}$/.test(color) ? color.slice(1) : null;
-  if (!rgb) return "";
-  const alpha = /^#[0-9a-fA-F]{8}$/.test(color) ? Math.round((parseInt(color.slice(7), 16) / 255) * 100000) : null;
-  const colorEl = alpha == null
-    ? `<a:srgbClr val="${rgb}"/>`
-    : `<a:srgbClr val="${rgb}"><a:alpha val="${alpha}"/></a:srgbClr>`;
+  const parsed = parseHexColor(color);
+  if (!parsed) return "";
+  const colorEl = parsed.alpha == null
+    ? `<a:srgbClr val="${parsed.rgb}"/>`
+    : `<a:srgbClr val="${parsed.rgb}"><a:alpha val="${Math.round(parsed.alpha * 100000)}"/></a:srgbClr>`;
   return `<cx:dataPt idx="${idx}"><cx:spPr><a:solidFill>${colorEl}</a:solidFill></cx:spPr></cx:dataPt>`;
 }
 
@@ -267,7 +240,7 @@ export function buildChartExParts(theme, chartEl, chartIndex) {
   } else {
     // treemap / sunburst：xlsx = [级0(最深)...级N-1(根), size]
     // levels（官方）：显示层级数，超出部分聚合到边界层
-    const maxLevels = Number.isFinite(s.levels) && s.levels > 0 ? Math.floor(s.levels) : null;
+    const maxLevels = resolveTreeLevels(s);
     const { depth, leafRows } = buildHierarchyRows(chartEl, s, maxLevels);
     if (depth === 0) return null;
     rowCount = leafRows.length + 1; // 层级表行数（叶子行 + 表头）
@@ -465,7 +438,7 @@ function buildChartExXlsx(chartEl, s, type) {
       table.push(row);
     });
   } else {
-    const maxLevels = Number.isFinite(s.levels) && s.levels > 0 ? Math.floor(s.levels) : null;
+    const maxLevels = resolveTreeLevels(s);
     const { depth, leafRows } = buildHierarchyRows(chartEl, s, maxLevels);
     // xlsx 列序 = 根在前（PowerPoint 官方布局，对照 treemap-color.pptx：A=父…最右=叶子）
     const header = [];

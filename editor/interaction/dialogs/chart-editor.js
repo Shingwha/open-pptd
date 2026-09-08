@@ -9,7 +9,7 @@
 //   - 类型切换：语义键重映射（remapEncode）+ 共存约束警告（validateChartSeries）
 // ============================================================================
 
-import { CHART_META, CHART_TYPE_ORDER, validateChartSeries, remapEncode, DATA_LABEL_CONTENTS } from "../../../packages/model/chart.js";
+import { CHART_META, CHART_TYPE_ORDER, validateChartSeries, remapEncode, DATA_LABEL_CONTENTS, colLetter, NUMBER_FORMAT_CODES } from "../../../packages/model/chart.js";
 import { resolveColor, themeChartPalette } from "../../../packages/model/theme.js";
 import { showDialog, buildCellInput, button } from "./base.js";
 import { renderGroup, themeSwatches, fieldHandlers } from "../fields.js";
@@ -18,27 +18,14 @@ import * as ui from "../../ui.js";
 
 const LEGEND_POS = [["bottom", "底部"], ["top", "顶部"], ["right", "右侧"], ["left", "左侧"]];
 const LABEL_CONTENT = [["value", "数值"], ["percentage", "百分比"], ["category", "分类名"]];
-const NUMBER_FMTS = [
-  ["", "无"], ["0", "整数"], ["0.0", "一位小数"], ["0%", "百分比"],
-  ["0.0%", "一位百分比"], ["#,##0", "千分位"], ["0.0E+00", "科学计数"],
-];
+// 格式码全集 = model NUMBER_FORMAT_CODES（与 formatChartValue 解释器同源），文案在本层
+const NUMBER_FMT_LABELS = { "": "无", "0": "整数", "0.0": "一位小数", "0%": "百分比", "0.0%": "一位百分比", "#,##0": "千分位", "0.0E+00": "科学计数" };
+const NUMBER_FMTS = NUMBER_FORMAT_CODES.map((code) => [code, NUMBER_FMT_LABELS[code]]);
 const LINE_STYLES = [["solid", "实线"], ["dash", "虚线"], ["dot", "点线"]];
 const STACK_OPTS = [["", "无"], ["normal", "普通堆叠"], ["percent", "百分比堆叠"]];
 const MARKER_SHAPES = [["circle", "圆点"], ["rect", "方块"], ["diamond", "菱形"], ["triangle", "三角"]];
 const SIZE_SCALES = [["sqrt", "平方根"], ["linear", "线性"], ["log", "对数"]];
 const NODE_ALIGNS = [["justify", "两端对齐"], ["left", "左对齐"], ["right", "右对齐"]];
-
-/** 列字母（Excel 式：A B … Z AA AB）。 */
-function colLetter(i) {
-  let s = "";
-  i += 1;
-  while (i > 0) {
-    const m = (i - 1) % 26;
-    s = String.fromCharCode(65 + m) + s;
-    i = Math.floor((i - 1) / 26);
-  }
-  return s;
-}
 
 /** 找未占用的数值列名（y2/y3…）。 */
 function findUnusedValCol(el) {

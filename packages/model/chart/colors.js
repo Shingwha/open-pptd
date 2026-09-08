@@ -41,6 +41,16 @@ export function hexA(hex, alpha) {
   return `#${h.slice(0, 6)}${a}`;
 }
 
+/** HEX6/HEX8 → { rgb: "RRGGBB"（大小写保持原样）, alpha: 0..1 | null }；
+ * 其余输入返回 null。OOXML 投影端 alpha ×100000 写 a:alpha，rgb 大写化与
+ * 否由各投影端自定（经典 srgbClr 走 hexToRgbVal 大写、cx:dataPt 保持原样）。 */
+export function parseHexColor(hex) {
+  const c = String(hex || "");
+  if (/^#[0-9a-fA-F]{8}$/.test(c)) return { rgb: c.slice(1, 7), alpha: parseInt(c.slice(7), 16) / 255 };
+  if (/^#[0-9a-fA-F]{6}$/.test(c)) return { rgb: c.slice(1), alpha: null };
+  return null;
+}
+
 /** HSL 亮度减少 n%（官方 treemap 派生：L_new = max(0, L_old - 10)）。 */
 export function darkenByLightness(hex, step = 10) {
   const h = String(hex || "#888888").replace("#", "");

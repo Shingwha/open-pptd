@@ -8,10 +8,11 @@ import { dashSpec } from "../../style-spec.js";
 import { resolveBarLayout } from "../layout.js";
 import { resolveChartDirection, seriesAxisIndex, seriesChannels } from "../axes.js";
 import { hexA } from "../colors.js";
+import { formatChartValue } from "../format.js";
 import { resolveDataLabels } from "../labels.js";
 import { themeChartPalette } from "../../theme.js";
 import { cartesianAxes } from "./axes.js";
-import { AXIS_TEXT, chartStyleColors, echartsLabel, markerSymbol, seriesColor, fmtNum } from "./shared.js";
+import { AXIS_TEXT, chartStyleColors, echartsLabel, markerSymbol, seriesColor } from "./shared.js";
 
 /** 气泡尺寸映射（官方 sizeScale: sqrt/linear/log + sizeRange px）。
  * lo/hi 为全 chart 气泡系列的全局极值——与导出端 PowerPoint 的全局归一化
@@ -59,7 +60,7 @@ function waterfallOption(ctx) {
   const fmt = (p) => {
     if (catLabel) return p.name;
     const v = data[p.dataIndex].y;
-    return wfLabelCfg?.numberFormat ? fmtNum(v, wfLabelCfg.numberFormat) : String(v);
+    return wfLabelCfg?.numberFormat ? formatChartValue(v, wfLabelCfg.numberFormat) : String(v);
   };
   const axes = cartesianAxes(theme, el, cats, series, { horizontal: false });
   // 彩段标签朝浮动柱外侧：增量在外顶（上）、减量在外底（下），与 PowerPoint

@@ -9,6 +9,7 @@ import { resolveColor, resolveFont } from "../../theme.js";
 import { dashSpec } from "../../style-spec.js";
 import { CHART_DEFAULTS } from "../meta.js";
 import { resolveDataLabels } from "../labels.js";
+import { formatChartValue } from "../format.js";
 
 /** 主题轴/文字缺省样式（字号来自官方 CHART_DEFAULTS 单源）。 */
 export const AXIS_TEXT = { color: "#6b7280", fontSize: CHART_DEFAULTS.axisSize };
@@ -37,7 +38,7 @@ export function echartsLabel(theme, el, s, { position = "top", pie = false } = {
   let formatter;
   if (cfg.content === "percentage") formatter = pie ? "{d}%" : (p) => `${(p.percent ?? 0).toFixed(1)}%`;
   else if (cfg.content === "category") formatter = pie ? "{b}" : (p) => p.name;
-  else formatter = (p) => (cfg.numberFormat ? fmtNum(displayValue(p), cfg.numberFormat) : String(displayValue(p)));
+  else formatter = (p) => (cfg.numberFormat ? formatChartValue(displayValue(p), cfg.numberFormat) : String(displayValue(p)));
   return {
     show: true,
     position,
@@ -45,17 +46,6 @@ export function echartsLabel(theme, el, s, { position = "top", pie = false } = {
     color: cfg.color ? resolveColor(theme, cfg.color) || labelColor : labelColor,
     formatter,
   };
-}
-
-export function fmtNum(v, format) {
-  const n = Number(v);
-  if (Number.isNaN(n)) return String(v ?? "");
-  if (format === "0%") return `${Math.round(n * 100)}%`;
-  if (format === "0.0%") return `${(n * 100).toFixed(1)}%`;
-  if (/^0\.0+$/.test(format)) return n.toFixed(format.length - 2);
-  if (format === "0.0E+00") return n.toExponential(1);
-  if (format === "#,##0") return n.toLocaleString("en-US");
-  return String(Math.round(n));
 }
 
 /** 系列主体色（与 writer 同源；$key 主题引用 → 解析为具体色）。 */

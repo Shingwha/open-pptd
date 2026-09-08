@@ -5,42 +5,15 @@
 
 import { resolveColor } from "../../theme.js";
 import { hierarchyColor, hexA } from "../colors.js";
+import { parseHierarchy, resolveTreeLevels } from "../tree.js";
+import { formatChartValue } from "../format.js";
 import { resolveDataLabels } from "../labels.js";
-import { fmtNum } from "./shared.js";
 import { AXIS_TEXT, chartStyleColors, echartsLabel } from "./shared.js";
 
 /** 父子表 → ECharts 树（node 带 itemStyle 层级色；levels 裁剪与 writer 同源）。 */
 function buildEchartsTree(theme, el, s) {
-  const data = el.data || {};
-  const rows = data.rows || [];
-  const catCol = s._cols.category;
-  const valCol = s._cols.value;
-  const parentCol = s._cols.parent;
-  const nodes = new Map();
-  const childrenOf = new Map();
-  const roots = [];
-  for (const r of rows) {
-    const name = String(r[catCol] ?? "").trim();
-    if (!name) continue;
-    nodes.set(name, { name, value: r[valCol] ?? null, parent: parentCol != null ? r[parentCol] : null });
-    if (!childrenOf.has(name)) childrenOf.set(name, []);
-  }
-  for (const node of nodes.values()) {
-    const p = node.parent == null || node.parent === "" ? null : String(node.parent);
-    if (p == null || !nodes.has(p)) roots.push(node);
-    else childrenOf.get(p).push(node);
-  }
-  const sumCache = new Map();
-  const subtreeSum = (node) => {
-    if (sumCache.has(node.name)) return sumCache.get(node.name);
-    const kids = childrenOf.get(node.name) || [];
-    const v = kids.length === 0
-      ? (Number.isFinite(Number(node.value)) ? Number(node.value) : 0)
-      : kids.reduce((acc, k) => acc + subtreeSum(k), 0);
-    sumCache.set(node.name, v);
-    return v;
-  };
-  const maxLevels = Number.isFinite(s.levels) && s.levels > 0 ? Math.floor(s.levels) : null;
+  const { childrenOf, roots, subtreeSum } = parseHierarchy(el, s);
+  const maxLevels = resolveTreeLevels(s);
   const tree = [];
   const walk = (node, level, rootIdx) => {
     const kids = childrenOf.get(node.name) || [];
@@ -132,7 +105,7 @@ export function buildMatrix(ctx) {
                 position: "inside",
                 fontSize: labelCfg.fontSize || 9,
                 color: labelCfg.color ? resolveColor(theme, labelCfg.color) || labelColor : labelColor,
-                formatter: (p) => (labelCfg.numberFormat ? fmtNum(p.value[2], labelCfg.numberFormat) : String(p.value[2])),
+                formatter: (p) => (labelCfg.numberFormat ? formatChartValue(p.value[2], labelCfg.numberFormat) : String(p.value[2])),
               },
             }
           : {}),

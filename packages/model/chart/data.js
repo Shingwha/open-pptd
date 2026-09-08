@@ -21,3 +21,15 @@ export function isNumericColumn(table, colIdx) {
   }
   return true;
 }
+
+/** 0-based 列索引 → Excel 列字母（A B … Z AA AB；xlsx 引用与图表编辑器网格共用）。 */
+export function colLetter(n) {
+  let s = "";
+  n += 1;
+  while (n > 0) {
+    const r = (n - 1) % 26;
+    s = String.fromCharCode(65 + r) + s;
+    n = Math.floor((n - 1) / 26);
+  }
+  return s;
+}

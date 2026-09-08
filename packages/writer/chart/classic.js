@@ -10,10 +10,10 @@
 // ============================================================================
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "../xml.js";
-import { resolveChartSeries, resolveBarLayout, resolvePlotLayout, chartDataTable, resolveDataLabels, toAxisArray, resolveChartDirection, seriesAxisIndex, seriesChannels, CHART_DEFAULTS } from "../../model/chart.js";
+import { resolveChartSeries, resolveBarLayout, resolvePlotLayout, chartDataTable, resolveDataLabels, toAxisArray, resolveChartDirection, seriesAxisIndex, seriesChannels, CHART_DEFAULTS, colLetter } from "../../model/chart.js";
 import { resolveColor, resolveFont, themeChartPalette } from "../../model/theme.js";
 import { buildFill, buildLn, buildShadow } from "../drawing.js";
-import { buildChartXlsx, buildSheetOrder, colLetter } from "./xlsx.js";
+import { buildChartXlsx, buildSheetOrder } from "./xlsx.js";
 import { fillXml, lnXml, txPrXml } from "./style.js";
 import {
   barSerXml, lineSerXml, areaSerXml, scatterSerXml, bubbleSerXml,

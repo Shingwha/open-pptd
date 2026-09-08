@@ -5,17 +5,18 @@
 import { el, hexToRgbVal } from "../xml.js";
 import { resolveColor, resolveFont } from "../../model/theme.js";
 import { dashSpec } from "../../model/style-spec.js";
+import { parseHexColor, CHART_DEFAULTS } from "../../model/chart.js";
 import { buildFill, solidFillResolved } from "../drawing.js";
-import { CHART_DEFAULTS } from "../../model/chart.js";
 
-/** 颜色 → a:srgbClr（HEX6 直接转；HEX8 拆出 alpha 子元素）。 */
+/** 颜色 → a:srgbClr（HEX6 直接转；HEX8 拆出 alpha 子元素——解析唯一实现在
+ * model parseHexColor，cx:dataPt 同源）。 */
 export function srgbClrXml(color) {
-  const c = String(color || "#000000");
-  if (/^#[0-9a-fA-F]{8}$/.test(c)) {
-    const alpha = Math.round((parseInt(c.slice(7), 16) / 255) * 100000);
-    return el("a:srgbClr", { val: hexToRgbVal(c.slice(0, 7)) }, el("a:alpha", { val: alpha }));
+  const parsed = parseHexColor(color);
+  if (parsed) {
+    return el("a:srgbClr", { val: parsed.rgb.toUpperCase() },
+      parsed.alpha == null ? "" : el("a:alpha", { val: Math.round(parsed.alpha * 100000) }));
   }
-  return el("a:srgbClr", { val: hexToRgbVal(c) });
+  return el("a:srgbClr", { val: hexToRgbVal(color) });
 }
 
 /** 系列填充 → a:solidFill（先 resolveColor 解析 $token 为具体色，再走 drawing.js

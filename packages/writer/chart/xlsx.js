@@ -8,20 +8,9 @@
 // ============================================================================
 
 import { el, esc, xmlHeader } from "../xml.js";
-import { chartDataTable, isNumericColumn } from "../../model/chart.js";
+import { chartDataTable, isNumericColumn, colLetter } from "../../model/chart.js";
 import { DEFAULT_FONT } from "../../model/theme.js";
 import { ZipWriter } from "../zip.js";
-
-function colLetter(n) {
-  let s = "";
-  n += 1;
-  while (n > 0) {
-    const r = (n - 1) % 26;
-    s = String.fromCharCode(65 + r) + s;
-    n = Math.floor((n - 1) / 26);
-  }
-  return s;
-}
 
 /**
  * 工作表列重排（candlestick 需要 open/high/low/close 连续 4 列，PowerPoint
@@ -223,5 +212,3 @@ export function buildChartXlsx(chartEl, fonts, sheetOrder) {
   zip.add("xl/theme/theme1.xml", xlTheme);
   return zip.build();
 }
-
-export { colLetter };
