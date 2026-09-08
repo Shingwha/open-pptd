@@ -1,0 +1,36 @@
+version: v2
+title: L'ATELIER — Art Deco 黑金
+size: [720, 960]
+theme:
+  colors:
+    primary: "#C9A227"
+    accent: "#E8D9B0"
+    bg: "#0E0E10"
+    text: "#F0E9DA"
+    muted: "#8A8271"
+    line: "#3A3529"
+    success: "#9AA37A"
+    warning: "#C9A227"
+    danger: "#B0603A"
+    primarySoft: "#1A1913"
+    primaryTint: "#2A2618"
+    primaryDeep: "#08080A"
+    accent3: "#B08D2E"
+    accent4: "#8A6E22"
+    accent5: "#E8D9B0"
+    accent6: "#6B5A1E"
+  textStyles:
+    title: { fontSize: 58, color: "$primary", fontFamily: "Oranienbaum", lineHeight: 1.1, letterSpacing: 4 }
+    subtitle: { fontSize: 14, color: "$text", fontFamily: "Microsoft YaHei", letterSpacing: 8, lineHeight: 1.4 }
+    body: { fontSize: 15, color: "$text", fontFamily: "Microsoft YaHei", lineHeight: 1.7 }
+    caption: { fontSize: 11, color: "$muted", fontFamily: "Microsoft YaHei", lineHeight: 1.4 }
+    label: { fontSize: 13, color: "$primary", fontFamily: "Microsoft YaHei", letterSpacing: 8, lineHeight: 1.4 }
+  tableStyles:
+    default:
+      cellStyle: { fontSize: 12, color: "$text", fill: { type: "solid", color: "#1A1913" }, border: { style: "solid", width: 1, color: "$line" } }
+      firstRowStyle: { fill: { type: "solid", color: "$primary" }, color: "#0E0E10", bold: true }
+      rowOverColumn: true
+fonts:
+  Oranienbaum: { family: "Oranienbaum" }
+pages:
+  - pages/01_poster.page

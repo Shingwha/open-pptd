@@ -1,0 +1,11 @@
+# Style Brief — 02 Art Deco 黑金（精修版）
+- Goal / audience: 香氛品牌开幕夜海报；面向高审美人群，远看华丽对称，近看每一根线都讲究。
+- Canvas: 3:4 竖版 [720, 960]。
+- Core message: 一个属于黄金年代的优雅。
+- Visual concept: Art Deco——黑底金线、严格对称、同心圆徽章、细线双框、四角装饰、阶梯收尾。
+- Primary focus: 中央同心圆徽章 + 12 枚小菱形环 + 居中高对比衬线标题。
+- Poster-level move: 以中轴线贯穿；金色只走细线与徽章；用字距、留白和层次做出精致感。
+- Visual DNA: 近黑底（径向微渐变）+ 香槟金 + 暖米字；发丝级细线、直角、无阴影。
+- Fonts: 标题 Oranienbaum（高对比衬线，字距拉开）；辅助信息 Microsoft YaHei，字距加大。
+- Reading order: 顶部标识 → 徽章 → 主标题 → 分隔饰线 → 副题 → 信息 → 阶梯收尾。
+- Avoid: 廉价金色渐变、满屏花纹、粗块状星芒；金色不铺面，线不喧宾夺主。

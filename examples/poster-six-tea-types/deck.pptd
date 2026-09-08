@@ -1,0 +1,38 @@
+version: v2
+title: 六大茶类 · 一条发酵轴
+size: [720, 1080]
+fonts:
+  霞鹜文楷: { family: "LXGW WenKai" }
+  MiSans: { family: "MiSans" }
+theme:
+  colors:
+    primary: "#2F5D4A"
+    accent: "#B07A3C"
+    bg: "#F7F5EF"
+    text: "#2A2C28"
+    muted: "#6E7268"
+    line: "#DCD8CB"
+    success: "#5B8C4A"
+    warning: "#C98A2B"
+    danger: "#A63A2E"
+    primarySoft: "#EEF2EC"
+    primaryTint: "#D9E3D8"
+    primaryDeep: "#1E3D30"
+    accent3: "#7BA05B"
+    accent4: "#D4B44A"
+    accent5: "#A63A2E"
+    accent6: "#4A3428"
+  textStyles:
+    display: { fontSize: 56, fontFamily: "LXGW WenKai", color: "$text", lineHeight: 1.1 }
+    title: { fontSize: 24, fontFamily: "LXGW WenKai", color: "$text", lineHeight: 1.2 }
+    heading: { fontSize: 15, fontFamily: "MiSans", color: "$text", bold: true, lineHeight: 1.3 }
+    body: { fontSize: 12, fontFamily: "MiSans", color: "$text", lineHeight: 1.6 }
+    caption: { fontSize: 10, fontFamily: "MiSans", color: "$muted", lineHeight: 1.5 }
+    label: { fontSize: 11, fontFamily: "MiSans", color: "$primary", bold: true, letterSpacing: 2, lineHeight: 1.4 }
+  tableStyles:
+    default:
+      cellStyle: { fontSize: 11, color: "$text", fill: { type: "solid", color: "#FFFFFF" }, border: { style: "solid", width: 1, color: "$line" } }
+      firstRowStyle: { fill: { type: "solid", color: "$primary" }, color: "#FFFFFF", bold: true }
+      rowOverColumn: true
+pages:
+  - pages/1_poster.page

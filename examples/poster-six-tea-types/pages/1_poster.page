@@ -1,0 +1,695 @@
+pageType: poster
+background: { type: solid, color: "$bg" }
+elements:
+  - elementId: eyebrow
+    elementType: text
+    bounds: [48, 48, 400, 20]
+    content:
+      style: "$label"
+      text: "TEA · 六大茶类图鉴"
+  - elementId: title
+    elementType: text
+    bounds: [44, 72, 560, 72]
+    content:
+      style: "$display"
+      text: "六大茶类"
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 150, 520, 24]
+    content:
+      fontSize: 14
+      fontFamily: "MiSans"
+      color: "$muted"
+      text: "一条发酵轴，从鲜爽到醇厚"
+  - elementId: leaf-icon
+    elementType: icon
+    bounds: [612, 76, 46, 46]
+    iconName: "fas:leaf"
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.85
+  - elementId: head-rule
+    elementType: shape
+    bounds: [48, 184, 624, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: axis-label
+    elementType: text
+    bounds: [48, 204, 320, 20]
+    content:
+      style: "$label"
+      text: "发酵度 OXIDATION"
+  - elementId: axis-bar
+    elementType: shape
+    bounds: [48, 234, 624, 18]
+    shapeName: rect
+    fill:
+      type: gradient
+      gradientType: linear
+      angle: 0
+      stops:
+        - { position: 0, color: "#7BA05B" }
+        - { position: 0.08, color: "#C9C9A0" }
+        - { position: 0.15, color: "#D4B44A" }
+        - { position: 0.45, color: "#B07A3C" }
+        - { position: 0.85, color: "#A63A2E" }
+        - { position: 1, color: "#4A3428" }
+  - elementId: axis-mark-1
+    elementType: shape
+    bounds: [48, 222, 10, 10]
+    shapeName: diamond
+    fill: { type: solid, color: "#7BA05B" }
+  - elementId: axis-mark-2
+    elementType: shape
+    bounds: [93, 222, 10, 10]
+    shapeName: diamond
+    fill: { type: solid, color: "#C9C9A0" }
+  - elementId: axis-mark-3
+    elementType: shape
+    bounds: [137, 222, 10, 10]
+    shapeName: diamond
+    fill: { type: solid, color: "#D4B44A" }
+  - elementId: axis-mark-4
+    elementType: shape
+    bounds: [324, 222, 10, 10]
+    shapeName: diamond
+    fill: { type: solid, color: "#B07A3C" }
+  - elementId: axis-mark-5
+    elementType: shape
+    bounds: [573, 222, 10, 10]
+    shapeName: diamond
+    fill: { type: solid, color: "#A63A2E" }
+  - elementId: axis-mark-6
+    elementType: shape
+    bounds: [662, 222, 10, 10]
+    shapeName: diamond
+    fill: { type: solid, color: "#4A3428" }
+  - elementId: axis-0
+    elementType: text
+    bounds: [48, 258, 60, 16]
+    content:
+      fontSize: 10
+      fontFamily: "MiSans"
+      color: "$muted"
+      text: "0% 不发酵"
+  - elementId: axis-100
+    elementType: text
+    bounds: [552, 258, 120, 16]
+    content:
+      fontSize: 10
+      fontFamily: "MiSans"
+      color: "$muted"
+      align: [right, middle]
+      text: "后发酵 100%"
+  - elementId: table-head-bg
+    elementType: shape
+    bounds: [48, 288, 624, 30]
+    shapeName: rect
+    fill: { type: solid, color: "$primarySoft" }
+  - elementId: th-1
+    elementType: text
+    bounds: [72, 294, 100, 18]
+    content:
+      fontSize: 10
+      fontFamily: "MiSans"
+      color: "$muted"
+      letterSpacing: 1
+      text: "茶类"
+  - elementId: th-2
+    elementType: text
+    bounds: [182, 294, 108, 18]
+    content:
+      fontSize: 10
+      fontFamily: "MiSans"
+      color: "$muted"
+      letterSpacing: 1
+      text: "发酵度"
+  - elementId: th-3
+    elementType: text
+    bounds: [296, 294, 130, 18]
+    content:
+      fontSize: 10
+      fontFamily: "MiSans"
+      color: "$muted"
+      letterSpacing: 1
+      text: "代表茶"
+  - elementId: th-4
+    elementType: text
+    bounds: [444, 294, 130, 18]
+    content:
+      fontSize: 10
+      fontFamily: "MiSans"
+      color: "$muted"
+      letterSpacing: 1
+      text: "咖啡因 / 杯"
+  - elementId: th-5
+    elementType: text
+    bounds: [588, 294, 84, 18]
+    content:
+      fontSize: 10
+      fontFamily: "MiSans"
+      color: "$muted"
+      letterSpacing: 1
+      text: "水温"
+  - elementId: head-rule-2
+    elementType: shape
+    bounds: [48, 318, 624, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$text" }
+  - elementId: r1-swatch
+    elementType: shape
+    bounds: [48, 340, 6, 32]
+    shapeName: rect
+    fill: { type: solid, color: "#7BA05B" }
+  - elementId: r1-name
+    elementType: text
+    bounds: [72, 336, 100, 20]
+    content:
+      fontSize: 15
+      fontFamily: "LXGW WenKai"
+      color: "$text"
+      text: "绿茶"
+  - elementId: r1-en
+    elementType: text
+    bounds: [72, 358, 110, 14]
+    content:
+      fontSize: 9
+      fontFamily: "MiSans"
+      color: "$muted"
+      text: "GREEN TEA"
+  - elementId: r1-ox
+    elementType: text
+    bounds: [182, 342, 108, 18]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "不发酵 · 0%"
+  - elementId: r1-rep
+    elementType: text
+    bounds: [296, 342, 130, 18]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "龙井 / 碧螺春"
+  - elementId: r1-caf
+    elementType: text
+    bounds: [444, 334, 90, 16]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "#4F7A38"
+      bold: true
+      text: "30mg"
+  - elementId: r1-bar-track
+    elementType: shape
+    bounds: [444, 356, 90, 6]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: r1-bar
+    elementType: shape
+    bounds: [444, 356, 54, 6]
+    shapeName: rect
+    fill: { type: solid, color: "#7BA05B" }
+  - elementId: r1-temp
+    elementType: text
+    bounds: [588, 342, 84, 18]
+    content:
+      fontSize: 11
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "75–80°C"
+  - elementId: r1-rule
+    elementType: shape
+    bounds: [48, 378, 624, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: r2-swatch
+    elementType: shape
+    bounds: [48, 396, 6, 32]
+    shapeName: rect
+    fill: { type: solid, color: "#C9C9A0" }
+  - elementId: r2-name
+    elementType: text
+    bounds: [72, 392, 100, 20]
+    content:
+      fontSize: 15
+      fontFamily: "LXGW WenKai"
+      color: "$text"
+      text: "白茶"
+  - elementId: r2-en
+    elementType: text
+    bounds: [72, 414, 110, 14]
+    content:
+      fontSize: 9
+      fontFamily: "MiSans"
+      color: "$muted"
+      text: "WHITE TEA"
+  - elementId: r2-ox
+    elementType: text
+    bounds: [182, 398, 108, 18]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "微发酵 · 5–10%"
+  - elementId: r2-rep
+    elementType: text
+    bounds: [296, 398, 130, 18]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "白毫银针 / 白牡丹"
+  - elementId: r2-caf
+    elementType: text
+    bounds: [444, 390, 90, 16]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "#7A6F2E"
+      bold: true
+      text: "25mg"
+  - elementId: r2-bar-track
+    elementType: shape
+    bounds: [444, 412, 90, 6]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: r2-bar
+    elementType: shape
+    bounds: [444, 412, 45, 6]
+    shapeName: rect
+    fill: { type: solid, color: "#C9C9A0" }
+  - elementId: r2-temp
+    elementType: text
+    bounds: [588, 398, 84, 18]
+    content:
+      fontSize: 11
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "85–90°C"
+  - elementId: r2-rule
+    elementType: shape
+    bounds: [48, 434, 624, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: r3-swatch
+    elementType: shape
+    bounds: [48, 452, 6, 32]
+    shapeName: rect
+    fill: { type: solid, color: "#D4B44A" }
+  - elementId: r3-name
+    elementType: text
+    bounds: [72, 448, 100, 20]
+    content:
+      fontSize: 15
+      fontFamily: "LXGW WenKai"
+      color: "$text"
+      text: "黄茶"
+  - elementId: r3-en
+    elementType: text
+    bounds: [72, 470, 110, 14]
+    content:
+      fontSize: 9
+      fontFamily: "MiSans"
+      color: "$muted"
+      text: "YELLOW TEA"
+  - elementId: r3-ox
+    elementType: text
+    bounds: [182, 454, 108, 18]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "轻发酵 · 10–20%"
+  - elementId: r3-rep
+    elementType: text
+    bounds: [296, 454, 130, 18]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "君山银针 / 蒙顶黄芽"
+  - elementId: r3-caf
+    elementType: text
+    bounds: [444, 446, 90, 16]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "#8A6E14"
+      bold: true
+      text: "30mg"
+  - elementId: r3-bar-track
+    elementType: shape
+    bounds: [444, 468, 90, 6]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: r3-bar
+    elementType: shape
+    bounds: [444, 468, 54, 6]
+    shapeName: rect
+    fill: { type: solid, color: "#D4B44A" }
+  - elementId: r3-temp
+    elementType: text
+    bounds: [588, 454, 84, 18]
+    content:
+      fontSize: 11
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "80–85°C"
+  - elementId: r3-rule
+    elementType: shape
+    bounds: [48, 490, 624, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: r4-swatch
+    elementType: shape
+    bounds: [48, 508, 6, 32]
+    shapeName: rect
+    fill: { type: solid, color: "#B07A3C" }
+  - elementId: r4-name
+    elementType: text
+    bounds: [72, 504, 130, 20]
+    content:
+      fontSize: 15
+      fontFamily: "LXGW WenKai"
+      color: "$text"
+      text: "青茶 · 乌龙"
+  - elementId: r4-en
+    elementType: text
+    bounds: [72, 526, 130, 14]
+    content:
+      fontSize: 9
+      fontFamily: "MiSans"
+      color: "$muted"
+      text: "OOLONG"
+  - elementId: r4-ox
+    elementType: text
+    bounds: [182, 510, 108, 18]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "半发酵 · 15–70%"
+  - elementId: r4-rep
+    elementType: text
+    bounds: [296, 510, 130, 18]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "铁观音 / 大红袍"
+  - elementId: r4-caf
+    elementType: text
+    bounds: [444, 502, 90, 16]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "#B07A3C"
+      bold: true
+      text: "40mg"
+  - elementId: r4-bar-track
+    elementType: shape
+    bounds: [444, 524, 90, 6]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: r4-bar
+    elementType: shape
+    bounds: [444, 524, 72, 6]
+    shapeName: rect
+    fill: { type: solid, color: "#B07A3C" }
+  - elementId: r4-temp
+    elementType: text
+    bounds: [588, 510, 84, 18]
+    content:
+      fontSize: 11
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "95–100°C"
+  - elementId: r4-rule
+    elementType: shape
+    bounds: [48, 546, 624, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: r5-swatch
+    elementType: shape
+    bounds: [48, 564, 6, 32]
+    shapeName: rect
+    fill: { type: solid, color: "#A63A2E" }
+  - elementId: r5-name
+    elementType: text
+    bounds: [72, 560, 100, 20]
+    content:
+      fontSize: 15
+      fontFamily: "LXGW WenKai"
+      color: "$text"
+      text: "红茶"
+  - elementId: r5-en
+    elementType: text
+    bounds: [72, 582, 110, 14]
+    content:
+      fontSize: 9
+      fontFamily: "MiSans"
+      color: "$muted"
+      text: "BLACK TEA"
+  - elementId: r5-ox
+    elementType: text
+    bounds: [182, 566, 108, 18]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "全发酵 · 80–90%"
+  - elementId: r5-rep
+    elementType: text
+    bounds: [296, 566, 130, 18]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "正山小种 / 金骏眉"
+  - elementId: r5-caf
+    elementType: text
+    bounds: [444, 558, 90, 16]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "#A63A2E"
+      bold: true
+      text: "50mg"
+  - elementId: r5-bar-track
+    elementType: shape
+    bounds: [444, 580, 90, 6]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: r5-bar
+    elementType: shape
+    bounds: [444, 580, 90, 6]
+    shapeName: rect
+    fill: { type: solid, color: "#A63A2E" }
+  - elementId: r5-temp
+    elementType: text
+    bounds: [588, 566, 84, 18]
+    content:
+      fontSize: 11
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "90–95°C"
+  - elementId: r5-rule
+    elementType: shape
+    bounds: [48, 602, 624, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: r6-swatch
+    elementType: shape
+    bounds: [48, 620, 6, 32]
+    shapeName: rect
+    fill: { type: solid, color: "#4A3428" }
+  - elementId: r6-name
+    elementType: text
+    bounds: [72, 616, 100, 20]
+    content:
+      fontSize: 15
+      fontFamily: "LXGW WenKai"
+      color: "$text"
+      text: "黑茶"
+  - elementId: r6-en
+    elementType: text
+    bounds: [72, 638, 110, 14]
+    content:
+      fontSize: 9
+      fontFamily: "MiSans"
+      color: "$muted"
+      text: "DARK TEA"
+  - elementId: r6-ox
+    elementType: text
+    bounds: [182, 622, 108, 18]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "后发酵 · 100%"
+  - elementId: r6-rep
+    elementType: text
+    bounds: [296, 622, 130, 18]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "普洱 / 六堡茶"
+  - elementId: r6-caf
+    elementType: text
+    bounds: [444, 614, 90, 16]
+    content:
+      fontSize: 12
+      fontFamily: "MiSans"
+      color: "#4A3428"
+      bold: true
+      text: "40mg"
+  - elementId: r6-bar-track
+    elementType: shape
+    bounds: [444, 636, 90, 6]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: r6-bar
+    elementType: shape
+    bounds: [444, 636, 72, 6]
+    shapeName: rect
+    fill: { type: solid, color: "#4A3428" }
+  - elementId: r6-temp
+    elementType: text
+    bounds: [588, 622, 84, 18]
+    content:
+      fontSize: 11
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "100°C"
+  - elementId: r6-rule
+    elementType: shape
+    bounds: [48, 658, 624, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: radar-title
+    elementType: text
+    bounds: [48, 684, 300, 22]
+    content:
+      style: "$heading"
+      text: "风味对比"
+  - elementId: radar
+    elementType: chart
+    bounds: [48, 708, 300, 244]
+    data:
+      cols: [维度, 绿茶, 红茶]
+      rows:
+        - [鲜爽, 9, 3]
+        - [花香, 6, 5]
+        - [醇厚, 3, 8]
+        - [回甘, 6, 7]
+        - [陈韵, 1, 3]
+    spokeAxis: { min: 0, max: 10 }
+    legend: { show: true, position: bottom, fontSize: 10 }
+    series:
+      - type: radar
+        encode: { category: 维度, y: 绿茶 }
+        name: 绿茶
+        lineColor: "$primary"
+        areaColor: "#2F5D4A33"
+      - type: radar
+        encode: { category: 维度, y: 红茶 }
+        name: 红茶
+        lineColor: "$accent"
+        areaColor: "#B07A3C33"
+  - elementId: brew-title
+    elementType: text
+    bounds: [400, 684, 272, 22]
+    content:
+      style: "$heading"
+      text: "冲泡指南"
+  - elementId: brew-icon-1
+    elementType: icon
+    bounds: [400, 718, 22, 22]
+    iconName: "fas:temperature-half"
+    fill: { type: solid, color: "$accent" }
+  - elementId: brew-label-1
+    elementType: text
+    bounds: [432, 718, 100, 22]
+    content:
+      align: [left, middle]
+      fontSize: 13
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "水温"
+  - elementId: brew-value-1
+    elementType: text
+    bounds: [532, 718, 140, 22]
+    content:
+      align: [right, middle]
+      fontSize: 13
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "80–100°C"
+  - elementId: brew-icon-2
+    elementType: icon
+    bounds: [400, 782, 22, 22]
+    iconName: "fas:clock"
+    fill: { type: solid, color: "$accent" }
+  - elementId: brew-label-2
+    elementType: text
+    bounds: [432, 782, 100, 22]
+    content:
+      align: [left, middle]
+      fontSize: 13
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "时间"
+  - elementId: brew-value-2
+    elementType: text
+    bounds: [532, 782, 140, 22]
+    content:
+      align: [right, middle]
+      fontSize: 13
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "10 秒 – 3 分钟"
+  - elementId: brew-icon-3
+    elementType: icon
+    bounds: [400, 846, 22, 22]
+    iconName: "fas:leaf"
+    fill: { type: solid, color: "$accent" }
+  - elementId: brew-label-3
+    elementType: text
+    bounds: [432, 846, 100, 22]
+    content:
+      align: [left, middle]
+      fontSize: 13
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "茶水比"
+  - elementId: brew-value-3
+    elementType: text
+    bounds: [532, 846, 140, 22]
+    content:
+      align: [right, middle]
+      fontSize: 13
+      fontFamily: "MiSans"
+      color: "$text"
+      text: "1 : 15 – 1 : 50"
+  - elementId: brew-note
+    elementType: text
+    bounds: [400, 900, 272, 44]
+    content:
+      style: "$caption"
+      lineHeight: 1.6
+      text: "不同茶类差异较大，以上为参考区间；以实际口感为准。"
+  - elementId: foot-rule
+    elementType: shape
+    bounds: [48, 968, 624, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: footer
+    elementType: text
+    bounds: [48, 980, 624, 34]
+    content:
+      style: "$caption"
+      lineHeight: 1.6
+      text: "咖啡因为每杯约值（150ml），因品种、投茶量与冲泡方式而异 · 示例信息图，由 open-pptd 生成"

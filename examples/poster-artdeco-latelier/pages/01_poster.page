@@ -1,0 +1,358 @@
+pageType: content
+background:
+  type: gradient
+  gradientType: radial
+  stops:
+    - { position: 0, color: "#17161D" }
+    - { position: 1, color: "#08080A" }
+notes: 严格的左右对称。细线双框、四角装饰、中央同心圆徽章环抱 12 枚小菱形，背后有一层极细的放射纹。标题用金色渐变衬线，上下各一道饰线锁住。金色只走发丝级细线。
+elements:
+  - elementId: frame-outer
+    elementType: shape
+    bounds: [36, 36, 648, 888]
+    shapeName: rect
+    border: { style: solid, width: 1, color: "$primary" }
+    opacity: 0.45
+  - elementId: frame-inner
+    elementType: shape
+    bounds: [48, 48, 624, 864]
+    shapeName: rect
+    border: { style: solid, width: 1, color: "$primary" }
+    opacity: 0.22
+  - elementId: corner-tl-h
+    elementType: shape
+    bounds: [60, 60, 48, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.6
+  - elementId: corner-tl-v
+    elementType: shape
+    bounds: [60, 60, 1, 48]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.6
+  - elementId: corner-tr-h
+    elementType: shape
+    bounds: [612, 60, 48, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.6
+  - elementId: corner-tr-v
+    elementType: shape
+    bounds: [659, 60, 1, 48]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.6
+  - elementId: corner-bl-h
+    elementType: shape
+    bounds: [60, 899, 48, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.6
+  - elementId: corner-bl-v
+    elementType: shape
+    bounds: [60, 852, 1, 48]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.6
+  - elementId: corner-br-h
+    elementType: shape
+    bounds: [612, 899, 48, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.6
+  - elementId: corner-br-v
+    elementType: shape
+    bounds: [659, 852, 1, 48]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.6
+  - elementId: corner-diamond-tl
+    elementType: shape
+    bounds: [110, 110, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.7
+  - elementId: corner-diamond-tr
+    elementType: shape
+    bounds: [602, 110, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.7
+  - elementId: corner-diamond-bl
+    elementType: shape
+    bounds: [110, 842, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.7
+  - elementId: corner-diamond-br
+    elementType: shape
+    bounds: [602, 842, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.7
+  - elementId: burst
+    elementType: shape
+    bounds: [190, 130, 340, 340]
+    shapeName: star32
+    adjustments: [9000]
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.06
+  - elementId: circle-1
+    elementType: shape
+    bounds: [220, 160, 280, 280]
+    shapeName: ellipse
+    border: { style: solid, width: 1, color: "$primary" }
+    opacity: 0.5
+  - elementId: circle-2
+    elementType: shape
+    bounds: [242, 182, 236, 236]
+    shapeName: ellipse
+    border: { style: solid, width: 1, color: "$primary" }
+    opacity: 0.4
+  - elementId: circle-3
+    elementType: shape
+    bounds: [266, 206, 188, 188]
+    shapeName: ellipse
+    border: { style: solid, width: 1, color: "$primary" }
+    opacity: 0.32
+  - elementId: circle-4
+    elementType: shape
+    bounds: [292, 232, 136, 136]
+    shapeName: ellipse
+    border: { style: solid, width: 1, color: "$primary" }
+    opacity: 0.26
+  - elementId: circle-5
+    elementType: shape
+    bounds: [318, 258, 84, 84]
+    shapeName: ellipse
+    border: { style: solid, width: 1, color: "$primary" }
+    opacity: 0.2
+  - elementId: center-diamond
+    elementType: shape
+    bounds: [348, 288, 24, 24]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+  - elementId: center-diamond-inner
+    elementType: shape
+    bounds: [355, 295, 10, 10]
+    shapeName: diamond
+    fill: { type: solid, color: "$bg" }
+  - elementId: ring-d0
+    elementType: shape
+    bounds: [356, 144, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.75
+  - elementId: ring-d1
+    elementType: shape
+    bounds: [432, 164, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.75
+  - elementId: ring-d2
+    elementType: shape
+    bounds: [488, 220, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.75
+  - elementId: ring-d3
+    elementType: shape
+    bounds: [508, 296, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.75
+  - elementId: ring-d4
+    elementType: shape
+    bounds: [488, 372, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.75
+  - elementId: ring-d5
+    elementType: shape
+    bounds: [432, 428, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.75
+  - elementId: ring-d6
+    elementType: shape
+    bounds: [356, 448, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.75
+  - elementId: ring-d7
+    elementType: shape
+    bounds: [280, 428, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.75
+  - elementId: ring-d8
+    elementType: shape
+    bounds: [224, 372, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.75
+  - elementId: ring-d9
+    elementType: shape
+    bounds: [204, 296, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.75
+  - elementId: ring-d10
+    elementType: shape
+    bounds: [224, 220, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.75
+  - elementId: ring-d11
+    elementType: shape
+    bounds: [280, 164, 8, 8]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.75
+  - elementId: est
+    elementType: text
+    bounds: [180, 64, 360, 18]
+    content:
+      style: "$label"
+      align: [center, middle]
+      text: "EST. MCMXXV"
+  - elementId: est-rule-left
+    elementType: shape
+    bounds: [280, 88, 64, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.7
+  - elementId: est-rule-right
+    elementType: shape
+    bounds: [376, 88, 64, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.7
+  - elementId: est-diamond
+    elementType: shape
+    bounds: [355, 84, 10, 10]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+  - elementId: kicker
+    elementType: text
+    bounds: [80, 496, 560, 18]
+    content:
+      fontSize: 12
+      color: "$primary"
+      letterSpacing: 8
+      align: [center, middle]
+      text: "PARFUM · PARIS"
+  - elementId: rule-above
+    elementType: shape
+    bounds: [260, 522, 200, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.5
+  - elementId: diamond-above
+    elementType: shape
+    bounds: [355, 518, 10, 10]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+  - elementId: title
+    elementType: text
+    bounds: [80, 536, 560, 88]
+    content:
+      fontSize: 62
+      fontFamily: "Oranienbaum"
+      letterSpacing: 6
+      align: [center, middle]
+      gradient:
+        type: gradient
+        gradientType: linear
+        angle: 90
+        stops:
+          - { position: 0, color: "#F3E7C4" }
+          - { position: 0.5, color: "#C9A227" }
+          - { position: 1, color: "#8A6E22" }
+      text: "L'ATELIER"
+  - elementId: rule-below
+    elementType: shape
+    bounds: [260, 630, 200, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.5
+  - elementId: diamond-below
+    elementType: shape
+    bounds: [355, 626, 10, 10]
+    shapeName: diamond
+    fill: { type: solid, color: "$primary" }
+  - elementId: subtitle
+    elementType: text
+    bounds: [80, 650, 560, 22]
+    content:
+      style: "$subtitle"
+      align: [center, middle]
+      text: "MAISON DE PARFUM"
+  - elementId: cn-line
+    elementType: text
+    bounds: [80, 680, 560, 20]
+    content:
+      fontSize: 12
+      color: "$muted"
+      letterSpacing: 2
+      align: [center, middle]
+      text: "香氛开幕夜 · 限定发布"
+  - elementId: info-1
+    elementType: text
+    bounds: [80, 724, 560, 24]
+    content:
+      fontSize: 16
+      color: "$text"
+      letterSpacing: 4
+      align: [center, middle]
+      text: "GRAND GALA D'OUVERTURE"
+  - elementId: info-2
+    elementType: text
+    bounds: [80, 754, 560, 22]
+    content:
+      fontSize: 13
+      color: "$primary"
+      letterSpacing: 2
+      align: [center, middle]
+      text: "PARIS · 2026.06.18"
+  - elementId: info-3
+    elementType: text
+    bounds: [80, 782, 560, 20]
+    content:
+      fontSize: 11
+      color: "$muted"
+      letterSpacing: 4
+      align: [center, middle]
+      text: "BLACK TIE · 19H00"
+  - elementId: zig-1
+    elementType: shape
+    bounds: [300, 836, 120, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.7
+  - elementId: zig-2
+    elementType: shape
+    bounds: [315, 846, 90, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.5
+  - elementId: zig-3
+    elementType: shape
+    bounds: [330, 856, 60, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.35
+  - elementId: zig-4
+    elementType: shape
+    bounds: [345, 866, 30, 3]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+    opacity: 0.22
+  - elementId: foot
+    elementType: text
+    bounds: [320, 884, 80, 16]
+    content:
+      style: "$caption"
+      align: [center, middle]
+      text: "№ 01"
