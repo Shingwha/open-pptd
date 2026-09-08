@@ -52,5 +52,12 @@ export function buildOptionFromSpec(spec) {
   };
 
   const ctx = { theme, el, series, cats, types, primary, common, layout, barLayout: spec.barLayout, bubble };
-  return buildPolar(ctx) ?? buildMatrix(ctx) ?? buildCartesian(ctx);
+  const built = buildPolar(ctx) ?? buildMatrix(ctx) ?? buildCartesian(ctx);
+  // 单源契约：预览 / render 截图 / 前端导出图片均假设「无动画、首帧即成帧」。顶层
+  // animation:false 管不住所有系列——ECharts treemap 的 defaultOption 硬编码
+  // animation:true，新标签会走 ChartView._animateLabels 的 opacity 0→1 淡入，
+  // 同步捕获（截图 / canvas.toDataURL）拿到的是透明文字。故逐 series 兜底，
+  // 不依赖各类型 defaultOption 的默认值。
+  for (const s of built?.series || []) s.animation = false;
+  return built;
 }
