@@ -65,15 +65,18 @@ function waterfallOption(ctx) {
     return wfLabelCfg?.numberFormat ? fmtNum(v, wfLabelCfg.numberFormat) : String(v);
   };
   const axes = cartesianAxes(theme, el, cats, series, { horizontal: false });
+  // 彩段标签朝浮动柱外侧：增量在外顶（上）、减量在外底（下），与 PowerPoint
+  // chartEx 瀑布的端点标签一致
   return {
     ...common,
     series: [
-      // 双 bar stack 模拟：透明基座 = 段起点 start，彩色段 = 段高 y（不是累计 end——
-      // ECharts stack 会把两段相加，若彩段用 end 顶端变 2×start+y，柱体成倍拉高），
-      // 叠加后顶端 = start + y = end，与 writer chartEx 导出的 PowerPoint 重算结果一致
-      { type: "bar", stack: "wf", silent: true, barWidth, data: data.map((d) => d.start), itemStyle: { color: "transparent" }, tooltip: { show: false } },
+      // 双 bar stack 模拟：透明基座 = min(start,end)、彩段 = |y|，全正数堆叠。
+      // 不能用 start 当基座：ECharts 对同 stack 组按正负分两侧累计，负增量的
+      // 彩段会被压到零轴下方，瀑布桥退化成普通负值柱（预览/导出分叉）
+      { type: "bar", stack: "wf", silent: true, barWidth, data: data.map((d) => Math.min(d.start, d.end)), itemStyle: { color: "transparent" }, tooltip: { show: false } },
       {
-        type: "bar", stack: "wf", barWidth, data: data.map((d) => d.y),
+        type: "bar", stack: "wf", barWidth,
+        data: data.map((d) => ({ value: Math.abs(d.y), label: { position: d.y >= 0 ? "top" : "bottom" } })),
         itemStyle: { color: (p) => colorOf(data[p.dataIndex]) },
         label: label ? { ...label, formatter: fmt } : undefined,
       },

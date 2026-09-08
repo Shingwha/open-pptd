@@ -1,0 +1,51 @@
+pageType: content
+background: {type: solid, color: "#FFFFFF"}
+elements:
+  - elementId: t1
+    elementType: text
+    bounds: [60, 40, 620, 40]
+    content:
+      style: "$title"
+      text: 瀑布图负增量（利润桥——浮动柱须悬于累计区间，禁退化成负值柱）
+  - elementId: c1
+    elementType: chart
+    bounds: [60, 110, 520, 360]
+    title: 负增量瀑布（含首尾汇总）
+    data:
+      cols: [项目, 金额, 合计]
+      rows:
+        - [毛利, 1857, true]
+        - [门店人力, -522, null]
+        - [租金物业, -448, null]
+        - [营销投放, -210, null]
+        - [总部及其他, -349, null]
+        - [净利, 328, true]
+    series:
+      - type: waterfall
+        encode: {x: 项目, y: 金额, isTotal: 合计}
+        name: 利润桥
+        totalBars: {fill: "#1E3B33"}
+        decreaseBars: {fill: "#C15F3C"}
+        dataLabels: {show: true}
+  - elementId: c2
+    elementType: chart
+    bounds: [620, 110, 280, 360]
+    title: 中段部分汇总
+    data:
+      cols: [项目, 金额, 汇总]
+      rows:
+        - [期初, 500, true]
+        - [收入A, 300, null]
+        - [成本B, -180, null]
+        - [小计, 620, true]
+        - [收入C, 140, null]
+        - [成本D, -60, null]
+        - [期末, 700, true]
+    series:
+      - type: waterfall
+        encode: {x: 项目, y: 金额, isTotal: 汇总}
+        name: 现金流
+        totalBars: {fill: "#64748B"}
+        increaseBars: {fill: "#10B981"}
+        decreaseBars: {fill: "#EF4444"}
+        dataLabels: {show: true}
