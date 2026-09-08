@@ -13,20 +13,17 @@ import { themeChartPalette } from "../../theme.js";
 import { cartesianAxes } from "./axes.js";
 import { AXIS_TEXT, chartStyleColors, echartsLabel, markerSymbol, seriesColor, fmtNum } from "./shared.js";
 
-/** 气泡尺寸映射（官方 sizeScale: sqrt/linear/log + sizeRange px）。 */
-function bubbleSizeFn(s) {
+/** 气泡尺寸映射（官方 sizeScale: sqrt/linear/log + sizeRange px）。
+ * lo/hi 为全 chart 气泡系列的全局极值——与导出端 PowerPoint 的全局归一化
+ * 同口径（系列各自归一会破坏跨系列的大小可比性）。 */
+function bubbleSizeFn(s, glo, ghi) {
   const [minR, maxR] = s.sizeRange || [6, 48];
   const scale = s.sizeScale || "sqrt";
-  const vals = (s._values.size || []).filter((v) => v != null).map(Number);
-  const lo = Math.min(0, ...vals);
-  const hi = Math.max(1, ...vals);
-  const span = hi - lo || 1;
-  const t = (v) => {
-    const n = (Number(v) - lo) / span;
-    if (scale === "linear") return n;
-    if (scale === "log") return Math.log1p(n * 10) / Math.log1p(10);
-    return Math.sqrt(n);
-  };
+  const span = ghi - glo || 1;
+  const t = (v) =>
+    scale === "linear" ? (v - glo) / span
+    : scale === "log" ? Math.log1p((v - glo) * 10) / Math.log1p(span * 10)
+    : Math.sqrt((v - glo) / span);
   return (v) => minR + t(v) * (maxR - minR);
 }
 
@@ -100,6 +97,9 @@ export function buildCartesian(ctx) {
   // 类目轴标题的底部让位由布局模型 resolvePlotLayout 统一处理（common.grid 已含）
 
   if (primary === "scatter" || primary === "bubble") {
+    const bubSizes = series.filter((s) => s.type === "bubble").flatMap((s) => (s._values.size || []).filter((v) => v != null).map(Number)).filter(Number.isFinite);
+    const bubLo = Math.min(0, ...bubSizes);
+    const bubHi = Math.max(1, ...bubSizes);
     return {
       ...common,
       tooltip: { trigger: "item", formatter: (p) => `${p.seriesName}<br/>x: ${p.value[0]}<br/>y: ${p.value[1]}${p.value[2] != null ? `<br/>size: ${p.value[2]}` : ""}` },
@@ -112,7 +112,7 @@ export function buildCartesian(ctx) {
           return pt;
         });
         const m = markerSymbol(theme, s.marker ?? { shape: "circle" }, seriesColor(theme, s));
-        const sizeFn = s.type === "bubble" ? bubbleSizeFn(s) : null;
+        const sizeFn = s.type === "bubble" ? bubbleSizeFn(s, bubLo, bubHi) : null;
         return {
           type: "scatter",
           name: s.name,

@@ -92,7 +92,7 @@ PIE_FILL/RADAR_FILL 是 COM 截图校准的约定值，改动需 02/08 页双端
 |---|---|---|
 | 1 | **I20 数值轴自动范围**：ECharts nice-number vs PowerPoint 算法（03 页 0-70 vs 0-80） | 不写死 min/max，保数据可编辑+自适应语义（pptd.md:1060 口径）；显式配置 min/max 时两端一致 |
 | 2 | **I14 雷达刻度**：PPT 显示值轴刻度数字（nice 步进多环），预览不显示；splitNumber 两端不同 | 接受；spokeAxis.label 语义已对齐。另实测类目排布方向两端相反（预览顺时针 / PPT 逆时针），属 ECharts radar 与 PPT 的固有差异 |
-| 3 | **I22 气泡尺寸**：sizeRange px 映射 vs PowerPoint 内部缩放（PPT 气泡显著更大） | 接受；不写死换算 |
+| 3 | **I22 气泡尺寸** —— **已修复（第二轮）**：此前原始 size 值直进数据坐标，PowerPoint 气泡巨大互相覆盖 | writer 归一化 size 值 = 100×(d/dmax)²（d = 预览同源 px 直径，chart 全局极值）+ 反解 c:bubbleScale；标定：直径 ∝ √size×scale，scale=100 时最大泡 ≈ 0.51×绘图区短边，>150 触发截断（0.83）。预览同步改为 chart 全局极值归一（原按系列各自归一，跨系列大小不可比） |
 | 4 | **I17 残留**：treemap levels 瓦片切分算法两端不同（ECharts squarify vs PPT），聚合语义已同源，块边界/纵横向或有差 | 接受 |
 | 5 | **I18 残留**：深色瓦片上预览标签默认深色文字对比度不足（标签已渲染；PPT 端用白字） | 待办候选：按瓦片亮度选标签色 |
 | 6 | **瀑布色板**：chartEx style part 语义色（绿/蓝/橙）vs 预览主题色板（蓝/橙/绿） | 接受；用户配 totalBars/increaseBars/decreaseBars fill 时两端同色 |

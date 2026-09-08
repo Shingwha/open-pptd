@@ -32,6 +32,9 @@ import { IMAGE_CHART_TYPES } from "./image.js";
 export function buildChartParts(theme, chartEl, chartIndex) {
   const { series, cats, warn } = resolveChartSeries(theme, chartEl);
   const types = [...new Set(series.map((s) => s.type))];
+  // 绘图区几何单源（I19）：预览 grid 与导出 manualLayout、气泡 bubbleScale
+  // 校准共用同一模型
+  const layout = resolvePlotLayout(chartEl, series);
   // heatmap/sankey 不告警——slide.js collectChart 会走 SSR 图片化回退（image.js），
   // 此前按"暂不支持原生导出，已跳过"告警系文案过时
   const unsupported = types.filter((t) => !EXPORTABLE_CHART_TYPES.includes(t) && !CHARTEX_TYPES.includes(t) && !IMAGE_CHART_TYPES.includes(t));
@@ -156,6 +159,37 @@ export function buildChartParts(theme, chartEl, chartIndex) {
         ].join(""))
       );
     } else if (type === "bubble") {
+      // 气泡尺寸归一化（I22）：PowerPoint 直径 ∝ √size（面积模式），并以绘图区
+      // 短边为基准（scale=100% 时最大泡直径 ≈ 0.51×短边，探针实测）。把写入值
+      // 归一为 100×(d/dmax)²——d 为与预览同源的 px 目标直径（全局极值 + sizeScale
+      // 映射）——整体大小再用 bubbleScale 校准；否则原始值直进数据坐标，气泡
+      // 大到互相覆盖
+      const allSizes = groupSeries.flatMap((s) => (s._values.size || []).filter((v) => v != null).map(Number)).filter(Number.isFinite);
+      const glo = Math.min(0, ...allSizes);
+      const ghi = Math.max(1, ...allSizes);
+      const span = ghi - glo || 1;
+      const tOf = (v, scale) =>
+        scale === "linear" ? (v - glo) / span
+        : scale === "log" ? Math.log1p((v - glo) * 10) / Math.log1p(span * 10)
+        : Math.sqrt((v - glo) / span);
+      let dMax = 0;
+      const normSizes = groupSeries.map((s) => {
+        const [minR, maxR] = s.sizeRange || [6, 48];
+        const ds = (s._values.size || []).map((v) => {
+          if (v == null || !Number.isFinite(Number(v))) return null;
+          return minR + tOf(Number(v), s.sizeScale || "sqrt") * (maxR - minR);
+        });
+        for (const d of ds) if (d != null && d > dMax) dMax = d;
+        return ds;
+      });
+      groupSeries.forEach((s, i) => {
+        s._values.size = normSizes[i].map((d) => (d == null ? null : Math.round(100 * (d / dMax) * (d / dMax) * 1000) / 1000));
+      });
+      const [, , PW, PH] = chartEl.bounds;
+      const plotMinDim = Math.max(1, Math.min(layout.plot.w * PW, layout.plot.h * PH));
+      // 标定（探针实测）：直径 ∝ √size×scale；scale=100 时最大泡直径 ≈ 0.51×绘图
+      // 区短边，>150 触发平台截断（0.83）。由目标占比反解 scale（局部线性拟斜率）
+      const bubbleScale = Math.round(Math.min(150, Math.max(20, (dMax / plotMinDim) * 156)));
       chartElems.push(
         el("c:bubbleChart", {}, [
           el("c:varyColors", { val: "0" }),
@@ -164,6 +198,8 @@ export function buildChartParts(theme, chartEl, chartIndex) {
             for (const s of groupSeries) ss.push(bubbleSerXml(theme, s, sheetRange, serCounter++, labelsOf(s, "bubble")));
             return ss.join("");
           })(),
+          el("c:bubbleScale", { val: bubbleScale }),
+          el("c:sizeRepresents", { val: "area" }),
           el("c:axId", { val: catId }),
           el("c:axId", { val: valId }),
         ].join(""))
@@ -285,7 +321,6 @@ export function buildChartParts(theme, chartEl, chartIndex) {
   // 绘图区几何单源（I19）：与预览同一布局模型投影 manualLayout（layoutTarget=inner，
   // x/y/w/h 为 chartSpace 0-1 分数）。此前写 <c:layout/> 让 PowerPoint 自动布局，
   // 绘图区几何与预览固定网格两套体系（01 页 PPT 绘图区更高更满、02 页饼显著更大）
-  const layout = resolvePlotLayout(chartEl, series);
   const frac5 = (v) => String(Number(v.toFixed(5)));
   const plotAreaLayoutXml =
     `<c:layout><c:manualLayout>` +
