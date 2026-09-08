@@ -2,11 +2,11 @@
 // writer/chart/style.js — Chart XML 公共样式片段（系列填充/线条/文本/标签/marker）
 // ----------------------------------------------------------------------------
 
-import { el, hexToRgbVal } from "../xml.js";
+import { el, escAttr, hexToRgbVal } from "../xml.js";
 import { resolveColor, resolveFont } from "../../model/theme.js";
 import { dashSpec } from "../../model/style-spec.js";
 import { parseHexColor, CHART_DEFAULTS } from "../../model/chart.js";
-import { buildFill, solidFillResolved } from "../drawing.js";
+import { buildFill, buildLn, buildShadow, solidFillResolved } from "../drawing.js";
 
 /** 颜色 → a:srgbClr（HEX6 直接转；HEX8 拆出 alpha 子元素——解析唯一实现在
  * model parseHexColor，cx:dataPt 同源）。 */
@@ -101,4 +101,27 @@ export function markerXml(theme, marker, color) {
   const fill = cfg.fill || color;
   if (fill) kids.push(el("c:spPr", {}, fillXml(theme, fill)));
   return el("c:marker", {}, kids.join(""));
+}
+
+/** 图表框（官方 Chart.fill/border/shadow → chartSpace spPr）——经典 c: 与
+ * chartEx cx: 的 spPr 同构，此前 classic/chartex 各写一份。 */
+export function chartSpaceSpPrXml(theme, chartEl, tag = "c") {
+  return (chartEl.fill || chartEl.border || chartEl.shadow)
+    ? el(`${tag}:spPr`, {}, [
+      chartEl.fill ? buildFill(theme, chartEl.fill) : "",
+      chartEl.border ? buildLn(theme, chartEl.border) : "",
+      chartEl.shadow ? buildShadow(theme, chartEl.shadow) : "",
+    ].join(""))
+    : "";
+}
+
+/** 富文本字符样式内层（solidFill + latin/ea）——c:title 与 cx:title/rich 的
+ * a:rPr / a:defRPr 共用；无 color 落 schemeClr tx1。 */
+export function richCharStyleXml(theme, { color = null, fontFamily = null }) {
+  const fonts = resolveFont(theme, fontFamily);
+  const col = color ? resolveColor(theme, color) : null;
+  return (col
+    ? `<a:solidFill><a:srgbClr val="${hexToRgbVal(col)}"/></a:solidFill>`
+    : `<a:solidFill><a:schemeClr val="tx1"/></a:solidFill>`) +
+    `<a:latin typeface="${escAttr(fonts.latin)}"/><a:ea typeface="${escAttr(fonts.ea)}"/>`;
 }

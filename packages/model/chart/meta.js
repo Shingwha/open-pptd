@@ -38,6 +38,11 @@ export const CHART_DEFAULTS = {
   labelSize: 9,  // dataLabels 字号
   axisSize: 9,   // 坐标轴刻度文字
   legendSize: 9, // 图例文字
+  titleSize: 14, // 图表标题（官方 string | TitleConfig 缺省 14pt）
+  markerSize: 8, // 预览 marker symbolSize 缺省（导出端未配置不写 c:size，落平台默认）
+  // K 线涨跌缺省（对照 PowerPoint/Excel 原生：up=白底灰边 / down=黑底灰边，chart46 校准；
+  // 此前预览 color0/borderColor 写 #000000 系，与导出两端不一致）
+  candlestick: { upFill: "#FFFFFF", upBorder: "#666666", downFill: "#404040", downBorder: "#666666" },
   // 这些类型默认不显示图例（legend 未配置时）
   legendOffTypes: ["waterfall", "treemap", "sunburst", "sankey", "heatmap"],
 };

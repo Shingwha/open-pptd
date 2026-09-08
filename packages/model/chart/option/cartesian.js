@@ -5,7 +5,7 @@
 
 import { resolveColor } from "../../theme.js";
 import { dashSpec } from "../../style-spec.js";
-import { resolveBarLayout } from "../layout.js";
+import { CHART_DEFAULTS } from "../meta.js";
 import { resolveChartDirection, seriesAxisIndex, seriesChannels } from "../axes.js";
 import { hexA } from "../colors.js";
 import { formatChartValue } from "../format.js";
@@ -13,20 +13,6 @@ import { resolveDataLabels } from "../labels.js";
 import { themeChartPalette } from "../../theme.js";
 import { cartesianAxes } from "./axes.js";
 import { AXIS_TEXT, chartStyleColors, echartsLabel, markerSymbol, seriesColor } from "./shared.js";
-
-/** 气泡尺寸映射（官方 sizeScale: sqrt/linear/log + sizeRange px）。
- * lo/hi 为全 chart 气泡系列的全局极值——与导出端 PowerPoint 的全局归一化
- * 同口径（系列各自归一会破坏跨系列的大小可比性）。 */
-function bubbleSizeFn(s, glo, ghi) {
-  const [minR, maxR] = s.sizeRange || [6, 48];
-  const scale = s.sizeScale || "sqrt";
-  const span = ghi - glo || 1;
-  const t = (v) =>
-    scale === "linear" ? (v - glo) / span
-    : scale === "log" ? Math.log1p((v - glo) * 10) / Math.log1p(span * 10)
-    : Math.sqrt((v - glo) / span);
-  return (v) => minR + t(v) * (maxR - minR);
-}
 
 /** waterfall：双 bar stack 模拟（透明基座 + 彩色段）。轴走共用 cartesianAxes
  * （此前自拼硬编码轴、忽略 xAxis/yAxis 配置——I28）。 */
@@ -86,7 +72,7 @@ function waterfallOption(ctx) {
 
 /** 笛卡尔系分派入口（命中返回 option，否则 null）。 */
 export function buildCartesian(ctx) {
-  const { theme, el, series, cats, primary, common } = ctx;
+  const { theme, el, series, cats, primary, common, barLayout, bubble } = ctx;
   if (primary === "waterfall") return waterfallOption(ctx);
 
   const known = ["bar", "line", "area", "scatter", "bubble", "candlestick"];
@@ -98,9 +84,6 @@ export function buildCartesian(ctx) {
   // 类目轴标题的底部让位由布局模型 resolvePlotLayout 统一处理（common.grid 已含）
 
   if (primary === "scatter" || primary === "bubble") {
-    const bubSizes = series.filter((s) => s.type === "bubble").flatMap((s) => (s._values.size || []).filter((v) => v != null).map(Number)).filter(Number.isFinite);
-    const bubLo = Math.min(0, ...bubSizes);
-    const bubHi = Math.max(1, ...bubSizes);
     return {
       ...common,
       tooltip: { trigger: "item", formatter: (p) => `${p.seriesName}<br/>x: ${p.value[0]}<br/>y: ${p.value[1]}${p.value[2] != null ? `<br/>size: ${p.value[2]}` : ""}` },
@@ -113,7 +96,8 @@ export function buildCartesian(ctx) {
           return pt;
         });
         const m = markerSymbol(theme, s.marker ?? { shape: "circle" }, seriesColor(theme, s));
-        const sizeFn = s.type === "bubble" ? bubbleSizeFn(s, bubLo, bubHi) : null;
+        // 气泡直径与导出归一化同源（spec.bubble.diameterFn；全局极值 + sizeScale 映射）
+        const sizeFn = s.type === "bubble" && bubble ? bubble.diameterFn(s) : null;
         return {
           type: "scatter",
           name: s.name,
@@ -129,8 +113,7 @@ export function buildCartesian(ctx) {
   }
 
   // bar / line / area / candlestick
-  // 柱宽/组内间隙：model resolveBarLayout 单源投影（与 writer 导出同一结果）
-  const barLayout = resolveBarLayout(el, series);
+  // 柱宽/组内间隙：spec.barLayout 单源投影（与 writer 导出同一结果）
   const seriesOptions = series.map((s) => {
     const color = seriesColor(theme, s);
     // 数值通道按方向取（横向柱：数值在 x；其余：数值在 y）——与 writer seriesChannels 同源
@@ -187,16 +170,18 @@ export function buildCartesian(ctx) {
       const close = s._values.close ?? [];
       const up = s.upBars || {};
       const down = s.downBars || {};
+      const cs = CHART_DEFAULTS.candlestick;
       return {
         type: "candlestick",
         // K 线柱宽走 resolveBarLayout 投影（writer 端 stock gapWidth 150 同一缺省，
         // 两端柱宽收敛——此前 ECharts 默认 ~80% 槽宽 vs PPT 40%）
         barWidth: `${barLayout.echarts.barWidthPct}%`,
+        // 涨跌缺省色与导出同源（CHART_DEFAULTS.candlestick，chart46 校准）
         itemStyle: {
-          color: resolveColor(theme, up.fill) || "#FFFFFF",
-          color0: resolveColor(theme, down.fill) || "#000000",
-          borderColor: resolveColor(theme, up.border?.color) || "#000000",
-          borderColor0: resolveColor(theme, down.border?.color) || "#000000",
+          color: resolveColor(theme, up.fill) || cs.upFill,
+          color0: resolveColor(theme, down.fill) || cs.downFill,
+          borderColor: resolveColor(theme, up.border?.color) || cs.upBorder,
+          borderColor0: resolveColor(theme, down.border?.color) || cs.downBorder,
         },
         data: high.map((hv, j) => {
           const o = open ? Number(open[j] ?? 0) : Number(close[j] ?? 0);

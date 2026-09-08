@@ -9,12 +9,11 @@
 //   6. 图表文字用 +mn-lt/+mn-ea 绑定主题 minor 字体
 // ============================================================================
 
-import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "../xml.js";
-import { resolveChartSeries, resolveBarLayout, resolvePlotLayout, chartDataTable, resolveDataLabels, toAxisArray, resolveChartDirection, seriesAxisIndex, seriesChannels, CHART_DEFAULTS, colLetter } from "../../model/chart.js";
-import { resolveColor, resolveFont, themeChartPalette } from "../../model/theme.js";
-import { buildFill, buildLn, buildShadow } from "../drawing.js";
+import { el, esc, xmlHeader } from "../xml.js";
+import { resolveChartSpec, resolveChartDirection, seriesAxisIndex, seriesChannels, chartDataTable, resolveDataLabels, colLetter } from "../../model/chart.js";
+import { resolveFont, themeChartPalette } from "../../model/theme.js";
 import { buildChartXlsx, buildSheetOrder } from "./xlsx.js";
-import { fillXml, lnXml, txPrXml } from "./style.js";
+import { fillXml, lnXml, txPrXml, chartSpaceSpPrXml, richCharStyleXml } from "./style.js";
 import {
   barSerXml, lineSerXml, areaSerXml, scatterSerXml, bubbleSerXml,
   candlestickSerXml, upDownBarsXml, pieSerXml, radarSerXml,
@@ -30,11 +29,11 @@ import { IMAGE_CHART_TYPES } from "./image.js";
  *  时 xml/rels 为空（预览正常，导出跳过该元素并警告）。
  */
 export function buildChartParts(theme, chartEl, chartIndex) {
-  const { series, cats, warn } = resolveChartSeries(theme, chartEl);
-  const types = [...new Set(series.map((s) => s.type))];
-  // 绘图区几何单源（I19）：预览 grid 与导出 manualLayout、气泡 bubbleScale
-  // 校准共用同一模型
-  const layout = resolvePlotLayout(chartEl, series);
+  // 有效语义单源（spec：归一化系列/标题/图例/布局/柱宽/气泡），本函数只做 OOXML 投影
+  const spec = resolveChartSpec(theme, chartEl);
+  const series = spec.series;
+  const types = spec.types;
+  const layout = spec.layout;
   // heatmap/sankey 不告警——slide.js collectChart 会走 SSR 图片化回退（image.js），
   // 此前按"暂不支持原生导出，已跳过"告警系文案过时
   const unsupported = types.filter((t) => !EXPORTABLE_CHART_TYPES.includes(t) && !CHARTEX_TYPES.includes(t) && !IMAGE_CHART_TYPES.includes(t));
@@ -44,7 +43,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
   }
   // chartEx 体系（waterfall/treemap/sunburst 独占系列数组）
   if (types.some((t) => CHARTEX_TYPES.includes(t))) {
-    return buildChartExParts(theme, chartEl, chartIndex);
+    return buildChartExParts(spec, chartIndex);
   }
 
   const table = chartDataTable(chartEl);
@@ -85,9 +84,8 @@ export function buildChartParts(theme, chartEl, chartIndex) {
 
   const chartElems = [];
   let serCounter = 0;
-  // 柱宽/槽宽语义单源（model resolveBarLayout：gapWidth/overlap/堆叠判定的唯一定义处，
-  // renderer 预览投影同一结果）
-  const barLayout = resolveBarLayout(chartEl, series);
+  // 柱宽/槽宽语义（spec.barLayout 单源，renderer 预览投影同一结果）
+  const barLayout = spec.barLayout;
   const isStacked = barLayout.stacked;
   const isPercent = barLayout.percent;
   const isStream = series.some((s) => s.stack === "stream");
@@ -159,46 +157,20 @@ export function buildChartParts(theme, chartEl, chartIndex) {
         ].join(""))
       );
     } else if (type === "bubble") {
-      // 气泡尺寸归一化（I22）：PowerPoint 直径 ∝ √size（面积模式），并以绘图区
-      // 短边为基准（scale=100% 时最大泡直径 ≈ 0.51×短边，探针实测）。把写入值
-      // 归一为 100×(d/dmax)²——d 为与预览同源的 px 目标直径（全局极值 + sizeScale
-      // 映射）——整体大小再用 bubbleScale 校准；否则原始值直进数据坐标，气泡
-      // 大到互相覆盖
-      const allSizes = groupSeries.flatMap((s) => (s._values.size || []).filter((v) => v != null).map(Number)).filter(Number.isFinite);
-      const glo = Math.min(0, ...allSizes);
-      const ghi = Math.max(1, ...allSizes);
-      const span = ghi - glo || 1;
-      const tOf = (v, scale) =>
-        scale === "linear" ? (v - glo) / span
-        : scale === "log" ? Math.log1p((v - glo) * 10) / Math.log1p(span * 10)
-        : Math.sqrt((v - glo) / span);
-      let dMax = 0;
-      const normSizes = groupSeries.map((s) => {
-        const [minR, maxR] = s.sizeRange || [6, 48];
-        const ds = (s._values.size || []).map((v) => {
-          if (v == null || !Number.isFinite(Number(v))) return null;
-          return minR + tOf(Number(v), s.sizeScale || "sqrt") * (maxR - minR);
-        });
-        for (const d of ds) if (d != null && d > dMax) dMax = d;
-        return ds;
-      });
-      groupSeries.forEach((s, i) => {
-        s._values.size = normSizes[i].map((d) => (d == null ? null : Math.round(100 * (d / dMax) * (d / dMax) * 1000) / 1000));
-      });
-      const [, , PW, PH] = chartEl.bounds;
-      const plotMinDim = Math.max(1, Math.min(layout.plot.w * PW, layout.plot.h * PH));
-      // 标定（探针实测）：直径 ∝ √size×scale；scale=100 时最大泡直径 ≈ 0.51×绘图
-      // 区短边，>150 触发平台截断（0.83）。由目标占比反解 scale（局部线性拟斜率）
-      const bubbleScale = Math.round(Math.min(150, Math.max(20, (dMax / plotMinDim) * 156)));
+      // 气泡尺寸有效语义（spec.bubble 单源：预览直径与导出归一化写值、bubbleScale
+      // 反解同一模型——此前 writer 复制一份映射并直接改写 s._values.size，model
+      // 归一化结果被导出副作用污染）
+      const bub = spec.bubble;
       chartElems.push(
         el("c:bubbleChart", {}, [
           el("c:varyColors", { val: "0" }),
           (() => {
             const ss = [];
-            for (const s of groupSeries) ss.push(bubbleSerXml(theme, s, sheetRange, serCounter++, labelsOf(s, "bubble")));
+            let bi = 0;
+            for (const s of groupSeries) ss.push(bubbleSerXml(theme, s, sheetRange, serCounter++, labelsOf(s, "bubble"), bub.writes[bi++]));
             return ss.join("");
           })(),
-          el("c:bubbleScale", { val: bubbleScale }),
+          el("c:bubbleScale", { val: bub.bubbleScale }),
           el("c:sizeRepresents", { val: "area" }),
           el("c:axId", { val: catId }),
           el("c:axId", { val: valId }),
@@ -258,7 +230,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
   }
 
   // 轴（官方 AxisConfig 全字段；radar 的 spokeAxis 映射到 catAx/valAx）
-  const primary = types[0];
+  const primary = spec.primary;
   let axes = "";
   if (primary === "pie") {
     axes = "";
@@ -269,39 +241,29 @@ export function buildChartParts(theme, chartEl, chartIndex) {
     const spoke = (chartEl.spokeAxis && typeof chartEl.spokeAxis === "object" ? chartEl.spokeAxis : {});
     const catCfg = { ...(spoke.show === false ? { show: false } : {}), label: spoke.label, axisLine: spoke.axisLine };
     const valCfg = { min: spoke.min, max: spoke.max, label: spoke.label, axisLine: spoke.axisLine, gridLine: spoke.gridLine, ...(spoke.show === false ? { show: false } : {}) };
-    axes = buildRadarAxesXml(theme, catCfg, valCfg);
+    axes = buildRadarAxesXml(theme, catCfg, valCfg, chartEl.fontFamily);
   } else {
     // percentStacked 数值轴缺省格式 0%（预览渲染 0%-100%，General 会显示 0.2 小数）
     axes = buildAxesXml(theme, chartEl, series, horizontal, "catVal", { valNumFmt: isPercent ? "0%" : null });
   }
 
-  // 标题（官方 string | TitleConfig；样式 color/fontSize/fontFamily 全消费）
-  const titleCfg = chartEl.title;
-  const titleText = typeof titleCfg === "string" ? titleCfg : titleCfg?.text || "";
-  const titleFonts = resolveFont(theme, titleCfg && typeof titleCfg === "object" ? titleCfg.fontFamily || chartEl.fontFamily : chartEl.fontFamily);
-  const titleColor = titleCfg && typeof titleCfg === "object" && titleCfg.color ? resolveColor(theme, titleCfg.color) : null;
-  const titleSz = titleCfg && typeof titleCfg === "object" && titleCfg.fontSize != null ? Math.round(titleCfg.fontSize * 100) : 1400;
-  const titleXml = titleText
+  // 标题（有效配置 spec.title；rich 字符样式与 chartEx 轴标题同源 richCharStyleXml）
+  const t = spec.title;
+  const titleXml = t.text
     ? (
       `<c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/>` +
-      `<a:p><a:pPr/><a:r><a:rPr lang="zh-CN" sz="${titleSz}">` +
-      (titleColor ? `<a:solidFill><a:srgbClr val="${hexToRgbVal(titleColor)}"/></a:solidFill>` : `<a:solidFill><a:schemeClr val="tx1"/></a:solidFill>`) +
-      `<a:latin typeface="${escAttr(titleFonts.latin)}"/><a:ea typeface="${escAttr(titleFonts.ea)}"/></a:rPr><a:t>${esc(titleText)}</a:t></a:r></a:p>` +
+      `<a:p><a:pPr/><a:r><a:rPr lang="zh-CN" sz="${Math.round(t.size * 100)}">${richCharStyleXml(theme, t)}</a:rPr><a:t>${esc(t.text)}</a:t></a:r></a:p>` +
       `</c:rich></c:tx><c:layout/></c:title>` +
       `<c:autoTitleDeleted val="0"/>`
     )
     : `<c:autoTitleDeleted val="1"/>`;
 
-  // 图例（官方 LegendConfig：默认按类型表；legend:false 全局关；样式消费）
-  const legendDefaultOff = new Set(CHART_DEFAULTS.legendOffTypes);
-  const legendCfg = chartEl.legend;
+  // 图例（有效配置 spec.legend：开关/方位/字号单源；官方 LegendConfig 样式消费）
+  const lg = spec.legend;
   let legendXml = "";
-  if (legendCfg !== false && !(legendCfg === undefined && types.every((t) => legendDefaultOff.has(t)))) {
-    const pos = typeof legendCfg === "object" && legendCfg.position ? legendCfg.position : "bottom";
-    const posVal = { top: "t", bottom: "b", left: "l", right: "r" }[pos] || "b";
-    const legendLabel = typeof legendCfg === "object" ? legendCfg : null;
-    const legendFontFamily = legendLabel?.fontFamily || chartEl.fontFamily;
-    legendXml = `<c:legend><c:legendPos val="${posVal}"/><c:overlay val="0"/>${txPrXml(theme, legendLabel?.fontSize ? Math.round(legendLabel.fontSize * 100) : CHART_DEFAULTS.legendSize * 100, "tx1", { ...(legendLabel?.color ? { color: legendLabel.color } : {}), ...(legendFontFamily ? { fontFamily: legendFontFamily } : {}) })}</c:legend>`;
+  if (lg.on) {
+    const legendFontFamily = lg.fontFamily || chartEl.fontFamily;
+    legendXml = `<c:legend><c:legendPos val="${lg.ooxmlPos}"/><c:overlay val="0"/>${txPrXml(theme, Math.round(lg.size * 100), "tx1", { ...(lg.color ? { color: lg.color } : {}), ...(legendFontFamily ? { fontFamily: legendFontFamily } : {}) })}</c:legend>`;
   }
 
   // nullHandling（多系列取第一个非空；官方 radar 默认 connect）
@@ -309,14 +271,9 @@ export function buildChartParts(theme, chartEl, chartIndex) {
   const disp = nh === "zero" ? "zero" : nh === "connect" ? "span" : "gap";
 
   // 图表框（官方 Chart.fill/border/shadow → chartSpace spPr，独立于系列色；
-  // 对照用户参考：</c:chart> 后 c:spPr → c:txPr → c:externalData）
-  const frameSpPr = (chartEl.fill || chartEl.border || chartEl.shadow)
-    ? el("c:spPr", {}, [
-      chartEl.fill ? buildFill(theme, chartEl.fill) : "",
-      chartEl.border ? buildLn(theme, chartEl.border) : "",
-      chartEl.shadow ? buildShadow(theme, chartEl.shadow) : "",
-    ].join(""))
-    : "";
+  // 与 chartEx cx:spPr 同构共用 chartSpaceSpPrXml。对照用户参考：</c:chart> 后
+  // c:spPr → c:txPr → c:externalData）
+  const frameSpPr = chartSpaceSpPrXml(theme, chartEl, "c");
 
   // 绘图区几何单源（I19）：与预览同一布局模型投影 manualLayout（layoutTarget=inner，
   // x/y/w/h 为 chartSpace 0-1 分数）。此前写 <c:layout/> 让 PowerPoint 自动布局，

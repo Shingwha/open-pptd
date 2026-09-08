@@ -12,22 +12,18 @@
 // ============================================================================
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "../xml.js";
-import { resolveChartSeries, resolveDataLabels, hierarchyColor, parseHexColor, parseHierarchy, resolveTreeLevels, CHART_DEFAULTS } from "../../model/chart.js";
+import { resolveDataLabels, hierarchyColor, parseHexColor, parseHierarchy, resolveTreeLevels, resolveTitleLike, CHART_DEFAULTS } from "../../model/chart.js";
 import { resolveColor, resolveFont, DEFAULT_FONT } from "../../model/theme.js";
-import { buildFill, buildLn, buildShadow } from "../drawing.js";
 import { buildChartXlsx } from "./xlsx.js";
+import { chartSpaceSpPrXml, richCharStyleXml } from "./style.js";
 import { buildChartStyleXml, buildChartColorStyleXml } from "../chartex-style.js";
 
-/** cx 富文本字符样式（字号/颜色/字体；a: 段与经典 c:title 的 rich 同构。
- * 参考文件里 chartEx 全是默认样式无实例可抄，结构按 chartex schema 写，
- * 由 COM 打开无修复弹窗 + 渲染生效验证。 */
+/** cx 字符样式（字号/颜色/字体；a: 段与经典 c:title 的 rich 同构——内层字符样式
+ * 单源 richCharStyleXml。参考文件里 chartEx 全是默认样式无实例可抄，结构按
+ * chartex schema 写，由 COM 打开无修复弹窗 + 渲染生效验证。 */
 function cxCharStyleXml(theme, { fontSize, color, fontFamily, defaultSize }) {
-  const fonts = resolveFont(theme, fontFamily || null);
   const sz = Math.round((fontSize != null ? fontSize : defaultSize) * 100);
-  const fill = color
-    ? `<a:solidFill><a:srgbClr val="${hexToRgbVal(resolveColor(theme, color) || color)}"/></a:solidFill>`
-    : `<a:solidFill><a:schemeClr val="tx1"/></a:solidFill>`;
-  return { sz, inner: `${fill}<a:latin typeface="${escAttr(fonts.latin)}"/><a:ea typeface="${escAttr(fonts.ea)}"/>` };
+  return { sz, inner: richCharStyleXml(theme, { color, fontFamily }) };
 }
 
 /** cx:txPr —— dataLabels 的字号/颜色/字体透传（treemap/sunburst 瓦片标签）。
@@ -189,11 +185,15 @@ function buildWaterfallDataPoints(theme, s, rows) {
 }
 
 /**
- * chartEx 部件（waterfall/treemap/sunburst）。
+ * chartEx 部件（waterfall/treemap/sunburst）。入参为 spec 单源
+ * （resolveChartSpec 结果；语义——标题/图例/层级树/瀑布分类——全部来自 model，
+ * 本函数只做 cx: 方言投影）。
  * @returns {{chartEx: true, xml, relsXml, xlsx, styleXml, colorsXml}} | null
  */
-export function buildChartExParts(theme, chartEl, chartIndex) {
-  const { series } = resolveChartSeries(theme, chartEl);
+export function buildChartExParts(spec, chartIndex) {
+  const theme = spec.theme;
+  const chartEl = spec.el;
+  const series = spec.series;
   const s = series[0];
   const type = s.type;
   const data = chartEl.data || { cols: [], rows: [] };
@@ -271,36 +271,31 @@ export function buildChartExParts(theme, chartEl, chartIndex) {
     return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   })}}`;
 
-  const titleCfg = chartEl.title;
-  const titleText = typeof titleCfg === "string" ? titleCfg : titleCfg?.text || "";
-  // 无标题时省略 cx:title——空元素 `<cx:title/>` 会让 PowerPoint 渲染「图表标题」
-  // 占位文字（09/11/12/17/19/21 页实测；cx:title 在 cx:chart 下可省略，省略不触发修复）
-  // 样式消费（I27）：cx:tx > cx:rich 承载字号/颜色/字体；此前 cx:txData 纯文本，
-  // 样式全落 PowerPoint 默认
-  const titleXml = titleText
-    ? `<cx:title pos="t" align="ctr" overlay="0"><cx:tx>${cxRichXml(theme, titleText, {
-      fontSize: titleCfg && typeof titleCfg === "object" ? titleCfg.fontSize : null,
-      color: titleCfg && typeof titleCfg === "object" ? titleCfg.color : null,
-      fontFamily: (titleCfg && typeof titleCfg === "object" ? titleCfg.fontFamily : null) || chartEl.fontFamily,
-      defaultSize: 14,
+  const titleXml = spec.title.text
+    ? `<cx:title pos="t" align="ctr" overlay="0"><cx:tx>${cxRichXml(theme, spec.title.text, {
+      fontSize: spec.title.size,
+      color: spec.title.color,
+      fontFamily: spec.title.fontFamily,
+      defaultSize: CHART_DEFAULTS.titleSize,
     })}</cx:tx></cx:title>`
     : "";
-  // 图例（I27）：pos 必须是 t/b/l/r 枚举（此前直传 "bottom" 等拼写值，枚举外）；
-  // 配了字号/颜色/字体时以 cx:txPr 缺省字符样式承载（同经典 c:txPr 思路）
-  const legendCfg = chartEl.legend;
+  // 无标题时省略 cx:title——空元素 `<cx:title/>` 会让 PowerPoint 渲染「图表标题」
+  // 占位文字（09/11/12/17/19/21 页实测；cx:title 在 cx:chart 下可省略，省略不触发修复）
+  // 图例（I27）：pos 必须是 t/b/l/r 枚举（spec.legend.ooxmlPos，缺省 bottom——此前
+  // 本端缺省 t，与 classic/预览分叉）；配了字号/颜色/字体时以 cx:txPr 缺省字符样式
+  // 承载（同经典 c:txPr 思路）
+  const lg = spec.legend;
   let legendXml = "";
-  if (legendCfg === true || typeof legendCfg === "object") {
-    const lc = typeof legendCfg === "object" ? legendCfg : {};
-    const posVal = { top: "t", bottom: "b", left: "l", right: "r" }[lc.position] || "t";
+  if (lg.on) {
     let legendTxPr = "";
-    if (lc.fontSize != null || lc.color || lc.fontFamily) {
+    if (lg.hasStyle) {
       const { sz, inner } = cxCharStyleXml(theme, {
-        fontSize: lc.fontSize, color: lc.color,
-        fontFamily: lc.fontFamily || chartEl.fontFamily, defaultSize: CHART_DEFAULTS.legendSize,
+        fontSize: lg.size, color: lg.color,
+        fontFamily: lg.fontFamily || chartEl.fontFamily, defaultSize: CHART_DEFAULTS.legendSize,
       });
       legendTxPr = `<cx:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="${sz}" b="0" i="0" u="none" strike="noStrike">${inner}</a:defRPr></a:pPr><a:endParaRPr lang="zh-CN"/></a:p></cx:txPr>`;
     }
-    legendXml = `<cx:legend pos="${posVal}" align="ctr" overlay="0">${legendTxPr}</cx:legend>`;
+    legendXml = `<cx:legend pos="${lg.ooxmlPos}" align="ctr" overlay="0">${legendTxPr}</cx:legend>`;
   }
 
   // 轴（waterfall：分类 + 数值）。轴标题映射（I28）：xAxis→类目轴、yAxis→数值轴，
@@ -310,15 +305,15 @@ export function buildChartExParts(theme, chartEl, chartIndex) {
   // PowerPoint 直接拒开），位置由平台沿轴自动排布
   let axes = "";
   if (type === "waterfall") {
+    // 轴标题有效配置（resolveTitleLike，与经典轴标题/图表标题同源）
     const cxAxisTitleXml = (axisCfg) => {
       const c = axisCfg && typeof axisCfg === "object" ? axisCfg : null;
-      const tCfg = c ? (typeof c.title === "string" ? { text: c.title } : c.title || null) : null;
-      const t = tCfg?.text;
-      if (!t) return "";
-      return `<cx:title><cx:tx>${cxRichXml(theme, t, {
-        fontSize: tCfg.fontSize,
-        color: tCfg.color,
-        fontFamily: tCfg.fontFamily || chartEl.fontFamily,
+      const t = c ? resolveTitleLike(c.title, { fallbackFontFamily: chartEl.fontFamily || null, defaultSize: CHART_DEFAULTS.axisSize }) : null;
+      if (!t || !t.text) return "";
+      return `<cx:title><cx:tx>${cxRichXml(theme, t.text, {
+        fontSize: t.size,
+        color: t.color,
+        fontFamily: t.fontFamily,
         defaultSize: CHART_DEFAULTS.axisSize,
       })}</cx:tx></cx:title>`;
     };
@@ -334,14 +329,9 @@ export function buildChartExParts(theme, chartEl, chartIndex) {
   const fmtOvrs =
     `<cx:fmtOvrs><cx:fmtOvr idx="0"><cx:spPr><a:solidFill><a:schemeClr val="accent1"/></a:solidFill></cx:spPr></cx:fmtOvr></cx:fmtOvrs>`;
 
-  // 图表框（官方 Chart.fill/border/shadow → cx:chartSpace spPr；chartEx 同样适用）
-  const frameSpPr = (chartEl.fill || chartEl.border || chartEl.shadow)
-    ? `<cx:spPr>` +
-      (chartEl.fill ? buildFill(theme, chartEl.fill) : "") +
-      (chartEl.border ? buildLn(theme, chartEl.border) : "") +
-      (chartEl.shadow ? buildShadow(theme, chartEl.shadow) : "") +
-      `</cx:spPr>`
-    : "";
+  // 图表框（官方 Chart.fill/border/shadow → cx:chartSpace spPr；与经典 c:spPr
+  // 同构共用 chartSpaceSpPrXml）
+  const frameSpPr = chartSpaceSpPrXml(theme, chartEl, "cx");
 
   // 隐藏系列（waterfall 汇总列：hidden="1" + dataId=1，对照 waterfall-color.pptx）
   const isTotalCol = s._cols.isTotal;

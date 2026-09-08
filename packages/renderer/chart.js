@@ -7,7 +7,8 @@
 // ============================================================================
 
 import * as echarts from "./vendor/echarts.mjs";
-import { buildChartOption } from "../model/chart/option/index.js";
+import { resolveChartSpec } from "../model/chart/spec.js";
+import { buildOptionFromSpec } from "../model/chart/option/index.js";
 import { normalizeFill, dashSpec } from "../model/style-spec.js";
 import { resolveColor } from "../model/theme.js";
 import { gradientCss } from "./gradient.js";
@@ -38,7 +39,7 @@ export function renderChart(theme, el, ctx = {}) {
   const box = createElementShell(el);
   box.dataset.chartEl = "1";
   Object.assign(box.style, frameStyle(theme, el));
-  const option = buildChartOption(theme, el);
+  const option = buildOptionFromSpec(resolveChartSpec(theme, el));
   const chart = echarts.init(box, null, {
     renderer: "canvas",
     ...(ctx.pixelRatio ? { devicePixelRatio: ctx.pixelRatio } : {}),

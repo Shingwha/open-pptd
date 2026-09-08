@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { el, esc } from "../xml.js";
-import { hexA, colLetter } from "../../model/chart.js";
+import { hexA, colLetter, CHART_DEFAULTS } from "../../model/chart.js";
 import { buildFill } from "../drawing.js";
 import { fillXml, lnXml, dLblsXml, markerXml } from "./style.js";
 
@@ -129,7 +129,7 @@ export function scatterSerXml(theme, s, sheetRange, idx, labels, chs) {
   return el("c:ser", {}, kids.join(""));
 }
 
-export function bubbleSerXml(theme, s, sheetRange, idx, labels) {
+export function bubbleSerXml(theme, s, sheetRange, idx, labels, sizeVals = null) {
   const kids = [
     el("c:idx", { val: idx }),
     el("c:order", { val: idx }),
@@ -141,7 +141,9 @@ export function bubbleSerXml(theme, s, sheetRange, idx, labels) {
   kids.push(
     el("c:xVal", {}, numRefXml(sheetRange(s._cols.x), s._values.x)),
     el("c:yVal", {}, numRefXml(sheetRange(s._cols.y), s._values.y)),
-    el("c:bubbleSize", {}, numRefXml(sheetRange(s._cols.size), s._values.size)),
+    // 归一化写值（spec.bubble.writes：100×(d/dmax)²）；此前由 writer 预处理改写
+    // s._values.size 传入
+    el("c:bubbleSize", {}, numRefXml(sheetRange(s._cols.size), sizeVals || s._values.size)),
     el("c:bubble3D", { val: "0" })
   );
   return el("c:ser", {}, kids.join(""));
@@ -177,15 +179,17 @@ export function candlestickSerXml(theme, s, sheetRange, serIdx, labels, colHeade
   }).join("");
 }
 
-/** upBars/downBars（对照用户文件 chart46：Excel 默认 up=lt1 白底灰边 / down=dk1 75% 黑底灰边）。 */
+/** upBars/downBars（对照用户文件 chart46：Excel 默认 up=lt1 白底灰边 / down=dk1 75%
+ * 黑底灰边；缺省色单源 CHART_DEFAULTS.candlestick，与预览同源）。 */
 export function upDownBarsXml(theme, s) {
   const up = s.upBars || {};
   const down = s.downBars || {};
-  const upSpPr = [fillXml(theme, up.fill || "#FFFFFF")];
-  const upLn = el("a:ln", { w: Math.round((up.border?.width ?? 1) * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, fillXml(theme, up.border?.color || "#666666"));
+  const cs = CHART_DEFAULTS.candlestick;
+  const upSpPr = [fillXml(theme, up.fill || cs.upFill)];
+  const upLn = el("a:ln", { w: Math.round((up.border?.width ?? 1) * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, fillXml(theme, up.border?.color || cs.upBorder));
   upSpPr.push(upLn);
-  const downSpPr = [fillXml(theme, down.fill || "#404040")];
-  const downLn = el("a:ln", { w: Math.round((down.border?.width ?? 1) * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, fillXml(theme, down.border?.color || "#666666"));
+  const downSpPr = [fillXml(theme, down.fill || cs.downFill)];
+  const downLn = el("a:ln", { w: Math.round((down.border?.width ?? 1) * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, fillXml(theme, down.border?.color || cs.downBorder));
   downSpPr.push(downLn);
   return el("c:upDownBars", {}, [
     el("c:gapWidth", { val: "150" }),

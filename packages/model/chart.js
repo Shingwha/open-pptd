@@ -11,6 +11,8 @@
 //   chart/data.js    ChartData 表格工具（xlsx 嵌入、数值列判定、列字母）
 //   chart/tree.js    treemap/sunburst 父子表 → 树解析（预览嵌套与导出叶子路径共用）
 //   chart/format.js  numberFormat 唯一解释器（预览/SSR；词表锚点）
+//   chart/title-legend.js 标题/图例有效配置（string|Config → 单一形态）
+//   chart/spec.js    图表有效语义单源 resolveChartSpec（预览/导出共同投影）
 // 新增导出时在对应域模块实现并在此登记；消费方一律 import 本文件，不深引 chart/ 内部。
 // ============================================================================
 
@@ -23,3 +25,5 @@ export { DATA_LABEL_CONTENTS, resolveDataLabels } from "./chart/labels.js";
 export { chartDataTable, isNumericColumn, colLetter } from "./chart/data.js";
 export { parseHierarchy, resolveTreeLevels } from "./chart/tree.js";
 export { NUMBER_FORMAT_CODES, formatChartValue } from "./chart/format.js";
+export { resolveTitleLike, resolveLegend } from "./chart/title-legend.js";
+export { resolveChartSpec } from "./chart/spec.js";

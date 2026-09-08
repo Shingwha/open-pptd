@@ -1,62 +1,56 @@
 // ============================================================================
-// model/chart/option/index.js — 图表数据 → ECharts option（单源编排，纯函数无 DOM）
+// model/chart/option/index.js — 图表 spec → ECharts option（预览方言投影，纯函数）
 // ----------------------------------------------------------------------------
-// 预览渲染（renderer/chart.js）与导出图片化（writer SSR，规划中）共享同一份
-// option 组装。按轴系家族分派：polar（pie/radar）/ cartesian（bar/line/area/
-// scatter/bubble/candlestick/waterfall）/ matrix（heatmap/treemap/sunburst/sankey）。
-// 官方默认值（dataLabels 默认关、图例默认表、startAngle 0 = 12 点、treemap 子节点
-// HSL.L -10 等）与 writer 导出一致。
+// spec 单源在 chart/spec.js（resolveChartSpec：归一化系列/标题/图例/布局/气泡）；
+// 本目录把 spec 投影成 ECharts option，不做语义判断。按轴系家族分派：polar
+// （pie/radar）/ cartesian（bar/line/area/scatter/bubble/candlestick/waterfall）/
+// matrix（heatmap/treemap/sunburst/sankey）。预览渲染（renderer/chart.js）与导出
+// 图片化（writer SSR）共享；官方默认值全部来自 spec 落定结果。
 // ============================================================================
 
-import { resolveChartSeries } from "../resolve.js";
+import { resolveChartSpec } from "../spec.js";
 import { resolveColor, resolveFont } from "../../theme.js";
-import { resolvePlotLayout } from "../layout.js";
 import { baseOption, legendState } from "./shared.js";
 import { buildPolar } from "./polar.js";
 import { buildCartesian } from "./cartesian.js";
 import { buildMatrix } from "./matrix.js";
 
-/** 图表元素 → ECharts option。 */
+/** 图表元素 → ECharts option（便捷入口；重复渲染同元素请复用 spec）。 */
 export function buildChartOption(theme, el) {
-  const { series, cats } = resolveChartSeries(theme, el);
+  return buildOptionFromSpec(resolveChartSpec(theme, el));
+}
+
+/** spec → ECharts option。 */
+export function buildOptionFromSpec(spec) {
+  const { theme, el, series, cats, types, primary, title, legend, layout, bubble } = spec;
 
   const base = baseOption(theme, el);
 
-  // 标题（官方 string | TitleConfig；默认 14pt、主题文字色，顶部居中——与导出端
-  // titleXml/autoTitleDeleted 对应；此前预览不渲染标题，与导出背离）
-  const titleCfg = el.title;
-  const titleText = typeof titleCfg === "string" ? titleCfg : titleCfg?.text || "";
-  if (titleText) {
-    const fonts = resolveFont(theme, (titleCfg && typeof titleCfg === "object" ? titleCfg.fontFamily : null) || el.fontFamily || null);
-    const titleColor = (titleCfg && typeof titleCfg === "object" && titleCfg.color ? resolveColor(theme, titleCfg.color) : null)
+  // 标题投影（样式语义见 spec.title；顶部居中，颜色缺省主题文字色）
+  if (title.text) {
+    const fonts = resolveFont(theme, title.fontFamily);
+    const titleColor = (title.color ? resolveColor(theme, title.color) : null)
       || resolveColor(theme, theme.colors?.text) || "#1f2937";
-    const titleSize = titleCfg && typeof titleCfg === "object" && titleCfg.fontSize != null ? titleCfg.fontSize : 14;
     base.title = {
-      text: titleText,
+      text: title.text,
       left: "center", top: 0,
-      textStyle: { color: titleColor, fontSize: titleSize, fontFamily: `${fonts.latin},${fonts.ea},sans-serif` },
+      textStyle: { color: titleColor, fontSize: title.size, fontFamily: `${fonts.latin},${fonts.ea},sans-serif` },
     };
   }
 
-  if (!series.length || (cats.length === 0 && series[0]?.type !== "sankey")) {
+  if (!series.length || (cats.length === 0 && primary !== "sankey")) {
     return { ...base, title: base.title || { text: "（暂无数据）", left: "center", top: "middle", textStyle: { color: "#9ca3af", fontSize: 13, fontWeight: "normal" } } };
   }
 
-  const types = new Set(series.map((s) => s.type));
-  const primary = series[0].type;
-
-  // 图例（官方默认：waterfall/treemap/sunburst/sankey/heatmap 关，其余开；样式消费）
-  const { legendOpt } = legendState(theme, el, types);
-  // 绘图区几何单源（I19）：grid 由布局模型投影（含标题/轴标题让位），导出端
-  // manualLayout 从同一模型取分数矩形——两端绘图区几何不再各一套体系
-  const layout = resolvePlotLayout(el, series);
+  // 图例投影（legendState 只做 ECharts 方位/样式转换，语义在 spec.legend）
+  const { legendOpt } = legendState(theme, legend);
   const common = {
     ...base,
     legend: legendOpt,
     grid: layout.grid,
-    tooltip: { trigger: [...types].some((t) => ["pie", "radar", "treemap", "sunburst", "sankey"].includes(t)) ? "item" : "axis" },
+    tooltip: { trigger: types.some((t) => ["pie", "radar", "treemap", "sunburst", "sankey"].includes(t)) ? "item" : "axis" },
   };
 
-  const ctx = { theme, el, series, cats, types, primary, common, layout };
+  const ctx = { theme, el, series, cats, types, primary, common, layout, barLayout: spec.barLayout, bubble };
   return buildPolar(ctx) ?? buildMatrix(ctx) ?? buildCartesian(ctx);
 }

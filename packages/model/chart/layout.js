@@ -7,8 +7,8 @@
 // chartEx（waterfall/treemap/sunburst）平台无 plotArea 布局控制，plot 字段仅
 // 经典图表导出消费；预览侧 waterfall 仍消费 grid。
 
-import { CHART_DEFAULTS } from "./meta.js";
 import { toAxisArray, resolveChartDirection } from "./axes.js";
+import { resolveTitleLike, resolveLegend } from "./title-legend.js";
 
 /** 笛卡尔系基础边距（px）——绘图区布局模型的共同基底，轴标签拥挤估算
  * （option/axes.js）同样以此为基准。唯一定义处，option/shared.js 转 re-export。 */
@@ -22,6 +22,8 @@ const RADAR_FILL = 0.9;
 /**
  * 绘图区布局单源（预览 grid 与导出 manualLayout 共同投影，唯一定义处）。
  * 输入 el.bounds（px；预览壳与 SSR 图片化、graphicFrame ext 三端同一尺寸口径）。
+ * chrome：spec 预解析的标题/图例有效配置（resolveChartSpec 传入，避免重复解析）；
+ * 直调（旧路径）时内部自行解析。
  * 输出：
  *   grid  — ECharts px 边距（预览与 SSR 共用；含标题 +24、竖排笛卡尔类目轴标题 +18 让位）
  *   plot  — chartSpace 0-1 分数矩形（writer 写 manualLayout layoutTarget=inner）
@@ -30,17 +32,17 @@ const RADAR_FILL = 0.9;
  * bar/line/area/candlestick（scatter/bubble 数值 x 轴、waterfall/heatmap 走
  * chartEx 或矩阵家族，历史上不让位）；饼/雷达无轴标签，左右收窄为对称 24px。
  */
-export function resolvePlotLayout(el, series) {
+export function resolvePlotLayout(el, series, chrome = null) {
   const [, , bw0, bh0] = el.bounds || [];
   const W = Number(bw0) > 0 ? Number(bw0) : 640;
   const H = Number(bh0) > 0 ? Number(bh0) : 360;
   const primary = series[0]?.type || "";
   const types = new Set(series.map((s) => s.type));
 
-  const titleText = typeof el.title === "string" ? el.title : el.title?.text || "";
-  const legendDefaultOff = new Set(CHART_DEFAULTS.legendOffTypes);
-  const legendOn = el.legend !== false && !(el.legend === undefined && [...types].every((t) => legendDefaultOff.has(t)));
-  const legendPos = typeof el.legend === "object" && el.legend.position ? el.legend.position : "bottom";
+  const titleText = chrome ? chrome.titleText : resolveTitleLike(el.title).text;
+  const legend = chrome ? chrome.legend : resolveLegend(el, types);
+  const legendOn = legend.on;
+  const legendPos = legend.pos;
 
   let xTitle = false;
   if (!["pie", "radar", "waterfall", "scatter", "bubble", "heatmap", "treemap", "sunburst", "sankey"].includes(primary)) {

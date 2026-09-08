@@ -62,7 +62,7 @@ export function markerSymbol(theme, marker, color) {
   return {
     show: true,
     symbol: shape,
-    symbolSize: cfg.size || 8,
+    symbolSize: cfg.size || CHART_DEFAULTS.markerSize,
     itemStyle: { color: resolveColor(theme, cfg.fill) || color, borderColor: resolveColor(theme, cfg.border?.color), borderWidth: cfg.border?.width },
   };
 }
@@ -80,27 +80,24 @@ export function baseOption(theme, el) {
   };
 }
 
-/** 图例开关判定（官方默认表 CHART_DEFAULTS.legendOffTypes 单源）。
+/** 图例 ECharts 投影（语义在 spec.legend：on/pos/size/color 单源）。
  * 四方位完整映射（top/bottom 水平居中，left/right 垂直居中竖排）——此前只写
  * 单边 {pos:0}，right 会落到顶部横排，与导出端 legendPos 背离。 */
-export function legendState(theme, el, types) {
+export function legendState(theme, legend) {
   const { legendColor } = chartStyleColors(theme);
-  const legendDefaultOff = new Set(CHART_DEFAULTS.legendOffTypes);
-  const legendOn = el.legend !== false && !(el.legend === undefined && [...types].every((t) => legendDefaultOff.has(t)));
-  const legendPos = typeof el.legend === "object" && el.legend.position ? el.legend.position : "bottom";
-  const legendCfg = typeof el.legend === "object" ? el.legend : {};
-  const posOpt = legendPos === "top" ? { top: 0, left: "center" }
-    : legendPos === "left" ? { left: 0, top: "middle", orient: "vertical" }
-    : legendPos === "right" ? { right: 0, top: "middle", orient: "vertical" }
+  const cfg = legend.cfg || {};
+  const posOpt = legend.pos === "top" ? { top: 0, left: "center" }
+    : legend.pos === "left" ? { left: 0, top: "middle", orient: "vertical" }
+    : legend.pos === "right" ? { right: 0, top: "middle", orient: "vertical" }
     : { bottom: 0, left: "center" };
   const legendOpt = {
-    show: legendOn,
+    show: legend.on,
     ...posOpt,
-    textStyle: { color: legendCfg.color ? resolveColor(theme, legendCfg.color) || legendColor : legendColor, fontSize: legendCfg.fontSize || CHART_DEFAULTS.legendSize },
+    textStyle: { color: cfg.color ? resolveColor(theme, cfg.color) || legendColor : legendColor, fontSize: cfg.fontSize || CHART_DEFAULTS.legendSize },
     // 图例 marker 收敛 PowerPoint 小方块观感（此前 roundRect 14×8 大圆角色块，I25）
     icon: "rect", itemWidth: 10, itemHeight: 8,
   };
-  return { legendOn, legendOpt };
+  return { legendOn: legend.on, legendOpt };
 }
 
 export { dashSpec, resolveColor };

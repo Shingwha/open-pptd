@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { el, esc, hexToRgbVal } from "../xml.js";
-import { resolveColor } from "../../model/theme.js";
+import { resolveColor, resolveFont } from "../../model/theme.js";
 import { toAxisArray, seriesAxisIndex, CHART_DEFAULTS } from "../../model/chart.js";
 import { txPrXml, srgbClrXml } from "./style.js";
 
@@ -25,16 +25,24 @@ function axisLnXml(theme, cfg, fallbackColor, fallbackWidth = 0.75) {
   return el("a:ln", { w: Math.round((o.width ?? fallbackWidth) * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, kids.join(""));
 }
 
-/** 轴标题（string | TitleConfig → c:title，schema 位置：axPos 之后）。 */
-function axisTitleXml(theme, title) {
+/** 轴标题（string | TitleConfig → c:title，schema 位置：axPos 之后）。
+ * fontFamily 配置生效（此前写死 +mn-lt/+mn-ea 主题字体、配置被静默忽略——与
+ * chartEx 轴标题语义对齐）；未配置时保持 +mn-lt/+mn-ea 主题引用不变。 */
+function axisTitleXml(theme, title, chartFontFamily = null) {
   const cfg = typeof title === "string" ? { text: title } : title || null;
   if (!cfg || !cfg.text) return "";
-  const sz = cfg.fontSize ? Math.round(cfg.fontSize * 100) : 900;
+  const sz = cfg.fontSize ? Math.round(cfg.fontSize * 100) : CHART_DEFAULTS.axisSize * 100;
   const kids = [el("a:bodyPr"), el("a:lstStyle")];
   const rPrKids = [];
   const col = cfg.color ? resolveColor(theme, cfg.color) : null;
   rPrKids.push(col ? el("a:solidFill", {}, el("a:srgbClr", { val: hexToRgbVal(col) })) : el("a:solidFill", {}, el("a:schemeClr", { val: "tx1" })));
-  rPrKids.push(el("a:latin", { typeface: "+mn-lt" }), el("a:ea", { typeface: "+mn-ea" }));
+  const ff = cfg.fontFamily || chartFontFamily || null;
+  if (ff) {
+    const fonts = resolveFont(theme, ff);
+    rPrKids.push(el("a:latin", { typeface: fonts.latin }), el("a:ea", { typeface: fonts.ea }));
+  } else {
+    rPrKids.push(el("a:latin", { typeface: "+mn-lt" }), el("a:ea", { typeface: "+mn-ea" }));
+  }
   kids.push(
     el("a:p", {}, [
       el("a:pPr"),
@@ -49,10 +57,11 @@ function axisTitleXml(theme, title) {
 
 /**
  * 单轴 XML（官方 AxisConfig 全字段）。
- * @param {object} p {theme, id, crossId, kind: "cat"|"val", pos, cfg, secondary, tickLabels, crosses}
+ * @param {object} p {theme, id, crossId, kind: "cat"|"val", pos, cfg, secondary, tickLabels, crosses, fontFamily}
  *   secondary: 次轴——类别轴 delete=1（数据不重复，仅用于配轴）；数值轴换侧
+ *   fontFamily: chart.fontFamily（轴标题 fontFamily 兜底）
  */
-function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, tickLabels = true, crosses = "autoZero", valNumFmt = null }) {
+function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, tickLabels = true, crosses = "autoZero", valNumFmt = null, fontFamily = null }) {
   const show = cfg.show !== false;
   const kids = [
     el("c:axId", { val: id }),
@@ -64,7 +73,7 @@ function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, t
     ].join("")),
     el("c:delete", { val: show && !secondary ? "0" : "1" }),
     el("c:axPos", { val: pos }),
-    axisTitleXml(theme, cfg.title),
+    axisTitleXml(theme, cfg.title, fontFamily),
   ];
   // majorGridlines（数值轴；gridLine: false → 不输出）
   const gridCfg = kind === "val" ? cfg.gridLine : null;
@@ -99,9 +108,9 @@ function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, t
 /**
  * radar 轴组（spokeAxis 已折算为两个 AxisConfig；radar 无次轴，固定 cat(1)+val(2)）。
  */
-export function buildRadarAxesXml(theme, catCfg, valCfg) {
-  return axisXml(theme, { id: 1, crossId: 2, kind: "cat", pos: "b", cfg: catCfg }) +
-    axisXml(theme, { id: 2, crossId: 1, kind: "val", pos: "l", cfg: valCfg });
+export function buildRadarAxesXml(theme, catCfg, valCfg, fontFamily = null) {
+  return axisXml(theme, { id: 1, crossId: 2, kind: "cat", pos: "b", cfg: catCfg, fontFamily }) +
+    axisXml(theme, { id: 2, crossId: 1, kind: "val", pos: "l", cfg: valCfg, fontFamily });
 }
 
 /**
@@ -121,20 +130,21 @@ export function buildAxesXml(theme, el, series, horizontal, mode = "catVal", { v
   const valPos = horizontal ? "b" : "l";
   const secValPos = horizontal ? "t" : "r";
   const out = [];
+  const ff = el.fontFamily || null;
   if (mode === "valVal") {
     // scatter/bubble：双数值轴
-    out.push(axisXml(theme, { id: 1, crossId: 2, kind: "val", pos: "b", cfg: xAxes[0], gridOnValOnly: true }));
-    out.push(axisXml(theme, { id: 2, crossId: 1, kind: "val", pos: "l", cfg: yAxes[0] }));
+    out.push(axisXml(theme, { id: 1, crossId: 2, kind: "val", pos: "b", cfg: xAxes[0], fontFamily: ff }));
+    out.push(axisXml(theme, { id: 2, crossId: 1, kind: "val", pos: "l", cfg: yAxes[0], fontFamily: ff }));
     for (let i = 1; i <= maxIdx; i++) {
       const id = 1 + i * 2;
-      out.push(axisXml(theme, { id, crossId: id + 1, kind: "val", pos: "t", cfg: xAxes[i] || {}, crosses: "max" }));
-      out.push(axisXml(theme, { id: id + 1, crossId: id, kind: "val", pos: "r", cfg: yAxes[i] || {}, crosses: "max" }));
+      out.push(axisXml(theme, { id, crossId: id + 1, kind: "val", pos: "t", cfg: xAxes[i] || {}, crosses: "max", fontFamily: ff }));
+      out.push(axisXml(theme, { id: id + 1, crossId: id, kind: "val", pos: "r", cfg: yAxes[i] || {}, crosses: "max", fontFamily: ff }));
     }
     return out.join("");
   }
   // catVal（bar/line/area/candlestick/radar 等）
-  out.push(axisXml(theme, { id: 1, crossId: 2, kind: "cat", pos: catPos, cfg: catCfg }));
-  out.push(axisXml(theme, { id: 2, crossId: 1, kind: "val", pos: valPos, cfg: valCfg, valNumFmt }));
+  out.push(axisXml(theme, { id: 1, crossId: 2, kind: "cat", pos: catPos, cfg: catCfg, fontFamily: ff }));
+  out.push(axisXml(theme, { id: 2, crossId: 1, kind: "val", pos: valPos, cfg: valCfg, valNumFmt, fontFamily: ff }));
   for (let i = 1; i <= maxIdx; i++) {
     // 次轴 ID 分配必须与 groupAxisId 的约定一致（类别轴=1+i*2、数值轴=2+i*2）：
     // 图表组按"类别轴在前、数值轴在后"引用 [1+i*2, 2+i*2]，若 valAx 抢了 1+i*2，
@@ -142,8 +152,8 @@ export function buildAxesXml(theme, el, series, horizontal, mode = "catVal", { v
     const catId = 1 + i * 2;
     const valId = 2 + i * 2;
     // 次轴：数值轴换侧（crosses=max）+ 隐藏类别轴（配轴用，delete=1），对照原生 PowerPoint 结构
-    out.push(axisXml(theme, { id: valId, crossId: catId, kind: "val", pos: secValPos, cfg: horizontal ? xAxes[i] || {} : yAxes[i] || {}, secondary: false, crosses: "max" }));
-    out.push(axisXml(theme, { id: catId, crossId: valId, kind: "cat", pos: catPos, cfg: horizontal ? yAxes[i] || {} : xAxes[i] || {}, secondary: true }));
+    out.push(axisXml(theme, { id: valId, crossId: catId, kind: "val", pos: secValPos, cfg: horizontal ? xAxes[i] || {} : yAxes[i] || {}, secondary: false, crosses: "max", fontFamily: ff }));
+    out.push(axisXml(theme, { id: catId, crossId: valId, kind: "cat", pos: catPos, cfg: horizontal ? yAxes[i] || {} : xAxes[i] || {}, secondary: true, fontFamily: ff }));
   }
   return out.join("");
 }
