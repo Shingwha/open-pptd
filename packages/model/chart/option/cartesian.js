@@ -7,10 +7,9 @@ import { resolveColor } from "../../theme.js";
 import { dashSpec } from "../../style-spec.js";
 import { CHART_DEFAULTS } from "../meta.js";
 import { resolveChartDirection, seriesAxisIndex, seriesChannels } from "../axes.js";
-import { hexA } from "../colors.js";
+import { hexA, waterfallColorOf } from "../colors.js";
 import { formatChartValue } from "../format.js";
 import { resolveDataLabels } from "../labels.js";
-import { themeChartPalette } from "../../theme.js";
 import { cartesianAxes } from "./axes.js";
 import { AXIS_TEXT, chartStyleColors, echartsLabel, markerSymbol, seriesColor } from "./shared.js";
 
@@ -22,9 +21,6 @@ function waterfallOption(ctx) {
   const rows = el.data?.rows || [];
   const isTotalCol = s._cols.isTotal;
   const vals = s._values.y ?? [];
-  const totCfg = s.totalBars || {};
-  const incCfg = s.increaseBars || {};
-  const decCfg = s.decreaseBars || {};
   let base = 0;
   const data = rows.map((r, i) => {
     const isTotal = isTotalCol != null ? r[isTotalCol] === true : false;
@@ -33,12 +29,8 @@ function waterfallOption(ctx) {
     base = isTotal ? y : base + y;
     return { start, end: start + y, y, isTotal };
   });
-  const palette = themeChartPalette(theme);
-  const colorOf = (d) => {
-    const cfg = d.isTotal ? totCfg : d.y >= 0 ? incCfg : decCfg;
-    if (cfg && cfg.fill) return resolveColor(theme, cfg.fill) || palette[0];
-    return d.isTotal ? palette[0] : d.y >= 0 ? palette[1] : palette[2];
-  };
+  // 三分类色单源 waterfallColorOf（预览与 chartEx 导出同一语义，含缺省色板）
+  const colorOf = (d) => waterfallColorOf(theme, s, d.isTotal, d.y);
   const label = echartsLabel(theme, el, s, { position: "top" });
   const barWidth = el.barWidth != null ? `${el.barWidth * 100}%` : undefined;
   const wfLabelCfg = resolveDataLabels(el, s, "waterfall");

@@ -2,7 +2,7 @@
 // model/chart/colors.js — 图表取色与色派生（官方 §5.2，writer/renderer 共享）
 // ----------------------------------------------------------------------------
 
-import { resolveColor } from "../theme.js";
+import { resolveColor, themeChartPalette } from "../theme.js";
 
 /**
  * 层级图节点色（官方 treemap/sunburst 颜色派生规则，writer/renderer 共享）：
@@ -49,6 +49,37 @@ export function parseHexColor(hex) {
   if (/^#[0-9a-fA-F]{8}$/.test(c)) return { rgb: c.slice(1, 7), alpha: parseInt(c.slice(7), 16) / 255 };
   if (/^#[0-9a-fA-F]{6}$/.test(c)) return { rgb: c.slice(1), alpha: null };
   return null;
+}
+
+/** 相对亮度（Rec.709 加权，0..1；hex6/hex8，非法输入返回 null）。 */
+export function luminanceOf(hex) {
+  const parsed = parseHexColor(hex);
+  if (!parsed) return null;
+  const ch = [0, 2, 4].map((i) => parseInt(parsed.rgb.slice(i, i + 2), 16) / 255);
+  return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+}
+
+/** 底色 → 标签字色（瓦片/段可读性：深底白字、浅底主题深字；阈值 0.5）。
+ * 底色非法返回 null（调用方保持平台默认）。 */
+export function labelColorOn(bgHex, darkHex = "#1f2937") {
+  const l = luminanceOf(bgHex);
+  if (l == null) return null;
+  return l < 0.5 ? "#FFFFFF" : darkHex;
+}
+
+/**
+ * 瀑布三分类色（官方 totalBars/increaseBars/decreaseBars → 缺省主题色循环
+ * palette[0/1/2]；预览与 chartEx 导出同一分类语义——此前 chartEx 未配置时
+ * 落 PowerPoint 平台缺省色板，两端不一致）。
+ */
+export function waterfallColorOf(theme, s, isTotal, y) {
+  const cfg = isTotal ? s.totalBars : y >= 0 ? s.increaseBars : s.decreaseBars;
+  if (cfg && cfg.fill) {
+    const c = resolveColor(theme, cfg.fill);
+    if (c) return c;
+  }
+  const palette = themeChartPalette(theme);
+  return isTotal ? palette[0] : y >= 0 ? palette[1] : palette[2];
 }
 
 /** HSL 亮度减少 n%（官方 treemap 派生：L_new = max(0, L_old - 10)）。 */

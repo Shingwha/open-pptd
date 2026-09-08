@@ -4,22 +4,27 @@
 // ----------------------------------------------------------------------------
 
 import { resolveColor } from "../../theme.js";
-import { hierarchyColor, hexA } from "../colors.js";
+import { hierarchyColor, hexA, labelColorOn } from "../colors.js";
 import { parseHierarchy, resolveTreeLevels } from "../tree.js";
 import { formatChartValue } from "../format.js";
 import { resolveDataLabels } from "../labels.js";
 import { AXIS_TEXT, chartStyleColors, echartsLabel } from "./shared.js";
 
-/** 父子表 → ECharts 树（node 带 itemStyle 层级色；levels 裁剪与 writer 同源）。 */
-function buildEchartsTree(theme, el, s) {
+/** 父子表 → ECharts 树（node 带 itemStyle 层级色；levels 裁剪与 writer 同源。
+ * 标签字色按瓦片亮度自动选深/浅（labels.color 配置优先）——深色瓦片深字不可读）。 */
+function buildEchartsTree(theme, el, s, labelCfg) {
   const { childrenOf, roots, subtreeSum } = parseHierarchy(el, s);
   const maxLevels = resolveTreeLevels(s);
+  const { labelColor } = chartStyleColors(theme);
+  const cfgColor = labelCfg?.color ? resolveColor(theme, labelCfg.color) || labelColor : null;
   const tree = [];
   const walk = (node, level, rootIdx) => {
     const kids = childrenOf.get(node.name) || [];
     const item = { name: node.name, value: kids.length === 0 ? node.value : subtreeSum(node) };
     const c = hierarchyColor(theme, s, rootIdx, level);
     if (c) item.itemStyle = { color: c };
+    const lc = cfgColor || (c ? labelColorOn(c, labelColor) : labelColor);
+    item.label = { color: lc };
     if (kids.length && (maxLevels == null || level + 1 < maxLevels)) {
       item.children = kids.map((k) => walk(k, level + 1, rootIdx));
     }
@@ -34,8 +39,8 @@ export function buildMatrix(ctx) {
 
   if (primary === "treemap" || primary === "sunburst") {
     const s = series[0];
-    const tree = buildEchartsTree(theme, el, s);
     const labelCfg = resolveDataLabels(el, s, primary);
+    const tree = buildEchartsTree(theme, el, s, labelCfg);
     const showValue = labelCfg?.content === "value";
     const showName = labelCfg?.content === "category" || labelCfg == null;
     // treemap 铺满布局模型矩形（I26：ECharts 默认 80% 宽高居中留白，PPT 端铺满）

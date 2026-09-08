@@ -12,7 +12,7 @@
 // ============================================================================
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "../xml.js";
-import { resolveDataLabels, hierarchyColor, parseHexColor, parseHierarchy, resolveTreeLevels, resolveTitleLike, colLetter, CHART_DEFAULTS } from "../../model/chart.js";
+import { resolveDataLabels, hierarchyColor, parseHexColor, parseHierarchy, resolveTreeLevels, resolveTitleLike, labelColorOn, waterfallColorOf, colLetter, CHART_DEFAULTS } from "../../model/chart.js";
 import { resolveColor, resolveFont, DEFAULT_FONT } from "../../model/theme.js";
 import { buildChartXlsx } from "./xlsx.js";
 import { chartSpaceSpPrXml, richCharStyleXml } from "./style.js";
@@ -27,8 +27,9 @@ function cxCharStyleXml(theme, { fontSize, color, fontFamily, defaultSize }) {
 }
 
 /** cx:txPr —— dataLabels 的字号/颜色/字体透传（treemap/sunburst 瓦片标签）。
- * schema 允许（COM 实测打开 + 渲染生效），须位于 cx:visibility 之后；
- * 不配置时省略，走 chartStyle part 默认字。 */
+ * schema（CT_DataLabels sequence）txPr 在 visibility 之前——此前写在 visibility
+ * 之后，被 PowerPoint 宽容解析丢弃，曾误判"平台忽略 txPr"换 cs:dataLabel 槽。
+ * 不配置时省略。 */
 function dataLabelsTxPrXml(theme, labels) {
   if (labels.fontSize == null && !labels.color && !labels.fontFamily) return "";
   const fonts = resolveFont(theme, labels.fontFamily || null);
@@ -118,12 +119,15 @@ function cxDataPtXml(idx, color) {
 }
 
 /**
- * treemap/sunburst fill → cx:dataPt 逐点色（对照用户 treemap-color.pptx 实测）。
- * idx = 整棵树先根 DFS 节点编号（根=0，含中间节点；叶子按其祖先链前置子树累加）。
- * 颜色按官方派生规则（hierarchyColor；与 renderer 同源）。
+ * treemap/sunburst fill → cx:dataPt 逐点色 + 逐点标签色（对照用户
+ * treemap-color.pptx 实测）。idx = 整棵树先根 DFS 节点编号（根=0，含中间节点；
+ * 叶子按其祖先链前置子树累加）。颜色按官方派生规则（hierarchyColor；与
+ * renderer 同源）。标签：未配置 labels.color 时深色瓦片（labelColorOn 判定）
+ * 逐点 cx:dataLabel 下发白字——权威色源 cs:dataLabel 槽只能全图一色，瓦片
+ * 逐级加深需逐点覆盖（schema CT_DataLabel：idx + txPr）。
  */
-function buildLeafDataPoints(theme, s, leafRows) {
-  if (s.fill == null) return "";
+function buildTreePointsAndLabels(theme, s, leafRows, labels) {
+  if (s.fill == null) return { dataPoints: "", pointLabels: "" };
   // 按 leafRows（每行 rev=[最深...根]）构建树（children 顺序 = 行序，与 PowerPoint 一致）
   const rootMap = new Map(); // 根名 → {name, children, isLeaf}
   const nodeOf = (name) => {
@@ -152,35 +156,44 @@ function buildLeafDataPoints(theme, s, leafRows) {
   const roots = [...new Set(leafRows.map(({ rev }) => rev[rev.length - 1]))]
     .map((name) => rootMap.get(name));
   const rootOrder = new Map(roots.map((r, i) => [r.name, i]));
-  // 先根 DFS 编号
+  // 先根 DFS 编号 + 记录每节点（层级/根序），供逐点标签色计算
   let counter = 0;
   const idxOfNode = new Map();
-  const walk = (node) => {
+  const nodesInOrder = []; // {node, level, rootIdx}
+  const walk = (node, level, rootIdx) => {
     idxOfNode.set(node, counter++);
-    for (const ch of node.children) walk(ch);
+    nodesInOrder.push({ node, level, rootIdx });
+    for (const ch of node.children) walk(ch, level + 1, rootIdx);
   };
-  for (const root of roots) walk(root);
+  for (const root of roots) walk(root, 0, rootOrder.get(root.name));
   // 每个 leafRows 行（叶子路径）→ 该叶子节点的 idx
-  const out = leafRows.map(({ rev }) => {
+  const dataPoints = leafRows.map(({ rev }) => {
     const node = nodeOf(rev[0]); // rev[0] = 最深 = 该行叶子
     const c = hierarchyColor(theme, s, rootOrder.get(rev[rev.length - 1]), rev.length - 1);
     if (!c) return "";
     return cxDataPtXml(idxOfNode.get(node), c);
   }).join("");
-  return out;
+  // 逐点白字标签（深色瓦片；未配置 labels.color 时生效）
+  const autoLabel = labels && labels.color == null;
+  const sz = Math.round(((labels?.fontSize ?? CHART_DEFAULTS.labelSize)) * 100);
+  const pointLabels = autoLabel
+    ? nodesInOrder.map(({ node, level, rootIdx }) => {
+      const c = hierarchyColor(theme, s, rootIdx, level);
+      if (!c || labelColorOn(c) !== "#FFFFFF") return "";
+      return `<cx:dataLabel idx="${idxOfNode.get(node)}"><cx:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="${sz}" b="0" i="0" u="none" strike="noStrike"><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill></a:defRPr></a:pPr><a:endParaRPr lang="zh-CN"/></a:p></cx:txPr></cx:dataLabel>`;
+    }).join("")
+    : "";
+  return { dataPoints, pointLabels };
 }
 
-/** waterfall 三分类色 → cx:dataPt 逐点色（chartEx 无逐点边框，border 忽略）。 */
+/** waterfall 三分类色 → cx:dataPt 逐点色（chartEx 无逐点边框，border 忽略）。
+ * 未配置分类色也逐点下发（waterfallColorOf 缺省主题色板），与预览一致。 */
 function buildWaterfallDataPoints(theme, s, rows) {
   const isTotalCol = s._cols.isTotal;
   return rows.map((r, i) => {
     const isTotal = isTotalCol != null ? r[isTotalCol] === true : false;
     const yv = Number(r[s._cols.y] ?? 0);
-    const cfg = isTotal ? s.totalBars : yv >= 0 ? s.increaseBars : s.decreaseBars;
-    if (!cfg || !cfg.fill) return "";
-    const c = resolveColor(theme, cfg.fill);
-    if (!c) return "";
-    return cxDataPtXml(i, c);
+    return cxDataPtXml(i, waterfallColorOf(theme, s, isTotal, yv));
   }).join("");
 }
 
@@ -232,10 +245,14 @@ export function buildChartExParts(spec, chartIndex) {
     layoutPr = subIdx.length
       ? `<cx:layoutPr><cx:subtotals>${subIdx.map((i) => `<cx:idx val="${i}"/>`).join("")}</cx:subtotals></cx:layoutPr>`
       : `<cx:layoutPr><cx:aggregation/></cx:layoutPr>`;
+    // schema（CT_DataLabels sequence）：txPr 在 visibility 之前（此前写反，元素
+    // 被 PowerPoint 宽容解析丢弃，曾误判"平台忽略 cx:txPr"）
     dataLabels = labels
       ? `<cx:dataLabels pos="outEnd"><cx:visibility seriesName="0" categoryName="${labels.content === "category" ? "1" : "0"}" value="${labels.content === "value" ? "1" : "0"}"/></cx:dataLabels>`
       : "";
-    // 三分类色（官方 totalBars/increaseBars/decreaseBars → cx:dataPt 逐点色）
+    // 三分类色（官方 totalBars/increaseBars/decreaseBars → cx:dataPt 逐点色；
+    // 未配置也逐点下发 waterfallColorOf 缺省色板——此前留空落 PowerPoint 平台
+    // 缺省绿/蓝/橙，与预览主题色板不一致）
     dataPoints = buildWaterfallDataPoints(theme, s, rows);
   } else {
     // treemap / sunburst：xlsx = [级0(最深)...级N-1(根), size]
@@ -258,12 +275,15 @@ export function buildChartExParts(spec, chartIndex) {
       extra: "",
     };
     layoutPr = type === "treemap" ? `<cx:layoutPr><cx:parentLabelLayout val="overlapping"/></cx:layoutPr>` : "";
-    dataLabels = labels
-      ? `<cx:dataLabels pos="${type === "sunburst" ? "ctr" : "inEnd"}"><cx:visibility seriesName="0" categoryName="${labels.content === "category" ? "1" : "0"}" value="${labels.content === "value" ? "1" : "0"}"/>${dataLabelsTxPrXml(theme, labels)}</cx:dataLabels>`
-      : "";
     // fill 颜色（官方派生规则 → cx:dataPoint 逐叶色）：
     //   单值/1D 数组按根节点循环，子节点沿 HSL.L 每级 -10；2D 数组外层按根、内层按级
-    dataPoints = buildLeafDataPoints(theme, s, leafRows);
+    const { dataPoints: treePts, pointLabels } = buildTreePointsAndLabels(theme, s, leafRows, labels);
+    dataPoints = treePts;
+    // dataLabels（schema 顺序：txPr → visibility → dataLabel*）。未配置 labels.color
+    // 时深色瓦片逐点下发白字（labelColorOn 按亮度选色），浅色瓦片保持平台默认深字
+    dataLabels = labels
+      ? `<cx:dataLabels pos="${type === "sunburst" ? "ctr" : "inEnd"}">${dataLabelsTxPrXml(theme, labels)}<cx:visibility seriesName="0" categoryName="${labels.content === "category" ? "1" : "0"}" value="${labels.content === "value" ? "1" : "0"}"/>${pointLabels}</cx:dataLabels>`
+      : "";
   }
 
   const guid = () => `{${"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -393,15 +413,29 @@ export function buildChartExParts(spec, chartIndex) {
     xml,
     relsXml,
     xlsx: buildChartExXlsx(chartEl, s, type),
-    // 瓦片标签文字色源在 chartStyle part（cx:dataLabels 的 txPr 被 PowerPoint
-    // 忽略）——labels 配了 color/fontSize 时覆盖 cs:dataLabel 槽
-    styleXml: buildChartStyleXml(
-      (type === "treemap" || type === "sunburst") && labels && (labels.color || labels.fontSize != null)
-        ? { colorHex: labels.color ? hexToRgbVal(resolveColor(theme, labels.color) || labels.color) : null, fontSize: labels.fontSize }
-        : null
-    ),
+    // 瓦片标签字色源 = chartStyle part 的 cs:dataLabel 槽（COM 实测 PowerPoint
+    // 唯一生效的标签色源）。labels.color 配置 → 直接覆盖；未配置 → 按首根 0 层
+    // 瓦片亮度自动选白/默认（深色瓦片深字不可读）。逐点 cx:dataLabel 一并下发
+    // （见 buildTreePointsAndLabels），供支持逐点样式的渲染端精细覆盖
+    styleXml: buildChartStyleXml(labelSlotFor(theme, s, type, labels)),
     colorsXml: buildChartColorStyleXml(),
   };
+}
+
+/** treemap/sunburst 瓦片标签槽覆盖参数；其余类型返回 null（保持默认深字）。
+ * labels.color 配置 → 直接覆盖；否则字色按首根 0 层瓦片亮度自动选（深色瓦片
+ * 返回白字、浅色瓦片 null 保持平台深字），字号配置随槽透传。 */
+function labelSlotFor(theme, s, type, labels) {
+  if ((type !== "treemap" && type !== "sunburst") || !labels) return null;
+  const rootColor = hierarchyColor(theme, s, 0, 0);
+  const autoColor = rootColor && labelColorOn(rootColor) === "#FFFFFF" ? "FFFFFF" : null;
+  if (labels.color) {
+    return { colorHex: hexToRgbVal(resolveColor(theme, labels.color) || labels.color), fontSize: labels.fontSize };
+  }
+  if (labels.fontSize != null || autoColor) {
+    return { colorHex: autoColor, fontSize: labels.fontSize };
+  }
+  return null;
 }
 
 /** chartEx 专用 xlsx：瀑布图 [cat, val, 汇总列]；树/旭日 [级0..级N, size]（叶子路径）。 */

@@ -20,7 +20,7 @@ export { CHART_META, CHART_TYPE_ORDER, CHART_DEFAULTS, remapEncode, chartRouteOf
 export { validateChartSeries, mergeSeriesDefault, resolveChartSeries } from "./chart/resolve.js";
 export { resolveBarLayout, resolvePlotLayout } from "./chart/layout.js";
 export { toAxisArray, inferAxisType, resolveChartDirection, seriesAxisIndex, seriesChannels } from "./chart/axes.js";
-export { hexA, darkenByLightness, hierarchyColor, parseHexColor } from "./chart/colors.js";
+export { hexA, darkenByLightness, hierarchyColor, parseHexColor, luminanceOf, labelColorOn, waterfallColorOf } from "./chart/colors.js";
 export { DATA_LABEL_CONTENTS, resolveDataLabels } from "./chart/labels.js";
 export { chartDataTable, isNumericColumn, colLetter } from "./chart/data.js";
 export { parseHierarchy, resolveTreeLevels } from "./chart/tree.js";
