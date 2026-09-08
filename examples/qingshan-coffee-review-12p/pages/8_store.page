@@ -1,0 +1,139 @@
+pageType: content
+background: {type: solid, color: "$bg"}
+notes: 能力页：五维盘点对标上季——会员运营和出品效率拉开身位，供应链只涨 3 分是短板，鲜奶损耗率 6.8% 明显高于 5% 红线，H2 专门有一项行动打它。
+elements:
+  - elementId: kicker
+    elementType: text
+    bounds: [60, 42, 520, 20]
+    content:
+      style: "$kicker"
+      text: "03 · 门店能力 STORE CAPABILITY"
+  - elementId: dot1
+    elementType: shape
+    bounds: [862, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot2
+    elementType: shape
+    bounds: [876, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot3
+    elementType: shape
+    bounds: [890, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+  - elementId: dot4
+    elementType: shape
+    bounds: [904, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot5
+    elementType: shape
+    bounds: [918, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: title
+    elementType: text
+    bounds: [60, 70, 840, 40]
+    content:
+      style: "$title"
+      text: 五维门店盘点：会员运营 88 分领先，供应链 71 分待补
+  - elementId: lead
+    elementType: text
+    bounds: [60, 132, 360, 64]
+    content:
+      style: "$body"
+      text: 12 家直营店按五维打分（百分制），对标上季：整体 +5.4 分，经营侧跑赢，供给侧偏慢。
+  - elementId: f1-dot
+    elementType: shape
+    bounds: [60, 218, 9, 9]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent4"}
+  - elementId: f1-title
+    elementType: text
+    bounds: [80, 210, 340, 24]
+    content:
+      style: "$sectionTitle"
+      text: 会员运营 88（+9）
+  - elementId: f1-note
+    elementType: text
+    bounds: [80, 234, 340, 40]
+    content:
+      style: "$caption"
+      text: 小程序月复购 38%，居区域品牌第一；会员贡献营收 61%
+  - elementId: f2-dot
+    elementType: shape
+    bounds: [60, 296, 9, 9]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent4"}
+  - elementId: f2-title
+    elementType: text
+    bounds: [80, 288, 340, 24]
+    content:
+      style: "$sectionTitle"
+      text: 出品效率 82（+8）
+  - elementId: f2-note
+    elementType: text
+    bounds: [80, 312, 340, 40]
+    content:
+      style: "$caption"
+      text: 平均出杯 4.2 分钟（目标 ≤4.5）；高峰弃单率降至 1.1%
+  - elementId: f3-dot
+    elementType: shape
+    bounds: [60, 374, 9, 9]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+  - elementId: f3-title
+    elementType: text
+    bounds: [80, 366, 340, 24]
+    content:
+      style: "$sectionTitle"
+      text: 供应链 71（+3）
+  - elementId: f3-note
+    elementType: text
+    bounds: [80, 390, 340, 40]
+    content:
+      style: "$caption"
+      text: 鲜奶日配损耗率 6.8%，高于 5% 红线——列为 H2 攻坚项
+  - elementId: radar
+    elementType: chart
+    bounds: [450, 122, 450, 356]
+    fontFamily: "LXGW Neo XiHei"
+    legend: {position: bottom, fontSize: 10.5}
+    spokeAxis: {max: 100, min: 0, gridLine: {color: "$line"}, axisLine: {color: "$line"}}
+    data:
+      cols: [维度, 本季, 上季]
+      rows:
+        - [出品效率, 82, 74]
+        - [会员运营, 88, 79]
+        - [门店体验, 76, 72]
+        - [供应链, 71, 68]
+        - [人效管理, 79, 75]
+    series:
+      - type: radar
+        encode: {category: 维度, y: 本季}
+        name: 本季（Q2）
+        lineColor: "$primary"
+        width: 2.5
+        areaColor: "#1E3B3329"
+      - type: radar
+        encode: {category: 维度, y: 上季}
+        name: 上季（Q1）
+        lineColor: "$muted"
+        lineStyle: dash
+        width: 1.5
+        areaColor: "#8A80721A"
+  - elementId: insight
+    elementType: text
+    bounds: [60, 480, 700, 24]
+    content:
+      style: "$caption"
+      text: 打分口径：神秘顾客抽检 + 运营后台指标合成，每店每季两次。
+  - elementId: pageno
+    elementType: text
+    bounds: [820, 480, 80, 24]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 08 / 12

@@ -1,0 +1,60 @@
+pageType: cover
+background: {type: solid, color: "$bg"}
+notes: 开场：上半年整体达标——营收 2,731 万、达成 104%，毛利率站稳 68%。今天用五个视角把"钱从哪来、花到哪去、下半年打哪"讲清楚。
+elements:
+  - elementId: kicker
+    elementType: text
+    bounds: [60, 42, 520, 20]
+    content:
+      style: "$kicker"
+      text: "QINGSHAN COFFEE · 2026 H1 BUSINESS REVIEW"
+  - elementId: brand
+    elementType: text
+    bounds: [60, 150, 540, 92]
+    content:
+      fontSize: 54
+      fontFamily: "Source Han Serif CN"
+      color: "$primaryDeep"
+      bold: true
+      lineHeight: 1.1
+      text: 青山咖啡
+  - elementId: subtitle
+    elementType: text
+    bounds: [60, 244, 540, 40]
+    content:
+      fontSize: 21
+      fontFamily: "Source Han Serif CN"
+      color: "$accent"
+      bold: true
+      text: 2026 上半年经营复盘
+  - elementId: status
+    elementType: text
+    bounds: [60, 312, 560, 66]
+    content:
+      style: "$body"
+      lineHeight: 1.9
+      text: |
+        <p>H1 营收 <strong>¥2,731 万</strong>（目标达成 104%）　毛利率 <strong>68.0%</strong>（+1.2pct）　会员 <strong>8.6 万</strong>（+31%）</p>
+  - elementId: cup-ring
+    elementType: shape
+    bounds: [662, 128, 248, 248]
+    shapeName: donut
+    adjustments: [22000]
+    fill: {type: solid, color: "$accent"}
+  - elementId: ring-label
+    elementType: text
+    bounds: [724, 214, 124, 78]
+    content:
+      align: [center, middle]
+      text: |
+        <p><span style="font-size:11px; color:$muted;">上半年毛利率</span></p>
+        <p><span style="font-size:27px; font-family:Source Han Serif CN; color:$primary; font-weight:bold;">68.0%</span></p>
+  - elementId: cover-meta
+    elementType: text
+    bounds: [60, 452, 560, 76]
+    content:
+      style: "$caption"
+      lineHeight: 1.7
+      text: |
+        <p>汇报：品牌运营部 · 2026 年 7 月</p>
+        <p>本报告为多图表能力展示，全部数据为品牌示例数据（虚构）</p>

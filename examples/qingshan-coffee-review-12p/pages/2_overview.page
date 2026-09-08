@@ -1,0 +1,135 @@
+pageType: content
+background: {type: solid, color: "$bg"}
+notes: 大盘页：先给结论——营收达标且逐月走高，6 月创单月新高；毛利率跟营收同向改善，说明不是靠打折冲量。右边那根橙色线是毛利率，对应右轴。
+elements:
+  - elementId: kicker
+    elementType: text
+    bounds: [60, 42, 520, 20]
+    content:
+      style: "$kicker"
+      text: "01 · 大盘 OVERVIEW"
+  - elementId: dot1
+    elementType: shape
+    bounds: [862, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+  - elementId: dot2
+    elementType: shape
+    bounds: [876, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot3
+    elementType: shape
+    bounds: [890, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot4
+    elementType: shape
+    bounds: [904, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot5
+    elementType: shape
+    bounds: [918, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: title
+    elementType: text
+    bounds: [60, 70, 840, 40]
+    content:
+      style: "$title"
+      text: 上半年营收 2,731 万、达标 104%，6 月单月创新高
+  - elementId: kpi1-num
+    elementType: text
+    bounds: [60, 128, 200, 44]
+    content:
+      style: "$statNum"
+      text: ¥2,731 万
+  - elementId: kpi1-label
+    elementType: text
+    bounds: [60, 172, 200, 22]
+    content:
+      style: "$caption"
+      text: H1 营收 · 同比 +18.4%
+  - elementId: kpi2-num
+    elementType: text
+    bounds: [290, 128, 180, 44]
+    content:
+      style: "$statNum"
+      color: "$accent"
+      text: 104%
+  - elementId: kpi2-label
+    elementType: text
+    bounds: [290, 172, 180, 22]
+    content:
+      style: "$caption"
+      text: 年度目标达成率
+  - elementId: kpi3-num
+    elementType: text
+    bounds: [520, 128, 180, 44]
+    content:
+      style: "$statNum"
+      text: 68.0%
+  - elementId: kpi3-label
+    elementType: text
+    bounds: [520, 172, 180, 22]
+    content:
+      style: "$caption"
+      text: 毛利率 · +1.2pct
+  - elementId: kpi4-num
+    elementType: text
+    bounds: [750, 128, 150, 44]
+    content:
+      style: "$statNum"
+      text: 8.6 万
+  - elementId: kpi4-label
+    elementType: text
+    bounds: [750, 172, 150, 22]
+    content:
+      style: "$caption"
+      text: 会员规模 · +31%
+  - elementId: chart
+    elementType: chart
+    bounds: [60, 214, 840, 262]
+    fontFamily: "LXGW Neo XiHei"
+    legend: {position: top, fontSize: 10.5}
+    barWidth: 0.55
+    yAxis:
+      - {title: 营收（万元）, gridLine: {color: "$line"}}
+      - {title: 毛利率, min: 0.6, max: 0.72, label: {numberFormat: "0%"}, gridLine: {show: false}}
+    data:
+      cols: [月份, 营收, 毛利率]
+      rows:
+        - [1月, 412, 0.668]
+        - [2月, 385, 0.672]
+        - [3月, 446, 0.679]
+        - [4月, 462, 0.684]
+        - [5月, 498, 0.681]
+        - [6月, 528, 0.686]
+    series:
+      - type: bar
+        encode: {x: 月份, y: 营收}
+        name: 月度营收
+        fill: "$primary"
+        dataLabels: {show: true, fontSize: 9.5, color: "$muted"}
+      - type: line
+        encode: {x: 月份, y: 毛利率}
+        name: 毛利率（右轴）
+        yAxisIndex: 1
+        lineColor: "$accent"
+        width: 2.5
+        smooth: true
+        marker: {shape: circle, size: 6, fill: "$accent"}
+  - elementId: insight
+    elementType: text
+    bounds: [60, 480, 700, 24]
+    content:
+      style: "$caption"
+      text: 增长主因：4 月大学路、滨江天街两店爬坡，6 月冷饮季「桂花冷萃」单品贡献增量 21 万。
+  - elementId: pageno
+    elementType: text
+    bounds: [820, 480, 80, 24]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 02 / 12

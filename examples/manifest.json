@@ -3,6 +3,27 @@
   "generated": "2026-09-06T14:23:04.404Z",
   "entries": [
     {
+      "id": "qingshan-coffee-review-12p",
+      "title": "青山咖啡 · 2026 上半年经营复盘（图表全类型）",
+      "description": "管理汇报×图表重构验收：12 页 13 图表覆盖全部 13 类型——组合双轴/堆叠面积/环形/矩形树/旭日/热力/气泡+散点/雷达/K线+均线/负增量瀑布/桑基/横向条形",
+      "tags": [
+        "管理汇报",
+        "图表全类型",
+        "多图表"
+      ],
+      "pages": 12,
+      "fonts": [
+        "思源宋体",
+        "霞鹜新晰黑"
+      ],
+      "size": [
+        960,
+        540
+      ],
+      "kind": "ppt",
+      "deck": "examples/qingshan-coffee-review-12p/deck.pptd"
+    },
+    {
       "id": "brand-mori-showcase-7p",
       "title": "MORI 森野 · 城市户外生活方式品牌提案",
       "description": "品牌提案：纸白×墨黑×信号红三色纪律，超大字号与巨型「森」字构图",

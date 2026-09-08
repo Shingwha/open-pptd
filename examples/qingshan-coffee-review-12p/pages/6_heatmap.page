@@ -1,0 +1,109 @@
+pageType: content
+background: {type: solid, color: "$bg"}
+notes: 客流页：工作日双峰（8 点通勤、15 点午后），周末没有早高峰但午后更肥——14 到 17 点周均 240 单往上。热力图按订单量渐变，颜色越深单越多。
+elements:
+  - elementId: kicker
+    elementType: text
+    bounds: [60, 42, 520, 20]
+    content:
+      style: "$kicker"
+      text: "03 · 运营 客流节律 TRAFFIC RHYTHM"
+  - elementId: dot1
+    elementType: shape
+    bounds: [862, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot2
+    elementType: shape
+    bounds: [876, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot3
+    elementType: shape
+    bounds: [890, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+  - elementId: dot4
+    elementType: shape
+    bounds: [904, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot5
+    elementType: shape
+    bounds: [918, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: title
+    elementType: text
+    bounds: [60, 70, 840, 40]
+    content:
+      style: "$title"
+      text: 工作日双峰在 8 点与 15 点，周末午后是最大富矿
+  - elementId: chart
+    elementType: chart
+    bounds: [60, 124, 840, 352]
+    fontFamily: "LXGW Neo XiHei"
+    data:
+      cols: [时段, 星期, 订单]
+      rows:
+        - ["7-9点", 周一, 186]
+        - ["7-9点", 周二, 172]
+        - ["7-9点", 周三, 168]
+        - ["7-9点", 周四, 175]
+        - ["7-9点", 周五, 181]
+        - ["7-9点", 周六, 96]
+        - ["7-9点", 周日, 88]
+        - ["9-11点", 周一, 118]
+        - ["9-11点", 周二, 112]
+        - ["9-11点", 周三, 108]
+        - ["9-11点", 周四, 115]
+        - ["9-11点", 周五, 126]
+        - ["9-11点", 周六, 142]
+        - ["9-11点", 周日, 138]
+        - ["11-14点", 周一, 156]
+        - ["11-14点", 周二, 148]
+        - ["11-14点", 周三, 152]
+        - ["11-14点", 周四, 158]
+        - ["11-14点", 周五, 172]
+        - ["11-14点", 周六, 198]
+        - ["11-14点", 周日, 192]
+        - ["14-17点", 周一, 164]
+        - ["14-17点", 周二, 158]
+        - ["14-17点", 周三, 166]
+        - ["14-17点", 周四, 171]
+        - ["14-17点", 周五, 189]
+        - ["14-17点", 周六, 258]
+        - ["14-17点", 周日, 246]
+        - ["17-20点", 周一, 132]
+        - ["17-20点", 周二, 126]
+        - ["17-20点", 周三, 130]
+        - ["17-20点", 周四, 138]
+        - ["17-20点", 周五, 168]
+        - ["17-20点", 周六, 186]
+        - ["17-20点", 周日, 178]
+        - ["20-22点", 周一, 74]
+        - ["20-22点", 周二, 68]
+        - ["20-22点", 周三, 72]
+        - ["20-22点", 周四, 78]
+        - ["20-22点", 周五, 112]
+        - ["20-22点", 周六, 134]
+        - ["20-22点", 周日, 108]
+    series:
+      - type: heatmap
+        encode: {x: 时段, y: 星期, value: 订单}
+        colorScheme: ["#EFE9DB", "#1E3B33"]
+        colorScale: {domain: [60, 260]}
+        dataLabels: {show: true, fontSize: 8.5, color: "$muted"}
+  - elementId: insight
+    elementType: text
+    bounds: [60, 480, 700, 24]
+    content:
+      style: "$caption"
+      text: 读法：单元格为对应时段订单量均值（12 店合计），颜色越深单越多；右侧色条为同一刻度。
+  - elementId: pageno
+    elementType: text
+    bounds: [820, 480, 80, 24]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 06 / 12

@@ -21,3 +21,4 @@ assets/icons/brands/
 
 # 本地工具运行痕迹（ZCode 会话目录）
 .zcode/
+examples/*/deck.pptx

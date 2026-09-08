@@ -1,0 +1,95 @@
+pageType: content
+background: {type: solid, color: "$bg"}
+notes: 采购页：Q2 生豆价格中枢从 34 块上移到 36 块附近，6 月中冲高回落，MA5 已经拐头——判断三季度还有反复，H2 在 9 月新豆上市前锁掉 60% 的量，锁价窗口写进行动计划。
+elements:
+  - elementId: kicker
+    elementType: text
+    bounds: [60, 42, 520, 20]
+    content:
+      style: "$kicker"
+      text: "04 · 效益 采购成本 BEAN COST"
+  - elementId: dot1
+    elementType: shape
+    bounds: [862, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot2
+    elementType: shape
+    bounds: [876, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot3
+    elementType: shape
+    bounds: [890, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot4
+    elementType: shape
+    bounds: [904, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+  - elementId: dot5
+    elementType: shape
+    bounds: [918, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: title
+    elementType: text
+    bounds: [60, 70, 840, 40]
+    content:
+      style: "$title"
+      text: 生豆采购价二季度上行 6%：MA5 拐头，9 月前锁价 60%
+  - elementId: chart
+    elementType: chart
+    bounds: [60, 124, 840, 352]
+    fontFamily: "LXGW Neo XiHei"
+    legend: {position: bottom, fontSize: 10.5}
+    yAxis: {title: 元/公斤, min: 32, max: 38, gridLine: {color: "$line"}}
+    data:
+      cols: [日期, 开盘, 收盘, 最低, 最高, MA5]
+      rows:
+        - ["6-02", 33.8, 34.2, 33.5, 34.6, null]
+        - ["6-03", 34.2, 34.0, 33.7, 34.5, null]
+        - ["6-04", 34.0, 34.5, 33.9, 34.7, null]
+        - ["6-05", 34.5, 34.8, 34.2, 35.0, null]
+        - ["6-08", 34.8, 34.6, 34.3, 35.1, 34.42]
+        - ["6-09", 34.6, 35.2, 34.5, 35.4, 34.62]
+        - ["6-10", 35.2, 35.6, 35.0, 35.8, 34.94]
+        - ["6-11", 35.6, 36.1, 35.4, 36.3, 35.26]
+        - ["6-12", 36.1, 35.9, 35.5, 36.2, 35.48]
+        - ["6-15", 35.9, 36.4, 35.7, 36.6, 35.84]
+        - ["6-16", 36.4, 36.8, 36.1, 37.0, 36.16]
+        - ["6-17", 36.8, 36.5, 36.2, 37.1, 36.34]
+        - ["6-18", 36.5, 36.9, 36.3, 37.2, 36.5]
+        - ["6-19", 36.9, 37.3, 36.7, 37.6, 36.78]
+        - ["6-22", 37.3, 37.0, 36.6, 37.4, 36.9]
+        - ["6-23", 37.0, 36.6, 36.3, 37.1, 36.96]
+        - ["6-24", 36.6, 36.2, 35.9, 36.7, 36.8]
+        - ["6-25", 36.2, 35.8, 35.5, 36.4, 36.38]
+    series:
+      - type: candlestick
+        encode: {x: 日期, open: 开盘, close: 收盘, low: 最低, high: 最高}
+        name: 生豆现货
+        upBars: {fill: "$success"}
+        downBars: {fill: "$danger"}
+        wickStyle: {color: "$muted"}
+      - type: line
+        encode: {x: 日期, y: MA5}
+        name: 5 日均价
+        lineColor: "$accent"
+        width: 2.5
+        smooth: true
+        marker: false
+  - elementId: insight
+    elementType: text
+    bounds: [60, 480, 700, 24]
+    content:
+      style: "$caption"
+      text: 读法：K 线为阿拉比卡生豆华东现货均价（示例行情），橙色曲线为 5 日移动平均；绿涨红跌。
+  - elementId: pageno
+    elementType: text
+    bounds: [820, 480, 80, 24]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 10 / 12

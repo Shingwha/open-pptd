@@ -1,0 +1,129 @@
+pageType: content
+background: {type: solid, color: "$bg"}
+notes: 渠道页：外卖订单占比从 1 月 38.5% 升到 6 月 40.6%，自提跟着小程序涨，堂食基本走平——增量几乎全在非堂食，这就是 P6 外卖扩容行动的依据。河流图为流式堆叠，厚度即订单量。
+elements:
+  - elementId: kicker
+    elementType: text
+    bounds: [60, 42, 520, 20]
+    content:
+      style: "$kicker"
+      text: "02 · 结构 渠道演变 CHANNEL STREAM"
+  - elementId: dot1
+    elementType: shape
+    bounds: [862, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot2
+    elementType: shape
+    bounds: [876, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+  - elementId: dot3
+    elementType: shape
+    bounds: [890, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot4
+    elementType: shape
+    bounds: [904, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot5
+    elementType: shape
+    bounds: [918, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: title
+    elementType: text
+    bounds: [60, 70, 840, 40]
+    content:
+      style: "$title"
+      text: 外卖订单占比从 39% 升到 41%：增量全在非堂食
+  - elementId: chart
+    elementType: chart
+    bounds: [60, 124, 840, 288]
+    fontFamily: "LXGW Neo XiHei"
+    legend: {position: bottom, fontSize: 10.5}
+    seriesDefaults:
+      area: {stack: value}
+    data:
+      cols: [月份, 外卖, 自提, 堂食]
+      rows:
+        - [1月, 6.2, 4.1, 5.8]
+        - [2月, 5.9, 3.8, 5.2]
+        - [3月, 6.8, 4.6, 6.1]
+        - [4月, 7.4, 5.2, 6.3]
+        - [5月, 8.1, 5.9, 6.2]
+        - [6月, 8.9, 6.4, 6.6]
+    series:
+      - type: area
+        encode: {x: 月份, y: 外卖}
+        name: 外卖
+        lineColor: "$accent"
+        areaColor: "#C15F3C40"
+        smooth: true
+      - type: area
+        encode: {x: 月份, y: 自提}
+        name: 小程序自提
+        lineColor: "$accent3"
+        areaColor: "#B08D3E40"
+        smooth: true
+      - type: area
+        encode: {x: 月份, y: 堂食}
+        name: 堂食
+        lineColor: "$primary"
+        areaColor: "#1E3B3340"
+        smooth: true
+  - elementId: t1-num
+    elementType: text
+    bounds: [60, 424, 260, 36]
+    content:
+      style: "$statNum"
+      fontSize: 24
+      text: 40.6%
+  - elementId: t1-label
+    elementType: text
+    bounds: [60, 460, 260, 22]
+    content:
+      style: "$caption"
+      text: 6 月外卖订单占比 · 1 月 38.5%
+  - elementId: t2-num
+    elementType: text
+    bounds: [360, 424, 280, 36]
+    content:
+      style: "$statNum"
+      fontSize: 24
+      text: 21.9 万单
+  - elementId: t2-label
+    elementType: text
+    bounds: [360, 460, 280, 22]
+    content:
+      style: "$caption"
+      text: 6 月全渠道订单 · 同比 +26%
+  - elementId: t3-num
+    elementType: text
+    bounds: [680, 424, 220, 36]
+    content:
+      style: "$statNum"
+      fontSize: 24
+      color: "$accent"
+      text: +51%
+  - elementId: t3-label
+    elementType: text
+    bounds: [680, 460, 220, 22]
+    content:
+      style: "$caption"
+      text: 自提订单上半年增幅
+  - elementId: insight
+    elementType: text
+    bounds: [60, 494, 700, 22]
+    content:
+      style: "$caption"
+      text: 河流图为流式堆叠（中轴对称），各层厚度 = 当月订单量（万单）。
+  - elementId: pageno
+    elementType: text
+    bounds: [820, 494, 80, 22]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 03 / 12

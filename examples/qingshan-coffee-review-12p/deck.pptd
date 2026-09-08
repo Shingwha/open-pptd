@@ -1,0 +1,53 @@
+version: v2
+title: "青山咖啡 2026 上半年经营复盘 · 多图表展示"
+size: [960, 540]
+fonts:
+  思源宋体: { family: "Source Han Serif CN" }
+  霞鹜新晰黑: { family: "LXGW Neo XiHei" }
+theme:
+  colors:
+    primary: "#1E3B33"       # 墨绿：主强调、表头、图首系列
+    accent: "#C15F3C"        # 陶土橙：标签、关键数字、次系列
+    bg: "#FBF8F2"            # 暖白纸感：页面底
+    text: "#26221B"          # 暖墨近黑：正文
+    muted: "#8A8072"         # 暖灰：次级文字
+    line: "#E6DFD2"          # 浅暖细线
+    success: "#3E8E5C"
+    warning: "#C08A2D"
+    danger: "#B4533C"
+    primarySoft: "#EFF2EB"   # 浅绿底：隔行/浅底块
+    primaryTint: "#D9E2D4"   # 浅绿强调
+    primaryDeep: "#10241E"   # 深墨绿：小面积重字
+    accent3: "#B08D3E"       # 蜜黄铜：系列3
+    accent4: "#4C7A5A"       # 松绿：系列4
+    accent5: "#46707E"       # 青灰蓝：系列5（冷色对位）
+    accent6: "#8C5A45"       # 咖啡棕：系列6
+  textStyles:
+    kicker: { fontFamily: "LXGW Neo XiHei", fontSize: 9.5, color: "$accent", bold: true, letterSpacing: 3, lineHeight: 1.3 }
+    title: { fontFamily: "Source Han Serif CN", fontSize: 24, color: "$text", bold: true, lineHeight: 1.25 }
+    subtitle: { fontFamily: "LXGW Neo XiHei", fontSize: 12, color: "$muted", lineHeight: 1.5 }
+    sectionTitle: { fontFamily: "LXGW Neo XiHei", fontSize: 13, color: "$text", bold: true, lineHeight: 1.35 }
+    body: { fontFamily: "LXGW Neo XiHei", fontSize: 11.5, color: "$text", lineHeight: 1.6 }
+    caption: { fontFamily: "LXGW Neo XiHei", fontSize: 9.5, color: "$muted", lineHeight: 1.45 }
+    statNum: { fontFamily: "Source Han Serif CN", fontSize: 30, color: "$primary", bold: true, lineHeight: 1.1 }
+  tableStyles:
+    default:
+      cellStyle: { fontSize: 11, color: "$text", fill: { type: "solid", color: "#FFFFFF" }, border: { style: "solid", width: 1, color: "$line" } }
+      firstRowStyle: { fill: { type: "solid", color: "$primary" }, color: "#FFFFFF", bold: true }
+      bodyStyles:
+        - { fill: { type: "solid", color: "$primarySoft" } }
+        - { fill: { type: "solid", color: "#FFFFFF" } }
+      rowOverColumn: true
+pages:
+  - pages/1_cover.page
+  - pages/2_overview.page
+  - pages/3_stream.page
+  - pages/4_mix.page
+  - pages/5_structure.page
+  - pages/6_heatmap.page
+  - pages/7_matrix.page
+  - pages/8_store.page
+  - pages/9_conversion.page
+  - pages/10_bean.page
+  - pages/11_profit.page
+  - pages/12_action.page

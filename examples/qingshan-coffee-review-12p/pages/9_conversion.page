@@ -1,0 +1,111 @@
+pageType: content
+background: {type: solid, color: "$bg"}
+notes: 转化页：桑基图看会员漏斗——进店到消费 74% 还行，注册后 90 天复购 63% 说明会员引擎健康；真正贵的是"进店客流"这一层，所以预算要从曝光端挪一点到门店体验和自提补贴。
+elements:
+  - elementId: kicker
+    elementType: text
+    bounds: [60, 42, 520, 20]
+    content:
+      style: "$kicker"
+      text: "03 · 运营 会员转化 MEMBER FUNNEL"
+  - elementId: dot1
+    elementType: shape
+    bounds: [862, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot2
+    elementType: shape
+    bounds: [876, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot3
+    elementType: shape
+    bounds: [890, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+  - elementId: dot4
+    elementType: shape
+    bounds: [904, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot5
+    elementType: shape
+    bounds: [918, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: title
+    elementType: text
+    bounds: [60, 70, 840, 40]
+    content:
+      style: "$title"
+      text: 进店到消费 74%，注册后 90 天复购 63%：漏斗后段健康
+  - elementId: chart
+    elementType: chart
+    bounds: [60, 122, 840, 354]
+    fontFamily: "LXGW Neo XiHei"
+    data:
+      cols: [来源, 去向, 万人]
+      rows:
+        - [内容曝光, 进店客流, 420]
+        - [内容曝光, 线上商城, 180]
+        - [进店客流, 就餐消费, 310]
+        - [进店客流, 流失, 110]
+        - [线上商城, 到店自提, 120]
+        - [线上商城, 流失, 60]
+        - [就餐消费, 注册会员, 240]
+        - [就餐消费, 非会员消费, 70]
+        - [注册会员, 90天复购, 150]
+        - [注册会员, 沉睡, 90]
+    series:
+      - type: sankey
+        encode: {source: 来源, target: 去向, flow: 万人}
+        nodeAlign: justify
+        fill: ["$primary", "$accent", "$accent3", "$accent4", "$accent5", "$accent6"]
+        dataLabels: {show: true, fontSize: 10, color: "$text"}
+  - elementId: t1-num
+    elementType: text
+    bounds: [60, 434, 260, 36]
+    content:
+      style: "$statNum"
+      fontSize: 24
+      text: 74%
+  - elementId: t1-label
+    elementType: text
+    bounds: [60, 470, 260, 22]
+    content:
+      style: "$caption"
+      text: 进店客流就餐转化
+  - elementId: t2-num
+    elementType: text
+    bounds: [360, 434, 280, 36]
+    content:
+      style: "$statNum"
+      fontSize: 24
+      text: 77%
+  - elementId: t2-label
+    elementType: text
+    bounds: [360, 470, 280, 22]
+    content:
+      style: "$caption"
+      text: 消费顾客注册会员比例
+  - elementId: t3-num
+    elementType: text
+    bounds: [680, 434, 220, 36]
+    content:
+      style: "$statNum"
+      fontSize: 24
+      color: "$accent"
+      text: 63%
+  - elementId: t3-label
+    elementType: text
+    bounds: [680, 470, 220, 22]
+    content:
+      style: "$caption"
+      text: 注册会员 90 天复购率
+  - elementId: pageno
+    elementType: text
+    bounds: [820, 508, 80, 20]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 09 / 12

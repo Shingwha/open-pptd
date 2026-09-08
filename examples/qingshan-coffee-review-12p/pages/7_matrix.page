@@ -1,0 +1,106 @@
+pageType: content
+background: {type: solid, color: "$bg"}
+notes: 门店矩阵：横轴人效、纵轴坪效、气泡面积是销售额。旗舰店右上角又大又靠上；快取店人效最高但坪效低，是模型差异不是问题；灰色菱形是行业基准，标准店里江宁金鹰和天一广场在基准线以下。
+elements:
+  - elementId: kicker
+    elementType: text
+    bounds: [60, 42, 520, 20]
+    content:
+      style: "$kicker"
+      text: "03 · 运营 门店矩阵 STORE MATRIX"
+  - elementId: dot1
+    elementType: shape
+    bounds: [862, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot2
+    elementType: shape
+    bounds: [876, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot3
+    elementType: shape
+    bounds: [890, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+  - elementId: dot4
+    elementType: shape
+    bounds: [904, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot5
+    elementType: shape
+    bounds: [918, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: title
+    elementType: text
+    bounds: [60, 70, 840, 40]
+    content:
+      style: "$title"
+      text: 三家旗舰店坪效领跑：标准店人效分化最大
+  - elementId: chart
+    elementType: chart
+    bounds: [60, 124, 840, 352]
+    fontFamily: "LXGW Neo XiHei"
+    legend: {position: top, fontSize: 10.5}
+    xAxis: {title: 人效（万元/人·年）}
+    yAxis: {title: 坪效（元/㎡·月）}
+    seriesDefaults:
+      bubble: {sizeScale: sqrt, sizeRange: [10, 46]}
+    data:
+      cols: [业态, 人效, 坪效, 销售额]
+      rows:
+        - [旗舰, 5.2, 2150, 356]
+        - [旗舰, 4.9, 1980, 322]
+        - [旗舰, 4.6, 1890, 308]
+        - [标准, 4.4, 1760, 318]
+        - [标准, 4.1, 1680, 294]
+        - [标准, 4.3, 1720, 289]
+        - [标准, 3.9, 1540, 253]
+        - [标准, 4.0, 1610, 328]
+        - [标准, 3.7, 1420, 263]
+        - [快取, 5.4, 1180, 168]
+        - [快取, 5.1, 1090, 152]
+        - [快取, 4.8, 1010, 141]
+        - [基准, 4.3, 1600, null]
+    series:
+      - type: bubble
+        encode: {x: 人效, y: 坪效, size: 销售额}
+        name: 旗舰店
+        dataFilter: {col: 业态, value: 旗舰}
+        fill: "$primary"
+      - type: bubble
+        encode: {x: 人效, y: 坪效, size: 销售额}
+        name: 标准店
+        dataFilter: {col: 业态, value: 标准}
+        fill: "$accent4"
+      - type: bubble
+        encode: {x: 人效, y: 坪效, size: 销售额}
+        name: 快取店
+        dataFilter: {col: 业态, value: 快取}
+        fill: "$accent"
+      - type: scatter
+        encode: {x: 人效, y: 坪效}
+        name: 行业基准
+        dataFilter: {col: 业态, value: 基准}
+        marker: {shape: diamond, size: 16, fill: "$accent3", border: {style: solid, width: 2, color: "$text"}}
+  - elementId: f1-title
+    elementType: text
+    bounds: [60, 434, 840, 24]
+    content:
+      style: "$sectionTitle"
+      text: 江宁金鹰、天一广场双指标低于行业基准——H2 进驻调改名单
+  - elementId: insight
+    elementType: text
+    bounds: [60, 480, 700, 24]
+    content:
+      style: "$caption"
+      text: 读法：气泡面积 = 门店 H1 销售额；人效 = 营收/全职当量，坪效 = 营收/经营面积。
+  - elementId: pageno
+    elementType: text
+    bounds: [820, 480, 80, 24]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 07 / 12

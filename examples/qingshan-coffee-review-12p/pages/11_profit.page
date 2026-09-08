@@ -1,0 +1,113 @@
+pageType: content
+background: {type: solid, color: "$bg"}
+notes: 盈利页：毛利 1,857 万走到净利 328 万，四项成本里人力和租金合计吃掉 970 万、约占营收 35%。净利率 12% 同比是改善的，但人力占比超了 18% 的内控线。
+elements:
+  - elementId: kicker
+    elementType: text
+    bounds: [60, 42, 520, 20]
+    content:
+      style: "$kicker"
+      text: "04 · 盈利质量 PROFIT BRIDGE"
+  - elementId: dot1
+    elementType: shape
+    bounds: [862, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot2
+    elementType: shape
+    bounds: [876, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot3
+    elementType: shape
+    bounds: [890, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot4
+    elementType: shape
+    bounds: [904, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+  - elementId: dot5
+    elementType: shape
+    bounds: [918, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: title
+    elementType: text
+    bounds: [60, 70, 840, 40]
+    content:
+      style: "$title"
+      text: 从毛利 1,857 万到净利 328 万：租金与人力吃掉一半
+  - elementId: chart
+    elementType: chart
+    bounds: [60, 122, 840, 288]
+    fontFamily: "LXGW Neo XiHei"
+    legend: {position: bottom, fontSize: 10.5}
+    title: {text: H1 利润桥（万元）, fontSize: 12, color: "$primary"}
+    yAxis: {title: 万元, label: {numberFormat: "#,##0"}, gridLine: {color: "$line"}}
+    xAxis: {title: 成本项目}
+    data:
+      cols: [项目, 金额, 合计]
+      rows:
+        - [毛利, 1857, true]
+        - [门店人力, -522, null]
+        - [租金物业, -448, null]
+        - [营销投放, -210, null]
+        - [总部及其他, -349, null]
+        - [净利, 328, true]
+    series:
+      - type: waterfall
+        encode: {x: 项目, y: 金额, isTotal: 合计}
+        totalBars: {fill: "$primary"}
+        increaseBars: {fill: "$accent4"}
+        decreaseBars: {fill: "$accent"}
+        dataLabels: {show: true, fontSize: 10}
+  - elementId: t1-num
+    elementType: text
+    bounds: [60, 424, 260, 36]
+    content:
+      style: "$statNum"
+      fontSize: 24
+      text: 12.0%
+  - elementId: t1-label
+    elementType: text
+    bounds: [60, 460, 260, 22]
+    content:
+      style: "$caption"
+      text: 净利率 · 同比 +0.8pct
+  - elementId: t2-num
+    elementType: text
+    bounds: [360, 424, 280, 36]
+    content:
+      style: "$statNum"
+      fontSize: 24
+      color: "$danger"
+      text: 19.1%
+  - elementId: t2-label
+    elementType: text
+    bounds: [360, 460, 280, 22]
+    content:
+      style: "$caption"
+      text: 人力占营收 · 超内控线 18%
+  - elementId: t3-num
+    elementType: text
+    bounds: [680, 424, 220, 36]
+    content:
+      style: "$statNum"
+      fontSize: 24
+      color: "$danger"
+      text: 16.4%
+  - elementId: t3-label
+    elementType: text
+    bounds: [680, 460, 220, 22]
+    content:
+      style: "$caption"
+      text: 租售比 · 12 店中 4 店超 18%
+  - elementId: pageno
+    elementType: text
+    bounds: [820, 508, 80, 20]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 11 / 12

@@ -1,0 +1,118 @@
+pageType: content
+background: {type: solid, color: "$bg"}
+notes: 结构页：左边 treemap 下钻到 SKU——燕麦拿铁一个单品 519 万；右边 sunburst 看城市——上海占 36%，苏州宁波单店城市还有加密空间。两张图都是层级结构，一块看盘面。
+elements:
+  - elementId: kicker
+    elementType: text
+    bounds: [60, 42, 520, 20]
+    content:
+      style: "$kicker"
+      text: "02 · 结构 层级视图 HIERARCHY"
+  - elementId: dot1
+    elementType: shape
+    bounds: [862, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot2
+    elementType: shape
+    bounds: [876, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+  - elementId: dot3
+    elementType: shape
+    bounds: [890, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot4
+    elementType: shape
+    bounds: [904, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot5
+    elementType: shape
+    bounds: [918, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: title
+    elementType: text
+    bounds: [60, 70, 840, 40]
+    content:
+      style: "$title"
+      text: 两张层级图看盘面：单品王「燕麦拿铁」519 万，上海占 36%
+  - elementId: treemap
+    elementType: chart
+    bounds: [50, 124, 440, 352]
+    fontFamily: "LXGW Neo XiHei"
+    title: {text: 品类 → SKU 销售结构, fontSize: 12, color: "$primary"}
+    legend: {position: bottom, fontSize: 10}
+    data:
+      cols: [节点, 销售额, 父]
+      rows:
+        - [咖啡饮品, 1486, null]
+        - [燕麦拿铁, 519, 咖啡饮品]
+        - [美式, 297, 咖啡饮品]
+        - [冷萃系列, 268, 咖啡饮品]
+        - [手冲, 216, 咖啡饮品]
+        - [其他咖啡, 186, 咖啡饮品]
+        - [非咖饮品, 512, null]
+        - [抹茶, 178, 非咖饮品]
+        - [柠檬茶, 152, 非咖饮品]
+        - [可可, 96, 非咖饮品]
+        - [其他非咖, 86, 非咖饮品]
+        - [烘焙轻食, 438, null]
+        - [可颂, 165, 烘焙轻食]
+        - [磅蛋糕, 118, 烘焙轻食]
+        - [贝果, 89, 烘焙轻食]
+        - [其他烘焙, 66, 烘焙轻食]
+        - [周边零售, 295, null]
+        - [挂耳, 142, 周边零售]
+        - [豆礼盒, 96, 周边零售]
+        - [杯具, 57, 周边零售]
+    series:
+      - type: treemap
+        encode: {category: 节点, value: 销售额, parent: 父}
+        levels: 2
+        # 子节点沿 HSL.L 派生 -10，根色须取中浅调，派生后仍可辨
+        fill: ["#3E6B54", "#CE7B55", "#C9A45C", "#6FA082"]
+        dataLabels: {content: category, fontSize: 10, color: "#FFFFFF"}
+  - elementId: sunburst
+    elementType: chart
+    bounds: [510, 124, 400, 352]
+    fontFamily: "LXGW Neo XiHei"
+    title: {text: 城市 → 门店销售分布, fontSize: 12, color: "$accent"}
+    legend: {position: bottom, fontSize: 10, color: "$muted"}
+    data:
+      cols: [节点, 销售额, 父]
+      rows:
+        - [上海, 986, null]
+        - [静安嘉里, 356, 上海]
+        - [大学路, 322, 上海]
+        - [滨江天街, 308, 上海]
+        - [杭州, 612, null]
+        - [武林银泰, 318, 杭州]
+        - [滨江宝龙, 294, 杭州]
+        - [南京, 542, null]
+        - [新街口, 289, 南京]
+        - [江宁金鹰, 253, 南京]
+        - [苏州, 328, null]
+        - [观前街, 328, 苏州]
+        - [宁波, 263, null]
+        - [天一广场, 263, 宁波]
+    series:
+      - type: sunburst
+        encode: {category: 节点, value: 销售额, parent: 父}
+        levels: 2
+        fill: ["$primary", "$accent", "$accent3", "$accent4", "$accent5"]
+  - elementId: insight
+    elementType: text
+    bounds: [60, 480, 700, 24]
+    content:
+      style: "$caption"
+      text: 读法：两图均为两级层级，内层/上层为汇总；treemap 面积与 sunburst 扇角同销售额成正比。
+  - elementId: pageno
+    elementType: text
+    bounds: [820, 480, 80, 24]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 05 / 12

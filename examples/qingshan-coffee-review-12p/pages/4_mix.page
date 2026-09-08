@@ -1,0 +1,149 @@
+pageType: content
+background: {type: solid, color: "$bg"}
+notes: 结构页：回答"增长从哪来"。咖啡饮品是基本盘但占比在降，非咖 +42% 是上半年最快的增量，烘焙的连带率还有空间。右轴四行按占比从高到低。
+elements:
+  - elementId: kicker
+    elementType: text
+    bounds: [60, 42, 520, 20]
+    content:
+      style: "$kicker"
+      text: "02 · 品类结构 CATEGORY MIX"
+  - elementId: dot1
+    elementType: shape
+    bounds: [862, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot2
+    elementType: shape
+    bounds: [876, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+  - elementId: dot3
+    elementType: shape
+    bounds: [890, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot4
+    elementType: shape
+    bounds: [904, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot5
+    elementType: shape
+    bounds: [918, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: title
+    elementType: text
+    bounds: [60, 70, 840, 40]
+    content:
+      style: "$title"
+      text: 咖啡饮品贡献 54%：基本盘稳固，非咖与烘焙是增量
+  - elementId: donut
+    elementType: chart
+    bounds: [50, 128, 450, 348]
+    fontFamily: "LXGW Neo XiHei"
+    legend: {position: bottom, fontSize: 10.5}
+    data:
+      cols: [品类, 销售额]
+      rows:
+        - [咖啡饮品, 1486]
+        - [非咖饮品, 512]
+        - [烘焙轻食, 438]
+        - [周边零售, 295]
+    series:
+      - type: pie
+        encode: {category: 品类, value: 销售额}
+        innerRadius: 0.58
+        startAngle: 0
+        fill: ["$primary", "$accent", "$accent3", "$accent4"]
+        dataLabels: {show: true, content: percentage, numberFormat: "0%", fontSize: 10.5, color: "#FFFFFF"}
+  - elementId: donut-center
+    elementType: text
+    bounds: [212, 266, 126, 60]
+    content:
+      align: [center, middle]
+      text: |
+        <p><span style="font-size:10.5px; color:$muted;">H1 总销售额</span></p>
+        <p><span style="font-size:20px; font-family:Source Han Serif CN; color:$primary; font-weight:bold;">¥2,731 万</span></p>
+  - elementId: row1-dot
+    elementType: shape
+    bounds: [540, 143, 10, 10]
+    shapeName: ellipse
+    fill: {type: solid, color: "$primary"}
+  - elementId: row1-title
+    elementType: text
+    bounds: [562, 134, 330, 24]
+    content:
+      style: "$sectionTitle"
+      text: 咖啡饮品　¥1,486 万 · 54.4%
+  - elementId: row1-note
+    elementType: text
+    bounds: [562, 158, 330, 22]
+    content:
+      style: "$caption"
+      text: 基本盘；招牌「燕麦拿铁 Nº3」单品占全盘 19%
+  - elementId: row2-dot
+    elementType: shape
+    bounds: [540, 228, 10, 10]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+  - elementId: row2-title
+    elementType: text
+    bounds: [562, 219, 330, 24]
+    content:
+      style: "$sectionTitle"
+      text: 非咖饮品　¥512 万 · 18.7%
+  - elementId: row2-note
+    elementType: text
+    bounds: [562, 243, 330, 22]
+    content:
+      style: "$caption"
+      text: 同比 +42%，上半年最快增量；冷饮季主力
+  - elementId: row3-dot
+    elementType: shape
+    bounds: [540, 313, 10, 10]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent3"}
+  - elementId: row3-title
+    elementType: text
+    bounds: [562, 304, 330, 24]
+    content:
+      style: "$sectionTitle"
+      text: 烘焙轻食　¥438 万 · 16.0%
+  - elementId: row3-note
+    elementType: text
+    bounds: [562, 328, 330, 22]
+    content:
+      style: "$caption"
+      text: 连带率 0.34；午后时段（14–17 点）占比过半
+  - elementId: row4-dot
+    elementType: shape
+    bounds: [540, 398, 10, 10]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent4"}
+  - elementId: row4-title
+    elementType: text
+    bounds: [562, 389, 330, 24]
+    content:
+      style: "$sectionTitle"
+      text: 周边零售　¥295 万 · 10.8%
+  - elementId: row4-note
+    elementType: text
+    bounds: [562, 413, 330, 22]
+    content:
+      style: "$caption"
+      text: 挂耳与豆礼盒为主，门店陈列位待优化
+  - elementId: insight
+    elementType: text
+    bounds: [60, 480, 700, 24]
+    content:
+      style: "$caption"
+      text: 读法：环形图按 H1 销售额占比排布；右侧四行为对应品类的量级与动线。
+  - elementId: pageno
+    elementType: text
+    bounds: [820, 480, 80, 24]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 04 / 12

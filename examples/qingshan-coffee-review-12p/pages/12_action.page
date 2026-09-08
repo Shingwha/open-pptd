@@ -1,0 +1,158 @@
+pageType: final
+background: {type: solid, color: "$bg"}
+notes: 收尾页：四项行动对应前面四个发现——非咖增量打旺季产品线，供应链短板用两店整改带动，会员存量做复购，外卖补时段缺口。合计瞄准增量 540 万，全年净利率目标 13%。
+elements:
+  - elementId: kicker
+    elementType: text
+    bounds: [60, 42, 520, 20]
+    content:
+      style: "$kicker"
+      text: "05 · 下半年行动 H2 ACTIONS"
+  - elementId: dot1
+    elementType: shape
+    bounds: [862, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot2
+    elementType: shape
+    bounds: [876, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot3
+    elementType: shape
+    bounds: [890, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot4
+    elementType: shape
+    bounds: [904, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$line"}
+  - elementId: dot5
+    elementType: shape
+    bounds: [918, 44, 8, 8]
+    shapeName: ellipse
+    fill: {type: solid, color: "$accent"}
+  - elementId: title
+    elementType: text
+    bounds: [60, 70, 840, 40]
+    content:
+      style: "$title"
+      text: 下半年四项行动：瞄准增量 540 万，全年净利率奔 13%
+  - elementId: a1-num
+    elementType: text
+    bounds: [60, 132, 46, 34]
+    content:
+      fontSize: 21
+      fontFamily: "Source Han Serif CN"
+      color: "$accent"
+      bold: true
+      text: 01
+  - elementId: a1-title
+    elementType: text
+    bounds: [116, 132, 300, 24]
+    content:
+      style: "$sectionTitle"
+      text: 旺季限定产品线
+  - elementId: a1-note
+    elementType: text
+    bounds: [116, 156, 300, 40]
+    content:
+      style: "$caption"
+      text: 7–8 月冷饮季上新 6 款，延续「桂花冷萃」打法
+  - elementId: a2-num
+    elementType: text
+    bounds: [60, 218, 46, 34]
+    content:
+      fontSize: 21
+      fontFamily: "Source Han Serif CN"
+      color: "$accent"
+      bold: true
+      text: 02
+  - elementId: a2-title
+    elementType: text
+    bounds: [116, 218, 300, 24]
+    content:
+      style: "$sectionTitle"
+      text: 外卖时段扩容
+  - elementId: a2-note
+    elementType: text
+    bounds: [116, 242, 300, 40]
+    content:
+      style: "$caption"
+      text: 全时段外卖试点 6 店，补齐 14–17 点空档
+  - elementId: a3-num
+    elementType: text
+    bounds: [60, 304, 46, 34]
+    content:
+      fontSize: 21
+      fontFamily: "Source Han Serif CN"
+      color: "$accent"
+      bold: true
+      text: 03
+  - elementId: a3-title
+    elementType: text
+    bounds: [116, 304, 300, 24]
+    content:
+      style: "$sectionTitle"
+      text: 会员复购计划
+  - elementId: a3-note
+    elementType: text
+    bounds: [116, 328, 300, 40]
+    content:
+      style: "$caption"
+      text: 周三会员日 + 储值卡分级，复购 38%→45%
+  - elementId: a4-num
+    elementType: text
+    bounds: [60, 390, 46, 34]
+    content:
+      fontSize: 21
+      fontFamily: "Source Han Serif CN"
+      color: "$accent"
+      bold: true
+      text: 04
+  - elementId: a4-title
+    elementType: text
+    bounds: [116, 390, 300, 24]
+    content:
+      style: "$sectionTitle"
+      text: 校园店 2 号 / 3 号开业
+  - elementId: a4-note
+    elementType: text
+    bounds: [116, 414, 300, 40]
+    content:
+      style: "$caption"
+      text: 8 月开学季前落地，爬坡期按 90 天测算
+  - elementId: hbar
+    elementType: chart
+    bounds: [460, 128, 440, 348]
+    fontFamily: "LXGW Neo XiHei"
+    legend: {position: bottom, fontSize: 10.5}
+    xAxis: {title: 预期增量（万元）, label: {numberFormat: "#,##0"}, gridLine: {color: "$line"}}
+    yAxis: {label: {fontSize: 11}}
+    data:
+      cols: [行动, 增量]
+      rows:
+        - [旺季限定, 180]
+        - [校园新店, 150]
+        - [会员复购, 120]
+        - [外卖扩容, 90]
+    series:
+      - type: bar
+        encode: {x: 增量, y: 行动}
+        name: 预期增量
+        fill: "$accent"
+        dataLabels: {show: true, fontSize: 10, color: "$text"}
+  - elementId: insight
+    elementType: text
+    bounds: [60, 480, 700, 24]
+    content:
+      style: "$caption"
+      text: 右图为四项收入型行动的增量拆解（规划口径）；供应链降损作为成本专项并行推进（承上页短板）。
+  - elementId: pageno
+    elementType: text
+    bounds: [820, 480, 80, 24]
+    content:
+      style: "$caption"
+      align: [right, top]
+      text: 12 / 12
