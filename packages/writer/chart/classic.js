@@ -10,7 +10,7 @@
 // ============================================================================
 
 import { el, esc, xmlHeader } from "../xml.js";
-import { resolveChartSpec, resolveChartDirection, seriesAxisIndex, seriesChannels, chartDataTable, resolveDataLabels, colLetter } from "../../model/chart.js";
+import { resolveChartSpec, CHART_META, resolveChartDirection, seriesAxisIndex, seriesChannels, chartDataTable, resolveDataLabels, colLetter } from "../../model/chart.js";
 import { resolveFont, themeChartPalette } from "../../model/theme.js";
 import { buildChartXlsx, buildSheetOrder } from "./xlsx.js";
 import { fillXml, lnXml, txPrXml, chartSpaceSpPrXml, richCharStyleXml } from "./style.js";
@@ -20,8 +20,6 @@ import {
 } from "./ser.js";
 import { buildAxesXml, buildRadarAxesXml } from "./axes.js";
 import { buildChartExParts } from "./chartex.js";
-import { EXPORTABLE_CHART_TYPES, CHARTEX_TYPES } from "./types.js";
-import { IMAGE_CHART_TYPES } from "./image.js";
 
 /**
  * 构建图表部件（chartN.xml + rels + xlsx）。
@@ -34,15 +32,14 @@ export function buildChartParts(theme, chartEl, chartIndex) {
   const series = spec.series;
   const types = spec.types;
   const layout = spec.layout;
-  // heatmap/sankey 不告警——slide.js collectChart 会走 SSR 图片化回退（image.js），
-  // 此前按"暂不支持原生导出，已跳过"告警系文案过时
-  const unsupported = types.filter((t) => !EXPORTABLE_CHART_TYPES.includes(t) && !CHARTEX_TYPES.includes(t) && !IMAGE_CHART_TYPES.includes(t));
+  // 路由单源 CHART_META.route：无 route = 未知类型（预览正常，导出跳过并警告）
+  const unsupported = types.filter((t) => !CHART_META[t]?.route);
   if (unsupported.length) {
     console.warn(`[writer] 图表 ${chartEl.elementId} 类型 ${unsupported.join("/")} 暂不支持原生导出（待官方参考比对），已跳过`);
     return null;
   }
-  // chartEx 体系（waterfall/treemap/sunburst 独占系列数组）
-  if (types.some((t) => CHARTEX_TYPES.includes(t))) {
+  // chartEx 体系（waterfall/treemap/sunburst 独占系列数组；路由单源 CHART_META.route）
+  if (types.some((t) => CHART_META[t]?.route === "chartex")) {
     return buildChartExParts(spec, chartIndex);
   }
 

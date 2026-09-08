@@ -9,9 +9,10 @@ import { el, esc, xmlHeader } from "./xml.js";
 import { encodeUtf8 } from "../model/bytes.js";
 import { NS_A, NS_R, NS_P, NS_REL } from "./parts.js";
 import { PAGE_WIDTH, PAGE_HEIGHT } from "../model/model.js";
+import { chartRouteOf } from "../model/chart.js";
 import { backgroundXml } from "./background.js";
 import { buildChartParts } from "./chart.js";
-import { buildChartImageBytes, IMAGE_CHART_TYPES } from "./chart/image.js";
+import { buildChartImageBytes } from "./chart/image.js";
 import { TINY_PNG } from "./chart/types.js";
 import { getType } from "./types/index.js";
 
@@ -32,7 +33,6 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
   const rels = [{ id: "rId1", type: "slideLayout", target: "../slideLayouts/slideLayout1.xml" }];
   const mediaFiles = []; // { path, bytes }
   const chartParts = []; // { path, bytes, relsPath, relsBytes, xlsxPath, xlsxBytes }
-  const chartImageRefs = {}; // chartId → { pngId, svgId }（heatmap/sankey 图片化导出）
   const links = new Map(); // url -> rId
   let idCounter = 1;
   let mediaCounter = 0;
@@ -99,10 +99,11 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
       rels.push({ id, type: "image", target: `../media/${name}.${ext}` });
       return { id, path, ext };
     },
-    // heatmap/sankey 图片化（先于 registerChart 调用，不消耗图表编号——
-    // Content_Types 按连续 id 声明 chartN.xml，编号空隙会声明缺失部件）
+    // heatmap/sankey 图片化（路由单源 chartRouteOf === "image"：先于 registerChart
+    // 调用，不消耗图表编号——Content_Types 按连续 id 声明 chartN.xml，编号空隙会
+    // 声明缺失部件）
     collectChartImage(theme, el) {
-      if (!IMAGE_CHART_TYPES.includes(el.series?.[0]?.type)) return null;
+      if (chartRouteOf(el) !== "image") return null;
       const svgBytes = buildChartImageBytes(theme, el);
       const png = this.addMedia(TINY_PNG, "png");
       const svg = this.addMedia(svgBytes, "svg");
@@ -121,21 +122,11 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
       }
       return id;
     },
+    // 经典/chartEx 部件收集（toXml 已按路由先行分流，image 到不了这里）；
+    // parts 为空 = 未知类型兜底 → 返回 false 跳过，不留悬空引用
     collectChart(theme, el, chartId) {
       const parts = buildChartParts(theme, el, chartId);
-      if (!parts) {
-        // heatmap/sankey：PowerPoint 无原生类型，SSR 矢量图回退（writer/chart/image.js，
-        // 与预览同源 option）；其余未知类型仍跳过
-        const type = el.series?.[0]?.type;
-        if (!IMAGE_CHART_TYPES.includes(type)) return false;
-        const svgBytes = buildChartImageBytes(theme, el);
-        const png = this.addMedia(TINY_PNG, "png");
-        const svg = this.addMedia(svgBytes, "svg");
-        chartImageRefs[el.elementId] = { pngId: png.id, svgId: svg.id };
-        chartCounter -= 1; // 图片化不产出 chart part，回退编号（Content_Types 按
-        // 连续 id 声明 chartN.xml，留空隙会声明缺失部件 → PowerPoint 修复弹窗）
-        return true;
-      }
+      if (!parts) return false;
       if (parts.chartEx) {
         // chartEx 扩展体系（waterfall/treemap/sunburst）：独立命名 + Worksheet xlsx
         // + style/colors 样式部件（rId2/rId3，PowerPoint 按此索引默认样式表）
@@ -202,7 +193,7 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
       .join("") +
     `</Relationships>`;
 
-  return { xml, relsXml, mediaFiles, chartParts, chartImageRefs, mediaCount: (options.mediaBase || 0) + mediaCounter, notesXml };
+  return { xml, relsXml, mediaFiles, chartParts, mediaCount: (options.mediaBase || 0) + mediaCounter, notesXml };
 }
 
 function relType(type) {

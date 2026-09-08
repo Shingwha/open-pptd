@@ -3,11 +3,12 @@
 // ----------------------------------------------------------------------------
 
 import { el, escAttr } from "../xml.js";
-import { CHARTEX_TYPES, TINY_PNG } from "./types.js";
+import { chartRouteOf } from "../../model/chart.js";
+import { TINY_PNG } from "./types.js";
 
 /** 图表元素 → slide 内 graphicFrame（引用 chart part，媒体/部件由 pptx.js 汇总）。
- * heatmap/sankey 图片化（ctx.chartImageRefs 有记录）→ p:pic（PNG 占位 + svgBlip 矢量，
- * PowerPoint 2016+/WPS 新版/LibreOffice 显示矢量，旧版显示占位图）。 */
+ * heatmap/sankey 图片化（路由 image，调用方传 imgRef）→ p:pic（PNG 占位 +
+ * svgBlip 矢量，PowerPoint 2016+/WPS 新版/LibreOffice 显示矢量，旧版显示占位图）。 */
 export function chartXml(theme, chartEl, ctx, chartId, imgRef = null) {
   const [x, y, w, h] = chartEl.bounds;
   if (imgRef) {
@@ -34,7 +35,9 @@ export function chartXml(theme, chartEl, ctx, chartId, imgRef = null) {
       el("p:spPr", {}, xfrm + el("a:prstGeom", { prst: "rect" }, el("a:avLst"))),
     ].join(""));
   }
-  const isChartEx = CHARTEX_TYPES.includes(chartEl.series?.[0]?.type);
+  // chartEx 判定单源 chartRouteOf（model CHART_META.route——此前本处与
+  // classic.js 各判一次）
+  const isChartEx = chartRouteOf(chartEl) === "chartex";
   const rId = ctx.chartRef ? ctx.chartRef(chartId, isChartEx ? "chartEx" : "chart") : "rIdChart1";
   const uri = isChartEx
     ? "http://schemas.microsoft.com/office/drawing/2014/chartex"

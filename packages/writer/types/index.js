@@ -6,6 +6,7 @@
 // ============================================================================
 
 import { registerType } from "../../model/registry.js";
+import { chartRouteOf } from "../../model/chart.js";
 import { textXml } from "../text.js";
 import { shapeXml } from "../shape.js";
 import { iconXml } from "../icon.js";
@@ -24,15 +25,22 @@ registerType({ type: "table", toXml: tableXml });
 registerType({
   type: "chart",
 
-  // 图表导出需要先注册 chart part（嵌入 xlsx），再输出 p:graphicFrame
+  // 导出路由单源 chartRouteOf：image 先行收集媒体（不消耗图表编号），
+  // classic/chartex 注册 chart part 后输出 graphicFrame，无路由 = 跳过
   toXml(theme, el, ctx) {
     if (!ctx.registerChart || !ctx.collectChart) {
       console.warn(`[writer] 图表 ${el.elementId} 缺少图表部件上下文，已跳过`);
       return "";
     }
-    // heatmap/sankey 图片化先行（不消耗图表编号，见 slide.js collectChartImage）
-    const imgRef = ctx.collectChartImage ? ctx.collectChartImage(theme, el) : null;
-    if (imgRef) return chartXml(theme, el, ctx, null, imgRef);
+    const route = chartRouteOf(el);
+    if (route === "image") {
+      const imgRef = ctx.collectChartImage ? ctx.collectChartImage(theme, el) : null;
+      return imgRef ? chartXml(theme, el, ctx, null, imgRef) : "";
+    }
+    if (route === null) {
+      console.warn(`[writer] 图表 ${el.elementId} 类型 ${el.series?.[0]?.type} 暂不支持原生导出，已跳过`);
+      return "";
+    }
     const chartId = ctx.registerChart();
     const ok = ctx.collectChart(theme, el, chartId);
     if (!ok) return ""; // 类型暂不支持原生导出（预览正常，导出跳过该元素）

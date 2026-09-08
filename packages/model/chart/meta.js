@@ -8,24 +8,35 @@
 // ============================================================================
 
 /**
- * 13 类型注册表（官方字段集 + 约束）。
- * encode: 官方 encode 字段（? 结尾 = 可选）；coexist: 允许共存的类型集合。
+ * 13 类型注册表（官方字段集 + 约束 + 导出路由）。
+ * encode: 官方 encode 字段（? 结尾 = 可选）；coexist: 允许共存的类型集合；
+ * route: 导出路由单源——classic（c:chartSpace）/ chartex（cx: 扩展，PPT 2016+）/
+ * image（无原生类型，SSR 矢量图）。预览不区分；writer 派生类型表、编号口径、
+ * mc 包装判定全部消费此处，禁止再各写一份类型清单。
  */
 export const CHART_META = {
-  bar: { label: "柱状图", encode: { x: "x", y: "y" }, axes: "cartesian", coexist: ["bar", "line", "area", "scatter", "bubble", "candlestick"] },
-  line: { label: "折线图", encode: { x: "x", y: "y" }, axes: "cartesian", coexist: ["bar", "line", "area", "scatter", "bubble", "candlestick"] },
-  area: { label: "面积图", encode: { x: "x", y: "y" }, axes: "cartesian", coexist: ["bar", "line", "area", "scatter", "bubble", "candlestick"] },
-  scatter: { label: "散点图", encode: { x: "x", y: "y" }, axes: "cartesian", coexist: ["bar", "line", "area", "scatter", "bubble"] },
-  bubble: { label: "气泡图", encode: { x: "x", y: "y", size: "size" }, axes: "cartesian", coexist: ["bar", "line", "area", "scatter", "bubble"] },
-  candlestick: { label: "股价图", encode: { x: "x", high: "high", low: "low", close: "close", open: "open?" }, axes: "cartesian", coexist: ["candlestick", "bar", "line", "area"] },
-  pie: { label: "饼图", encode: { category: "category", value: "value" }, axes: "none", coexist: ["pie"] },
-  radar: { label: "雷达图", encode: { category: "category", y: "y" }, axes: "radar", coexist: ["radar"] },
-  waterfall: { label: "瀑布图", encode: { x: "x", y: "y", isTotal: "isTotal?" }, axes: "cartesian", coexist: ["waterfall"] },
-  heatmap: { label: "热力图", encode: { x: "x", y: "y", value: "value" }, axes: "cartesian", coexist: ["heatmap"] },
-  treemap: { label: "矩形树图", encode: { category: "category", value: "value", parent: "parent?" }, axes: "none", coexist: ["treemap"] },
-  sunburst: { label: "旭日图", encode: { category: "category", value: "value", parent: "parent?" }, axes: "none", coexist: ["sunburst"] },
-  sankey: { label: "桑基图", encode: { source: "source", target: "target", flow: "flow" }, axes: "none", coexist: ["sankey"] },
+  bar: { label: "柱状图", route: "classic", encode: { x: "x", y: "y" }, axes: "cartesian", coexist: ["bar", "line", "area", "scatter", "bubble", "candlestick"] },
+  line: { label: "折线图", route: "classic", encode: { x: "x", y: "y" }, axes: "cartesian", coexist: ["bar", "line", "area", "scatter", "bubble", "candlestick"] },
+  area: { label: "面积图", route: "classic", encode: { x: "x", y: "y" }, axes: "cartesian", coexist: ["bar", "line", "area", "scatter", "bubble", "candlestick"] },
+  scatter: { label: "散点图", route: "classic", encode: { x: "x", y: "y" }, axes: "cartesian", coexist: ["bar", "line", "area", "scatter", "bubble"] },
+  bubble: { label: "气泡图", route: "classic", encode: { x: "x", y: "y", size: "size" }, axes: "cartesian", coexist: ["bar", "line", "area", "scatter", "bubble"] },
+  candlestick: { label: "股价图", route: "classic", encode: { x: "x", high: "high", low: "low", close: "close", open: "open?" }, axes: "cartesian", coexist: ["candlestick", "bar", "line", "area"] },
+  pie: { label: "饼图", route: "classic", encode: { category: "category", value: "value" }, axes: "none", coexist: ["pie"] },
+  radar: { label: "雷达图", route: "classic", encode: { category: "category", y: "y" }, axes: "radar", coexist: ["radar"] },
+  waterfall: { label: "瀑布图", route: "chartex", encode: { x: "x", y: "y", isTotal: "isTotal?" }, axes: "cartesian", coexist: ["waterfall"] },
+  heatmap: { label: "热力图", route: "image", encode: { x: "x", y: "y", value: "value" }, axes: "cartesian", coexist: ["heatmap"] },
+  treemap: { label: "矩形树图", route: "chartex", encode: { category: "category", value: "value", parent: "parent?" }, axes: "none", coexist: ["treemap"] },
+  sunburst: { label: "旭日图", route: "chartex", encode: { category: "category", value: "value", parent: "parent?" }, axes: "none", coexist: ["sunburst"] },
+  sankey: { label: "桑基图", route: "image", encode: { source: "source", target: "target", flow: "flow" }, axes: "none", coexist: ["sankey"] },
 };
+
+/** 图表元素 → 导出路由（'classic' | 'chartex' | 'image'；非图表/未知类型 null）。
+ * 编号口径唯一定义：classic/chartex 产出 chart part 消耗编号，image 不消耗。 */
+export function chartRouteOf(el) {
+  if (!el || el.elementType !== "chart") return null;
+  const t = el.series?.[0]?.type;
+  return CHART_META[t]?.route || null;
+}
 
 export const CHART_TYPE_ORDER = Object.keys(CHART_META);
 

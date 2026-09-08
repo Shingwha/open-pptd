@@ -16,7 +16,7 @@
 // 新增导出时在对应域模块实现并在此登记；消费方一律 import 本文件，不深引 chart/ 内部。
 // ============================================================================
 
-export { CHART_META, CHART_TYPE_ORDER, CHART_DEFAULTS, remapEncode } from "./chart/meta.js";
+export { CHART_META, CHART_TYPE_ORDER, CHART_DEFAULTS, remapEncode, chartRouteOf } from "./chart/meta.js";
 export { validateChartSeries, mergeSeriesDefault, resolveChartSeries } from "./chart/resolve.js";
 export { resolveBarLayout, resolvePlotLayout } from "./chart/layout.js";
 export { toAxisArray, inferAxisType, resolveChartDirection, seriesAxisIndex, seriesChannels } from "./chart/axes.js";
