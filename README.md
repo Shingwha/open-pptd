@@ -19,9 +19,11 @@
 **海报（竖版，`kind: poster`）**
 
 <p align="center">
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fxiaohongshu-intro-poster%2Fdeck.pptd"><img src="docs/images/xiaohongshu.png" width="23%" alt="open-pptd 小红书介绍海报"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-bailu-solar-term%2Fdeck.pptd"><img src="docs/images/poster-bailu.png" width="23%" alt="白露 · 二十四节气文化海报"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-echo-valley-festival%2Fdeck.pptd"><img src="docs/images/poster-echo.png" width="23%" alt="山谷回声音乐节 2026 演出海报"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fxiaohongshu-intro-poster%2Fdeck.pptd"><img src="docs/images/xiaohongshu.png" width="18%" alt="open-pptd 小红书介绍海报"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-artdeco-latelier%2Fdeck.pptd"><img src="docs/images/poster-artdeco.png" width="18%" alt="L'ATELIER · Art Deco 黑金香氛海报"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-echo-valley-festival%2Fdeck.pptd"><img src="docs/images/poster-echo.png" width="18%" alt="山谷回声音乐节 2026 演出海报"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-six-tea-types%2Fdeck.pptd"><img src="docs/images/poster-six-tea.png" width="18%" alt="六大茶类 · 一条发酵轴信息图海报"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-bailu-solar-term%2Fdeck.pptd"><img src="docs/images/poster-bailu.png" width="18%" alt="白露 · 二十四节气文化海报"/></a>
 </p>
 
 更多示例（咨询简报、数据年报、BP、架构评审等）见线上画廊与 `examples/` 目录。

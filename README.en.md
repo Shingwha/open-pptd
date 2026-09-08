@@ -19,9 +19,11 @@ A "content → editable project → live preview → PPTX" presentation pipeline
 **Posters (vertical, `kind: poster`)**
 
 <p align="center">
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fxiaohongshu-intro-poster%2Fdeck.pptd"><img src="docs/images/xiaohongshu.png" width="23%" alt="open-pptd Xiaohongshu Intro Poster"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-bailu-solar-term%2Fdeck.pptd"><img src="docs/images/poster-bailu.png" width="23%" alt="Bailu Solar Term Cultural Poster"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-echo-valley-festival%2Fdeck.pptd"><img src="docs/images/poster-echo.png" width="23%" alt="Echo Valley Festival 2026 Poster"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fxiaohongshu-intro-poster%2Fdeck.pptd"><img src="docs/images/xiaohongshu.png" width="18%" alt="open-pptd Xiaohongshu Intro Poster"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-artdeco-latelier%2Fdeck.pptd"><img src="docs/images/poster-artdeco.png" width="18%" alt="L'ATELIER Art Deco Poster"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-echo-valley-festival%2Fdeck.pptd"><img src="docs/images/poster-echo.png" width="18%" alt="Echo Valley Festival 2026 Poster"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-six-tea-types%2Fdeck.pptd"><img src="docs/images/poster-six-tea.png" width="18%" alt="Six Tea Types Infographic Poster"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-bailu-solar-term%2Fdeck.pptd"><img src="docs/images/poster-bailu.png" width="18%" alt="Bailu Solar Term Cultural Poster"/></a>
 </p>
 
 More examples (consulting decks, data annuals, pitch decks, architecture reviews) live in the online gallery and the `examples/` directory.
