@@ -1,28 +1,7 @@
 {
   "version": 2,
-  "generated": "2026-09-06T14:23:04.404Z",
+  "generated": "2026-09-08T09:14:37.729Z",
   "entries": [
-    {
-      "id": "qingshan-coffee-review-12p",
-      "title": "青山咖啡 · 2026 上半年经营复盘（图表全类型）",
-      "description": "管理汇报×图表重构验收：12 页 13 图表覆盖全部 13 类型——组合双轴/堆叠面积/环形/矩形树/旭日/热力/气泡+散点/雷达/K线+均线/负增量瀑布/桑基/横向条形",
-      "tags": [
-        "管理汇报",
-        "图表全类型",
-        "多图表"
-      ],
-      "pages": 12,
-      "fonts": [
-        "思源宋体",
-        "霞鹜新晰黑"
-      ],
-      "size": [
-        960,
-        540
-      ],
-      "kind": "ppt",
-      "deck": "examples/qingshan-coffee-review-12p/deck.pptd"
-    },
     {
       "id": "brand-mori-showcase-7p",
       "title": "MORI 森野 · 城市户外生活方式品牌提案",
@@ -151,6 +130,26 @@
       "deck": "examples/miaopai-saas-bp/deck.pptd"
     },
     {
+      "id": "poster-artdeco-latelier",
+      "title": "L'ATELIER · Art Deco 黑金香氛开幕夜",
+      "description": "装饰艺术风海报：黑底金线严格对称，同心圆徽章与细线双框，高对比衬线巨字，3:4 竖版",
+      "tags": [
+        "海报",
+        "Art Deco",
+        "黑金"
+      ],
+      "pages": 1,
+      "fonts": [
+        "Oranienbaum"
+      ],
+      "size": [
+        720,
+        960
+      ],
+      "kind": "poster",
+      "deck": "examples/poster-artdeco-latelier/deck.pptd"
+    },
+    {
       "id": "poster-bailu-solar-term",
       "title": "白露 · 节气文化手机海报",
       "description": "留白国风节气海报：竖排「白露」隶书巨字与诗句相衬，印章点睛，9:16 手机幅",
@@ -191,6 +190,48 @@
       ],
       "kind": "poster",
       "deck": "examples/poster-echo-valley-festival/deck.pptd"
+    },
+    {
+      "id": "poster-six-tea-types",
+      "title": "六大茶类 · 一条发酵轴",
+      "description": "茶文化信息图海报：一条发酵轴串起六大茶类，六行规格表配风味雷达与冲泡指南，2:3 竖版",
+      "tags": [
+        "海报",
+        "信息图",
+        "茶文化"
+      ],
+      "pages": 1,
+      "fonts": [
+        "霞鹜文楷",
+        "MiSans"
+      ],
+      "size": [
+        720,
+        1080
+      ],
+      "kind": "poster",
+      "deck": "examples/poster-six-tea-types/deck.pptd"
+    },
+    {
+      "id": "qingshan-coffee-review-12p",
+      "title": "青山咖啡 · 2026 上半年经营复盘（图表全类型）",
+      "description": "管理汇报×图表重构验收：12 页 13 图表覆盖全部 13 类型——组合双轴/堆叠面积/环形/矩形树/旭日/热力/气泡+散点/雷达/K线+均线/负增量瀑布/桑基/横向条形",
+      "tags": [
+        "管理汇报",
+        "图表全类型",
+        "多图表"
+      ],
+      "pages": 12,
+      "fonts": [
+        "思源宋体",
+        "霞鹜新晰黑"
+      ],
+      "size": [
+        960,
+        540
+      ],
+      "kind": "ppt",
+      "deck": "examples/qingshan-coffee-review-12p/deck.pptd"
     },
     {
       "id": "shanmingji-2026-launch",
