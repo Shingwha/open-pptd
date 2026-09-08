@@ -82,6 +82,10 @@ PIE_FILL/RADAR_FILL 是 COM 截图校准的约定值，改动需 02/08 页双端
 - **cx:legend**：pos 为 t/b/l/r 枚举；缺省字符样式走 cx:txPr（单段无 run，COM 验证打开+渲染）；
   图例条目文字由 PowerPoint 按类型语义生成（waterfall 显示 增加/减少/汇总，不是系列名）。
 - **系列 uniqueId 是随机 GUID**：字节级 diff 导出产物前必须归一化掉。
+- **dataLabels 样式不透传**：cx:dataLabels 只消费内容开关（visibility 的
+  categoryName/value，随 labels.content 切换），fontSize/color/numberFormat
+  在 chartEx 导出端不落盘（走 chartStyle part 默认）——配置样式字段会造成
+  预览与导出观感分歧，chartEx 图表建议只配 content。
 - **瀑布语义色**：增加/减少/汇总色由 chartStyle part（styleN.xml）语义槽驱动，
   与预览主题色板取色是两套体系（见 §5）。
 - **旧版兼容**：经典 c:chart 全兼容；chartEx 需 PowerPoint 2016+。

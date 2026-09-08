@@ -273,7 +273,7 @@ export function buildChartExParts(theme, chartEl, chartIndex) {
     };
     layoutPr = type === "treemap" ? `<cx:layoutPr><cx:parentLabelLayout val="overlapping"/></cx:layoutPr>` : "";
     dataLabels = labels
-      ? `<cx:dataLabels pos="${type === "sunburst" ? "ctr" : "inEnd"}"><cx:visibility seriesName="0" categoryName="1" value="0"/></cx:dataLabels>`
+      ? `<cx:dataLabels pos="${type === "sunburst" ? "ctr" : "inEnd"}"><cx:visibility seriesName="0" categoryName="${labels.content === "category" ? "1" : "0"}" value="${labels.content === "value" ? "1" : "0"}"/></cx:dataLabels>`
       : "";
     // fill 颜色（官方派生规则 → cx:dataPoint 逐叶色）：
     //   单值/1D 数组按根节点循环，子节点沿 HSL.L 每级 -10；2D 数组外层按根、内层按级
