@@ -118,8 +118,6 @@ html:has(.gallery-view) {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 18px;
   margin-top: 14px;
-  /* 卡片保持自然高度：同行比例不同（如 16:9 混 4:3）时矮卡不被拉伸留白 */
-  align-items: start;
 }
 /* 海报 tab：竖版封面更窄的列宽，网格更密 */
 .gallery-grid.poster-grid {
@@ -166,9 +164,12 @@ html:has(.gallery-view) {
 
 .gallery-card-cover {
   position: relative;
-  aspect-ratio: 16 / 9; /* 缺省兜底；卡片创建时内联 aspect-ratio 跟随作品实际画布（清单 size） */
+  aspect-ratio: 16 / 9; /* PPT 固定框；海报 tab 固定 3:4（下方规则），作品 contain 居中 */
   overflow: hidden;
   background: var(--bg);
+}
+.poster-grid .gallery-card-cover {
+  aspect-ratio: 3 / 4;
 }
 /* 渲染目标：与页数角标平级，重渲染清空时不带走角标 */
 .gallery-card-canvas {
@@ -207,6 +208,10 @@ html:has(.gallery-view) {
   font-size: var(--text-lg);
   font-weight: 600;
   line-height: 1.4;
+  /* 单行省略：标题长短不一，固定一行高度保证卡片齐整 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 页数角标：覆盖在封面右下角（视频时长式），任意封面底色均可读 */
@@ -227,6 +232,7 @@ html:has(.gallery-view) {
   font-size: var(--text-sm);
   color: var(--sub);
   line-height: 1.5;
+  min-height: 1.5em; /* 无描述时也撑出一行，信息区高度一致 */
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
@@ -235,9 +241,11 @@ html:has(.gallery-view) {
 
 .gallery-card-tags {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
   margin-top: 7px;
+  height: 20px; /* 固定单行：标签超出一行隐藏，不撑高卡片 */
+  overflow: hidden;
 }
 
 .gallery-tag {

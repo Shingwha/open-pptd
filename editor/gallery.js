@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 // 画廊 = 示例作品封面卡片网格；点击卡片进入编辑器（editor/?deck=...）。
 // 渲染链路：fetch examples/manifest.json → parseDeck → normalizeTheme/mergeFonts →
-// renderPage（960×540 逻辑尺寸，按容器宽度自适应缩放）。
+// renderPage（封面框固定比例：PPT 16:9 / 海报 3:4，作品 contain 缩放居中）。
 // 纯静态可用（GitHub Pages 无服务器，全部相对路径 fetch；项目媒体图同样
 // 以相对路径解析为绝对 URL 加载）。
 // 性能：项目文件走 Cache API 跨会话缓存（app/project/project-cache.js），
@@ -88,26 +88,30 @@ async function loadProject(entry) {
   return proj;
 }
 
-/** 按容器实际宽度渲染一页封面（按 deck 自身尺寸缩放，PPT/海报比例均支持）。 */
+/** 按卡片封面框 contain 渲染一页封面：框比例固定（PPT 16:9 / 海报 3:4，见 gallery.css），
+ *  作品按 min(cw/pw, ch/ph) 缩放居中，空隙由封面框中性衬底留白（装裱感，网格成行齐整）。 */
 function renderPageFit(container, page, deck, theme, imageMap, iconMap = {}) {
   disposeChartInstances(container);
   container.innerHTML = "";
   const cw = container.clientWidth;
-  if (!cw) {
-    // 容器尚未布局（宽度 0）：下一帧再试一次，避免 0.1 下限把封面缩成 96px 残影
+  const ch = container.clientHeight;
+  if (!cw || !ch) {
+    // 容器尚未布局（宽高 0）：下一帧再试一次，避免 0.1 下限把封面缩成残影
     requestAnimationFrame(() => {
-      if (document.contains(container) && container.clientWidth) {
+      if (document.contains(container) && container.clientWidth && container.clientHeight) {
         renderPageFit(container, page, deck, theme, imageMap, iconMap);
       }
     });
     return;
   }
   const [pw, ph] = deckSize(deck);
-  const scale = Math.max(0.1, Math.min(2, cw / pw));
+  const scale = Math.max(0.1, Math.min(2, Math.min(cw / pw, ch / ph)));
   const stage = document.createElement("div");
   stage.className = "gallery-page";
   stage.style.width = `${pw}px`;
   stage.style.height = `${ph}px`;
+  stage.style.left = `${(cw - pw * scale) / 2}px`;
+  stage.style.top = `${(ch - ph * scale) / 2}px`;
   stage.style.transform = `scale(${scale})`;
   stage.style.transformOrigin = "top left";
   renderPage(stage, page, deck, theme, { imageMap, iconMap });
@@ -243,10 +247,6 @@ export async function showGallery() {
       card.style.setProperty("--card-i", i); // 【试验项】错落浮入的序号（配 gallery.css 的 gallery-card-in）
       const thumb = document.createElement("div");
       thumb.className = "gallery-card-cover loading";
-      // 封面框跟随作品实际画布比例（PPT 16:9 / 海报 3:4 等）
-      if (Array.isArray(entry.size) && entry.size.length === 2) {
-        thumb.style.aspectRatio = `${entry.size[0]} / ${entry.size[1]}`;
-      }
       // 渲染目标 canvas 与页数角标平级：重渲染清空 canvas 不带走角标
       const canvas = document.createElement("div");
       canvas.className = "gallery-card-canvas";
@@ -260,10 +260,11 @@ export async function showGallery() {
       const tags = (entry.tags || [])
         .map((t) => `<span class="gallery-tag">${escapeHtml(t)}</span>`)
         .join("");
+      // 标题/描述/标签三个槽位恒在（无内容留空），卡片信息区高度一致、网格成行齐整
       info.innerHTML =
         `<div class="gallery-card-title">${escapeHtml(entry.title)}</div>` +
-        (entry.description ? `<div class="gallery-card-desc">${escapeHtml(entry.description)}</div>` : "") +
-        (tags ? `<div class="gallery-card-tags">${tags}</div>` : "");
+        `<div class="gallery-card-desc">${escapeHtml(entry.description || "")}</div>` +
+        `<div class="gallery-card-tags">${tags}</div>`;
       card.appendChild(thumb);
       card.appendChild(info);
       card.addEventListener("click", () => {
