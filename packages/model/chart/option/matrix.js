@@ -6,6 +6,7 @@
 import { resolveColor } from "../../theme.js";
 import { hierarchyColor, hexA } from "../colors.js";
 import { resolveDataLabels } from "../labels.js";
+import { fmtNum } from "./shared.js";
 import { AXIS_TEXT, chartStyleColors, echartsLabel } from "./shared.js";
 
 /** 父子表 → ECharts 树（node 带 itemStyle 层级色；levels 裁剪与 writer 同源）。 */
@@ -87,6 +88,7 @@ export function buildMatrix(ctx) {
 
   if (primary === "heatmap") {
     const s = series[0];
+    const labelCfg = resolveDataLabels(el, s, primary);
     const xCats = [...new Set((s._values.x || []).map((v) => String(v ?? "")))];
     const yCats = [...new Set((s._values.y || []).map((v) => String(v ?? "")))];
     const xi = new Map(xCats.map((c, i) => [c, i]));
@@ -100,7 +102,7 @@ export function buildMatrix(ctx) {
     const [lo, hi] = diverging ? [-m, m] : (Array.isArray(scaleCfg.domain) ? scaleCfg.domain : [Math.min(...vals, 0), Math.max(...vals, 1)]);
     const colorbar = s.colorbar !== false;
     const colorbarCfg = typeof s.colorbar === "object" ? s.colorbar : {};
-    const { legendColor, axisColor, gridColor } = chartStyleColors(theme);
+    const { legendColor, axisColor, gridColor, labelColor } = chartStyleColors(theme);
     return {
       ...common,
       legend: { show: false },
@@ -121,7 +123,19 @@ export function buildMatrix(ctx) {
       series: [{
         type: "heatmap",
         data,
-        label: echartsLabel(theme, el, s, { position: "inside" }),
+        // 热力图 p.value = [xi, yi, value]：标签必须取第 3 位（echartsLabel 的
+        // 散点口径取 p.value[1]，会把类目索引当数值渲染）
+        ...(labelCfg
+          ? {
+              label: {
+                show: true,
+                position: "inside",
+                fontSize: labelCfg.fontSize || 9,
+                color: labelCfg.color ? resolveColor(theme, labelCfg.color) || labelColor : labelColor,
+                formatter: (p) => (labelCfg.numberFormat ? fmtNum(p.value[2], labelCfg.numberFormat) : String(p.value[2])),
+              },
+            }
+          : {}),
         itemStyle: { borderColor: "#fff", borderWidth: 1 },
       }],
     };

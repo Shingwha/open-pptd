@@ -27,3 +27,4 @@ elements:
         encode: {x: 行, y: 列, value: 值}
         colorScheme: ["#E8F0FE", "#2563EB"]
         colorScale: {type: linear}
+        dataLabels: {show: true, fontSize: 10, color: "$text"}
