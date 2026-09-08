@@ -47,12 +47,14 @@ export function valRefXml(ch, sheetRange) {
   return el("c:val", {}, numRefXml(sheetRange(ch.col), ch.vals));
 }
 
+/** c:ser 公共前奏：idx/order + 系列名 tx（strRef；此前 9 个构造器各写一遍）。
+ * 注意 bar 传 s._index（I23 横向柱序修正的字节级结果），其余传发射序 idx。 */
+function serPreludeXml(name, idxVal, nameColIdx) {
+  return [el("c:idx", { val: idxVal }), el("c:order", { val: idxVal }), seriesNameXml(name, nameColIdx)];
+}
+
 export function barSerXml(theme, s, sheetRange, idx, labels, chs) {
-  const kids = [
-    el("c:idx", { val: s._index }),
-    el("c:order", { val: s._index }),
-    seriesNameXml(s.name, sheetRange.nameCol(s)),
-  ];
+  const kids = serPreludeXml(s.name, s._index, sheetRange.nameCol(s));
   // s.color = fill || 主题色循环默认（模型解析）；fillXml 统一字符串色 + 渐变
   if (s.color) {
     const spPr = [fillXml(theme, s.color)];
@@ -68,11 +70,7 @@ export function barSerXml(theme, s, sheetRange, idx, labels, chs) {
 }
 
 export function lineSerXml(theme, s, sheetRange, idx, labels, chs) {
-  const kids = [
-    el("c:idx", { val: idx }),
-    el("c:order", { val: idx }),
-    seriesNameXml(s.name, sheetRange.nameCol(s)),
-  ];
+  const kids = serPreludeXml(s.name, idx, sheetRange.nameCol(s));
   const spPr = [];
   if (s.lineColor) spPr.push(lnXml(theme, s.lineColor, s.width ?? 2, s.lineStyle));
   if (spPr.length) kids.push(el("c:spPr", {}, spPr.join("")));
@@ -86,11 +84,7 @@ export function lineSerXml(theme, s, sheetRange, idx, labels, chs) {
 }
 
 export function areaSerXml(theme, s, sheetRange, idx, labels, chs) {
-  const kids = [
-    el("c:idx", { val: idx }),
-    el("c:order", { val: idx }),
-    seriesNameXml(s.name, sheetRange.nameCol(s)),
-  ];
+  const kids = serPreludeXml(s.name, idx, sheetRange.nameCol(s));
   const spPr = [];
   const fill = s.areaColor || hexA(s.color, 0.22);
   if (s.areaColor && typeof s.areaColor === "object") spPr.push(buildFill(theme, s.areaColor));
@@ -105,11 +99,7 @@ export function areaSerXml(theme, s, sheetRange, idx, labels, chs) {
 }
 
 export function scatterSerXml(theme, s, sheetRange, idx, labels, chs) {
-  const kids = [
-    el("c:idx", { val: idx }),
-    el("c:order", { val: idx }),
-    seriesNameXml(s.name, sheetRange.nameCol(s)),
-  ];
+  const kids = serPreludeXml(s.name, idx, sheetRange.nameCol(s));
   // s.color = fill || 主题色循环默认（模型解析）——不配 fill 也要写 spPr，
   // 否则 PowerPoint 对 bubbleChart 等不自动区分系列色（06 页实测只有一种气泡）。
   // 散点语义 = 仅 marker 不连线：scatterStyle 虽为 lineMarker（OOXML 无纯散点值），
@@ -130,11 +120,7 @@ export function scatterSerXml(theme, s, sheetRange, idx, labels, chs) {
 }
 
 export function bubbleSerXml(theme, s, sheetRange, idx, labels, sizeVals = null) {
-  const kids = [
-    el("c:idx", { val: idx }),
-    el("c:order", { val: idx }),
-    seriesNameXml(s.name, sheetRange.nameCol(s)),
-  ];
+  const kids = serPreludeXml(s.name, idx, sheetRange.nameCol(s));
   // s.color = fill || 主题色循环默认（同 scatter）
   if (s.color) kids.push(el("c:spPr", {}, fillXml(theme, s.color)));
   if (labels) kids.push(dLblsXml(theme, labels));
@@ -162,9 +148,7 @@ export function candlestickSerXml(theme, s, sheetRange, serIdx, labels, colHeade
     const idx = serIdx + i;
     const displayName = colHeaders[s._cols[ch]] || s.name;
     const kids = [
-      el("c:idx", { val: idx }),
-      el("c:order", { val: idx }),
-      seriesNameXml(displayName, sheetRange.colHeader(s._cols[ch])),
+      ...serPreludeXml(displayName, idx, sheetRange.colHeader(s._cols[ch])),
       el("c:spPr", {}, el("a:ln", { w: "38100", cap: "rnd" }, el("a:noFill"), el("a:round"))),
       el("c:marker", {}, el("c:symbol", { val: "none" })),
     ];
@@ -219,9 +203,7 @@ export function pieSerXml(theme, s, sheetRange, idx, labels, palette) {
     ].join(""));
   }).join("");
   const kids = [
-    el("c:idx", { val: idx }),
-    el("c:order", { val: idx }),
-    seriesNameXml(s.name, sheetRange.nameCol(s)),
+    ...serPreludeXml(s.name, idx, sheetRange.nameCol(s)),
     el("c:spPr", {}, fillXml(theme, s.color)),
     pts,
   ];
@@ -234,11 +216,7 @@ export function pieSerXml(theme, s, sheetRange, idx, labels, palette) {
 }
 
 export function radarSerXml(theme, s, sheetRange, idx, labels, chs) {
-  const kids = [
-    el("c:idx", { val: idx }),
-    el("c:order", { val: idx }),
-    seriesNameXml(s.name, sheetRange.nameCol(s)),
-  ];
+  const kids = serPreludeXml(s.name, idx, sheetRange.nameCol(s));
   const spPr = [];
   if (s.areaColor || s.color) {
     if (s.areaColor && typeof s.areaColor === "object") spPr.push(buildFill(theme, s.areaColor));

@@ -12,7 +12,7 @@
 // ============================================================================
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "../xml.js";
-import { resolveDataLabels, hierarchyColor, parseHexColor, parseHierarchy, resolveTreeLevels, resolveTitleLike, CHART_DEFAULTS } from "../../model/chart.js";
+import { resolveDataLabels, hierarchyColor, parseHexColor, parseHierarchy, resolveTreeLevels, resolveTitleLike, colLetter, CHART_DEFAULTS } from "../../model/chart.js";
 import { resolveColor, resolveFont, DEFAULT_FONT } from "../../model/theme.js";
 import { buildChartXlsx } from "./xlsx.js";
 import { chartSpaceSpPrXml, richCharStyleXml } from "./style.js";
@@ -249,8 +249,8 @@ export function buildChartExParts(spec, chartIndex) {
       levelCols.push(leafRows.map((x) => x.rev[L] ?? ""));
     }
     const sizes = leafRows.map((x) => Number(x.value ?? 0));
-    const colLetters = depth === 1 ? ["A"] : ["A", "B", "C", "D", "E", "F", "G", "H"].slice(0, depth);
-    sizeLetter = String.fromCharCode(65 + depth); // 层级列后一列（A=65；depth 3 → D）
+    const colLetters = Array.from({ length: depth }, (_, i) => colLetter(i));
+    sizeLetter = colLetter(depth); // 层级列后一列
     dims = {
       main:
         cxStrDimXml("A", colLetters[depth - 1], levelCols, rowCount) +

@@ -80,7 +80,8 @@ export function buildMatrix(ctx) {
       ...common,
       legend: { show: false },
       tooltip: { trigger: "item", formatter: (p) => `${xCats[p.value[0]]} / ${yCats[p.value[1]]}: ${p.value[2]}` },
-      grid: { left: 48, right: colorbar ? 40 : 24, top: 16, bottom: 36 },
+      // 网格 = 布局模型投影（色标条右带让位；此前此处写死 {48,40,16,36} 绕过模型）
+      grid: layout.grid,
       xAxis: { type: "category", data: xCats, axisLine: { lineStyle: { color: axisColor } }, axisLabel: AXIS_TEXT, splitArea: { show: true, areaStyle: { color: ["#fff"] } } },
       yAxis: { type: "category", data: yCats, axisLine: { lineStyle: { color: axisColor } }, axisLabel: AXIS_TEXT, splitArea: { show: true, areaStyle: { color: ["#fff"] } } },
       visualMap: {

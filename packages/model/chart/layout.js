@@ -58,15 +58,22 @@ export function resolvePlotLayout(el, series, chrome = null) {
   // treemap/sunburst 无轴无图例（默认关），PPT 端铺满标题/图例带以下的全部空间
   //（I26：此前 ECharts treemap 默认 80% 宽高居中，预览四周留白而 PPT 铺满）
   const treeLike = primary === "treemap" || primary === "sunburst";
+  // heatmap：色标条占右带（colorbar 40 / 无 24），历史校准值自成一格（此前该
+  // 网格写死在 option/matrix.js 绕过布局模型）
+  const heatmapGrid = primary === "heatmap"
+    ? { left: 48, right: series[0]?.colorbar !== false ? 40 : 24, top: 16, bottom: 36 }
+    : null;
   const grid = treeLike
     ? {
         left: 2, right: 2,
         top: titleText ? CHART_GRID.top + 24 : 4,
         bottom: legendOn && legendPos === "bottom" ? 40 : 4,
       }
-    : polar
-      ? { ...CHART_GRID, left: 24, top: CHART_GRID.top + (titleText ? 24 : 0) }
-      : { ...CHART_GRID, top: CHART_GRID.top + (titleText ? 24 : 0), bottom: CHART_GRID.bottom + (xTitle ? 18 : 0) };
+    : heatmapGrid
+      ? heatmapGrid
+      : polar
+        ? { ...CHART_GRID, left: 24, top: CHART_GRID.top + (titleText ? 24 : 0) }
+        : { ...CHART_GRID, top: CHART_GRID.top + (titleText ? 24 : 0), bottom: CHART_GRID.bottom + (xTitle ? 18 : 0) };
 
   const bw = Math.max(1, W - grid.left - grid.right);
   const bh = Math.max(1, H - grid.top - grid.bottom);
