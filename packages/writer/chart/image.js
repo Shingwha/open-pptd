@@ -5,10 +5,11 @@
 // 处理」口径，导出时用与预览同源的 model option（chart/option/）SSR 出 SVG，
 // 以 a:blip(PNG 占位) + svgBlip(真实矢量) 图片部件嵌入（PowerPoint 2016+/WPS
 // 新版/LibreOffice 显示矢量，旧版显示占位图；数据不可在 PPT 内再编辑）。
-// 零新增依赖：复用 renderer/vendor/echarts.mjs（dep-graph 受控豁免，仅 vendor）。
+// 零新增依赖：复用 packages/vendor/echarts.mjs（renderer 与 writer 的中立共享
+// vendor 区；构建为无 DOM 依赖的纯 ESM）。
 // ============================================================================
 
-import * as echarts from "../../renderer/vendor/echarts.mjs";
+import * as echarts from "../../vendor/echarts.mjs";
 import { buildChartOption } from "../../model/chart/option/index.js";
 import { resolveColor } from "../../model/theme.js";
 import { encodeUtf8 } from "../../model/bytes.js";

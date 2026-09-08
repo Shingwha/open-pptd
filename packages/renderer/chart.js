@@ -6,7 +6,7 @@
 // spPr）、ECharts 实例生命周期。
 // ============================================================================
 
-import * as echarts from "./vendor/echarts.mjs";
+import * as echarts from "../vendor/echarts.mjs";
 import { resolveChartSpec } from "../model/chart/spec.js";
 import { buildOptionFromSpec } from "../model/chart/option/index.js";
 import { normalizeFill, dashSpec } from "../model/style-spec.js";
