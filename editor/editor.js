@@ -7,11 +7,11 @@
 //     → { ready, destroy, api, io, state, view }
 //
 // rootEl is the mount point: dom refs prefer its subtree, falling back to document
-// for unmatched ids (the static skeleton is still in index.html; an embedded caller
-// may pass an empty container). destroy() is idempotent: it removes DOM created or
-// taken over by this instance, unbinds all window/document listeners, closes push
-// channels, releases chart instances, clears the dom cache and restores the theme
-// and default dialogs.
+// for unmatched elements (the static skeleton is still in index.html; an embedded
+// caller may pass an empty container) — that fallback policy lives only in dom.js.
+// destroy() is idempotent: it removes DOM created or taken over by this instance,
+// unbinds all window/document listeners, closes push channels, releases chart
+// instances, clears the dom cache and restores the theme and default dialogs.
 //
 // Zero external behavior change: standalone main.js still opens with ?deck=,
 // screenshots with ?shot=1, and main.js keeps exposing window.__pptdEditor/__pptdIo.

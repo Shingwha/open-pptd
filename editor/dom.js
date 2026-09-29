@@ -1,8 +1,9 @@
 // ============================================================================
-// dom.js — static skeleton element registry (the single entry for the page skeleton)
+// dom.js — static skeleton element registry (the single entry for editor/index.html)
 // ----------------------------------------------------------------------------
-// Modules never call document.getElementById/querySelector for skeleton elements;
-// they read dom.<name> (or, for regions that carry no id, dom.query(selector)).
+// Editor modules never call document.getElementById/querySelector for
+// editor/index.html skeleton elements; they read dom.<name> (or, for regions that
+// carry no id of their own, dom.query(selector)).
 // Lookups are lazy (first access) and cached: the skeleton is authored once by
 // editor/index.html and never replaced, so caching is safe. The authoritative id
 // contract is editor/index.html; register new skeleton elements here.
@@ -17,7 +18,7 @@
 // it inside the mount point would change three observable things at once — the
 // .icon-slot[data-icon] set that injectIcons() replaces within createEditor's
 // scope, the contract-3 theme injection host chosen by createEditor, and the
-// element destroy() clears. See the S3 report for the measurement.
+// element destroy() clears.
 //
 // createDom(rootEl) factory: an embedded host that owns its skeleton inside its
 // container gets its own instance; the default `dom` singleton is rebound by
