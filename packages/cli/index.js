@@ -1,12 +1,14 @@
 // ============================================================================
-// cli/index.js — packages/cli 包级 barrel（契约 4 入口 open-pptd/cli）
+// cli/index.js — packages/cli package barrel (contract entry open-pptd/cli)
 // ----------------------------------------------------------------------------
-// 把 cli/bin.js 的编排暴露为可编程 API（bin.js 仍是唯一 CLI 入口，本文件只再
-// 导出底层实现，不复制任何逻辑）。Node 专用：允许 node:* / fs。
+// Exposes the cli/bin.js orchestration as a programmatic API (bin.js is still the
+// only CLI entry; this file only re-exports the underlying implementations and
+// duplicates no logic). Node-only: node:* / fs allowed.
 //
-// 与 bin.js 的一处差异：bin.js 内部持有 EXAMPLES_DIR（<pkg>/examples）并传给
-// runGallery；可编程调用方通常不关心包内示例目录，故此处用薄包装给
-// runGallery 补一个默认 examplesDir（不改变传参语义，仍可显式覆盖）。
+// One difference from bin.js: bin.js holds EXAMPLES_DIR (<pkg>/examples) and passes
+// it to runGallery; programmatic callers usually don't care about the in-package
+// examples dir, so this file wraps runGallery with a default examplesDir (argument
+// semantics unchanged, still overridable).
 // ============================================================================
 
 import { join, dirname } from "node:path";
@@ -24,7 +26,7 @@ export { runEnsure, collectRequirements, checkResources, ensureResources } from 
 
 const EXAMPLES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "examples");
 
-/** gallery scan|list；examplesDir 缺省为包内 examples/（bin.js 的取值）。 */
+/** gallery scan|list; examplesDir defaults to the in-package examples/ (bin.js's value). */
 export function runGallery(args, examplesDir = EXAMPLES_DIR) {
   return runGalleryImpl(args, examplesDir);
 }

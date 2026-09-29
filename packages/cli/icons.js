@@ -1,11 +1,13 @@
 // ============================================================================
-// cli/icons.js — Font Awesome 图标库下载与状态
+// cli/icons.js — Font Awesome icon library download and status
 // ----------------------------------------------------------------------------
-// 注册表读**包内** `assets/icons/registry.json`；SVG 字节读 home
-// （`~/.open-pptd/assets/icons`）优先、包内回退；下载只写 home、原子落盘。
-//   icons list                 按风格统计（registry 总数 vs 本地已有）
-//   icons download [--force]   全量下载三风格 SVG（兼容别名，内部走下载器 / assets sync）
-// SVG 本体不入库不入包；未下载时浏览器/CLI 导出走 CDN 兜底（icon-fa.js 回源链）。
+// The registry is read from the **in-package** `assets/icons/registry.json`; SVG bytes
+// are read from home (`~/.open-pptd/assets/icons`) first, with an in-package fallback;
+// downloads write home only, atomically.
+//   icons list                 per-style counts (registry total vs local present)
+//   icons download [--force]   fetch all three styles as SVG (compatibility alias, backed by the downloader / assets sync)
+// SVGs are neither committed to the repo nor shipped in the package; when not downloaded
+// the browser/CLI export falls back to the CDN (icon-fa.js origin chain).
 // ============================================================================
 
 import { readIconRegistry, iconReadyInfo, ICON_STYLES } from "./resource-status.js";

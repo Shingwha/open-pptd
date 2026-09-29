@@ -1,13 +1,13 @@
 // ============================================================================
-// cli/render.js — render 命令（无头渲染为 PNG）
+// cli/render.js — render command (headless render to PNG)
 // ----------------------------------------------------------------------------
-// 装配：Node 版本检查 + 注入 packages/server 的 startServer → headless 截图。
+// Assembly: Node version check + injecting packages/server startServer → headless screenshot.
 // ============================================================================
 
 import { startServer } from "../server/index.js";
 import { renderDeck } from "../renderer/headless/shoot.js";
 
-/** render 子命令入口。 */
+/** render subcommand entry. */
 export async function runRender({ manifest, outPath, page, scale, browserPath, timeoutMs }) {
   const major = Number(process.versions.node.split(".")[0]);
   if (major < 18) {

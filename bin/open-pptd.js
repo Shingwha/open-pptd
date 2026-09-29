@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // ============================================================================
-// bin/open-pptd.js — CLI 入口（薄壳，转发 packages/cli/bin.js）
+// bin/open-pptd.js — CLI entry (thin shell, forwards to packages/cli/bin.js)
 // ============================================================================
 
 import "../packages/cli/bin.js";

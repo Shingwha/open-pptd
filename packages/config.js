@@ -1,31 +1,33 @@
 // ============================================================================
-// packages/config.js — 用户级配置（契约 5）
+// packages/config.js — user-level config (contract 5)
 // ----------------------------------------------------------------------------
-//   config.json 位于 `paths.home`，带 `version` 字段（允许用户手改）。
-//   readConfig()  默认值合并 + 逐版本迁移（version 缺失补 1）
-//   writeConfig() 浅合并写回，**保留未知键**，原子写（tmp → rename）
+//   config.json lives in `paths.home`, with a `version` field (users may edit it).
+//   readConfig()  default merge + per-version migration (missing version → 1)
+//   writeConfig() shallow merge write-back, **keeping unknown keys**, atomic (tmp → rename)
 //
-// 读三级/写一级同样适用于配置：配置只读/写 home 一处，包内不含用户配置。
+// The read-three/write-one rule applies to config too: config is read/written in home
+// only; the package never contains user config.
 // ============================================================================
 
 import { readFileSync, mkdirSync, writeFileSync, renameSync, rmSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { paths } from "./paths.js";
 
-/** 当前配置 schema 版本（缺失时补齐为此值）。 */
+/** Current config schema version (filled in with this value when missing). */
 export const CONFIG_VERSION = 1;
 
-/** 默认配置（新键在此登记；下游按需读取，未知键原样保留）。 */
+/** Default config (register new keys here; downstream reads on demand, unknown keys are preserved). */
 export const DEFAULT_CONFIG = Object.freeze({
   version: CONFIG_VERSION,
-  // 导出前置体检是否默认自动补齐缺失字体（默认 false：导出默认只体检，
-  // 避免 CI/agent 环境意外触发数十 MB 下载；`open-pptd ensure` 默认补齐）。
+  // Whether the export preflight auto-fetches missing fonts by default (default false: export
+  // only checks, so CI/agent envs don't trigger tens of MB of downloads; `open-pptd ensure`
+  // fetches by default).
   autoFetch: false,
 });
 
 /**
- * 读取配置：文件缺失/损坏 → 默认值；逐版本迁移（缺 version 补 1）。
- * @returns {object} 合并后的配置（含未知键）
+ * Read config: missing/corrupt file → defaults; per-version migration (missing version → 1).
+ * @returns {object} merged config (including unknown keys)
  */
 export function readConfig() {
   let raw = {};
@@ -33,7 +35,7 @@ export function readConfig() {
     const parsed = JSON.parse(readFileSync(paths.config, "utf8"));
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) raw = parsed;
   } catch {
-    raw = {}; // 文件缺失或 JSON 损坏 → 默认值（不抛错，doctor/导出链路不应因配置受损而中断）
+    raw = {}; // missing file or corrupt JSON → defaults (no throw; the doctor/export chain must not break on a damaged config)
   }
   const cfg = { ...DEFAULT_CONFIG, ...raw };
   if (typeof cfg.version !== "number") cfg.version = CONFIG_VERSION;
@@ -41,9 +43,9 @@ export function readConfig() {
 }
 
 /**
- * 浅合并写回（保留未知键），原子落盘。
+ * Shallow merge write-back (keeping unknown keys), atomic.
  * @param {object} patch
- * @returns {object} 写回后的完整配置
+ * @returns {object} the full config after write-back
  */
 export function writeConfig(patch = {}) {
   const next = { ...readConfig(), ...patch };
@@ -54,7 +56,7 @@ export function writeConfig(patch = {}) {
     writeFileSync(tmp, JSON.stringify(next, null, 2) + "\n", "utf8");
     renameSync(tmp, dest);
   } catch (err) {
-    try { if (existsSync(tmp)) rmSync(tmp, { force: true }); } catch { /* 清理失败不掩盖原错误 */ }
+    try { if (existsSync(tmp)) rmSync(tmp, { force: true }); } catch { /* a cleanup failure must not mask the original error */ }
     throw err;
   }
   return next;

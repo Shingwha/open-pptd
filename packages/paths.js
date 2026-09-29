@@ -1,15 +1,17 @@
 // ============================================================================
-// packages/paths.js — 资源与配置路径解析（契约 5，见 docs/embedding.md §5）
+// packages/paths.js — resource and config path resolution (contract 5, see docs/embedding.md §5)
 // ----------------------------------------------------------------------------
-// 规则（本文件独占，下游只消费、不自己拼目录名）：
-//   · 读三级：$OPEN_PPTD_HOME → ~/.open-pptd → <包根>/assets（首个命中即用）
-//   · 写一级：永远写 home（npm/pnpm 安装目录可能只读，包内资源永久只读）
-//   · registry.json 与代码版本耦合 → resourceRoots.registry 只有一根（包根），
-//     home 永不遮蔽它
+// Rules (owned by this file; downstream only consumes, never builds dir names itself):
+//   · read three levels: $OPEN_PPTD_HOME → ~/.open-pptd → <package root>/assets (first hit wins)
+//   · write one level: always write home (npm/pnpm install dirs may be read-only;
+//     in-package resources are permanently read-only)
+//   · registry.json is version-coupled with the code → resourceRoots.registry has a single
+//     root (the package root); home never shadows it
 //
-// 本模块 Node 专用（CLI / 本地 serve / 下游 Host 半边消费），不进浏览器链路；
-// 浏览器端仍按「站点根相对」请求 assets/**，由 server/static.js 的多根解析落地，
-// 因此 font-registry.js / icon-fa.js 的浏览器分支保持零改动。
+// Node-only module (consumed by CLI / local serve / the downstream Host half), never in the
+// browser path; the browser still requests assets/** site-root-relative, resolved by
+// server/static.js multi-root logic, so the browser branches of font-registry.js / icon-fa.js
+// stay untouched.
 // ============================================================================
 
 import { existsSync, mkdirSync, writeFileSync, renameSync, rmSync, statSync, readdirSync } from "node:fs";
@@ -19,12 +21,12 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-/** 包根（含 contract.json / package.json / assets 的目录）。 */
+/** Package root (the dir holding contract.json / package.json / assets). */
 export const PACKAGE_ROOT = resolve(__dirname, "..");
 
 /**
- * 资源根目录：`$OPEN_PPTD_HOME` 优先（原样使用，Node 不展开 `~`），
- * 否则 `os.homedir()/.open-pptd`。
+ * Resource home: `$OPEN_PPTD_HOME` first (used verbatim; Node does not expand `~`),
+ * otherwise `os.homedir()/.open-pptd`.
  * @returns {string}
  */
 export function openPptdHome() {
@@ -33,7 +35,7 @@ export function openPptdHome() {
   return join(os.homedir(), ".open-pptd");
 }
 
-/** home 与各资源目录（模块加载时求值一次，反映当时的 OPEN_PPTD_HOME）。 */
+/** home and the resource dirs (evaluated once at module load, reflecting OPEN_PPTD_HOME at that time). */
 export const paths = Object.freeze({
   home: openPptdHome(),
   assets: join(openPptdHome(), "assets"),
@@ -48,9 +50,9 @@ export const paths = Object.freeze({
 });
 
 /**
- * 读侧解析链（顺序即优先级，首个命中即用）：
- *   fonts / icons：home 优先 → 包内只读回退（现有安装零迁移）
- *   registry     ：**【只有一根】** 包根（版本耦合，home 永不遮蔽）
+ * Read-side resolution chain (order is priority, first hit wins):
+ *   fonts / icons: home first → in-package read-only fallback (zero migration for existing installs)
+ *   registry     : **single root only** — the package root (version-coupled; home never shadows)
  */
 export const resourceRoots = Object.freeze({
   fonts: Object.freeze([paths.fonts, join(PACKAGE_ROOT, "assets", "fonts")]),
@@ -59,9 +61,9 @@ export const resourceRoots = Object.freeze({
 });
 
 /**
- * 幂等创建 home 目录树（assets/{fonts,icons}、cli、state、cache、tmp）。
- * EACCES/EPERM 抛出明确错误（调用方决定只读降级）。
- * @returns {string} home 路径
+ * Idempotently create the home dir tree (assets/{fonts,icons}, cli, state, cache, tmp).
+ * EACCES/EPERM throw a clear error (the caller decides the read-only degrade).
+ * @returns {string} home path
  */
 export function ensureHome() {
   const dirs = [paths.home, paths.assets, paths.fonts, paths.icons, paths.cli, paths.state, paths.cache, paths.tmp];
@@ -77,10 +79,10 @@ export function ensureHome() {
 }
 
 /**
- * 在候选根中按序找首个命中文件（读三级）。
+ * Find the first hit file across candidate roots, in order (three-level read).
  * @param {"fonts"|"icons"|"registry"} kind
- * @param {string} [rel] 根内相对路径（如 "SmileySans-Oblique.ttf" / "assets/fonts/registry.json"）
- * @returns {string|null} 绝对路径
+ * @param {string} [rel] path relative to a root (e.g. "SmileySans-Oblique.ttf" / "assets/fonts/registry.json")
+ * @returns {string|null} absolute path
  */
 export function resolveResourceFile(kind, rel = "") {
   const roots = resourceRoots[kind] || [];
@@ -92,9 +94,10 @@ export function resolveResourceFile(kind, rel = "") {
 }
 
 /**
- * 原子落盘：先写 `tmp/<random>.part`，完成后同盘 `rename()` 到目标。
- * 并发下载同一文件不会留下半截目标文件（读侧永远看到完整字节或旧字节）。
- * @param {string} destPath 目标绝对路径
+ * Atomic write: write `tmp/<random>.part` first, then same-volume `rename()` to the target.
+ * Concurrent downloads of the same file never leave a half-written target (the reader
+ * always sees complete or old bytes).
+ * @param {string} destPath absolute target path
  * @param {Buffer|Uint8Array|string} bytes
  * @returns {string} destPath
  */
@@ -114,13 +117,13 @@ export function atomicWriteFile(destPath, bytes) {
       return destPath;
     } catch (err) {
       lastErr = err;
-      try { rmSync(part, { force: true }); } catch { /* 清理失败不阻塞重试 */ }
+      try { rmSync(part, { force: true }); } catch { /* a cleanup failure does not block the retry */ }
     }
   }
   throw lastErr;
 }
 
-/** 清理 tmp/ 下的残留 .part（崩溃后遗症）；返回删除个数。 */
+/** Clean leftover .part files in tmp/ (crash residue); returns the count removed. */
 export function cleanTempParts() {
   let n = 0;
   try {
@@ -131,12 +134,12 @@ export function cleanTempParts() {
         }
       }
     }
-  } catch { /* tmp 不可读则跳过 */ }
+  } catch { /* tmp unreadable → skip */ }
   return n;
 }
 
 /**
- * CLI 运行时根定位（下游复用同一套引擎定位逻辑，不查 PATH）：
+ * CLI runtime root lookup (downstream reuses the same engine-locating logic; PATH is not searched):
  *   `OPEN_PPTD_CLI` → `~/.open-pptd/cli/current` → null
  */
 export function resolveCliRoot() {
@@ -146,12 +149,12 @@ export function resolveCliRoot() {
   return null;
 }
 
-/** 含 contract.json 的包根（与 PACKAGE_ROOT 同义；契约面命名）。 */
+/** Package root containing contract.json (synonym of PACKAGE_ROOT; contract-surface name). */
 export function contractRoot() {
   return PACKAGE_ROOT;
 }
 
-/** 目录体积（字节，忽略不可读项）；用于 doctor / assets list 的“体积”事实。 */
+/** Directory size in bytes (skipping unreadable entries); used for the doctor / assets list size facts. */
 export function dirSize(dir) {
   let total = 0;
   try {
@@ -160,9 +163,9 @@ export function dirSize(dir) {
       const p = join(dir, e.name);
       if (e.isDirectory()) total += dirSize(p);
       else {
-        try { total += statSync(p).size; } catch { /* 忽略 */ }
+        try { total += statSync(p).size; } catch { /* ignore */ }
       }
     }
-  } catch { /* 忽略 */ }
+  } catch { /* ignore */ }
   return total;
 }

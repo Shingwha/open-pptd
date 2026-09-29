@@ -1,7 +1,8 @@
 // ============================================================================
-// cli/bin.js — CLI 装配根（参数解析与命令分发，薄壳）
+// cli/bin.js — CLI assembly root (argument parsing and command dispatch, thin shell)
 // ----------------------------------------------------------------------------
-// 命令面（稳定面见 integration-plan 附录 D.9；新增子命令是兼容变更）：
+// Command surface (stable surface in integration-plan appendix D.9; adding a
+// subcommand is a compatible change):
 //   serve [--port <n>] [--project <dir>] [--detach] [--json] [--stop] [--open]
 //   export <deck.pptd> [--out <pptx>] [--theme <key>] [--no-embed-fonts] [--full-fonts]
 //                      [--offline] [--strict] [--json] [--fetch]
@@ -13,11 +14,11 @@
 //   assets list | sync [icons|fonts|all] [--from <zip>] | clean
 //   paths [--json]
 //   doctor [--json]
-//   fonts list|download|check    （兼容别名）
-//   icons list|download          （兼容别名）
-// 业务实现：export.js / render.js / gallery.js / fonts.js / icons.js /
-//           doctor.js / paths(doctor.js) / assets.js / ensure.js（本文件只做分发）。
-// serve --json：stdout 只输出一行 JSON（{url,port,pid}），人类文案全部走 stderr。
+//   fonts list|download|check    (compatibility aliases)
+//   icons list|download          (compatibility aliases)
+// Business logic: export.js / render.js / gallery.js / fonts.js / icons.js /
+//                 doctor.js / paths(doctor.js) / assets.js / ensure.js (this file only dispatches).
+// serve --json: stdout carries a single JSON line ({url,port,pid}); all human text goes to stderr.
 // ============================================================================
 
 import { existsSync, readFileSync, mkdirSync, rmSync, writeFileSync, renameSync } from "node:fs";
@@ -85,20 +86,20 @@ function usage() {
   );
 }
 
-/** 取选项值：--key <value>，缺省返回 fallback。 */
+/** Option value: --key <value>, returns fallback when absent. */
 function opt(args, key, fallback = null) {
   const idx = args.indexOf(key);
   return idx >= 0 ? args[idx + 1] : fallback;
 }
 
-/** 取输出路径：-o 或 --out。 */
+/** Output path: -o or --out. */
 function outArg(args) {
   const idx = args.indexOf("-o") >= 0 ? args.indexOf("-o") : args.indexOf("--out");
   return idx >= 0 ? args[idx + 1] : null;
 }
 
 // ---------------------------------------------------------------------------
-// serve：状态文件（~/.open-pptd/state/serve.json）与停止/后台派生的握手
+// serve: state file (~/.open-pptd/state/serve.json) and the stop/detach handshake
 // ---------------------------------------------------------------------------
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -109,7 +110,7 @@ function writeServeState(stateFile, state) {
   renameSync(tmp, stateFile);
 }
 
-/** 读取状态文件（未就绪/损坏返回 null）。 */
+/** Read the state file (null when not ready/corrupt). */
 function readServeState(stateFile) {
   try {
     const s = JSON.parse(readFileSync(stateFile, "utf8"));
@@ -119,7 +120,7 @@ function readServeState(stateFile) {
   }
 }
 
-/** 探活：确认该端口确为 open-pptd serve（/api/ping → {ok:true,mode:"local"}）。 */
+/** Liveness: confirm the port is really open-pptd serve (/api/ping → {ok:true,mode:"local"}). */
 function pingOpenPptd(port) {
   return new Promise((done) => {
     const req = http.get({ host: "127.0.0.1", port, path: "/api/ping", timeout: 1500 }, (res) => {
@@ -143,11 +144,11 @@ function openBrowser(url) {
     const child = spawn(cmd, argv, { detached: true, stdio: "ignore", windowsHide: true });
     child.unref();
   } catch {
-    /* 唤起浏览器失败不影响 serve */
+    /* a browser launch failure does not affect serve */
   }
 }
 
-/** serve --stop：读状态 → 校验 pid 存活且确为本程序 → 终止并清理。 */
+/** serve --stop: read state → verify the pid is alive and really ours → terminate and clean up. */
 async function serveStop(stateFile, json) {
   const human = (m) => (json ? console.error(m) : console.log(m));
   if (!existsSync(stateFile)) {
@@ -201,7 +202,7 @@ async function serveStop(stateFile, json) {
   human(`✓ 已停止 serve（pid ${st.pid} · port ${st.port}）`);
 }
 
-/** serve --detach：派生 detached 子进程，等它把状态写进 state/serve.json 后返回。 */
+/** serve --detach: spawn a detached child and return once it writes state to state/serve.json. */
 async function serveDetach({ port, projectRoot, json, open }) {
   const binPath = join(PKG_ROOT, "bin", "open-pptd.js");
   const childArgs = [binPath, "serve", "--port", String(port)];
@@ -290,7 +291,7 @@ async function runServe(args) {
 }
 
 // ---------------------------------------------------------------------------
-// export / export-project：默认前置资源体检（软降级，不阻塞导出）
+// export / export-project: preflight resource check by default (soft-degrade, never blocks export)
 // ---------------------------------------------------------------------------
 async function runExportLike(args, { projectMode }) {
   const manifest = args[1];
@@ -301,7 +302,8 @@ async function runExportLike(args, { projectMode }) {
   const json = args.includes("--json");
   const offline = args.includes("--offline");
   const strict = args.includes("--strict");
-  // 默认只体检（避免 CI/agent 意外触发数十 MB 下载）；--fetch / config.autoFetch 才补齐
+  // Check only by default (avoids accidentally triggering tens of MB of downloads in CI/agent);
+  // only --fetch / config.autoFetch fetch.
   const fetchToo = !offline && (args.includes("--fetch") || args.includes("--auto-fetch") || readConfig().autoFetch === true);
   const warn = (m) => console.error(m);
 

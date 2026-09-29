@@ -1,12 +1,13 @@
 // ============================================================================
-// cli/doctor.js — doctor / paths 子命令（L1.6，命令面见附录 D.9）
+// cli/doctor.js — doctor / paths subcommands (L1.6, command surface in appendix D.9)
 // ----------------------------------------------------------------------------
-//   doctor [--json]  一次输出五项事实：cli / node / home(含可写性) / assets / path
-//   paths  [--json]  输出 home 与各资源目录（contract.json 的运行时对应物）
+//   doctor [--json]  prints five facts at once: cli / node / home (with writability) / assets / path
+//   paths  [--json]  prints home and each resource dir (runtime counterpart of contract.json)
 //
-// doctor 一个命令服务三方：模型自检、安装脚本收尾验证、用户排障；能判别三种高频
-// 失败态——缺 CLI、装了但 PATH 没配、有 CLI 但资源没下。
-// --json：stdout 只输出一行 JSON（人类文案走 stderr）。
+// doctor serves three parties with one command: model self-check, install-script final
+// verification, user troubleshooting; it can distinguish three high-frequency failure
+// modes — CLI missing, installed but PATH not set, CLI present but resources not downloaded.
+// --json: stdout is a single JSON line (human text goes to stderr).
 // ============================================================================
 
 import { existsSync, writeFileSync, rmSync, accessSync, constants } from "node:fs";
@@ -15,7 +16,7 @@ import { paths, resourceRoots, resolveCliRoot, contractRoot } from "../paths.js"
 import { readFontRegistry, readIconRegistry, fontReadyInfo, iconReadyInfo, packageVersion } from "./resource-status.js";
 import { readConfig } from "../config.js";
 
-/** 最近已存在的祖先目录（探针写这里，避免为测可写性而新建 home）。 */
+/** Nearest existing ancestor (write the probe there, so testing writability never creates home). */
 function nearestExisting(dir) {
   let d = dir;
   for (;;) {
@@ -26,7 +27,7 @@ function nearestExisting(dir) {
   }
 }
 
-/** 目录（或其最近祖先）是否可写：先权限位，再真实探针写入后清理。 */
+/** Is the dir (or its nearest ancestor) writable: permission bits first, then a real probe write cleaned up after. */
 function isWritable(dir) {
   const base = nearestExisting(dir);
   if (!base) return false;
@@ -45,7 +46,7 @@ function isWritable(dir) {
   }
 }
 
-/** PATH 是否包含某目录（Windows 大小写不敏感 / 分隔符归一）。 */
+/** Does PATH contain a dir (Windows case-insensitive, separators normalized). */
 function onPath(dir) {
   const norm = (s) => String(s).replace(/[\\/]+/g, "/").replace(/\/+$/, "").toLowerCase();
   const target = norm(dir);
@@ -54,7 +55,7 @@ function onPath(dir) {
     .some((e) => e && norm(e) === target);
 }
 
-/** 采集五项事实（doctor --json 契约）。 */
+/** Collect the five facts (doctor --json contract). */
 export function collectDoctorFacts() {
   const fontReg = readFontRegistry();
   const iconReg = readIconRegistry();
@@ -70,7 +71,7 @@ export function collectDoctorFacts() {
   };
 }
 
-/** doctor 子命令入口。 */
+/** doctor subcommand entry. */
 export function runDoctor(args) {
   const json = args.includes("--json");
   const log = json ? console.error : console.log;
@@ -95,7 +96,7 @@ export function runDoctor(args) {
   }
 }
 
-/** paths 子命令入口。 */
+/** paths subcommand entry. */
 export function runPaths(args) {
   const json = args.includes("--json");
   const cfg = readConfig();
