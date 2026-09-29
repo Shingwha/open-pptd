@@ -1,11 +1,12 @@
 // ============================================================================
-// components/panel.js — Panel 原语（侧栏 / 面板容器）
+// components/panel.js — Panel primitive (sidebar / panel container)
 // ----------------------------------------------------------------------------
-// 侧栏（aside.inspector）与浮层面板的容器外壳。U1 只提供构造与内容装配；
-// U2 的信息架构（分区折叠 / 按类型过滤）在此之上展开。
+// The container shell for the sidebar (aside.inspector) and floating panels. Just
+// construction and content assembly here; the information architecture (section
+// collapsing / per-type filtering) builds on top of it.
 // ============================================================================
 
-/** 侧栏面板容器（.inspector 结构：头部 + 内容区）。 */
+/** Sidebar panel container (.inspector structure: head + content area). */
 export function panel({ className = "inspector", head = null, id = "" } = {}) {
   const aside = document.createElement("aside");
   aside.className = className;
@@ -33,7 +34,7 @@ export function panel({ className = "inspector", head = null, id = "" } = {}) {
   return aside;
 }
 
-/** 通用浮层容器（.file-menu / .theme-panel 同款外壳）。 */
+/** Generic floating panel container (same shell as .file-menu / .theme-panel). */
 export function floatingPanel(className, content = null) {
   const el = document.createElement("div");
   el.className = className;

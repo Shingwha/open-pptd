@@ -1,8 +1,8 @@
 // ============================================================================
-// components/index.js — 组件原语层 barrel
+// components/index.js — component primitive layer barrel
 // ----------------------------------------------------------------------------
-// 原生 DOM 原语函数（不引 React、不引打包器），样式集中在
-// editor/styles/primitives.css。U1 建立原语层与统一入口；各调用点按 U2 逐步迁移。
+// Native DOM primitive functions (no React, no bundler); styles are centralized in
+// editor/styles/primitives.css. Call sites migrate over time.
 // ============================================================================
 
 export { button, iconButton, buttonRow, btnClass } from "./button.js";

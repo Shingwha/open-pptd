@@ -1,8 +1,9 @@
 // ============================================================================
-// components/dialog.js — Dialog 原语（沿用 interaction/dialogs/base.js 骨架）
+// components/dialog.js — Dialog primitive (reuses the interaction/dialogs/base.js skeleton)
 // ----------------------------------------------------------------------------
-// 骨架保持：遮罩 + 面板 + 头部 + 内容 + 底部按钮，关闭策略（✕ / 遮罩点击）可配。
-// 本模块是原语层门面（集中入口），逻辑仍是 base.js 的一份实现。
+// The skeleton is kept: mask + panel + header + content + footer buttons, with a
+// configurable close policy (✕ / overlay click). This module is the primitive-layer
+// facade (a central entry); the logic remains the one implementation in base.js.
 // ============================================================================
 
 export { showDialog, closeAllDialogs } from "../interaction/dialogs/base.js";

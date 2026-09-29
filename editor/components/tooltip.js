@@ -1,9 +1,10 @@
 // ============================================================================
-// components/tooltip.js — Tooltip 原语（400ms 延迟）
+// components/tooltip.js — Tooltip primitive (400ms delay)
 // ----------------------------------------------------------------------------
-// 取代原生 title=（无延迟控制、样式不可控）。挂到任意元素上：
-//   attachTooltip(el, "文字")  → 悬停 400ms 后显示；离开/按下即隐藏
-// 只用一个共享浮层节点，避免每个元素建 DOM。
+// Replaces the native title= (no delay control, uncontrollable styling). Attach to
+// any element:
+//   attachTooltip(el, "text")  → shows after 400ms hover; hides on leave/press
+// A single shared layer node is used, avoiding one DOM node per element.
 // ============================================================================
 
 const DELAY = 400;
@@ -34,10 +35,10 @@ function hide() {
 }
 
 /**
- * 给元素挂延迟提示。
+ * Attach a delayed tooltip to an element.
  * @param {HTMLElement} el
  * @param {string} text
- * @returns {() => void} 解绑
+ * @returns {() => void} unbind
  */
 export function attachTooltip(el, text) {
   const onEnter = () => {
