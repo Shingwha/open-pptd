@@ -7,11 +7,14 @@
 //            → 变换（旋转/透明度 + 翻转）
 //            → 类型分组（types/*.js 的 props 返回 groups 声明）
 //   [多选]   多选头（数量 + 复制 + 删除）
+//            → 位置与尺寸（可批量：值一致可编辑；不一致「混合」斜体只读）
 //            → 对齐（选区）+ 分布（≥3 可用）
-//            → 层级 + 组合 / 取消组合
+//            → 层级 + 变换（可批量 / 混合）
+//            → 组合 / 取消组合 + 类型专属（同类型列「混合」占位）
 //   [未选中] 演示文稿 → 页面设置 → 提示
 //
 // 对齐语义二义化（U1/PowerPoint）：单选 → 对齐页面；多选 → 对齐选区包围盒。
+// 排列算法唯一实现于 interaction/arrange.js（与右键菜单共用，避免两处漂移）。
 // 组合元素（elementType:"group"）随 children 一起变换。
 //
 // 字段声明（types 只描述，布局由本渲染器统一决定）：
@@ -31,7 +34,18 @@
 import { getType } from "../types/index.js";
 import * as ui from "../ui.js";
 import { renderGroup, fieldHandlers, themeSwatches } from "./fields.js";
-import { PAGE_HEIGHT, PAGE_TYPES, PAGE_WIDTH, resolveColor } from "../../packages/model/index.js";
+import { ALIGN_MODES, alignSelection, distribute, translate } from "./arrange.js";
+import { PAGE_TYPES, resolveColor } from "../../packages/model/index.js";
+
+/** 无「变换」分区的类型（官方限制：不支持整体旋转/翻转/透明度）。 */
+const NO_TRANSFORM = new Set(["table", "chart", "group"]);
+
+/** 一组元素的取值是否一致：一致返回该值，不一致返回 undefined（→「混合」）。 */
+const sameValueOf = (els, get) => {
+  const vs = els.map(get);
+  const first = JSON.stringify(vs[0]);
+  return vs.every((v) => JSON.stringify(v) === first) ? vs[0] : undefined;
+};
 
 export function bindProperties(panel, api) {
   const { state, page, beginChange, endChange, deleteSelected, duplicateSelected, moveLayer } = api;
@@ -39,6 +53,11 @@ export function bindProperties(panel, api) {
 
   // 输入事务：首次实际提交才快照（点进输入框不输入不再误标脏），blur 结束事务
   let txActive = false;
+  // 多选批量事务（同一策略，独立标志避免与单选项互相干扰）
+  let multiTx = false;
+
+  const list = () => page().elements || [];
+  const translateEl = (el, dx, dy) => translate(el, dx, dy, list());
 
   /** 注册表 props 用控件（提交事务 + 提交后即时刷新画布，面板不重建保焦点）。 */
   function helpers() {
@@ -69,6 +88,21 @@ export function bindProperties(panel, api) {
     });
   }
 
+  /** 多选批量提交包装（首提交快照；提交只刷画布，blur 再全量对齐面板）。 */
+  const multiCommit = (apply) => {
+    if (!multiTx) {
+      multiTx = true;
+      beginChange();
+    }
+    apply();
+    api.refreshPreview();
+  };
+  const multiEndTx = () => {
+    if (!multiTx) return;
+    multiTx = false;
+    endChange();
+  };
+
   function refresh() {
     panel.innerHTML = "";
     const els = getSelectedElements();
@@ -90,36 +124,6 @@ export function bindProperties(panel, api) {
     }
   }
 
-  // --------------------------------------------------------------------------
-  // 组合辅助：组 → 展开为 children（变换随组一起作用）
-  // --------------------------------------------------------------------------
-  const membersOf = (el) => {
-    if (el.elementType !== "group" || !Array.isArray(el.children)) return [];
-    const list = page().elements || [];
-    return el.children.map((id) => list.find((e) => e.elementId === id)).filter(Boolean);
-  };
-  /** 选中项 → 实际要位移的元素（组展开 children）。 */
-  const affected = (els) => els.flatMap((el) => [el, ...membersOf(el)]);
-  const unionBounds = (els) => {
-    let x1 = Infinity;
-    let y1 = Infinity;
-    let x2 = -Infinity;
-    let y2 = -Infinity;
-    for (const el of els) {
-      const b = el.bounds;
-      x1 = Math.min(x1, b[0]);
-      y1 = Math.min(y1, b[1]);
-      x2 = Math.max(x2, b[0] + b[2]);
-      y2 = Math.max(y2, b[1] + b[3]);
-    }
-    return [x1, y1, x2 - x1, y2 - y1];
-  };
-  const translate = (el, dx, dy) => {
-    el.bounds[0] += dx;
-    el.bounds[1] += dy;
-    for (const m of membersOf(el)) translate(m, dx, dy);
-  };
-
   /** 元素头：类型徽标 + elementId + 复制 + 删除。 */
   function itemHead(el) {
     const head = document.createElement("div");
@@ -138,72 +142,30 @@ export function bindProperties(panel, api) {
   }
 
   // --------------------------------------------------------------------------
-  // 对齐行 / 分布行（单选 = 页面；多选 = 选区包围盒）
+  // 对齐行 / 分布行（单选 = 页面；多选 = 选区包围盒；算法见 arrange.js）
   // --------------------------------------------------------------------------
-  const ALIGN = [
-    ["left", "←", "左对齐"], ["hcenter", "↔", "水平居中"], ["right", "→", "右对齐"],
-    ["top", "↑", "顶对齐"], ["vcenter", "↕", "垂直居中"], ["bottom", "↓", "底对齐"],
-  ];
-
   /** 单选/多选统一入口：单选对页面，多选对选区包围盒。 */
-  function alignSelection(els, mode) {
-    const ref = els.length > 1 ? unionBounds(els) : [0, 0, PAGE_WIDTH, PAGE_HEIGHT];
-    for (const el of els) {
-      const [bx, by, bw, bh] = el.bounds;
-      let dx = 0;
-      let dy = 0;
-      if (mode === "left") dx = ref[0] - bx;
-      else if (mode === "hcenter") dx = Math.round(ref[0] + (ref[2] - bw) / 2) - bx;
-      else if (mode === "right") dx = ref[0] + ref[2] - bw - bx;
-      else if (mode === "top") dy = ref[1] - by;
-      else if (mode === "vcenter") dy = Math.round(ref[1] + (ref[3] - bh) / 2) - by;
-      else if (mode === "bottom") dy = ref[1] + ref[3] - bh - by;
-      translate(el, dx, dy);
-    }
-  }
-
-  /** 分布（多选 ≥3）：水平/垂直方向等间距（保持两端元素不动）。 */
-  function distribute(els, axis) {
-    if (els.length < 3) return;
-    const size = axis === "h" ? 2 : 3;
-    const start = axis === "h" ? 0 : 1;
-    const sorted = [...els].sort((a, b) => a.bounds[start] + a.bounds[size] / 2 - (b.bounds[start] + b.bounds[size] / 2));
-    const first = sorted[0];
-    const last = sorted[sorted.length - 1];
-    const spanStart = first.bounds[start];
-    const spanEnd = last.bounds[start] + last.bounds[size];
-    const totalSize = sorted.reduce((s, e) => s + e.bounds[size], 0);
-    const gap = (spanEnd - spanStart - totalSize) / (sorted.length - 1);
-    let cursor = spanStart + first.bounds[size];
-    for (let i = 1; i < sorted.length - 1; i += 1) {
-      const el = sorted[i];
-      const target = Math.round(cursor + gap);
-      const d = target - el.bounds[start];
-      if (axis === "h") translate(el, d, 0);
-      else translate(el, 0, d);
-      cursor = target + el.bounds[size];
-    }
-  }
+  const alignSel = (els, mode) => alignSelection(els, mode, list());
 
   function alignRow(els, label) {
     const g = ui.group(label);
     const row = document.createElement("div");
     row.className = "prop-icon-row";
-    for (const [mode, glyph, title] of ALIGN) {
+    for (const [mode, glyph, title] of ALIGN_MODES) {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "prop-icon-btn";
       b.textContent = glyph;
       b.title = title;
-      b.addEventListener("click", () => { beginChange(); alignSelection(els, mode); endChange(); });
+      b.addEventListener("click", () => { beginChange(); alignSel(els, mode); endChange(); });
       row.appendChild(b);
     }
     g.appendChild(row);
     if (els.length >= 3) {
       const row2 = document.createElement("div");
       row2.className = "prop-icon-row";
-      const hb = ui.button("水平分布", () => { beginChange(); distribute(els, "h"); endChange(); }, { className: "btn btn-sm", title: "水平等间距（≥3 个）" });
-      const vb = ui.button("垂直分布", () => { beginChange(); distribute(els, "v"); endChange(); }, { className: "btn btn-sm", title: "垂直等间距（≥3 个）" });
+      const hb = ui.button("水平分布", () => { beginChange(); distribute(els, "h", list()); endChange(); }, { className: "btn btn-sm", title: "水平等间距（≥3 个）" });
+      const vb = ui.button("垂直分布", () => { beginChange(); distribute(els, "v", list()); endChange(); }, { className: "btn btn-sm", title: "垂直等间距（≥3 个）" });
       row2.append(hb, vb);
       g.appendChild(row2);
     }
@@ -214,9 +176,10 @@ export function bindProperties(panel, api) {
     const g = ui.group("层级");
     const row = document.createElement("div");
     row.className = "prop-actions";
+    // 数组顺序 = 绘制顺序（越靠后越在上层）：上移 = 索引 +1（B5 修正，此前与 z 序相反）
     row.append(
-      ui.button("上移一层", () => { beginChange(); moveLayer(-1); endChange(); }),
-      ui.button("下移一层", () => { beginChange(); moveLayer(1); endChange(); })
+      ui.button("上移一层", () => { beginChange(); moveLayer(1); endChange(); }),
+      ui.button("下移一层", () => { beginChange(); moveLayer(-1); endChange(); })
     );
     g.appendChild(row);
     return g;
@@ -237,7 +200,64 @@ export function bindProperties(panel, api) {
   }
 
   // --------------------------------------------------------------------------
-  // 多选面板
+  // 混合占位（「混合」= 各元素取值不同；斜体、只读、禁用）
+  // --------------------------------------------------------------------------
+  function mixNode() {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "mix";
+    input.value = "混合";
+    input.readOnly = true;
+    input.disabled = true;
+    input.tabIndex = -1;
+    return input;
+  }
+
+  /** 双列格里的混合占位（label 上置）。 */
+  function mixCellPlaceholder(label) {
+    return ui.cell(label, mixNode());
+  }
+
+  /** 整行混合占位（label 左置）。 */
+  function mixRow(label) {
+    return ui.field(label, mixNode());
+  }
+
+  /**
+   * 双列格：值一致 → 可编辑数字输入（写回全部选中）；不一致 → 「混合」占位。
+   * @param get (el) => value；set (el, value) => void（内部已带事务与刷新）
+   */
+  function mixCell(label, els, get, set, opts = {}) {
+    const v = sameValueOf(els, get);
+    if (v === undefined) return mixCellPlaceholder(label);
+    return ui.cell(
+      label,
+      ui.numInput(v, (nv) => { for (const e of els) set(e, nv); }, { ...opts, onBlur: multiEndTx })
+    );
+  }
+
+  function hintBox(text) {
+    const d = document.createElement("div");
+    d.className = "prop-hint";
+    d.textContent = text;
+    return d;
+  }
+
+  /** 字段声明 → 展示标签列表（混合占位用；button/hint 类不占位）。 */
+  function fieldLabels(f) {
+    switch (f?.kind) {
+      case "checks":
+        return (f.items || []).map((i) => i.label).filter(Boolean);
+      case "hint":
+      case "button":
+        return [];
+      default:
+        return f?.label ? [f.label] : [];
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // 多选面板：可批量设置的属性可编辑，其余「混合」占位
   // --------------------------------------------------------------------------
   function renderMulti(els) {
     const head = document.createElement("div");
@@ -253,14 +273,105 @@ export function bindProperties(panel, api) {
     head.append(badge, id, dup, del);
     panel.appendChild(head);
 
+    // 位置与尺寸（值一致可批量编辑，不一致「混合」）
+    const g = ui.group("位置与尺寸");
+    const grid = document.createElement("div");
+    grid.className = "prop-grid";
+    grid.appendChild(mixCell("X", els, (e) => e.bounds[0], (e, v) => multiCommit(() => translateEl(e, v - e.bounds[0], 0))));
+    grid.appendChild(mixCell("Y", els, (e) => e.bounds[1], (e, v) => multiCommit(() => translateEl(e, 0, v - e.bounds[1]))));
+    grid.appendChild(mixCell("宽", els, (e) => e.bounds[2], (e, v) => multiCommit(() => (e.bounds[2] = Math.max(4, v))), { min: 4 }));
+    grid.appendChild(mixCell("高", els, (e) => e.bounds[3], (e, v) => multiCommit(() => (e.bounds[3] = Math.max(4, v))), { min: 4 }));
+    g.appendChild(grid);
+    panel.appendChild(g);
+
     panel.appendChild(alignRow(els, "对齐（选区）"));
     panel.appendChild(layerRow());
+
+    // 变换：全部支持则批量（一致可编辑/混合）；含不支持类型则保留分区 + 混合占位 + 说明
+    if (els.every((e) => !NO_TRANSFORM.has(e.elementType))) panel.appendChild(multiTransformSection(els));
+    else panel.appendChild(mixedTransformSection(els));
+
     panel.appendChild(groupRow(els));
+    const typeSec = mixedTypeSection(els);
+    if (typeSec) panel.appendChild(typeSec);
 
     const hint = document.createElement("div");
     hint.className = "prop-hint panel-hint";
-    hint.textContent = "多选：对齐相对选区包围盒；≥3 个可用分布。Ctrl+G 组合，Esc 退出多选。";
+    hint.textContent = "多选：对齐相对选区包围盒；≥3 个可用分布。「混合」= 各元素取值不同。Ctrl+G 组合，Esc 退出多选。";
     panel.appendChild(hint);
+  }
+
+  /** 多选变换分区：旋转 / 透明度可批量（一致可编辑 / 不一致混合）+ 翻转（批量）。 */
+  function multiTransformSection(els) {
+    const g = ui.group("变换");
+    const grid = document.createElement("div");
+    grid.className = "prop-grid";
+    grid.appendChild(mixCell("旋转", els, (e) => e.rotation ?? 0, (e, v) => multiCommit(() => (e.rotation = v)), { min: -360, max: 360 }));
+    grid.appendChild(
+      mixCell("透明度", els, (e) => e.opacity ?? 1, (e, v) => multiCommit(() => (e.opacity = Math.min(1, Math.max(0, v)))), { min: 0, max: 1, step: 0.05 })
+    );
+    g.appendChild(grid);
+    g.appendChild(flipRow(els));
+    return g;
+  }
+
+  /** 多选但含不支持变换的类型：分区保留 + 混合占位 + 说明。 */
+  function mixedTransformSection(els) {
+    const g = ui.group("变换");
+    const n = els.filter((e) => NO_TRANSFORM.has(e.elementType)).length;
+    g.appendChild(mixRow("旋转"));
+    g.appendChild(mixRow("透明度"));
+    g.appendChild(hintBox(`含 ${n} 个不支持整体变换的元素（表格 / 图表 / 组），旋转与透明度不可批量设置。`));
+    return g;
+  }
+
+  /** 翻转开关行（批量：各元素各自置为目标态）。 */
+  function flipRow(els) {
+    const row = document.createElement("div");
+    row.className = "prop-checks";
+    const mk = (axis, label) => {
+      const all = els.every((e) => !!(e.flip || [])[axis === "h" ? 0 : 1]);
+      return ui.checkbox(label, all, (v) => {
+        beginChange();
+        for (const e of els) {
+          const f = Array.isArray(e.flip) ? e.flip : [false, false];
+          e.flip = axis === "h" ? [v, !!f[1]] : [!!f[0], v];
+        }
+        endChange();
+      });
+    };
+    row.append(mk("h", "水平翻转"), mk("v", "垂直翻转"));
+    return row;
+  }
+
+  /** 同类型多选：按类型声明列出「混合」占位（对齐设计稿 mix 态）；多种类型给出说明。 */
+  function mixedTypeSection(els) {
+    const types = [...new Set(els.map((e) => e.elementType))];
+    if (types.length > 1) {
+      const g = ui.group("类型专属");
+      g.appendChild(hintBox(`已选 ${types.length} 种类型（${types.map((t) => getType(t)?.label || t).join(" / ")}），类型专属属性请在单选下编辑。`));
+      return g;
+    }
+    const def = getType(types[0]);
+    if (!def?.props) return null;
+    const g = ui.group(def.label || types[0]);
+    let groups = [];
+    try {
+      groups = def.props(els[0], helpers()) || [];
+    } catch {
+      groups = [];
+    }
+    let any = false;
+    for (const gr of groups) {
+      for (const f of gr?.fields || []) {
+        for (const label of fieldLabels(f)) {
+          g.appendChild(mixRow(label));
+          any = true;
+        }
+      }
+    }
+    if (!any) g.appendChild(mixRow("属性"));
+    return g;
   }
 
   // --------------------------------------------------------------------------
@@ -275,8 +386,8 @@ export function bindProperties(panel, api) {
     const grid = document.createElement("div");
     grid.className = "prop-grid";
     const [x, y, w, hh] = el.bounds;
-    grid.appendChild(ui.cell("X", h.numInput(x, (v) => translate(el, v - el.bounds[0], 0))));
-    grid.appendChild(ui.cell("Y", h.numInput(y, (v) => translate(el, 0, v - el.bounds[1]))));
+    grid.appendChild(ui.cell("X", h.numInput(x, (v) => translateEl(el, v - el.bounds[0], 0))));
+    grid.appendChild(ui.cell("Y", h.numInput(y, (v) => translateEl(el, 0, v - el.bounds[1]))));
     grid.appendChild(ui.cell("宽", h.numInput(w, (v) => (el.bounds[2] = Math.max(4, v)), { min: 4 })));
     grid.appendChild(ui.cell("高", h.numInput(hh, (v) => (el.bounds[3] = Math.max(4, v)), { min: 4 })));
     g.appendChild(grid);
@@ -289,7 +400,7 @@ export function bindProperties(panel, api) {
 
     // —— 变换 ——
     // 官方限制：table/chart 不支持整体旋转/翻转/透明度（pptd.md §Table/§Chart limitation）；组不整体旋转
-    if (["table", "chart", "group"].includes(el.elementType)) return;
+    if (NO_TRANSFORM.has(el.elementType)) return;
     const g2 = ui.group("变换");
     const grid2 = document.createElement("div");
     grid2.className = "prop-grid";
@@ -374,6 +485,7 @@ export function bindProperties(panel, api) {
     destroy() {
       panel.innerHTML = "";
       txActive = false;
+      multiTx = false;
     },
   };
 }

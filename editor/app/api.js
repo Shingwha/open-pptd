@@ -77,6 +77,48 @@ export function createEditorApi({ state, page, selected, selectedElements, ops }
       ops.moveLayer(dir);
       view.render();
     },
+    /** 置于顶层 / 置于底层（edge: "front"|"back"；右键菜单用）。 */
+    moveLayerEdge: (edge) => {
+      ops.beginChange();
+      ops.moveLayerEdge(edge);
+      view.render();
+    },
+    /** 复制选中到剪贴板 / 粘贴（右键菜单 + Ctrl+C/V）。 */
+    copySelected: () => ops.copySelected(),
+    pasteClipboard: () => {
+      if (!Array.isArray(state.clipboard) || state.clipboard.length === 0) return [];
+      ops.beginChange();
+      const ids = ops.pasteClipboard();
+      view.render();
+      return ids;
+    },
+    /** 新建一页并切过去（状态条 ＋ / 页面级右键菜单）。 */
+    addPage: () => {
+      ops.beginChange();
+      ops.addPage();
+      view.render();
+    },
+    /** 复制页（缩略条右键 / 批量）；返回新页索引。 */
+    duplicatePages: (indexes) => {
+      ops.beginChange();
+      const out = ops.duplicatePages(indexes);
+      view.render();
+      return out;
+    },
+    /** 删除页（缩略条右键 / 批量；至少保留 1 页）。 */
+    deletePages: (indexes) => {
+      ops.beginChange();
+      const ok = ops.deletePages(indexes);
+      view.render();
+      return ok;
+    },
+    /** 页面重排（缩略条拖排序，可撤销）。 */
+    movePage: (from, to) => {
+      ops.beginChange();
+      const ok = ops.movePage(from, to);
+      view.render();
+      return ok;
+    },
     /** 组合 / 取消组合（Ctrl+G / Ctrl+Shift+G）。 */
     group: () => {
       ops.beginChange();

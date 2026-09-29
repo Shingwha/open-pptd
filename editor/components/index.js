@@ -6,7 +6,7 @@
 // ============================================================================
 
 export { button, iconButton, buttonRow, btnClass } from "./button.js";
-export { menu, menuItem, menuSeparator, menuLabel } from "./menu.js";
+export { menu, menuItem, menuSeparator, menuLabel, openMenuAt, closePopupMenu } from "./menu.js";
 export { section, detailsSection } from "./section.js";
 export { panel, floatingPanel } from "./panel.js";
 export { showDialog, closeAllDialogs } from "./dialog.js";

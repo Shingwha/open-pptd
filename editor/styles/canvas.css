@@ -184,7 +184,8 @@
   /* 兜底尺寸：renderCanvas 按 deck.size 内联覆盖（海报等任意画布比例） */
   width: 960px;
   height: 540px;
-  background: var(--panel);
+  /* 纸张底：深色主题下也是浅色纸面（版面可读），见 tokens.css --paper */
+  background: var(--paper);
   box-shadow: var(--shadow-sm), var(--shadow-lg);
   /* 缩放锚点居中：flex 居中的布局盒中心 = 视觉中心，左右完全对称 */
   transform-origin: center;

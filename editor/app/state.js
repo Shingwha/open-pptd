@@ -13,12 +13,27 @@
 // ============================================================================
 
 import { createHistory } from "../interaction/history.js";
-import { nextElementId } from "../../packages/model/index.js";
+import { createPage, nextElementId } from "../../packages/model/index.js";
 
 /** 深拷贝元素并重映射 elementId / group.children（克隆用）。 */
 function cloneElement(el) {
   const copy = JSON.parse(JSON.stringify(el));
   copy.elementId = nextElementId(el.elementType);
+  return copy;
+}
+
+/** 深拷贝整页并重映射全部 elementId（含 group.children 引用）。 */
+function clonePage(pg) {
+  const copy = JSON.parse(JSON.stringify(pg));
+  const map = new Map();
+  for (const el of copy.elements || []) {
+    const nid = nextElementId(el.elementType);
+    map.set(el.elementId, nid);
+    el.elementId = nid;
+  }
+  for (const el of copy.elements || []) {
+    if (Array.isArray(el.children)) el.children = el.children.map((cid) => map.get(cid)).filter(Boolean);
+  }
   return copy;
 }
 
@@ -39,6 +54,7 @@ export function createEditorState() {
     projectName: "", // 本地项目文件夹名（顶栏/状态栏显示）
     dirty: false, // 编辑器是否有未保存修改（自动刷新前检查，防丢更新）
     savedDeck: null, // 最后一次加载/保存时的 deck 基线（撤销/重做回该状态即视为已保存）
+    clipboard: null, // 元素剪贴板（copySelected 快照；page.elements 片段数组）
   };
 
   // ---- selectedId 兼容访问器（getter 返回主选中，setter 支持旧的单值赋值）----
@@ -238,18 +254,122 @@ export function createEditorState() {
     duplicateInPlace() {
       return ops.duplicateSelected(0);
     },
+    /** 层序移动。dir = 数组索引增量，数组顺序即绘制顺序（越靠后画得越靠上层）：
+     *  dir=+1 前移一层（上移，B5 修正方向——此前上移/下移标签与 z 序相反）。 */
     moveLayer(dir) {
       const list = elements();
       const idxs = selectedElements()
         .map((el) => list.indexOf(el))
         .filter((i) => i >= 0)
-        .sort((a, b) => (dir < 0 ? a - b : b - a)); // 上行从低到高，下行从高到低
+        .sort((a, b) => (dir > 0 ? b - a : a - b)); // 上移从高到低、下移从低到高，避免互相踩位
       for (const idx of idxs) {
         const to = idx + dir;
         if (to < 0 || to >= list.length) continue;
         const [el] = list.splice(idx, 1);
         list.splice(to, 0, el);
       }
+    },
+    /** 置于顶层（edge="front"）/ 置于底层（edge="back"）：相对整页元素，保持相对次序。 */
+    moveLayerEdge(edge) {
+      const list = elements();
+      const picked = selectedElements();
+      if (picked.length === 0) return;
+      const front = edge !== "back";
+      // 保持选中项之间的原有先后：置顶从前往后取出后 append；置底从后往前取出后 unshift
+      const ordered = picked.slice().sort((a, b) => list.indexOf(a) - list.indexOf(b));
+      const seq = front ? ordered : ordered.slice().reverse();
+      for (const el of seq) {
+        const from = list.indexOf(el);
+        if (from < 0) continue;
+        list.splice(from, 1);
+        if (front) list.push(el);
+        else list.unshift(el);
+      }
+    },
+
+    // ---- 剪贴板（右键菜单「粘贴」/ Ctrl+C / Ctrl+V）----
+    /** 复制选中到剪贴板（含组成员，深拷贝；返回是否写入）。 */
+    copySelected() {
+      const picked = selectedElements();
+      if (picked.length === 0) return false;
+      const ids = new Set(picked.map((el) => el.elementId));
+      for (const el of picked) {
+        if (el.elementType === "group" && Array.isArray(el.children)) {
+          for (const cid of el.children) ids.add(cid);
+        }
+      }
+      const list = elements();
+      state.clipboard = list.filter((el) => ids.has(el.elementId)).map((el) => JSON.parse(JSON.stringify(el)));
+      return state.clipboard.length > 0;
+    },
+    /** 粘贴剪贴板（+24 偏移、新 elementId、组 children 重映射），选中新副本并返回其 id。 */
+    pasteClipboard(offset = 24) {
+      const clip = Array.isArray(state.clipboard) ? state.clipboard : [];
+      if (clip.length === 0) return [];
+      // 组内成员 id（这些副本不直接进入选中集，随组一起选中）
+      const memberIds = new Set();
+      for (const src of clip) {
+        if (Array.isArray(src.children)) for (const cid of src.children) memberIds.add(cid);
+      }
+      const map = new Map();
+      const copies = clip.map((src) => {
+        const copy = JSON.parse(JSON.stringify(src));
+        copy.elementId = nextElementId(src.elementType);
+        copy.bounds = [copy.bounds[0] + offset, copy.bounds[1] + offset, copy.bounds[2], copy.bounds[3]];
+        map.set(src.elementId, copy.elementId);
+        return { src, copy };
+      });
+      const list = elements();
+      for (const { copy } of copies) {
+        if (Array.isArray(copy.children)) copy.children = copy.children.map((cid) => map.get(cid)).filter(Boolean);
+        list.push(copy);
+      }
+      const topIds = copies.filter(({ src }) => !memberIds.has(src.elementId)).map(({ copy }) => copy.elementId);
+      ops.selectMany(topIds);
+      return topIds;
+    },
+
+    // ---- 页面 ----
+    /** 新建一页并切过去（状态条 ＋ / 页面级右键菜单共用）。 */
+    addPage() {
+      state.deck.pages.push(createPage({}));
+      state.currentPage = state.deck.pages.length - 1;
+      ops.clearSelection();
+      return state.currentPage;
+    },
+    /** 复制若干页（深拷贝 + 元素 id 重映射），插在原页之后；返回新页索引（升序）。 */
+    duplicatePages(indexes) {
+      const list = state.deck.pages;
+      const idxs = [...new Set((indexes || []).filter((i) => Number.isInteger(i) && i >= 0 && i < list.length))].sort((a, b) => a - b);
+      if (!idxs.length) return [];
+      for (const i of idxs.slice().reverse()) list.splice(i + 1, 0, clonePage(list[i])); // 从后往前插入不动前面索引
+      // 复本最终位置 = 原索引 + 1 + 它前面已插入的复本数（= 在 idxs 中的序号）
+      return idxs.map((i, k) => i + 1 + k);
+    },
+    /** 删除若干页（至少保留 1 页）；返回是否删除成功。 */
+    deletePages(indexes) {
+      const list = state.deck.pages;
+      const doomed = new Set((indexes || []).filter((i) => Number.isInteger(i) && i >= 0 && i < list.length));
+      if (!doomed.size || list.length - doomed.size < 1) return false;
+      const before = state.currentPage;
+      const removedBefore = [...doomed].filter((i) => i < before).length;
+      for (const [i, pg] of list.entries()) if (doomed.has(i)) state.pagesPending?.delete(pg);
+      const kept = list.filter((_, i) => !doomed.has(i));
+      state.deck.pages = kept;
+      state.currentPage = Math.max(0, Math.min(kept.length - 1, before - removedBefore));
+      ops.clearSelection();
+      return true;
+    },
+    /** 页面重排（拖排序）：把 from 位置的页移到 to 位置；to 越界自动 clamp。 */
+    movePage(from, to) {
+      const list = state.deck.pages;
+      if (!Number.isInteger(from) || from < 0 || from >= list.length) return false;
+      const target = Math.max(0, Math.min(list.length - 1, to));
+      if (target === from) return false;
+      const [pg] = list.splice(from, 1);
+      list.splice(target, 0, pg);
+      state.currentPage = target;
+      return true;
     },
 
     // ---- 组合 ----

@@ -1,37 +1,38 @@
 /* ============================================================================
    tokens.css — 设计令牌（单一来源）
    ----------------------------------------------------------------------------
-   全部取值逐条照抄设计参考稿 docs/specs/ref/editor-design-reference.html 的
-   `:root`（浅）与 `[data-theme="dark"]`（深）令牌板；深浅两套只在此处定义，
-   组件永远不写死颜色、也不感知 light/dark，只引用语义令牌。
+   取值基座 = 原版（9cd4906）的令牌板：圆角 6/8/12px、4 档轻投影、中性灰阶
+   #f5f6f8/#ffffff/#1c2532/#5b6572/#98a2af/#e7eaef/#d3d8e0、动效 120/180ms。
 
-   结构：
-     1. 中性 11 阶 --n-0…--n-900（唯一色阶来源）
+   结构（反向别名：旧令牌名持原值，U1 新令牌名指向旧令牌）：
+     1. 中性 11 阶 --n-0…--n-900（值 = 原版语义灰阶，唯一起点）
      2. 强调 / 语义色（--accent 系、--danger/--success/--warning 及 -soft）
      3. 语义别名（组件只认这些）
-     4. 圆角 3 档 / 阴影 2 档 / 动效 3 档 + 1 缓动 / 控件高 3 档 / 字号 6 档
-     5. 复合过渡（把 transition 形态收敛到 3 条）
-     6. 兼容别名（旧令牌名 → 新令牌；未迁移组件不破，组件侧逐步切新名）
-     7. 深色板（[data-pptd-theme="dark"]，A2 落地的属性选择器）
+     4. 尺寸基座（原版令牌名：--radius* / --shadow* / --text-* / --control-h* / --dur-*）
+     5. 复合过渡（transition 形态说明）
+     6. 兼容别名（U1 新名 → 旧名；旧名持原值）
+     7. 遮罩 / 描边 / 缩略条悬浮标签
+     8. 深色板（[data-pptd-theme="dark"]，A2 落地的属性选择器）
 
+   注：选中态令牌（--sel-bg / --sel-ring）由用户拍板保持现状，不回退。
    断点约定：窄屏 = 900px（与 ui.js 的 BP_NARROW 常量一一对应，见 responsive.css）
    ============================================================================ */
 
 :root {
-  /* ---- 1. 中性 11 阶（唯一色阶来源） ---- */
-  --n-0: #ffffff;
-  --n-50: #fafbfc;
-  --n-100: #f4f5f7;
-  --n-200: #ebedf0;
-  --n-300: #e0e3e8;
-  --n-400: #ccd1d9;
-  --n-500: #a4acb8;
-  --n-600: #78818f;
-  --n-700: #565f6d;
-  --n-800: #3a424e;
-  --n-900: #1e242e;
+  /* ---- 1. 中性 11 阶（值对齐原版语义灰阶，唯一起点） ---- */
+  --n-0: #ffffff;   /* = 原 --panel */
+  --n-50: #f5f6f8;  /* = 原 --bg */
+  --n-100: #eef1f5; /* 协调值：原版无对应阶，取 bg 与 line 之间 */
+  --n-200: #ebedf0; /* 协调值：hover 底（原版 hover 用 --bg，此处略深一档） */
+  --n-300: #e7eaef; /* = 原 --line */
+  --n-400: #d3d8e0; /* = 原 --line-strong */
+  --n-500: #98a2af; /* = 原 --faint */
+  --n-600: #7c8595; /* 协调值：原版无对应阶，取 faint 与 sub 之间 */
+  --n-700: #5b6572; /* = 原 --sub */
+  --n-800: #333d4b; /* 协调值：原版无对应阶，取 sub 与 ink 之间 */
+  --n-900: #1c2532; /* = 原 --ink */
 
-  /* ---- 2. 强调 + 语义色 ---- */
+  /* ---- 2. 强调 + 语义色（原版值） ---- */
   --accent: #2563eb;
   --accent-hover: #1d4ed8;
   --accent-soft: #eef4fd;
@@ -43,6 +44,8 @@
   --warning-soft: #fdf6e3;
   /* 主色底上的前景（按钮/徽标文字） */
   --on-accent: #ffffff;
+  /* 纸张：画布/缩略图底色（深色下也保持浅色纸面，保证版面可读） */
+  --paper: #ffffff;
 
   /* ---- 3. 语义别名（组件只认这些） ---- */
   --bg: var(--n-50);
@@ -58,25 +61,31 @@
   --sel-bg: var(--accent-soft);
   --sel-ring: var(--accent);
 
-  /* ---- 4. 圆角（3 档）/ 阴影（2 档）/ 动效 / 控件高 / 字号 ---- */
-  --r-1: 2px;   /* 内嵌控件 */
-  --r-2: 4px;   /* 按钮、输入 */
-  --r-3: 6px;   /* 面板、对话框 */
-  --sh-pop: 0 4px 14px rgba(20, 25, 35, 0.1);
-  --sh-modal: 0 16px 48px rgba(20, 25, 35, 0.18);
-  --t-fast: 80ms;
-  --t-med: 140ms;
-  --t-slow: 200ms;
+  /* ---- 4. 尺寸基座（原版令牌名 + 原值） ---- */
+  /* 圆角：6 / 8 / 12px */
+  --radius-sm: 6px;    /* 控件/小芯片 */
+  --radius: 8px;       /* 面板/卡片 */
+  --radius-lg: 12px;   /* 对话框/大浮层 */
+  /* 阴影：4 档轻投影 */
+  --shadow-sm: 0 1px 2px rgba(28, 37, 50, 0.06);
+  --shadow-md: 0 4px 16px rgba(28, 37, 50, 0.1);
+  --shadow-lg: 0 12px 32px rgba(28, 37, 50, 0.14);
+  --shadow-sheet: 0 -8px 32px rgba(28, 37, 50, 0.16);
+  /* 动效 */
+  --dur-fast: 120ms;
+  --dur-med: 180ms;
   --ease: cubic-bezier(0.2, 0, 0, 1);
-  --h-sm: 24px;
-  --h: 28px;
-  --h-lg: 32px;
-  --f-xs: 11px;
-  --f-sm: 12px;
-  --f-md: 13px;
-  --f-lg: 14px;
-  --f-xl: 16px;
-  --f-2xl: 24px; /* 页面级大标题（画廊 hero） */
+  /* 控件高 */
+  --control-h: 28px;
+  --control-h-lg: 32px;
+  --topbar-h: 48px;
+  /* 字号 */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-md: 13px;
+  --text-lg: 14px;
+  --text-xl: 16px;
+  --text-2xl: 24px;
   --font: "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
 
@@ -85,47 +94,51 @@
      B 动效：opacity/transform @ --t-med
      C 尺寸：width/opacity/border-left-color @ --t-med
      D none（无过渡，如 prefers-reduced-motion）
-     具体声明在各组件文件内以这三条形态的字面值书写（不用复合令牌，
+     具体声明在各组件文件内以这几条形态的字面值书写（不用复合令牌，
      以保住「全仓 var(-- 用量只增不减」的可审计性）。 */
 
-  /* ---- 6. 兼容别名（旧令牌名 → 新令牌；组件侧由 T5/T6 逐步切新名） ---- */
+  /* ---- 6. 兼容别名（U1 新令牌名 → 回填后的旧令牌；旧名持原值） ---- */
   --primary: var(--accent);
   --primary-strong: var(--accent-hover);
   --primary-soft: var(--accent-soft);
-  --primary-tint: color-mix(in srgb, var(--accent) 14%, transparent);
+  --primary-tint: color-mix(in srgb, var(--accent) 10%, transparent);
   --scrollbar: var(--line-strong);
   --font-ui: var(--font);
-  --text-xs: var(--f-xs);
-  --text-sm: var(--f-sm);
-  --text-md: var(--f-md);
-  --text-lg: var(--f-lg);
-  --text-xl: var(--f-xl);
-  --text-2xl: var(--f-2xl);
+  --f-xs: var(--text-xs);
+  --f-sm: var(--text-sm);
+  --f-md: var(--text-md);
+  --f-lg: var(--text-lg);
+  --f-xl: var(--text-xl);
+  --f-2xl: var(--text-2xl);
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 24px;
-  --radius-sm: var(--r-2);
-  --radius: var(--r-3);
-  --radius-lg: var(--r-3);
-  --control-h: var(--h);
-  --control-h-lg: var(--h-lg);
-  --topbar-h: 48px;
-  --shadow-sm: var(--sh-pop);
-  --shadow-md: var(--sh-pop);
-  --shadow-lg: var(--sh-modal);
-  --shadow-sheet: var(--sh-modal);
+  /* 圆角别名：新名 → 旧名（6/8/12px） */
+  --r-1: var(--radius-sm);
+  --r-2: var(--radius);
+  --r-3: var(--radius-lg);
+  /* 控件高别名 */
+  --h-sm: 24px; /* 协调值：原版无对应档，保留 U1 紧凑档 */
+  --h: var(--control-h);
+  --h-lg: var(--control-h-lg);
+  /* 阴影别名：新名 → 旧名 */
+  --sh-pop: var(--shadow-md);
+  --sh-modal: var(--shadow-lg);
+  /* 动效别名 */
+  --t-fast: var(--dur-fast);
+  --t-med: var(--dur-med);
+  --t-slow: 200ms;
+  /* 层级 */
   --z-sticky: 20;   /* 顶栏/缩略条等常驻层 */
   --z-dropdown: 85; /* 下拉菜单/浮层 */
   --z-overlay: 100; /* 遮罩/画布覆盖层 */
   --z-modal: 1000;  /* 对话框/放映 */
   --z-toast: 1100;  /* 提示，永远最上 */
-  --dur-fast: var(--t-fast);
-  --dur-med: var(--t-med);
 
-  /* ---- 遮罩 / 描边 / 缩略条悬浮标签（A2 落地，保留并给 dark 值） ---- */
+  /* ---- 7. 遮罩 / 描边 / 缩略条悬浮标签（值对齐原版） ---- */
   --mask: color-mix(in srgb, var(--n-900) 45%, transparent);
   --chip-border: color-mix(in srgb, var(--n-900) 12%, transparent);
   --thumb-chip-bg: color-mix(in srgb, var(--n-900) 65%, transparent);
@@ -137,8 +150,8 @@
 /* ============================================================================
    [data-pptd-theme="dark"] — 深色令牌（契约 3）
    ----------------------------------------------------------------------------
-   取值逐条照抄设计参考稿的 [data-theme="dark"] 板：面板比底暗一档、文字反转、
-   强调色提亮、语义色降饱和、阴影加深。由 editor/theme.js 的
+   取值照抄原版（9cd4906）的 [data-theme="dark"] 板：面板比底暗一档、文字反转、
+   强调色提亮、语义色降饱和、阴影 4 档加深。由 editor/theme.js 的
    applyThemeTokens(rootEl, { mode: "dark" }) 注入属性；宿主也可自行加该属性。
    组件永远不知道 light/dark —— 只有这里知道。
    ============================================================================ */
@@ -165,8 +178,14 @@
   --warning: #e0a83a;
   --warning-soft: #382c12;
 
-  --sh-pop: 0 4px 14px rgba(0, 0, 0, 0.45);
-  --sh-modal: 0 16px 48px rgba(0, 0, 0, 0.6);
+  /* 纸张：深色下仍是浅色纸面 */
+  --paper: #f7f8fa;
+
+  /* 阴影 4 档（暗底用纯黑，方向不变） */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+  --shadow-sheet: 0 -8px 32px rgba(0, 0, 0, 0.55);
 
   /* 遮罩 / 描边 / 缩略条标签：暗底整体反转 */
   --mask: rgba(0, 0, 0, 0.6);

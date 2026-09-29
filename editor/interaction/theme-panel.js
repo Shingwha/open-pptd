@@ -13,6 +13,7 @@
 import { showToast } from "../app/toast.js";
 import { attachPopover } from "../popover.js";
 import { THEME_PALETTES, mergePaletteColors, resolveColor } from "../../packages/model/index.js";
+import { THEME_MODES } from "../theme.js";
 
 /** 语义色中文名（17 键全集；accent1/2 = primary/accent，不单独列）。 */
 const KEY_LABELS = {
@@ -46,7 +47,7 @@ const CARD_KEYS = ["primary", "accent", "accent3", "accent4", "accent5", "accent
 
 const HEX_RE = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
-export function bindThemePanel({ state, api, io, anchor }) {
+export function bindThemePanel({ state, api, io, anchor, themeMode = null }) {
   let panel = null;
   let popover = null;
   const ac = new AbortController();
@@ -94,6 +95,35 @@ export function bindThemePanel({ state, api, io, anchor }) {
     title.className = "theme-panel-title";
     title.textContent = "配色";
     panel.appendChild(title);
+
+    // —— 外观（三态：浅 / 深 / 跟随系统；B3 入口置于配色面板内，不占顶栏）——
+    if (themeMode) {
+      const sec0 = document.createElement("div");
+      sec0.className = "theme-sec";
+      sec0.textContent = "外观";
+      panel.appendChild(sec0);
+      const modes = document.createElement("div");
+      modes.className = "theme-modes";
+      const modeBtns = [];
+      const syncModes = () => {
+        const cur = themeMode.get();
+        for (const [mode, b] of modeBtns) b.classList.toggle("active", mode === cur);
+      };
+      for (const [mode, label] of THEME_MODES) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "btn btn-sm theme-mode-btn";
+        b.textContent = label;
+        b.addEventListener("click", () => {
+          themeMode.set(mode);
+          syncModes();
+        });
+        modeBtns.push([mode, b]);
+        modes.appendChild(b);
+      }
+      panel.appendChild(modes);
+      syncModes();
+    }
 
     const sec1 = document.createElement("div");
     sec1.className = "theme-sec";

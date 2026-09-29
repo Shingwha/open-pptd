@@ -24,11 +24,12 @@ import { createPresent } from "./app/present.js";
 import { clearToasts } from "./app/toast.js";
 import { createCanvasController } from "./interaction/canvas.js";
 import { createStageController } from "./interaction/stage.js";
+import { bindContextMenu } from "./interaction/contextmenu.js";
 import { makeZoomCtlDraggable } from "./app/view/zoom-ctl.js";
 import { bindProperties } from "./interaction/properties.js";
 import { injectIcons } from "./icons.js";
 import { dom } from "./dom.js";
-import { applyThemeTokens } from "./theme.js";
+import { applyThemeTokens, bindThemeMode } from "./theme.js";
 import { configureDialogs, resetDialogs } from "./dialogs.js";
 import { closeAllDialogs } from "./interaction/dialogs/base.js";
 import { disposeChartInstances } from "../packages/renderer/index.js";
@@ -86,10 +87,15 @@ export function createEditor(rootEl, options = {}) {
       : document.documentElement;
   const restoreTheme = theme ? applyThemeTokens(themeHost, theme) : null;
 
+  // 三态主题（B3：浅 / 深 / 跟随系统）：宿主注入 mode 时交给宿主（注入优先于内置板），
+  // 否则编辑器自管（localStorage 持久化 + prefers-color-scheme 跟随，落在 data-pptd-theme）
+  const themeMode = theme?.mode ? null : bindThemeMode();
+  disposers.push(() => themeMode?.destroy());
+
   // --------------------------------------------------------------------------
   // 装配（原 main.js initEditor 的闭包化）
   // --------------------------------------------------------------------------
-  const { state, page, selected, selectedElements, ops } = createEditorState();
+  const { state, page, selected, selectedElements, groupOf, ops } = createEditorState();
   const api = createEditorApi({ state, page, selected, selectedElements, ops });
 
   // 对外事件：dirty/selectionChange 在每次渲染后按状态变化派发
@@ -142,6 +148,10 @@ export function createEditor(rootEl, options = {}) {
   });
   disposers.push(() => stage.destroy?.());
 
+  // 画布右键上下文菜单（三态：单选 / 多选 / 空白页级）
+  const contextMenu = bindContextMenu({ stage: dom.stage, api, state, page, groupOf, view });
+  disposers.push(() => contextMenu.destroy?.());
+
   // 缩放控件：拖拽换位（位置持久化，双击百分比归位）
   const zoomCtl = makeZoomCtlDraggable(dom.stage, dom.zoomCtl);
   disposers.push(() => zoomCtl.destroy?.());
@@ -186,7 +196,7 @@ export function createEditor(rootEl, options = {}) {
     emitEvents();
   };
 
-  const toolbar = bindToolbar({ state, page, api, view, io, present });
+  const toolbar = bindToolbar({ state, page, api, view, io, present, themeMode });
   disposers.push(() => toolbar.destroy?.());
   const keyboard = bindKeyboard({ state, api, io, present });
   disposers.push(() => keyboard.destroy?.());
