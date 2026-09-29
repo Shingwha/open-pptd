@@ -1,8 +1,9 @@
 // ============================================================================
-// cli/export.js — 命令行导出（Node 环境：加载 PPTD 项目 → buildPptx）
+// cli/export.js — command-line export (Node: load a PPTD project → buildPptx)
 // ----------------------------------------------------------------------------
-// 与浏览器导出的差异只在图片加载：这里按相对路径读文件（dataURL 同样支持），
-// 并复用 writer 的字节签名校验，保证 PPT 文件安全。
+// The only difference from browser export is image loading: here files are read by
+// relative path (dataURL also supported) and the writer's byte-signature check is
+// reused, keeping the PPTX file safe.
 // ============================================================================
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -18,30 +19,33 @@ import { skipReasonText } from "../writer/font.js";
 import { decodeDataUrl, imageSize, safeFileName } from "../writer/util.js";
 import { ZipWriter } from "../writer/zip.js";
 import { paths } from "../paths.js";
+import { readFontRegistry, readIconRegistry } from "./resource-status.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-/** 技能根目录（assets/ 相对此定位）。 */
+/** Skill root dir (assets/ is located relative to this). */
 export const SKILL_ROOT = join(__dirname, "..", "..");
 
 // ----------------------------------------------------------------------------
-// 常量拆分（契约 5）：**注册表目录**（包内，只含 registry.json，与代码版本耦合）
-// 与**字节目录**（home 大件，可删可重下）分开。历史上两者共用 FONT_LIB_DIR/
-// ICON_LIB_DIR，资源外置后必须分离：注册表读包内（home 永不遮蔽），字节读 home
-// 优先、包内回退（现有安装零迁移）。
+// Constant split (contract 5): **registry dirs** (in-package, registry.json only,
+// version-coupled) are separate from **byte dirs** (large files in home, deletable
+// and re-downloadable). Historically both shared FONT_LIB_DIR/ICON_LIB_DIR; after
+// resources were externalized they must split: the registry reads from the package
+// (home never shadows it), bytes read home-first with package fallback (zero
+// migration for existing installs).
 // ----------------------------------------------------------------------------
-/** 包内字体注册表目录（只 registry.json）。 */
+/** Font registry dir inside the package (registry.json only). */
 export const FONT_REGISTRY_DIR = join(SKILL_ROOT, "assets", "fonts");
-/** 包内图标注册表目录（只 registry.json）。 */
+/** Icon registry dir inside the package (registry.json only). */
 export const ICON_REGISTRY_DIR = join(SKILL_ROOT, "assets", "icons");
-/** home 字体字节目录（写盘目标）。 */
+/** Font bytes dir in home (write target). */
 export const FONT_BYTES_DIR = paths.fonts;
-/** home 图标字节目录（写盘目标）。 */
+/** Icon bytes dir in home (write target). */
 export const ICON_BYTES_DIR = paths.icons;
-/** 兼容别名（外部脚本/既有调用方）：语义 = 包内注册表目录。 */
+/** Compatibility aliases (external scripts/existing callers): semantics = in-package registry dir. */
 export const FONT_LIB_DIR = FONT_REGISTRY_DIR;
 export const ICON_LIB_DIR = ICON_REGISTRY_DIR;
 
-/** home 字节目录 → 包内同名目录（读侧回退映射；同盘 rename 的读侧对称）。 */
+/** home bytes dir → same-named package dir (read-side fallback map; the read-side mirror of the same-volume rename). */
 const READ_FALLBACKS = [
   [FONT_BYTES_DIR, FONT_REGISTRY_DIR],
   [ICON_BYTES_DIR, ICON_REGISTRY_DIR],
@@ -60,10 +64,12 @@ function fallbackPath(p) {
 }
 
 /**
- * writer 注入的 fs：把「读三级」落在解析层。
- * writer 的字体/图标加载按 `join(fontDir|iconDir, name)` 读盘且本工单禁触其逻辑，
- * 故回退在注入的 fs 内完成：home 缺文件（含 `registry.json`——按设计永不在 home，
- * 只会落在包内）时改读包内同名路径。浏览器分支不经过本函数（Node 专用）。
+ * fs injected into the writer: the three-level read is enforced at the resolution
+ * layer. The writer loads fonts/icons with `join(fontDir|iconDir, name)` and its
+ * logic is frozen, so the fallback happens inside the injected fs: when a file is
+ * missing in home (including `registry.json` — by design never in home, only in the
+ * package) it reads the same-named package path. The browser branch never goes
+ * through this function (Node-only).
  */
 export function createResourceFs() {
   return {
@@ -82,10 +88,11 @@ export function createResourceFs() {
 const EXT_BY_EXTNAME = { ".png": "png", ".jpg": "jpg", ".jpeg": "jpg", ".gif": "gif" };
 
 /**
- * 读取 manifest + 全部页面文件（exportDeck / exportProject / check 共用，避免双份实现漂移）。
- * @param {string} manifest .pptd 文件路径
+ * Read the manifest plus all page files (shared by exportDeck / exportProject / check
+ * to avoid duplicate implementations drifting).
+ * @param {string} manifest .pptd file path
  * @returns {{ manifestText: string, manifestObj: object, deckDir: string, pageFiles: Map<string,string> }}
- *  pageFiles: 页面相对路径 → 文件文本
+ *  pageFiles: page relative path → file text
  */
 export function loadProjectFiles(manifest) {
   const manifestText = readFileSync(manifest, "utf8");
@@ -98,7 +105,12 @@ export function loadProjectFiles(manifest) {
   return { manifestText, manifestObj, deckDir, pageFiles };
 }
 
-/** 图片加载器：src 为 dataURL 直接解码，否则按 deck 目录相对路径读文件。 */
+/** Validation-issue location prefix ("page N elementId", either part optional); shared by the check and export gates. */
+export function issueLocation(issue) {
+  return [issue.page != null ? `第${issue.page}页` : null, issue.elementId].filter(Boolean).join(" ");
+}
+
+/** Image loader: a dataURL src is decoded directly, otherwise read as a deck-relative path. */
 function createLoadImage(deckDir) {
   return (src) => {
     if (typeof src !== "string" || !src) return null;
@@ -124,33 +136,34 @@ function createLoadImage(deckDir) {
 }
 
 /**
- * 导出项目包（deck.pptd + pages/*.page + media 图片 → zip）。
- * 原样打包磁盘文件（不经模型重序列化，保留注释/格式），解压后可直接被编辑器打开继续编辑。
+ * Export a project bundle (deck.pptd + pages/*.page + media images → zip).
+ * Packs the on-disk files verbatim (no model re-serialization, preserving
+ * comments/format); after extraction the editor can open it for further editing.
  * @param {object} opts
- * @param {string} opts.manifest .pptd 文件路径
- * @param {string} [opts.outPath] 输出 zip 路径（缺省 <deck 目录>/<标题>-project.zip）
+ * @param {string} opts.manifest .pptd file path
+ * @param {string} [opts.outPath] output zip path (defaults to <deck dir>/<title>-project.zip)
  */
 export async function exportProject({ manifest, outPath = null }) {
   const { manifestText, manifestObj, deckDir, pageFiles } = loadProjectFiles(manifest);
   const zip = new ZipWriter();
 
-  // 1. manifest（保留原文件名）
+  // 1. manifest (keeps its original file name)
   zip.add(basename(manifest) || "deck.pptd", manifestText);
 
-  // 2. 页面文件（原样）
+  // 2. page files (verbatim)
   const pageRels = [...pageFiles.keys()];
   for (const rel of pageRels) {
     zip.add(rel, pageFiles.get(rel));
   }
 
-  // 3. 图片（页面 image 元素引用的相对路径文件；dataURL 内嵌无需处理，远程 URL 跳过）
-  // 页面逐个解析（失败仍打包原文件，仅跳过图片扫描），图片收集统一走 walk.js
+  // 3. images (files referenced by page image elements; embedded dataURL needs no work, remote URLs are skipped)
+  // pages are parsed one by one (a failure still packs the raw file, only skipping image scan); image collection goes through walk.js
   const pageObjs = [];
   for (const rel of pageRels) {
     try {
       pageObjs.push(yaml.load(pageFiles.get(rel)));
     } catch {
-      continue; // 页面解析失败仍打包原文件，仅跳过图片扫描
+      continue; // a page parse failure still packs the raw file, only skipping image scan
     }
   }
   for (const src of collectImageSrcs(pageObjs)) {
@@ -167,38 +180,39 @@ export async function exportProject({ manifest, outPath = null }) {
   return { bytes, outPath: finalPath };
 }
 
-/** 导出 PPTX。字体嵌入统一由 writer 处理：deck.fonts 的 file/url 或注册表引用
- *  （{family: <注册名>}）→ 从字体库取字（home 优先 → 包内回退）→ 子集化 → EOT 嵌入。
- *  fullFonts=true 时全量嵌入（跳过子集化，导出后可继续编辑，对应 --full-fonts）。 */
+/** Export PPTX. Font embedding is handled entirely by the writer: deck.fonts file/url or
+ *  a registry reference ({family: <registry name>}) → load bytes from the font library
+ *  (home first → package fallback) → subset → EOT embed.
+ *  fullFonts=true embeds the full font (skips subsetting; editable after export; maps to --full-fonts). */
 export async function exportDeck({ manifest, outPath = null, embedFonts = true, fullFonts = false, theme = null }) {
   const { manifestText, deckDir, pageFiles } = loadProjectFiles(manifest);
   const deck = parseDeck(manifestText, pageFiles);
-  // 导出前置闸门（v3 §4.4）：error 阻断导出，warning 报告后继续
-  const fontRegistry = JSON.parse(readFileSync(join(FONT_REGISTRY_DIR, "registry.json"), "utf8"));
-  const iconRegistry = JSON.parse(readFileSync(join(ICON_REGISTRY_DIR, "registry.json"), "utf8"));
+  // Export preflight gate: an error blocks export, a warning is reported and export continues
+  const fontRegistry = readFontRegistry();
+  const iconRegistry = readIconRegistry();
   const report = validateDeck(deck, {
     fileExists: (rel) => existsSync(join(deckDir, rel)),
     fontRegistry,
     iconRegistry,
   });
   for (const issue of report.warnings) {
-    const at = [issue.page != null ? `第${issue.page}页` : null, issue.elementId].filter(Boolean).join(" ");
+    const at = issueLocation(issue);
     console.warn(`⚠ [${issue.rule}] ${at ? at + " " : ""}${issue.message}`);
   }
   if (report.errors.length) {
     const lines = report.errors.map((issue) => {
-      const at = [issue.page != null ? `第${issue.page}页` : null, issue.elementId].filter(Boolean).join(" ");
+      const at = issueLocation(issue);
       return `  ✗ [${issue.rule}] ${at ? at + " " : ""}${issue.message}`;
     });
     throw new Error(`deck 校验未通过（${report.errors.length} 个错误，先用 check 命令排查）:\n${lines.join("\n")}`);
   }
-  // --theme <key>：应用配色预设（未知键报错，避免静默导出错误配色）
+  // --theme <key>: apply a palette preset (an unknown key errors, avoiding a silent wrong-colored export)
   if (theme) {
     const preset = THEME_PALETTES[theme];
     if (!preset) {
       throw new Error(`未知配色预设 "${theme}"，可用: ${Object.keys(THEME_PALETTES).join(" / ")}`);
     }
-    // 预设键覆盖，deck 自定义色键保留（整套替换会令 $gold 等自有引用全部 unknown token）
+    // preset keys override, deck's own color keys are kept (a full replacement would turn $gold etc. into unknown tokens)
     deck.theme = { ...(deck.theme || {}), colors: mergePaletteColors(deck.theme?.colors, preset.colors) };
   }
   const skipped = [];
@@ -207,7 +221,7 @@ export async function exportDeck({ manifest, outPath = null, embedFonts = true, 
     loadImage: createLoadImage(deckDir),
     embedFonts,
     fullFonts,
-    // 字节读 home 优先 → 包内回退；registry.json 恒读包内（registryDir 显式指定）
+    // bytes read home-first → package fallback; registry.json always from the package (registryDir set explicitly)
     fontDir: FONT_BYTES_DIR,
     registryDir: FONT_REGISTRY_DIR,
     fs: createResourceFs(),

@@ -1,17 +1,18 @@
 // ============================================================================
-// server/api.js — 写回与探活 API
+// server/api.js — write-back and liveness API
 // ----------------------------------------------------------------------------
-//   POST /api/save  浏览器保存 → 写磁盘（仅 --project 挂载时可用）
-//   GET  /api/ping  探活（本地 serve 独有，GitHub Pages 上 404）——画廊据此
-//                   区分本地/线上模式
+//   POST /api/save  browser save → disk (only with --project mount)
+//   GET  /api/ping  liveness probe (local serve only, 404 on GitHub Pages) — the
+//                   gallery uses it to tell local from online mode
 // ============================================================================
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join, normalize, sep, dirname } from "node:path";
 
 /**
- * 写回 API：body 为 { path, content } 单文件或 { files: [...] } 批量；
- * 图片条目为 { path, b64 }（persistDataUrlImages 产物）：base64 按二进制写。
+ * Write-back API: body is { path, content } for a single file or { files: [...] }
+ * for a batch; image entries are { path, b64 } (persistDataUrlImages output):
+ * base64 is written as binary.
  */
 export function handleSave(req, res, projectRoot) {
   if (!projectRoot) {
@@ -48,7 +49,7 @@ export function handleSave(req, res, projectRoot) {
   });
 }
 
-/** 探活 API。 */
+/** Liveness probe. */
 export function handlePing(res) {
   res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ ok: true, mode: "local" }));
 }

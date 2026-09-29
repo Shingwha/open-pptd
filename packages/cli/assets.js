@@ -1,45 +1,36 @@
 // ============================================================================
-// cli/assets.js — assets 子命令：一次请求装全量（替代逐文件下载）
+// cli/assets.js — assets subcommand: install everything in one request (replaces per-file downloads)
 // ----------------------------------------------------------------------------
-//   assets list                              状态（装了哪些、版本、体积）
-//   assets sync [icons|fonts|all] [--from <zip>]  下载 → 校验 → 解压到 home/assets
-//   assets clean                             清 cache/ 与 tmp/（可整目录安全删除）
+//   assets list                                   status (what is installed, version, size)
+//   assets sync [icons|fonts|all] [--from <zip>]  download → verify → extract to home/assets
+//   assets clean                                  clear cache/ and tmp/ (safe to delete wholesale)
 //
-// 资产 zip 源（GitHub Releases，由 A4 的 pack-release 产出）：
+// Asset zip sources (GitHub Releases, produced by pack-release):
 //   https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-icons-v<ver>.zip
 //   https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-fonts-v<ver>.zip
-// zip 缺失（404）→ 回退逐文件下载器（cli/download.js）并明确提示。
-// 校验：优先 SHA256SUMS（同 release），缺失则结构性校验（ZIP 完整 + 期望扩展名）。
-// **注册表永不进 assets/**：解压时丢弃任何 registry.json 条目。
+// Missing zip (404) → fall back to the per-file downloader (cli/download.js) with a clear notice.
+// Verification: prefer SHA256SUMS (same release), otherwise structural (valid ZIP + expected extension).
+// **The registry never enters assets/**: any registry.json entry is dropped at extraction.
 // ============================================================================
 
 import { existsSync, readFileSync, rmSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { inflateRawSync } from "node:zlib";
-import { paths, PACKAGE_ROOT, ensureHome, atomicWriteFile, dirSize } from "../paths.js";
-import { readFontRegistry, readIconRegistry, fontReadyInfo, iconReadyInfo } from "./resource-status.js";
+import { paths, ensureHome, atomicWriteFile, dirSize } from "../paths.js";
+import { readFontRegistry, readIconRegistry, fontReadyInfo, iconReadyInfo, packageVersion } from "./resource-status.js";
 import { downloadFonts, downloadIcons } from "./download.js";
 
 const RELEASES = "https://github.com/Shingwha/open-pptd/releases/latest/download";
 
-/** 包版本（资产 zip 名带版本号）。 */
-function packageVersion() {
-  try {
-    return JSON.parse(readFileSync(join(PACKAGE_ROOT, "package.json"), "utf8")).version || "0.0.0";
-  } catch {
-    return "0.0.0";
-  }
-}
-
-/** 资产目标定义：zip 名 / 解压落点 / 期望扩展名。 */
+/** Asset target definitions: zip name / extraction dest / expected extension. */
 export const ASSET_TARGETS = {
   icons: { zipName: () => `open-pptd-icons-v${packageVersion()}.zip`, dest: () => paths.icons, ext: /\.svg$/i },
   fonts: { zipName: () => `open-pptd-fonts-v${packageVersion()}.zip`, dest: () => paths.fonts, ext: /\.(ttf|otf)$/i },
 };
 
 // ---------------------------------------------------------------------------
-// 极简 ZIP 读取（store + deflate；node:zlib inflateRaw）
+// Minimal ZIP reader (store + deflate; node:zlib inflateRaw)
 // ---------------------------------------------------------------------------
 /** @returns {Array<{name:string, data:Buffer}>} */
 export function readZipEntries(bytes) {
@@ -78,7 +69,7 @@ export function readZipEntries(bytes) {
   return out;
 }
 
-/** 安全相对路径（拒绝绝对路径 / .. / 盘符）。 */
+/** Safe relative path (rejects absolute paths / .. / drive letters). */
 function safeRelPath(name) {
   const n = String(name).replace(/\\/g, "/");
   if (!n || n.startsWith("/") || /^[a-zA-Z]:/.test(n)) return null;
@@ -88,7 +79,7 @@ function safeRelPath(name) {
 }
 
 /**
- * 解压 ZIP 到目录（丢弃 registry.json 条目；防路径穿越；原子写）。
+ * Extract a ZIP into a dir (drop registry.json entries; traversal-safe; atomic writes).
  * @returns {{files:string[], matched:number}}
  */
 export function extractZipTo(bytes, destDir, { verifyExt = null } = {}) {
@@ -99,9 +90,9 @@ export function extractZipTo(bytes, destDir, { verifyExt = null } = {}) {
     if (e.name.endsWith("/")) continue;
     const rel = safeRelPath(e.name);
     if (!rel) continue;
-    if (/(^|\/)registry\.json$/i.test(rel)) continue; // 注册表永不进 assets/
+    if (/(^|\/)registry\.json$/i.test(rel)) continue; // the registry never enters assets/
     const dest = join(destDir, rel);
-    if (!dest.startsWith(destDir)) continue; // 二次防穿越
+    if (!dest.startsWith(destDir)) continue; // second traversal guard
     atomicWriteFile(dest, e.data);
     files.push(rel);
     if (verifyExt && verifyExt.test(rel)) matched++;
@@ -111,7 +102,7 @@ export function extractZipTo(bytes, destDir, { verifyExt = null } = {}) {
 }
 
 // ---------------------------------------------------------------------------
-// 下载 + SHA256 校验
+// Download + SHA256 verification
 // ---------------------------------------------------------------------------
 async function fetchBytes(url, timeoutMs = 60000) {
   const ctl = new AbortController();
@@ -125,7 +116,7 @@ async function fetchBytes(url, timeoutMs = 60000) {
   }
 }
 
-/** 尝试取同 release 的 SHA256SUMS 并校验；不可得则返回 null（调用方降级）。 */
+/** Try to fetch and verify the release's SHA256SUMS; null when unavailable (caller degrades). */
 async function verifySha256(name, bytes) {
   try {
     const sums = (await fetchBytes(`${RELEASES}/SHA256SUMS`, 15000)).toString("utf8");
@@ -140,7 +131,7 @@ async function verifySha256(name, bytes) {
 }
 
 /**
- * 下载单个资产 zip 并解压到 home。
+ * Download one asset zip and extract it to home.
  * @returns {Promise<{ok:boolean, files?:number, reason?:string}>}
  */
 async function syncTargetFromRelease(target) {
@@ -162,7 +153,7 @@ async function syncTargetFromRelease(target) {
   }
 }
 
-/** 离线导入：从本地 zip 解压（不做网络）。 */
+/** Offline import: extract from a local zip (no network). */
 function syncTargetFromZip(target, zipPath) {
   if (!existsSync(zipPath)) throw new Error(`zip 不存在: ${zipPath}`);
   const def = ASSET_TARGETS[target];
@@ -172,7 +163,7 @@ function syncTargetFromZip(target, zipPath) {
 }
 
 // ---------------------------------------------------------------------------
-// 子命令
+// Subcommands
 // ---------------------------------------------------------------------------
 function assetsList() {
   const fontReg = readFontRegistry();
@@ -235,14 +226,14 @@ function assetsClean() {
       try {
         rmSync(join(dir, e.name), { recursive: true, force: true });
         n++;
-      } catch { /* 占用则跳过 */ }
+      } catch { /* in use → skip */ }
     }
     console.log(`✓ 已清 ${dir}（${n} 项）`);
   }
   console.log("（cache/ 与 tmp/ 可整目录安全删除；assets/ 与 config.json 未动）");
 }
 
-/** assets 子命令入口。 */
+/** assets subcommand entry. */
 export async function runAssets(args) {
   const sub = args[0] || "list";
   if (sub === "list") {

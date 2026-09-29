@@ -1,16 +1,16 @@
 // ============================================================================
-// cli/gallery.js — gallery 子命令：画廊索引扫描
+// cli/gallery.js — gallery subcommand: gallery index scan
 // ----------------------------------------------------------------------------
-//   gallery scan  扫描 examples/ 生成静态画廊索引
-//                 （examples/manifest.json，仅提交给 GitHub Pages 用；本地 serve 自动扫描）
-//   gallery list  列出画廊条目
+//   gallery scan  scan examples/ and write the static gallery index
+//                 (examples/manifest.json; for GitHub Pages only — local serve scans live)
+//   gallery list  list gallery entries
 // ============================================================================
 
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { buildManifest } from "../server/gallery.js";
 
-/** gallery 子命令入口。 */
+/** gallery subcommand entry. */
 export function runGallery(args, examplesDir) {
   const sub = args[0] || "list";
   if (sub === "scan") {
@@ -31,7 +31,7 @@ export function runGallery(args, examplesDir) {
       console.log(`· ${e.id}  ${e.title}（${e.pages} 页）  ${e.deck}`);
     }
   } else {
-    return false; // 未知子命令，调用方打 usage
+    return false; // unknown subcommand; caller prints usage
   }
   return true;
 }

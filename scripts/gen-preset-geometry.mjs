@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 // ============================================================================
-// gen-preset-geometry.mjs — 从 ECMA-376 规范生成预置形状几何数据
+// gen-preset-geometry.mjs — generate preset shape geometry from the ECMA-376 spec
 // ----------------------------------------------------------------------------
-// 输入：ECMA-376 Part 1 规范附带的 presetShapeDefinitions.xml
-//   （官方下载：https://ecma-international.org/publications-and-standards/standards/ecma-376/
-//    → ECMA-376-1_5th_edition_december_2016.zip → OfficeOpenXML-DrawingMLGeometries.zip）
-// 输出：packages/model/preset-geometry.data.js（几何数据 + 标签 + 分类，公式/路径原样转写）
-// 用法：node scripts/gen-preset-geometry.mjs <presetShapeDefinitions.xml>
+// Input: presetShapeDefinitions.xml shipped with the ECMA-376 Part 1 spec
+//   (official download: https://ecma-international.org/publications-and-standards/standards/ecma-376/
+//    → ECMA-376-1_5th_edition_december_2016.zip → OfficeOpenXML-DrawingMLGeometries.zip)
+// Output: packages/model/preset-geometry.data.js (geometry data + labels + categories; formulas/paths transcribed verbatim)
+// Usage: node scripts/gen-preset-geometry.mjs <presetShapeDefinitions.xml>
 // ----------------------------------------------------------------------------
-// 收录全部 187 个预置形状（ECMA-376 附录），支持全部路径命令：
+// Covers all 187 preset shapes (ECMA-376 appendix) and every path command:
 //   moveTo / lnTo / cubicBezTo / quadBezTo / arcTo / close
-// 每个形状可含多条 path（fill 主轮廓 + lighten/darken 明暗面 + fill="none" 描边细节），
-// 与 PowerPoint 渲染同源；upArrow 规范文件缺失，由 downArrow 垂直镜像推导。
+// Each shape may have multiple paths (fill outline + lighten/darken faces + fill="none" stroke details),
+// the same source as PowerPoint rendering; upArrow is absent from the spec file and is derived by
+// vertically mirroring downArrow.
 // ============================================================================
 
 import { readFileSync, writeFileSync } from "node:fs";
@@ -21,10 +22,10 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 // ---------------------------------------------------------------------------
-// 中文标签 + 菜单分类（对齐 references/shapes.md 的 177 种 + 连接线 10 种）
+// Labels and menu categories (177 shapes from references/shapes.md + 10 connectors)
 // ---------------------------------------------------------------------------
 const LABELS = {
-  // 基本形状
+  // basic shapes
   rect: "矩形", roundRect: "圆角矩形", ellipse: "椭圆", triangle: "三角形",
   rtTriangle: "直角三角形", parallelogram: "平行四边形", trapezoid: "梯形",
   nonIsoscelesTrapezoid: "不等边梯形", diamond: "菱形", pentagon: "五边形",
@@ -37,15 +38,15 @@ const LABELS = {
   smileyFace: "笑脸", bevel: "立体矩形", can: "圆柱体", cube: "立方体",
   funnel: "漏斗", gear6: "六齿齿轮", gear9: "九齿齿轮", plaque: "勋章",
   doubleWave: "双波浪", wave: "波浪", lineInv: "反线",
-  // 矩形变体
+  // rectangle variants
   round1Rect: "单圆角矩形", round2DiagRect: "对角双圆角矩形", round2SameRect: "同侧双圆角矩形",
   snip1Rect: "单切角矩形", snip2DiagRect: "对角双切角矩形", snip2SameRect: "同侧双切角矩形",
   snipRoundRect: "一圆角一切角矩形",
-  // 星与爆炸
+  // stars and explosions
   star4: "四角星", star5: "五角星", star6: "六角星", star7: "七角星",
   star8: "八角星", star10: "十角星", star12: "十二角星", star16: "十六角星",
   star24: "二十四角星", star32: "三十二角星", irregularSeal1: "爆炸形 1", irregularSeal2: "爆炸形 2",
-  // 箭头
+  // arrows
   rightArrow: "右箭头", leftArrow: "左箭头", upArrow: "上箭头", downArrow: "下箭头",
   leftRightArrow: "左右箭头", upDownArrow: "上下箭头", quadArrow: "四向箭头",
   leftRightUpArrow: "左右上箭头", leftUpArrow: "左上箭头", bentArrow: "弯箭头",
@@ -54,11 +55,11 @@ const LABELS = {
   curvedRightArrow: "曲线右箭头", curvedLeftArrow: "曲线左箭头", curvedUpArrow: "曲线上箭头",
   curvedDownArrow: "曲线下箭头", stripedRightArrow: "条纹右箭头",
   notchedRightArrow: "缺口右箭头", swooshArrow: "飞掠箭头",
-  // 箭头标注
+  // arrow callouts
   rightArrowCallout: "右箭头标注", leftArrowCallout: "左箭头标注", upArrowCallout: "上箭头标注",
   downArrowCallout: "下箭头标注", leftRightArrowCallout: "左右箭头标注",
   upDownArrowCallout: "上下箭头标注", quadArrowCallout: "四向箭头标注",
-  // 标注
+  // callouts
   wedgeRectCallout: "矩形标注", wedgeRoundRectCallout: "圆角矩形标注",
   wedgeEllipseCallout: "椭圆标注", cloudCallout: "云形标注",
   borderCallout1: "线形标注 1", borderCallout2: "线形标注 2", borderCallout3: "线形标注 3",
@@ -66,29 +67,29 @@ const LABELS = {
   accentBorderCallout1: "带框强调线标注 1", accentBorderCallout2: "带框强调线标注 2",
   accentBorderCallout3: "带框强调线标注 3",
   callout1: "无框标注 1", callout2: "无框标注 2", callout3: "无框标注 3",
-  // 括号
+  // braces and brackets
   leftBrace: "左大括号", rightBrace: "右大括号", leftBracket: "左中括号",
   rightBracket: "右中括号", bracePair: "双大括号", bracketPair: "双中括号",
-  // 丝带
+  // ribbons
   ribbon: "下曲丝带", ribbon2: "上曲丝带", ellipseRibbon: "曲面下丝带",
   ellipseRibbon2: "曲面上丝带", leftRightRibbon: "左右丝带",
-  // 卷轴
+  // scrolls
   horizontalScroll: "水平卷轴", verticalScroll: "垂直卷轴",
-  // 数学符号
+  // math symbols
   mathPlus: "加号（数学）", mathMinus: "减号（数学）", mathMultiply: "乘号（数学）",
   mathDivide: "除号（数学）", mathEqual: "等号（数学）", mathNotEqual: "不等号（数学）",
-  // 图表图形
+  // chart shapes
   chartPlus: "图表加号", chartStar: "图表星形", chartX: "图表叉形",
-  // 选项卡
+  // tabs
   cornerTabs: "角形选项卡", squareTabs: "方形选项卡", plaqueTabs: "勋章选项卡",
-  // 动作按钮
+  // action buttons
   actionButtonBackPrevious: "后退按钮", actionButtonBeginning: "开始按钮",
   actionButtonBlank: "空白按钮", actionButtonDocument: "文档按钮",
   actionButtonEnd: "结束按钮", actionButtonForwardNext: "前进按钮",
   actionButtonHelp: "帮助按钮", actionButtonHome: "主页按钮",
   actionButtonInformation: "信息按钮", actionButtonMovie: "影片按钮",
   actionButtonReturn: "返回按钮", actionButtonSound: "声音按钮",
-  // 流程图
+  // flowcharts
   flowChartProcess: "流程", flowChartAlternateProcess: "可选流程",
   flowChartDecision: "决策", flowChartDocument: "文档",
   flowChartMultidocument: "多文档", flowChartInputOutput: "数据",
@@ -102,7 +103,7 @@ const LABELS = {
   flowChartOnlineStorage: "在线存储", flowChartMagneticDisk: "磁盘",
   flowChartMagneticDrum: "磁鼓", flowChartMagneticTape: "磁带",
   flowChartOfflineStorage: "离线存储", flowChartDisplay: "显示",
-  // 连接线（ECMA-376 线形预置）
+  // connectors (ECMA-376 line presets)
   line: "直线", straightConnector1: "直线连接符",
   bentConnector2: "折线连接符 2", bentConnector3: "折线连接符 3",
   bentConnector4: "折线连接符 4", bentConnector5: "折线连接符 5",
@@ -110,7 +111,7 @@ const LABELS = {
   curvedConnector4: "曲线连接符 4", curvedConnector5: "曲线连接符 5",
 };
 
-// 菜单分组（顺序即展示顺序）
+// Menu grouping (order is display order)
 const CATEGORY_OF = {
   rect: "基本", roundRect: "基本", ellipse: "基本", triangle: "基本", rtTriangle: "基本",
   parallelogram: "基本", trapezoid: "基本", nonIsoscelesTrapezoid: "基本", diamond: "基本",
@@ -185,13 +186,13 @@ function stripNs(x) {
   return x.replace(/\sxmlns="[^"]*"/g, "").replace(/>\s+</g, "><");
 }
 
-/** 提取顶层形状块（扁平结构，一个顶层元素一个形状）。 */
+/** Extract a top-level shape block (flat structure: one top-level element per shape). */
 function extractBlock(name) {
   const re = new RegExp("<" + name + ">([\\s\\S]*?)</" + name + ">");
   return re.exec(src)?.[1] ?? null;
 }
 
-/** 路径点列表（<pt x=".." y=".." />）。 */
+/** Path point list (<pt x=".." y=".." />). */
 function parsePts(block) {
   const out = [];
   const re = /<pt\s+x="([^"]*)"\s+y="([^"]*)"\s*\/>/g;
@@ -200,7 +201,7 @@ function parsePts(block) {
   return out;
 }
 
-/** 一条 path 的全部命令（moveTo/lnTo/cubicBezTo/quadBezTo/arcTo/close）。 */
+/** All commands of one path (moveTo/lnTo/cubicBezTo/quadBezTo/arcTo/close). */
 function parsePathCommands(pathBody) {
   const cmds = [];
   let pos = 0;
@@ -235,7 +236,7 @@ function parseShape(name) {
   if (!raw) return null;
   const block = stripNs(raw);
 
-  // avLst：调整值默认（保持出现顺序与名称）
+  // avLst: adjustment defaults (preserving appearance order and names)
   const adjNames = [];
   const adjDefault = [];
   const avm = /<avLst>([\s\S]*?)<\/avLst>/.exec(block);
@@ -248,7 +249,7 @@ function parseShape(name) {
     }
   }
 
-  // gdLst：公式（仅第一个 gdLst 段；avLst 段是调整值默认，已由 adjNames/adjDefault 收录）
+  // gdLst: formulas (first gdLst section only; the avLst section is adjustment defaults, already captured by adjNames/adjDefault)
   const guides = [];
   const glBlock = /<gdLst>([\s\S]*?)<\/gdLst>/.exec(block)?.[1] ?? "";
   const glRe = /<gd\s+name="([^"]+)"\s+fmla="([^"]+)"\s*\/>/g;
@@ -259,15 +260,15 @@ function parseShape(name) {
     guides.push([gm[1], op, f.slice(1)]);
   }
 
-  // pathLst：全部 path（主填充 + 明暗面 + 描边细节），与 PowerPoint 同源
+  // pathLst: all paths (main fill + light/dark faces + stroke details), the same source as PowerPoint
   const paths = [];
   const pathRe = /<path\b([^>]*)>([\s\S]*?)<\/path>/g;
   let pm;
   while ((pm = pathRe.exec(block))) {
     const attrs = pm[1].trim();
     const vbM = /w="([\d.]+)"\s+h="([\d.]+)"/.exec(attrs);
-    const fillAttr = /fill="([^"]+)"/.exec(attrs)?.[1] ?? null; // null=实心；"none"=描边；lighten/darken…=明暗面
-    const stroke = !/stroke="false"/.test(attrs); // 默认可描边
+    const fillAttr = /fill="([^"]+)"/.exec(attrs)?.[1] ?? null; // null = solid; "none" = stroke only; lighten/darken… = light/dark face
+    const stroke = !/stroke="false"/.test(attrs); // stroke enabled by default
     paths.push({
       fill: fillAttr,
       stroke,
@@ -280,11 +281,11 @@ function parseShape(name) {
   return { adjNames, adjDefault, guides, paths };
 }
 
-// upArrow 规范定义文件缺失：几何 = downArrow 垂直镜像（PPT 行为一致）
+// upArrow is absent from the spec definitions: geometry = downArrow vertically mirrored (matches PowerPoint)
 function deriveUpArrow() {
   const down = parseShape("downArrow");
   if (!down) throw new Error("derive upArrow: downArrow 缺失");
-  // 路径点 y 引用镜像：t↔b；y 方向指南 y1/y2 由「b - dy」改为「t + dy」
+  // mirror y references in path points: t↔b; y-direction guides y1/y2 change from "b - dy" to "t + dy"
   const yRefMap = { t: "b", b: "t", y1: "y1m", y2: "y2m", vc: "vc" };
   const guides = [...down.guides];
   const findGuide = (n) => guides.find((g) => g[0] === n);
@@ -303,7 +304,7 @@ function deriveUpArrow() {
 }
 
 // ---------------------------------------------------------------------------
-// 生成
+// Generate
 // ---------------------------------------------------------------------------
 const allNames = [...new Set(src.match(/\n  <(\w+)>/g).map((m) => /<(\w+)>/.exec(m)[1]))];
 const out = {};
@@ -316,7 +317,7 @@ for (const name of allNames) {
   if (!shape.category) throw new Error(`${name}: 缺少分类`);
   out[name] = shape;
 }
-// upArrow 规范文件缺失：由 downArrow 垂直镜像推导（PPT 行为一致）
+// upArrow missing from the spec file: derived by vertically mirroring downArrow (matches PowerPoint)
 if (!out.upArrow) {
   const up = deriveUpArrow();
   up.label = LABELS.upArrow;

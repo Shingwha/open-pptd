@@ -1,12 +1,13 @@
 // ============================================================================
-// cli/fonts.js — fonts 子命令：内置字体库管理
+// cli/fonts.js — fonts subcommand: built-in font library management
 // ----------------------------------------------------------------------------
-// 字体库落点：注册表读**包内** `assets/fonts/registry.json`（版本耦合，永不被 home
-// 遮蔽）；字体字节读 home（`~/.open-pptd/assets/fonts`）优先、包内只读回退；下载
-// 只写 home，原子落盘（见 cli/download.js）。
-//   fonts list              查看内置字体库（状态 ✓/✗）
-//   fonts download <名称|all>  按需/全量下载字体文件（兼容别名，内部走下载器）
-//   fonts check <deck.pptd> 体检 deck 字体声明（嵌入/仅声明/缺失）
+// Font library locations: the registry is read from the **in-package**
+// `assets/fonts/registry.json` (version-coupled, never shadowed by home); font bytes
+// are read from home (`~/.open-pptd/assets/fonts`) first, with an in-package read-only
+// fallback; downloads write home only, atomically (see cli/download.js).
+//   fonts list                 view the built-in font library (status ✓/✗)
+//   fonts download <name|all>  fetch one/all font files (compatibility alias, backed by the downloader)
+//   fonts check <deck.pptd>    validate the deck's font declarations (embedded / declared-only / missing)
 // ============================================================================
 
 import { existsSync, readFileSync } from "node:fs";
@@ -86,7 +87,7 @@ async function fontsCheck(manifest) {
   console.log("\n提示：注册表引用写法 fonts: {title: {family: <注册名>}}；未命中注册表的 family 视为系统字体。");
 }
 
-/** fonts 子命令入口。 */
+/** fonts subcommand entry. */
 export async function runFonts(args) {
   const sub = args[0] || "list";
   if (sub === "list") {
@@ -96,7 +97,7 @@ export async function runFonts(args) {
   } else if (sub === "check") {
     await fontsCheck(args[1]);
   } else {
-    return false; // 未知子命令，调用方打 usage
+    return false; // unknown subcommand; caller prints usage
   }
   return true;
 }

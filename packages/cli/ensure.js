@@ -1,15 +1,15 @@
 // ============================================================================
-// cli/ensure.js — 导出前置资源体检 + 按需补齐（integration-plan §3.6）
+// cli/ensure.js — export preflight resource check + on-demand fetch (integration-plan §3.6)
 // ----------------------------------------------------------------------------
-// 五步流程：
-//   ① 收集引用  解析 deck → 字体声明（注册表解析）/ 图标引用 / 媒体文件
-//   ② 三级比对  home/assets → 包内 assets → 判定 ready | fetchable | system | unknown | missing
-//   ③ 按需补齐  只下“缺失的、且注册表带 url/mirrors 的”（复用 cli/download.js）
-//   ④ 再校验    重跑 ②；仍缺的如实列出
-//   ⑤ 输出清单  {checked, fetched[], embedded[], skipped[], missing[]}
+// Five steps:
+//   1 collect references  parse deck → font declarations (registry-resolved) / icon refs / media files
+//   2 three-level compare  home/assets → in-package assets → decide ready | fetchable | system | unknown | missing
+//   3 fetch on demand      download only what is missing and has url/mirrors in the registry (reusing cli/download.js)
+//   4 re-check             run step 2 again; list what is still missing
+//   5 output manifest      {checked, fetched[], embedded[], skipped[], missing[]}
 //
-// 可编程 API：collectRequirements / checkResources / ensureResources（D.8）。
-// 软降级契约：网络失败绝不影响导出——只告警 + 跳过嵌入。
+// Programmatic API: collectRequirements / checkResources / ensureResources (D.8).
+// Soft-degrade contract: a network failure never affects export — warn and skip embedding only.
 // ============================================================================
 
 import { existsSync } from "node:fs";
@@ -26,9 +26,9 @@ import { downloadFonts } from "./download.js";
 const isRemote = (src) => /^(https?:|data:)/i.test(String(src || ""));
 
 /**
- * ① 收集 deck 引用的资源。
+ * 1. Collect the resources referenced by the deck.
  * @param {object} opts
- * @param {string} opts.manifest .pptd 路径
+ * @param {string} opts.manifest .pptd path
  * @returns {{ deckDir:string, fonts:object[], icons:object[], media:object[], fontRegistry:object, iconRegistry:object }}
  */
 export function collectRequirements({ manifest }) {
@@ -62,14 +62,14 @@ export function collectRequirements({ manifest }) {
   return { deckDir, fonts, icons, media, fontRegistry, iconRegistry };
 }
 
-/** ②/④ 三级比对：汇总状态。 */
+/** 2/4. Three-level compare: aggregate status. */
 export function checkResources(reqs) {
   const fontsReady = reqs.fonts.filter((f) => f.status === "ready");
   const fontsFetchable = reqs.fonts.filter((f) => f.status === "fetchable");
   const fontsMissing = reqs.fonts.filter((f) => f.status === "missing");
   const fontsSystem = reqs.fonts.filter((f) => f.status === "system" || f.status === "unknown");
   const mediaMissing = reqs.media.filter((m) => !m.exists);
-  // missing = 会被跳过的「注册命中但无本地字节」字体 + deck 内缺失媒体（真错误）
+  // missing = fonts that will be skipped ("registry hit but no local bytes") + media missing inside the deck (real errors)
   const missing = [
     ...fontsFetchable.map((f) => ({ kind: "font", family: f.family, file: f.file, reason: "本地无字节（可下载）" })),
     ...fontsMissing.map((f) => ({ kind: "font", family: f.family, file: f.file, reason: "本地无字节且无可用下载源" })),
@@ -85,8 +85,8 @@ export function checkResources(reqs) {
 }
 
 /**
- * ③ 按需补齐（只下缺失的、注册表带 url/mirrors 的字体）+ ④ 再校验。
- * @param {object} reqs collectRequirements 结果
+ * 3. Fetch on demand (only missing fonts whose registry entry has url/mirrors) + 4. re-check.
+ * @param {object} reqs collectRequirements result
  * @param {{offline?:boolean}} [opts]
  * @returns {Promise<{fetched:object[],failed:object[],summary:object}>}
  */
@@ -98,7 +98,7 @@ export async function ensureResources(reqs, { offline = false } = {}) {
     const wanted = new Set(targets.map((t) => t.family));
     const subset = { ...reqs.fontRegistry, fonts: (reqs.fontRegistry.fonts || []).filter((f) => wanted.has(f.family) || wanted.has(f.key)) };
     await downloadFonts(subset, "all");
-    // 重读就绪状态（downloadFonts 已写盘；✗ 未落盘的进入 failed）
+    // re-read readiness (downloadFonts has written to disk; ✗ not-on-disk ones go to failed)
     for (const t of targets) {
       const hit = findFont(reqs.fontRegistry, t.family);
       if (hit && fontFileReady(hit)) {
@@ -114,7 +114,7 @@ export async function ensureResources(reqs, { offline = false } = {}) {
   return { fetched, failed, summary: checkResources(reqs) };
 }
 
-/** ensure 子命令入口（CLI 产品面）。 */
+/** ensure subcommand entry (CLI product surface). */
 export async function runEnsure(args) {
   const manifest = args[1];
   if (!manifest || !existsSync(manifest)) {

@@ -1,14 +1,16 @@
 // ============================================================================
-// cli/download.js — 逐文件下载器（字体 / 图标），原子落盘到 home
+// cli/download.js — per-file downloader (fonts / icons), atomic writes to home
 // ----------------------------------------------------------------------------
-// 契约 5 的并发原子性：
-//   · 写盘目标改 home（写一级）：`~/.open-pptd/assets/{fonts,icons}`
-//   · 先落 `tmp/<random>.part` → 同盘 `rename()` 原子落地（cli/../paths.atomicWriteFile）
-//   · 字体保留既有校验：magic 前 4 字节 + size 与注册表比对；图标保留 SVG 结构校验
-//   · 并发 6、两段式超时（连接 10s / body 60s[字体] · 30s[图标]）保留
+// Contract 5 concurrency atomicity:
+//   · write target is home (single write level): `~/.open-pptd/assets/{fonts,icons}`
+//   · write `tmp/<random>.part` first → same-volume `rename()` (paths.atomicWriteFile)
+//   · fonts keep the existing checks: magic first 4 bytes + size vs registry;
+//     icons keep the SVG structure check
+//   · concurrency 6, two-stage timeouts (connect 10s / body 60s [fonts] · 30s [icons]) kept
 //
-// 本模块是 `assets sync` 的**回退路径**（release zip 缺失时）；也是
-// `fonts download` / `icons download` 兼容别名的实现。
+// This module is the **fallback path** for `assets sync` (when the release zip is
+// missing); it is also the implementation behind the `fonts download` /
+// `icons download` compatibility aliases.
 // ============================================================================
 
 import { existsSync, statSync, readFileSync } from "node:fs";
@@ -17,7 +19,7 @@ import { paths, ensureHome, atomicWriteFile, resolveResourceFile } from "../path
 import { ICON_STYLES } from "./resource-status.js";
 
 // ---------------------------------------------------------------------------
-// 字体
+// Fonts
 // ---------------------------------------------------------------------------
 const FONT_CONNECT_TIMEOUT_MS = 10000;
 const FONT_BODY_TIMEOUT_MS = 60000;
@@ -28,9 +30,9 @@ function isFontMagic(buf) {
 }
 
 /**
- * 下载注册表字体到 home（按 key/family/子串匹配目标）。
- * @param {object} reg 字体注册表
- * @param {string} name "all" 或字体 key/family/子串
+ * Download registry fonts to home (targets matched by key/family/substring).
+ * @param {object} reg font registry
+ * @param {string} name "all" or a font key/family/substring
  * @returns {Promise<{ok:number,total:number,notFound:boolean}>}
  */
 export async function downloadFonts(reg, name = "all") {
@@ -55,7 +57,7 @@ export async function downloadFonts(reg, name = "all") {
 
   const downloadOne = async (f) => {
     const out = join(paths.fonts, f.file);
-    // 已就绪（home 或包内命中，且 size 一致）→ 跳过；尺寸不符 = 上游字节更换，重下
+    // already ready (hit in home or package, size matches) → skip; a size mismatch means upstream bytes changed → redownload
     const existing = resolveResourceFile("fonts", f.file);
     if (existing) {
       const magic = readFileSync(existing).subarray(0, 4);
@@ -67,7 +69,7 @@ export async function downloadFonts(reg, name = "all") {
       }
       if (validMagic && stale) console.log(`  ↻ ${f.key} 本地文件与注册表尺寸不符，重新下载`);
     }
-    // 回退链：主源 url（GitHub raw）→ mirrors 镜像（jsDelivr 等），逐个尝试直到成功
+    // fallback chain: primary url (GitHub raw) → mirrors (jsDelivr etc.), tried in order until one succeeds
     const sources = [f.url, ...(f.mirrors || [])].filter(Boolean);
     for (const src of sources) {
       if (unhealthy.has(src)) continue;
@@ -91,7 +93,7 @@ export async function downloadFonts(reg, name = "all") {
           ]).finally(() => clearTimeout(bodyTimer))
         );
         if (buf.length < 1000 || !isFontMagic(buf)) throw new Error("响应不是有效字体文件");
-        atomicWriteFile(out, buf); // tmp/*.part → rename（并发安全）
+        atomicWriteFile(out, buf); // tmp/*.part → rename (concurrency-safe)
         console.log(`  ✓ ${f.key} ← ${src} ${(buf.length / 1024 / 1024).toFixed(1)}MB`);
         return true;
       } catch (e) {
@@ -123,7 +125,7 @@ export async function downloadFonts(reg, name = "all") {
 }
 
 // ---------------------------------------------------------------------------
-// 图标
+// Icons
 // ---------------------------------------------------------------------------
 async function fetchWithTimeout(url, bodyMs) {
   const ctl = new AbortController();
@@ -143,10 +145,10 @@ async function fetchWithTimeout(url, bodyMs) {
 }
 
 /**
- * 全量下载三风格 SVG 到 home/assets/icons（已有跳过，--force 重下）。
- * @param {object} registry 图标注册表
+ * Download all three SVG styles to home/assets/icons (skip existing, --force re-downloads).
+ * @param {object} registry icon registry
  * @param {{force?:boolean}} [opts]
- * @returns {Promise<boolean>} 全部成功
+ * @returns {Promise<boolean>} all succeeded
  */
 export async function downloadIcons(registry, { force = false } = {}) {
   ensureHome();
@@ -181,7 +183,7 @@ export async function downloadIcons(registry, { force = false } = {}) {
           const buf = await fetchWithTimeout(url, 30_000);
           const text = Buffer.from(buf).toString("utf8");
           if (!text.startsWith("<svg") || !text.includes("</svg>") || text.length < 60) throw new Error("内容非法（非 SVG）");
-          atomicWriteFile(task.file, text); // tmp/*.part → rename（并发安全）
+          atomicWriteFile(task.file, text); // tmp/*.part → rename (concurrency-safe)
           ok = true;
           break;
         } catch (err) {
