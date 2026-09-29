@@ -153,7 +153,7 @@ export function createIo({ state, view, ops, source, onSaved, onDeckChange, onEr
     exportProjectZip: saver.exportProjectZip,
     exportImages: saver.exportImages,
     saveProject: saver.saveProject,
-    preloadRemoteImages: images.preloadRemoteImages,
+    preloadImages: images.preloadImages,
     renderStatusBar: live.renderStatusBar,
     fontManager,
     source: projectSource, // transport facade (hosts/tests can read it; all internal IO goes through it)
