@@ -147,7 +147,7 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
 }
 .rot:hover .sel-rotate-ic,
 .rot:active .sel-rotate-ic {
@@ -169,7 +169,7 @@
   color: var(--ink);
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
   white-space: nowrap;
 }
 .sel-overlay.resizing .sel-size { display: block; }
@@ -205,14 +205,14 @@
 .status-dirty { color: var(--danger); }
 .status-btn {
   border: 1px solid var(--line-strong);
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   background: var(--panel);
   color: var(--sub);
   font-size: var(--text-sm);
   line-height: 1.4;
   padding: 1px 10px;
   cursor: pointer;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .status-btn:hover { border-color: var(--primary); color: var(--primary); }
 .status-btn:active { background: var(--bg); }
@@ -260,7 +260,7 @@
   padding: 6px 9px;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   white-space: nowrap;
   transform: translateX(-50%);
@@ -272,7 +272,7 @@
   font-weight: 700;
   color: var(--primary);
   background: var(--primary-soft);
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   padding: 1px var(--space-2);
   margin-right: 2px;
 }
@@ -287,14 +287,14 @@
   height: 26px;
   max-width: 110px;
   border: 1px solid var(--line);
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
   padding: 0 var(--space-1);
   font-size: var(--text-sm);
   color: var(--ink);
   background: var(--panel);
   outline: none;
   cursor: pointer;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .qb-select:hover { border-color: var(--faint); }
 .qb-select:focus-visible {
@@ -308,10 +308,10 @@
   height: 26px;
   padding: 2px;
   border: 1px solid var(--line);
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
   background: var(--panel);
   cursor: pointer;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .qb-color:hover { border-color: var(--faint); }
 .qb-color:focus-visible {
@@ -325,13 +325,13 @@
   height: 26px;
   padding: 0 var(--space-1);
   border: 0;
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
   background: none;
   font-size: var(--text-sm);
   font-weight: 700;
   color: var(--ink);
   cursor: pointer;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .qb-btn:hover { background: var(--bg); color: var(--primary); }
 .qb-btn:active { background: var(--line); }
@@ -342,12 +342,12 @@
   height: 26px;
   padding: 0 9px;
   border: 1px solid var(--line);
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
   background: var(--panel);
   font-size: var(--text-sm);
   color: var(--ink);
   cursor: pointer;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .qb-text-btn:hover { border-color: var(--primary); color: var(--primary); }
 .qb-text-btn:active { background: var(--bg); }

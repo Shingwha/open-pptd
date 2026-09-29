@@ -1,74 +1,35 @@
 /* ============================================================================
-   tokens.css — design tokens (single source)
+   tokens.css — design tokens (single source of truth)
    ----------------------------------------------------------------------------
-   Value base = the original (9cd4906) token sheet: radii 6/8/12px, four light
-   shadow steps, neutral grays
-   #f5f6f8/#ffffff/#1c2532/#5b6572/#98a2af/#e7eaef/#d3d8e0, motion 120/180ms.
+   Value base = the original (9cd4906) token sheet: neutral grays
+   #f5f6f8/#ffffff/#1c2532/#5b6572/#98a2af/#e7eaef/#d3d8e0, accent #2563eb,
+   radii 6/8/12px, four light shadow steps, motion 120/180ms.
 
-   Structure (reverse aliases: the old token name keeps its value, the new token
-   name points at the old one):
-     1. 11 neutral steps --n-0…--n-900 (values = the original semantic grays, the only origin)
-     2. accent / semantic colors (--accent family, --danger/--success/--warning and -soft)
-     3. semantic aliases (components only know these)
-     4. size base (original token names: --radius* / --shadow* / --text-* / --control-h* / --dur-*)
-     5. composite transitions (transition-form notes)
-     6. compat aliases (new name → old name; the old name keeps the value)
-     7. mask / outline / thumbnail hover labels
-     8. dark sheet ([data-pptd-theme="dark"], attribute selector)
+   Structure (canonical names hold the values; the U1 vocabulary is demoted to
+   aliases in the legacy block at the tail):
+     1. base: size / motion / spacing / layers (mode-independent)
+     2. semantic colors + accent family (canonical values; the only origin)
+     3. dark sheet — [data-pptd-theme="dark"] re-declares the canonical names
+     4. legacy aliases (new names → canonical names) + compat names (--primary…)
+     5. dark overrides for the legacy-only neutral steps
+
+   The canonical selector list is ":root, [data-pptd-theme="light"]" so a detached
+   probe element can read either palette with getComputedStyle (editor/theme.js
+   defaultTokens); ":root" alone covers the attribute-less default document, and
+   [data-pptd-theme] (presence) makes the alias block apply to any themed subtree.
 
    Note: the selection tokens (--sel-bg / --sel-ring) stay as-is by user decision.
    Breakpoint convention: narrow = 900px (mirrors the BP_NARROW constant in ui.js, see responsive.css)
    ============================================================================ */
 
-:root {
-  /* ---- 1. 11 neutral steps (values = the original semantic grays, the only origin) ---- */
-  --n-0: #ffffff;   /* = original --panel */
-  --n-50: #f5f6f8;  /* = original --bg */
-  --n-100: #eef1f5; /* harmonized: no counterpart in the original, between bg and line */
-  --n-200: #ebedf0; /* harmonized: hover background (the original hover used --bg, one step shallower) */
-  --n-300: #e7eaef; /* = original --line */
-  --n-400: #d3d8e0; /* = original --line-strong */
-  --n-500: #98a2af; /* = original --faint */
-  --n-600: #7c8595; /* harmonized: no counterpart in the original, between faint and sub */
-  --n-700: #5b6572; /* = original --sub */
-  --n-800: #333d4b; /* harmonized: no counterpart in the original, between sub and ink */
-  --n-900: #1c2532; /* = original --ink */
-
-  /* ---- 2. accent + semantic colors (original values) ---- */
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
-  --accent-soft: #eef4fd;
-  --danger: #d64545;
-  --danger-soft: #fdf1f1;
-  --success: #2e9e5b;
-  --success-soft: #ecf7f0;
-  --warning: #9a6700;
-  --warning-soft: #fdf6e3;
-  /* Foreground on an accent fill (button/badge text) */
-  --on-accent: #ffffff;
-  /* Paper: canvas/thumbnail backdrop (kept light in dark mode so the layout stays readable) */
-  --paper: #ffffff;
-
-  /* ---- 3. semantic aliases (components only know these) ---- */
-  --bg: var(--n-50);
-  --panel: var(--n-0);
-  --line: var(--n-300);
-  --line-strong: var(--n-400);
-  --ink: var(--n-900);
-  --sub: var(--n-700);
-  --faint: var(--n-500);
-  --hover: var(--n-200);
-  --active: var(--n-300);
-  --disabled: var(--n-500);
-  --sel-bg: var(--accent-soft);
-  --sel-ring: var(--accent);
-
-  /* ---- 4. size base (original token names + values) ---- */
+/* ---- 1. base: size / motion / spacing / layers (mode-independent) ---- */
+:root,
+[data-pptd-theme] {
   /* Radii: 6 / 8 / 12px */
   --radius-sm: 6px;    /* controls/small chips */
   --radius: 8px;       /* panels/cards */
   --radius-lg: 12px;   /* dialogs/large overlays */
-  /* Shadows: four light steps */
+  /* Shadows: four light steps (the dark sheet re-declares them) */
   --shadow-sm: 0 1px 2px rgba(28, 37, 50, 0.06);
   --shadow-md: 0 4px 16px rgba(28, 37, 50, 0.1);
   --shadow-lg: 0 12px 32px rgba(28, 37, 50, 0.14);
@@ -90,50 +51,13 @@
   --text-2xl: 24px;
   --font: "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
-
-  /* ---- 5. transition forms: only 4 are allowed site-wide ----
-     A control state: background/border-color/color/box-shadow/transform @ --t-fast
-     B motion: opacity/transform @ --t-med
-     C size: width/opacity/border-left-color @ --t-med
-     D none (no transition, e.g. prefers-reduced-motion)
-     The concrete declarations are written with these literal forms inside each
-     component file (no composite token, to preserve the auditable property that
-     "site-wide var(-- usage only grows"). */
-
-  /* ---- 6. compat aliases (new token name → the original name; the old name keeps the value) ---- */
-  --primary: var(--accent);
-  --primary-strong: var(--accent-hover);
-  --primary-soft: var(--accent-soft);
-  --primary-tint: color-mix(in srgb, var(--accent) 10%, transparent);
-  --scrollbar: var(--line-strong);
-  --font-ui: var(--font);
-  --f-xs: var(--text-xs);
-  --f-sm: var(--text-sm);
-  --f-md: var(--text-md);
-  --f-lg: var(--text-lg);
-  --f-xl: var(--text-xl);
-  --f-2xl: var(--text-2xl);
+  /* Spacing steps (no legacy counterpart: these are the only names) */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 24px;
-  /* Radius aliases: new name → old name (6/8/12px) */
-  --r-1: var(--radius-sm);
-  --r-2: var(--radius);
-  --r-3: var(--radius-lg);
-  /* Control-height aliases */
-  --h-sm: 24px; /* harmonized: no counterpart in the original, keeps the compact step */
-  --h: var(--control-h);
-  --h-lg: var(--control-h-lg);
-  /* Shadow aliases: new name → old name */
-  --sh-pop: var(--shadow-md);
-  --sh-modal: var(--shadow-lg);
-  /* Motion aliases */
-  --t-fast: var(--dur-fast);
-  --t-med: var(--dur-med);
-  --t-slow: 200ms;
   /* Layers */
   --z-sticky: 20;   /* persistent bars such as topbar/thumbbar */
   --z-dropdown: 85; /* dropdown menus/overlays */
@@ -141,40 +65,79 @@
   --z-modal: 1000;  /* dialogs/presentation */
   --z-toast: 1100;  /* toasts, always on top */
 
-  /* ---- 7. mask / outline / thumbnail hover labels (values match the original) ---- */
-  --mask: color-mix(in srgb, var(--n-900) 45%, transparent);
-  --chip-border: color-mix(in srgb, var(--n-900) 12%, transparent);
-  --thumb-chip-bg: color-mix(in srgb, var(--n-900) 65%, transparent);
-  --thumb-chip-ink: var(--n-0);
-  --thumb-num-bg: color-mix(in srgb, var(--n-0) 85%, transparent);
-  --thumb-num-ink: color-mix(in srgb, var(--n-900) 60%, transparent);
+  /* ---- transition forms: only 4 are allowed site-wide ----
+     A control state: background/border-color/color/box-shadow/transform @ --dur-fast
+     B motion: opacity/transform @ --dur-med
+     C size: width/opacity/border-left-color @ --dur-med
+     D none (no transition, e.g. prefers-reduced-motion)
+     The concrete declarations are written with these literal forms inside each
+     component file (no composite token, to preserve the auditable property that
+     "site-wide var(-- usage only grows"). */
+
+  /* ---- 2. semantic colors + accent family (the only origin of the color values) ---- */
+  --bg: #f5f6f8;
+  --panel: #ffffff;
+  --line: #e7eaef;
+  --line-strong: #d3d8e0;
+  --ink: #1c2532;
+  --sub: #5b6572;
+  --faint: #98a2af;
+  --hover: #ebedf0;
+  --active: #e7eaef;
+  --disabled: #98a2af;
+  --sel-bg: var(--accent-soft);
+  --sel-ring: var(--accent);
+
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: #eef4fd;
+  /* Foreground on an accent fill (button/badge text) */
+  --on-accent: #ffffff;
+  --danger: #d64545;
+  --danger-soft: #fdf1f1;
+  --success: #2e9e5b;
+  --success-soft: #ecf7f0;
+  --warning: #9a6700;
+  --warning-soft: #fdf6e3;
+  /* Paper: canvas/thumbnail backdrop (kept light in dark mode so the layout stays readable) */
+  --paper: #ffffff;
+
+  /* Mask / outline / thumbnail hover labels (values match the original) */
+  --mask: color-mix(in srgb, var(--ink) 45%, transparent);
+  --chip-border: color-mix(in srgb, var(--ink) 12%, transparent);
+  --thumb-chip-bg: color-mix(in srgb, var(--ink) 65%, transparent);
+  --thumb-chip-ink: var(--panel);
+  --thumb-num-bg: color-mix(in srgb, var(--panel) 85%, transparent);
+  --thumb-num-ink: color-mix(in srgb, var(--ink) 60%, transparent);
 }
 
 /* ============================================================================
    [data-pptd-theme="dark"] — dark tokens
    ----------------------------------------------------------------------------
-   Values copied from the original (9cd4906) [data-theme="dark"] sheet: panels one
-   step darker than the background, text inverted, accent brightened, semantic
-   colors desaturated, the four shadow steps deepened. Injected by
-   editor/theme.js applyThemeTokens(rootEl, { mode: "dark" }); the host may also
-   set the attribute itself. Components never know light/dark — only this block does.
+   Values from the original (9cd4906) [data-theme="dark"] sheet: panels one step
+   darker than the background, text inverted, accent brightened, semantic colors
+   desaturated, the four shadow steps deepened. Applied by editor/theme.js
+   (built-in tri-state) or by a host through applyThemeTokens(rootEl, { mode });
+   components never know light/dark — only this block does.
    ============================================================================ */
 [data-pptd-theme="dark"] {
-  --n-0: #16191f;
-  --n-50: #1b1f26;
-  --n-100: #21262e;
-  --n-200: #2a303a;
-  --n-300: #353c47;
-  --n-400: #454d5a;
-  --n-500: #6b7482;
-  --n-600: #8f98a6;
-  --n-700: #b3bbc6;
-  --n-800: #d5dae1;
-  --n-900: #eef1f5;
+  --bg: #1b1f26;
+  --panel: #16191f;
+  --line: #353c47;
+  --line-strong: #454d5a;
+  --ink: #eef1f5;
+  --sub: #b3bbc6;
+  --faint: #6b7482;
+  --hover: #2a303a;
+  --active: #353c47;
+  --disabled: #6b7482;
+  --sel-bg: var(--accent-soft);
+  --sel-ring: var(--accent);
 
   --accent: #4d8dff;
   --accent-hover: #6ba0ff;
   --accent-soft: #1c2a44;
+  --on-accent: #ffffff;
   --danger: #ff6b6b;
   --danger-soft: #3a1f22;
   --success: #3fbf74;
@@ -198,4 +161,71 @@
   --thumb-chip-ink: #eef1f5;
   --thumb-num-bg: rgba(22, 25, 31, 0.85);
   --thumb-num-ink: rgba(238, 241, 245, 0.7);
+}
+
+/* ============================================================================
+   legacy aliases — NOT a source of truth
+   ----------------------------------------------------------------------------
+   The U1 vocabulary (--r-* / --f-* / --sh-* / --h-* / --n-* / --t-*) and the
+   older compat names (--primary-* / --scrollbar / --font-ui) point at the
+   canonical tokens above.
+   New code must use the canonical names; this block only keeps host overrides by
+   an old name working. Nothing here may carry a value of its own.
+   ============================================================================ */
+:root,
+[data-pptd-theme] {
+  /* compat: the pre-accent family */
+  --primary: var(--accent);
+  --primary-strong: var(--accent-hover);
+  --primary-soft: var(--accent-soft);
+  --primary-tint: color-mix(in srgb, var(--accent) 10%, transparent);
+  --scrollbar: var(--line-strong);
+  --font-ui: var(--font);
+
+  /* U1 font sizes → --text-* */
+  --f-xs: var(--text-xs);
+  --f-sm: var(--text-sm);
+  --f-md: var(--text-md);
+  --f-lg: var(--text-lg);
+  --f-xl: var(--text-xl);
+  --f-2xl: var(--text-2xl);
+
+  /* U1 radii → --radius* */
+  --r-1: var(--radius-sm);
+  --r-2: var(--radius);
+  --r-3: var(--radius-lg);
+
+  /* U1 control heights → --control-h* */
+  --h: var(--control-h);
+  --h-lg: var(--control-h-lg);
+  --h-sm: 24px; /* harmonized: no counterpart in the original, keeps the compact step */
+
+  /* U1 shadows → --shadow-* */
+  --sh-pop: var(--shadow-md);
+  --sh-modal: var(--shadow-lg);
+
+  /* U1 motion → --dur-* */
+  --t-fast: var(--dur-fast);
+  --t-med: var(--dur-med);
+  --t-slow: 200ms;
+
+  /* U1 neutral steps → the canonical grays */
+  --n-0: var(--panel);
+  --n-50: var(--bg);
+  --n-100: #eef1f5; /* harmonized: no counterpart in the original, between bg and line */
+  --n-200: var(--hover);
+  --n-300: var(--line);
+  --n-400: var(--line-strong);
+  --n-500: var(--faint);
+  --n-600: #7c8595; /* harmonized: no counterpart in the original, between faint and sub */
+  --n-700: var(--sub);
+  --n-800: #333d4b; /* harmonized: no counterpart in the original, between sub and ink */
+  --n-900: var(--ink);
+}
+
+/* ---- dark values for the legacy-only neutral steps ---- */
+[data-pptd-theme="dark"] {
+  --n-100: #21262e;
+  --n-600: #8f98a6;
+  --n-800: #d5dae1;
 }

@@ -1,8 +1,10 @@
 // ============================================================================
 // editor/theme.js — theme token injection (contract 3)
 // ----------------------------------------------------------------------------
-// The engine's built-in light/dark token values (mirroring editor/styles/tokens.css)
-// plus applyThemeTokens(rootEl, { tokens, mode }) to inject tokens into any mount point.
+// defaultTokens(mode) reads the built-in light/dark palette out of
+// editor/styles/tokens.css at runtime (that sheet is the single source of the
+// values; this module holds no color literal) and applyThemeTokens(rootEl,
+// { tokens, mode }) injects tokens into any mount point.
 //
 // Usage (host / same-origin iframe embedding):
 //   const restore = applyThemeTokens(document.body, { mode: "dark" });
@@ -15,10 +17,12 @@
 // and custom properties inherit naturally); tokens land on rootEl's inline style
 // (higher priority than the stylesheet, for hosts mapping their --dsw-* over).
 //
-// After the token system rebuild, the authoritative names are the --accent family
-// and --n-*; the old names (--primary etc.) remain compatibility aliases in
-// tokens.css — a host overriding an alias is not overriding --accent, so new
-// integrations should override the canonical token names (--accent / --sel-ring etc.).
+// The canonical token names are the semantic ones (--bg/--panel/--line/--ink/
+// --radius/--text-*/--shadow-*/--control-h/--dur-*) plus the --accent family;
+// the U1 names (--r-*/--f-*/--sh-*/--h-*/--n-*/--t-*) and the older --primary*
+// family are aliases kept in the legacy block at the tail of tokens.css. A host
+// overriding an alias is not overriding the canonical token, so new integrations
+// should override the canonical names (--accent / --sel-ring etc.).
 // ============================================================================
 
 /**
@@ -40,108 +44,54 @@ export const TOKENS = [
   "--mask", "--chip-border",
   // thumbnail-bar hover label
   "--thumb-chip-bg", "--thumb-chip-ink", "--thumb-num-bg", "--thumb-num-ink",
-  // shadows
+  // shadows (legacy names: kept so host overrides by the old names keep working)
   "--sh-pop", "--sh-modal",
-  // compatibility aliases (old hosts overriding by the old names still work)
+  // legacy aliases (old hosts overriding by the old names still work)
   "--primary", "--primary-strong", "--primary-soft", "--primary-tint", "--scrollbar",
   "--shadow-sm", "--shadow-md", "--shadow-lg", "--shadow-sheet",
 ];
 
-const LIGHT = {
-  "--bg": "#f5f6f8",
-  "--panel": "#ffffff",
-  "--line": "#e7eaef",
-  "--line-strong": "#d3d8e0",
-  "--ink": "#1c2532",
-  "--sub": "#5b6572",
-  "--faint": "#98a2af",
-  "--hover": "#ebedf0",
-  "--active": "#e7eaef",
-  "--disabled": "#98a2af",
-  "--sel-bg": "#eef4fd",
-  "--sel-ring": "#2563eb",
-  "--accent": "#2563eb",
-  "--accent-hover": "#1d4ed8",
-  "--accent-soft": "#eef4fd",
-  "--on-accent": "#ffffff",
-  "--danger": "#d64545",
-  "--danger-soft": "#fdf1f1",
-  "--success": "#2e9e5b",
-  "--success-soft": "#ecf7f0",
-  "--warning": "#9a6700",
-  "--warning-soft": "#fdf6e3",
-  "--paper": "#ffffff",
-  "--mask": "rgba(28, 37, 50, 0.45)",
-  "--chip-border": "rgba(0, 0, 0, 0.12)",
-  "--thumb-chip-bg": "rgba(28, 37, 50, 0.65)",
-  "--thumb-chip-ink": "#ffffff",
-  "--thumb-num-bg": "rgba(255, 255, 255, 0.85)",
-  "--thumb-num-ink": "rgba(28, 37, 50, 0.6)",
-  "--sh-pop": "0 4px 16px rgba(28, 37, 50, 0.1)",
-  "--sh-modal": "0 12px 32px rgba(28, 37, 50, 0.14)",
-  // compatibility aliases
-  "--primary": "#2563eb",
-  "--primary-strong": "#1d4ed8",
-  "--primary-soft": "#eef4fd",
-  "--primary-tint": "rgba(37, 99, 235, 0.1)",
-  "--scrollbar": "#d3d8e0",
-  "--shadow-sm": "0 1px 2px rgba(28, 37, 50, 0.06)",
-  "--shadow-md": "0 4px 16px rgba(28, 37, 50, 0.1)",
-  "--shadow-lg": "0 12px 32px rgba(28, 37, 50, 0.14)",
-  "--shadow-sheet": "0 -8px 32px rgba(28, 37, 50, 0.16)",
-};
+// ----------------------------------------------------------------------------
+// Value source: tokens.css (probe read)
+// ----------------------------------------------------------------------------
+// defaultTokens() mounts a hidden probe element, stamps data-pptd-theme="light"
+// | "dark" on it and reads the resolved custom properties with getComputedStyle
+// (var() references are substituted at computed-value time, so aliases resolve
+// too). tokens.css declares the light palette on ":root, [data-pptd-theme=
+// "light"]" and the dark palette on [data-pptd-theme="dark"], so the probe needs
+// nothing from the surrounding page.
+//
+// Degradation: without a DOM (Node, SSR) there is no stylesheet to read, and
+// this module deliberately keeps no copy of the values, so an empty record is
+// returned. The tables only exist in tokens.css.
 
-// Dark palette copied entry by entry from the design reference [data-theme="dark"]
-// (panels one step darker than the background, text inverted, accents brightened,
-// semantic colors desaturated).
-const DARK = {
-  "--bg": "#1b1f26",
-  "--panel": "#16191f",
-  "--line": "#353c47",
-  "--line-strong": "#454d5a",
-  "--ink": "#eef1f5",
-  "--sub": "#b3bbc6",
-  "--faint": "#6b7482",
-  "--hover": "#2a303a",
-  "--active": "#353c47",
-  "--disabled": "#6b7482",
-  "--sel-bg": "#1c2a44",
-  "--sel-ring": "#4d8dff",
-  "--accent": "#4d8dff",
-  "--accent-hover": "#6ba0ff",
-  "--accent-soft": "#1c2a44",
-  "--on-accent": "#ffffff",
-  "--danger": "#ff6b6b",
-  "--danger-soft": "#3a1f22",
-  "--success": "#3fbf74",
-  "--success-soft": "#16301f",
-  "--warning": "#e0a83a",
-  "--warning-soft": "#382c12",
-  "--paper": "#f7f8fa",
-  "--mask": "rgba(0, 0, 0, 0.6)",
-  "--chip-border": "rgba(255, 255, 255, 0.14)",
-  "--thumb-chip-bg": "rgba(0, 0, 0, 0.7)",
-  "--thumb-chip-ink": "#eef1f5",
-  "--thumb-num-bg": "rgba(22, 25, 31, 0.85)",
-  "--thumb-num-ink": "rgba(238, 241, 245, 0.7)",
-  "--sh-pop": "0 4px 16px rgba(0, 0, 0, 0.45)",
-  "--sh-modal": "0 12px 32px rgba(0, 0, 0, 0.6)",
-  // compatibility aliases
-  "--primary": "#4d8dff",
-  "--primary-strong": "#6ba0ff",
-  "--primary-soft": "#1c2a44",
-  "--primary-tint": "rgba(77, 141, 255, 0.16)",
-  "--scrollbar": "#454d5a",
-  "--shadow-sm": "0 1px 2px rgba(0, 0, 0, 0.35)",
-  "--shadow-md": "0 4px 16px rgba(0, 0, 0, 0.45)",
-  "--shadow-lg": "0 12px 32px rgba(0, 0, 0, 0.6)",
-  "--shadow-sheet": "0 -8px 32px rgba(0, 0, 0, 0.55)",
-};
-
-/** Built-in light / dark token tables (returns a shallow copy the caller can safely mutate). */
-export function defaultTokens(mode = "light") {
-  return { ...(mode === "dark" ? DARK : LIGHT) };
+/** Mount the hidden probe element, read the mode's tokens, remove the probe. */
+function probeTokens(mode) {
+  if (typeof document === "undefined" || !document.documentElement || typeof getComputedStyle !== "function") return {};
+  const el = document.createElement("div");
+  el.setAttribute("aria-hidden", "true");
+  el.setAttribute("data-pptd-theme", mode);
+  el.style.cssText = "position:absolute;left:-9999px;top:-9999px;width:0;height:0;overflow:hidden;pointer-events:none";
+  const host = document.body || document.documentElement;
+  host.appendChild(el);
+  try {
+    const cs = getComputedStyle(el);
+    const out = {};
+    for (const name of TOKENS) {
+      const value = cs.getPropertyValue(name).trim();
+      if (value) out[name] = value;
+    }
+    return out;
+  } finally {
+    el.remove();
+  }
 }
+
+/** Built-in light / dark token table, read from tokens.css (a fresh copy the caller can safely mutate). */
+export function defaultTokens(mode = "light") {
+  return probeTokens(mode === "dark" ? "dark" : "light");
+}
+
 
 /**
  * Inject the theme into a mount point: mode → the data-pptd-theme attribute; tokens → inline token overrides.

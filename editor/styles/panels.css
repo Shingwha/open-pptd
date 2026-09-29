@@ -58,7 +58,7 @@ html:has(.gallery-view) {
   align-items: center;
   gap: 7px;
   padding: 5px var(--space-3);
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   background: var(--primary-soft);
   color: var(--primary-strong);
@@ -81,7 +81,7 @@ html:has(.gallery-view) {
   padding: 4px;
   background: var(--bg);
   border: 1px solid var(--line);
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   position: relative;
 }
 .gallery-tab {
@@ -91,9 +91,9 @@ html:has(.gallery-view) {
   font-size: var(--text-sm);
   color: var(--sub);
   padding: 5px 18px;
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   position: relative; /* paints the button above the indicator (which precedes it) */
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .gallery-tab:hover { color: var(--ink); }
 .gallery-tab.active {
@@ -113,10 +113,10 @@ html:has(.gallery-view) {
   bottom: 4px;
   left: 4px;
   width: 0;
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   background: var(--primary);
   will-change: transform;
-  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
 }
 
 .gallery-grid {
@@ -133,10 +133,10 @@ html:has(.gallery-view) {
 .gallery-card {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   cursor: pointer;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 
 /* [experimental] Staggered card fade-in on tab switch: remove this block plus the
@@ -228,7 +228,7 @@ html:has(.gallery-view) {
   font-size: var(--text-xs);
   color: var(--thumb-chip-ink);
   background: var(--thumb-chip-bg);
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
   padding: 2px 8px;
 }
 
@@ -257,7 +257,7 @@ html:has(.gallery-view) {
   font-size: var(--text-xs);
   color: var(--primary-strong);
   background: var(--primary-soft);
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
   padding: 1px 7px;
 }
 
@@ -268,7 +268,7 @@ html:has(.gallery-view) {
   color: var(--sub);
   background: var(--panel);
   border: 1px dashed var(--line-strong);
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   line-height: 1.8;
 }
 
@@ -301,7 +301,7 @@ html:has(.gallery-view) {
   background: var(--warning-soft);
   color: var(--warning);
   border: 1px solid var(--warning);
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   padding: 6px 10px;
   font-size: var(--text-sm);
   line-height: 1.6;
@@ -329,7 +329,7 @@ html:has(.gallery-view) {
   color: var(--primary);
   text-align: center;
   padding: 1px 2px;
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
 }
 .excel-grid .chart-col-head input:focus { background: var(--primary-soft); }
 /* Table width = content width (max-content set by the component): spare space when
@@ -337,7 +337,7 @@ html:has(.gallery-view) {
 /* Series list */
 .series-box {
   border: 1px solid var(--line);
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   padding: 10px;
   background: var(--bg);
 }
@@ -348,19 +348,19 @@ html:has(.gallery-view) {
   align-items: center;
   gap: 6px;
   padding: var(--space-1) 6px;
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .series-item:hover { background: var(--primary-soft); }
 .series-item.series-active { background: var(--primary-soft); outline: 1px solid var(--primary); }
 .series-item .color-field { gap: var(--space-1); }
-.series-item .color-swatch-btn { width: 20px; height: 20px; border-radius: var(--r-2); }
-.series-item .color-field input[type="color"] { width: 24px; height: 20px; border-radius: var(--r-2); }
+.series-item .color-swatch-btn { width: 20px; height: 20px; border-radius: var(--radius); }
+.series-item .color-field input[type="color"] { width: 24px; height: 20px; border-radius: var(--radius); }
 .series-item .color-hex { width: 52px; flex: none; padding: 2px var(--space-1); font-size: var(--text-xs); }
-.series-item input { padding: var(--space-1) 6px; font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--r-2); }
+.series-item input { padding: var(--space-1) 6px; font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--radius); }
 .series-item input[type="text"] { flex: 1; min-width: 60px; }
-.series-item select { padding: var(--space-1); font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--r-2); max-width: 120px; }
+.series-item select { padding: var(--space-1); font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--radius); max-width: 120px; }
 .series-item .btn-ghost { flex: none; }
 
 /* -- Excel-style data grid component (excel-grid.js, shared by table/chart) -- */
@@ -370,7 +370,7 @@ html:has(.gallery-view) {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--line);
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 .excel-grid .table-toolbar { border: none; border-bottom: 1px solid var(--line); border-radius: 0; }
