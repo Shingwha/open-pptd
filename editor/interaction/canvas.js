@@ -593,7 +593,6 @@ export function createCanvasController(canvas, opts) {
     startGesture,
     startMarquee,
     cancelMarquee,
-    isMarqueeActive: () => !!marquee,
     // 捏合接管时由路由器调用：与正常松手等价（提交已发生的位移并重渲染）
     cancelGesture: onDragEnd,
     isGestureActive: () => !!drag,

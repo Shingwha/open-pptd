@@ -11,14 +11,9 @@
 import { PAGE_HEIGHT, PAGE_WIDTH } from "../../packages/model/index.js";
 
 /** 组元素组成员（非组返回空）。list = 当前页元素数组。 */
-export function groupMembers(el, list) {
+function groupMembers(el, list) {
   if (el?.elementType !== "group" || !Array.isArray(el.children)) return [];
   return el.children.map((id) => list.find((e) => e.elementId === id)).filter(Boolean);
-}
-
-/** 选中项 → 实际要位移的元素（组展开 children）。 */
-export function affectedOf(els, list) {
-  return els.flatMap((el) => [el, ...groupMembers(el, list)]);
 }
 
 /** 位移元素（含组成员）。 */
@@ -29,7 +24,7 @@ export function translate(el, dx, dy, list) {
 }
 
 /** 选中集合的包围盒 [x, y, w, h]。 */
-export function unionBounds(els) {
+function unionBounds(els) {
   let x1 = Infinity;
   let y1 = Infinity;
   let x2 = -Infinity;

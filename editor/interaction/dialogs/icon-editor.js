@@ -17,7 +17,7 @@ const RENDER_CAP = 96;
  * @param {HTMLElement} mount 挂载容器
  * @param {object} opts { current 当前 iconName, onPick(rawIconName) }
  */
-export async function renderIconBrowser(mount, { current = null, onPick } = {}) {
+async function renderIconBrowser(mount, { current = null, onPick } = {}) {
   mount.innerHTML = "";
   const registry = await getIconRegistry();
 

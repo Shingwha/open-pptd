@@ -17,9 +17,8 @@
 // （cellFinal/tdCss/estimateTableLayout）——所见即所得。
 // ============================================================================
 
-import { showDialog, buildCellInput, button } from "./base.js";
+import { showDialog } from "./base.js";
 import { dialogs } from "../../dialogs.js";
-import * as ui from "../../ui.js";
 import { renderGroup, fieldHandlers } from "../fields.js";
 import { createExcelGrid } from "../excel-grid.js";
 import {

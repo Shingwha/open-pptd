@@ -9,7 +9,7 @@
 //   - 类型切换：语义键重映射（remapEncode）+ 共存约束警告（validateChartSeries）
 // ============================================================================
 
-import { showDialog, buildCellInput, button } from "./base.js";
+import { showDialog, button } from "./base.js";
 import { renderGroup, themeSwatches, fieldHandlers } from "../fields.js";
 import { createExcelGrid } from "../excel-grid.js";
 import * as ui from "../../ui.js";

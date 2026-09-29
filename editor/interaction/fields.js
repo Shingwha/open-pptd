@@ -61,7 +61,7 @@ export function renderGroup(group, h) {
 }
 
 /** 渲染字段列表到容器（num 两两成行，其余整行）。 */
-export function renderFields(g, fields, h) {
+function renderFields(g, fields, h) {
   let grid = null;
   const ensureGrid = () => {
     if (!grid) {
