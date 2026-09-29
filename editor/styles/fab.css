@@ -27,10 +27,7 @@
   justify-content: center;
   cursor: pointer;
   box-shadow: var(--shadow-md);
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease),
-              box-shadow var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .fab-ic { width: 20px; height: 20px; }
 .fab:hover { background: var(--primary-soft); border-color: var(--primary); }
@@ -43,5 +40,5 @@ body.inspector-open #btn-inspector-open,
 body:not(.inspector-collapsed) #btn-inspector-open {
   background: var(--primary-strong);
   border-color: var(--primary-strong);
-  color: #fff;
+  color: var(--on-accent);
 }

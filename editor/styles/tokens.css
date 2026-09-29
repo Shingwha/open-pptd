@@ -1,121 +1,163 @@
 /* ============================================================================
    tokens.css — 设计令牌（单一来源）
    ----------------------------------------------------------------------------
-   所有组件只引用令牌，不写死色值/字号/层级。改主题 = 改这里。
-   色板语义：
-   - 中性灰阶承载 90% 界面（bg/panel/ink/sub/faint/line）
-   - 唯一强调色 primary（蓝），危险 danger（红），成功/警告仅用于状态提示
+   全部取值逐条照抄设计参考稿 docs/specs/ref/editor-design-reference.html 的
+   `:root`（浅）与 `[data-theme="dark"]`（深）令牌板；深浅两套只在此处定义，
+   组件永远不写死颜色、也不感知 light/dark，只引用语义令牌。
+
+   结构：
+     1. 中性 11 阶 --n-0…--n-900（唯一色阶来源）
+     2. 强调 / 语义色（--accent 系、--danger/--success/--warning 及 -soft）
+     3. 语义别名（组件只认这些）
+     4. 圆角 3 档 / 阴影 2 档 / 动效 3 档 + 1 缓动 / 控件高 3 档 / 字号 6 档
+     5. 复合过渡（把 transition 形态收敛到 3 条）
+     6. 兼容别名（旧令牌名 → 新令牌；未迁移组件不破，组件侧逐步切新名）
+     7. 深色板（[data-pptd-theme="dark"]，A2 落地的属性选择器）
+
    断点约定：窄屏 = 900px（与 ui.js 的 BP_NARROW 常量一一对应，见 responsive.css）
    ============================================================================ */
 
 :root {
-  /* ---- 中性色板 ---- */
-  --bg: #f5f6f8;            /* 应用底色 */
-  --panel: #ffffff;         /* 面板/浮层底 */
-  --ink: #1c2532;           /* 主文字 */
-  --sub: #5b6572;           /* 次要文字 */
-  --faint: #98a2af;         /* 弱化文字/占位 */
-  --line: #e7eaef;          /* 细分隔线 */
-  --line-strong: #d3d8e0;   /* 控件边框 */
-  --scrollbar: #d3d8e0;     /* 滚动条（同 line-strong，独立语义） */
+  /* ---- 1. 中性 11 阶（唯一色阶来源） ---- */
+  --n-0: #ffffff;
+  --n-50: #fafbfc;
+  --n-100: #f4f5f7;
+  --n-200: #ebedf0;
+  --n-300: #e0e3e8;
+  --n-400: #ccd1d9;
+  --n-500: #a4acb8;
+  --n-600: #78818f;
+  --n-700: #565f6d;
+  --n-800: #3a424e;
+  --n-900: #1e242e;
 
-  /* ---- 强调色 ---- */
-  --primary: #2563eb;
-  --primary-strong: #1d4ed8;        /* hover/按下 */
-  --primary-soft: #eef4fd;          /* 选中底 */
-  --primary-tint: rgba(37, 99, 235, 0.1);
-
-  /* ---- 语义色 ---- */
+  /* ---- 2. 强调 + 语义色 ---- */
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: #eef4fd;
   --danger: #d64545;
   --danger-soft: #fdf1f1;
   --success: #2e9e5b;
   --success-soft: #ecf7f0;
   --warning: #9a6700;
   --warning-soft: #fdf6e3;
+  /* 主色底上的前景（按钮/徽标文字） */
+  --on-accent: #ffffff;
 
-  /* ---- 字体 ---- */
-  --font-ui: "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --text-xs: 11px;   /* 辅助说明/角标 */
-  --text-sm: 12px;   /* 次要信息/缩略条 */
-  --text-md: 13px;   /* 正文基准 */
-  --text-lg: 14px;   /* 分组标题/品牌 */
-  --text-xl: 16px;   /* 对话框标题 */
-  --text-2xl: 24px;  /* 页面级大标题（画廊 hero） */
+  /* ---- 3. 语义别名（组件只认这些） ---- */
+  --bg: var(--n-50);
+  --panel: var(--n-0);
+  --line: var(--n-300);
+  --line-strong: var(--n-400);
+  --ink: var(--n-900);
+  --sub: var(--n-700);
+  --faint: var(--n-500);
+  --hover: var(--n-200);
+  --active: var(--n-300);
+  --disabled: var(--n-500);
+  --sel-bg: var(--accent-soft);
+  --sel-ring: var(--accent);
 
-  /* ---- 间距阶梯（4px 基网） ---- */
+  /* ---- 4. 圆角（3 档）/ 阴影（2 档）/ 动效 / 控件高 / 字号 ---- */
+  --r-1: 2px;   /* 内嵌控件 */
+  --r-2: 4px;   /* 按钮、输入 */
+  --r-3: 6px;   /* 面板、对话框 */
+  --sh-pop: 0 4px 14px rgba(20, 25, 35, 0.1);
+  --sh-modal: 0 16px 48px rgba(20, 25, 35, 0.18);
+  --t-fast: 80ms;
+  --t-med: 140ms;
+  --t-slow: 200ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --h-sm: 24px;
+  --h: 28px;
+  --h-lg: 32px;
+  --f-xs: 11px;
+  --f-sm: 12px;
+  --f-md: 13px;
+  --f-lg: 14px;
+  --f-xl: 16px;
+  --f-2xl: 24px; /* 页面级大标题（画廊 hero） */
+  --font: "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+
+  /* ---- 5. 过渡形态：全站 transition 只允许 4 种形态 ----
+     A 控件态：background/border-color/color/box-shadow/transform @ --t-fast
+     B 动效：opacity/transform @ --t-med
+     C 尺寸：width/opacity/border-left-color @ --t-med
+     D none（无过渡，如 prefers-reduced-motion）
+     具体声明在各组件文件内以这三条形态的字面值书写（不用复合令牌，
+     以保住「全仓 var(-- 用量只增不减」的可审计性）。 */
+
+  /* ---- 6. 兼容别名（旧令牌名 → 新令牌；组件侧由 T5/T6 逐步切新名） ---- */
+  --primary: var(--accent);
+  --primary-strong: var(--accent-hover);
+  --primary-soft: var(--accent-soft);
+  --primary-tint: color-mix(in srgb, var(--accent) 14%, transparent);
+  --scrollbar: var(--line-strong);
+  --font-ui: var(--font);
+  --text-xs: var(--f-xs);
+  --text-sm: var(--f-sm);
+  --text-md: var(--f-md);
+  --text-lg: var(--f-lg);
+  --text-xl: var(--f-xl);
+  --text-2xl: var(--f-2xl);
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 24px;
-
-  /* ---- 圆角 ---- */
-  --radius-sm: 6px;    /* 控件/小芯片 */
-  --radius: 8px;       /* 面板/卡片 */
-  --radius-lg: 12px;   /* 对话框/大浮层 */
-
-  /* ---- 控件尺寸 ---- */
-  --control-h: 28px;       /* 表单控件/按钮基准高 */
-  --control-h-lg: 32px;    /* 顶栏按钮 */
+  --radius-sm: var(--r-2);
+  --radius: var(--r-3);
+  --radius-lg: var(--r-3);
+  --control-h: var(--h);
+  --control-h-lg: var(--h-lg);
   --topbar-h: 48px;
+  --shadow-sm: var(--sh-pop);
+  --shadow-md: var(--sh-pop);
+  --shadow-lg: var(--sh-modal);
+  --shadow-sheet: var(--sh-modal);
+  --z-sticky: 20;   /* 顶栏/缩略条等常驻层 */
+  --z-dropdown: 85; /* 下拉菜单/浮层 */
+  --z-overlay: 100; /* 遮罩/画布覆盖层 */
+  --z-modal: 1000;  /* 对话框/放映 */
+  --z-toast: 1100;  /* 提示，永远最上 */
+  --dur-fast: var(--t-fast);
+  --dur-med: var(--t-med);
 
-  /* ---- 遮罩 / 描边（暗色下需整体反转，故独立成令牌） ---- */
-  --mask: rgba(28, 37, 50, 0.45);       /* 对话框 / 属性抽屉遮罩 */
-  --chip-border: rgba(0, 0, 0, 0.12);   /* 颜色色块描边 */
-
-  /* ---- 缩略条悬浮标签（叠在缩略图上的半透明小标） ---- */
-  --thumb-chip-bg: rgba(28, 37, 50, 0.65);
-  --thumb-chip-ink: #ffffff;
-  --thumb-num-bg: rgba(255, 255, 255, 0.85);
-  --thumb-num-ink: rgba(28, 37, 50, 0.6);
-
-  /* ---- 阴影（仅浮层使用，保持轻） ---- */
-  --shadow-sm: 0 1px 2px rgba(28, 37, 50, 0.06);
-  --shadow-md: 0 4px 16px rgba(28, 37, 50, 0.1);
-  --shadow-lg: 0 12px 32px rgba(28, 37, 50, 0.14);
-  --shadow-sheet: 0 -8px 32px rgba(28, 37, 50, 0.16); /* 底部滑出面板（向上投影） */
-
-  /* ---- 层级（收敛原 20/85/100/9999/10000） ---- */
-  --z-sticky: 20;      /* 顶栏/缩略条等常驻层 */
-  --z-dropdown: 85;    /* 下拉菜单/浮层 */
-  --z-overlay: 100;    /* 遮罩/画布覆盖层 */
-  --z-modal: 1000;     /* 对话框/放映 */
-  --z-toast: 1100;     /* 提示，永远最上 */
-
-  /* ---- 动效 ---- */
-  --dur-fast: 120ms;
-  --dur-med: 180ms;
-  --ease: cubic-bezier(0.2, 0, 0, 1);
+  /* ---- 遮罩 / 描边 / 缩略条悬浮标签（A2 落地，保留并给 dark 值） ---- */
+  --mask: color-mix(in srgb, var(--n-900) 45%, transparent);
+  --chip-border: color-mix(in srgb, var(--n-900) 12%, transparent);
+  --thumb-chip-bg: color-mix(in srgb, var(--n-900) 65%, transparent);
+  --thumb-chip-ink: var(--n-0);
+  --thumb-num-bg: color-mix(in srgb, var(--n-0) 85%, transparent);
+  --thumb-num-ink: color-mix(in srgb, var(--n-900) 60%, transparent);
 }
 
 /* ============================================================================
    [data-pptd-theme="dark"] — 深色令牌（契约 3）
    ----------------------------------------------------------------------------
-   取值换算自设计参考稿 docs/specs/ref/editor-design-reference.html 的
-   [data-theme="dark"] 板：面板比底暗一档、文字反转、强调色提亮、语义色降饱和。
-   由 editor/theme.js 的 applyThemeTokens(rootEl, { mode: "dark" }) 注入属性；
-   也可在宿主页面自行给 <html>/<body> 加该属性。
-   注意：W3 的 U1 会整体重建令牌体系，此处只求语义正确。
+   取值逐条照抄设计参考稿的 [data-theme="dark"] 板：面板比底暗一档、文字反转、
+   强调色提亮、语义色降饱和、阴影加深。由 editor/theme.js 的
+   applyThemeTokens(rootEl, { mode: "dark" }) 注入属性；宿主也可自行加该属性。
+   组件永远不知道 light/dark —— 只有这里知道。
    ============================================================================ */
 [data-pptd-theme="dark"] {
-  /* ---- 中性色板 ---- */
-  --bg: #1b1f26;
-  --panel: #16191f;
-  --ink: #eef1f5;
-  --sub: #b3bbc6;
-  --faint: #6b7482;
-  --line: #353c47;
-  --line-strong: #454d5a;
-  --scrollbar: #454d5a;
+  --n-0: #16191f;
+  --n-50: #1b1f26;
+  --n-100: #21262e;
+  --n-200: #2a303a;
+  --n-300: #353c47;
+  --n-400: #454d5a;
+  --n-500: #6b7482;
+  --n-600: #8f98a6;
+  --n-700: #b3bbc6;
+  --n-800: #d5dae1;
+  --n-900: #eef1f5;
 
-  /* ---- 强调色 ---- */
-  --primary: #4d8dff;
-  --primary-strong: #6ba0ff;
-  --primary-soft: #1c2a44;
-  --primary-tint: rgba(77, 141, 255, 0.16);
-
-  /* ---- 语义色 ---- */
+  --accent: #4d8dff;
+  --accent-hover: #6ba0ff;
+  --accent-soft: #1c2a44;
   --danger: #ff6b6b;
   --danger-soft: #3a1f22;
   --success: #3fbf74;
@@ -123,17 +165,14 @@
   --warning: #e0a83a;
   --warning-soft: #382c12;
 
-  /* ---- 遮罩 / 描边 / 缩略条标签 ---- */
+  --sh-pop: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --sh-modal: 0 16px 48px rgba(0, 0, 0, 0.6);
+
+  /* 遮罩 / 描边 / 缩略条标签：暗底整体反转 */
   --mask: rgba(0, 0, 0, 0.6);
   --chip-border: rgba(255, 255, 255, 0.14);
   --thumb-chip-bg: rgba(0, 0, 0, 0.7);
   --thumb-chip-ink: #eef1f5;
   --thumb-num-bg: rgba(22, 25, 31, 0.85);
   --thumb-num-ink: rgba(238, 241, 245, 0.7);
-
-  /* ---- 阴影（暗底用纯黑，方向不变） ---- */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
-  --shadow-sheet: 0 -8px 32px rgba(0, 0, 0, 0.55);
 }

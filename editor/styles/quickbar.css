@@ -12,7 +12,7 @@
   padding: 6px 9px;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-3);
   box-shadow: var(--shadow-md);
   white-space: nowrap;
   transform: translateX(-50%);
@@ -24,7 +24,7 @@
   font-weight: 700;
   color: var(--primary);
   background: var(--primary-soft);
-  border-radius: 999px;
+  border-radius: var(--r-3);
   padding: 1px var(--space-2);
   margin-right: 2px;
 }
@@ -39,16 +39,14 @@
   height: 26px;
   max-width: 110px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   padding: 0 var(--space-1);
   font-size: var(--text-sm);
   color: var(--ink);
   background: var(--panel);
   outline: none;
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .qb-select:hover { border-color: var(--faint); }
 .qb-select:focus-visible {
@@ -62,12 +60,10 @@
   height: 26px;
   padding: 2px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   background: var(--panel);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .qb-color:hover { border-color: var(--faint); }
 .qb-color:focus-visible {
@@ -81,15 +77,13 @@
   height: 26px;
   padding: 0 var(--space-1);
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   background: none;
   font-size: var(--text-sm);
   font-weight: 700;
   color: var(--ink);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .qb-btn:hover { background: var(--bg); color: var(--primary); }
 .qb-btn:active { background: var(--line); }
@@ -100,14 +94,12 @@
   height: 26px;
   padding: 0 9px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   background: var(--panel);
   font-size: var(--text-sm);
   color: var(--ink);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .qb-text-btn:hover { border-color: var(--primary); color: var(--primary); }
 .qb-text-btn:active { background: var(--bg); }

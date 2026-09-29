@@ -10,7 +10,7 @@
   max-height: min(600px, 76vh);
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-3);
   box-shadow: var(--shadow-lg);
   flex-direction: column;
   overflow: hidden;
@@ -32,11 +32,9 @@
   font-size: var(--text-md);
   color: var(--sub);
   cursor: pointer;
-  border-radius: var(--radius) var(--radius) 0 0;
+  border-radius: var(--r-3) var(--r-3) 0 0;
   position: relative;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .add-tab:hover { color: var(--ink); background: var(--primary-soft); }
 .add-tab:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
@@ -48,7 +46,7 @@
   right: var(--space-3);
   bottom: -1px;
   height: 2px;
-  border-radius: 2px;
+  border-radius: var(--r-1);
   background: var(--primary);
 }
 
@@ -68,13 +66,13 @@
   flex: none;
   margin: 10px var(--space-3) 0;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--r-3);
   padding: 6px 10px;
   font-size: var(--text-md);
   outline: none;
   background: var(--bg);
   color: var(--ink);
-  transition: border-color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .add-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
 
@@ -98,14 +96,12 @@
   color: var(--sub);
   border: none;
   background: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .add-cat:hover { background: var(--primary-soft); color: var(--ink); }
 .add-cat:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
@@ -132,14 +128,12 @@
   align-items: center;
   justify-content: center;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--r-3);
   background: var(--panel);
   cursor: pointer;
   padding: 0;
   color: var(--sub);
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .add-thumb:hover { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
 .add-thumb:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
@@ -161,12 +155,10 @@
   gap: var(--space-1);
   padding: var(--space-4) var(--space-2) var(--space-3);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--r-3);
   background: var(--panel);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .add-card:hover { border-color: var(--primary); background: var(--primary-soft); }
 .add-card:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
@@ -198,14 +190,12 @@
   gap: 6px;
   padding: 14px 6px 10px;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--r-3);
   background: var(--panel);
   cursor: pointer;
   font-size: var(--text-sm);
   color: var(--ink);
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .add-chart-item:hover { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
 .add-chart-item:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
@@ -233,13 +223,13 @@
   padding: var(--space-2) 13px;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-3);
   box-shadow: var(--shadow-md);
   font-size: var(--text-sm);
   color: var(--ink);
   opacity: 0;
   transform: translateY(-6px);
-  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
 }
 .toast.show { opacity: 1; transform: translateY(0); }
 .toast::before {
@@ -262,7 +252,7 @@
   padding: var(--space-1);
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-3);
   box-shadow: var(--shadow-md);
   display: none;
   flex-direction: column;
@@ -275,15 +265,13 @@
   gap: var(--space-4);
   padding: var(--space-2) var(--space-3);
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   background: none;
   font-size: var(--text-md);
   color: var(--ink);
   text-align: left;
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .file-menu-item:hover { background: var(--bg); }
 .file-menu-item:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
@@ -303,7 +291,7 @@
   padding: var(--space-3);
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-3);
   box-shadow: var(--shadow-md);
   display: none;
 }
@@ -314,35 +302,33 @@
 .theme-presets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
 .theme-card {
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--r-3);
   padding: 6px;
   cursor: pointer;
   background: var(--bg);
   text-align: left;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .theme-card:hover { border-color: var(--primary); }
 .theme-card:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
 .theme-card.active { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
 .theme-card-swatches { display: flex; gap: 3px; margin-bottom: 5px; }
-.theme-card-swatch { flex: 1; height: 14px; border-radius: 3px; }
+.theme-card-swatch { flex: 1; height: 14px; border-radius: var(--r-2); }
 .theme-card-name { font-size: var(--text-xs); color: var(--ink); }
 
 .theme-editor { display: flex; flex-direction: column; gap: 2px; }
 .theme-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
-.theme-row-swatch { width: 18px; height: 18px; border-radius: var(--radius-sm); border: 1px solid var(--line); flex: none; }
+.theme-row-swatch { width: 18px; height: 18px; border-radius: var(--r-2); border: 1px solid var(--line); flex: none; }
 .theme-row-name { width: 68px; font-size: var(--text-xs); color: var(--ink); flex: none; }
 .theme-row input[type="color"] {
   width: 30px; height: 22px; padding: 0; border: 1px solid var(--line);
-  border-radius: var(--radius-sm); background: none; flex: none; cursor: pointer;
+  border-radius: var(--r-2); background: none; flex: none; cursor: pointer;
 }
 .theme-row input[type="text"] {
   flex: 1; min-width: 0; font-size: var(--text-xs); padding: 2px 6px;
-  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  border: 1px solid var(--line); border-radius: var(--r-2);
   background: var(--bg); color: var(--ink); outline: none;
-  transition: border-color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .theme-row input[type="text"]:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
 .theme-panel-foot { margin-top: var(--space-3); display: flex; justify-content: flex-end; }
@@ -360,7 +346,7 @@
   max-height: min(600px, 80vh);
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-3);
   box-shadow: var(--shadow-md);
   overflow: hidden;
 }
@@ -375,11 +361,11 @@
   padding: 6px 10px;
   font-size: var(--text-md);
   border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   background: var(--bg);
   color: var(--ink);
   outline: none;
-  transition: border-color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .font-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
 
@@ -417,14 +403,12 @@
   flex: none;
   padding: 2px 9px;
   font-size: var(--text-xs);
-  border-radius: 999px;
+  border-radius: var(--r-3);
   border: 1px solid var(--line);
   background: transparent;
   color: var(--sub);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .font-chip:hover { border-color: var(--line-strong); color: var(--ink); }
 .font-chip:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
@@ -435,14 +419,12 @@
   width: 26px;
   height: 26px;
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   background: transparent;
   color: var(--faint);
   font-size: var(--text-md);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .font-del:hover { background: var(--danger-soft); color: var(--danger); }
 .font-del:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
@@ -456,11 +438,11 @@
   padding: 5px 10px;
   font-size: var(--text-sm);
   border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   background: var(--panel);
   color: var(--ink);
   outline: none;
-  transition: border-color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .font-add-url input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
 .font-add-file { display: none; }

@@ -14,11 +14,11 @@
   padding: 3px;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--r-3);
   box-shadow: var(--shadow-md);
   cursor: grab;
   touch-action: none; /* 触屏拖动换位，不经浏览器手势 */
-  transition: box-shadow var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .zoom-ctl button { cursor: pointer; }
 .zoom-ctl.dragging {

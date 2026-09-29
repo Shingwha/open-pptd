@@ -27,8 +27,8 @@
   color: inherit;
   text-decoration: none;
   font-weight: 700;
-  border-radius: var(--radius-sm);
-  transition: opacity var(--dur-fast) var(--ease);
+  border-radius: var(--r-2);
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
 }
 .brand-home:hover { opacity: 0.8; }
 .brand-home:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
@@ -43,7 +43,7 @@
   white-space: nowrap;
   background: var(--bg);
   border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   padding: 2px 9px;
 }
 .brand-file.unnamed { color: var(--faint); } /* 空项目「未命名」淡显 */

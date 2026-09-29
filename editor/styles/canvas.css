@@ -145,7 +145,7 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  transition: transform var(--dur-fast) var(--ease);
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
 }
 .rot:hover .sel-rotate-ic,
 .rot:active .sel-rotate-ic {
@@ -167,7 +167,7 @@
   color: var(--ink);
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   white-space: nowrap;
 }
 .sel-overlay.resizing .sel-size { display: block; }
@@ -202,16 +202,14 @@
 .status-dirty { color: var(--danger); }
 .status-btn {
   border: 1px solid var(--line-strong);
-  border-radius: 999px;
+  border-radius: var(--r-3);
   background: var(--panel);
   color: var(--sub);
   font-size: var(--text-sm);
   line-height: 1.4;
   padding: 1px 10px;
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .status-btn:hover { border-color: var(--primary); color: var(--primary); }
 .status-btn:active { background: var(--bg); }
@@ -241,7 +239,7 @@
 .canvas-loading {
   position: absolute;
   inset: 0;
-  z-index: 40;
+  z-index: var(--z-overlay);
   background-color: var(--bg);
   background-image: linear-gradient(100deg, var(--bg) 40%, var(--panel) 50%, var(--bg) 60%);
   background-size: 200% 100%;

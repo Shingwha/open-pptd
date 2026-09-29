@@ -13,7 +13,7 @@
   background: var(--panel);
   color: var(--ink);
   padding: 0 var(--space-3);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   font-size: var(--text-md);
   cursor: pointer;
   white-space: nowrap;
@@ -22,9 +22,7 @@
   justify-content: center;
   gap: var(--space-1);
   text-decoration: none;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .btn:hover:not(:disabled) { border-color: var(--faint); background: var(--bg); }
 .btn:active:not(:disabled) { background: var(--line); }
@@ -38,7 +36,7 @@
 .btn-primary {
   background: var(--primary);
   border-color: var(--primary);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 600;
 }
 .btn-primary:hover:not(:disabled) { background: var(--primary-strong); border-color: var(--primary-strong); }
@@ -56,7 +54,7 @@
 .btn-present:hover:not(:disabled) {
   background: var(--primary);
   border-color: var(--primary);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .btn-ghost { border-color: transparent; color: var(--sub); background: transparent; }
@@ -73,12 +71,11 @@
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   background: transparent;
   color: var(--sub);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .icon-btn:hover:not(:disabled) { background: var(--bg); color: var(--ink); }
 .icon-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); color: var(--primary); }

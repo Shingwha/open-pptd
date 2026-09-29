@@ -31,7 +31,7 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   width: 960px;
   height: 540px;
   transform-origin: center;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
 }
 .present.blackout .present-stage { opacity: 0; }
 
@@ -45,7 +45,7 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   background: #fff;
   overflow: hidden;
   opacity: 0;
-  transition: opacity 0.26s ease;
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
   pointer-events: none;
 }
 .present-slide.on { opacity: 1; }
@@ -59,7 +59,7 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   right: 0;
   height: 3px;
   background: rgba(255, 255, 255, 0.08);
-  z-index: 3;
+  z-index: var(--z-sticky);
 }
 .present-progress i {
   display: block;
@@ -67,7 +67,7 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   width: 0;
   background: #fff;
   opacity: 0.85;
-  transition: width 0.25s ease;
+  transition: width var(--t-med) var(--ease), opacity var(--t-med) var(--ease), border-left-color var(--t-med) var(--ease);
 }
 
 /* 底部工具条（无操作自动隐藏） */
@@ -76,7 +76,7 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 3;
+  z-index: var(--z-sticky);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -86,7 +86,7 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   color: #fff;
   font-size: var(--text-sm);
   opacity: 1;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
 }
 .present.ui-hidden .present-ui,
 .present.ui-hidden .present-hint {
@@ -99,15 +99,13 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   height: var(--control-h);
   padding: 0 var(--space-3);
   border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
   font-size: var(--text-sm);
   cursor: pointer;
   white-space: nowrap;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .present-btn:hover { background: rgba(255, 255, 255, 0.2); }
 .present-btn:active { background: rgba(255, 255, 255, 0.28); }
@@ -136,7 +134,7 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   left: 50%;
   bottom: 56px;
   transform: translateX(-50%);
-  z-index: 3;
+  z-index: var(--z-sticky);
   color: rgba(255, 255, 255, 0.92);
   font-size: var(--text-sm);
   letter-spacing: 0.02em;
@@ -144,8 +142,8 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   pointer-events: none;
   background: rgba(15, 18, 24, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 999px;
+  border-radius: var(--r-3);
   padding: 6px var(--space-4);
   backdrop-filter: blur(6px);
-  transition: opacity 0.3s ease;
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
 }
