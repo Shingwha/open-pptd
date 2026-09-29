@@ -14,6 +14,9 @@ export { renderPage, autoGrowTexts, disposeChartInstances } from "./page.js";
 // ---- 图标缩略图（icon.js）----
 export { iconThumb } from "./icon.js";
 
+// ---- 表格单元格工具（table.js：编辑器缩略/工具链复用）----
+export { cellFinal, tdCss } from "./table.js";
+
 // ---- 元素渲染器命名空间（各 render*.js 的公开构建函数）----
 import { renderText } from "./text.js";
 import { renderShape } from "./shape.js";

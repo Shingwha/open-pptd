@@ -11,6 +11,9 @@ export { buildPptx, downloadPptx, downloadBlob, magicMatches } from "./pptx.js";
 // ---- ZIP 写入器（zip.js）----
 export { ZipWriter } from "./zip.js";
 
+// ---- 通用工具（util.js：dataUrl/图片尺寸/文件名）----
+export { imageSize, decodeDataUrl, extToMime, dataUrlOf, safeFileName } from "./util.js";
+
 // ---- 命名空间：OOXML 片段工具 ----
 export * as xml from "./xml.js"; // esc/escAttr/xmlHeader/el/hexToRgbVal/angleToOOXML
 export * as parts from "./parts.js"; // 部件装配（presentation/theme/rels/content-types…）

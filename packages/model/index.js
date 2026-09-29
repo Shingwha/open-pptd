@@ -18,11 +18,14 @@ export {
   createDeck,
   createPage,
   nextElementId,
+  syncElementId,
   deckSize,
   PAGE_WIDTH,
   PAGE_HEIGHT,
   PAGE_TYPES,
   SUPPORTED_SHAPES,
+  SHOT_READY_TITLE,
+  SHOT_ERROR_TITLE,
 } from "./model.js";
 
 // ---- 元素类型注册表（registry.js / style-spec.js）----
@@ -34,6 +37,9 @@ export {
   resolveTheme,
   resolveColor,
   resolveFont,
+  normalizeTheme,
+  resolveTableStyle,
+  themeChartPalette,
   DEFAULT_THEME,
   DEFAULT_FONT,
   THEME_PALETTES,
@@ -50,6 +56,22 @@ export { walkElements, collectImageSrcs } from "./walk.js";
 export { shapePaths, shapeMenuIcon } from "./preset-geometry.js";
 export { PRESET_SHAPES } from "./preset-geometry.data.js";
 
+// ---- 表格模型（table.js：网格/合并拆分/布局估算/校验）----
+export {
+  tableGrid,
+  tryMerge,
+  trySplit,
+  normalizeCells,
+  estimateTableLayout,
+  validateDims,
+} from "./table.js";
+
+// ---- 字体解析（font.js：CSS font 简写与字体资源清单）----
+export { parseFontInfo, parseFontResources } from "./font.js";
+
+// ---- vendored 第三方（与代码版本同仓管理，浏览器 Node 双端可用）----
+export * as yaml from "./vendor/js-yaml.mjs";
+
 // ---- 图表命名空间（chart.js 全部导出 + chart/option 构建器）----
 // chart.js 只再导出元数据/解析/布局工具；buildChartOption 在 chart/option/index.js，
 // 二者合并为单一 chart 命名空间（D.1 要求 chart 内含 buildChartOption）。
@@ -65,3 +87,17 @@ export * as fonts from "./font-registry.js";
 
 // ---- 字节工具命名空间（bytes.js 全部公开导出）----
 export * as bytes from "./bytes.js";
+
+// ---- 高频名字的扁平再导出（与上方命名空间并存；editor 消费面，免写 ns. 前缀）----
+export {
+  CHART_META,
+  CHART_TYPE_ORDER,
+  DATA_LABEL_CONTENTS,
+  NUMBER_FORMAT_CODES,
+  colLetter,
+  remapEncode,
+  validateChartSeries,
+} from "./chart.js";
+export { loadIconRegistry, resolveIconName, fetchIconSvg, normalizeIconSvg } from "./icon-fa.js";
+export { loadFontRegistry, findFont, fontFileUrl, fetchFontBytes } from "./font-registry.js";
+export { bytesToBase64, base64ToBytes } from "./bytes.js";
