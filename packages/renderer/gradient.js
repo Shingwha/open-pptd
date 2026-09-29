@@ -1,10 +1,10 @@
 // ============================================================================
-// renderer/gradient.js — GradientFill → CSS / SVG 渐变（渲染端统一入口）
+// renderer/gradient.js — GradientFill → CSS / SVG gradient (unified renderer entry)
 // ----------------------------------------------------------------------------
-// 角度规格（references/pptd.md）：angle 0 = 左→右，顺时针增大（90 = 上→下）。
-// CSS linear-gradient 的 0deg = 朝上、顺时针增大 → CSS 角度 = PPTD 角度 + 90。
-// 形状（SVG path）不能用 CSS 渐变，走 svgGradient 生成 <defs> 渐变由 url(#id) 引用；
-// 背景 / 文字（background-clip:text）/ 图表框走 gradientCss。
+// Angle spec (references/pptd.md): angle 0 = left→right, increasing clockwise (90 = top→bottom).
+// CSS linear-gradient 0deg points up and increases clockwise → CSS angle = PPTD angle + 90.
+// Shapes (SVG paths) cannot use CSS gradients, so svgGradient builds a <defs> gradient
+// referenced via url(#id); backgrounds / text (background-clip:text) / chart frames use gradientCss.
 // ============================================================================
 
 import { resolveColor } from "../model/theme.js";
@@ -14,12 +14,12 @@ function valid(fill) {
   return fill?.type === "gradient" && Array.isArray(fill.stops) && fill.stops.length >= 2;
 }
 
-/** PPTD 渐变角度 → CSS linear-gradient 角度（度）。 */
+/** PPTD gradient angle → CSS linear-gradient angle (degrees). */
 function gradientCssAngle(angle) {
   return ((Number(angle) || 0) + 90) % 360;
 }
 
-/** GradientFill → CSS background 声明（linear / radial）；无效渐变返回 null。 */
+/** GradientFill → CSS background declaration (linear / radial); null for an invalid gradient. */
 export function gradientCss(theme, fill) {
   if (!valid(fill)) return null;
   const stops = fill.stops
@@ -32,10 +32,10 @@ export function gradientCss(theme, fill) {
 let uid = 0;
 
 /**
- * GradientFill → SVG 渐变定义（形状 path 用）。返回 { id, def }：def 由调用方放进
- * <defs>，路径用 fill="url(#id)" 引用；无效渐变返回 null。生成逻辑统一在
- * model/svg-gradient.js（与图标同源）：linear userSpaceOnUse 矩形全长投影，
- * radial objectBoundingBox 圆。
+ * GradientFill → SVG gradient definition (for shape paths). Returns { id, def }: the caller
+ * places def in <defs> and paths reference it with fill="url(#id)"; null for an invalid
+ * gradient. Generation lives in model/svg-gradient.js (same source as icons): linear uses a
+ * userSpaceOnUse full-rectangle projection, radial uses an objectBoundingBox circle.
  */
 export function svgGradient(theme, fill, w, h) {
   const id = `pptd-grad-${++uid}`;

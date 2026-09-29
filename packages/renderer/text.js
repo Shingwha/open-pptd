@@ -1,12 +1,14 @@
 // ============================================================================
-// renderer/text.js — 富文本 → DOM（与 writer/text.js 同一继承链）
+// renderer/text.js — rich text → DOM (same inheritance chain as writer/text.js)
 // ----------------------------------------------------------------------------
-// 继承链：content 基础样式 → 容器层（root）→ 段落（显式差异）→ run（显式差异）
-// 关键：基础样式只写一次（容器层继承），span/段落内联样式只保留"显式差异"。
+// Chain: content base style → container (root) → paragraph (explicit deltas) → run
+// (explicit deltas). The base style is written once on the container and inherited;
+// span/paragraph inline styles carry only explicit deltas.
 //
-// 官方默认值（TextContent）：color #000000 / fontSize 18 / fontFamily Microsoft YaHei /
-// lineHeight 1 / align [left, top]。渲染端补齐浏览器 CSS 与 PPT 默认的差异。
-// 公式（\(...\)）：只继承 color / font-size（官方规范），KaTeX → MathML 原生渲染。
+// Official defaults (TextContent): color #000000 / fontSize 18 / fontFamily Microsoft
+// YaHei / lineHeight 1 / align [left, top]. The renderer fills the gaps between
+// browser CSS and these PPT defaults. Formulas (\(...\)) inherit only color / font-size
+// (official spec) and render natively via KaTeX → MathML.
 // ============================================================================
 
 import { parseRichText } from "../model/richtext.js";
@@ -21,10 +23,11 @@ const DEFAULT_FONT_SIZE = 18;
 const DEFAULT_LINE_HEIGHT = 1;
 
 /**
- * run 层：有效样式 = 基线 + 段落样式 + run 内联（mergeRunStyle 统一合并，
- * 与 writer buildParagraph→buildRun 同一条链），只写相对基线的显式差异；
- * 段落级复位（如 bold:false 关元素加粗）也落在 span 上阻断容器继承。
- * 公式 run → KaTeX MathML。
+ * Run layer: effective style = base + paragraph style + run inline (merged by
+ * mergeRunStyle, the same chain as writer buildParagraph→buildRun), writing only the
+ * explicit deltas relative to the base. Paragraph-level resets (e.g. bold:false to
+ * cancel an element bold) also land on the span to block container inheritance.
+ * A formula run → KaTeX MathML.
  */
 export function runSpan(theme, run, base, paraStyle) {
   const s = mergeRunStyle(base, paraStyle, run.style);
@@ -59,9 +62,10 @@ export function runSpan(theme, run, base, paraStyle) {
 }
 
 /**
- * 公式 run → 内联 span（KaTeX MathML，浏览器原生渲染）。
- * 官方规范：公式只继承 color 和 font-size（run.style 中已由解析器提取上下文值）。
- * 解析失败回退显示 LaTeX 源码（浅色底纹提示）。
+ * Formula run → inline span (KaTeX MathML, rendered natively by the browser).
+ * Official spec: formulas inherit only color and font-size (already extracted as
+ * context values into run.style by the parser). On parse failure, fall back to
+ * showing the LaTeX source with a light background.
  */
 function formulaSpan(theme, run, base) {
   const node = document.createElement("span");
@@ -88,16 +92,16 @@ function formulaSpan(theme, run, base) {
   return node;
 }
 
-/** 水平对齐 → CSS 值：distributed 无原生 CSS 等价，映射为 justify + 末行拉伸。 */
+/** Horizontal align → CSS value: distributed has no native CSS equivalent, mapped to justify + last-line stretch. */
 function textAlignCss(v) {
   const align = cssTextAlign(v);
-  if (!align) return v; // 未知值原样透传
+  if (!align) return v; // pass unknown values through unchanged
   const last = cssTextAlignLast(v);
   return last ? `${align};text-align-last:${last}` : align;
 }
 
-/** 段落层：只写段落盒布局样式（text-align / line-height / margin…，即 writer 的
- * a:pPr 范畴）；文字属性一律经 runSpan 的合并链逐 run 落地。 */
+/** Paragraph layer: writes only paragraph-box layout styles (text-align / line-height /
+ * margin…, the writer's a:pPr domain); text properties always land per run via runSpan. */
 export function applyParaStyle(el, para) {
   const s = para.style || {};
   const css = [];
@@ -112,10 +116,11 @@ export function applyParaStyle(el, para) {
 }
 
 /**
- * 渲染富文本元素内容 → 容器 DOM（宽高 100%）。
- * 基础样式（字号/颜色/加粗/字族/行高等）写在本容器上，由段落/run 继承。
- * @param {object} theme 规范化主题
- * @param {object} content 文本元素 content
+ * Render rich-text element content → container DOM (100% width/height).
+ * Base style (size/color/bold/font/line-height…) is written on this container and
+ * inherited by paragraphs/runs.
+ * @param {object} theme normalized theme
+ * @param {object} content text element content
  * @returns {HTMLElement}
  */
 function renderTextContent(theme, content) {
@@ -123,9 +128,9 @@ function renderTextContent(theme, content) {
   const base = computeBaseStyle(theme, content);
 
   const root = document.createElement("div");
-  // overflow:visible——文本永不裁剪（PowerPoint 不自动调整语义，见 renderText 注释）
+  // overflow:visible — text is never clipped (PowerPoint "do not autofit", see renderText)
   const css = ["width:100%;height:100%;box-sizing:border-box;overflow:visible;white-space:pre-line"];
-  // —— content 基础样式 → 容器层（一次，继承）；未设置时补齐官方默认值 ——
+  // -- content base style → container layer (once, inherited); fill official defaults when unset --
   css.push(`font-size:${base.fontSize || DEFAULT_FONT_SIZE}px`);
   const color = resolveColor(theme, base.color);
   if (color) css.push(`color:${color}`);
@@ -141,19 +146,19 @@ function renderTextContent(theme, content) {
     if (bg) css.push(`background:${bg}`);
   }
   if (base.textAlign) css.push(`text-align:${textAlignCss(base.textAlign)}`);
-  // 文字渐变：作用于文字本身（background-clip: text），与 color 互斥
+  // Text gradient: applied to the glyphs themselves (background-clip:text); mutually exclusive with color
   const grad = gradientCss(theme, base.gradient);
   if (grad) {
     css.push(`background:${grad}`);
     css.push("-webkit-background-clip:text;background-clip:text;color:transparent");
   }
-  // 文字阴影（boxShadowCss 单源：与 box-shadow 共用同一 offset/blur/color 值）
+  // Text shadow (boxShadowCss single source: shares offset/blur/color with box-shadow)
   const shadow = boxShadowCss(theme, base.shadow);
   if (shadow) css.push(`text-shadow:${shadow}`);
-  // 垂直文字 / 不换行（官方 textDirection / wrap）
+  // Vertical text / no wrap (official textDirection / wrap)
   if (content?.textDirection === "vertical") css.push("writing-mode:vertical-rl;text-orientation:upright");
   if (content?.wrap === false) css.push("white-space:pre;overflow:visible");
-  // 垂直对齐（官方缺省 top；middle/bottom 用 flex 撑开）
+  // Vertical align (official default top; middle/bottom use flex)
   const vAlign = Array.isArray(content?.align) ? content.align[1] : "top";
   if (vAlign === "middle" || vAlign === "bottom") {
     css.push("display:flex;flex-direction:column;justify-content:" + (vAlign === "middle" ? "center" : "flex-end"));
@@ -184,12 +189,13 @@ function renderTextContent(theme, content) {
   return root;
 }
 
-/** 文本元素 → 定位 DOM（定位 / 变换 / 标记统一走 renderer/shell.js）。
- * PowerPoint「不自动调整」语义（spec 10：文本永不因框小而消失）：盒高是作者声明，
- * 内容溢出**可见**（shell + 内容根均 overflow:visible），不裁剪、不重定位。 */
+/** Text element → positioned DOM (positioning / transforms / markers all go through renderer/shell.js).
+ * PowerPoint "do not autofit" semantics: box height is the author's declaration and content
+ * overflow stays VISIBLE (both shell and content root use overflow:visible) — never clipped,
+ * never repositioned. */
 export function renderText(theme, el) {
   const box = createElementShell(el);
-  box.style.overflow = "visible"; // 覆盖 shell 默认 overflow:hidden：溢出文字可见
+  box.style.overflow = "visible"; // override shell's default overflow:hidden so overflow text stays visible
   box.appendChild(renderTextContent(theme, el.content));
   return box;
 }

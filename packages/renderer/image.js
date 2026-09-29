@@ -1,31 +1,32 @@
 // ============================================================================
-// renderer/image.js — 图片元素 → DOM（crop → fit → cropShape 全管线 + 边框/阴影）
+// renderer/image.js — image element → DOM (full crop → fit → cropShape pipeline + border/shadow)
 // ----------------------------------------------------------------------------
-// 官方渲染顺序：crop（object-view-box：裁源图后再 object-fit）→ fit
-// （object-fit: cover/contain/fill）→ cropShape（clip-path 按形状轮廓裁剪）。
-// object-view-box 为 Chrome 104+；不支持时降级 clip-path 近似（仅含 crop 场景）。
+// Official render order: crop (object-view-box: crop the source, then object-fit) → fit
+// (object-fit: cover/contain/fill) → cropShape (clip-path by shape outline).
+// object-view-box requires Chrome 104+; when unsupported it degrades to an approximate
+// clip-path (crop-only scenarios).
 // ============================================================================
 
 import { resolveColor } from "../model/theme.js";
 import { shapePaths } from "../model/preset-geometry.js";
 import { createElementShell, boxShadowCss } from "./shell.js";
 
-/** 图片元素 → 定位 DOM。 */
+/** Image element → positioned DOM. */
 export function renderImage(theme, el, ctx = {}) {
   const [, , w, h] = el.bounds;
   const box = createElementShell(el);
 
   const img = document.createElement("img");
-  // 本地文件夹模式：src 相对路径 → 经 imageMap 解析为 dataURL（调用方传入，不再读全局）
+  // Local-folder mode: a relative src is resolved to a dataURL via imageMap (passed in by the caller; no global read)
   const map = ctx.imageMap || {};
   img.src = map[el.src] || el.src;
   img.style.cssText = `width:100%;height:100%;display:block;object-fit:${el.fit?.mode || "cover"};`;
-  // crop：先裁源图再 fit（官方顺序）。object-view-box 百分比以源图为准
+  // crop: crop the source first, then fit (official order). object-view-box percentages are relative to the source image
   const crop = el.crop;
   if (crop && (crop.left || crop.top || crop.right || crop.bottom)) {
     const inset = `inset(${(crop.top || 0) * 100}% ${(crop.right || 0) * 100}% ${(crop.bottom || 0) * 100}% ${(crop.left || 0) * 100}%)`;
     img.style.objectViewBox = inset;
-    // 降级：不支持 object-view-box 时用 clip-path 近似（仅视觉近似，不影响导出）
+    // Fallback: approximate with clip-path when object-view-box is unsupported (visual only; export unaffected)
     if (!("objectViewBox" in img.style)) img.style.clipPath = inset;
   }
   img.onerror = () => {
@@ -39,7 +40,7 @@ export function renderImage(theme, el, ctx = {}) {
   };
   box.appendChild(img);
 
-  // cropShape：形状轮廓裁剪（clip-path 作用于整个 box，边框/阴影随之裁剪）
+  // cropShape: clip by the shape outline (clip-path applies to the whole box, so border/shadow are clipped too)
   const shapeDef = el.cropShape;
   if (shapeDef?.shapeName && shapeDef.shapeName !== "rect") {
     const clip = cropShapeClip(shapeDef, w, h);
@@ -54,23 +55,23 @@ export function renderImage(theme, el, ctx = {}) {
   return box;
 }
 
-/** ShapeDef → CSS clip-path（预置几何按 bounds 求值；custom 直接用 SVG path）。 */
+/** ShapeDef → CSS clip-path (preset geometry evaluated at bounds; custom uses the SVG path directly). */
 function cropShapeClip(shapeDef, w, h) {
   if (shapeDef.shapeName === "custom") {
     if (!shapeDef.path) return null;
     const [vw = w, vh = h] = shapeDef.viewBox || [w, h];
-    // path() 坐标 = 元素本地坐标系（px），需把 viewBox 路径缩放到 w×h
+    // path() coordinates are in the element's local CSS-pixel system, so the viewBox path must be scaled to w×h
     if (vw === w && vh === h) return `path('${shapeDef.path}')`;
     return `path('${scalePath(shapeDef.path, w / vw, h / vh)}')`;
   }
   const paths = shapePaths(shapeDef.shapeName, w, h, shapeDef.adjustments);
   if (!paths) return null;
-  // 预置几何坐标已是 0..w × 0..h，直接可用（fill-rule 保持 nonzero，镂空语义一致）
+  // Preset geometry is already in 0..w × 0..h and can be used directly (fill-rule stays nonzero, preserving hole semantics)
   const d = paths.map((p) => p.d).join(" ");
   return `path('${d}')`;
 }
 
-/** 缩放 SVG path：按命令参数个数缩放坐标 token（A 命令只缩放终点 xy）。 */
+/** Scale an SVG path: scale coordinate tokens by command arity (for A only the endpoint xy is scaled). */
 function scalePath(d, sx, sy) {
   const ARITY = { M: 2, L: 2, H: 1, V: 1, C: 6, S: 4, Q: 4, T: 2, A: 7, Z: 0 };
   const tokens = d.match(/[MmLlHhVvCcSsQqTtAaZz]|-?\d*\.?\d+(?:[eE][+-]?\d+)?/g) || [];

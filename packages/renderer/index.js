@@ -1,25 +1,28 @@
 // ============================================================================
-// renderer/index.js — packages/renderer 包级 barrel（契约 4 入口 open-pptd/renderer）
+// renderer/index.js — packages/renderer package barrel (contract-4 entry open-pptd/renderer)
 // ----------------------------------------------------------------------------
-// 纯再导出，零逻辑。DOM 是 renderer 的输出目标（允许 window./document.），
-// 但仍不得出现 node:* / fs（防 Node API 渗入浏览器预览链路）。
+// Re-exports only, zero logic. DOM is renderer's output target (window./document.
+// are allowed here), but node:* / fs must never appear: no Node API may leak into
+// the browser preview pipeline.
 //
-// 红线：本 barrel 及其传递闭包**不得** import ./headless/**（无头截图链路是
-// Node 专用，浏览器端 import 本入口会把 Node 代码拉进页面）。
+// Hard rule: this barrel and its transitive closure must NOT import ./headless/**
+// (the headless screenshot pipeline is Node-only; importing this entry from a page
+// would drag Node code into the browser).
 // ============================================================================
 
-// ---- 页面绘制（page.js，disposeChartInstances 由 page.js 再导出）----
-// paintPage = 三段式管线的绘制入口（消费 LayoutTree）；renderPage/autoGrowTexts 为
-// 2.x 契约兼容面（renderPage 内部 layout → paintPage；autoGrowTexts 已废弃为空实现）。
+// ---- Page painting (page.js; disposeChartInstances is re-exported by page.js) ----
+// paintPage = paint entry of the three-stage pipeline (consumes LayoutTree);
+// renderPage/autoGrowTexts are the 2.x contract-compat surface (renderPage does
+// layout → paintPage internally; autoGrowTexts is a deprecated empty stub).
 export { paintPage, renderPage, autoGrowTexts, disposeChartInstances } from "./page.js";
 
-// ---- 图标缩略图（icon.js）----
+// ---- Icon thumbnail (icon.js) ----
 export { iconThumb } from "./icon.js";
 
-// ---- 表格单元格工具（table.js：编辑器缩略/工具链复用）----
+// ---- Table cell helpers (table.js: reused by editor thumbnails / toolchain) ----
 export { cellFinal, tdCss } from "./table.js";
 
-// ---- 元素渲染器命名空间（各 render*.js 的公开构建函数）----
+// ---- Element-renderer namespace (public builders of each render*.js) ----
 import { renderText } from "./text.js";
 import { renderShape } from "./shape.js";
 import { renderLine } from "./line.js";

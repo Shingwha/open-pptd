@@ -1,12 +1,13 @@
 // ============================================================================
-// renderer/headless/ws.js — MiniWebSocket（仅 Node 端使用）
+// renderer/headless/ws.js — MiniWebSocket (Node-only)
 // ----------------------------------------------------------------------------
-// RFC6455 客户端最小实现，只覆盖 CDP 需要的部分：文本帧收发、ping→pong、
-// close；客户端帧必须掩码。
+// Minimal RFC6455 client covering only what CDP needs: text frame send/receive,
+// ping→pong, close; client frames must be masked.
 //
-// 为什么自研：**不**用 Node 全局 WebSocket / fetch —— 内置 undici 的连接在
-// 远端（无头浏览器）退出后可能不释放 socket 句柄，导致 Node 进程无法退出
-// （实测 Node 24 仍复现）。net.connect 句柄完全可控。
+// Why hand-rolled: do NOT use Node's global WebSocket / fetch — the built-in undici
+// connection may not release its socket handle after the remote (headless browser)
+// exits, keeping the Node process alive (still reproducible on Node 24). net.connect
+// gives fully controllable handles.
 // ============================================================================
 
 import { connect as netConnect } from "node:net";
@@ -91,7 +92,7 @@ export class MiniWebSocket {
     });
   }
 
-  /** 累积缓冲并按帧解析（服务端→客户端帧不掩码）。 */
+  /** Accumulate the buffer and parse frames (server→client frames are unmasked). */
   _onData(chunk) {
     this._buffer = Buffer.concat([this._buffer, chunk]);
     while (this._buffer.length >= 2) {
@@ -107,7 +108,7 @@ export class MiniWebSocket {
       } else if (len === 127) {
         if (this._buffer.length < 10) return;
         const big = this._buffer.readBigUInt64BE(2);
-        if (big > BigInt(0x7fffffff)) return; // 防御：不处理超大帧
+        if (big > BigInt(0x7fffffff)) return; // guard: skip oversized frames
         len = Number(big);
         off = 10;
       }
@@ -132,11 +133,11 @@ export class MiniWebSocket {
       } else if (opcode === 9) {
         this._sendFrame(0x8a, payload); // ping → pong
       }
-      // 0x0/0x2/0xA 等本场景不需要
+      // 0x0/0x2/0xA etc. are not needed here
     }
   }
 
-  /** 发送文本帧（客户端帧必须掩码）。 */
+  /** Send a text frame (client frames must be masked). */
   _sendFrame(opcode, payload) {
     let header;
     if (payload.length < 126) {

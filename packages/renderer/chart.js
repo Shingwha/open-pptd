@@ -1,9 +1,10 @@
 // ============================================================================
-// renderer/chart.js — 图表预览 DOM 壳（ECharts 实例管理）
+// renderer/chart.js — chart preview DOM shell (ECharts instance management)
 // ----------------------------------------------------------------------------
-// option 组装单源在 packages/model/chart/option/（与导出图片化共享，纯函数）；
-// 本文件只负责：元素定位壳、图表框样式（fill/border/shadow ↔ 导出 chartSpace
-// spPr）、ECharts 实例生命周期。
+// Option assembly has a single source in packages/model/chart/option/ (shared with the
+// image export, pure functions); this file only owns the positioned shell, the chart
+// frame style (fill/border/shadow ↔ the exported chartSpace spPr), and the ECharts
+// instance lifecycle.
 // ============================================================================
 
 import * as echarts from "../vendor/echarts.mjs";
@@ -14,7 +15,7 @@ import { resolveColor } from "../model/theme.js";
 import { gradientCss } from "./gradient.js";
 import { createElementShell, boxShadowCss } from "./shell.js";
 
-/** 图表框（官方 Chart.fill/border/shadow → 容器样式，与 writer chartSpace spPr 对应）。 */
+/** Chart frame (official Chart.fill/border/shadow → container style, corresponding to the writer's chartSpace spPr). */
 function frameStyle(theme, el) {
   const st = {};
   const fill = normalizeFill(el.fill);
@@ -32,9 +33,11 @@ function frameStyle(theme, el) {
   return st;
 }
 
-/** 图表元素 → 定位 DOM（ECharts 实例；图表框 fill/border/shadow 与导出 chartSpace spPr 对应——
- * 未设 fill 时不给底色，透出页面背景，与导出端省略 spPr 的行为一致）。
- * ctx.pixelRatio：显式画布像素比（图片导出传 2，截图即 2x 位图；缺省跟屏幕 DPR）。 */
+/** Chart element → positioned DOM (ECharts instance; the frame fill/border/shadow match the
+ * exported chartSpace spPr — with no fill no background is applied, letting the page
+ * background show through, matching the export's omitted spPr). ctx.pixelRatio: explicit
+ * canvas pixel ratio (the image export passes 2 for a 2x bitmap; defaults to the screen DPR).
+ */
 export function renderChart(theme, el, ctx = {}) {
   const box = createElementShell(el);
   box.dataset.chartEl = "1";
@@ -49,7 +52,7 @@ export function renderChart(theme, el, ctx = {}) {
   return box;
 }
 
-/** 页面重渲染前释放图表实例。 */
+/** Dispose chart instances before a page repaint. */
 export function disposeChartInstances(container) {
   for (const node of container.querySelectorAll("[data-chart-el]")) {
     const inst = echarts.getInstanceByDom(node);

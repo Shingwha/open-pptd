@@ -1,9 +1,9 @@
 // ============================================================================
-// renderer/line.js — 线条 → SVG（直线 / 折线 sharp·round / 贝塞尔 smooth + 箭头）
+// renderer/line.js — line → SVG (straight / polyline sharp·round / bezier smooth + arrowheads)
 // ----------------------------------------------------------------------------
-// 官方语义：points 首尾为经过点，中间为贝塞尔控制点（smooth）；
-// sharp=直线段折线，round=圆角连接折线，smooth=贝塞尔曲线。
-// 2 点时三者等价（直线）。
+// Official semantics: the first and last of `points` are waypoints, the middle ones are
+// bezier control points (smooth); sharp = straight-segment polyline, round = rounded-join
+// polyline, smooth = bezier curve. With exactly 2 points all three are equivalent (a line).
 // ============================================================================
 
 import { resolveColor } from "../model/theme.js";
@@ -19,7 +19,7 @@ export function renderLine(theme, el) {
 
   const pts = parsePoints(el.points, el.viewBox || [1, 1], el.bounds);
   if (!pts || pts.length < 2) return svg;
-  // SVG 内部坐标系以 bounds 原点为 (0,0)，需转为相对坐标（否则画到视口外不可见）
+  // The SVG coordinate system uses the bounds origin as (0,0), so points must be made relative (otherwise they draw outside the viewport and stay invisible)
   const rel = pts.map(([px, py]) => [px - bx, py - by]);
   const [x1, y1] = rel[0];
   const [x2, y2] = rel[rel.length - 1];
@@ -29,12 +29,12 @@ export function renderLine(theme, el) {
   const dash = dashSpec(el.border?.style)?.css || null;
   const curve = el.curve || "round";
 
-  // 曲线（多点）用 path；直线用 line
+  // Curves (multiple points) use path; a straight line uses line
   let shape;
   if (rel.length > 2) {
     shape = document.createElementNS(SVG_NS, "path");
     if (curve === "smooth") {
-      // 贝塞尔：首尾为经过点，中间为控制点（分段与 writer 共用 smoothSegments，末锚点必达）
+      // Bezier: first/last are waypoints, middle ones are control points (segmentation is shared with the writer via smoothSegments; the last anchor is always reached)
       let d = `M ${x1} ${y1}`;
       for (const s of smoothSegments(rel)) {
         if (s.cmd === "Q") {
@@ -47,7 +47,7 @@ export function renderLine(theme, el) {
       }
       shape.setAttribute("d", d);
     } else {
-      // sharp / round：经过全部点的折线（仅连接样式不同）
+      // sharp / round: a polyline through every point (only the join style differs)
       shape.setAttribute("d", `M ${x1} ${y1} L ${rel.slice(1).map(([px, py]) => `${px} ${py}`).join(" L ")}`);
       shape.setAttribute("stroke-linejoin", curve === "round" ? "round" : "miter");
     }
@@ -61,11 +61,11 @@ export function renderLine(theme, el) {
   shape.setAttribute("stroke", color);
   shape.setAttribute("stroke-width", width);
   if (dash) shape.setAttribute("stroke-dasharray", dash);
-  // SVG 默认 fill 黑色会把开放路径隐式闭合填充（预览出"阴影区"），须与导出端 <a:noFill/> 对齐
+  // SVG's default black fill implicitly closes and fills open paths (a "shadow area" in preview), so it must match the export's <a:noFill/>
   shape.setAttribute("fill", "none");
   svg.appendChild(shape);
 
-  // 箭头方向 = 路径端点切线（曲线取最后一段方向，折线取末段方向）
+  // Arrow direction = path endpoint tangent (last segment for both curves and polylines)
   const endAngle = Math.atan2(y2 - rel[rel.length - 2][1], x2 - rel[rel.length - 2][0]);
   const startAngle = Math.atan2(rel[1][1] - y1, rel[1][0] - x1);
   const endArrow = el.arrow?.[1];
@@ -79,8 +79,9 @@ export function renderLine(theme, el) {
   return svg;
 }
 
-/** 箭头 SVG（triangle/stealth/diamond 多边形 + oval 椭圆），与导出端
- * a:headEnd/tailEnd 的四种 type 同名同向（尖端落在端点、沿端点切线方向）。 */
+/** Arrowhead SVG (triangle/stealth/diamond polygons + oval ellipse), named and oriented
+ * the same as the export's a:headEnd/tailEnd four types (tip on the endpoint, along the
+ * endpoint tangent). */
 function arrowHead(kind, x, y, angle, color, size) {
   if (kind === "oval") {
     const node = document.createElementNS(SVG_NS, "ellipse");
@@ -98,10 +99,10 @@ function arrowHead(kind, x, y, angle, color, size) {
   const wing = (a) => [x - size * Math.cos(angle + a), y - size * Math.sin(angle + a)];
   let pts;
   if (kind === "stealth") {
-    // 尖三角 + 底边内凹（凹点在中心线上回退一半）
+    // Pointed triangle with a concave base (the notch retreats half-size along the centerline)
     pts = [[x, y], wing(-0.45), [x - (size / 2) * Math.cos(angle), y - (size / 2) * Math.sin(angle)], wing(0.45)];
   } else if (kind === "diamond") {
-    // 菱形：尖端、两侧腰（半长处 ±0.35size）、尾
+    // Diamond: tip, two side vertices (±0.35·size at mid-length), tail
     const midX = x - (size / 2) * Math.cos(angle);
     const midY = y - (size / 2) * Math.sin(angle);
     const perp = angle + Math.PI / 2;
@@ -112,7 +113,7 @@ function arrowHead(kind, x, y, angle, color, size) {
       [midX + 0.35 * size * Math.cos(perp), midY + 0.35 * size * Math.sin(perp)],
     ];
   } else {
-    // triangle（默认）
+    // triangle (default)
     pts = [[x, y], wing(-0.45), wing(0.45)];
   }
   p.setAttribute("points", pts.map(([px, py]) => `${px},${py}`).join(" "));

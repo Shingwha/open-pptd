@@ -1,14 +1,16 @@
 // ============================================================================
-// renderer/page.js — 页面绘制（paintPage 消费 LayoutTree + 旧 renderPage 适配器）
+// renderer/page.js — page painting (paintPage consumes LayoutTree + legacy renderPage adapter)
 // ----------------------------------------------------------------------------
-// 三段式渲染管线的第三段：resolve → layout → **paint**。
-//   paintPage(layoutPage, ctx)  ← 唯一绘制入口：几何一律读 LayoutTree（位置/尺寸取
-//                                 frame；文本盒高取 declared，见 withFrame），本文件
-//                                 不测量、不写回模型（三铁律）
-//   renderPage(container, page, deck, theme, opts)  ← 2.x 兼容适配器（内部
-//                                 page → layout → paintPage），契约 4 导出面稳定
-// 元素 → DOM 经类型注册表分派（packages/model/registry.js）；新增元素类型
-// 只需在 renderer/types/ 注册 render 分片，无需改本文件。
+// Third stage of the three-stage pipeline: resolve → layout → paint.
+//   paintPage(layoutPage, ctx)  ← the only paint entry. All geometry is read from
+//                                 the LayoutTree (position/size from frame; text
+//                                 box height from declared, see withFrame). This
+//                                 file never measures nor writes back to the model.
+//   renderPage(container, page, deck, theme, opts)  ← 2.x compat adapter
+//                                 (page → layout → paintPage internally); the
+//                                 contract-4 export surface stays stable.
+// Element → DOM dispatch goes through the type registry (packages/model/registry.js);
+// adding an element type only needs a render fragment under renderer/types/.
 // ============================================================================
 
 import { getType } from "./types/index.js";
@@ -18,15 +20,15 @@ import { createElementShell } from "./shell.js";
 import { layout } from "../layout/index.js";
 import { normalizeTheme } from "../model/theme.js";
 
-/** 已规范化（含 colors）则原样，否则 normalizeTheme（与 layout 的 themeOf 同规则）。 */
+/** Return as-is when already normalized (has colors), else normalizeTheme (same rule as layout's themeOf). */
 function themeOf(theme) {
   const t = theme;
   if (t && typeof t === "object" && t.colors) return t;
   return normalizeTheme(t);
 }
 
-/** 元素 → DOM（经注册表分派；未注册类型回退占位）。
- * @param {object} ctx 绘制上下文（{ imageMap, iconMap, pixelRatio }）
+/** Element → DOM (dispatched via the registry; unknown types fall back to a placeholder).
+ * @param {object} ctx paint context ({ imageMap, iconMap, pixelRatio })
  */
 function renderElement(theme, el, ctx = {}) {
   const def = getType(el.elementType);
@@ -44,7 +46,7 @@ function placeholder(el) {
   return div;
 }
 
-/** 解析失败页：红色错误框（文件路径 + 行号 + 摘要，超 160 字符截断）。 */
+/** Parse-failure page: red error box (file path + line number + summary, truncated past 160 chars). */
 function renderParseError(container, page) {
   const div = document.createElement("div");
   div.className = "page-error";
@@ -56,32 +58,35 @@ function renderParseError(container, page) {
 }
 
 /**
- * LayoutElement + 元素模型 → 绘制视图对象。
- * 只做浅拷贝（**模型永不写回**）：bounds 取 layout 几何，分片签名保持不变
- * （`render(theme, el, ctx)`），内容/样式字段原样引用。
+ * LayoutElement + element model → paint-view object.
+ * Shallow copy only (the model is never written back): bounds come from the layout
+ * geometry, the fragment signature stays `render(theme, el, ctx)`, and content/style
+ * fields are referenced as-is.
  *
- * 几何取舍（报告已列）：
- * - 表格：读 frame + layout.table 精确行高/列宽（M3 白名单行为变更）。
- * - 文本：x/y/w 取 frame，**盒高取 declared**（作者框）——PowerPoint「不自动调整」
- *   语义：文字溢出可见、框不随内容长高、行位置锚定作者框；若用 frame.h（撑高值），
- *   居中/底对齐文本会随盒高整体下移（实测 city-cycling#5 标题下移 17px）。
- *   文本不裁剪由 renderText 的 overflow:visible 保证（见 text.js）。
- * - 其余元素：frame == declared（尺寸透传）。
+ * Geometry choices:
+ * - Table: read frame + layout.table for exact row heights / column widths.
+ * - Text: x/y/w from frame, but the box height comes from `declared` (the author
+ *   box) — PowerPoint "do not autofit" semantics: overflow stays visible, the box
+ *   does not grow with content, and line positions anchor to the author box. Using
+ *   frame.h (the grown height) would shift middle/bottom-aligned text down by the
+ *   box delta (measured: city-cycling#5 title shifted 17px). Clipping is prevented
+ *   by overflow:visible in renderText (see text.js).
+ * - Other elements: frame == declared (size passed through).
  */
 function withFrame(el, le) {
   const f = le.frame;
   const h = el.elementType === "text" ? le.declared.h : f.h;
   const view = { ...el, bounds: [f.x, f.y, f.w, h] };
-  if (le.table) view.layout = le; // 表格：layout 精确行高（renderTable 读 el.layout.table）
+  if (le.table) view.layout = le; // table: exact row heights from layout (renderTable reads el.layout.table)
   return view;
 }
 
 /**
- * 绘制 LayoutTree 的一页（纯绘制：几何从 LayoutTree 读，无 DOM 测量）。
- * @param {object} layoutPage LayoutTree.pages[i]（{ index, elements }）
+ * Paint one page of the LayoutTree (pure painting: geometry read from the tree, no DOM measuring).
+ * @param {object} layoutPage LayoutTree.pages[i] ({ index, elements })
  * @param {object} ctx { container, page, theme, imageMap, iconMap, pixelRatio }
- *  - container 画布容器（必填）
- *  - page      该页模型（仅取 background / _parseError / 元素内容；几何一律取自 layoutPage）
+ *  - container canvas container (required)
+ *  - page      page model (only background / _parseError / element content are read; geometry always comes from layoutPage)
  */
 export function paintPage(layoutPage, ctx = {}) {
   const { container, page } = ctx;
@@ -91,7 +96,7 @@ export function paintPage(layoutPage, ctx = {}) {
   container.innerHTML = "";
   container.appendChild(pageBackground(theme, page?.background));
   if (page?._parseError) renderParseError(container, page);
-  // 元素模型按 elementId 索引；layout 只含可绘制元素（group 组壳已被 layout 跳过）
+  // Element model indexed by elementId; layout holds only paintable elements (group shells are skipped by layout)
   const byId = new Map();
   for (const el of page?.elements || []) if (el) byId.set(el.elementId, el);
   for (const le of layoutPage?.elements || []) {
@@ -103,10 +108,10 @@ export function paintPage(layoutPage, ctx = {}) {
 }
 
 /**
- * 兼容适配器（契约 4 导出面：2.x 期间不删）。
- * 内部 resolve 后的 deck/page → 单页 layout（默认 fontMetricsMeasure）→ paintPage。
- * 旧签名 (container, page, deck, theme, opts)；opts.measure 可注入 MeasurePort。
- * @deprecated 新代码请直接 layout(deck) + paintPage(layoutPage, ctx)。
+ * Compat adapter (contract-4 export surface: kept through 2.x).
+ * Resolved deck/page → single-page layout (fontMetricsMeasure by default) → paintPage.
+ * Legacy signature (container, page, deck, theme, opts); opts.measure can inject a MeasurePort.
+ * @deprecated New code should call layout(deck) + paintPage(layoutPage, ctx) directly.
  */
 export function renderPage(container, page, deck, theme, opts = {}) {
   const th = theme ?? deck?.theme;
@@ -118,9 +123,10 @@ export function renderPage(container, page, deck, theme, opts = {}) {
 export { disposeChartInstances } from "./chart.js";
 
 /**
- * @deprecated spec 10 T1/T2：布局之后无测量——盒高由 LayoutTree 决定（表格取精确
- * rowHeights、文本取作者框 + 溢出可见），尺寸不再是渲染期的 DOM 事实。本函数保留
- * 为空实现，仅为 2.x 契约 4 导出面兼容（renderer barrel 的 autoGrowTexts 符号）；
- * 3.0 随契约移除。全部调用方已改走 layout。
+ * @deprecated There is no measuring after layout: box heights come from the LayoutTree
+ * (exact rowHeights for tables, author box + visible overflow for text), so size is no
+ * longer a render-time DOM fact. Kept as an empty stub purely for 2.x contract-4 export
+ * compatibility (the renderer barrel's autoGrowTexts symbol); removed in 3.0. All callers
+ * already go through layout.
  */
 export function autoGrowTexts() {}
