@@ -22,6 +22,7 @@ import { dialogs } from "../../dialogs.js";
 import { renderGroup, fieldHandlers } from "../fields.js";
 import { createExcelGrid } from "../excel-grid.js";
 import {
+  colLetter,
   estimateTableLayout,
   normalizeCells,
   resolveColor,
@@ -93,7 +94,7 @@ export function openTableEditor(el, { onChange }) {
     },
     rowHeight: (r) => rowHeights?.[r] ?? null,
     colWidths: () => columnWidths,
-    colHeadContent: (c) => String.fromCharCode(65 + c),
+    colHeadContent: (c) => colLetter(c),
     cellTitle: (r, c) => {
       const g = gd[r]?.[c];
       if (!g) return "";
