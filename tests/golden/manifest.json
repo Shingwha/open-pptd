@@ -1,0 +1,1709 @@
+{
+ "version": 1,
+ "generated": "2026-09-29T13:52:56.572Z",
+ "scale": 1,
+ "renderer": "renderer/headless renderDeck（现役旧管线，spec 09 T2）",
+ "hash": {
+  "perceptual": "dHash(9x8) + aHash(8x8)，64-bit hex",
+  "exact": "sha256"
+ },
+ "note": "PNG 本体 gitignore（tests/golden/png/）；本文件只存每页指纹与元数据。",
+ "projects": {
+  "tests/projects/table": {
+   "deck": "tests/projects/table/deck.pptd",
+   "pngDir": "tests__projects__table",
+   "pageCount": 9,
+   "sourceHash": "79a8fd35894735285ade117c2f59c1a8b18632d762f3916f2fde047c645c55c5",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 10351,
+     "sha256": "63ccbb91638b7fd06466a957cf568f9bc1badc4e20dac05404ac3d235a8a1097",
+     "dHash": "0000d4aa00000000",
+     "aHash": "ff7f00bfffffffff"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 28682,
+     "sha256": "6ca1f3c6d201e1957d4e4b3edc65e3da98a9737f663692417c70e09b932ddbf6",
+     "dHash": "a0d4aaaa94aaaa00",
+     "aHash": "bf00ffffbf81ffff"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 40860,
+     "sha256": "7d142c035949de04a69cc5b37dd5b69f369995e3718bfad5cce4415a23c7ba09",
+     "dHash": "d08caaa8c2ec0000",
+     "aHash": "cf008fff08ffffff"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 26030,
+     "sha256": "976150691892a75872578cb5c91483443f7de8a4e188a34e83897d5d0f2f1c34",
+     "dHash": "c0c82a298098aa00",
+     "aHash": "ff00ffffff00ffff"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 24612,
+     "sha256": "a74a24b49d30ffdc7ae65edb8d88a9df088a8c083c22363badf3aa6c4e6df236",
+     "dHash": "90a8a400009c8c00",
+     "aHash": "a70107ffff01bfff"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 36809,
+     "sha256": "a175f42d8b19bf15569aa250fe3dd6e3ccb648a9f0f540373f508f68dca607b8",
+     "dHash": "b0cc92d60098aa00",
+     "aHash": "af00859fff03ffff"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 43965,
+     "sha256": "41510c47b459bd2228610e40a591e8b0dbd5e792997876629623405488147883",
+     "dHash": "d0c896d4e8c0e892",
+     "aHash": "ff00ffff00ff00ff"
+    },
+    {
+     "page": 8,
+     "w": 960,
+     "h": 540,
+     "bytes": 36891,
+     "sha256": "483392975733636e7dce40aff331a3635e23c5a981e2a317b1ad81a409f6685c",
+     "dHash": "9084aac0aa0080b2",
+     "aHash": "ff00ffff00ffff00"
+    },
+    {
+     "page": 9,
+     "w": 960,
+     "h": 540,
+     "bytes": 35602,
+     "sha256": "3b28c1e8849243291b312b7032cd2683478b65af03b3501fd54aee22083dfcfe",
+     "dHash": "b0c89692c0ccb2a8",
+     "aHash": "ff0081ffff00ffff"
+    }
+   ]
+  },
+  "examples/brand-mori-showcase-7p": {
+   "deck": "examples/brand-mori-showcase-7p/deck.pptd",
+   "pngDir": "examples__brand-mori-showcase-7p",
+   "pageCount": 7,
+   "sourceHash": "1c98ffc025d13b09358742548a76dba931c10064284fe3d0d4113c7b58ba435e",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 35654,
+     "sha256": "6084e82f2ccac688b9ddc9e71d69455711024ab92f6797285f010b109a9b351c",
+     "dHash": "8686c6a6a6b68687",
+     "aHash": "fc9c1c3cfcfcfcfc"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 20824,
+     "sha256": "eb7599c1bf5fd41bb7b57b0c78dd289c970033a65803fe7dbd5a212d133013d3",
+     "dHash": "2584848424242e24",
+     "aHash": "ffbf1f1fffff7cff"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 42559,
+     "sha256": "86fda666fa953722c6311db51ad8f3b8142e10183d97db8f6ada2abf490758a1",
+     "dHash": "25a4b0b8b4303824",
+     "aHash": "ff0f273723e7ffff"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 43884,
+     "sha256": "17316f91eb076dba2a49478f41a4ce18f61a20a789ae0dadb5208b2996eb4e1b",
+     "dHash": "25b8c8c8c8c8c844",
+     "aHash": "ff071f111f1f1fff"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 42235,
+     "sha256": "afc90499a16a2a815c3fdbd624c6a3c560068e6502c11ff7a41fd24726d9bc59",
+     "dHash": "25c0501c5c1c1084",
+     "aHash": "7f0703fbfbf1ffff"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 52491,
+     "sha256": "ca5fbbdf63b0f06dda244150afa8eab2fbeffe4c2308bf530ef6f7ea391e192d",
+     "dHash": "2594c74745654ea4",
+     "aHash": "ff071e1c1fdf1fff"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 22250,
+     "sha256": "ada53767d8e6d6c531a3524728ab18c876a043e5e53a385106d31d434ac2351c",
+     "dHash": "6424747474242564",
+     "aHash": "0040e0e0e00000c0"
+    }
+   ]
+  },
+  "examples/business-review-7p": {
+   "deck": "examples/business-review-7p/deck.pptd",
+   "pngDir": "examples__business-review-7p",
+   "pageCount": 7,
+   "sourceHash": "d24cefcc558f4777e0e4f6eb9e33626659c4412a0411f20aac9d5b565a282e8e",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 60269,
+     "sha256": "4503ad8368cd69ef215268066fbfacfba91d9615eb243a76eec8b448984fbb53",
+     "dHash": "8700f09aaaaa8082",
+     "aHash": "feff07bff155ffff"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 94687,
+     "sha256": "248fde7545460c5093e60b5c668370b33ccada3f9099ff8b8c881eee71797dbd",
+     "dHash": "87e06a88e8e2eac9",
+     "aHash": "ff07f793e08f9fff"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 57232,
+     "sha256": "14b556c3f210df5406aa2b76e927483012a9f03d111723d77d8b84b66ad1c93b",
+     "dHash": "87f08a8c8aa4b481",
+     "aHash": "fe07bebb9f8dafff"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 73605,
+     "sha256": "c7d041262782b97308ba20963928e7a6d4f9ceb685dd0be1d918161cd0ba0bb6",
+     "dHash": "87a0369ed0d090c1",
+     "aHash": "ff07f8904787a7ff"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 98425,
+     "sha256": "d774a590cb95e58da582577cd85f053bc6a707370a671256e3ef0ed6d593ff7e",
+     "dHash": "83808686868686c1",
+     "aHash": "fe079d9d1dbd9dff"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 89431,
+     "sha256": "ae42218ca530cac7496c6077040dfd018da3bfed412ab4995f56041358b2b459",
+     "dHash": "87c024d8da189881",
+     "aHash": "fe076f1310ff3fff"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 80107,
+     "sha256": "c3dbfddcfb5a6bfa49cc75d983dd8f5f33b6f44b07e018ea0cd6e22800db2ee0",
+     "dHash": "87a0a0cacfdbc3c6",
+     "aHash": "fe0f0f90909f9ffd"
+    }
+   ]
+  },
+  "examples/city-cycling-report-7p": {
+   "deck": "examples/city-cycling-report-7p/deck.pptd",
+   "pngDir": "examples__city-cycling-report-7p",
+   "pageCount": 7,
+   "sourceHash": "5c37361afb911e3672b929a756980d891fde80b2c034d140dcf091fa07061afc",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 62698,
+     "sha256": "e61ceb05546378ec36b21bb93c50570b133da35970ebfe88e9f66f7e688fab8e",
+     "dHash": "8686a695459606d2",
+     "aHash": "ffff0002ffffffff"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 68215,
+     "sha256": "cc96cdbd14d5745c60f84787198a834ab3b2795ef3f03fa6987f9492380cf395",
+     "dHash": "82f8544aca5432e0",
+     "aHash": "ff03ff55ffff7fff"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 74943,
+     "sha256": "3fd45c74c6775f22462465929e0aa2d59805970802ceb616e86b551faae68da9",
+     "dHash": "82d48c54c6d6b4e0",
+     "aHash": "ff81bff9c888ffff"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 78008,
+     "sha256": "af9908a9651e3670e2a95dc1467fb112f6ae8a398609b314147503fe150658cb",
+     "dHash": "82d89ab884881aa0",
+     "aHash": "ff83f7b39993ffff"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 69800,
+     "sha256": "63e766cd0a34b7052fb9368f5d308991916b699473dd54212da288d4b1580b08",
+     "dHash": "82ce1098aa66cca8",
+     "aHash": "ff00773795ddffff"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 78708,
+     "sha256": "f4620b9dc830607fd6cf2a903ae5bbc9c0ceb2c18a3b29e5ad5d01fb13930657",
+     "dHash": "82d09896989e9ac0",
+     "aHash": "ff8703fdfffdffff"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 76126,
+     "sha256": "9c8dc726768aae472cf02226dd7d87a387c73dc8d09e50f432e1e065391ae7e8",
+     "dHash": "753434176e2f3e4d",
+     "aHash": "00e0e07cf8e06010"
+    }
+   ]
+  },
+  "examples/ev-range": {
+   "deck": "examples/ev-range/deck.pptd",
+   "pngDir": "examples__ev-range",
+   "pageCount": 17,
+   "sourceHash": "23797b4c1302d014b7c2cd5af2d1f3d075c5ecacd3d9653d9f310168801f5d79",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 57175,
+     "sha256": "2f9b402c30a7c24013d92cce56070914432cf848a3d25624b21405b95b5eb4d1",
+     "dHash": "eca57c1dfc5cf9c4",
+     "aHash": "0000f0f000e000ff"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 95946,
+     "sha256": "4a1e83c04e722d6e3692c9873351e2fc5a3761ab8f65f0f60439c3a597f1f8dd",
+     "dHash": "923888a8888892c3",
+     "aHash": "3f7303830303ffff"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 45691,
+     "sha256": "6cf57478e6697ca19fbb485124d95b80828a43e0a3722335b2c838ce5f779dbf",
+     "dHash": "1292c2c2c28282c3",
+     "aHash": "7f1f9f9f9f9f9f9f"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 28009,
+     "sha256": "5dece81e7d4468e6b030ae89a6aff67eb56c1c1b25c4c3f716306ffe4e4a2aa9",
+     "dHash": "b4f1e2e262f1f4e4",
+     "aHash": "8080c080e0f08080"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 134198,
+     "sha256": "1c1e2868efb261a03f1f2b42f8be0fef92160f8dc37b3a41688e426b86e20341",
+     "dHash": "8247c989968349ce",
+     "aHash": "1f1f0f17211f1f10"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 29610,
+     "sha256": "a35924a8781e210dad49ea2cd73386e717658726d97d2a73e4386ca0ecaf8566",
+     "dHash": "b4f1e2e21af9f4e4",
+     "aHash": "8080c0c0f0f08080"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 84518,
+     "sha256": "a1d8e17051cfad09c3dcedbc026cac2a69d9c56d8af5af01306aabf857733cd3",
+     "dHash": "928a8b0bcb0b8ac3",
+     "aHash": "00001f1f1f1f0500"
+    },
+    {
+     "page": 8,
+     "w": 960,
+     "h": 540,
+     "bytes": 152520,
+     "sha256": "218aa6a922855af00deaa7eaf791c7e350e22764c092d2b8a2077e68d74a66d6",
+     "dHash": "8270389697dc94c3",
+     "aHash": "0f61f1bebf81019f"
+    },
+    {
+     "page": 9,
+     "w": 960,
+     "h": 540,
+     "bytes": 160836,
+     "sha256": "b649d08e798688f7e2f1bfea53a3522676aff999a6558466a505ac07d4804c0f",
+     "dHash": "928d8c948d4d8ccf",
+     "aHash": "3f1f1b11bb1b399f"
+    },
+    {
+     "page": 10,
+     "w": 960,
+     "h": 540,
+     "bytes": 166345,
+     "sha256": "e1b4fc2f62f6ab1eabe5b2f3fe9b4a1639dc4b2ad239e2c0bad83b3f20c8d657",
+     "dHash": "9285898d8dc9a98d",
+     "aHash": "1f3f9f9b399fbf03"
+    },
+    {
+     "page": 11,
+     "w": 960,
+     "h": 540,
+     "bytes": 32058,
+     "sha256": "a472e1e6699b4f3182460edae6968683c3af3e95bd24b63c4fbe2d70e2f229fe",
+     "dHash": "b4f1e2e21a99b4e4",
+     "aHash": "8080c0c0f0f08080"
+    },
+    {
+     "page": 12,
+     "w": 960,
+     "h": 540,
+     "bytes": 125409,
+     "sha256": "3bf7347414006ed07b914109f3d7872232b98a2bdf6ac8d935542b67debb3460",
+     "dHash": "824b6969292998c9",
+     "aHash": "00fffee7ef7f0000"
+    },
+    {
+     "page": 13,
+     "w": 960,
+     "h": 540,
+     "bytes": 90301,
+     "sha256": "479d2c97ddd1332446ca6ffbe2de7f5dbeb1844450472d88a89050735d110dc0",
+     "dHash": "9212898fcb8f90c3",
+     "aHash": "00001f1f1f1f0000"
+    },
+    {
+     "page": 14,
+     "w": 960,
+     "h": 540,
+     "bytes": 26542,
+     "sha256": "b297cb0dd62d1256766d5b7a2c1c7577ba697b303eeb154f9405c94b84415918",
+     "dHash": "b4f1e2e262f1b4e4",
+     "aHash": "8080c0c0e0e08080"
+    },
+    {
+     "page": 15,
+     "w": 960,
+     "h": 540,
+     "bytes": 158616,
+     "sha256": "4c615ab31cdb4533341b2da69a38dee3036215625c9b12187da7bc45414eb288",
+     "dHash": "c2485a545757a883",
+     "aHash": "0010f0ffffff0000"
+    },
+    {
+     "page": 16,
+     "w": 960,
+     "h": 540,
+     "bytes": 72861,
+     "sha256": "9026e19ff8448c0399ac253a01ede9d5ac71d6192110cdc586282b20ab0cb17f",
+     "dHash": "921c8ca09c9a9acb",
+     "aHash": "3f7b818380ffffff"
+    },
+    {
+     "page": 17,
+     "w": 960,
+     "h": 540,
+     "bytes": 35098,
+     "sha256": "41a0cbd19f752d4c9b2a64f0f75875893084f0111f5ee25dfd274cc1b8cf6c55",
+     "dHash": "b4f56465b4e4f4c4",
+     "aHash": "0000c0c000c080ff"
+    }
+   ]
+  },
+  "examples/islelight-brand-book": {
+   "deck": "examples/islelight-brand-book/deck.pptd",
+   "pngDir": "examples__islelight-brand-book",
+   "pageCount": 7,
+   "sourceHash": "4b77fce6afdf0b974d8dfe49ba4ec4d2b5658aa101f476adee5a6b214c7733e2",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 33299,
+     "sha256": "17509b54809ac0f883d268c2c23f4336416f41f574a3ec139728a0dc5c6d9cba",
+     "dHash": "8c0c8c8c8c8f0f0f",
+     "aHash": "f8f8f8f8f8f8f8f8"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 24491,
+     "sha256": "1d1a2c877a3f4c85caa890bbc06bb023520058e0568c54340220f7759af2fce9",
+     "dHash": "00000000d8d80106",
+     "aHash": "ffff7f7ff703fffc"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 39636,
+     "sha256": "1c8acc23c770999a92e398b7de84c359b0463c9f73330299c0d7c56e35b7db99",
+     "dHash": "0030b2bcbaa88080",
+     "aHash": "ff6f3ff937038181"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 98074,
+     "sha256": "2856c2df7cee5d1a8cc9419038fa47e734d57855137975e5f4e72fea6f0b498d",
+     "dHash": "0080ac9c98981c1c",
+     "aHash": "fffff8fff0f0f0f9"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 228909,
+     "sha256": "4ff2241474638718d023d4e501922c0941e08aaf64481a193676aefa844b2dea",
+     "dHash": "0023aba5b3b3abab",
+     "aHash": "ffe0e0e0e0e4e0ff"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 141980,
+     "sha256": "c47d13625e00d3a8d811bac19b164ceae4d4af8d16d6b5e00e0fe37066046cd0",
+     "dHash": "00e0a4b08c8ccc0c",
+     "aHash": "ff1ffffff8f8f8f8"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 69725,
+     "sha256": "daf4d2455228796ea62d55dfc3ee0c0a3f171d4a4c573b89a2a0812cc5de7504",
+     "dHash": "0000c8cc40044000",
+     "aHash": "1f1f1f1f1f1f1f1f"
+    }
+   ]
+  },
+  "examples/miaopai-saas-bp": {
+   "deck": "examples/miaopai-saas-bp/deck.pptd",
+   "pngDir": "examples__miaopai-saas-bp",
+   "pageCount": 7,
+   "sourceHash": "c3f2f6a80a6889309e0608c41a2cdf996232b7bef6c0d7c7abbad99158656e71",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 41753,
+     "sha256": "066dc09e6789e7ef50a8ee2a9dd0d9a41763ab751174ed8b85d32e032e15319b",
+     "dHash": "30f0603800606101",
+     "aHash": "4080c0f000400000"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 74129,
+     "sha256": "4de228aca7b0661ad89ae7726dd8ef6278567429bdac5d429feeae7233f5140e",
+     "dHash": "80c01090101018a1",
+     "aHash": "1f0f63e3236333ff"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 77786,
+     "sha256": "b81de20ab7ea39f04c8c7bc0d3781b8b5e6b7d28ed7b445d488e9c671b43e13a",
+     "dHash": "8080a8a880a480e1",
+     "aHash": "ffff0103ffefffff"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 55678,
+     "sha256": "9389a1cc02c12f2273ecae56ed425760a97f12c29bb63506adde7b9360285af1",
+     "dHash": "909098989aaaa281",
+     "aHash": "ff8ff7bbb989ffff"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 87515,
+     "sha256": "afee6836536d3bb8bb75c0273e05ed3ee30d5a3d1da22c58c75efc2e9ba43f41",
+     "dHash": "a0a08884c6c4c0c1",
+     "aHash": "ff9f9f89898f8bff"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 66280,
+     "sha256": "109e0aef95fcd9fb416dce8517fd52d29ef13061e12a2cbf50f3984181aad989",
+     "dHash": "90d0088cccc8b881",
+     "aHash": "ff8ff33f0ffffbff"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 41746,
+     "sha256": "e71d29acf045d3fc0852273eb6191d2c00d44b2eeab40327e4d19a3754b20d1b",
+     "dHash": "6060307000307870",
+     "aHash": "4000e0e00060e100"
+    }
+   ]
+  },
+  "examples/poster-artdeco-latelier": {
+   "deck": "examples/poster-artdeco-latelier/deck.pptd",
+   "pngDir": "examples__poster-artdeco-latelier",
+   "pageCount": 1,
+   "sourceHash": "c30875f4f634905a265cf3028c3525dda79ac36f3a5841374d938a3dd7f546de",
+   "size": [
+    720,
+    960
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 720,
+     "h": 960,
+     "bytes": 313777,
+     "sha256": "805a1cd72a3eb5e6c52b6410b7a55959805467660b08c70d904e380fa187ccb7",
+     "dHash": "0f0f0f0f070f0f0f",
+     "aHash": "00183c3c3c3c3c00"
+    }
+   ]
+  },
+  "examples/poster-bailu-solar-term": {
+   "deck": "examples/poster-bailu-solar-term/deck.pptd",
+   "pngDir": "examples__poster-bailu-solar-term",
+   "pageCount": 1,
+   "sourceHash": "991b27b70b622282a2697871271bf73d2afa354112c10d452d476114ac672c4b",
+   "size": [
+    540,
+    960
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 540,
+     "h": 960,
+     "bytes": 54824,
+     "sha256": "a006dfc5f400b41470abc0fbd000e04e44f07da4622243462cc46f703575caf7",
+     "dHash": "80f6660e868a9680",
+     "aHash": "ffe1f9f8f99fff9f"
+    }
+   ]
+  },
+  "examples/poster-echo-valley-festival": {
+   "deck": "examples/poster-echo-valley-festival/deck.pptd",
+   "pngDir": "examples__poster-echo-valley-festival",
+   "pageCount": 1,
+   "sourceHash": "1af2b0ed15ccf71e3f9e8e8ff14400569ccfdfaf5d69b44ec6b2bb920a3612b6",
+   "size": [
+    720,
+    1080
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 720,
+     "h": 1080,
+     "bytes": 543896,
+     "sha256": "cdb3772160acc876123e2a46d10deb26c75cf60b564b889a46e8523ff44101b8",
+     "dHash": "676b951775677133",
+     "aHash": "00ffbfffe0007e00"
+    }
+   ]
+  },
+  "examples/poster-six-tea-types": {
+   "deck": "examples/poster-six-tea-types/deck.pptd",
+   "pngDir": "examples__poster-six-tea-types",
+   "pageCount": 1,
+   "sourceHash": "863acb76b987c24c67980e1149663e0b188164898dd1656253a96484b4749ebc",
+   "size": [
+    720,
+    1080
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 720,
+     "h": 1080,
+     "bytes": 93381,
+     "sha256": "bfd1f7a78f2a770cdd0f1c0e8498dfe8ec4afeb5e5478b7260be948d2a846526",
+     "dHash": "c39edab058cacaa0",
+     "aHash": "1e00c1cb5bf79fff"
+    }
+   ]
+  },
+  "examples/qingshan-coffee-review-12p": {
+   "deck": "examples/qingshan-coffee-review-12p/deck.pptd",
+   "pngDir": "examples__qingshan-coffee-review-12p",
+   "pageCount": 12,
+   "sourceHash": "44780e0e245b0bf7a185d9648926e472117fa330864e95093d74ea71df60f2fa",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 45002,
+     "sha256": "94b6caca60674ee0f463b6e4506ed941e95756e9e3cb789a571b5c82c4365e5f",
+     "dHash": "c202968595069280",
+     "aHash": "ffff18b8f8fdffff"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 55704,
+     "sha256": "0a9c568e03a52849f3dea28ba3d33a6782622bcd6d91ab3e69288f2e8e605535",
+     "dHash": "93aaaa32be9c9ce1",
+     "aHash": "ffffffff818181ff"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 52050,
+     "sha256": "6cb3460540d5c77813ef950398ba8d9e172fc0bc316362693bc6175d3df52784",
+     "dHash": "939034f8c4dc2481",
+     "aHash": "ff07fd8181c16fff"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 75605,
+     "sha256": "60f1c89b863f5e5646bfec7fc4b67f37e3e0eac8a28cc5e22513a8f5007608b0",
+     "dHash": "93b0c8a8a8a8c881",
+     "aHash": "ff079b8bab8f9fff"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 77957,
+     "sha256": "46e078f2b477f7a914fc7582977d3d3de4e2a9cc4cd438549ce941594e8e678f",
+     "dHash": "9384c48e8e8e84a1",
+     "aHash": "ffff990909098bff"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 46304,
+     "sha256": "5904102b5b809a992385d06881703743576d9e295d584bdcf88c6ee278fecc49",
+     "dHash": "93b0f8b8b0b0b0a1",
+     "aHash": "ffaf81818183a3ff"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 52939,
+     "sha256": "694d0b170c134f181e8bb173049522072f33ed0ed703bc01ac9b8aea7c7a7524",
+     "dHash": "93a01e70c61ca5a1",
+     "aHash": "ff07fdc39ff90fff"
+    },
+    {
+     "page": 8,
+     "w": 960,
+     "h": 540,
+     "bytes": 87230,
+     "sha256": "7e3f8789e91905f451d33c83b33fbbbf7d5bbf3358d811ec66e89dc35f2b8440",
+     "dHash": "93c08c9c9c8c988d",
+     "aHash": "ff031f313139fbff"
+    },
+    {
+     "page": 9,
+     "w": 960,
+     "h": 540,
+     "bytes": 123669,
+     "sha256": "814a92dfef68422183f6fa6bc3e1651ce86e517fbd20dc10a85d992390ccb183",
+     "dHash": "93a89c88b8846424",
+     "aHash": "ff830303018bffff"
+    },
+    {
+     "page": 10,
+     "w": 960,
+     "h": 540,
+     "bytes": 46846,
+     "sha256": "4fb38d2c36d15d25bea023c3ae86128e267c80b973cbaa956bda3a487825d917",
+     "dHash": "9398b4ba63828481",
+     "aHash": "ff03ffe0cf9fffff"
+    },
+    {
+     "page": 11,
+     "w": 960,
+     "h": 540,
+     "bytes": 43598,
+     "sha256": "7392faccabddf69ee26a683df1cdde76bb28ae825bb877527a18f155756c0104",
+     "dHash": "93d09080bc962401",
+     "aHash": "ff87ff8fa3bdffff"
+    },
+    {
+     "page": 12,
+     "w": 960,
+     "h": 540,
+     "bytes": 62331,
+     "sha256": "2f7e198ed207426c52b352dc274ec52c1e9c6c17ef01857d4fb3bfd599247dfc",
+     "dHash": "93c898989c9c9c81",
+     "aHash": "ff87b3b1b1b1f1ff"
+    }
+   ]
+  },
+  "examples/shanmingji-2026-launch": {
+   "deck": "examples/shanmingji-2026-launch/deck.pptd",
+   "pngDir": "examples__shanmingji-2026-launch",
+   "pageCount": 7,
+   "sourceHash": "5d4f8a4f68cb490b0675a25171aeb011fcfd4e19ccba91f529b41a486c1821db",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 250782,
+     "sha256": "8afde4cb444e5d0bfd5399ef423b62e4f65d9fec2490ee327260da3d145a5430",
+     "dHash": "7325756165626763",
+     "aHash": "0006eb6f0f0c0400"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 226031,
+     "sha256": "fc4365d6551c60bbf259ab7cd8c9a767cda8bd3c2a1dd33ab80956cd24829b5d",
+     "dHash": "a7c8888aeea62da5",
+     "aHash": "fff1f0f0f0ffffff"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 290787,
+     "sha256": "657f1d9d9ab795415cc814c7b62c24f8c5fa1639d5af7e0832c944c9f916d05c",
+     "dHash": "27ce9ece9cbe8ca7",
+     "aHash": "fff9f8f8f8f8f8ff"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 69470,
+     "sha256": "02ad6c6e8f1942fa14d8a9f810b119d122c32fe071d39c376ddab5fa78e7fc3b",
+     "dHash": "8786a825252525a5",
+     "aHash": "ff1f00ffffffffff"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 67865,
+     "sha256": "ada6e73854486eb87ab355baecc175c3eaf3dd63be0b35bc28f85bcab50407ac",
+     "dHash": "a7cca4aeeeac4e85",
+     "aHash": "ff1b09f9d9f9ffbf"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 217273,
+     "sha256": "39ad6fc5e1a8eff172f73b449ccedf36807ef14f06fc9b11b9eca3f3757bebf4",
+     "dHash": "a784c8c0c080c485",
+     "aHash": "ffff1f1f1f1f1fff"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 36559,
+     "sha256": "3f81c3bbd9355bdca1b1032d6b875e74efd40cba2305f832569755c1b0276ba2",
+     "dHash": "7424616161706464",
+     "aHash": "000000e3e3600040"
+    }
+   ]
+  },
+  "examples/tech-architecture-review-7p": {
+   "deck": "examples/tech-architecture-review-7p/deck.pptd",
+   "pngDir": "examples__tech-architecture-review-7p",
+   "pageCount": 7,
+   "sourceHash": "720c391846e18754a043e1c1a58ecd44c5c8ea6cc4d8a93966ad348c23d1b4b1",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 52633,
+     "sha256": "d7da25182c70eb48c23699b19e3ce1c9712f79113bbcdbd9f47f558b8faa225b",
+     "dHash": "83c2c3c29212a293",
+     "aHash": "ff0f0f1fff7f01ff"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 60185,
+     "sha256": "85c6e2a4240c766d64a76eaffd6453d0b0c87c354e279c6f2c9a7fec9b2dd7fe",
+     "dHash": "9392129c98988a92",
+     "aHash": "ff077731fb339fff"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 52849,
+     "sha256": "36da326c6b1c903307a4c804409cabb18b62baaaa9b2d67cac636be540ba73da",
+     "dHash": "93c2baf2b0d2d2e2",
+     "aHash": "ff0fe1e5ffffff8f"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 47700,
+     "sha256": "3b5aecee13529c1f8e0b89587b8f8faa6817cd290511d4dbc85f6bb9b74ec915",
+     "dHash": "93e2e8f8ba9656d8",
+     "aHash": "ff07c3e3e1ffffc7"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 63876,
+     "sha256": "107a10b6af8ebc66cf92cb1d4514376cb6b46274003923fe3a72b29c4cea38cf",
+     "dHash": "93e21cca8aca8a9c",
+     "aHash": "ff07f09fff9fffff"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 62013,
+     "sha256": "a1f2b31a2f08f2998235c633d247adc7de1b222a41815a834e4f59744c00ceca",
+     "dHash": "93820e3c6ecccc82",
+     "aHash": "ff07f0f0ffffdfff"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 62246,
+     "sha256": "04afb4d5b19bcb0ca1295c26f77575d50a3150367106d7d94e5a520891de6ab5",
+     "dHash": "642c352d0da57c3c",
+     "aHash": "00f878783800f0e0"
+    }
+   ]
+  },
+  "examples/tide-festival-sponsorship-7p": {
+   "deck": "examples/tide-festival-sponsorship-7p/deck.pptd",
+   "pngDir": "examples__tide-festival-sponsorship-7p",
+   "pageCount": 7,
+   "sourceHash": "dec0776eff6868c589a4fdfd35c74dd3bccafa89c79d8f9cad866baeb427d17d",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 49208,
+     "sha256": "a2716691d6b7aafc6c3c4ad624b1b3deaaacb672d82d02ae39d5b1038d173947",
+     "dHash": "24233373637a8230",
+     "aHash": "0006e60646e0ff00"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 67517,
+     "sha256": "8c77bb10477a4e21db5bd441e5f7c8c64d7706ed0804a3bcfb1f7160dd403393",
+     "dHash": "96929682b225a4a5",
+     "aHash": "bf3c3c0fe7ebafff"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 62131,
+     "sha256": "b59463585b843fe6abeb46bfb86820c68da8eae35a163c98be8aa6fd0f903fdb",
+     "dHash": "869aa88a398a99b3",
+     "aHash": "ffbf0081ffffffff"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 48437,
+     "sha256": "6a38c16e3ca881f6019d72ec3e488cdf7821796fbaaf0a869f640ac45038794f",
+     "dHash": "61a497d5b1d35334",
+     "aHash": "40e0a4a207e70600"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 71374,
+     "sha256": "ce92987b40d4e98a941bc96bee65225403d203bac9a2a1324363d05f9e9149ae",
+     "dHash": "869698b6966666a3",
+     "aHash": "ff3f00fff1ffffff"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 64969,
+     "sha256": "8d9c3c513707401b003dfd6af14cc57bc3d02c2ea4ca046d7c342477f530e945",
+     "dHash": "8692b28282949693",
+     "aHash": "bf1f878f8f3d00ff"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 37454,
+     "sha256": "58b221829f1988022c2e42b8e31a19e9567060d3d7992e03767c7d359ff86e4c",
+     "dHash": "054d0c0e0c0c4c8e",
+     "aHash": "00081808181818ff"
+    }
+   ]
+  },
+  "examples/xiaohongshu-intro-poster": {
+   "deck": "examples/xiaohongshu-intro-poster/deck.pptd",
+   "pngDir": "examples__xiaohongshu-intro-poster",
+   "pageCount": 1,
+   "sourceHash": "75ac74f6eac6242f3b88749c621bc804489a33ccb2f9ac99b322684d83af9678",
+   "size": [
+    720,
+    960
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 720,
+     "h": 960,
+     "bytes": 142203,
+     "sha256": "b588f43bf4636aa820bf10fb42cfb07c8fc254e985d5164721dc3cd1d946453f",
+     "dHash": "e0c0ccfcfcaaac96",
+     "aHash": "ff87fbf0f0ffff81"
+    }
+   ]
+  },
+  "tests/projects/chart": {
+   "deck": "tests/projects/chart/deck.pptd",
+   "pngDir": "tests__projects__chart",
+   "pageCount": 24,
+   "sourceHash": "9b28b145754196f63bac072b6ab99d041a2291c1e544a12bd451f65ecd29296c",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 8779,
+     "sha256": "22fbfdd43607f0c9ce49e4ad6af7332d6fccedebd79b14fd23d6f6e25a623a93",
+     "dHash": "000000aca8a8a830",
+     "aHash": "ffffff91818181ff"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 10776,
+     "sha256": "d7c4147342e30cb1f42c96c71434fe498a3f2e83432082704abb80834fd8fbd4",
+     "dHash": "0000606060606060",
+     "aHash": "ffffcfcfcfcfcfff"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 26254,
+     "sha256": "b280ab98d08cbab2820d21188a4cf92371aa1cc10bc7744c72dd1a369ec6cecf",
+     "dHash": "a00a68d00000b210",
+     "aHash": "0fffd187ffffe7ff"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 22050,
+     "sha256": "9ad2603dddd5c6817403c866ecad53290c96b0e0052e5114d0a5ef403c45e60c",
+     "dHash": "a0067cd8e4d8f030",
+     "aHash": "1fffc183c3c3c3ff"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 14545,
+     "sha256": "64e00f5c85b77e55da98f8b8680de87d4f1d3ff0f2d659438a7e74890dbb7e71",
+     "dHash": "a02c2d2c684cb510",
+     "aHash": "0ffffeebf7dfefff"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 24200,
+     "sha256": "a43f61ac51ca1eb2735192c6f14b24ecf6fdf7ed1b8cb22adb380fbd55067fc7",
+     "dHash": "80242c7ae6c4b210",
+     "aHash": "07fffbd0cdbfffff"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 18500,
+     "sha256": "2808d64bc8d3b2def73ca0c203b292c30db33df26878e0b24f1f0a6f9923d375",
+     "dHash": "80209eb08080b230",
+     "aHash": "0ffff983ffff81ef"
+    },
+    {
+     "page": 8,
+     "w": 960,
+     "h": 540,
+     "bytes": 36723,
+     "sha256": "ff67c4ef5d27ce71a51a9b6a0b0ad1bdb6f7df40eb781146bbd2d97c5e549fb1",
+     "dHash": "c010307030303010",
+     "aHash": "1fffffe7e7e7ffff"
+    },
+    {
+     "page": 9,
+     "w": 960,
+     "h": 540,
+     "bytes": 15178,
+     "sha256": "d28c809dfd0dcf43edd6efa0ad031bc1be7f43bed471f699253da6bef164efd6",
+     "dHash": "a07070ae86869e00",
+     "aHash": "ffffc79dbdbdbdff"
+    },
+    {
+     "page": 10,
+     "w": 960,
+     "h": 540,
+     "bytes": 14158,
+     "sha256": "43e071b93a33966f96d9efe3141fd17682961760359c94ad99d2ce8fa0aae60d",
+     "dHash": "a08cccf0f0fcfc00",
+     "aHash": "ffff81818181e1ff"
+    },
+    {
+     "page": 11,
+     "w": 960,
+     "h": 540,
+     "bytes": 12760,
+     "sha256": "b9a2da36f8bf5b570f9e9c2dc5276833b673282d6309ec224344a871187d4853",
+     "dHash": "a08aaaaa84aa8a8a",
+     "aHash": "ffff8181818181ff"
+    },
+    {
+     "page": 12,
+     "w": 960,
+     "h": 540,
+     "bytes": 35083,
+     "sha256": "6f3a5f644cbed7c09178d0e8e7de57e62177741dcf95dce7d3e6b0eab1508319",
+     "dHash": "c030306068703000",
+     "aHash": "ffffe7c3c3c7e7ff"
+    },
+    {
+     "page": 13,
+     "w": 960,
+     "h": 540,
+     "bytes": 111494,
+     "sha256": "7b6f18e7eaefcd324181dc50cc5c3e12b0c72cb9d9ba7c09a8cd8cab9cf14084",
+     "dHash": "c0acaca4b8acac00",
+     "aHash": "1fff8383838383ff"
+    },
+    {
+     "page": 14,
+     "w": 960,
+     "h": 540,
+     "bytes": 25794,
+     "sha256": "49a4f9b787b51f4fecb618b3e8b3814c099ebec302de73e8df732855922cee17",
+     "dHash": "80c0a0d0a0a0e0c0",
+     "aHash": "1fcf0707070787df"
+    },
+    {
+     "page": 15,
+     "w": 960,
+     "h": 540,
+     "bytes": 18776,
+     "sha256": "d64575f769d77748fd0825dcbdce9c58a845cbbca7b453769a2bc1a6af5a295e",
+     "dHash": "a0a4a4848484f430",
+     "aHash": "1fff3f8f1f9f81ff"
+    },
+    {
+     "page": 16,
+     "w": 960,
+     "h": 540,
+     "bytes": 23364,
+     "sha256": "cf79ca4d4bdbcc9f30eaf98fc928eaacceae344bca5eb0ab64d2c23ab36d7368",
+     "dHash": "a0023ca8a8a8a830",
+     "aHash": "fffff5a5a5a5a5ff"
+    },
+    {
+     "page": 17,
+     "w": 960,
+     "h": 540,
+     "bytes": 26158,
+     "sha256": "71e83eb00a0f7dcdbb90f341492b37014713d867c6723c3bafc2795dee5b9a59",
+     "dHash": "c0ccc89c9c9e9e0e",
+     "aHash": "fff9d0a0a0a0b0ff"
+    },
+    {
+     "page": 18,
+     "w": 960,
+     "h": 540,
+     "bytes": 31670,
+     "sha256": "2303fa4e0beeb781490e758e1c30da5ac4b936dd7462a60c783b0ab960307b4b",
+     "dHash": "8044ecccaebccc44",
+     "aHash": "bffff9f9f1f9f9ff"
+    },
+    {
+     "page": 19,
+     "w": 960,
+     "h": 540,
+     "bytes": 14919,
+     "sha256": "0178996a32179314817222c5ba43b40708ccd1fa6ee3ae1c2c91c670842e7811",
+     "dHash": "c082a0a080a080a0",
+     "aHash": "ff8f0f0f0f0f0fff"
+    },
+    {
+     "page": 20,
+     "w": 960,
+     "h": 540,
+     "bytes": 49509,
+     "sha256": "be5c6450986b5b9b45fb21c40aff3f05fd75b3cb483e37f554074187544761e4",
+     "dHash": "54a5a5a44ccedcc4",
+     "aHash": "07df0e8fdb9ddfff"
+    },
+    {
+     "page": 21,
+     "w": 960,
+     "h": 540,
+     "bytes": 33856,
+     "sha256": "f6e785b25062cefc680453f305dca8a864c1e9322ce3c33aeb4b669ce4e26787",
+     "dHash": "c46a8acaccf8b8d8",
+     "aHash": "fffff8fffff0f0f0"
+    },
+    {
+     "page": 22,
+     "w": 960,
+     "h": 540,
+     "bytes": 27200,
+     "sha256": "6454c290724ec0802a501fd3abfc6ae765746aff5ec5cf8ef35870702d4c4b83",
+     "dHash": "804421cecccccc00",
+     "aHash": "9fffff89818199ff"
+    },
+    {
+     "page": 23,
+     "w": 960,
+     "h": 540,
+     "bytes": 34305,
+     "sha256": "5cf9331cebb58237519b44b452723bb643c8293532cc9224be03b7b884c72ce2",
+     "dHash": "c092f2f2b2b2b000",
+     "aHash": "ffffe5c0c0c1e7ff"
+    },
+    {
+     "page": 24,
+     "w": 960,
+     "h": 540,
+     "bytes": 32290,
+     "sha256": "71cb92d572bb8461ba4af45add66c86c5d867267de73c7133290d6827a831931",
+     "dHash": "a046848686b69600",
+     "aHash": "83dfbdb898a0b7ff"
+    }
+   ]
+  },
+  "tests/projects/font-embed": {
+   "deck": "tests/projects/font-embed/deck.pptd",
+   "pngDir": "tests__projects__font-embed",
+   "pageCount": 7,
+   "sourceHash": "62a4532f6127ff287c51ae325589ce11ad472e83c49c6c19c0416e54d2d8a46d",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 69937,
+     "sha256": "bcafb47dac5ab6011a79bc1ac1cd0df4ecb564b64740a24bfdb9c34799725b91",
+     "dHash": "8ca888acb8aa888a",
+     "aHash": "ff0181ff330181ff"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 71268,
+     "sha256": "0d125747b4fdfd7818cf86b9d07bcfdc68f06aba4d3dcf4b1c54d619b4589bb6",
+     "dHash": "88a888ac9888888a",
+     "aHash": "ff0181ff130181ff"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 77766,
+     "sha256": "7082da8c42c8aebf74790dca71fb8a4264a4d9c49cb0478ec68c8d9344b1e166",
+     "dHash": "888888acb888a88a",
+     "aHash": "ff0107ff3101b7ff"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 66271,
+     "sha256": "75b5014018d2e219af75c5e6ab244c14c05daae690e85098d04e08c05af5095d",
+     "dHash": "8a8aa8ac988aa88a",
+     "aHash": "3700b3ff1301b3ff"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 65481,
+     "sha256": "6a911ce379cb9aedb2d924a08d7a8e0f3cd83cda4e66c38c1c66da3a634249b0",
+     "dHash": "88a8a8ac9888a88a",
+     "aHash": "3f01f7ff1101f7ff"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 73367,
+     "sha256": "741c34016ca2166d63f4c7ab0fd5d08cd64d9fd8bc7dc9584735bdb7e43f9d70",
+     "dHash": "8898a8ac9888a88a",
+     "aHash": "b700b7ff3301b7ff"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 58546,
+     "sha256": "c087aa42d2e4e751126eb5d0c03d482bd1759a4e76a92bc4428d12ddbfa79087",
+     "dHash": "8888a8ac82e2a282",
+     "aHash": "130001811f0f0fff"
+    }
+   ]
+  },
+  "tests/projects/icon": {
+   "deck": "tests/projects/icon/deck.pptd",
+   "pngDir": "tests__projects__icon",
+   "pageCount": 2,
+   "sourceHash": "1111ac6c62461f65ae8db1ad47e5da38283b4e5385343c534355de88e005c19f",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 18601,
+     "sha256": "b34a19c61499b6f24648d334ed594129ff964a3120cd2ec6731a37859efd0986",
+     "dHash": "00c0b03000000000",
+     "aHash": "ff1f07ffffffffff"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 47447,
+     "sha256": "f57b20f4d8674d823bc398269c3e490e67d98074efc8b3e1a8256c6b50a960bc",
+     "dHash": "90a06030eeee0080",
+     "aHash": "070f0f07d19d7fff"
+    }
+   ]
+  },
+  "tests/projects/image": {
+   "deck": "tests/projects/image/deck.pptd",
+   "pngDir": "tests__projects__image",
+   "pageCount": 1,
+   "sourceHash": "3b3ce768f272b81969088da6a6b51bd3ee60689a368c52ec6f2058c88ddef6c0",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 21494,
+     "sha256": "30dced9576003ecc6b050415ed3c7406e261ca240332a35b166f93594da1bd9d",
+     "dHash": "60aaaaa4a4a40000",
+     "aHash": "ff0100ff0088ffff"
+    }
+   ]
+  },
+  "tests/projects/line": {
+   "deck": "tests/projects/line/deck.pptd",
+   "pngDir": "tests__projects__line",
+   "pageCount": 2,
+   "sourceHash": "bf557a0a5f90ac0ac26d0447ac5f9cac6368fa0eae77b4184e2f19239d0d97b1",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 24952,
+     "sha256": "c762777ece93edeaa1467842c51bfd6115b1d8bf7efa42435f3b1f96ee60618e",
+     "dHash": "e0a0c0a1e810ae51",
+     "aHash": "0fefdfff80ff89ff"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 27938,
+     "sha256": "dad0736b30ddf0f0ad61881ef0754e6086724eda564347685586bfd277d62b99",
+     "dHash": "908284a0a8c63880",
+     "aHash": "070f0f0fbfdff19f"
+    }
+   ]
+  },
+  "tests/projects/notes": {
+   "deck": "tests/projects/notes/deck.pptd",
+   "pngDir": "tests__projects__notes",
+   "pageCount": 5,
+   "sourceHash": "c027ac55821885abe66b5f7df3ec1ca7bdfdc57652b77a6e3a72bd7d759ff58b",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 6582,
+     "sha256": "2411693198aa3ab73f55412b805180b98d171aeca31e9b032704a93a1a815eeb",
+     "dHash": "8080000000000000",
+     "aHash": "3f3fffffffffffff"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 6777,
+     "sha256": "aad11b669a85d10bc1a910088b0f6c48c447fcb167838226670fa618e15b28b1",
+     "dHash": "8080000000000000",
+     "aHash": "3f3fffffffffffff"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 6849,
+     "sha256": "6b0df5fa32f6520c05c4ae2f38fe2ec7f9aa02a30dd559e1a2e63adb391bcbb9",
+     "dHash": "8080000000000000",
+     "aHash": "3f3fffffffffffff"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 6750,
+     "sha256": "eca51cfcb7f6e2dd2cd6feb3785d5024596f3c8b65ea176df10d6757315ff093",
+     "dHash": "8080000000000000",
+     "aHash": "3f3fffffffffffff"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 11503,
+     "sha256": "8c8fab5d5d48d19d699c373cecf1ab9085969b4e7222b7a24754bdb3993fe96b",
+     "dHash": "c0c006d6dc949430",
+     "aHash": "fffffdd5918181ff"
+    }
+   ]
+  },
+  "tests/projects/shape": {
+   "deck": "tests/projects/shape/deck.pptd",
+   "pngDir": "tests__projects__shape",
+   "pageCount": 8,
+   "sourceHash": "861964e8448b829169cf2916bd8a122f53f9127e09880827aa7afc492d6baf66",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 17895,
+     "sha256": "e904dd01817fc4ce5917a6abfcba2b7d000515c1776324fc01bb1de7220873d8",
+     "dHash": "60d4d4d6d4d4d4d2",
+     "aHash": "ff008100810107ff"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 26100,
+     "sha256": "ad2ac1d0e49c6449f80fec84951fcb18f279da500e4781d35ea193fe91d1253c",
+     "dHash": "60d4d4d486968ccc",
+     "aHash": "ff0000001f0d3bfb"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 44655,
+     "sha256": "4ea559f3f73e9f77c984e97d406f31f4ece5f710199794502eb2e32a02a79585",
+     "dHash": "60d256d49696c6d6",
+     "aHash": "ffc4df80df011898"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 40002,
+     "sha256": "0d7490f87c1855d303c7025214b57be9e31ce2cb6191dc82e63f11aef77e3962",
+     "dHash": "60d4d4d6cccc9694",
+     "aHash": "ff00db009b1b00ff"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 36954,
+     "sha256": "303472c0aa3bdcbb7c52ac4e4f2f359f26dafda7d109f4ef8cb99ded12085b5f",
+     "dHash": "6056b3b0ced6d4f5",
+     "aHash": "ffc4ef0fdfdb80c3"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 27090,
+     "sha256": "546e6192386612861acf213c613229c081e86f307b19c489d690b30231830139",
+     "dHash": "20d4d4dcd2d0d494",
+     "aHash": "ffc0e9088703039b"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 36383,
+     "sha256": "f1a493c0b3f2cfa94e39ad7f8036e25a40c48e52a807d8d8419e57cbee73c794",
+     "dHash": "60ccd4d6d4cdd494",
+     "aHash": "ff1bdfc0c198038f"
+    },
+    {
+     "page": 8,
+     "w": 960,
+     "h": 540,
+     "bytes": 32166,
+     "sha256": "ae6939eac8ba3411e8df65a51b7886b72510580321d46f1e2924eb21fe51108f",
+     "dHash": "8a82a986d0c00000",
+     "aHash": "3f1c025d07dfffff"
+    }
+   ]
+  },
+  "tests/projects/text": {
+   "deck": "tests/projects/text/deck.pptd",
+   "pngDir": "tests__projects__text",
+   "pageCount": 8,
+   "sourceHash": "ced8f58bec086aa00ce73c9016a6380622ad6d030bba4c68391266fe6c8e3ba6",
+   "size": [
+    960,
+    540
+   ],
+   "pages": [
+    {
+     "page": 1,
+     "w": 960,
+     "h": 540,
+     "bytes": 27990,
+     "sha256": "03000690bfe9841d931515d0e773e38c716e1de2be3a28cff14b9eec57233286",
+     "dHash": "2424060e06242414",
+     "aHash": "00003c3c3c000018"
+    },
+    {
+     "page": 2,
+     "w": 960,
+     "h": 540,
+     "bytes": 35278,
+     "sha256": "49b36e1bdcffe6ab6f1a32a7383c4c0538a1c02f6525a80a0d2de018a2aa04ac",
+     "dHash": "c080a02a80181800",
+     "aHash": "1f1f07e41f7777ff"
+    },
+    {
+     "page": 3,
+     "w": 960,
+     "h": 540,
+     "bytes": 32106,
+     "sha256": "264e394334d4169fc92405c0b42d6a0638591cf9860e55fa733fb31d66de9be2",
+     "dHash": "d0d020f010028000",
+     "aHash": "07070f07e7fc1fff"
+    },
+    {
+     "page": 4,
+     "w": 960,
+     "h": 540,
+     "bytes": 31731,
+     "sha256": "aff9c0fc99f4621b3fb8e55a88ea638843a518aaf72bb98310f28ea0666d510e",
+     "dHash": "a020269e84c4b400",
+     "aHash": "0f0fcd310f9b0fff"
+    },
+    {
+     "page": 5,
+     "w": 960,
+     "h": 540,
+     "bytes": 64332,
+     "sha256": "a4357407dc1983389cc085f562879518b2929a7b636c658eeae2f72d0fc15420",
+     "dHash": "8298a89682a2a282",
+     "aHash": "0f03fffc1f8fffbf"
+    },
+    {
+     "page": 6,
+     "w": 960,
+     "h": 540,
+     "bytes": 50570,
+     "sha256": "8cd4775423fdc664c8f477d21b6a87b1c245d644486ac8f7adf749408d7df494",
+     "dHash": "a0e065a080d00000",
+     "aHash": "0f0f00ff07ffffff"
+    },
+    {
+     "page": 7,
+     "w": 960,
+     "h": 540,
+     "bytes": 61837,
+     "sha256": "42e7a6eeed48af4177222ea7941c46727e45dca6d3502d6cb6de985b248540bd",
+     "dHash": "a0acaaa0a08090a4",
+     "aHash": "0f07f70f073f0f0f"
+    },
+    {
+     "page": 8,
+     "w": 960,
+     "h": 540,
+     "bytes": 62622,
+     "sha256": "c2edf1033b285679d1af1882b4ffa928c9c56143f828fd3cfe0627118a150cc2",
+     "dHash": "808898d898c81c00",
+     "aHash": "1f133713b11bffff"
+    }
+   ]
+  }
+ },
+ "totals": {
+  "projects": 24,
+  "pages": 156
+ }
+}
