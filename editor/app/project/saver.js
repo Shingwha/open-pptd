@@ -14,6 +14,7 @@
 // ============================================================================
 
 import { showToast } from "../toast.js";
+import { commitBaseline } from "../state.js";
 import { showDialog } from "../../interaction/dialogs/base.js";
 import { openFontPanel } from "../../interaction/font-panel.js";
 import { createImageExporter } from "../export-image.js";
@@ -26,10 +27,7 @@ const fmtSize = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Mat
 
 export function createProjectSaver({ state, images, fontManager, renderStatusBar, onSaved, onError, source }) {
   /** Save succeeded: record the current deck as the on-disk baseline (undo back to it = clean, not blanket-dirty). */
-  const markSaved = () => {
-    state.savedDeck = structuredClone(state.deck);
-    state.dirty = false;
-  };
+  const markSaved = () => commitBaseline(state);
   // --------------------------------------------------------------------------
   // Export (PPTX dialog / project zip direct; entry points in the topbar File menu)
   // --------------------------------------------------------------------------

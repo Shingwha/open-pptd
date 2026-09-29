@@ -22,6 +22,7 @@ import { memorySource, directoryHandleSource, delegatingSource } from "./source.
 import { pickProjectFolder, ensurePermission } from "./handle-io.js";
 import { addRecent, setPendingProject, clearPendingProject } from "./handle-store.js";
 import { createHistory } from "../../interaction/history.js";
+import { commitBaseline } from "../state.js";
 import { dialogs } from "../../dialogs.js";
 import { showToast } from "../toast.js";
 import { createDeck, createPage, normalizeTheme, syncElementId } from "../../../packages/model/index.js";
@@ -116,8 +117,7 @@ export function createIo({ state, view, source, onSaved, onDeckChange, onError }
     loader.setBrandFile(""); // topbar back to "unnamed", clearing the old project name
     state.currentPage = 0;
     state.selectedId = null;
-    state.dirty = false;
-    state.savedDeck = structuredClone(state.deck); // blank-project baseline (undo/redo equality compare)
+    commitBaseline(state); // blank-project baseline (undo/redo equality compare)
     state.history = createHistory();
     syncElementId(state.deck);
     images.rebuildImageMap();
