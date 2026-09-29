@@ -73,6 +73,18 @@ export function resolveColor(theme, color) {
 }
 
 /**
+ * Resolve a color and fall back to a substitute when resolution fails.
+ * Collapses the "resolveColor(theme, x) || fallback" idiom repeated across chart
+ * option, renderer and writer modules into one expression, so the fallback policy
+ * lives in a single place. `fallback` is a plain value and is evaluated by the
+ * caller; behavior is identical to the inline `||` form (resolveColor only ever
+ * returns a string or null, so the fallback applies exactly when it returns null).
+ */
+export function colorOr(theme, color, fallback = null) {
+  return resolveColor(theme, color) || fallback;
+}
+
+/**
  * Apply a color preset: preset keys win, other custom color keys already on the deck
  * are kept. AI-generated decks often define $gold/$paper etc. in theme.colors and
  * pages reference them; replacing the whole set would turn every such reference into
@@ -133,7 +145,7 @@ export function themeChartPalette(theme) {
     get("accent5", c.danger || DEFAULT_THEME.colors.primary),
     get("accent6", c.primaryDeep || DEFAULT_THEME.colors.accent),
   ];
-  return vals.map((v) => resolveColor(theme, v) || v); // keep the raw value when resolution fails (lenient consumers)
+  return vals.map((v) => colorOr(theme, v, v)); // keep the raw value when resolution fails (lenient consumers)
 }
 
 /**

@@ -2,7 +2,7 @@
 // model/chart/colors.js — chart color lookup and derivation (official §5.2, shared by writer/renderer)
 // ----------------------------------------------------------------------------
 
-import { resolveColor, themeChartPalette } from "../theme.js";
+import { resolveColor, colorOr, themeChartPalette } from "../theme.js";
 
 /**
  * Hierarchy node color (official treemap/sunburst color derivation, shared by writer/renderer):
@@ -19,14 +19,14 @@ export function hierarchyColor(theme, s, rootIdx, levelFromRoot) {
   if (Array.isArray(fill)) {
     const f = fill[rootIdx % fill.length];
     if (Array.isArray(f)) {
-      if (levelFromRoot < f.length) return resolveColor(theme, f[levelFromRoot]) || null;
-      const base = resolveColor(theme, f[f.length - 1]) || null;
+      if (levelFromRoot < f.length) return colorOr(theme, f[levelFromRoot]);
+      const base = colorOr(theme, f[f.length - 1]);
       return base ? darkenByLightness(base, 10 * (levelFromRoot - f.length + 1)) : null;
     }
-    const base = resolveColor(theme, f) || null;
+    const base = colorOr(theme, f);
     return base ? darkenByLightness(base, 10 * levelFromRoot) : null;
   }
-  const base = resolveColor(theme, fill) || null;
+  const base = colorOr(theme, fill);
   return base ? darkenByLightness(base, 10 * levelFromRoot) : null;
 }
 

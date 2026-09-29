@@ -7,7 +7,7 @@
 // a:custGeom export.
 // ============================================================================
 
-import { resolveColor } from "../model/theme.js";
+import { resolveColor, colorOr } from "../model/theme.js";
 import { normalizeFill, dashSpec } from "../model/style-spec.js";
 import { shapePaths } from "../model/preset-geometry.js";
 import { svgGradient } from "./gradient.js";
@@ -74,7 +74,7 @@ export function renderShape(theme, el) {
     }
     geom.setAttribute("fill", base || "none");
     if (el.border) {
-      geom.setAttribute("stroke", resolveColor(theme, el.border.color) || "#000000");
+      geom.setAttribute("stroke", colorOr(theme, el.border.color, "#000000"));
       geom.setAttribute("stroke-width", el.border.width || 1);
       const ds = dashSpec(el.border.style);
       if (ds) geom.setAttribute("stroke-dasharray", ds.css);
@@ -84,7 +84,7 @@ export function renderShape(theme, el) {
     return svg;
   }
 
-  const strokeColor = el.border ? resolveColor(theme, el.border.color) || "#000000" : null;
+  const strokeColor = el.border ? colorOr(theme, el.border.color, "#000000") : null;
   const strokeWidth = el.border?.width || 1;
   const strokeDash = dashSpec(el.border?.style)?.css || null;
   // Only stroke guide lines / inner lines: with no border nothing is stroked (matching the

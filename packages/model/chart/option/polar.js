@@ -2,7 +2,7 @@
 // model/chart/option/polar.js — polar-coordinate option (pie / radar; pure functions)
 // ----------------------------------------------------------------------------
 
-import { resolveColor, themeChartPalette } from "../../theme.js";
+import { resolveColor, colorOr, themeChartPalette } from "../../theme.js";
 import { dashSpec } from "../../style-spec.js";
 import { chartStyleColors, echartsLabel, markerSymbol, seriesColor } from "./shared.js";
 
@@ -36,7 +36,7 @@ export function buildPolar(ctx) {
           name: c,
           value: s._values.value?.[i] ?? 0,
           // Official fill: an array cycles per point; a single color makes all points the same; unset = theme color cycle
-          itemStyle: { color: fills ? resolveColor(theme, fills[i % fills.length]) || pal[i % 6] : s.color || pal[i % 6] },
+          itemStyle: { color: fills ? colorOr(theme, fills[i % fills.length], pal[i % 6]) : s.color || pal[i % 6] },
         })),
       }],
     };
@@ -52,8 +52,8 @@ export function buildPolar(ctx) {
         radius: `${layout.radar.radiusPct}%`,
         splitNumber: 4,
         axisName: { color: labelColor, fontSize: 11 },
-        axisLine: { show: spoke.axisLine !== false, lineStyle: { color: spoke.axisLine && typeof spoke.axisLine === "object" && spoke.axisLine.color ? resolveColor(theme, spoke.axisLine.color) || gridColor : gridColor, width: 1 } },
-        splitLine: { show: spoke.gridLine !== false, lineStyle: { color: spoke.gridLine && typeof spoke.gridLine === "object" && spoke.gridLine.color ? resolveColor(theme, spoke.gridLine.color) || gridColor : gridColor, width: 1 } },
+        axisLine: { show: spoke.axisLine !== false, lineStyle: { color: spoke.axisLine && typeof spoke.axisLine === "object" && spoke.axisLine.color ? colorOr(theme, spoke.axisLine.color, gridColor) : gridColor, width: 1 } },
+        splitLine: { show: spoke.gridLine !== false, lineStyle: { color: spoke.gridLine && typeof spoke.gridLine === "object" && spoke.gridLine.color ? colorOr(theme, spoke.gridLine.color, gridColor) : gridColor, width: 1 } },
         splitArea: { show: false },
       },
       series: [{
@@ -64,7 +64,7 @@ export function buildPolar(ctx) {
           lineStyle: { color: seriesColor(theme, s), width: s.width ?? 2, type: dashSpec(s.lineStyle)?.cssBorder || "solid" },
           itemStyle: { color: seriesColor(theme, s) },
           symbol: s.marker ? markerSymbol(theme, s.marker, seriesColor(theme, s)).symbol : "none",
-          areaStyle: s.areaColor ? { color: typeof s.areaColor === "string" ? resolveColor(theme, s.areaColor) || seriesColor(theme, s) : seriesColor(theme, s) } : undefined,
+          areaStyle: s.areaColor ? { color: typeof s.areaColor === "string" ? colorOr(theme, s.areaColor, seriesColor(theme, s)) : seriesColor(theme, s) } : undefined,
           label: echartsLabel(theme, el, s, { position: "top" }),
         })),
       }],

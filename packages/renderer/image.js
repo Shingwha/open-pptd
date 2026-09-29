@@ -7,7 +7,7 @@
 // clip-path (crop-only scenarios).
 // ============================================================================
 
-import { resolveColor } from "../model/theme.js";
+import { colorOr } from "../model/theme.js";
 import { shapePaths } from "../model/preset-geometry.js";
 import { createElementShell, boxShadowCss } from "./shell.js";
 
@@ -48,7 +48,7 @@ export function renderImage(theme, el, ctx = {}) {
   }
 
   if (el.border) {
-    box.style.border = `${el.border.width || 1}px ${el.border.style || "solid"} ${resolveColor(theme, el.border.color) || "#000"}`;
+    box.style.border = `${el.border.width || 1}px ${el.border.style || "solid"} ${colorOr(theme, el.border.color, "#000")}`;
   }
   const boxShadow = boxShadowCss(theme, el.shadow);
   if (boxShadow) box.style.boxShadow = boxShadow;

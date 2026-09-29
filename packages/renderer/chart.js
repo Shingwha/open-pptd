@@ -11,7 +11,7 @@ import * as echarts from "../vendor/echarts.mjs";
 import { resolveChartSpec } from "../model/chart/spec.js";
 import { buildOptionFromSpec } from "../model/chart/option/index.js";
 import { normalizeFill, dashSpec } from "../model/style-spec.js";
-import { resolveColor } from "../model/theme.js";
+import { colorOr } from "../model/theme.js";
 import { gradientCss } from "./gradient.js";
 import { createElementShell, boxShadowCss } from "./shell.js";
 
@@ -20,11 +20,11 @@ function frameStyle(theme, el) {
   const st = {};
   const fill = normalizeFill(el.fill);
   if (fill) {
-    if (fill.type === "solid") st.background = resolveColor(theme, fill.color) || "#ffffff";
+    if (fill.type === "solid") st.background = colorOr(theme, fill.color, "#ffffff");
     else if (fill.type === "gradient") st.background = gradientCss(theme, fill) || "#ffffff";
   }
   if (el.border) {
-    st.border = `${el.border.width ?? 1}px solid ${resolveColor(theme, el.border.color) || "#000000"}`;
+    st.border = `${el.border.width ?? 1}px solid ${colorOr(theme, el.border.color, "#000000")}`;
     const ds = dashSpec(el.border.style);
     if (ds) st.borderStyle = ds.cssBorder;
   }

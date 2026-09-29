@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { el, esc, hexToRgbVal } from "../xml.js";
-import { resolveColor, resolveFont } from "../../model/theme.js";
+import { resolveColor, colorOr, resolveFont } from "../../model/theme.js";
 import { toAxisArray, seriesAxisIndex, CHART_DEFAULTS } from "../../model/chart.js";
 import { txPrXml, srgbClrXml } from "./style.js";
 
@@ -11,7 +11,7 @@ import { txPrXml, srgbClrXml } from "./style.js";
 function axisLnXml(theme, cfg, fallbackColor, fallbackWidth = 0.75) {
   if (cfg === false) return null; // the caller decides to omit or use noFill
   const o = typeof cfg === "object" ? cfg : {};
-  const color = o.color ? resolveColor(theme, o.color) : resolveColor(theme, fallbackColor) || "#6b7280";
+  const color = o.color ? resolveColor(theme, o.color) : colorOr(theme, fallbackColor, "#6b7280");
   const kids = [el("a:solidFill", {}, srgbClrXml(color))];
   const dash = { dash: "dash", dot: "dot" }[o.style];
   if (dash) kids.push(el("a:prstDash", { val: dash }));

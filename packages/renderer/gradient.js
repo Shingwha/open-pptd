@@ -7,7 +7,7 @@
 // referenced via url(#id); backgrounds / text (background-clip:text) / chart frames use gradientCss.
 // ============================================================================
 
-import { resolveColor } from "../model/theme.js";
+import { colorOr } from "../model/theme.js";
 import { svgGradientDef } from "../model/svg-gradient.js";
 
 function valid(fill) {
@@ -23,7 +23,7 @@ function gradientCssAngle(angle) {
 export function gradientCss(theme, fill) {
   if (!valid(fill)) return null;
   const stops = fill.stops
-    .map((s) => `${resolveColor(theme, s.color) || s.color} ${Math.round((s.position ?? 0) * 100)}%`)
+    .map((s) => `${colorOr(theme, s.color, s.color)} ${Math.round((s.position ?? 0) * 100)}%`)
     .join(", ");
   if (fill.gradientType === "radial") return `radial-gradient(circle, ${stops})`;
   return `linear-gradient(${gradientCssAngle(fill.angle)}deg, ${stops})`;

@@ -39,6 +39,7 @@ export { ELEMENT_TYPES } from "./style-spec.js";
 export {
   resolveTheme,
   resolveColor,
+  colorOr,
   resolveFont,
   normalizeTheme,
   resolveTableStyle,

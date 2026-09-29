@@ -6,7 +6,7 @@
 // touching window/document is forbidden (enforced by dep-graph).
 // ============================================================================
 
-import { resolveColor, resolveFont } from "../../theme.js";
+import { resolveColor, colorOr, resolveFont } from "../../theme.js";
 import { dashSpec } from "../../style-spec.js";
 import { CHART_DEFAULTS } from "../meta.js";
 import { resolveDataLabels } from "../labels.js";
@@ -22,10 +22,10 @@ export { CHART_GRID } from "../layout.js";
 /** Theme chart styles (grid/axis/text colors follow the theme colors keys, falling back to built-in defaults). */
 export function chartStyleColors(theme) {
   return {
-    labelColor: resolveColor(theme, theme.colors?.text) || "#1f2937",
-    axisColor: resolveColor(theme, theme.colors?.line) || "#d8dce1",
-    gridColor: resolveColor(theme, theme.colors?.line) || "#f0f2f5",
-    legendColor: resolveColor(theme, theme.colors?.text) || "#1f2937",
+    labelColor: colorOr(theme, theme.colors?.text, "#1f2937"),
+    axisColor: colorOr(theme, theme.colors?.line, "#d8dce1"),
+    gridColor: colorOr(theme, theme.colors?.line, "#f0f2f5"),
+    legendColor: colorOr(theme, theme.colors?.text, "#1f2937"),
   };
 }
 
@@ -45,14 +45,14 @@ export function echartsLabel(theme, el, s, { position = "top", pie = false } = {
     show: true,
     position,
     fontSize: cfg.fontSize || CHART_DEFAULTS.labelSize,
-    color: cfg.color ? resolveColor(theme, cfg.color) || labelColor : labelColor,
+    color: cfg.color ? colorOr(theme, cfg.color, labelColor) : labelColor,
     formatter,
   };
 }
 
 /** Series main color (same source as writer; $key theme reference -> resolved to a concrete color). */
 export function seriesColor(theme, s) {
-  if (s.type === "line" || s.type === "area" || s.type === "radar") return resolveColor(theme, s.lineColor) || resolveColor(theme, s.color);
+  if (s.type === "line" || s.type === "area" || s.type === "radar") return colorOr(theme, s.lineColor, resolveColor(theme, s.color));
   return resolveColor(theme, s.color);
 }
 
@@ -65,7 +65,7 @@ export function markerSymbol(theme, marker, color) {
     show: true,
     symbol: shape,
     symbolSize: cfg.size || CHART_DEFAULTS.markerSize,
-    itemStyle: { color: resolveColor(theme, cfg.fill) || color, borderColor: resolveColor(theme, cfg.border?.color), borderWidth: cfg.border?.width },
+    itemStyle: { color: colorOr(theme, cfg.fill, color), borderColor: resolveColor(theme, cfg.border?.color), borderWidth: cfg.border?.width },
   };
 }
 
@@ -97,7 +97,7 @@ export function legendState(theme, legend) {
   const legendOpt = {
     show: legend.on,
     ...posOpt,
-    textStyle: { color: cfg.color ? resolveColor(theme, cfg.color) || legendColor : legendColor, fontSize: cfg.fontSize || CHART_DEFAULTS.legendSize },
+    textStyle: { color: cfg.color ? colorOr(theme, cfg.color, legendColor) : legendColor, fontSize: cfg.fontSize || CHART_DEFAULTS.legendSize },
     // Legend marker converges on the PowerPoint small-square look (previously a roundRect 14×8 rounded block, I25)
     icon: "rect", itemWidth: 10, itemHeight: 8,
   };

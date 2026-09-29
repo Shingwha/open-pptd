@@ -11,26 +11,26 @@
 // PowerPoint's SVG engine gives no spec guarantee for paint-server inheritance.
 // ============================================================================
 
-import { resolveColor } from "./theme.js";
+import { colorOr } from "./theme.js";
 import { svgGradientDef } from "./svg-gradient.js";
 
 /** Resolve icon fill -> {type:'solid', color:hex} or {type:'gradient', gradientType, stops:[{color,position}], angle}. */
 export function normalizeIconFill(theme, fill) {
-  if (typeof fill === "string") return { type: "solid", color: resolveColor(theme, fill) || "#333333" };
-  if (!fill) return { type: "solid", color: resolveColor(theme, "$text") || "#333333" };
+  if (typeof fill === "string") return { type: "solid", color: colorOr(theme, fill, "#333333") };
+  if (!fill) return { type: "solid", color: colorOr(theme, "$text", "#333333") };
   if (fill.type === "gradient" && Array.isArray(fill.stops) && fill.stops.length >= 2) {
     return {
       type: "gradient",
       gradientType: fill.gradientType === "radial" ? "radial" : "linear",
       angle: fill.angle ?? 0,
       stops: fill.stops.map((s) => ({
-        color: resolveColor(theme, s.color) || "#333333",
+        color: colorOr(theme, s.color, "#333333"),
         position: s.position ?? 0,
       })),
     };
   }
   const color = fill.type === "solid" ? fill.color : fill.color ?? "$text";
-  return { type: "solid", color: resolveColor(theme, color) || "#333333" };
+  return { type: "solid", color: colorOr(theme, color, "#333333") };
 }
 
 /** Shape opening tags inside FA inner (no fill attribute after normalize, so injection is safe). */
