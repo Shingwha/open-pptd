@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>open-pptd 编辑器重构 · 设计参考稿</title>
+<style>
+/* ============================================================================
+   令牌层 —— 组件永远不知道 light/dark，只有令牌知道
+   ========================================================================== */
+:root{
+  /* 中性 11 阶（唯一色阶来源） */
+  --n-0:#ffffff; --n-50:#fafbfc; --n-100:#f4f5f7; --n-200:#ebedf0;
+  --n-300:#e0e3e8; --n-400:#ccd1d9; --n-500:#a4acb8; --n-600:#78818f;
+  --n-700:#565f6d; --n-800:#3a424e; --n-900:#1e242e;
+
+  /* 强调 + 语义 */
+  --accent:#2563eb; --accent-hover:#1d4ed8; --accent-soft:#eef4fd;
+  --danger:#d64545; --danger-soft:#fdf1f1;
+  --success:#2e9e5b; --success-soft:#ecf7f0;
+  --warning:#9a6700; --warning-soft:#fdf6e3;
+
+  /* 语义别名（组件只认这些） */
+  --bg:var(--n-50); --panel:var(--n-0);
+  --line:var(--n-300); --line-strong:var(--n-400);
+  --ink:var(--n-900); --sub:var(--n-700); --faint:var(--n-500);
+  --hover:var(--n-200); --active:var(--n-300); --disabled:var(--n-500);
+  --sel-bg:var(--accent-soft); --sel-ring:var(--accent);
+
+  /* 圆角：只剩 3 档 */
+  --r-1:2px; --r-2:4px; --r-3:6px;
+  /* 阴影：只剩 2 档（只给真正浮起的） */
+  --sh-pop:0 4px 14px rgba(20,25,35,.10);
+  --sh-modal:0 16px 48px rgba(20,25,35,.18);
+  /* 动效：3 档时长 + 1 条缓动 */
+  --t-fast:80ms; --t-med:140ms; --t-slow:200ms;
+  --ease:cubic-bezier(.2,0,0,1);
+  /* 控件高：3 档 */
+  --h-sm:24px; --h:28px; --h-lg:32px;
+  /* 字号（保留现状：6 档） */
+  --f-xs:11px; --f-sm:12px; --f-md:13px; --f-lg:14px; --f-xl:16px;
+
+  --font:"Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:ui-monospace,"Cascadia Code",Consolas,monospace;
+}
+[data-theme="dark"]{
+  --n-0:#16191f; --n-50:#1b1f26; --n-100:#21262e; --n-200:#2a303a;
+  --n-300:#353c47; --n-400:#454d5a; --n-500:#6b7482; --n-600:#8f98a6;
+  --n-700:#b3bbc6; --n-800:#d5dae1; --n-900:#eef1f5;
+  --accent:#4d8dff; --accent-hover:#6ba0ff; --accent-soft:#1c2a44;
+  --danger:#ff6b6b; --danger-soft:#3a1f22;
+  --success:#3fbf74; --success-soft:#16301f;
+  --warning:#e0a83a; --warning-soft:#382c12;
+  --sh-pop:0 4px 14px rgba(0,0,0,.45);
+  --sh-modal:0 16px 48px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--ink); font:var(--f-md)/1.5 var(--font);
+  -webkit-font-smoothing:antialiased; padding:0 0 80px;
+}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- 稿面骨架 ---------- */
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+.hero{padding:44px 0 28px;border-bottom:1px solid var(--line);margin-bottom:36px}
+.hero h1{margin:0 0 8px;font-size:26px;font-weight:650;letter-spacing:-.01em}
+.hero p{margin:0;color:var(--sub);max-width:74ch}
+.hero .tagline{margin-top:14px;display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:var(--f-xs);padding:2px 8px;border:1px solid var(--line);border-radius:var(--r-1);color:var(--sub);background:var(--panel)}
+.h2{display:flex;align-items:baseline;gap:10px;margin:40px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.h2 h2{margin:0;font-size:var(--f-xl);font-weight:620}
+.h2 .n{font:600 var(--f-xs)/1 var(--mono);color:var(--faint);letter-spacing:.08em}
+.h2 .note{color:var(--faint);font-size:var(--f-sm);margin-left:auto}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-3);padding:18px}
+
+/* ---------- 主题切换 ---------- */
+.themebar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:8px;
+  padding:10px 28px;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin-bottom:0}
+.themebar .brand{font-weight:650;font-size:var(--f-lg);letter-spacing:-.01em}
+.themebar .sp{margin-left:auto}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:var(--r-2);overflow:hidden;background:var(--panel)}
+.seg button{appearance:none;border:0;background:transparent;color:var(--sub);
+  font:var(--f-sm)/1 var(--font);padding:0 12px;height:var(--h);cursor:pointer;
+  transition:background var(--t-fast) var(--ease),color var(--t-fast) var(--ease)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button:hover{background:var(--hover)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+
+/* ---------- 按钮原语：3 尺寸 × 4 变体 ---------- */
+.btn{appearance:none;display:inline-flex;align-items:center;gap:6px;height:var(--h);
+  padding:0 10px;border:1px solid var(--line-strong);border-radius:var(--r-2);
+  background:var(--panel);color:var(--ink);font:var(--f-sm)/1 var(--font);cursor:pointer;
+  transition:background var(--t-fast) var(--ease),border-color var(--t-fast) var(--ease)}
+.btn:hover{background:var(--hover)}
+.btn:active{background:var(--active)}
+.btn[disabled]{color:var(--disabled);border-color:var(--line);cursor:not-allowed;background:transparent}
+.btn.sm{height:var(--h-sm);padding:0 8px;font-size:var(--f-xs)}
+.btn.lg{height:var(--h-lg);padding:0 14px;font-size:var(--f-md)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--hover)}
+.btn.danger{color:var(--danger);border-color:var(--line-strong)}
+.btn.danger:hover{background:var(--danger-soft);border-color:var(--danger)}
+.btn.icon{width:var(--h);padding:0;justify-content:center}
+.btn svg{width:15px;height:15px;flex:none}
+
+/* ---------- 字段原语：沿用现有 5 种 kind ---------- */
+.field{display:flex;align-items:center;gap:8px;min-height:var(--h)}
+.field>label{width:52px;flex:none;color:var(--sub);font-size:var(--f-sm)}
+.inp{flex:1;min-width:0;height:var(--h);border:1px solid var(--line-strong);
+  border-radius:var(--r-2);background:var(--panel);color:var(--ink);
+  padding:0 8px;font:var(--f-sm)/1 var(--font);font-variant-numeric:tabular-nums}
+.inp:focus{outline:1px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+.swatch{width:22px;height:var(--h);flex:none;border:1px solid var(--line-strong);
+  border-radius:var(--r-1);background:#2e6ff2}
+.swatch.dark{background:#16191f}
+.select{appearance:none;flex:1;height:var(--h);border:1px solid var(--line-strong);
+  border-radius:var(--r-2);background:var(--panel);color:var(--ink);padding:0 24px 0 8px;
+  font:var(--f-sm)/1 var(--font);
+  background-image:linear-gradient(45deg,transparent 50%,var(--faint) 50%),linear-gradient(135deg,var(--faint) 50%,transparent 50%);
+  background-position:calc(100% - 13px) 12px,calc(100% - 9px) 12px;
+  background-size:4px 4px,4px 4px;background-repeat:no-repeat}
+.checks{display:flex;gap:12px;flex-wrap:wrap}
+.chk{display:inline-flex;align-items:center;gap:5px;font-size:var(--f-sm);color:var(--ink)}
+.chk i{width:13px;height:13px;flex:none;border:1px solid var(--line-strong);border-radius:var(--r-1);
+  background:var(--panel);display:grid;place-items:center}
+.chk[aria-checked="true"] i{background:var(--accent);border-color:var(--accent)}
+.chk[aria-checked="true"] i::after{content:"";width:7px;height:4px;border-left:1.6px solid #fff;
+  border-bottom:1.6px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}
+
+/* ---------- 编辑器样机 ---------- */
+.frame{border:1px solid var(--line-strong);border-radius:var(--r-3);overflow:hidden;
+  background:var(--panel);box-shadow:var(--sh-pop)}
+.ftop{display:flex;align-items:center;gap:6px;height:40px;padding:0 8px;
+  border-bottom:1px solid var(--line);background:var(--panel)}
+.ftop .sep{width:1px;height:18px;background:var(--line);margin:0 4px}
+.ftop .file{font-size:var(--f-sm);color:var(--faint);margin-left:auto;margin-right:auto;
+  padding:0 16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fbody{display:flex;height:452px}
+.fcanvas{flex:1;min-width:0;position:relative;background:var(--n-100);
+  padding:26px;display:grid;place-items:center;overflow:hidden}
+[data-theme="dark"] .fcanvas{background:var(--n-50)}
+.slide{width:100%;max-width:520px;aspect-ratio:16/9;background:#fff;position:relative;
+  border:1px solid var(--line-strong);border-radius:var(--r-1);
+  box-shadow:0 1px 3px rgba(20,25,35,.08);padding:26px 30px}
+[data-theme="dark"] .slide{background:#f7f8fa}
+.slide .t{color:#12161d;font-weight:650;font-size:19px;letter-spacing:-.01em}
+.slide .b{margin-top:9px;color:#5b6472;font-size:11px;line-height:1.65;max-width:74%}
+.slide .bar{margin-top:16px;display:flex;gap:8px;align-items:flex-end;height:72px}
+.slide .bar span{flex:1;background:#dfe6f5;border-radius:1px 1px 0 0}
+.slide .bar span:nth-child(2){background:#b9cdf0}
+.slide .bar span:nth-child(4){background:#8fb0e8}
+.finsp{width:232px;flex:none;border-left:1px solid var(--line);background:var(--panel);
+  overflow:hidden;display:flex;flex-direction:column}
+.sec{border-bottom:1px solid var(--line)}
+.sec>summary{display:flex;align-items:center;gap:6px;height:30px;padding:0 10px;
+  cursor:pointer;list-style:none;font-size:var(--f-sm);font-weight:600;color:var(--ink);
+  transition:background var(--t-fast) var(--ease)}
+.sec>summary::-webkit-details-marker{display:none}
+.sec>summary:hover{background:var(--hover)}
+.sec>summary::before{content:"";width:0;height:0;flex:none;
+  border-left:4px solid var(--faint);border-top:3.5px solid transparent;border-bottom:3.5px solid transparent;
+  transition:transform var(--t-fast) var(--ease)}
+.sec[open]>summary::before{transform:rotate(90deg)}
+.sec .body{padding:6px 10px 12px;display:flex;flex-direction:column;gap:7px}
+.mix{color:var(--faint);font-style:italic}
+.alignrow{display:grid;grid-template-columns:repeat(6,1fr);gap:3px}
+.abtn{height:26px;border:1px solid var(--line-strong);border-radius:var(--r-1);background:var(--panel);
+  display:grid;place-items:center;cursor:pointer;color:var(--sub);
+  transition:background var(--t-fast) var(--ease),border-color var(--t-fast) var(--ease)}
+.abtn:hover{background:var(--hover)}
+.abtn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.abtn svg{width:13px;height:13px}
+.fbottom{display:flex;align-items:center;gap:8px;height:38px;padding:0 8px;
+  border-top:1px solid var(--line);background:var(--panel)}
+.thumbs{display:flex;gap:5px;align-items:center;overflow:hidden;flex:1;min-width:0}
+.th{width:52px;height:30px;flex:none;border:1px solid var(--line-strong);border-radius:var(--r-1);
+  background:#fff;position:relative;cursor:pointer}
+[data-theme="dark"] .th{background:#f7f8fa}
+.th .pn{position:absolute;left:2px;bottom:1px;font-size:9px;color:#7c8593;font-variant-numeric:tabular-nums}
+.th[aria-current="true"]{outline:1px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+.th.multi{outline:1px solid var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.fstat{display:flex;align-items:center;gap:6px;color:var(--sub);font-size:var(--f-sm);
+
+}
+.zoomctl{display:inline-flex;align-items:center;border:1px solid var(--line-strong);
+  border-radius:var(--r-2);overflow:hidden;height:var(--h-sm)}
+.zoomctl button{appearance:none;border:0;background:transparent;width:24px;height:100%;
+  cursor:pointer;color:var(--sub);font-size:var(--f-md);line-height:1}
+.zoomctl button:hover{background:var(--hover)}
+.zoomctl .v{padding:0 7px;font-size:var(--f-xs);color:var(--sub);font-variant-numeric:tabular-nums;
+  border-left:1px solid var(--line);border-right:1px solid var(--line);line-height:22px}
+
+/* ---------- 选择态 ---------- */
+.el{position:absolute;cursor:default}
+.el-single{border:1px solid var(--accent);background:var(--accent-soft)}
+.h{position:absolute;width:7px;height:7px;background:var(--panel);border:1px solid var(--accent);
+  border-radius:0}
+.h.tl{left:-4px;top:-4px}.h.tr{right:-4px;top:-4px}
+.h.bl{left:-4px;bottom:-4px}.h.br{right:-4px;bottom:-4px}
+.mbounds{border:1px dashed var(--accent);background:color-mix(in srgb,var(--accent) 5%,transparent)}
+.member{border:1px solid var(--accent);background:var(--accent-soft)}
+.marquee{border:1px dashed var(--accent);background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.rot{position:absolute;left:50%;top:-22px;transform:translateX(-50%);
+  width:13px;height:13px;border:1px solid var(--accent);border-radius:50%;background:var(--panel)}
+.rot::before{content:"";position:absolute;left:50%;top:13px;width:1px;height:9px;background:var(--accent)}
+.rot::after{content:"";position:absolute;left:50%;top:50%;width:5px;height:5px;
+  margin:-2.5px 0 0 -2.5px;border:1.2px solid var(--accent);border-radius:50%;
+  border-top-color:transparent;border-right-color:transparent}
+
+/* ---------- 上下文菜单 / 弹层 ---------- */
+.menu{background:var(--panel);border:1px solid var(--line-strong);border-radius:var(--r-2);
+  box-shadow:var(--sh-pop);padding:4px;min-width:186px;font-size:var(--f-sm)}
+.menu[hidden]{display:none}
+.mi{display:flex;align-items:center;gap:8px;height:26px;padding:0 8px;border-radius:var(--r-1);
+  cursor:pointer;color:var(--ink);white-space:nowrap}
+.mi:hover{background:var(--hover)}
+.mi .k{margin-left:auto;color:var(--faint);font-size:var(--f-xs);font-family:var(--mono)}
+.mi svg{width:14px;height:14px;color:var(--sub);flex:none}
+.msep{height:1px;background:var(--line);margin:4px 2px}
+.mi.dis{color:var(--disabled);pointer-events:none}
+
+/* ---------- 令牌板 ---------- */
+.ramp{display:grid;grid-template-columns:repeat(11,1fr);gap:0;border:1px solid var(--line);
+  border-radius:var(--r-2);overflow:hidden}
+.ramp div{height:52px;display:grid;place-items:end center;padding-bottom:4px;
+  font:600 9px/1 var(--mono);color:var(--faint)}
+.ramp div:nth-child(n+7){color:color-mix(in srgb,var(--bg) 70%,transparent)}
+.swrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.sw{flex:1;min-width:104px;border:1px solid var(--line);border-radius:var(--r-2);overflow:hidden}
+.sw i{display:block;height:38px}
+.sw b{display:block;padding:6px 8px;font:500 var(--f-xs)/1.35 var(--mono);color:var(--sub);
+  background:var(--panel);font-weight:400}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.lbl{font-size:var(--f-xs);color:var(--faint);letter-spacing:.06em;text-transform:uppercase;
+  margin:0 0 8px;font-weight:600}
+.demo{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.radiusbox{height:44px;background:var(--n-100);border:1px solid var(--line-strong);
+  display:grid;place-items:center;font-size:var(--f-xs);color:var(--sub)}
+.typescale>div{display:flex;align-items:baseline;gap:10px;padding:3px 0}
+.typescale .meta{color:var(--faint);font:400 var(--f-xs)/1 var(--mono);margin-left:auto}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:var(--f-sm)}
+.kv dt{color:var(--faint)}
+.kv dd{margin:0;color:var(--ink)}
+.tbl{width:100%;border-collapse:collapse;font-size:var(--f-sm);font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{border:1px solid var(--line);padding:5px 8px;text-align:left}
+.tbl th{background:var(--n-100);font-weight:600;color:var(--sub)}
+.tbl td.sel{background:var(--accent-soft);outline:1px solid var(--accent);outline-offset:-1px}
+.muted{color:var(--faint)}
+.strike{text-decoration:line-through;text-decoration-thickness:1px}
+.foot{margin-top:52px;padding-top:20px;border-top:1px solid var(--line);color:var(--faint);
+  font-size:var(--f-sm)}
+</style>
+</head>
+<body>
+
+<div class="themebar">
+  <span class="brand">open-pptd · 编辑器重构设计参考</span>
+  <span class="tag" style="margin-left:4px">非仓库文件 · 无构建 · 仅供评审</span>
+  <span class="sp"></span>
+  <div class="seg" role="group" aria-label="主题">
+    <button data-th="light" aria-pressed="true">浅</button>
+    <button data-th="dark" aria-pressed="false">深</button>
+    <button data-th="auto" aria-pressed="false">跟随系统</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <h1>减法优先的编辑器重构</h1>
+    <p>七条决策：<b>信息架构收成单行三入口</b>（插入 / 设计 / 放映）、<b>画布零常驻浮层</b>、<b>右键承载动作</b>、<b>选择模型改集合</b>（多选 · 框选 · 对齐到选区）、<b>锐利令牌</b>（圆角 2/4/6px · 1px 实线边界 · 2 档阴影 · 4 角点）、<b>组件原语层</b>（CSS 18→8 · 类名 268→~110）、<b>深浅色两层</b>。核心编辑能力一项不减。</p>
+    <div class="tagline">
+      <span class="tag">选择模型 Set&lt;string&gt;</span>
+      <span class="tag">令牌单一来源</span>
+      <span class="tag">原生 DOM · 零依赖</span>
+      <span class="tag">chrome: full / minimal / shot</span>
+      <span class="tag">两刀：U1 地基 → U2 信息架构</span>
+    </div>
+  </div>
+
+  <!-- ============ 1. 令牌 ============ -->
+  <div class="h2"><span class="n">01</span><h2>令牌体系</h2>
+    <span class="note">中性 11 阶 · 圆角 3 档 · 阴影 2 档 · 时长 3 档 · 控件高 3 档</span></div>
+
+  <div class="card">
+    <p class="lbl">中性色阶 n-0 → n-900（唯一色阶来源，浅深两套取值）</p>
+    <div class="ramp">
+      <div style="background:var(--n-0)">0</div><div style="background:var(--n-50)">50</div>
+      <div style="background:var(--n-100)">100</div><div style="background:var(--n-200)">200</div>
+      <div style="background:var(--n-300)">300</div><div style="background:var(--n-400)">400</div>
+      <div style="background:var(--n-500)">500</div><div style="background:var(--n-600)">600</div>
+      <div style="background:var(--n-700)">700</div><div style="background:var(--n-800)">800</div>
+      <div style="background:var(--n-900)">900</div>
+    </div>
+
+    <p class="lbl" style="margin-top:18px">语义 + 状态色</p>
+    <div class="swrow">
+      <div class="sw"><i style="background:var(--accent)"></i><b>--accent</b></div>
+      <div class="sw"><i style="background:var(--sel-ring)"></i><b>--sel-ring</b></div>
+      <div class="sw"><i style="background:var(--sel-bg)"></i><b>--sel-bg</b></div>
+      <div class="sw"><i style="background:var(--hover)"></i><b>--hover</b></div>
+      <div class="sw"><i style="background:var(--active)"></i><b>--active</b></div>
+      <div class="sw"><i style="background:var(--disabled)"></i><b>--disabled</b></div>
+      <div class="sw"><i style="background:var(--danger)"></i><b>--danger</b></div>
+      <div class="sw"><i style="background:var(--success)"></i><b>--success</b></div>
+      <div class="sw"><i style="background:var(--warning)"></i><b>--warning</b></div>
+    </div>
+
+    <div class="grid3" style="margin-top:22px">
+      <div>
+        <p class="lbl">圆角：3 档（原 15 种）</p>
+        <div class="demo">
+          <div class="radiusbox" style="border-radius:var(--r-1);width:74px">2px</div>
+          <div class="radiusbox" style="border-radius:var(--r-2);width:74px">4px</div>
+          <div class="radiusbox" style="border-radius:var(--r-3);width:74px">6px</div>
+        </div>
+      </div>
+      <div>
+        <p class="lbl">阴影：2 档（原 9 种）</p>
+        <div class="demo">
+          <div class="radiusbox" style="box-shadow:var(--sh-pop);border-radius:var(--r-2);width:104px;background:var(--panel)">弹出层</div>
+          <div class="radiusbox" style="box-shadow:var(--sh-modal);border-radius:var(--r-3);width:104px;background:var(--panel)">对话框</div>
+        </div>
+      </div>
+      <div>
+        <p class="lbl">层级：菜单 / 对话框实拍</p>
+        <div class="demo" style="align-items:flex-start">
+          <div class="menu" style="min-width:132px">
+            <div class="mi">对齐到选区</div>
+            <div class="mi">分布间距</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid3" style="margin-top:22px">
+      <div class="typescale">
+        <p class="lbl">字号：6 档（现状保留）</p>
+        <div><span style="font-size:var(--f-lg)">正文基准 14</span><span class="meta">--f-lg</span></div>
+        <div><span style="font-size:var(--f-md)">文档正文 13</span><span class="meta">--f-md</span></div>
+        <div><span style="font-size:var(--f-sm)">次要信息 12</span><span class="meta">--f-sm</span></div>
+        <div><span style="font-size:var(--f-xs)">辅助/角标 11</span><span class="meta">--f-xs</span></div>
+      </div>
+      <div>
+        <p class="lbl">控件高：3 档</p>
+        <div class="demo" style="align-items:flex-end">
+          <button class="btn sm">24</button>
+          <button class="btn">28</button>
+          <button class="btn lg">32</button>
+        </div>
+        <p class="lbl" style="margin-top:14px">动效：3 档时长 + 1 条缓动</p>
+        <div class="kv"><dt>--t-fast</dt><dd class="num">80ms</dd><dt>--t-med</dt><dd class="num">140ms</dd><dt>--t-slow</dt><dd class="num">200ms</dd></div>
+      </div>
+      <div>
+        <p class="lbl">等宽数字：坐标 / 尺寸 / 缩放 / 页码</p>
+        <div class="demo" style="flex-direction:column;align-items:flex-start;gap:6px">
+          <span class="num" style="font-family:var(--mono)">X 128 · Y 96 · W 240 · H 135</span>
+          <span class="num" style="font-family:var(--mono)">100% ／ 12 页</span>
+          <span class="muted" style="font-size:var(--f-xs)">用 <code>font-variant-numeric: tabular-nums</code>，数字不再跳动</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 2. 信息架构样机 ============ -->
+  <div class="h2"><span class="n">02</span><h2>简化后的编辑器（目标形态）</h2>
+    <span class="note">单行三入口 · 画布零常驻浮层 · 属性分区折叠 · 底部状态条</span></div>
+
+  <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+    <div class="seg" role="group" aria-label="选择态">
+      <button data-sel="single" aria-pressed="true">单选</button>
+      <button data-sel="multi" aria-pressed="false">多选</button>
+      <button data-sel="marquee" aria-pressed="false">框选</button>
+    </div>
+    <span class="muted" style="font-size:var(--f-sm)">切一下看选择模型改动的效果 →</span>
+  </div>
+
+  <div class="frame">
+    <!-- 顶栏：3 个入口 -->
+    <div class="ftop">
+      <button class="btn ghost" style="font-weight:600">插入
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="btn ghost" style="font-weight:600">设计
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="btn ghost" style="font-weight:600">放映</button>
+      <span class="sep"></span>
+      <button class="btn icon ghost" title="撤销 Ctrl+Z">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7L4 11l4 4"/><path d="M4 11h10a5 5 0 0 1 0 10h-3"/></svg></button>
+      <button class="btn icon ghost" title="重做 Ctrl+Y">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7l4 4-4 4"/><path d="M20 11H10a5 5 0 0 0 0 10h3"/></svg></button>
+      <span class="file">季度经营分析 · deck.pptd</span>
+      <button class="btn ghost sm" title="适配">适配
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="btn icon ghost" title="全屏">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    </div>
+
+    <div class="fbody">
+      <div class="fcanvas">
+        <div class="slide">
+          <div class="t">2026 Q3 经营分析</div>
+          <div class="b">收入结构持续优化，毛利率环比提升 2.4pt；下季度重点转向交付效率。</div>
+          <div class="bar">
+            <span style="height:46%"></span><span style="height:72%"></span>
+            <span style="height:58%"></span><span style="height:90%"></span>
+            <span style="height:64%"></span>
+          </div>
+
+          <!-- 单选 -->
+          <div class="el el-single" data-only="single" style="left:29px;top:132px;width:150px;height:74px">
+            <span class="h tl"></span><span class="h tr"></span><span class="h bl"></span><span class="h br"></span>
+            <span class="rot"></span>
+          </div>
+
+          <!-- 多选：两个成员 + 合并包围盒 -->
+          <div class="el member" data-only="multi" style="left:29px;top:132px;width:90px;height:74px"></div>
+          <div class="el member" data-only="multi" style="left:129px;top:150px;width:120px;height:56px"></div>
+          <div class="el mbounds" data-only="multi" style="left:29px;top:132px;width:220px;height:74px">
+            <span class="h tl"></span><span class="h tr"></span><span class="h bl"></span><span class="h br"></span>
+          </div>
+
+          <!-- 框选：marquee + 命中结果 -->
+          <div class="el member" data-only="marquee" style="left:29px;top:132px;width:90px;height:74px"></div>
+          <div class="el member" data-only="marquee" style="left:129px;top:150px;width:120px;height:56px"></div>
+          <div class="el marquee" data-only="marquee" style="left:22px;top:124px;width:240px;height:96px"></div>
+        </div>
+      </div>
+
+      <!-- 属性面板 -->
+      <div class="finsp">
+        <details class="sec" open>
+          <summary>位置与尺寸</summary>
+          <div class="body">
+            <div class="field"><label>X</label><input class="inp num" value="128" readonly><label style="width:auto">Y</label><input class="inp num" value="96" readonly></div>
+            <div class="field"><label>宽</label><input class="inp num" value="240" readonly><label style="width:auto">高</label><input class="inp num" value="135" readonly></div>
+          </div>
+        </details>
+
+        <details class="sec" open>
+          <summary>对齐 <span class="muted" id="alignbase" style="font-weight:400;font-size:var(--f-xs)">（页面）</span></summary>
+          <div class="body">
+            <div class="alignrow">
+              <button class="abtn" title="左对齐"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 3v18M8 7h9M8 12h6M8 17h11"/></svg></button>
+              <button class="abtn" title="水平居中"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M8 7h8M6 12h12M9 17h6"/></svg></button>
+              <button class="abtn" title="右对齐"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 3v18M7 7h9M10 12h6M5 17h11"/></svg></button>
+              <button class="abtn" title="顶对齐"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 4h18M7 8v9M12 8v6M17 8v11"/></svg></button>
+              <button class="abtn" title="垂直居中"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M7 8v8M12 6v12M17 9v6"/></svg></button>
+              <button class="abtn" title="底对齐"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 20h18M7 7v9M12 10v6M17 5v11"/></svg></button>
+            </div>
+            <div class="alignrow" style="grid-template-columns:repeat(2,1fr)" data-only-row="multi">
+              <button class="abtn" style="font-size:var(--f-xs)">水平分布</button>
+              <button class="abtn" style="font-size:var(--f-xs)">垂直分布</button>
+            </div>
+            <span class="muted" style="font-size:var(--f-xs)" id="alignhint">单选 → 相对页面；多选 → 相对选区包围盒</span>
+          </div>
+        </details>
+
+        <details class="sec" open>
+          <summary>层级</summary>
+          <div class="body">
+            <div class="demo">
+              <button class="btn sm">上移一层</button>
+              <button class="btn sm">下移一层</button>
+            </div>
+          </div>
+        </details>
+
+        <details class="sec">
+          <summary>变换</summary>
+          <div class="body">
+            <div class="field"><label>旋转</label><input class="inp num" value="0"><span class="muted">°</span></div>
+            <div class="field"><label>透明度</label><input class="inp num" value="100"><span class="muted">%</span></div>
+            <div class="demo">
+              <button class="btn sm">水平翻转</button><button class="btn sm">垂直翻转</button>
+            </div>
+          </div>
+        </details>
+
+        <details class="sec" id="mixsec">
+          <summary>文本</summary>
+          <div class="body">
+            <div class="field"><label>字号</label><input class="inp num mix" value="混合" readonly></div>
+            <div class="field"><label>字色</label>
+              <span class="swatch dark"></span><span class="swatch"></span>
+              <span class="muted" style="font-size:var(--f-xs)">混合</span></div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- 底部状态条：缩略图 + 缩放（原 .zoom-ctl 从画布收进这里） -->
+    <div class="fbottom">
+      <div class="thumbs">
+        <div class="th" aria-current="true"><span class="pn">1</span></div>
+        <div class="th"><span class="pn">2</span></div>
+        <div class="th multi"><span class="pn">3</span></div>
+        <div class="th multi"><span class="pn">4</span></div>
+        <div class="th"><span class="pn">5</span></div>
+        <div class="th"><span class="pn">6</span></div>
+        <div class="th" style="display:grid;place-items:center;color:var(--faint);border-style:dashed">＋</div>
+      </div>
+      <span class="fstat"><span class="num">12</span> 页 · <span class="num">4</span> 页已选</span>
+      <div class="zoomctl">
+        <button title="缩小">−</button><span class="v num">100%</span><button title="放大">＋</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:14px">
+    <div class="card">
+      <p class="lbl">减法从哪里来</p>
+      <div class="kv">
+        <dt>画布常驻浮层</dt><dd><span class="num">4</span> 个 → <b class="num">0</b> 个</dd>
+        <dt>顶栏按钮</dt><dd><span class="num">5</span> 个平铺 → <b class="num">3</b> 个入口</dd>
+        <dt>选择框手柄</dt><dd><span class="num">8</span> 个圆点 → <b class="num">4</b> 个角点</dd>
+        <dt>选中态</dt><dd>3px 软辉光（<span class="num">36</span> 处） → 1px 实线环</dd>
+        <dt>属性面板</dt><dd>一次全铺 → 分区折叠 + 按类型过滤</dd>
+        <dt>动作入口</dt><dd>常驻按钮 → <b>右键上下文菜单</b></dd>
+      </div>
+    </div>
+    <div class="card">
+      <p class="lbl">保留的基本编辑（一项不减）</p>
+      <div class="demo" style="gap:6px">
+        <span class="tag">文本</span><span class="tag">形状</span><span class="tag">图片</span>
+        <span class="tag">图标</span><span class="tag">线条</span><span class="tag">表格</span>
+        <span class="tag">图表</span>
+      </div>
+      <div class="demo" style="gap:6px;margin-top:8px">
+        <span class="tag">位置尺寸</span><span class="tag">旋转</span><span class="tag">透明度</span>
+        <span class="tag">层级</span><span class="tag">对齐</span><span class="tag">删除</span>
+        <span class="tag">复制</span><span class="tag">撤销重做</span><span class="tag">页面增删</span>
+        <span class="tag">页面背景</span><span class="tag">导出 PPTX</span><span class="tag">放映</span>
+        <span class="tag">字体管理</span><span class="tag">配色预设</span>
+      </div>
+      <p class="muted" style="font-size:var(--f-xs);margin:10px 0 0">字体管理与配色预设降级为「设计」下拉的二级入口——它们不是每次都用。</p>
+    </div>
+  </div>
+
+  <!-- ============ 3. 右键菜单 ============ -->
+  <div class="h2"><span class="n">03</span><h2>右键上下文菜单</h2>
+    <span class="note">简化的最大杠杆：动作从常驻 UI 移到右键</span></div>
+
+  <div class="grid3">
+    <div class="card">
+      <p class="lbl">单选时</p>
+      <div class="menu">
+        <div class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="8" width="12" height="12" rx="1"/><path d="M4 16V5a1 1 0 0 1 1-1h11"/></svg>复制<span class="k">Ctrl+D</span></div>
+        <div class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>删除<span class="k">Del</span></div>
+        <div class="msep"></div>
+        <div class="mi">置于顶层<span class="k">]</span></div>
+        <div class="mi">上移一层</div>
+        <div class="mi">下移一层</div>
+        <div class="mi">置于底层<span class="k">[</span></div>
+        <div class="msep"></div>
+        <div class="mi">水平翻转</div>
+        <div class="mi">垂直翻转</div>
+        <div class="msep"></div>
+        <div class="mi dis">对齐到选区<span class="k">多选</span></div>
+        <div class="mi dis">组合<span class="k">Ctrl+G</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="lbl">多选时（动作解锁）</p>
+      <div class="menu">
+        <div class="mi">对齐到选区 ▸</div>
+        <div class="mi">水平分布</div>
+        <div class="mi">垂直分布</div>
+        <div class="msep"></div>
+        <div class="mi">组合<span class="k">Ctrl+G</span></div>
+        <div class="mi">取消组合<span class="k">Ctrl+⇧+G</span></div>
+        <div class="msep"></div>
+        <div class="mi">复制 <span class="muted" style="font-size:var(--f-xs)">（4 个）</span><span class="k">Ctrl+D</span></div>
+        <div class="mi" style="color:var(--danger)">删除 <span class="muted" style="font-size:var(--f-xs)">（4 个）</span><span class="k">Del</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="lbl">空白处（页面级）</p>
+      <div class="menu">
+        <div class="mi">全选<span class="k">Ctrl+A</span></div>
+        <div class="msep"></div>
+        <div class="mi">粘贴<span class="k">Ctrl+V</span></div>
+        <div class="mi">新建页面</div>
+        <div class="mi">页面背景…</div>
+        <div class="msep"></div>
+        <div class="mi">适配画布<span class="k">Ctrl+0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 4. 键位 ============ -->
+  <div class="h2"><span class="n">04</span><h2>键位重映射</h2>
+    <span class="note">Shift 从「大步微调」让给「多选」，Alt 承接让出的语义</span></div>
+
+  <div class="card">
+    <table class="tbl">
+      <thead><tr><th style="width:26%">键</th><th style="width:30%">现在</th><th style="width:30%">改为</th><th>理由</th></tr></thead>
+      <tbody>
+        <tr><td><code>Shift</code> + 点击 / 拖动</td><td class="muted">大步微调（15px）／等比缩放</td><td><b>加选</b></td><td>PowerPoint 映射</td></tr>
+        <tr><td><code>Alt</code></td><td class="muted">（空闲）</td><td><b>微调 / 等比缩放 / 拖动复制</b></td><td>承接 Shift 让出的语义</td></tr>
+        <tr><td><code>Ctrl/Cmd</code> + 点击</td><td class="muted">—</td><td><b>切换选中</b></td><td>PowerPoint</td></tr>
+        <tr><td><code>Ctrl+A</code></td><td class="muted">—</td><td><b>全选</b>（当前页）</td><td>新增</td></tr>
+        <tr><td><code>Esc</code></td><td class="muted">取消选中</td><td><b>先退框选 → 再取消选中</b></td><td>分层</td></tr>
+        <tr><td><code>Ctrl+G</code> / <code>Ctrl+Shift+G</code></td><td class="muted">—</td><td><b>组合 / 取消组合</b></td><td>新增</td></tr>
+        <tr><td>方向键</td><td class="muted">1px ／ Shift 15px</td><td><b>1px ／ Alt 10px ／ Shift 网格吸附</b></td><td>对齐 PowerPoint 手感</td></tr>
+        <tr><td><code>Ctrl+D</code></td><td class="muted">复制元素</td><td>保留</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============ 5. 组件原语 ============ -->
+  <div class="h2"><span class="n">05</span><h2>组件原语层</h2>
+    <span class="note">CSS 18 → 8 个文件 · 类名 268 → ~110 · 去掉加载顺序依赖</span></div>
+
+  <div class="grid2">
+    <div class="card">
+      <p class="lbl">Button · 3 尺寸 × 4 变体</p>
+      <div class="demo" style="margin-bottom:10px">
+        <button class="btn sm">小</button><button class="btn">默认</button><button class="btn lg">大</button>
+        <button class="btn primary">主操作</button>
+        <button class="btn ghost">幽灵</button>
+        <button class="btn danger">危险</button>
+        <button class="btn icon ghost" title="图标按钮">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></button>
+        <button class="btn" disabled>禁用</button>
+      </div>
+      <p class="muted" style="font-size:var(--f-xs);margin:0">取消 `.btn` / `.icon-btn` / `.status-btn` / `.thumb-add` 的多处重复定义</p>
+    </div>
+
+    <div class="card">
+      <p class="lbl">Field · 沿用现有 5 种 kind（架构是好的）</p>
+      <div class="field"><label>num</label><input class="inp num" value="240"></div>
+      <div class="field"><label>color</label><span class="swatch"></span><input class="inp" value="#2e6ff2" style="max-width:104px"></div>
+      <div class="field"><label>select</label>
+        <span class="select">居中</span></div>
+      <div class="field"><label>checks</label>
+        <span class="checks">
+          <span class="chk" aria-checked="true"><i></i>粗体</span>
+          <span class="chk" aria-checked="false"><i></i>斜体</span>
+          <span class="chk" aria-checked="true"><i></i>下划线</span>
+        </span></div>
+      <div class="field"><label>text</label><input class="inp" value="季度经营分析"></div>
+    </div>
+
+    <div class="card">
+      <p class="lbl">Dialog 骨架 · Section · 菜单</p>
+      <div class="menu" style="box-shadow:var(--sh-modal);border-radius:var(--r-3);padding:0;overflow:hidden;min-width:0">
+        <div style="padding:12px 14px;border-bottom:1px solid var(--line);font-weight:620">导出项目包</div>
+        <div style="padding:14px;display:flex;flex-direction:column;gap:9px">
+          <div class="field"><label>范围</label><span class="select">全部页面</span></div>
+          <div class="field"><label>倍率</label><input class="inp num" value="2" style="max-width:80px"><span class="muted" style="font-size:var(--f-xs)">×</span></div>
+        </div>
+        <div style="padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn">取消</button><button class="btn primary">导出</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="lbl">DataGrid · 表格数据编辑（原 excel-grid）</p>
+      <table class="tbl">
+        <thead><tr><th></th><th>Q1</th><th>Q2</th><th>Q3</th></tr></thead>
+        <tbody>
+          <tr><th>收入</th><td class="num">1,240</td><td class="num sel">1,486</td><td class="num">1,702</td></tr>
+          <tr><th>成本</th><td class="num">820</td><td class="num">904</td><td class="num">988</td></tr>
+          <tr><th>毛利</th><td class="num">420</td><td class="num">582</td><td class="num">714</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="font-size:var(--f-xs);margin:8px 0 0">选中用 <code>outline: 1px</code> + <code>--sel-bg</code>——替代原来的 <code>inset 0 0 0 999px</code> 颜色 hack</p>
+    </div>
+  </div>
+
+  <!-- ============ 6. 深浅色 ============ -->
+  <div class="h2"><span class="n">06</span><h2>深浅色：两层主题</h2>
+    <span class="note">组件不知道 light/dark，只有令牌知道</span></div>
+
+  <div class="card">
+    <div class="grid2">
+      <div>
+        <p class="lbl">第一层：自带默认板</p>
+        <p style="margin:0;color:var(--sub);font-size:var(--f-sm)">独立 <code>serve</code> / GitHub Pages 下自足可看，不依赖宿主。补 <code>prefers-color-scheme</code> 与「浅 / 深 / 跟随系统」三态。</p>
+        <div class="demo" style="margin-top:10px">
+          <button class="btn" onclick="setTheme('light')">切到浅色</button>
+          <button class="btn" onclick="setTheme('dark')">切到深色</button>
+        </div>
+      </div>
+      <div>
+        <p class="lbl">第二层：DSH 覆盖</p>
+        <p style="margin:0;color:var(--sub);font-size:var(--f-sm)">嵌进 DeepSeek Harness 时，由 <code>applyThemeTokens(rootEl, { tokens, mode })</code>（契约 3）用宿主 <code>--dsw-*</code> 映射覆盖。宿主深色标记是 <code>body[data-ds-dark-theme]</code>。</p>
+      </div>
+    </div>
+    <p class="lbl" style="margin-top:18px">实施前必须先修的 7 处硬编码（绕过令牌写死颜色）</p>
+    <div class="demo" style="gap:6px">
+      <span class="tag" style="font-family:var(--mono)">responsive.css:42</span>
+      <span class="tag" style="font-family:var(--mono)">thumbbar.css:74/75/92/93</span>
+      <span class="tag" style="font-family:var(--mono)">inspector.css:34/179</span>
+      <span class="tag" style="font-family:var(--mono)">dialogs.css:9</span>
+      <span class="tag" style="font-family:var(--mono)">excel-grid.css:12/15</span>
+    </div>
+  </div>
+
+  <!-- ============ 7. 两刀 ============ -->
+  <div class="h2"><span class="n">07</span><h2>两刀与回归保障</h2>
+    <span class="note">U1 地基 → U2 信息架构与视觉</span></div>
+
+  <div class="grid2">
+    <div class="card">
+      <p class="lbl">U1 · 地基（选择模型 + 令牌 + 原语）</p>
+      <ol style="margin:0;padding-left:20px;color:var(--sub);font-size:var(--f-sm);line-height:1.85">
+        <li>选择模型改 <code>Set&lt;string&gt;</code> + 框选 + 加选 + <code>Ctrl+A</code> + 分层 <code>Esc</code></li>
+        <li>键位重映射（<code>Shift</code>→多选、<code>Alt</code>→微调/等比/复制拖动）</li>
+        <li>对齐语义二义化 + 分布 + 组合</li>
+        <li>令牌重建（11 阶中性色、交互态、3 圆角、2 阴影、3 时长）+ 修 7 处硬编码</li>
+        <li>原语层 + CSS 18→8</li>
+        <li>选中态改 1px 实线环 + 4 角点（消灭 36 处软辉光）</li>
+      </ol>
+      <p class="muted" style="font-size:var(--f-xs);margin:10px 0 0">出口：<code>ui-shots.mjs</code> 与基线一致 · <code>run-all.mjs</code> 全绿 · <code>packages/</code> 零改动</p>
+    </div>
+    <div class="card">
+      <p class="lbl">U2 · 信息架构与视觉</p>
+      <ol style="margin:0;padding-left:20px;color:var(--sub);font-size:var(--f-sm);line-height:1.85">
+        <li>单行顶栏 + 画布零浮层 + 状态条收纳缩放 + <code>chrome</code> 三档</li>
+        <li>右键上下文菜单 + 快调条收敛为 4 项 + ⋮</li>
+        <li>属性面板分区折叠 + 按类型过滤 + 多选「混合」</li>
+        <li>缩略条：右键菜单 · 拖动排序 · 页面多选</li>
+        <li>深浅色切换 UI + 配色重做</li>
+      </ol>
+      <p class="muted" style="font-size:var(--f-xs);margin:10px 0 0">出口：浅深两套截图 · 三档 <code>chrome</code> 复核 · 画廊共用令牌同步复验</p>
+    </div>
+  </div>
+
+  <div class="foot">
+    <p style="margin:0"><b>这是设计参考，不是实现。</b>静态 HTML 单文件，无构建、无依赖，位于桌面，<b>未触碰 open-pptd 仓库任何文件</b>。对应文档：<code>open-pptd × DSH 深度集成方案.md</code> 的 §6.4–6.13（思路与决策）、§7.6（U1/U2 工单）。</p>
+  </div>
+</div>
+
+<script>
+/* 主题：light / dark / auto */
+const root = document.documentElement;
+const mq = matchMedia('(prefers-color-scheme: dark)');
+let mode = 'light';
+function apply(){
+  const eff = mode === 'auto' ? (mq.matches ? 'dark' : 'light') : mode;
+  root.setAttribute('data-theme', eff);
+  document.querySelectorAll('[data-th]').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.th === mode)));
+}
+function setTheme(m){ mode = m; apply(); }
+document.querySelectorAll('[data-th]').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.th)));
+mq.addEventListener('change', () => { if (mode === 'auto') apply(); });
+apply();
+
+/* 选择态样机：single / multi / marquee */
+function setSel(s){
+  document.querySelectorAll('[data-only]').forEach(el => {
+    el.style.display = (el.dataset.only === s) ? '' : 'none';
+  });
+  const isMulti = s !== 'single';
+  const base = document.getElementById('alignbase');
+  const hint = document.getElementById('alignhint');
+  if (base) base.textContent = isMulti ? '（选区）' : '（页面）';
+  if (hint) hint.textContent = isMulti
+    ? '多选 → 对齐选区包围盒，并解锁「分布」与「组合」'
+    : '单选 → 相对页面；多选 → 相对选区包围盒';
+  document.querySelectorAll('[data-only-row="multi"]').forEach(el => {
+    el.style.display = isMulti ? '' : 'none';
+  });
+  const mix = document.getElementById('mixsec');
+  if (mix) mix.style.display = (s === 'multi') ? '' : 'none';
+  document.querySelectorAll('[data-sel]').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.sel === s)));
+}
+document.querySelectorAll('[data-sel]').forEach(b =>
+  b.addEventListener('click', () => setSel(b.dataset.sel)));
+setSel('single');
+</script>
+</body>
+</html>
