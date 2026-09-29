@@ -7,11 +7,10 @@
 //
 // Selection model (U1):
 //   - state.selection: Set<string> — element id set (ordered, last = "most
-//     recently selected")
-//   - state.selectedId — compatibility accessor: single select returns the only
-//     id, multi-select returns the last one, empty returns null; assignment still
-//     works (`state.selectedId = null` clears, `= id` single-selects). Legacy
-//     call sites need no change.
+//     recently selected"). Internal to this module: every write goes through ops
+//     (select/selectMany/selectAll/clearSelection); every read goes through the
+//     api surface, whose single derivation is primarySelectedId() (single select →
+//     the only id; multi → the most recently added; empty → null).
 //   - group elements (elementType:"group") reference member ids via children;
 //     selection/hit-testing normalizes to the group (clicking a member = select
 //     the group).
@@ -61,7 +60,7 @@ export function createEditorState() {
     currentPage: 0,
     history: createHistory(),
     selection: new Set(), // selected element ids (multi-select)
-    _lastSelected: null,  // last id added to the selection (selectedId returns it on multi-select)
+    _lastSelected: null,  // last id added to the selection (returned as primary on multi-select)
     imageMap: {},
     iconMap: {}, // { [iconName]: {inner,w,h} } (icons.js preload cache, shared by render/export)
     pagesPending: new Set(), // pages not yet ready during progressive load (page object refs; survives delete/reorder)
@@ -74,32 +73,26 @@ export function createEditorState() {
     clipboard: null, // element clipboard (copySelected snapshot; a page.elements slice)
   };
 
-  // ---- selectedId compatibility accessor (getter returns the primary selection, setter keeps old single-value assignment) ----
-  Object.defineProperty(state, "selectedId", {
-    enumerable: true,
-    configurable: true,
-    get() {
-      if (state.selection.size === 0) return null;
-      if (state.selection.size === 1) return state.selection.values().next().value;
-      if (state._lastSelected && state.selection.has(state._lastSelected)) return state._lastSelected;
-      let last = null;
-      for (const id of state.selection) last = id;
-      return last;
-    },
-    set(v) {
-      state.selection.clear();
-      if (v == null) {
-        state._lastSelected = null;
-      } else {
-        state.selection.add(v);
-        state._lastSelected = v;
-      }
-    },
-  });
-
   const page = () => state.deck.pages[state.currentPage];
   const elements = () => page().elements || [];
-  const selected = () => elements().find((el) => el.elementId === state.selectedId) || null;
+
+  /**
+   * Primary selection id — the single definition of the "current element id" read
+   * (single select → the only id; multi → the most recently added, otherwise the
+   * last iterated; empty → null). Exposed through api.getSelected; the api layer
+   * re-exports `selected` (element form) too. Do not read state.selection directly
+   * outside this module.
+   */
+  const primarySelectedId = () => {
+    if (state.selection.size === 0) return null;
+    if (state.selection.size === 1) return state.selection.values().next().value;
+    if (state._lastSelected && state.selection.has(state._lastSelected)) return state._lastSelected;
+    let last = null;
+    for (const id of state.selection) last = id;
+    return last;
+  };
+
+  const selected = () => elements().find((el) => el.elementId === primarySelectedId()) || null;
 
   /** All selected elements (in selection order; ids absent from the page are skipped). */
   const selectedElements = () => {
@@ -209,6 +202,14 @@ export function createEditorState() {
     },
 
     // ---- mutations ----
+    /** Append an element to the current page (add menu / type pickers). Selecting it is a separate op. */
+    addElement(el) {
+      page().elements.push(el);
+    },
+    /** Install a deck as the current document (load / new blank / undo-redo all share it); the surrounding resets stay with the caller. */
+    replaceDeck(deck) {
+      state.deck = deck;
+    },
     updateSelected(patch) {
       for (const el of selectedElements()) Object.assign(el, patch);
     },
@@ -424,5 +425,5 @@ export function createEditorState() {
     },
   };
 
-  return { state, page, elements, selected, selectedElements, groupOf, selectionBounds, ops };
+  return { state, page, elements, selected, primarySelectedId, selectedElements, groupOf, selectionBounds, ops };
 }

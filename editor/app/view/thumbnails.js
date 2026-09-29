@@ -26,7 +26,7 @@ import { openPageBackgroundDialog } from "../../interaction/dialogs/page-backgro
 const THUMB_W = 140;
 const THUMB_H = 79;
 
-export function createThumbnails({ state, api, reload }) {
+export function createThumbnails({ state, api, ops, reload }) {
   const bar = dom.pageThumbs;
   const ac = new AbortController(); // lifetime: drag/wheel listeners are unbound once through this
 
@@ -259,7 +259,7 @@ export function createThumbnails({ state, api, reload }) {
     pageSel.clear();
     anchorPage = pg;
     state.currentPage = i;
-    state.selectedId = null;
+    ops.clearSelection(); // page switch drops the element selection (single write entry)
     reload();
   }
 

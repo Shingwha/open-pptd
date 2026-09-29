@@ -18,7 +18,7 @@ import { preloadIcons } from "./icons.js";
 import { dom } from "../../dom.js";
 import { DEFAULT_THEME, resolveTheme, syncElementId } from "../../../packages/model/index.js";
 
-export function createLoader({ state, view, images, fontManager, source, connect, renderStatusBar, onDeckChange, onError }) {
+export function createLoader({ state, view, ops, images, fontManager, source, connect, renderStatusBar, onDeckChange, onError }) {
   // --------------------------------------------------------------------------
   // Theme and state application
   // --------------------------------------------------------------------------
@@ -34,10 +34,10 @@ export function createLoader({ state, view, images, fontManager, source, connect
   /** Apply an undo/redo snapshot to the current state. */
   function applyHistory(deckSnapshot) {
     if (!deckSnapshot) return;
-    state.deck = deckSnapshot;
+    ops.replaceDeck(deckSnapshot);
     state.theme = resolveTheme(state.deck);
     if (state.currentPage >= state.deck.pages.length) state.currentPage = state.deck.pages.length - 1;
-    state.selectedId = null;
+    ops.clearSelection();
     // Undo/redo lands: mark dirty first, then the render hook equality-compares against the saved baseline
     // (undoing back to the save point marks it clean; redoing past it marks it dirty again)
     state.dirty = true;
@@ -72,7 +72,7 @@ export function createLoader({ state, view, images, fontManager, source, connect
   function applyDeck(manifestText, pageFiles, { manifestPath = "", handle = null, projectName = "" } = {}) {
     applyDeckToState(
       { manifestText, pageFiles, manifestPath, handle, projectName },
-      { state, images, renderStatusBar, setBrandFile, applyTheme }
+      { state, ops, images, renderStatusBar, setBrandFile, applyTheme }
     );
     try {
       onDeckChange?.(state.deck);

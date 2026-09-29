@@ -28,7 +28,7 @@ const measurePort = isDomMeasureAvailable() ? createDomMeasure() : undefined;
 const lastOverflow = new Map();
 let overflowDeck = null;
 
-export function createView({ state, page, selected, api, controller, props }) {
+export function createView({ state, page, selected, api, controller, props, ops }) {
   // Under strict mode a bare render() call has this === undefined, so self-reference through viewObj
   const viewObj = {};
 
@@ -45,7 +45,7 @@ export function createView({ state, page, selected, api, controller, props }) {
     getSize: () => deckSize(state),
   });
   // Thumbnail bar: a page switch/delete needs a full refresh, going back to render() via the reload callback
-  const thumbnails = createThumbnails({ state, api, reload: () => viewObj.render() });
+  const thumbnails = createThumbnails({ state, api, ops, reload: () => viewObj.render() });
 
   // Method table: render() calls the other render functions bare, while allowing external hooks to be attached on viewObj
   Object.assign(viewObj, {
@@ -142,7 +142,7 @@ export function createView({ state, page, selected, api, controller, props }) {
   // --------------------------------------------------------------------------
   function renderProps() {
     const el = selected();
-    const count = state.selection?.size || 0;
+    const count = api.getSelection().length; // selection reads via the api surface, never state.selection
     const badge = dom.inspectorBadge;
     const def = el ? getType(el.elementType) : null;
     if (count > 1) {
@@ -167,7 +167,7 @@ export function createView({ state, page, selected, api, controller, props }) {
     const canvas = dom.canvas;
     const stage = dom.stage;
     // The quickbar only appears on a single selection (batch actions for multi-select live in the property panel / context menu, U2 consolidation)
-    const node = el && state.selection?.size === 1 ? canvas.querySelector(`[data-element-id="${CSS.escape(el.elementId)}"]`) : null;
+    const node = el && api.getSelection().length === 1 ? canvas.querySelector(`[data-element-id="${CSS.escape(el.elementId)}"]`) : null;
     if (!el || !node) {
       qb.classList.remove("show");
       qb.innerHTML = "";

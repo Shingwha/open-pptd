@@ -32,7 +32,7 @@ export function bindKeyboard({ state, api, io, present }) {
     } else if (mod && key === "d") {
       // Duplicate the selected element (needs a selection; api handles the rest)
       e.preventDefault();
-      if (state.selection.size) api.duplicateSelected();
+      if (api.getSelection().length) api.duplicateSelected(); // selection read via the api surface
     } else if (mod && key === "c") {
       // Copy into the editor-internal clipboard (used by the context menu "paste" and Ctrl+V; B6)
       e.preventDefault();

@@ -52,9 +52,9 @@ async function runShot(deckUrl) {
   // Minimal assembly: state + io (only the load/font/image pipeline; view is a
   // stub and all UI stays hidden. refreshPage is called by finishLoad's
   // progressive load, so the stub must provide it).
-  const { state } = createEditorState();
+  const { state, ops } = createEditorState();
   // Single read source: screenshot mode always goes over HTTP (loadDeck passes deckUrl as the read hint)
-  const io = createIo({ state, view: { render() {}, refreshPage() {} }, source: httpSource({}) });
+  const io = createIo({ state, ops, view: { render() {}, refreshPage() {} }, source: httpSource({}) });
 
   const root = document.createElement("div");
   root.id = "shot-root";
