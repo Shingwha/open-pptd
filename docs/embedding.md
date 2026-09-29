@@ -36,8 +36,27 @@
 | `open-pptd/editor` | `editor/index.js` | 契约 1/2/3（规划中） |
 | `open-pptd/paths` | `packages/paths.js` | 契约 5（规划中） |
 | `open-pptd/config` | `packages/config.js` | 契约 5（规划中） |
+| `open-pptd/measure` | `packages/measure/index.js` | 统一排版度量：`measureTextRuns` / `measureCell` / `measureTable` / `lineHeightMultiplierFor` / `fontMetricsMeasure`（MeasurePort 默认实现）+ 度量表 |
+| `open-pptd/layout` | `packages/layout/index.js` | `layout(deck, measure?) → LayoutTree`（最终几何 + overflow 事实） |
 | `open-pptd/editor/index.html` | `editor/index.html` | 编辑器页面 |
 | `open-pptd/package.json` | `package.json` | 清单 |
+
+`open-pptd/measure` / `open-pptd/layout`（渲染管线三段式，spec 08–09）：
+
+```js
+// open-pptd/measure —— 确定性纯函数度量（Node/CLI/CI 可跑可快照）
+import { fontMetricsMeasure, measureTextRuns, measureCell, measureTable, lineHeightMultiplierFor } from "open-pptd/measure";
+measureTextRuns(runs, { fontSize, lineHeight, lineHeightPx, fontFamily }, maxWidth) // → { lines, height }
+measureTable(tableElement) // → { columnWidths, rowHeights, totalHeight }
+
+// open-pptd/layout —— 几何事实一次性算定；paint/校验/writer 读同一棵树
+import { layout } from "open-pptd/layout";
+const tree = layout(deck, fontMetricsMeasure); // LayoutTree：frame / text / table / overflow{x,y,page,overlaps}
+```
+
+包根 `open-pptd` 同时再导出 `measure` 命名空间与 `layout` 函数（Node 专用入口）。
+上述两入口为**纯新增导出**（`CONTRACT_VERSION` 维持 2）；`measure`/`layout` 为双端纯函数包，
+与 `model`/`writer` 同档环境纯净（禁 `node:`/`fs`/`window.`/`document.`）。
 
 `open-pptd/model` 冻结导出名（`packages/model/index.js`）：
 

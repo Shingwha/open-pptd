@@ -14,6 +14,8 @@
     "./editor": "./editor/index.js",
     "./paths": "./packages/paths.js",
     "./config": "./packages/config.js",
+    "./measure": "./packages/measure/index.js",
+    "./layout": "./packages/layout/index.js",
     "./editor/index.html": "./editor/index.html",
     "./package.json": "./package.json",
     "./internal/*": "./*"

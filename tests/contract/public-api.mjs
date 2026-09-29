@@ -281,6 +281,40 @@ async function main() {
     else bad("readConfig() 返回含 version 的配置", JSON.stringify(cfg));
   }
 
+  console.log("\n=== 7. 渲染管线新入口 measure / layout（spec 09 T5）===");
+  {
+    const MEASURE_SPEC = {
+      file: "packages/measure/index.js",
+      names: ["measureTextRuns", "measureCell", "measureTable", "lineHeightMultiplierFor", "createMetricsTable", "runsFromRichText", "fontMetricsMeasure", "defaultMetricsTable"],
+      fns: ["measureTextRuns", "measureCell", "measureTable", "lineHeightMultiplierFor", "createMetricsTable", "runsFromRichText"],
+      objs: ["fontMetricsMeasure", "defaultMetricsTable"],
+    };
+    const LAYOUT_SPEC = { file: "packages/layout/index.js", names: ["layout"], fns: ["layout"], objs: [] };
+    for (const spec of [MEASURE_SPEC, LAYOUT_SPEC]) {
+      const abs = join(ROOT, spec.file);
+      if (!existsSync(abs)) { bad(`${spec.file} 存在`, "文件缺失"); continue; }
+      let mod;
+      try {
+        mod = await import(pathToFileURL(abs).href);
+      } catch (e) {
+        bad(`${spec.file} 可静态导入`, e.message);
+        continue;
+      }
+      const missing = spec.names.filter((n) => !(n in mod));
+      if (missing.length) bad(`${spec.file} 导出名齐全`, `缺 ${missing.join(", ")}`);
+      else ok(`${spec.file} 导出名齐全（${spec.names.length} 个）`);
+      for (const n of spec.fns) if (n in mod && typeof mod[n] !== "function") bad(`${spec.file}#${n} 应为函数`, `实际 ${typeof mod[n]}`);
+      for (const n of spec.objs) if (n in mod && (typeof mod[n] !== "object" || mod[n] === null)) bad(`${spec.file}#${n} 应为对象`, `实际 ${typeof mod[n]}`);
+    }
+    // 包根再导出面：measure 命名空间 + layout 函数
+    const root = await import(pathToFileURL(join(ROOT, "packages/index.js")).href);
+    if (root.measure && typeof root.measure.measureTextRuns === "function") ok("packages/index.js 再导出 measure 命名空间");
+    else bad("packages/index.js 再导出 measure 命名空间", `measure=${typeof root.measure}`);
+    if (typeof root.layout === "function") ok("packages/index.js 再导出 layout 函数");
+    else bad("packages/index.js 再导出 layout 函数", `layout=${typeof root.layout}`);
+    // entries ↔ exports 对应由 §3 双向比对自动覆盖（entries 新增 measure/layout）
+  }
+
   console.log(`\n结果: ${fail === 0 ? "契约通过 ✅" : `契约破坏 ❌（${fail} 处）`}${skip ? `；待落地跳过 ${skip} 项` : ""}`);
   if (pending.length) console.log(`待落地: ${pending.join("、")}`);
   process.exit(fail ? 1 : 0);

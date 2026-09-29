@@ -18,3 +18,8 @@ export * from "./server/index.js";
 export * from "./cli/index.js";
 export * from "./paths.js";
 export * from "./config.js";
+
+// ---- 渲染管线三段式新入口（spec 09 T5；纯新增导出，契约维持 2）----
+// measure 走命名空间（避免与既有扁平导出名潜在冲突），layout 直导函数。
+export * as measure from "./measure/index.js";
+export { default as layout } from "./layout/index.js";
