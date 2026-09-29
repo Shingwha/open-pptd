@@ -23,7 +23,7 @@ const FADE_MS = 260; // matches the <p:fade/> cadence in the exported PPTX
 const UI_HIDE_MS = 1800; // hide the bottom toolbar after the pointer stops moving
 const WHEEL_DEBOUNCE_MS = 600;
 
-export function createPresent({ state, view }) {
+export function createPresent({ state, view, ops }) {
   let root = null; // overlay
   let stage = null; // slide viewport (scaled container)
   let layers = []; // double-buffered layers (deck's real canvas size, cross-faded)
@@ -319,7 +319,7 @@ export function createPresent({ state, view }) {
     // Sync the editor to the page the show ended on
     if (state.currentPage !== index) {
       state.currentPage = index;
-      state.selectedId = null;
+      ops.clearSelection(); // leaving the show drops the element selection (single write entry)
       view.render();
     }
   }

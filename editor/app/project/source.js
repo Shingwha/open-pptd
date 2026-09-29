@@ -240,13 +240,13 @@ export function memorySource({ files = {}, writable = true } = {}) {
  * Apply a read project to editor state: reset history/selection/pages/image map/
  * id counter and render the statusbar (shared by loadDeck and manual refresh).
  * @param {{ manifestText, pageFiles, manifestPath?, handle?, projectName? }} deckData
- * @param {{ state, images, renderStatusBar, setBrandFile, applyTheme? }} ctx
- *        the injected editor context (images.rebuildImageMap / topbar brand / statusbar)
+ * @param {{ state, ops, images, renderStatusBar, setBrandFile, applyTheme? }} ctx
+ *        the injected editor context (ops document/selection writes, images.rebuildImageMap / topbar brand / statusbar)
  */
 export function applyDeck(deckData, ctx) {
-  const { state, images, renderStatusBar, setBrandFile } = ctx;
+  const { state, ops, images, renderStatusBar, setBrandFile } = ctx;
   const { manifestText, pageFiles, manifestPath = "", handle = null, projectName = "" } = deckData;
-  state.deck = parseDeck(manifestText, pageFiles);
+  ops.replaceDeck(parseDeck(manifestText, pageFiles));
   state.manifestPath = manifestPath;
   state.projectHandle = handle;
   state.projectName = projectName;
@@ -263,7 +263,7 @@ export function applyDeck(deckData, ctx) {
     state.theme = resolveTheme(state.deck);
   }
   state.currentPage = 0;
-  state.selectedId = null;
+  ops.clearSelection();
   state.history = createHistory();
   commitBaseline(state); // load baseline: undo/redo back to it means no unsaved changes
   syncElementId(state.deck);

@@ -15,14 +15,14 @@ import { isNarrow } from "../ui.js";
 import { dom } from "../dom.js";
 import { dialogs } from "../dialogs.js";
 
-export function bindToolbar({ state, page, api, view, io, present, themeMode = null }) {
+export function bindToolbar({ state, api, ops, view, io, present, themeMode = null }) {
   const disposers = []; // destroy set for child bindings (menus/popovers)
   let mainMenu = null;
   /** Add an element to the current page and select it; charts/tables go straight into the data editor (a just-picked icon does not reopen the picker). */
   function addElement(element) {
     api.beginChange();
-    page().elements.push(element);
-    state.selectedId = element.elementId;
+    ops.addElement(element); // model write; selection stays a separate op
+    ops.select(element.elementId, "replace");
     view.render();
     if (element.elementType !== "icon") api.openEditor(element);
   }

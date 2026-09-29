@@ -101,8 +101,8 @@ export function createEditor(rootEl, options = {}) {
   // --------------------------------------------------------------------------
   // Assembly (the closure of the old main.js initEditor)
   // --------------------------------------------------------------------------
-  const { state, page, selected, selectedElements, groupOf, ops } = createEditorState();
-  const api = createEditorApi({ state, page, selected, selectedElements, ops });
+  const { state, page, selected, primarySelectedId, selectedElements, groupOf, ops } = createEditorState();
+  const api = createEditorApi({ state, page, selected, primarySelectedId, selectedElements, ops });
 
   // Public events: dirty/selectionChange dispatched after each render when the state changed
   let lastDirty = null;
@@ -116,10 +116,11 @@ export function createEditor(rootEl, options = {}) {
         console.warn("[editor] on.dirty 回调异常:", err?.message || err);
       }
     }
-    if (state.selectedId !== lastSelected) {
-      lastSelected = state.selectedId;
+    const primaryId = api.getSelected(); // the api read surface (no direct state field access)
+    if (primaryId !== lastSelected) {
+      lastSelected = primaryId;
       try {
-        on.selectionChange?.(state.selectedId);
+        on.selectionChange?.(primaryId);
       } catch (err) {
         console.warn("[editor] on.selectionChange 回调异常:", err?.message || err);
       }
@@ -130,7 +131,7 @@ export function createEditor(rootEl, options = {}) {
   const controller = createCanvasController(dom.canvas, { ...api });
 
   const props = bindProperties(dom.props, api);
-  const view = createView({ state, page, selected, api, controller, props });
+  const view = createView({ state, page, selected, api, controller, props, ops });
   api.bind({ controller, view });
   disposers.push(() => view.destroy?.());
 
@@ -165,6 +166,7 @@ export function createEditor(rootEl, options = {}) {
   const io = createIo({
     state,
     view,
+    ops,
     source,
     onSaved: () => {
       try {
@@ -191,7 +193,7 @@ export function createEditor(rootEl, options = {}) {
   api.fontOptions = () => io.fontManager.fontOptions(); // element font dropdown options (late-bound)
 
   // Present mode (topbar "Present" button + F5)
-  const present = createPresent({ state, view });
+  const present = createPresent({ state, view, ops });
   api.present = present;
   disposers.push(() => present.destroy?.());
 
@@ -202,7 +204,7 @@ export function createEditor(rootEl, options = {}) {
     emitEvents();
   };
 
-  const toolbar = bindToolbar({ state, page, api, view, io, present, themeMode });
+  const toolbar = bindToolbar({ state, api, ops, view, io, present, themeMode });
   disposers.push(() => toolbar.destroy?.());
   const keyboard = bindKeyboard({ state, api, io, present });
   disposers.push(() => keyboard.destroy?.());

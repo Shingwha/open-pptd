@@ -9,9 +9,11 @@
 // method is called), which avoids circular module deps; main.js just assembles
 // them in order.
 //
-// Selection model (U1): getSelected/getSelectedElement keep the single-value
-// compatibility semantics (primary selection); getSelection/
-// getSelectedElements/select(id, mode)/selectAll/isSelected are additive.
+// Selection model (U1): writes go through the ops here (select/selectMany/
+// selectAll/clearSelection); reads go through getSelected / getSelectedElement /
+// getSelection / getSelectedElements / isSelected. This is the ONE read surface:
+// editor modules must not touch state.selection directly (state.js keeps the
+// single derivation, primarySelectedId).
 // ============================================================================
 
 import { openChartEditor } from "../interaction/dialogs/chart-editor.js";
@@ -19,7 +21,7 @@ import { openTableEditor } from "../interaction/dialogs/table-editor.js";
 import { openIconPicker } from "../interaction/dialogs/icon-editor.js";
 import { ensureIcon } from "./project/icons.js";
 
-export function createEditorApi({ state, page, selected, selectedElements, ops }) {
+export function createEditorApi({ state, page, selected, primarySelectedId, selectedElements, ops }) {
   let controller = null; // canvas interaction controller (interaction/canvas.js)
   let view = null; // render orchestration (app/view/view.js)
 
@@ -35,8 +37,8 @@ export function createEditorApi({ state, page, selected, selectedElements, ops }
     state,
     page,
     getPage: page,
-    // ---- selection (single-value compatibility + multi-select) ----
-    getSelected: () => state.selectedId,
+    // ---- selection (primary + multi-select); reads only, writes go through ops below ----
+    getSelected: primarySelectedId,
     getSelectedElement: selected,
     getSelection: () => [...state.selection],
     getSelectedElements: selectedElements,

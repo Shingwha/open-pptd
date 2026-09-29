@@ -27,7 +27,7 @@ import { dialogs } from "../../dialogs.js";
 import { showToast } from "../toast.js";
 import { createDeck, createPage, normalizeTheme, syncElementId } from "../../../packages/model/index.js";
 
-export function createIo({ state, view, source, onSaved, onDeckChange, onError }) {
+export function createIo({ state, view, ops, source, onSaved, onDeckChange, onError }) {
   const fontManager = createFontManager(state);
   const images = createImageStore(state);
   bindIconMap(state.iconMap); // bind the icon preload cache (icons.js module singleton, shared by render/export)
@@ -47,6 +47,7 @@ export function createIo({ state, view, source, onSaved, onDeckChange, onError }
   const loader = createLoader({
     state,
     view,
+    ops,
     images,
     fontManager,
     source: projectSource,
@@ -108,15 +109,16 @@ export function createIo({ state, view, source, onSaved, onDeckChange, onError }
    */
   async function newProject({ toast = true } = {}) {
     if (state.dirty && !(await dialogs.confirm("编辑器有未保存的修改，新建将放弃这些修改。确定继续？"))) return false;
-    state.deck = createDeck({ title: "未命名演示文稿" });
-    state.deck.pages.push(createPage({ pageType: "content" }));
+    const deck = createDeck({ title: "未命名演示文稿" });
+    deck.pages.push(createPage({ pageType: "content" }));
+    ops.replaceDeck(deck);
     state.theme = normalizeTheme(null);
     state.manifestPath = null;
     state.projectHandle = null;
     state.projectName = "";
     loader.setBrandFile(""); // topbar back to "unnamed", clearing the old project name
     state.currentPage = 0;
-    state.selectedId = null;
+    ops.clearSelection();
     commitBaseline(state); // blank-project baseline (undo/redo equality compare)
     state.history = createHistory();
     syncElementId(state.deck);
