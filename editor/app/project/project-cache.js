@@ -1,27 +1,31 @@
 // ============================================================================
-// project-cache.js — PPTD 项目文本的跨会话缓存（Cache API）
+// project-cache.js — cross-session cache of PPTD project texts (Cache API)
 // ----------------------------------------------------------------------------
-// 画廊缩略图与编辑器加载的是同一份项目（manifest + pages/*.page），
-// 这些文件部署后很少变化，值得跨会话缓存：第二次打开页面时直接命中
-// 缓存，秒开且省掉几十个网络请求（断网也能看画廊）。
+// Gallery thumbnails and the editor load the same project (manifest +
+// pages/*.page); these files rarely change after deploy, so they are worth
+// caching across sessions: a second page open hits the cache, opening instantly
+// and dropping dozens of network requests (the gallery even works offline).
 //
-// 缓存键 = 应用版本 + manifest 内容哈希：发版（版本号变化）自动全量失效，
-// 页面随版本更新的内容（如 examples 迁移）不会命中旧缓存；版本内第二次
-// 打开命中缓存秒开。版本号取自仓库根 package.json（Pages 与本地 serve
-// 均可相对定位），获取失败退化为 "unknown"（键稳定，仍可缓存）。
+// Cache key = app version + manifest content hash: a release (version change)
+// invalidates everything automatically, so content that updates with the version
+// (e.g. the examples migration) never hits a stale cache; a second open within
+// the same version opens from cache instantly. The version comes from the repo
+// root package.json (relatively locatable under Pages and local serve alike);
+// on failure it degrades to "unknown" (stable key, still cacheable).
 //
-// 本地 serve（开发模式）对静态文件发 Cache-Control: no-store，
-// 浏览器不会缓存，本地开发永远走网络，不受本缓存影响。
+// Local serve (dev mode) sends Cache-Control: no-store for static files, so the
+// browser does not cache and local dev always goes to the network, unaffected by
+// this cache.
 // ============================================================================
 
 const CACHE_NAME = "open-pptd-projects-v2";
-const KEY_PREFIX = "/__pptd_cache__/proj/"; // 纯缓存键（伪造路径，永不真实请求）
+const KEY_PREFIX = "/__pptd_cache__/proj/"; // pure cache key (fake path, never actually requested)
 const MAX_ENTRIES = 24;
-const ROOT = new URL("../../../", import.meta.url).href; // 本文件位于 editor/app/project/，../../../ 即站点根
+const ROOT = new URL("../../../", import.meta.url).href; // this file lives in editor/app/project/, so ../../../ is the site root
 
 let versionPromise = null;
 
-/** 应用版本（package.json 的 version；发版变化 → 缓存键全变 → 旧缓存自动失效）。 */
+/** App version (package.json version; a release changes it → all cache keys change → old caches auto-invalidate). */
 function getAppVersion() {
   if (!versionPromise) {
     versionPromise = fetch(new URL("package.json", ROOT).href, { cache: "no-cache" })
@@ -32,7 +36,7 @@ function getAppVersion() {
   return versionPromise;
 }
 
-/** djb2 哈希（仅用于缓存键区分内容版本，不涉及安全）。 */
+/** djb2 hash (only distinguishes content versions in the cache key; not security-related). */
 export function hashText(text) {
   let h = 5381;
   for (let i = 0; i < text.length; i++) {
@@ -42,10 +46,10 @@ export function hashText(text) {
 }
 
 /**
- * 拉取 manifest + 页面文本，带跨会话缓存。
- * @param {string} manifestUrl deck.pptd 的绝对 URL
+ * Fetch the manifest + page texts, with cross-session caching.
+ * @param {string} manifestUrl absolute URL of deck.pptd
  * @param {(manifestText: string) => { pages?: string[] }} parseManifest
- *   解析 manifest 提取页面相对路径列表（仅缓存未命中时调用）
+ *   parses the manifest into a page relative-path list (only called on a cache miss)
  * @returns {Promise<{ manifestText: string, pageTexts: Map<string,string>, missing?: number, fromCache: boolean }>}
  */
 export async function fetchProjectTexts(manifestUrl, parseManifest) {
@@ -53,7 +57,7 @@ export async function fetchProjectTexts(manifestUrl, parseManifest) {
   if (!res.ok) throw new Error(`加载失败 ${manifestUrl}: ${res.status}`);
   const manifestText = await res.text();
   const base = manifestUrl.slice(0, manifestUrl.lastIndexOf("/") + 1);
-  // 本地 serve 开发模式发 Cache-Control: no-store → 直接走网络，跳过 Cache API
+  // Local serve dev mode sends Cache-Control: no-store → go straight to the network, skipping the Cache API
   const localDev = (res.headers.get("cache-control") || "").includes("no-store");
   if (localDev) {
     const { pageTexts, missing } = await fetchPages(base, parseManifest(manifestText));
@@ -70,7 +74,7 @@ export async function fetchProjectTexts(manifestUrl, parseManifest) {
       return { manifestText, pageTexts: new Map(data.pages), missing: 0, fromCache: true };
     }
     const { pageTexts, missing } = await fetchPages(base, parseManifest(manifestText));
-    // 页面缺失时不写缓存（避免缓存不完整项目，页面补全后仍命中旧缓存）
+    // Do not write the cache while pages are missing (avoids caching a partial project that keeps hitting the stale cache after pages land)
     if (missing === 0) {
       const body = JSON.stringify({ pages: [...pageTexts] });
       await cache.put(cacheKey, new Response(body, { headers: { "Content-Type": "application/json" } }));
@@ -78,7 +82,7 @@ export async function fetchProjectTexts(manifestUrl, parseManifest) {
     }
     return { manifestText, pageTexts, missing, fromCache: false };
   } catch (err) {
-    // Cache API 不可用（旧浏览器/隐私模式/配额满）：退化为每次直接拉取
+    // Cache API unavailable (old browser/private mode/quota full): degrade to a direct fetch each time
     const { pageTexts, missing } = await fetchPages(base, parseManifest(manifestText));
     return { manifestText, pageTexts, missing, fromCache: false };
   }
@@ -86,8 +90,9 @@ export async function fetchProjectTexts(manifestUrl, parseManifest) {
 
 async function fetchPages(base, manifest) {
   const rels = manifest.pages || [];
-  // 并行拉取（串行逐页累计 RTT 是冷启动空白的大头）；404 = 写入中跳过
-  // （交给 parseDeck 宽容处理，「有一页显示一页」），其余失败整体抛错
+  // Fetch in parallel (sequential per-page RTT is the bulk of the cold-start blank);
+  // 404 = mid-write, skip it (parseDeck handles it leniently, "show each page as it
+  // lands"); other failures throw for the whole batch
   const fetched = await Promise.all(
     rels.map(async (rel) => {
       const url = base + rel;
@@ -106,7 +111,7 @@ async function fetchPages(base, manifest) {
   return { pageTexts, missing };
 }
 
-/** 控制缓存体积：条目数超上限时，清掉除当前键外的所有旧版本（含历史版本键）。 */
+/** Bound the cache size: when the entry count exceeds the cap, drop every stale version except the current key (including historical version keys). */
 async function prune(cache, keepKey) {
   const keys = await cache.keys();
   if (keys.length <= MAX_ENTRIES) return;

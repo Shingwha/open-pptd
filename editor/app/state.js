@@ -1,28 +1,33 @@
 // ============================================================================
-// app/state.js — 编辑器状态 + 纯模型操作（不碰 DOM）
+// app/state.js — editor state + pure model operations (no DOM)
 // ----------------------------------------------------------------------------
-// 只做两件事：持有全局状态、提供纯模型变更（快照/选中/删除/层序）。
-// 需要触发重渲染的组合操作（deleteSelected 等）由 main.js 的 api 层包装。
+// Two responsibilities only: hold the global state, and offer pure model
+// mutations (snapshot/selection/delete/layer order). Composite operations that
+// also need to re-render (deleteSelected etc.) are wrapped by the api layer.
 //
-// 选择模型（U1）：
-//   - state.selection: Set<string> —— 元素 id 集合（有序，末位即「最后选中」）
-//   - state.selectedId —— 兼容访问器：单选返回唯一 id，多选返回最后选中，空选 null；
-//     赋值仍然可用（`state.selectedId = null` 清空、`= id` 单选）。旧调用点零改动。
-//   - group 元素（elementType:"group"）以 children 引用成员 id；选中/命中自动
-//     归一到组（点成员 = 选组）。
+// Selection model (U1):
+//   - state.selection: Set<string> — element id set (ordered, last = "most
+//     recently selected")
+//   - state.selectedId — compatibility accessor: single select returns the only
+//     id, multi-select returns the last one, empty returns null; assignment still
+//     works (`state.selectedId = null` clears, `= id` single-selects). Legacy
+//     call sites need no change.
+//   - group elements (elementType:"group") reference member ids via children;
+//     selection/hit-testing normalizes to the group (clicking a member = select
+//     the group).
 // ============================================================================
 
 import { createHistory } from "../interaction/history.js";
 import { createPage, nextElementId } from "../../packages/model/index.js";
 
-/** 深拷贝元素并重映射 elementId / group.children（克隆用）。 */
+/** Deep-copy an element and remap elementId / group.children (clone helper). */
 function cloneElement(el) {
   const copy = JSON.parse(JSON.stringify(el));
   copy.elementId = nextElementId(el.elementType);
   return copy;
 }
 
-/** 深拷贝整页并重映射全部 elementId（含 group.children 引用）。 */
+/** Deep-copy a whole page and remap every elementId (including group.children refs). */
 function clonePage(pg) {
   const copy = JSON.parse(JSON.stringify(pg));
   const map = new Map();
@@ -43,21 +48,21 @@ export function createEditorState() {
     theme: null,
     currentPage: 0,
     history: createHistory(),
-    selection: new Set(), // 选中元素 id 集合（多选）
-    _lastSelected: null,  // 最后加入选中的 id（多选时 selectedId 返回它）
+    selection: new Set(), // selected element ids (multi-select)
+    _lastSelected: null,  // last id added to the selection (selectedId returns it on multi-select)
     imageMap: {},
-    iconMap: {}, // { [iconName]: {inner,w,h} }（icons.js 预读缓存，渲染/导出共用）
-    pagesPending: new Set(), // 渐进加载中未就绪的页（存页对象引用，删除/重排不失效）
+    iconMap: {}, // { [iconName]: {inner,w,h} } (icons.js preload cache, shared by render/export)
+    pagesPending: new Set(), // pages not yet ready during progressive load (page object refs; survives delete/reorder)
     fontLibrary: {}, // { [family]: { bytes, source: "local"|"url", url, file, subset, embed, size } }
-    manifestPath: null, // 当前项目 URL（/project/xxx/deck.pptd；部署模式为远程 URL）
-    projectHandle: null, // 本地项目 DirectoryHandle（官方文件夹选择器打开；经句柄读写）
-    projectName: "", // 本地项目文件夹名（顶栏/状态栏显示）
-    dirty: false, // 编辑器是否有未保存修改（自动刷新前检查，防丢更新）
-    savedDeck: null, // 最后一次加载/保存时的 deck 基线（撤销/重做回该状态即视为已保存）
-    clipboard: null, // 元素剪贴板（copySelected 快照；page.elements 片段数组）
+    manifestPath: null, // current project URL (/project/xxx/deck.pptd; a remote URL in deploy mode)
+    projectHandle: null, // local project DirectoryHandle (opened via the OS folder picker; IO goes through the handle)
+    projectName: "", // local project folder name (shown in the topbar/statusbar)
+    dirty: false, // whether the editor has unsaved changes (checked before auto-refresh to avoid losing edits)
+    savedDeck: null, // deck baseline from the last load/save (undo/redo back to it = clean)
+    clipboard: null, // element clipboard (copySelected snapshot; a page.elements slice)
   };
 
-  // ---- selectedId 兼容访问器（getter 返回主选中，setter 支持旧的单值赋值）----
+  // ---- selectedId compatibility accessor (getter returns the primary selection, setter keeps old single-value assignment) ----
   Object.defineProperty(state, "selectedId", {
     enumerable: true,
     configurable: true,
@@ -84,7 +89,7 @@ export function createEditorState() {
   const elements = () => page().elements || [];
   const selected = () => elements().find((el) => el.elementId === state.selectedId) || null;
 
-  /** 全部选中元素（保持选中顺序；跨页不存在的 id 自动跳过）。 */
+  /** All selected elements (in selection order; ids absent from the page are skipped). */
   const selectedElements = () => {
     const list = elements();
     const out = [];
@@ -95,14 +100,14 @@ export function createEditorState() {
     return out;
   };
 
-  /** 命中 id 所属的组元素（成员 → 组；否则 null）。 */
+  /** The group element containing id (member → group; otherwise null). */
   const groupOf = (id) =>
     elements().find((e) => e.elementType === "group" && Array.isArray(e.children) && e.children.includes(id)) || null;
 
-  /** 选中归一到组：点组成员 = 选整组。 */
+  /** Normalize a selection id to its group: clicking a member = selecting the whole group. */
   const normalizeId = (id) => (id == null ? null : groupOf(id)?.elementId || id);
 
-  /** 选中集合的包围盒（多选/组共用；无选中返回 null）。 */
+  /** Bounding box of the selection (shared by multi-select/group; null when empty). */
   const selectionBounds = () => {
     const els = selectedElements();
     if (els.length === 0) return null;
@@ -120,28 +125,24 @@ export function createEditorState() {
     return [x1, y1, x2 - x1, y2 - y1];
   };
 
-  /** 纯模型操作（渲染由 api 层组合）。 */
+  /** Pure model operations (rendering is composed by the api layer). */
   const ops = {
     beginChange() {
       state.history.snapshot(state.deck);
       state.dirty = true;
     },
-    /** 标记当前 deck 为已落盘基线（加载/保存成功后调用；撤销回它即恢复干净）。 */
-    markSaved() {
-      state.savedDeck = structuredClone(state.deck);
-      state.dirty = false;
-    },
-    /** 重算 dirty：当前 deck 与保存基线等值比较（渲染钩子里调用）。
-     * RP-C / M6：删除「无用户编辑时被动同化进基线」的特例赦免——渲染已不再写回模型
-     * （测量只进 layout，见 app/view/view.js + dom-measure.js），渲染触发的被动归一化
-     * 不复存在，dirty 只反映真实的内容差异（撤销回保存点即恢复干净）。 */
+    /** Recompute dirty: equality-compare the current deck against the saved baseline (called from the render hook).
+     * RP-C / M6: the old special-case amnesty ("passively absorb into the baseline when there was no user edit")
+     * is gone — rendering no longer writes back to the model (measurement only feeds layout, see
+     * app/view/view.js + dom-measure.js), so render-triggered passive normalization no longer exists and dirty
+     * reflects only real content differences (undoing back to the save point marks it clean again). */
     syncDirty() {
       if (!state.savedDeck) return;
       state.dirty = JSON.stringify(state.deck) !== JSON.stringify(state.savedDeck);
     },
 
-    // ---- 选择 ----
-    /** 选中。mode: "replace"（默认）| "add"（Shift 加选）| "toggle"（Ctrl 切换）。 */
+    // ---- selection ----
+    /** Select. mode: "replace" (default) | "add" (Shift) | "toggle" (Ctrl). */
     select(id, mode = "replace") {
       const target = normalizeId(id);
       if (target == null) {
@@ -183,7 +184,7 @@ export function createEditorState() {
       state.selection.clear();
       state._lastSelected = null;
     },
-    /** 全选当前页（组成员折叠为组，避免重复计入）。 */
+    /** Select all on the current page (group members collapse into the group, so they are not double-counted). */
     selectAll() {
       const ids = elements()
         .filter((el) => el.elementType === "group" || !groupOf(el.elementId))
@@ -195,7 +196,7 @@ export function createEditorState() {
       return state.selection.has(id);
     },
 
-    // ---- 变更 ----
+    // ---- mutations ----
     updateSelected(patch) {
       for (const el of selectedElements()) Object.assign(el, patch);
     },
@@ -207,7 +208,7 @@ export function createEditorState() {
       for (const id of ids) {
         const el = list.find((e) => e.elementId === id);
         if (el && el.elementType === "group" && Array.isArray(el.children)) {
-          for (const cid of el.children) doomed.add(cid); // 删组连带删成员
+          for (const cid of el.children) doomed.add(cid); // deleting a group also deletes its members
         }
       }
       const kept = list.filter((e) => !doomed.has(e.elementId));
@@ -215,7 +216,7 @@ export function createEditorState() {
       page().elements = kept;
       ops.clearSelection();
     },
-    /** 复制选中（含组成员）；副本置于列表顶层，选中切到副本。返回新 id 数组。 */
+    /** Copy the selection (including group members); copies go on top of the list and become the selection. Returns the new ids. */
     duplicateSelected(offset = 24) {
       const list = elements();
       const picked = selectedElements();
@@ -246,18 +247,18 @@ export function createEditorState() {
       ops.selectMany(newIds);
       return newIds;
     },
-    /** 复制选中但不偏移（Ctrl/Alt 拖动复制：副本与原位重合，随后跟着指针走）。 */
+    /** Duplicate the selection without offset (Ctrl/Alt drag-copy: the copy starts on top of the original and follows the pointer). */
     duplicateInPlace() {
       return ops.duplicateSelected(0);
     },
-    /** 层序移动。dir = 数组索引增量，数组顺序即绘制顺序（越靠后画得越靠上层）：
-     *  dir=+1 前移一层（上移，B5 修正方向——此前上移/下移标签与 z 序相反）。 */
+    /** Move in layer order. dir = array-index delta; array order is paint order (later = drawn on top):
+     *  dir=+1 moves one layer forward (up; the B5 fix — the old up/down labels were inverted vs z-order). */
     moveLayer(dir) {
       const list = elements();
       const idxs = selectedElements()
         .map((el) => list.indexOf(el))
         .filter((i) => i >= 0)
-        .sort((a, b) => (dir > 0 ? b - a : a - b)); // 上移从高到低、下移从低到高，避免互相踩位
+        .sort((a, b) => (dir > 0 ? b - a : a - b)); // move up from high to low, down from low to high, so shifts don't collide
       for (const idx of idxs) {
         const to = idx + dir;
         if (to < 0 || to >= list.length) continue;
@@ -265,13 +266,13 @@ export function createEditorState() {
         list.splice(to, 0, el);
       }
     },
-    /** 置于顶层（edge="front"）/ 置于底层（edge="back"）：相对整页元素，保持相对次序。 */
+    /** Bring to front (edge="front") / send to back (edge="back"), relative to the whole page, preserving relative order. */
     moveLayerEdge(edge) {
       const list = elements();
       const picked = selectedElements();
       if (picked.length === 0) return;
       const front = edge !== "back";
-      // 保持选中项之间的原有先后：置顶从前往后取出后 append；置底从后往前取出后 unshift
+      // Keep the original order among the selected items: front takes them front-to-back and appends; back takes them back-to-front and unshifts
       const ordered = picked.slice().sort((a, b) => list.indexOf(a) - list.indexOf(b));
       const seq = front ? ordered : ordered.slice().reverse();
       for (const el of seq) {
@@ -283,8 +284,8 @@ export function createEditorState() {
       }
     },
 
-    // ---- 剪贴板（右键菜单「粘贴」/ Ctrl+C / Ctrl+V）----
-    /** 复制选中到剪贴板（含组成员，深拷贝；返回是否写入）。 */
+    // ---- clipboard (context menu "paste" / Ctrl+C / Ctrl+V) ----
+    /** Copy the selection to the clipboard (including group members, deep copy; returns whether anything was written). */
     copySelected() {
       const picked = selectedElements();
       if (picked.length === 0) return false;
@@ -298,11 +299,11 @@ export function createEditorState() {
       state.clipboard = list.filter((el) => ids.has(el.elementId)).map((el) => JSON.parse(JSON.stringify(el)));
       return state.clipboard.length > 0;
     },
-    /** 粘贴剪贴板（+24 偏移、新 elementId、组 children 重映射），选中新副本并返回其 id。 */
+    /** Paste the clipboard (+24 offset, new elementId, group children remapped), select the new copies and return their ids. */
     pasteClipboard(offset = 24) {
       const clip = Array.isArray(state.clipboard) ? state.clipboard : [];
       if (clip.length === 0) return [];
-      // 组内成员 id（这些副本不直接进入选中集，随组一起选中）
+      // Group member ids (these copies do not enter the selection directly; they are selected with the group)
       const memberIds = new Set();
       for (const src of clip) {
         if (Array.isArray(src.children)) for (const cid of src.children) memberIds.add(cid);
@@ -325,24 +326,24 @@ export function createEditorState() {
       return topIds;
     },
 
-    // ---- 页面 ----
-    /** 新建一页并切过去（状态条 ＋ / 页面级右键菜单共用）。 */
+    // ---- pages ----
+    /** Add a page and switch to it (statusbar + / page-level context menu). */
     addPage() {
       state.deck.pages.push(createPage({}));
       state.currentPage = state.deck.pages.length - 1;
       ops.clearSelection();
       return state.currentPage;
     },
-    /** 复制若干页（深拷贝 + 元素 id 重映射），插在原页之后；返回新页索引（升序）。 */
+    /** Duplicate pages (deep copy + element id remap), inserted right after each original; returns the new page indexes (ascending). */
     duplicatePages(indexes) {
       const list = state.deck.pages;
       const idxs = [...new Set((indexes || []).filter((i) => Number.isInteger(i) && i >= 0 && i < list.length))].sort((a, b) => a - b);
       if (!idxs.length) return [];
-      for (const i of idxs.slice().reverse()) list.splice(i + 1, 0, clonePage(list[i])); // 从后往前插入不动前面索引
-      // 复本最终位置 = 原索引 + 1 + 它前面已插入的复本数（= 在 idxs 中的序号）
+      for (const i of idxs.slice().reverse()) list.splice(i + 1, 0, clonePage(list[i])); // insert back-to-front so earlier indexes stay valid
+      // Final position of a copy = original index + 1 + how many copies were inserted before it (= its rank in idxs)
       return idxs.map((i, k) => i + 1 + k);
     },
-    /** 删除若干页（至少保留 1 页）；返回是否删除成功。 */
+    /** Delete pages (always keeps at least 1); returns whether anything was deleted. */
     deletePages(indexes) {
       const list = state.deck.pages;
       const doomed = new Set((indexes || []).filter((i) => Number.isInteger(i) && i >= 0 && i < list.length));
@@ -356,7 +357,7 @@ export function createEditorState() {
       ops.clearSelection();
       return true;
     },
-    /** 页面重排（拖排序）：把 from 位置的页移到 to 位置；to 越界自动 clamp。 */
+    /** Reorder pages (drag-sort): move the page at `from` to `to`; `to` is clamped. */
     movePage(from, to) {
       const list = state.deck.pages;
       if (!Number.isInteger(from) || from < 0 || from >= list.length) return false;
@@ -368,8 +369,8 @@ export function createEditorState() {
       return true;
     },
 
-    // ---- 组合 ----
-    /** 组合当前选中（≥2）为 group 元素；返回新组 id（失败返回 null）。 */
+    // ---- grouping ----
+    /** Group the current selection (≥2) into a group element; returns the new group id (null on failure). */
     groupSelected() {
       const list = elements();
       const picked = selectedElements().filter((e) => e.elementType !== "group");
@@ -391,11 +392,11 @@ export function createEditorState() {
         children: memberEls.map((e) => e.elementId),
       };
       const topIdx = Math.max(...memberEls.map((e) => list.indexOf(e)));
-      list.splice(topIdx + 1, 0, group); // 组置成员之上，保持渲染层级
+      list.splice(topIdx + 1, 0, group); // place the group above its members to keep the paint order
       ops.select(group.elementId);
       return group.elementId;
     },
-    /** 取消组合：选中单个组时，解散为成员（成员 bounds 不变，往返幂等）。 */
+    /** Ungroup: when a single group is selected, dissolve it into its members (member bounds unchanged, round-trip idempotent). */
     ungroupSelected() {
       const list = elements();
       const groups = selectedElements().filter((e) => e.elementType === "group");

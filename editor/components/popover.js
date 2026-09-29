@@ -1,9 +1,11 @@
 // ============================================================================
-// components/popover.js — Popover 原语（4 锚点方向）
+// components/popover.js — Popover primitive (4 anchor directions)
 // ----------------------------------------------------------------------------
-// 复用 editor/popover.js 的 attachPopover（fixed 定位、外点关闭、Esc、resize 重定位）。
-// 本模块补一层「开合状态自管」的门面：浮层默认 hidden，open/toggle/close 全包，
-// 4 个锚点方向由 attachPopover 的 align(left/right) + flip(下/上) 组合覆盖。
+// Reuses editor/popover.js attachPopover (fixed positioning, outside-click close,
+// Esc, resize reposition). This module adds a façade that owns the open/close
+// state: the popover is hidden by default and open/toggle/close are all wrapped;
+// the 4 anchor directions are covered by combining attachPopover's align
+// (left/right) and flip (down/up).
 // ============================================================================
 
 import { attachPopover } from "../popover.js";
@@ -11,10 +13,10 @@ import { attachPopover } from "../popover.js";
 export { attachPopover };
 
 /**
- * 便捷封装：把 content 挂到 anchor 旁，返回 { open, close, toggle, position, destroy }。
- * @param {HTMLElement} anchor 锚点
- * @param {HTMLElement} content 浮层内容（默认隐藏态用 hidden 属性）
- * @param {object} [opts] 透传 attachPopover 的 align/gap/width/height/flip
+ * Convenience wrapper: mount content next to anchor, returning { open, close, toggle, position, destroy }.
+ * @param {HTMLElement} anchor anchor
+ * @param {HTMLElement} content popover content (hidden state uses the hidden attribute by default)
+ * @param {object} [opts] passthrough align/gap/width/height/flip for attachPopover
  */
 export function popover(anchor, content, opts = {}) {
   const close = () => {

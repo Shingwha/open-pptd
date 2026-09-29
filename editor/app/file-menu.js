@@ -1,20 +1,22 @@
 // ============================================================================
-// app/file-menu.js — 「文件」下拉菜单外壳（画廊与编辑器共用）
+// app/file-menu.js — "File" dropdown shell (shared by the gallery and the editor)
 // ----------------------------------------------------------------------------
-// 桌面软件统一心智：文件操作入口 = 文件菜单。画廊（开始页角色）放
-// 打开编辑器/打开/最近；编辑器另加新建/保存/导出——同一外壳，内容按上下文渲染。
-// 外壳负责：浮层开合（定位/外点关闭/resize 重定位统一走 popover.js）、
-// 条目构建器（item/sep/label）与「最近打开」区段（IndexedDB 句柄列表）。
+// Desktop-app mental model: file operations live in a File menu. The gallery
+// (as the start page) puts "open editor / open / recent" there; the editor adds
+// new/save/export — same shell, content rendered per context. The shell owns the
+// popover open/close (positioning / outside-click close / resize repositioning
+// all go through popover.js), the item builders (item/sep/label) and the
+// "recently opened" section (IndexedDB handle list).
 // ============================================================================
 
 import { listRecent } from "./project/handle-store.js";
 import { attachPopover } from "../popover.js";
 
 /**
- * 绑定一个「文件」下拉菜单。
- * @param anchor 触发按钮（点击切换开合）
+ * Bind a "File" dropdown.
+ * @param anchor the trigger button (click toggles open/close)
  * @param renderBody async ({ menu, item, sep, label, appendRecents }) => void
- *   每次展开时调用（内容实时刷新，最近列表不过期）
+ *   called on every open (content is refreshed each time, so the recent list never goes stale)
  */
 export function createFileMenu(anchor, renderBody) {
   let menu = null;
@@ -56,7 +58,7 @@ export function createFileMenu(anchor, renderBody) {
     return el;
   }
 
-  /** 「最近打开」区段（无记录时不渲染）。onPick(entry) 由调用方定义打开方式。 */
+  /** "Recent" section (not rendered when there are no entries). onPick(entry) is defined by the caller. */
   async function appendRecents(menu, onPick) {
     const recents = await listRecent();
     if (!recents.length) return;
@@ -66,7 +68,7 @@ export function createFileMenu(anchor, renderBody) {
     }
   }
 
-  /** 相对时间（最近列表副文本）。 */
+  /** Relative time (secondary text in the recent list). */
   function timeAgo(ts) {
     const diff = Date.now() - ts;
     if (diff < 60_000) return "刚刚";
@@ -80,13 +82,13 @@ export function createFileMenu(anchor, renderBody) {
       menu = document.createElement("div");
       menu.className = "file-menu";
       document.body.appendChild(menu);
-      // 浮层外壳（锚点下方左对齐定位 / 外点与 Esc 关闭 / resize 重定位）
+      // Popover shell (left-aligned below the anchor / outside-click and Esc close / resize reposition)
       popover = attachPopover(anchor, menu, { align: "left", isOpen, close });
     }
     menu.innerHTML = "";
     await renderBody({ menu, item, sep, label, appendRecents });
     menu.classList.add("open");
-    popover.position(); // 先显示再定位：offsetWidth 需要可见才有值
+    popover.position(); // show first, then position: offsetWidth only has a value once visible
   }
 
   function close() {
@@ -99,7 +101,7 @@ export function createFileMenu(anchor, renderBody) {
   }, { signal: ac.signal });
 
   return {
-    /** 释放：解绑锚点监听、摘掉浮层与全局关闭监听。 */
+    /** Release: unbind the anchor listener, drop the popover and the global close listeners. */
     destroy() {
       ac.abort();
       popover?.destroy();

@@ -1,19 +1,22 @@
 // ============================================================================
-// components/datagrid.js — DataGrid 原语（键盘导航 + 范围选择）
+// components/datagrid.js — DataGrid primitive (keyboard navigation + range selection)
 // ----------------------------------------------------------------------------
-// 基础是既有 Excel 式拖拽选区（interaction/drag-select.js）与数据网格样式
-// （primitives.css 的 .data-table / .excel-grid）。本模块给出原语入口，
-// 并把「键盘导航（方向键移动选中、范围扩展）」补成通用工具。
+// The foundation is the existing Excel-style drag selection
+// (interaction/drag-select.js) and the data-grid styles (primitives.css
+// .data-table / .excel-grid). This module provides the primitive entry and fills
+// in "keyboard navigation (arrows move the selection, Shift extends the range)" as
+// a reusable utility.
 // ============================================================================
 
 export { bindExcelDragSelect } from "../interaction/drag-select.js";
 
 /**
- * 给网格容器挂键盘导航：方向键在 [data-tr][data-tc] 单元格间移动，
- * Shift+方向键扩展范围选择，Enter 聚焦编辑。
+ * Attach keyboard navigation to a grid container: arrows move between
+ * [data-tr][data-tc] cells, Shift+arrows extend the range selection, Enter focuses
+ * the editor.
  * @param {HTMLElement} gridWrap
  * @param {object} opts { getRows(), getCols(), onSelect(sel), focusCell(r,c) }
- * @returns {() => void} 解绑
+ * @returns {() => void} unbind
  */
 export function bindGridKeyboard(gridWrap, { getRows, getCols, onSelect, focusCell }) {
   const onKey = (e) => {

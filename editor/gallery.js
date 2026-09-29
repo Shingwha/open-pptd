@@ -1,13 +1,15 @@
 // ============================================================================
-// gallery.js — 作品画廊视图（只读渲染，复用 renderer/page.js）
+// gallery.js — deck gallery view (read-only rendering, reuses renderer/page.js)
 // ----------------------------------------------------------------------------
-// 画廊 = 示例作品封面卡片网格；点击卡片进入编辑器（editor/?deck=...）。
-// 渲染链路：fetch examples/manifest.json → parseDeck → normalizeTheme/mergeFonts →
-// renderPage（封面框固定比例：PPT 16:9 / 海报 3:4，作品 contain 缩放居中）。
-// 纯静态可用（GitHub Pages 无服务器，全部相对路径 fetch；项目媒体图同样
-// 以相对路径解析为绝对 URL 加载）。
-// 性能：项目文件走 Cache API 跨会话缓存（app/project/project-cache.js），
-// 缩略图懒加载（滚动到才拉）+ ResizeObserver 随卡片宽度重渲染。
+// The gallery = a grid of sample-work cover cards; clicking a card enters the
+// editor (editor/?deck=...). Render chain: fetch examples/manifest.json →
+// parseDeck → normalizeTheme/mergeFonts → renderPage (the cover box has a fixed
+// ratio: PPT 16:9 / poster 3:4, with the work contained and centered).
+// Works fully statically (GitHub Pages has no server; everything is fetched via
+// relative paths; project media images resolve relative paths into absolute URLs).
+// Performance: project files use the Cache API across sessions
+// (app/project/project-cache.js) and thumbnails lazy-load (fetched on scroll) with
+// a ResizeObserver re-rendering on card width changes.
 // ============================================================================
 
 import { fetchProjectTexts } from "./app/project/project-cache.js";
@@ -21,9 +23,9 @@ import { injectIcons } from "./icons.js";
 import { deckSize, parseDeck, parseFontResources, resolveTheme, yaml } from "../packages/model/index.js";
 import { disposeChartInstances, renderPage } from "../packages/renderer/index.js";
 
-injectIcons(); // 顶栏图标占位（data-icon）注入实际 SVG（图标单一来源 icons.js）
+injectIcons(); // topbar icon placeholders (data-icon) get the real SVG (single icon source icons.js)
 
-// 仓库根 URL（本文件位于 <root>/editor/，../ 即站点根——兼容本地与 GitHub Pages 子路径）
+// Repo root URL (this file lives in <root>/editor/, so ../ is the site root — works for local and GitHub Pages sub-paths)
 const ROOT = new URL("../", import.meta.url).href;
 
 let manifestCache = null;
@@ -35,7 +37,7 @@ async function loadManifest() {
   if (manifestCache) return manifestCache;
   const res = await fetch(new URL("examples/manifest.json", ROOT));
   if (!res.ok) {
-    // 无 examples/（如发布仓库精简版）：降级为空画廊，不报错
+    // No examples/ (e.g. a trimmed release repo): degrade to an empty gallery, no error
     console.warn(`[gallery] 画廊清单不可用（${res.status}），按空画廊处理`);
     manifestCache = [];
     return manifestCache;
@@ -45,21 +47,23 @@ async function loadManifest() {
   return manifestCache;
 }
 
-/** 注册项目声明字体（deck.fonts 资源表）：按条目的 family 注册名命中注册表，与编辑器
- *  restoreFromDeck 同管线。槽位 key 只是 deck 作者起的任意名，不保证等于注册表 key/family
- *  （如「刀隶体」vs 注册表「阿里妈妈刀隶体」），拿它查表会静默脱靶回退系统字体。 */
+/** Register the deck's declared fonts (deck.fonts resource table): match the entry family
+ *  name in the registry, the same pipeline as the editor's restoreFromDeck. The slot key
+ *  is an arbitrary name the deck author chose and is not guaranteed to equal the registry
+ *  key/family (e.g. a shorthand vs the full registry name), so querying with it silently
+ *  misses and falls back to a system font. */
 async function loadProjectFonts(deck) {
   const resources = parseFontResources(deck?.fonts);
   for (const [key, res] of Object.entries(resources)) {
     try {
       await registerRegistryFontFace(res.family || key);
     } catch {
-      /* 单字体失败不影响整体 */
+      /* a single font failing does not affect the rest */
     }
   }
 }
 
-/** 加载项目（manifest + pages → 模型 + 主题 + 字体），带会话内缓存 + Cache API 跨会话缓存。 */
+/** Load a project (manifest + pages → model + theme + fonts), with an in-session cache + Cache API cross-session cache. */
 async function loadProject(entry) {
   if (projectCache.has(entry.id)) return projectCache.get(entry.id);
   const manifestUrl = new URL(entry.deck, ROOT).href;
@@ -67,7 +71,7 @@ async function loadProject(entry) {
   const deck = parseDeck(manifestText, pageTexts);
   const theme = resolveTheme(deck);
   await loadProjectFonts(deck);
-  // 相对路径图片 → 以项目 manifest 为基准解析为绝对 URL（页面内 img.src 直接用）
+  // Relative-path images → resolve to absolute URLs against the project manifest (img.src uses them directly)
   const imageMap = {};
   for (const page of deck.pages) {
     for (const el of page.elements || []) {
@@ -76,7 +80,7 @@ async function loadProject(entry) {
       }
     }
   }
-  // 图标预读（封面页）：FA SVG 经本地/CDN + Cache API，渲染与图片同层缓存
+  // Icon preload (cover page): FA SVGs go through local/CDN + Cache API, cached on the same layer as images
   const iconMap = {};
   if (deck.pages[0]) await preloadIcons([deck.pages[0]], iconMap);
   const proj = { deck, theme, imageMap, iconMap };
@@ -84,15 +88,16 @@ async function loadProject(entry) {
   return proj;
 }
 
-/** 按卡片封面框 contain 渲染一页封面：框比例固定（PPT 16:9 / 海报 3:4，见 gallery.css），
- *  作品按 min(cw/pw, ch/ph) 缩放居中，空隙由封面框中性衬底留白（装裱感，网格成行齐整）。 */
+/** Render one cover page contained in the card cover box: the box ratio is fixed (PPT 16:9 / poster
+ *  3:4, see gallery.css), the work scales to min(cw/pw, ch/ph) and centers, and the gap is left as the
+ *  neutral cover backing (a mounting feel, keeping the grid tidy row by row). */
 function renderPageFit(container, page, deck, theme, imageMap, iconMap = {}) {
   disposeChartInstances(container);
   container.innerHTML = "";
   const cw = container.clientWidth;
   const ch = container.clientHeight;
   if (!cw || !ch) {
-    // 容器尚未布局（宽高 0）：下一帧再试一次，避免 0.1 下限把封面缩成残影
+    // The container is not laid out yet (zero size): retry next frame, avoiding the 0.1 floor shrinking the cover to a ghost
     requestAnimationFrame(() => {
       if (document.contains(container) && container.clientWidth && container.clientHeight) {
         renderPageFit(container, page, deck, theme, imageMap, iconMap);
@@ -114,8 +119,9 @@ function renderPageFit(container, page, deck, theme, imageMap, iconMap = {}) {
   container.appendChild(stage);
 }
 
-// 封面尺寸跟随：窗口缩放 / 移动端地址栏伸缩 / 横竖屏切换导致卡片宽度变化时，
-// 按最新宽度重渲染封面（亚像素级抖动 <1px 忽略）。
+// Cover size following: re-render the cover at the latest width when window resize /
+// mobile address-bar changes / orientation changes alter the card width (sub-pixel
+// jitter <1px is ignored).
 const thumbSizes = new WeakMap();
 const sizeObserver = new ResizeObserver((entries) => {
   for (const ent of entries) {
@@ -133,8 +139,9 @@ const sizeObserver = new ResizeObserver((entries) => {
 });
 
 // ----------------------------------------------------------------------------
-// 缩略图懒加载：卡片先入网格（骨架屏占位），滚动到可视区（提前 400px 预热）
-// 才拉取项目并渲染。首屏打开页面时零项目请求，画廊秒开。
+// Thumbnail lazy loading: cards enter the grid first (skeleton placeholder) and the
+// project is fetched and rendered only once scrolled into view (400px preheat).
+// The first paint makes zero project requests, so the gallery opens instantly.
 // ----------------------------------------------------------------------------
 const thumbEntries = new WeakMap();
 const thumbObserver = new IntersectionObserver(
@@ -148,7 +155,7 @@ const thumbObserver = new IntersectionObserver(
       const cover = canvas.parentElement;
       loadProject(entry)
         .then((proj) => {
-          if (!document.contains(canvas)) return; // 加载完成前已离开页面
+          if (!document.contains(canvas)) return; // left the page before loading finished
           cover.classList.remove("loading");
           renderPageFit(canvas, proj.deck.pages[0], proj.deck, proj.theme, proj.imageMap, proj.iconMap);
         })
@@ -163,13 +170,13 @@ const thumbObserver = new IntersectionObserver(
   { rootMargin: "400px" }
 );
 
-/** 探测运行模式：本地 serve 有 /api/ping；GitHub Pages 纯静态 → 线上模式。 */
+/** Detect the runtime mode: local serve has /api/ping; pure-static GitHub Pages → remote mode. */
 async function detectMode() {
   try {
     const res = await fetch(new URL("api/ping", ROOT), { cache: "no-store" });
     if (res.ok) return "local";
   } catch {
-    /* 网络错误 → 线上 */
+    /* network error → remote */
   }
   return "remote";
 }
@@ -178,13 +185,13 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-/** 画廊：示例作品封面卡片网格（点击 → 编辑器）。 */
+/** Gallery: a grid of sample-work cover cards (click → editor). */
 export async function showGallery() {
   const grid = $("gallery-grid");
   grid.hidden = false;
   grid.innerHTML = "";
 
-  // 模式徽标
+  // Mode badge
   const mode = await detectMode();
   const modeEl = $("gallery-mode");
   if (modeEl) {
@@ -196,18 +203,18 @@ export async function showGallery() {
       mode === "local" ? "作品可编辑并写回项目目录" : "可编辑预览，保存将下载项目包（zip）";
   }
 
-  // 「文件」菜单（与编辑器同一外壳）：画廊=开始页角色，放 打开编辑器 / 打开 / 最近
+  // The File menu (same shell as the editor): the gallery is the start page, so it holds open editor / open / recent
   const fileBtn = $("btn-file");
   if (fileBtn) {
-    const supported = "showDirectoryPicker" in window; // 句柄读写不经服务器，本地/线上均可用
+    const supported = "showDirectoryPicker" in window; // handle read/write bypasses the server, available locally and online
     createFileMenu(fileBtn, async ({ menu, item, appendRecents }) => {
       menu.appendChild(item("打开编辑器", { onClick: () => (location.href = new URL("editor/", ROOT).href) }));
       const openItem = item("打开本地项目", { onClick: openLocalFromPicker });
-      if (!supported) openItem.hidden = true; // 不支持的浏览器不显示
+      if (!supported) openItem.hidden = true; // hidden in unsupported browsers
       menu.appendChild(openItem);
       if (supported) {
         await appendRecents(menu, (entry) => {
-          setPendingProject(entry.id); // 编辑器据此续开（授权仍有效则免确认）
+          setPendingProject(entry.id); // the editor reopens from this (no prompt while the grant holds)
           location.href = new URL("editor/", ROOT).href;
         });
       }
@@ -222,7 +229,7 @@ export async function showGallery() {
     return;
   }
 
-  // 双 tab：PPT / 海报（条目由 meta.yaml 的 kind 显式指定，缺省 ppt）
+  // Two tabs: PPT / poster (the entry is specified by meta.yaml kind, defaulting to ppt)
   const TABS = [
     { kind: "ppt", label: "PPT" },
     { kind: "poster", label: "海报" },
@@ -240,10 +247,10 @@ export async function showGallery() {
     for (const [i, entry] of list.entries()) {
       const card = document.createElement("div");
       card.className = "gallery-card";
-      card.style.setProperty("--card-i", i); // 【试验项】错落浮入的序号（配 gallery.css 的 gallery-card-in）
+      card.style.setProperty("--card-i", i); // [experiment] staggered float-in index (pairs with gallery-card-in in gallery.css)
       const thumb = document.createElement("div");
       thumb.className = "gallery-card-cover loading";
-      // 渲染目标 canvas 与页数角标平级：重渲染清空 canvas 不带走角标
+      // The render target canvas sits level with the page-count badge: clearing the canvas on re-render does not take the badge with it
       const canvas = document.createElement("div");
       canvas.className = "gallery-card-canvas";
       const badge = document.createElement("span");
@@ -256,7 +263,7 @@ export async function showGallery() {
       const tags = (entry.tags || [])
         .map((t) => `<span class="gallery-tag">${escapeHtml(t)}</span>`)
         .join("");
-      // 标题/描述/标签三个槽位恒在（无内容留空），卡片信息区高度一致、网格成行齐整
+      // The title/description/tags slots always exist (empty when absent), so card info height is uniform and the grid stays tidy
       info.innerHTML =
         `<div class="gallery-card-title">${escapeHtml(entry.title)}</div>` +
         `<div class="gallery-card-desc">${escapeHtml(entry.description || "")}</div>` +
@@ -264,7 +271,7 @@ export async function showGallery() {
       card.appendChild(thumb);
       card.appendChild(info);
       card.addEventListener("click", () => {
-        // 跳转到编辑器并加载该作品（本地可编辑写回；线上可编辑、保存下载 zip）
+        // Jump to the editor and load this work (editable + writable locally; online editable with zip download on save)
         location.href = new URL("editor/?deck=" + encodeURIComponent(entry.deck), ROOT).href;
       });
       grid.appendChild(card);
@@ -274,35 +281,36 @@ export async function showGallery() {
     }
   }
 
-  /** 把滑块指示器对齐到激活 tab。FLIP：left/width 瞬时设为目标值，
-      视觉位移用 transform 补偿——起点与终点都用视口坐标（getBoundingClientRect）
-      测量且包含进行中的动画，快速连点时从"看起来所在的位置"续滑不瞬移。
-      instant=true（resize/字体就绪）直接归位。 */
+  /** Align the slider indicator with the active tab. FLIP: left/width jump instantly to the
+      target, and the visual offset is compensated with transform — start and end are both
+      measured in viewport coords (getBoundingClientRect) and include in-flight animation, so
+      rapid clicks continue from "where it looks like it is" without teleporting.
+      instant=true (resize/fonts ready) snaps it directly into place. */
   function moveTabIndicator(instant = false) {
     const active = tabsEl?.querySelector(".gallery-tab.active");
     const bar = $("gallery-tab-indicator");
     if (!active || !bar) return;
-    const startLeft = bar.getBoundingClientRect().left; // 当前视觉位置（视口坐标）
+    const startLeft = bar.getBoundingClientRect().left; // current visual position (viewport coords)
     bar.style.transition = "none";
     bar.style.transform = "";
     bar.style.left = `${active.offsetLeft}px`;
     bar.style.width = `${active.offsetWidth}px`;
-    const dx = instant ? 0 : startLeft - bar.getBoundingClientRect().left; // 同坐标系求差
+    const dx = instant ? 0 : startLeft - bar.getBoundingClientRect().left; // difference in the same coordinate system
     if (!dx) {
       bar.style.transition = "";
       return;
     }
     bar.style.transform = `translateX(${dx}px)`;
-    bar.getBoundingClientRect(); // 强制回流，让起始位移先生效
+    bar.getBoundingClientRect(); // force reflow so the starting offset applies first
     bar.style.transition = "";
-    bar.style.transform = ""; // 从 dx 过渡回 0，滑到目标位
+    bar.style.transform = ""; // transition from dx back to 0, sliding to the target
   }
 
   function setTab(kind) {
     tabsEl?.querySelectorAll(".gallery-tab").forEach((b) => b.classList.toggle("active", b.dataset.kind === kind));
     moveTabIndicator();
     grid.classList.toggle("poster-grid", kind === "poster");
-    // 网格重建推迟一帧：滑块动画先在干净的主线程上起步
+    // Defer the grid rebuild by one frame: the slider animation starts on a clean main thread
     requestAnimationFrame(() => fillGrid(entries.filter((e) => (e.kind || "ppt") === kind)));
   }
 
@@ -318,27 +326,28 @@ export async function showGallery() {
       const btn = ev.target.closest(".gallery-tab");
       if (btn && !btn.classList.contains("active")) {
         setTab(btn.dataset.kind);
-        // 平滑回顶：配合滑块与浮入动画，并避免停留在页面下方时 scrollTop 超出新内容高度被强拉的纵跳
+        // Smooth scroll to top: pairs with the slider and the entry animation, and avoids a vertical jolt when the current
+        // scrollTop exceeds the new content height
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     });
     window.addEventListener("resize", () => moveTabIndicator(true));
-    document.fonts?.ready.then(() => moveTabIndicator(true)); // 字体加载完成后 tab 宽度可能变化，直接归位
+    document.fonts?.ready.then(() => moveTabIndicator(true)); // tab widths may change once fonts load; snap into place
   }
   setTab("ppt");
 }
 
-/** 「打开本地项目」：原生选择器 → 校验 deck.pptd → 记最近 → 跳编辑器续开。 */
+/** "Open local project": native picker → validate deck.pptd → record recent → jump to the editor to reopen. */
 async function openLocalFromPicker() {
   try {
     const handle = await pickProjectFolder();
-    if (!handle) return; // 用户取消
+    if (!handle) return; // user cancelled
     if (!(await hasDeck(handle))) {
       showToast("所选文件夹里没有 deck.pptd，请选择 PPTD 项目文件夹", "danger", 5000);
       return;
     }
     const entry = await addRecent(handle);
-    if (entry) setPendingProject(entry.id); // 编辑器据此续开（同会话授权仍有效，免确认）
+    if (entry) setPendingProject(entry.id); // the editor reopens from this (the same-session grant still holds, no prompt)
     location.href = new URL("editor/", ROOT).href;
   } catch (err) {
     showToast(`打开失败: ${err.message}`, "danger");

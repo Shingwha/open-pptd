@@ -1,17 +1,18 @@
 // ============================================================================
-// ui.js — 共享表单控件（属性面板 / 快速条 / 类型注册表 props 共用）
+// ui.js — shared form controls (used by the property panel / quickbar / type-registry props)
 // ----------------------------------------------------------------------------
-// 交互约定：控件支持 { onBlur } 钩子，属性面板借此实现
-// 「首次提交 → beginChange 快照 / blur → endChange 重渲染」的事务模式；
-// 快速条则不传钩子，直接在 onCommit 里包 change()。
+// Interaction convention: controls support an { onBlur } hook, which the property
+// panel uses to implement the "first commit → beginChange snapshot / blur →
+// endChange re-render" transaction mode; the quickbar passes no hook and wraps
+// change() directly in onCommit.
 // ============================================================================
 
-// svgIcon 已迁至 icons.js（内联图标单一来源）；此处再导出，既有 import 路径不变
+// svgIcon moved to icons.js (the single inline-icon source); re-exported here so existing import paths stay valid
 export { svgIcon } from "./icons.js";
 import { attachPopover } from "./popover.js";
 import { button as coreButton } from "./components/button.js";
 
-/** 属性行：label + 控件。 */
+/** Property row: label + control. */
 export function field(label, control) {
   const wrap = document.createElement("label");
   wrap.className = "prop-field";
@@ -22,7 +23,7 @@ export function field(label, control) {
   return wrap;
 }
 
-/** 属性分组容器（标题可点击折叠，默认展开；折叠态由 CSS 隐藏非标题子节点）。 */
+/** Property group container (the title is click-to-collapse, expanded by default; collapsed state hides non-title children via CSS). */
 export function group(title) {
   const g = document.createElement("div");
   g.className = "prop-group";
@@ -35,8 +36,8 @@ export function group(title) {
   return g;
 }
 
-/** 文本输入（rows > 0 时为 textarea，input 事件实时提交；否则 change 提交）。
- * textarea 高度自动跟随内容（min 一行 / max 140px 滚动），无需手动设 rows。 */
+/** Text input (textarea when rows > 0, committing on input; otherwise committing on change).
+ * The textarea height follows its content (min one line / max 140px scroll), no manual rows needed. */
 export function textInput(value, onCommit, { rows = 0, placeholder = "", onFocus, onBlur, autoResize = true } = {}) {
   const input = document.createElement(rows ? "textarea" : "input");
   if (rows) {
@@ -48,7 +49,7 @@ export function textInput(value, onCommit, { rows = 0, placeholder = "", onFocus
       input.style.height = Math.min(Math.max(input.scrollHeight, 34), 140) + "px";
     };
     input.addEventListener("input", fit);
-    if (autoResize) requestAnimationFrame(fit); // 初始高度按内容（面板刚插入 DOM 才能量到）
+    if (autoResize) requestAnimationFrame(fit); // initial height by content (only measurable once the panel is in the DOM)
   } else {
     input.type = "text";
     input.placeholder = placeholder;
@@ -60,7 +61,7 @@ export function textInput(value, onCommit, { rows = 0, placeholder = "", onFocus
   return input;
 }
 
-/** 数字输入（实时提交，非法值忽略）。 */
+/** Number input (commits live; invalid values ignored). */
 export function numInput(value, onCommit, { min = -10000, step = 1, onFocus, onBlur } = {}) {
   const input = document.createElement("input");
   input.type = "number";
@@ -76,10 +77,11 @@ export function numInput(value, onCommit, { min = -10000, step = 1, onFocus, onB
 }
 
 /**
- * 颜色选择。
- * value 可为 hex 或主题令牌（$primary 等）；opts.resolve(value) → 具体 hex，
- * 用于回填 input 当前值（否则令牌永远显示默认黑，用户无法看到真实颜色）。
- * 仅接受 #RRGGBB 回填，其余不设置（保持浏览器默认）。
+ * Color picker.
+ * value may be a hex or a theme token ($primary etc.); opts.resolve(value) → a
+ * concrete hex, used to fill in the input's current value (otherwise a token always
+ * shows the default black and the user never sees the real color). Only #RRGGBB is
+ * accepted for the fill; anything else is left alone (keeping the browser default).
  */
 export function colorInput(value, onCommit, { className = "", title = "", resolve, onFocus, onBlur } = {}) {
   const input = document.createElement("input");
@@ -89,7 +91,7 @@ export function colorInput(value, onCommit, { className = "", title = "", resolv
   const hex = resolve ? resolve(value) : value;
   if (/^#[0-9a-fA-F]{6}$/.test(hex || "")) input.value = hex;
   if (onFocus) input.addEventListener("focus", onFocus);
-  // input = 取色拖动中实时提交（选择器内拖动即生效）；change = 选择器关闭兜底（幂等）
+  // input = commit live while dragging in the picker (dragging inside applies immediately); change = picker-close fallback (idempotent)
   input.addEventListener("input", () => onCommit(input.value));
   input.addEventListener("change", () => onCommit(input.value));
   if (onBlur) input.addEventListener("blur", onBlur);
@@ -97,7 +99,7 @@ export function colorInput(value, onCommit, { className = "", title = "", resolv
 }
 
 /**
- * 双列紧凑格（label 上置 + 控件），用于数值类小字段。
+ * Two-column compact cell (label above + control), for small numeric fields.
  */
 export function cell(label, control) {
   const wrap = document.createElement("div");
@@ -110,9 +112,9 @@ export function cell(label, control) {
 }
 
 /**
- * 三合一颜色控件：色块按钮（弹主题色面板）+ 取色器 + hex 文本（支持 #RRGGBBAA）。
- * swatches = [{key, value}]（value 为解析后的 hex，点击回填 $key 令牌）。
- * 弹层由色块按钮开关，点击外部关闭；行内只占一排，不挤压布局。
+ * Three-in-one color control: swatch button (opens the theme-color panel) + picker + hex text (supports #RRGGBBAA).
+ * swatches = [{key, value}] (value is the resolved hex; clicking writes back the $key token).
+ * The panel is toggled by the swatch button and closes on an outside click; it occupies one row inline without squeezing the layout.
  */
 export function colorField(value, onCommit, { resolve, swatches = [], onFocus, onBlur } = {}) {
   const wrap = document.createElement("div");
@@ -120,19 +122,19 @@ export function colorField(value, onCommit, { resolve, swatches = [], onFocus, o
 
   const hexOf = (v) => { const h = resolve ? resolve(v) : v; return /^#[0-9a-fA-F]{6}$/.test(h || "") ? h : null; };
 
-  // 色块按钮：展示当前解析色，点击开关主题色弹层
+  // Swatch button: shows the current resolved color, click toggles the theme-color panel
   const swatchBtn = document.createElement("button");
   swatchBtn.type = "button";
   swatchBtn.className = "color-swatch-btn";
   swatchBtn.title = "主题色";
-  // 展示当前解析色：显式传入优先（取色器拖动），否则 hex 输入框（可能是 $key）
+  // Show the current resolved color: an explicit argument wins (picker drag), otherwise the hex input (possibly a $key)
   const paint = (raw) => {
     const v = raw || hex.value.trim() || picker.value;
     swatchBtn.style.background = hexOf(v) || "var(--panel)";
   };
 
   const picker = colorInput(value, onCommit, { resolve, onFocus, onBlur });
-  picker.addEventListener("input", () => paint(picker.value)); // 拖动取色器时同步色块
+  picker.addEventListener("input", () => paint(picker.value)); // keep the swatch in sync while dragging the picker
   const hex = document.createElement("input");
   hex.type = "text";
   hex.className = "color-hex";
@@ -151,8 +153,8 @@ export function colorField(value, onCommit, { resolve, swatches = [], onFocus, o
     }
   });
 
-  // 主题色弹层：fixed 定位（不依赖父容器 overflow，永不裁剪），
-  // 定位/外点关闭/resize 重定位走 popover.js 通用件（gap 6，下方不足时向上弹出）
+  // Theme-color panel: fixed positioning (independent of parent overflow, never clipped);
+  // positioning/outside-click close/resize reposition go through the popover.js generic piece (gap 6, flips up when there is not enough room below)
   const pop = document.createElement("div");
   pop.className = "color-pop";
   pop.hidden = true;
@@ -181,7 +183,7 @@ export function colorField(value, onCommit, { resolve, swatches = [], onFocus, o
   if (swatches.length) {
     const popover = attachPopover(swatchBtn, pop, {
       gap: 6,
-      width: 224, // 隐藏态测量兜底（offsetWidth/Height 需可见才有值）
+      width: 224, // hidden-state measurement fallback (offsetWidth/Height only have a value once visible)
       height: 220,
       flip: true,
       isOpen: () => !pop.hidden,
@@ -190,18 +192,18 @@ export function colorField(value, onCommit, { resolve, swatches = [], onFocus, o
     swatchBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       pop.hidden = !pop.hidden;
-      if (!pop.hidden) popover.position(); // 显示后测量并定位（fixed，脱离父容器裁剪）
+      if (!pop.hidden) popover.position(); // measure and position after showing (fixed, escapes parent clipping)
     });
   } else {
-    swatchBtn.hidden = true; // 无主题色数据时不显示色块按钮
+    swatchBtn.hidden = true; // hide the swatch button when there is no theme-color data
   }
 
   wrap.append(swatchBtn, picker, hex, pop);
-  paint(); // 初始渲染色块（此时 picker/hex 已就绪）
+  paint(); // initial swatch paint (picker/hex are ready by now)
   return wrap;
 }
 
-/** 下拉选择。options = [[value, label], ...]。 */
+/** Dropdown select. options = [[value, label], ...]. */
 export function selectInput(options, value, onCommit, { className = "", title = "", onFocus, onBlur } = {}) {
   const sel = document.createElement("select");
   if (className) sel.className = className;
@@ -219,7 +221,7 @@ export function selectInput(options, value, onCommit, { className = "", title = 
   return sel;
 }
 
-/** 勾选框（label 文本 + 控件）。 */
+/** Checkbox (label text + control). */
 export function checkbox(label, checked, onCommit, { onFocus, onBlur } = {}) {
   const wrap = document.createElement("label");
   wrap.className = "prop-check";
@@ -234,8 +236,8 @@ export function checkbox(label, checked, onCommit, { onFocus, onBlur } = {}) {
   return wrap;
 }
 
-/** 按钮。active 追加 .on（快速条开关态）；preventDefault 默认防 textarea 失焦。
- * 实现委托 components/button.js（Button 原语，全站按钮的唯一构造点）。 */
+/** Button. active appends .on (quickbar toggle state); preventDefault defaults to preventing textarea blur.
+ * The implementation delegates to components/button.js (the Button primitive, the only button construction point site-wide). */
 export function button(label, onClick, { title = "", className = "btn btn-sm", active = false, preventDefault = true } = {}) {
   return coreButton(label, {
     className,
@@ -247,11 +249,11 @@ export function button(label, onClick, { title = "", className = "btn btn-sm", a
 }
 
 // ----------------------------------------------------------------------------
-// 快速条专用控件（qb-* 样式）
+// Quickbar-only controls (qb-* styles)
 // ----------------------------------------------------------------------------
 
-/** 窄屏断点（px）：缩略图缩窄、快速条吸底横滑、属性抽屉形态共用
- * （与 editor/styles/ 响应式块的 max-width 媒体查询同步，改动需双侧一致）。 */
+/** Narrow breakpoint (px): thumbnail narrowing, bottom-docked quickbar horizontal scroll and the property drawer form share it
+ * (in sync with the max-width media queries in editor/styles/; changes must match on both sides). */
 export const BP_NARROW = 900;
 
 export const isNarrow = () => window.matchMedia(`(max-width: ${BP_NARROW}px)`).matches;

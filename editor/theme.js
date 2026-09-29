@@ -1,45 +1,48 @@
 // ============================================================================
-// editor/theme.js — 主题令牌注入（契约 3）
+// editor/theme.js — theme token injection (contract 3)
 // ----------------------------------------------------------------------------
-// 引擎自带的浅/深两套令牌值（与 editor/styles/tokens.css 一一对应），以及把
-// 令牌注入任意挂载点的 applyThemeTokens(rootEl, { tokens, mode })。
+// The engine's built-in light/dark token values (mirroring editor/styles/tokens.css)
+// plus applyThemeTokens(rootEl, { tokens, mode }) to inject tokens into any mount point.
 //
-// 用法（宿主 / 同源 iframe 嵌入）：
+// Usage (host / same-origin iframe embedding):
 //   const restore = applyThemeTokens(document.body, { mode: "dark" });
-//   // 或覆盖单个令牌
+//   // or override a single token
 //   const restore2 = applyThemeTokens(rootEl, { tokens: { "--accent": "#7c3aed" } });
-//   restore();  // 幂等还原（摘掉属性与内联覆盖）
+//   restore();  // idempotent restore (drops the attribute and inline overrides)
 //
-// 实现：mode 落到 rootEl 的 data-pptd-theme 属性（tokens.css 的
-// [data-pptd-theme="dark"] 块覆盖 :root 的浅色默认值，自定义属性自然向下继承）；
-// tokens 落到 rootEl 的内联 style（优先级高于样式表，用于宿主把 --dsw-* 映射过来）。
+// Implementation: mode lands on rootEl's data-pptd-theme attribute (the
+// [data-pptd-theme="dark"] block in tokens.css overrides the :root light defaults,
+// and custom properties inherit naturally); tokens land on rootEl's inline style
+// (higher priority than the stylesheet, for hosts mapping their --dsw-* over).
 //
-// U1/T4：令牌体系重建后，权威名是 --accent 系与 --n-*；旧名（--primary 等）
-// 仍是 tokens.css 里的兼容别名，宿主覆盖请注意「覆盖别名不等于覆盖 --accent」——
-// 新接入请直接覆盖 --accent / --sel-ring 等规范令牌名。
+// After the token system rebuild, the authoritative names are the --accent family
+// and --n-*; the old names (--primary etc.) remain compatibility aliases in
+// tokens.css — a host overriding an alias is not overriding --accent, so new
+// integrations should override the canonical token names (--accent / --sel-ring etc.).
 // ============================================================================
 
 /**
- * 引擎支持的令牌名（对标 editor/styles/tokens.css）。
- * 尺寸/间距/层级/动效类令牌不参与主题切换，故不在列表内。
+ * Token names the engine supports (mirrors editor/styles/tokens.css).
+ * Size/spacing/z-index/animation tokens do not participate in theme switching, so
+ * they are not listed.
  */
 export const TOKENS = [
-  // 语义中性
+  // semantic neutrals
   "--bg", "--panel", "--line", "--line-strong", "--ink", "--sub", "--faint",
   "--hover", "--active", "--disabled", "--sel-bg", "--sel-ring",
-  // 强调色
+  // accents
   "--accent", "--accent-hover", "--accent-soft", "--on-accent",
-  // 语义色
+  // semantic colors
   "--danger", "--danger-soft", "--success", "--success-soft", "--warning", "--warning-soft",
-  // 纸张（画布/缩略图底色：浅色白、深色浅灰，保证版面在深色下仍可读）
+  // paper (canvas/thumbnail backdrop: white when light, light gray when dark, so a layout stays readable on dark)
   "--paper",
-  // 遮罩与描边
+  // masks and strokes
   "--mask", "--chip-border",
-  // 缩略条悬浮标签
+  // thumbnail-bar hover label
   "--thumb-chip-bg", "--thumb-chip-ink", "--thumb-num-bg", "--thumb-num-ink",
-  // 阴影
+  // shadows
   "--sh-pop", "--sh-modal",
-  // 兼容别名（旧宿主按旧名覆盖仍可用）
+  // compatibility aliases (old hosts overriding by the old names still work)
   "--primary", "--primary-strong", "--primary-soft", "--primary-tint", "--scrollbar",
   "--shadow-sm", "--shadow-md", "--shadow-lg", "--shadow-sheet",
 ];
@@ -76,7 +79,7 @@ const LIGHT = {
   "--thumb-num-ink": "rgba(28, 37, 50, 0.6)",
   "--sh-pop": "0 4px 16px rgba(28, 37, 50, 0.1)",
   "--sh-modal": "0 12px 32px rgba(28, 37, 50, 0.14)",
-  // 兼容别名
+  // compatibility aliases
   "--primary": "#2563eb",
   "--primary-strong": "#1d4ed8",
   "--primary-soft": "#eef4fd",
@@ -88,8 +91,9 @@ const LIGHT = {
   "--shadow-sheet": "0 -8px 32px rgba(28, 37, 50, 0.16)",
 };
 
-// 深色板逐条照抄设计参考稿的 [data-theme="dark"]（面板比底暗一档、文字反转、
-// 强调色提亮、语义色降饱和）。
+// Dark palette copied entry by entry from the design reference [data-theme="dark"]
+// (panels one step darker than the background, text inverted, accents brightened,
+// semantic colors desaturated).
 const DARK = {
   "--bg": "#1b1f26",
   "--panel": "#16191f",
@@ -122,7 +126,7 @@ const DARK = {
   "--thumb-num-ink": "rgba(238, 241, 245, 0.7)",
   "--sh-pop": "0 4px 16px rgba(0, 0, 0, 0.45)",
   "--sh-modal": "0 12px 32px rgba(0, 0, 0, 0.6)",
-  // 兼容别名
+  // compatibility aliases
   "--primary": "#4d8dff",
   "--primary-strong": "#6ba0ff",
   "--primary-soft": "#1c2a44",
@@ -134,16 +138,16 @@ const DARK = {
   "--shadow-sheet": "0 -8px 32px rgba(0, 0, 0, 0.55)",
 };
 
-/** 内置浅色 / 深色令牌表（返回浅拷贝，调用方可安全改写）。 */
+/** Built-in light / dark token tables (returns a shallow copy the caller can safely mutate). */
 export function defaultTokens(mode = "light") {
   return { ...(mode === "dark" ? DARK : LIGHT) };
 }
 
 /**
- * 把主题注入挂载点：mode → data-pptd-theme 属性；tokens → 内联令牌覆盖。
- * @param {HTMLElement} rootEl 挂载点（通常 document.body 或编辑器根容器）
+ * Inject the theme into a mount point: mode → the data-pptd-theme attribute; tokens → inline token overrides.
+ * @param {HTMLElement} rootEl mount point (usually document.body or the editor root container)
  * @param {{ tokens?: Record<string,string>, mode?: "light"|"dark" }} [opts]
- * @returns {() => void} 还原函数（幂等：摘属性、清内联覆盖）
+ * @returns {() => void} restore function (idempotent: drops the attribute, clears inline overrides)
  */
 export function applyThemeTokens(rootEl, { tokens, mode } = {}) {
   const el = rootEl || (typeof document !== "undefined" ? document.body : null);
@@ -172,20 +176,23 @@ export function applyThemeTokens(rootEl, { tokens, mode } = {}) {
 }
 
 // ----------------------------------------------------------------------------
-// 三态主题模式（B3：浅 / 深 / 跟随系统）
+// Tri-state theme mode (B3: light / dark / follow system)
 // ----------------------------------------------------------------------------
-// 独立 serve / GitHub Pages（第一层「自带默认板」）下由编辑器自己管：
-//   - 选择持久化 localStorage（键 pptd.themeMode）
-//   - "auto" → 实时读 prefers-color-scheme，并监听其变化
-//   - 生效值落到 document.documentElement 的 data-pptd-theme（tokens.css 的深色板选择器）
-// 嵌入宿主（第二层「宿主覆盖」）时不启动：宿主经 applyThemeTokens(rootEl,{mode}) 注入，
-// 注入优先于内置板（见 createEditor 对 options.theme.mode 的判断）。
+// Under standalone serve / GitHub Pages (layer one, "built-in palette") the editor
+// manages it itself:
+//   - the choice persists in localStorage (key pptd.themeMode)
+//   - "auto" reads prefers-color-scheme live and listens for its changes
+//   - the effective value lands on document.documentElement's data-pptd-theme
+//     (the dark-palette selector in tokens.css)
+// It does not start when embedded in a host (layer two, "host override"): the host
+// injects via applyThemeTokens(rootEl,{mode}), and the injection wins over the
+// built-in palette (see createEditor's handling of options.theme.mode).
 // ----------------------------------------------------------------------------
 
-/** 主题模式 localStorage 键（独立 serve 场景持久化）。 */
+/** Theme-mode localStorage key (persisted in the standalone serve case). */
 export const THEME_MODE_KEY = "pptd.themeMode";
 
-/** 三态清单（UI 渲染顺序）：浅 / 深 / 跟随系统。 */
+/** Tri-state list (UI render order): light / dark / follow system. */
 export const THEME_MODES = [
   ["light", "浅"],
   ["dark", "深"],
@@ -194,7 +201,7 @@ export const THEME_MODES = [
 
 const isMode = (m) => m === "light" || m === "dark" || m === "auto";
 
-/** 系统当前偏好（auto 时解析为 light/dark）。 */
+/** Current system preference (resolved to light/dark under auto). */
 export function systemTheme() {
   try {
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
@@ -203,7 +210,7 @@ export function systemTheme() {
   }
 }
 
-/** 读取已保存的模式（非法值回落 light）。 */
+/** Read the saved mode (invalid values fall back to light). */
 export function getThemeMode(storageKey = THEME_MODE_KEY) {
   try {
     const v = localStorage.getItem(storageKey);
@@ -214,8 +221,9 @@ export function getThemeMode(storageKey = THEME_MODE_KEY) {
 }
 
 /**
- * 应用模式：解析 auto → light/dark，写到 root 的 data-pptd-theme，并持久化模式本身。
- * @returns {"light"|"dark"} 实际生效的板
+ * Apply a mode: resolve auto → light/dark, write it to root's data-pptd-theme, and
+ * persist the mode itself.
+ * @returns {"light"|"dark"} the palette actually in effect
  */
 export function setThemeMode(mode, { root = null, storageKey = THEME_MODE_KEY } = {}) {
   const m = isMode(mode) ? mode : "light";
@@ -225,13 +233,14 @@ export function setThemeMode(mode, { root = null, storageKey = THEME_MODE_KEY } 
   try {
     localStorage.setItem(storageKey, m);
   } catch {
-    /* 隐私模式等写入失败忽略 */
+    /* ignore write failures (private mode etc.) */
   }
   return effective;
 }
 
 /**
- * 绑定三态主题：立即应用已保存模式，并在 auto 下跟随系统变化。
+ * Bind the tri-state theme: apply the saved mode immediately and follow system
+ * changes while in auto.
  * @param {object} [opts] { root, storageKey, onChange(effective, mode) }
  * @returns {{ get(): string, effective(): string, set(mode): string, destroy(): void }}
  */
@@ -263,7 +272,7 @@ export function bindThemeMode({ root = null, storageKey = THEME_MODE_KEY, onChan
       try {
         mq?.removeEventListener("change", onSystemChange);
       } catch {
-        /* 忽略 */
+        /* ignore */
       }
       mq = null;
     },

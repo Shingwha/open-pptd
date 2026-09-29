@@ -1,19 +1,20 @@
 // ============================================================================
-// app/keyboard.js — 全局快捷键（Ctrl+Z/Y/S/D/A/G/C/V）
+// app/keyboard.js — global shortcuts (Ctrl+Z/Y/S/D/A/G/C/V)
 // ----------------------------------------------------------------------------
-// 元素级按键（Delete/方向键/Esc 分层/] [ 层序）在 interaction/canvas.js 内处理，两者互补。
-//   Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y  撤销 / 重做
-//   Ctrl+S                          保存
-//   Ctrl+D                          复制选中（偏移副本）
-//   Ctrl+C / Ctrl+V                 复制 / 粘贴（编辑器内部剪贴板；B6）
-//   Ctrl+A                          全选当前页（U1）
-//   Ctrl+G / Ctrl+Shift+G           组合 / 取消组合（U1）
+// Element-level keys (Delete/arrows/Esc layering/[ ] layer order) are handled in
+// interaction/canvas.js; the two are complementary.
+//   Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y  undo / redo
+//   Ctrl+S                          save
+//   Ctrl+D                          duplicate selection (offset copy)
+//   Ctrl+C / Ctrl+V                 copy / paste (editor-internal clipboard; B6)
+//   Ctrl+A                          select all on the current page (U1)
+//   Ctrl+G / Ctrl+Shift+G           group / ungroup (U1)
 // ============================================================================
 
 export function bindKeyboard({ state, api, io, present }) {
   const ac = new AbortController();
   document.addEventListener("keydown", (e) => {
-    // 放映中：按键全部由放映层接管（翻页/黑屏/退出），编辑器快捷键不响应
+    // While presenting, the present layer owns all keys (page/blackout/exit); editor shortcuts stay quiet
     if (present?.isActive()) return;
     const tag = (e.target.tagName || "").toLowerCase();
     if (tag === "input" || tag === "textarea" || tag === "select") return;
@@ -29,27 +30,27 @@ export function bindKeyboard({ state, api, io, present }) {
       e.preventDefault();
       io.saveProject();
     } else if (mod && key === "d") {
-      // 复制选中元素（需有选中元素；api 内部处理）
+      // Duplicate the selected element (needs a selection; api handles the rest)
       e.preventDefault();
       if (state.selection.size) api.duplicateSelected();
     } else if (mod && key === "c") {
-      // 复制到编辑器内部剪贴板（右键菜单「粘贴」与 Ctrl+V 用，B6）
+      // Copy into the editor-internal clipboard (used by the context menu "paste" and Ctrl+V; B6)
       e.preventDefault();
       api.copySelected();
     } else if (mod && key === "v") {
       e.preventDefault();
       api.pasteClipboard();
     } else if (mod && key === "a") {
-      // 全选当前页（U1）
+      // Select all on the current page (U1)
       e.preventDefault();
       api.selectAll();
     } else if (mod && key === "g") {
-      // 组合 / 取消组合（U1）
+      // Group / ungroup (U1)
       e.preventDefault();
       if (e.shiftKey) api.ungroup();
       else api.group();
     } else if (e.key === "F5") {
-      // 放映：从当前页开始全屏演示（PowerPoint 习惯键）
+      // Present: start a fullscreen show from the current page (PowerPoint muscle memory)
       e.preventDefault();
       present?.start();
     }

@@ -1,13 +1,13 @@
 // ============================================================================
-// components/section.js — Section 原语（可折叠分组：标题 + 重置）
+// components/section.js — Section primitive (collapsible group: title + reset)
 // ----------------------------------------------------------------------------
-// 两种实现：
-//   section()        div 版（复用 .prop-group，折叠态 .collapsed）——属性面板用
-//   detailsSection() 原生 <details> 版（复用 .sec 样式）——设计稿 §02 样机形态
-// 二者都给「标题 + 内容 + 可选重置按钮」。
+// Two implementations:
+//   section()        div form (reuses .prop-group, collapsed state .collapsed) — used by the property panel
+//   detailsSection() native <details> form (reuses .sec styles) — design §02 mockup form
+// Both provide "title + content + optional reset button".
 // ============================================================================
 
-/** div 版可折叠分组（.prop-group）。 */
+/** div-form collapsible group (.prop-group). */
 export function section(title, { collapsed = false, onReset = null } = {}) {
   const g = document.createElement("div");
   g.className = "prop-group" + (collapsed ? " collapsed" : "");
@@ -32,7 +32,7 @@ export function section(title, { collapsed = false, onReset = null } = {}) {
   return g;
 }
 
-/** 原生 <details> 版分组（.sec 样式，设计稿样机形态）。 */
+/** Native <details> group (.sec styles, design mockup form). */
 export function detailsSection(title, { open = true } = {}) {
   const d = document.createElement("details");
   d.className = "sec";

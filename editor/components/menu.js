@@ -1,11 +1,12 @@
 // ============================================================================
-// components/menu.js — Menu 原语（子菜单 / 快捷键提示 / 图标位）
+// components/menu.js — Menu primitive (submenu / shortcut hints / icon slot)
 // ----------------------------------------------------------------------------
-// 外壳 .menu / 条目 .mi / 分隔 .msep / 禁用 .dis，对齐设计稿 §03 右键菜单形态。
-// 同时兼容既有文件菜单的 .file-menu* 样式（menu() 可传 className）。
+// Shell .menu / item .mi / separator .msep / disabled .dis, matching design
+// §03 context-menu form. Also compatible with the existing file-menu .file-menu*
+// styles (menu() accepts a className).
 // ============================================================================
 
-/** 菜单容器。className 默认 .menu；文件菜单传 "file-menu"。 */
+/** Menu container. className defaults to .menu; the file menu passes "file-menu". */
 export function menu({ className = "menu", id = "" } = {}) {
   const el = document.createElement("div");
   el.className = className;
@@ -15,10 +16,10 @@ export function menu({ className = "menu", id = "" } = {}) {
 }
 
 /**
- * 菜单条目。
+ * Menu item.
  * @param {string} label
  * @param {object} [opts] { icon, hint, submenu, submenuItems, onClick, disabled, danger, className }
- *   submenuItems: HTMLElement[] —— 二级菜单条目（悬停/点击展开，越界自动向左翻）
+ *   submenuItems: HTMLElement[] — second-level items (open on hover/click, flips left when out of bounds)
  */
 export function menuItem(label, opts = {}) {
   const {
@@ -51,7 +52,7 @@ export function menuItem(label, opts = {}) {
   return item;
 }
 
-/** 二级菜单：挂在条目内（.submenu），悬停/点击展开；越界时向左翻。 */
+/** Second-level menu: mounted inside the item (.submenu), opens on hover/click; flips left when out of bounds. */
 function attachSubmenu(item, nodes) {
   const sub = document.createElement("div");
   sub.className = "menu submenu";
@@ -72,7 +73,7 @@ function attachSubmenu(item, nodes) {
     place();
   });
   item.addEventListener("pointerleave", (e) => {
-    if (sub.contains(e.relatedTarget)) return; // 移入子菜单不收起
+    if (sub.contains(e.relatedTarget)) return; // moving into the submenu does not close it
     sub.hidden = true;
   });
   item.addEventListener("click", (e) => {
@@ -82,14 +83,14 @@ function attachSubmenu(item, nodes) {
   });
 }
 
-/** 菜单分隔线。 */
+/** Menu separator line. */
 export function menuSeparator() {
   const s = document.createElement("div");
   s.className = "msep";
   return s;
 }
 
-/** 菜单内的小节标题。 */
+/** Section title inside a menu. */
 export function menuLabel(text) {
   const l = document.createElement("div");
   l.className = "file-menu-label";
@@ -98,21 +99,22 @@ export function menuLabel(text) {
 }
 
 // ----------------------------------------------------------------------------
-// 指针处弹出菜单（右键上下文菜单 / 缩略条菜单共用同一套开合与定位）
+// Pointer-position popup menu (context menu / thumbnail-bar menu share one open/close and positioning path)
 // ----------------------------------------------------------------------------
 let activePopup = null;
 
-/** 关闭当前弹出菜单（无则忽略）。 */
+/** Close the active popup menu (no-op when none). */
 export function closePopupMenu() {
   activePopup?.close();
 }
 
 /**
- * 在指针位置打开菜单（视口内 clamp；外点/ Esc / 滚轮/失焦/尺寸变化自动关闭）。
- * @param {number} x 客户区 x
- * @param {number} y 客户区 y
- * @param {HTMLElement[]} nodes 菜单内容（menuItem/menuSeparator 产物）
- * @param {object} [opts] { className?: 追加类名 }
+ * Open a menu at the pointer position (clamped into the viewport; auto-closes on
+ * outside click / Esc / wheel / blur / resize).
+ * @param {number} x client x
+ * @param {number} y client y
+ * @param {HTMLElement[]} nodes menu content (menuItem/menuSeparator products)
+ * @param {object} [opts] { className?: extra class }
  * @returns {{ el: HTMLElement, close(): void }}
  */
 export function openMenuAt(x, y, nodes, { className = "" } = {}) {
@@ -133,7 +135,7 @@ export function openMenuAt(x, y, nodes, { className = "" } = {}) {
   window.addEventListener("blur", close, { signal: ac.signal });
   window.addEventListener("resize", close, { signal: ac.signal });
 
-  // 先放屏幕外测量尺寸，再 clamp 到视口内（避免闪现错位）
+  // Measure offscreen first, then clamp into the viewport (avoids a flash at the wrong spot)
   el.style.position = "fixed";
   el.style.left = "-9999px";
   el.style.top = "0";

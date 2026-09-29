@@ -1,10 +1,12 @@
 // ============================================================================
-// components/field.js — Field 原语（沿用 interaction/fields.js 的 5 种 kind）
+// components/field.js — Field primitive (reuses the 5 kinds of interaction/fields.js)
 // ----------------------------------------------------------------------------
-// 架构保留：字段声明（types/*.js 的 props）→ interaction/fields.js 渲染，
-// 本模块只是把「5 种 kind」的入口集中成原语层门面，供 components/* 与面板共用。
+// Architecture kept: field declarations (types/*.js props) → rendered by
+// interaction/fields.js; this module only centralizes the "5 kinds" entry as a
+// primitive-layer facade shared by components/* and the panels.
 //   num / text / textarea / select / color / checks / button / hint
-// U1 只统一入口与令牌，不改字段声明协议（U2 做分区折叠与「混合」占位）。
+// Only the entry and tokens are unified; the field declaration protocol is
+// unchanged.
 // ============================================================================
 
 export {
@@ -24,5 +26,5 @@ export {
   checkbox,
 } from "../ui.js";
 
-/** 分组（可折叠 Section 的简化形态，见 components/section.js）。 */
+/** Group (the simplified form of a collapsible Section, see components/section.js). */
 export { group } from "../ui.js";

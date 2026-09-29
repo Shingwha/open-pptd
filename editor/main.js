@@ -1,17 +1,19 @@
 // ============================================================================
-// main.js — standalone 入口（薄组合根）
+// main.js — standalone entry (thin composition root)
 // ----------------------------------------------------------------------------
-// 只负责"从哪里打开、挂到哪、暴露哪些测试钩子"，编辑器装配全部在 editor.js：
-//   - ?shot=1        → 无头截图模式（app/shot.js，跳过编辑器 UI）
-//   - ?deck=<项目>    → createEditor + httpSource({ deckUrl })
-//   - 有会话恢复标记  → 续开上次本地项目（授权有效直开，否则弹恢复卡片）
-//   - 否则           → 空白编辑器
+// Only decides "where to open from, what to mount on, which test hooks to expose";
+// editor assembly all lives in editor.js:
+//   - ?shot=1        → headless screenshot mode (app/shot.js, skips the editor UI)
+//   - ?deck=<project> → createEditor + httpSource({ deckUrl })
+//   - session-restore marker present → reopen the last local project (open directly
+//     while the grant holds, otherwise show the restore card)
+//   - otherwise      → blank editor
 //
-// 对外契约（零行为变化，消费端见 tests/e2e/incremental-load.mjs、
-// packages/renderer/headless/shoot.js）：
-//   window.__pptdEditor = ed.api   编辑器操作门面
-//   window.__pptdIo     = ed.io    项目 IO（e2e 调 saveProject() 验证写回）
-//   window.__pptdShot              shot 截图模式专用（由 app/shot.js 设置）
+// Public contract (zero behavior change; consumers: tests/e2e/incremental-load.mjs,
+// packages/renderer/headless/shoot.js):
+//   window.__pptdEditor = ed.api   editor operation facade
+//   window.__pptdIo     = ed.io    project IO (e2e calls saveProject() to verify write-back)
+//   window.__pptdShot              shot-mode only (set by app/shot.js)
 // ============================================================================
 
 import { createEditor } from "./editor.js";
@@ -28,14 +30,16 @@ import {
 import { showDialog } from "./interaction/dialogs/base.js";
 import { SHOT_ERROR_TITLE } from "../packages/model/index.js";
 
-// 仓库根 URL（本文件位于 <root>/editor/，../ 即站点根）
+// Repo root URL (this file lives in <root>/editor/, so ../ is the site root)
 const ROOT = new URL("../", import.meta.url).href;
 
 /**
- * 本地项目会话恢复：上次打开的本地项目（画廊跳转 / 编辑器刷新）——授权仍有效
- * 则直接续开；否则弹恢复卡片，点「打开」在用户手势里重新授权（浏览器要求）。
- * @param {object} io 编辑器 io 面
- * @param {string|null} pendingId 启动前捕获的待恢复条目 id（空白初始化会清标记）
+ * Local project session restore: the last opened local project (gallery jump /
+ * editor refresh) — reopen directly while the grant still holds, otherwise show
+ * the restore card and let the "Open" click re-grant inside a user gesture (a
+ * browser requirement).
+ * @param {object} io editor io facade
+ * @param {string|null} pendingId the pending entry id captured before boot (blank init clears the marker)
  */
 async function restorePendingProject(io, pendingId) {
   if (!pendingId) return false;
@@ -48,7 +52,7 @@ async function restorePendingProject(io, pendingId) {
   try {
     granted = (await entry.handle.queryPermission({ mode: "readwrite" })) === "granted";
   } catch {
-    /* 句柄失效 → 走卡片让用户确认 */
+    /* handle invalid → route through the card so the user confirms */
   }
   if (granted) {
     try {
@@ -62,8 +66,8 @@ async function restorePendingProject(io, pendingId) {
   return true;
 }
 
-/** 恢复卡片：项目名 + [新建空白 / 打开项目]（打开在点击手势里请求授权）。
- * 走 showDialog 基础设施；无 ✕ / 遮罩关闭——必须显式二选一（误关会丢会话入口）。 */
+/** Restore card: project name + [new blank / open project] (open requests the grant inside the click gesture).
+ * Goes through the showDialog infrastructure; no ✕ / overlay close — the user must pick explicitly (an accidental close would lose the session entry). */
 function showRestoreCard(io, entry) {
   const hint = document.createElement("div");
   hint.className = "prop-hint";
@@ -110,14 +114,15 @@ function showRestoreCard(io, entry) {
 }
 
 // ----------------------------------------------------------------------------
-// 启动：?shot=1 截图；?deck= 加载指定项目；有会话恢复标记则续开；否则空白
+// Boot: ?shot=1 screenshot; ?deck= loads the given project; with a session-restore
+// marker reopen it; otherwise blank
 // ----------------------------------------------------------------------------
 async function boot() {
   const params = new URLSearchParams(location.search);
   const deckParam = params.get("deck");
   const deckUrl = deckParam ? (/^https?:/.test(deckParam) ? deckParam : new URL(deckParam, ROOT).href) : null;
   if (params.get("shot") === "1") {
-    // 无头截图模式（open-pptd render 使用）：跳过编辑器 UI，只渲染页面
+    // Headless screenshot mode (used by `open-pptd render`): skip the editor UI, render the page only
     import("./app/shot.js")
       .then((m) => m.initShot(deckUrl))
       .catch((err) => {
@@ -127,21 +132,21 @@ async function boot() {
     return;
   }
 
-  // 空白初始化会清掉会话标记，故先捕获待恢复 id
+  // Blank init clears the session marker, so capture the pending id first
   const pendingId = deckUrl ? null : getPendingProjectId();
   const root = document.getElementById("pptd-root") || document.body;
   const ed = createEditor(root, {
     source: httpSource({ deckUrl }),
-    deckUrl: deckUrl || null, // ?deck= 存在时加载它；否则 createEditor 静默空白
+    deckUrl: deckUrl || null, // load it when ?deck= is present; otherwise createEditor starts blank silently
     chrome: "full",
   });
 
-  // 对外测试钩子（ui-shots.mjs / incremental-load.mjs / shoot.js 依赖）
+  // Public test hooks (depended on by ui-shots.mjs / incremental-load.mjs / shoot.js)
   window.__pptdEditor = ed.api;
   window.__pptdIo = ed.io;
 
   if (deckUrl) {
-    clearPendingProject(); // URL 项目优先，清掉本地项目会话标记
+    clearPendingProject(); // URL project wins; clear the local-project session marker
     return;
   }
   if (await restorePendingProject(ed.io, pendingId)) return;

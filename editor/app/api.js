@@ -1,15 +1,17 @@
 // ============================================================================
-// app/api.js — 编辑器操作 API（模型操作 + 渲染组合的统一入口）
+// app/api.js — editor operation API (single entry for model ops + render orchestration)
 // ----------------------------------------------------------------------------
-// 画布控制器 / 属性面板 / 快速条 / 工具栏共用同一 API：
-//   - 纯模型操作来自 ops（app/state.js）
-//   - 渲染编排来自 view（app/view/view.js）
-// controller / view 经 bind() 延迟注入：创建顺序为 api → controller → view
-// （controller/view 需要 api，而 api 的方法只在调用时访问它们），
-// 避免模块间循环依赖；main.js 只负责按顺序装配。
+// The canvas controller, property panel, quickbar and toolbar all share this API:
+//   - pure model operations come from ops (app/state.js)
+//   - render orchestration comes from view (app/view/view.js)
+// controller / view are injected late via bind(): creation order is
+// api → controller → view (they need api, while api only touches them when a
+// method is called), which avoids circular module deps; main.js just assembles
+// them in order.
 //
-// 选择模型（U1）：getSelected/getSelectedElement 保留单值兼容语义（主选中），
-// 新增 getSelection/getSelectedElements/select(id, mode)/selectAll/isSelected。
+// Selection model (U1): getSelected/getSelectedElement keep the single-value
+// compatibility semantics (primary selection); getSelection/
+// getSelectedElements/select(id, mode)/selectAll/isSelected are additive.
 // ============================================================================
 
 import { openChartEditor } from "../interaction/dialogs/chart-editor.js";
@@ -18,10 +20,10 @@ import { openIconPicker } from "../interaction/dialogs/icon-editor.js";
 import { ensureIcon } from "./project/icons.js";
 
 export function createEditorApi({ state, page, selected, selectedElements, ops }) {
-  let controller = null; // 画布交互控制器（interaction/canvas.js）
-  let view = null; // 渲染编排（app/view/view.js）
+  let controller = null; // canvas interaction controller (interaction/canvas.js)
+  let view = null; // render orchestration (app/view/view.js)
 
-  /** 轻量选中：不重建画布 DOM（避免打断双击/拖动）。 */
+  /** Lightweight selection: no canvas DOM rebuild (avoids breaking dblclick/drag). */
   const lightSelect = () => {
     controller.refreshSelection();
     view.renderProps();
@@ -33,7 +35,7 @@ export function createEditorApi({ state, page, selected, selectedElements, ops }
     state,
     page,
     getPage: page,
-    // ---- 选中（单值兼容 + 多选）----
+    // ---- selection (single-value compatibility + multi-select) ----
     getSelected: () => state.selectedId,
     getSelectedElement: selected,
     getSelection: () => [...state.selection],
@@ -55,10 +57,10 @@ export function createEditorApi({ state, page, selected, selectedElements, ops }
       ops.clearSelection();
       if (controller) lightSelect();
     },
-    /** Ctrl+A / Esc 等由控制器兜底时调用（不重建面板）。 */
+    /** Called when the controller handles Ctrl+A / Esc itself (no panel rebuild). */
     beginChange: ops.beginChange,
     endChange: () => view.render(),
-    /** 轻量预览刷新：只重建画布（属性面板控件提交后即时反馈，不重建面板保焦点）。 */
+    /** Light preview refresh: rebuilds only the canvas (instant feedback on panel commit, panel kept so focus survives). */
     refreshPreview: () => view.renderCanvas(),
     updateSelected: ops.updateSelected,
     deleteSelected: () => {
@@ -71,19 +73,19 @@ export function createEditorApi({ state, page, selected, selectedElements, ops }
       ops.duplicateSelected();
       view.render();
     },
-    /** 复制选中到原位（供 Ctrl/Alt 拖动复制使用；快照/渲染由画布控制器负责）。 */
+    /** Duplicate selection in place (for Ctrl/Alt drag-copy; snapshot/render are the canvas controller's job). */
     duplicateInPlace: () => ops.duplicateInPlace(),
     moveLayer: (dir) => {
       ops.moveLayer(dir);
       view.render();
     },
-    /** 置于顶层 / 置于底层（edge: "front"|"back"；右键菜单用）。 */
+    /** Bring to front / send to back (edge: "front"|"back"; used by the context menu). */
     moveLayerEdge: (edge) => {
       ops.beginChange();
       ops.moveLayerEdge(edge);
       view.render();
     },
-    /** 复制选中到剪贴板 / 粘贴（右键菜单 + Ctrl+C/V）。 */
+    /** Copy selection to clipboard / paste (context menu + Ctrl+C/V). */
     copySelected: () => ops.copySelected(),
     pasteClipboard: () => {
       if (!Array.isArray(state.clipboard) || state.clipboard.length === 0) return [];
@@ -92,34 +94,34 @@ export function createEditorApi({ state, page, selected, selectedElements, ops }
       view.render();
       return ids;
     },
-    /** 新建一页并切过去（状态条 ＋ / 页面级右键菜单）。 */
+    /** Add and switch to a new page (statusbar + / page-level context menu). */
     addPage: () => {
       ops.beginChange();
       ops.addPage();
       view.render();
     },
-    /** 复制页（缩略条右键 / 批量）；返回新页索引。 */
+    /** Duplicate pages (thumbnail-bar context menu / batch); returns the new page indexes. */
     duplicatePages: (indexes) => {
       ops.beginChange();
       const out = ops.duplicatePages(indexes);
       view.render();
       return out;
     },
-    /** 删除页（缩略条右键 / 批量；至少保留 1 页）。 */
+    /** Delete pages (thumbnail-bar context menu / batch; keeps at least 1 page). */
     deletePages: (indexes) => {
       ops.beginChange();
       const ok = ops.deletePages(indexes);
       view.render();
       return ok;
     },
-    /** 页面重排（缩略条拖排序，可撤销）。 */
+    /** Reorder a page (thumbnail drag-sort, undoable). */
     movePage: (from, to) => {
       ops.beginChange();
       const ok = ops.movePage(from, to);
       view.render();
       return ok;
     },
-    /** 组合 / 取消组合（Ctrl+G / Ctrl+Shift+G）。 */
+    /** Group / ungroup (Ctrl+G / Ctrl+Shift+G). */
     group: () => {
       ops.beginChange();
       const id = ops.groupSelected();
@@ -131,7 +133,7 @@ export function createEditorApi({ state, page, selected, selectedElements, ops }
       ops.ungroupSelected();
       view.render();
     },
-    /** 打开元素的数据编辑器（图表/表格/图标；快照由调用方负责）。 */
+    /** Open the element's data editor (chart/table/icon; the caller owns the snapshot). */
     openEditor(el) {
       if (el.elementType === "chart") {
         openChartEditor(el, { theme: state.theme, onChange: () => view.render() });
@@ -142,12 +144,12 @@ export function createEditorApi({ state, page, selected, selectedElements, ops }
           current: el.iconName,
           onPick: (raw) => {
             el.iconName = raw;
-            ensureIcon(raw).then(() => view.render()); // 选中图标预读后重渲染
+            ensureIcon(raw).then(() => view.render()); // re-render after the icon def is preloaded
           },
         });
       }
     },
-    /** 装配完成注入交互依赖（controller / view），之后 API 才可安全调用。 */
+    /** Inject interaction deps (controller / view) once assembly is done; the API is only safe to call after this. */
     bind(deps) {
       controller = deps.controller;
       view = deps.view;

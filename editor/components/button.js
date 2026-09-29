@@ -1,23 +1,24 @@
 // ============================================================================
-// components/button.js — Button 原语（3 尺寸 × 4 变体 + icon）
+// components/button.js — Button primitive (3 sizes × 4 variants + icon)
 // ----------------------------------------------------------------------------
-// 全站按钮的唯一构造点：属性面板 / 快速条 / 对话框 / 顶栏 / 工具栏共用，
-// 取代散落的 .btn / .icon-btn / .status-btn / .thumb-add 多份重复定义（样式集中在
-// editor/styles/primitives.css 的 .btn 体系）。
+// The only button construction point site-wide: shared by the property panel /
+// quickbar / dialogs / topbar / toolbar, replacing scattered .btn / .icon-btn /
+// .status-btn / .thumb-add duplicates (styles centralized in the .btn system in
+// editor/styles/primitives.css).
 //
-// 用法：
-//   button("取消")                                    // 默认
-//   button("导出", { variant: "primary", size: "sm" })
-//   button("", { icon: "<svg…>", variant: "ghost", size: "icon", title: "撤销" })
-//   button("删除", { variant: "danger", onClick: fn })
+// Usage:
+//   button("Cancel")                                  // default
+//   button("Export", { variant: "primary", size: "sm" })
+//   button("", { icon: "<svg…>", variant: "ghost", size: "icon", title: "Undo" })
+//   button("Delete", { variant: "danger", onClick: fn })
 //
-// className 可整体覆盖（兼容既有调用：className:"btn btn-sm"）。
+// className can override everything (compatible with existing calls: className:"btn btn-sm").
 // ============================================================================
 
 const VARIANTS = { default: "", primary: "btn-primary", ghost: "btn-ghost", danger: "btn-danger" };
 const SIZES = { default: "", sm: "btn-sm", lg: "btn-lg", icon: "icon-btn" };
 
-/** 组装按钮类名（variant/size → CSS 类；className 覆盖时以 className 为准）。 */
+/** Assemble the button class list (variant/size → CSS classes; className wins when provided). */
 export function btnClass({ variant = "default", size = "default", className = "" } = {}) {
   if (className) return className;
   const parts = ["btn", VARIANTS[variant] ?? "", SIZES[size] ?? ""].filter(Boolean);
@@ -25,17 +26,17 @@ export function btnClass({ variant = "default", size = "default", className = ""
 }
 
 /**
- * 构造 <button>。
- * @param {string} label 文本（icon 时可为空）
+ * Construct a <button>.
+ * @param {string} label text (may be empty for icon-only)
  * @param {object} [opts]
  *   onClick?        (event) => void
  *   variant?        "default"|"primary"|"ghost"|"danger"
  *   size?           "default"|"sm"|"lg"|"icon"
- *   icon?           SVG 字符串（放在文字前）
- *   title?          悬浮提示（默认取 label）
- *   className?      整体覆盖类名（兼容旧调用）
- *   active?         追加 .on（快速条开关态）
- *   preventDefault? 默认 true：mousedown 阻止默认（避免 textarea 失焦）
+ *   icon?           SVG string (placed before the text)
+ *   title?          hover tooltip (defaults to label)
+ *   className?      full class override (compatible with old calls)
+ *   active?         append .on (quickbar toggle state)
+ *   preventDefault? default true: prevent default on mousedown (avoids textarea blur)
  *   disabled?
  * @returns {HTMLButtonElement}
  */
@@ -63,12 +64,12 @@ export function button(label, opts = {}) {
   return b;
 }
 
-/** 纯图标按钮（无文字，正方形命中区）。 */
+/** Icon-only button (no text, square hit area). */
 export function iconButton(iconSvg, opts = {}) {
   return button("", { ...opts, icon: iconSvg, size: opts.size || "icon" });
 }
 
-/** 一组按钮（横向排列，用于工具栏/操作行）。 */
+/** A row of buttons (horizontal, for toolbars/action rows). */
 export function buttonRow(children, { className = "prop-actions" } = {}) {
   const row = document.createElement("div");
   row.className = className;

@@ -1,16 +1,17 @@
 // ============================================================================
-// app/shot.js — 无头截图模式（?shot=1，open-pptd render 使用）
+// app/shot.js — headless screenshot mode (?shot=1, used by `open-pptd render`)
 // ----------------------------------------------------------------------------
-// 跳过全部编辑器 UI，把每页直接绘制进一个 deck 自身尺寸的裸容器（size 缺省
-// 960×540）——与编辑器预览同一条绘制管线（layout → renderer/page.js paintPage +
-// 同一份字体文件 + 同一 imageMap）。
-// 对外契约（供 packages/renderer/headless/shoot.js 的 CDP 驱动）：
+// Skips the whole editor UI and paints each page straight into a bare container
+// sized to the deck itself (960×540 when size is missing) — same paint pipeline
+// as the editor preview (layout → renderer/page.js paintPage + the same font
+// files + the same imageMap).
+// Public contract (for the CDP driver in packages/renderer/headless/shoot.js):
 //   window.__pptdShot = { count, goto(index), width, height }
-//   window.pptdReady("ready")   = 当前页绘制完成、画面稳定，可截图
-//                                （CDP Runtime.addBinding 注入；非 CDP 环境自动跳过）
-//   window.pptdReady("error")   = 初始化失败
-//   document.title === "PPTD_READY" / "PPTD_ERROR" 保留为可观测量（人工/走查用）
-// 正常打开编辑器（无 ?shot=1 参数）时本模块不会被加载。
+//   window.pptdReady("ready")   = current page painted and stable, ready to shoot
+//                                 (injected via CDP Runtime.addBinding; skipped outside CDP)
+//   window.pptdReady("error")   = initialization failed
+//   document.title === "PPTD_READY" / "PPTD_ERROR" is kept as an observable (manual/walkthrough use)
+// This module is not loaded when the editor is opened normally (no ?shot=1).
 // ============================================================================
 
 import { createEditorState } from "./state.js";
@@ -21,16 +22,17 @@ import { renderPage } from "../../packages/renderer/index.js";
 
 export const READY_TITLE = SHOT_READY_TITLE;
 
-// CDP 就绪绑定名（与 packages/renderer/headless/cdp.js 的 READY_BINDING 同名约定；
-// 此处不得 import headless 模块——那是 Node 专用链路）。
+// CDP ready-binding name (same convention as READY_BINDING in
+// packages/renderer/headless/cdp.js; must not import the headless module here —
+// that is a Node-only path).
 const READY_BINDING = "pptdReady";
 
-/** 触发 CDP 就绪事件（addBinding 注入的全局函数；非 CDP 环境不存在 → 静默跳过）。 */
+/** Fire the CDP ready event (the global injected by addBinding; absent outside CDP → silently skipped). */
 function notifyReady(payload = "ready") {
   try {
     if (typeof window[READY_BINDING] === "function") window[READY_BINDING](payload);
   } catch {
-    /* 绑定不可用（手动打开 ?shot=1）：仅靠 document.title 观测 */
+    /* binding unavailable (opened ?shot=1 by hand): observe via document.title only */
   }
 }
 
@@ -47,10 +49,11 @@ async function runShot(deckUrl) {
   if (!deckUrl) throw new Error("shot 模式需要 ?deck= 参数");
   document.documentElement.classList.add("shot-mode");
 
-  // 最小装配：state + io（仅用加载/字体/图片管线；view 用空桩，UI 全部隐藏。
-  // refreshPage 为 finishLoad 渐进加载所调用，桩上必须存在）
+  // Minimal assembly: state + io (only the load/font/image pipeline; view is a
+  // stub and all UI stays hidden. refreshPage is called by finishLoad's
+  // progressive load, so the stub must provide it).
   const { state } = createEditorState();
-  // 只读单源：截图模式固定走 HTTP（loadDeck 传入 deckUrl 作为读取 hint）
+  // Single read source: screenshot mode always goes over HTTP (loadDeck passes deckUrl as the read hint)
   const io = createIo({ state, view: { render() {}, refreshPage() {} }, source: httpSource({}) });
 
   const root = document.createElement("div");
@@ -58,7 +61,7 @@ async function runShot(deckUrl) {
   document.body.appendChild(root);
   root.style.cssText = "position:fixed;left:0;top:0;overflow:hidden;background:#fff;";
 
-  /** 绘制一页并等待画面稳定：字体就绪 + 图片解码 + 双 rAF（图表 animation:false 同步绘制）。 */
+  /** Paint one page and wait for the frame to settle: fonts ready + images decoded + double rAF (charts drawn synchronously with animation:false). */
   async function render(index) {
     const page = state.deck.pages[index];
     renderPage(root, page, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
@@ -76,15 +79,15 @@ async function runShot(deckUrl) {
     const i = Math.max(0, Math.min(state.deck.pages.length - 1, index));
     await render(i);
     document.title = READY_TITLE;
-    notifyReady("ready"); // CDP 就绪事件（替代 title 轮询）
+    notifyReady("ready"); // CDP ready event (replaces title polling)
     return i;
   }
 
   await io.loadDeck(deckUrl, { silent: true });
-  // 容器 = deck 自身尺寸（size 缺省/非法时回退 960×540），支持任意画布比例（如 3:4 海报）
+  // Container = the deck's own size (960×540 fallback when size is missing/invalid), supporting any canvas ratio (e.g. a 3:4 poster)
   const [deckW, deckH] = deckSize(state.deck);
   root.style.width = `${deckW}px`;
   root.style.height = `${deckH}px`;
   window.__pptdShot = { count: state.deck.pages.length, goto, width: deckW, height: deckH };
-  await goto(0); // 首页就绪后 CDP 才开始逐页驱动
+  await goto(0); // CDP only starts per-page driving after the first page is ready
 }

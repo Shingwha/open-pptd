@@ -15,10 +15,10 @@
     <link rel="stylesheet" href="./styles/responsive.css" />
   </head>
   <body>
-    <!-- 编辑器挂载点（createEditor 的 rootEl；standalone 时骨架仍由本页静态提供） -->
+    <!-- editor mount point (createEditor's rootEl; in standalone the skeleton is still provided statically by this page) -->
     <div id="pptd-root"></div>
     <div class="app" id="editor-app">
-      <!-- 顶栏 -->
+      <!-- topbar -->
       <header class="topbar">
         <div class="brand">
           <a class="brand-home" href="../" title="返回作品画廊">OPEN PPTD</a>
@@ -60,20 +60,20 @@
         </div>
       </header>
 
-      <!-- 工作区 -->
+      <!-- workspace -->
       <div class="workspace">
-        <!-- 画布（全宽预览） -->
+        <!-- canvas (full-width preview) -->
         <main id="stage" class="stage">
           <div id="canvas-wrap" class="canvas-wrap">
             <div id="canvas" class="canvas"></div>
-            <!-- 渐进加载遮罩：盖住启动空白与未就绪页的失败占位（renderCanvas 按需显隐） -->
+            <!-- progressive-load mask: covers the startup blank and the failure placeholder of not-ready pages (shown/hidden by renderCanvas) -->
             <div id="canvas-loading" class="canvas-loading"></div>
           </div>
 
-          <!-- 选中元素时的浮动快调条 -->
+          <!-- floating quickbar while an element is selected -->
           <div id="quickbar" class="quickbar"></div>
 
-          <!-- 右下角操作组（双端统一）：属性面板入口 / 添加元素 -->
+          <!-- bottom-right action group (same on both ends): property-panel entry / add element -->
           <div class="fab-stack">
             <button id="btn-inspector-open" class="fab" title="打开/收起属性面板">
               <svg viewBox="0 0 24 24" class="fab-ic"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="6" r="2.2" fill="currentColor"/><circle cx="15" cy="12" r="2.2" fill="currentColor"/><circle cx="7" cy="18" r="2.2" fill="currentColor"/></svg>
@@ -83,7 +83,7 @@
             </button>
           </div>
 
-          <!-- 画布缩放控件：浮动在画布底部中央（双端统一，远离右下角按钮组） -->
+          <!-- canvas zoom control: floats at the bottom center of the canvas (same on both ends, away from the bottom-right button group) -->
           <div id="zoom-ctl" class="zoom-ctl">
             <button id="btn-zoom-out" class="icon-btn" title="缩小">
               <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16.5 16.5L21 21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 11h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -100,7 +100,7 @@
           <div id="add-menu" class="add-menu"></div>
         </main>
 
-        <!-- 右侧属性抽屉 -->
+        <!-- right property drawer -->
         <aside class="inspector" id="inspector">
           <div class="inspector-head">
             <div class="inspector-title-row">
@@ -116,10 +116,10 @@
 
       </div>
 
-      <!-- 窄屏属性面板遮罩 -->
+      <!-- narrow-screen property panel mask -->
       <div id="inspector-mask" class="inspector-mask"></div>
 
-      <!-- 底部页面缩略条 -->
+      <!-- bottom page thumbnail bar -->
       <footer class="thumbbar">
         <div id="page-thumbs" class="page-thumbs"></div>
         <button id="btn-add-page" class="thumb-add" title="添加页面">＋</button>
