@@ -60,10 +60,21 @@
   --control-h-lg: 32px;    /* 顶栏按钮 */
   --topbar-h: 48px;
 
+  /* ---- 遮罩 / 描边（暗色下需整体反转，故独立成令牌） ---- */
+  --mask: rgba(28, 37, 50, 0.45);       /* 对话框 / 属性抽屉遮罩 */
+  --chip-border: rgba(0, 0, 0, 0.12);   /* 颜色色块描边 */
+
+  /* ---- 缩略条悬浮标签（叠在缩略图上的半透明小标） ---- */
+  --thumb-chip-bg: rgba(28, 37, 50, 0.65);
+  --thumb-chip-ink: #ffffff;
+  --thumb-num-bg: rgba(255, 255, 255, 0.85);
+  --thumb-num-ink: rgba(28, 37, 50, 0.6);
+
   /* ---- 阴影（仅浮层使用，保持轻） ---- */
   --shadow-sm: 0 1px 2px rgba(28, 37, 50, 0.06);
   --shadow-md: 0 4px 16px rgba(28, 37, 50, 0.1);
   --shadow-lg: 0 12px 32px rgba(28, 37, 50, 0.14);
+  --shadow-sheet: 0 -8px 32px rgba(28, 37, 50, 0.16); /* 底部滑出面板（向上投影） */
 
   /* ---- 层级（收敛原 20/85/100/9999/10000） ---- */
   --z-sticky: 20;      /* 顶栏/缩略条等常驻层 */
@@ -76,4 +87,53 @@
   --dur-fast: 120ms;
   --dur-med: 180ms;
   --ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ============================================================================
+   [data-pptd-theme="dark"] — 深色令牌（契约 3）
+   ----------------------------------------------------------------------------
+   取值换算自设计参考稿 docs/specs/ref/editor-design-reference.html 的
+   [data-theme="dark"] 板：面板比底暗一档、文字反转、强调色提亮、语义色降饱和。
+   由 editor/theme.js 的 applyThemeTokens(rootEl, { mode: "dark" }) 注入属性；
+   也可在宿主页面自行给 <html>/<body> 加该属性。
+   注意：W3 的 U1 会整体重建令牌体系，此处只求语义正确。
+   ============================================================================ */
+[data-pptd-theme="dark"] {
+  /* ---- 中性色板 ---- */
+  --bg: #1b1f26;
+  --panel: #16191f;
+  --ink: #eef1f5;
+  --sub: #b3bbc6;
+  --faint: #6b7482;
+  --line: #353c47;
+  --line-strong: #454d5a;
+  --scrollbar: #454d5a;
+
+  /* ---- 强调色 ---- */
+  --primary: #4d8dff;
+  --primary-strong: #6ba0ff;
+  --primary-soft: #1c2a44;
+  --primary-tint: rgba(77, 141, 255, 0.16);
+
+  /* ---- 语义色 ---- */
+  --danger: #ff6b6b;
+  --danger-soft: #3a1f22;
+  --success: #3fbf74;
+  --success-soft: #16301f;
+  --warning: #e0a83a;
+  --warning-soft: #382c12;
+
+  /* ---- 遮罩 / 描边 / 缩略条标签 ---- */
+  --mask: rgba(0, 0, 0, 0.6);
+  --chip-border: rgba(255, 255, 255, 0.14);
+  --thumb-chip-bg: rgba(0, 0, 0, 0.7);
+  --thumb-chip-ink: #eef1f5;
+  --thumb-num-bg: rgba(22, 25, 31, 0.85);
+  --thumb-num-ink: rgba(238, 241, 245, 0.7);
+
+  /* ---- 阴影（暗底用纯黑，方向不变） ---- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+  --shadow-sheet: 0 -8px 32px rgba(0, 0, 0, 0.55);
 }
