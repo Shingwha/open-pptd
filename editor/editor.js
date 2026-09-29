@@ -3,8 +3,15 @@
 // ----------------------------------------------------------------------------
 // Moves the whole assembly logic of the old main.js boot()/initEditor() in here and
 // closes it over:
-//   createEditor(rootEl, { source, deck?, deckUrl?, theme?, chrome?, dialogs?, locale?, on? })
+//   createEditor(rootEl, { source, deck?, deckUrl?, theme?, chrome?, dialogs?, locale?, interactive?, on? })
 //     → { ready, destroy, api, io, state, view }
+//
+// Assembly capability (`interactive`, default true; `chrome:"shot"` implies false):
+// the interactive assembly binds canvas/keyboard/contextmenu/present/toolbar/stage
+// and the permanent listeners (resize, theme-mode media query, live reload). The
+// non-interactive one keeps state/api/io and the SAME load → font → image → paint
+// pipeline, but swaps the full view for the headless paint view and binds nothing.
+// app/shot.js (?shot=1) is exactly this assembly mounted on #shot-root.
 //
 // rootEl is the mount point: dom refs prefer its subtree, falling back to document
 // for unmatched elements (the static skeleton is still in index.html; an embedded
@@ -19,7 +26,7 @@
 
 import { createEditorState } from "./app/state.js";
 import { createEditorApi } from "./app/api.js";
-import { createView } from "./app/view/view.js";
+import { createView, createHeadlessView } from "./app/view/view.js";
 import { createIo } from "./app/project/io.js";
 import { bindToolbar } from "./app/toolbar.js";
 import { bindKeyboard } from "./app/keyboard.js";
@@ -51,9 +58,11 @@ const CHROME_PRESETS = {
  *   deck?      { manifestText, pageFiles, manifestPath? } initial document (otherwise read from source)
  *   deckUrl?   project URL loaded via source.read(deckUrl) (standalone ?deck=)
  *   theme?     { tokens?: Record<string,string>, mode?: "light"|"dark" }
- *   chrome?    "full" | "embedded" | { topbar?, brand?, github?, thumbbar?, quickbar?, zoom?, inspector? }
+ *   chrome?    "full" | "embedded" | "shot" | { topbar?, brand?, github?, thumbbar?, quickbar?, zoom?, inspector? }
+ *              ("shot" = the non-interactive headless assembly, implies interactive:false)
  *   dialogs?   host implementation { alert, confirm } (overrides native dialogs, see editor/dialogs.js)
  *   locale?    "zh-CN" (default; no i18n resources yet, recorded only)
+ *   interactive? false = non-interactive assembly (headless paint only, no interaction slices)
  *   on?        { ready?, dirty?, saved?, error?, deckChange?, selectionChange? }
  * @returns {{ ready: Promise<void>, destroy(): void, api: object, io: object, state: object, view: object }}
  */
@@ -69,13 +78,16 @@ export function createEditor(rootEl, options = {}) {
     on = {},
   } = options;
 
+  // Assembly capability, decided in one place: "shot" is inherently non-interactive.
+  const interactive = options.interactive !== false && chrome !== "shot";
+
   if (!source) throw new Error("createEditor: options.source（ProjectSource）为必填");
   const mount = rootEl || (typeof document !== "undefined" ? document.body : null);
   if (!mount) throw new Error("createEditor: 需要可用的 rootEl");
 
   // Mount-point scope (unmatched ids fall back to document, see dom.js)
   dom.rebind(mount);
-  injectIcons(mount);
+  if (interactive) injectIcons(mount); // icon slots live in the editor skeleton only
   if (dialogsImpl) configureDialogs(dialogsImpl);
 
   const disposers = [];
@@ -91,8 +103,10 @@ export function createEditor(rootEl, options = {}) {
   // Tri-state theme (B3: light / dark / follow system): when the host injects a
   // mode, defer to the host (injection wins over the built-in palette); otherwise
   // the editor manages it (localStorage persistence + prefers-color-scheme
-  // following, applied on data-pptd-theme)
-  const themeMode = theme?.mode ? null : bindThemeMode();
+  // following, applied on data-pptd-theme).
+  // Non-interactive: there is no user to follow the system for, and flipping the
+  // palette would change the screenshot — the stylesheet default stays in place.
+  const themeMode = interactive && !theme?.mode ? bindThemeMode() : null;
   disposers.push(() => themeMode?.destroy());
 
   // --------------------------------------------------------------------------
@@ -124,41 +138,52 @@ export function createEditor(rootEl, options = {}) {
     }
   };
 
-  // Element gesture executor (drag/resize/rotate; viewport gestures are in the stage router)
-  const controller = createCanvasController(dom.canvas, { ...api });
+  // Interaction slices (element gestures, property panel) exist only in the
+  // interactive assembly; the headless one builds the same api without them (the
+  // api guards controller-less calls, and view is the headless paint view).
+  let controller = null;
+  let props = null;
+  if (interactive) {
+    // Element gesture executor (drag/resize/rotate; viewport gestures are in the stage router)
+    controller = createCanvasController(dom.canvas, { ...api });
+    props = bindProperties(dom.props, api);
+  }
 
-  const props = bindProperties(dom.props, api);
-  const view = createView({ state, page, selected, api, controller, props, ops });
+  const view = interactive
+    ? createView({ state, page, selected, api, controller, props, ops })
+    : createHeadlessView({ state, container: mount });
   api.bind({ controller, view });
   disposers.push(() => view.destroy?.());
 
-  // Stage gesture router: viewport pan/zoom + element gesture dispatch + click-empty deselect + double-click
-  const stage = createStageController(dom.stage, {
-    element: controller,
-    select: api.select,
-    getSelected: api.getSelected,
-    isSelected: api.isSelected,
-    deselect: () => api.select(null),
-    onActivate: (id) => {
-      const el = page().elements.find((e) => e.elementId === id);
-      if (!el) return;
-      ops.beginChange();
-      api.openEditor(el);
-    },
-    panBy: (dx, dy) => view.panBy(dx, dy),
-    setZoom: (z, anchor) => view.setZoom(z, anchor),
-    getZoom: () => view.getZoom(),
-    zoomReset: () => view.zoomReset(),
-  });
-  disposers.push(() => stage.destroy?.());
+  if (interactive) {
+    // Stage gesture router: viewport pan/zoom + element gesture dispatch + click-empty deselect + double-click
+    const stage = createStageController(dom.stage, {
+      element: controller,
+      select: api.select,
+      getSelected: api.getSelected,
+      isSelected: api.isSelected,
+      deselect: () => api.select(null),
+      onActivate: (id) => {
+        const el = page().elements.find((e) => e.elementId === id);
+        if (!el) return;
+        ops.beginChange();
+        api.openEditor(el);
+      },
+      panBy: (dx, dy) => view.panBy(dx, dy),
+      setZoom: (z, anchor) => view.setZoom(z, anchor),
+      getZoom: () => view.getZoom(),
+      zoomReset: () => view.zoomReset(),
+    });
+    disposers.push(() => stage.destroy?.());
 
-  // Canvas right-click context menu (three states: single-select / multi-select / empty page-level)
-  const contextMenu = bindContextMenu({ stage: dom.stage, api, state, page, groupOf, view });
-  disposers.push(() => contextMenu.destroy?.());
+    // Canvas right-click context menu (three states: single-select / multi-select / empty page-level)
+    const contextMenu = bindContextMenu({ stage: dom.stage, api, state, page, groupOf, view });
+    disposers.push(() => contextMenu.destroy?.());
 
-  // Zoom control: drag-to-move (position persisted, double-click the percentage resets)
-  const zoomCtl = makeZoomCtlDraggable(dom.stage, dom.zoomCtl, dom.zoomLabel);
-  disposers.push(() => zoomCtl.destroy?.());
+    // Zoom control: drag-to-move (position persisted, double-click the percentage resets)
+    const zoomCtl = makeZoomCtlDraggable(dom.stage, dom.zoomCtl, dom.zoomLabel);
+    disposers.push(() => zoomCtl.destroy?.());
+  }
 
   const io = createIo({
     state,
@@ -189,42 +214,49 @@ export function createEditor(rootEl, options = {}) {
   });
   api.fontOptions = () => io.fontManager.fontOptions(); // element font dropdown options (late-bound)
 
-  // Present mode (topbar "Present" button + F5)
-  const present = createPresent({ state, view, ops });
-  api.present = present;
-  disposers.push(() => present.destroy?.());
-
-  view.afterRender = () => {
-    ops.syncDirty(); // recompute dirty after undo/redo or editing back to the saved value
-    io.renderStatusBar(); // statusbar (dirty dot etc.) refreshed on every render
-    present.sync(); // while presenting: sync the current page on live refresh/window resize
-    emitEvents();
-  };
-
-  const toolbar = bindToolbar({ state, api, ops, view, io, present, themeMode });
-  disposers.push(() => toolbar.destroy?.());
-  const keyboard = bindKeyboard({ state, api, io, present });
-  disposers.push(() => keyboard.destroy?.());
-  disposers.push(() => props.destroy?.());
-  disposers.push(() => controller.destroy?.());
-
-  // Live reload (unified project mode): subscribe to push/polling once the project is ready
-  io.connectLiveReload();
-
-  // resize: rAF debounce + full render (thumbnail sizes / quickbar positioning sync when dragging the window across breakpoints)
+  // --------------------------------------------------------------------------
+  // Interactive bindings (skipped entirely by the non-interactive assembly)
+  // --------------------------------------------------------------------------
   const resizeAc = new AbortController();
   let resizeRaf = 0;
-  window.addEventListener(
-    "resize",
-    () => {
-      cancelAnimationFrame(resizeRaf);
-      resizeRaf = requestAnimationFrame(() => view.render());
-    },
-    { signal: resizeAc.signal }
-  );
+
+  if (interactive) {
+    // Present mode (topbar "Present" button + F5)
+    const present = createPresent({ state, view, ops });
+    api.present = present;
+    disposers.push(() => present.destroy?.());
+
+    view.afterRender = () => {
+      ops.syncDirty(); // recompute dirty after undo/redo or editing back to the saved value
+      io.renderStatusBar(); // statusbar (dirty dot etc.) refreshed on every render
+      present.sync(); // while presenting: sync the current page on live refresh/window resize
+      emitEvents();
+    };
+
+    const toolbar = bindToolbar({ state, api, ops, view, io, present, themeMode });
+    disposers.push(() => toolbar.destroy?.());
+    const keyboard = bindKeyboard({ state, api, io, present });
+    disposers.push(() => keyboard.destroy?.());
+    disposers.push(() => props.destroy?.());
+    disposers.push(() => controller.destroy?.());
+
+    // Live reload (unified project mode): subscribe to push/polling once the project is ready.
+    // (The headless assembly still connects through the load pipeline's own connect() call.)
+    io.connectLiveReload();
+
+    // resize: rAF debounce + full render (thumbnail sizes / quickbar positioning sync when dragging the window across breakpoints)
+    window.addEventListener(
+      "resize",
+      () => {
+        cancelAnimationFrame(resizeRaf);
+        resizeRaf = requestAnimationFrame(() => view.render());
+      },
+      { signal: resizeAc.signal }
+    );
+  }
 
   // chrome trimming (embedded/object form): hide host-hostile outbound navigation and the given regions
-  const chromeHidden = applyChrome(chrome);
+  const chromeHidden = interactive ? applyChrome(chrome) : [];
 
   // --------------------------------------------------------------------------
   // Initial load: deck → use directly; deckUrl → read(url); both omitted → follow
@@ -247,10 +279,13 @@ export function createEditor(rootEl, options = {}) {
     }
     if (deckUrl) {
       try {
-        await io.loadDeck(deckUrl);
+        // Headless assembly loads silently: there is no UI, and a load toast would
+        // land in the screenshot.
+        await io.loadDeck(deckUrl, interactive ? {} : { silent: true });
       } catch (err) {
         console.error(err);
         showLoadError(err);
+        if (!interactive) throw err; // headless: the CDP driver is parked on ready, propagate the failure
       }
       return;
     }
