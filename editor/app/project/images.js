@@ -54,20 +54,29 @@ function collectMediaFiles(pages, imageMap, onRelPath = null) {
   return out;
 }
 
+/**
+ * 收集 list 内尚未进 imageMap 的「项目内相对路径」图片引用（去重，跳过 dataURL）。
+ * HTTP 预读与句柄预读两种来源共用这段筛选。
+ */
+function pendingImageSrcs(state, list) {
+  const todo = [];
+  const seen = new Set();
+  walkElements(list, (el) => {
+    if (el.elementType !== "image" || !el.src || el.src.startsWith("data:")) return;
+    if (state.imageMap[el.src] || seen.has(el.src)) return;
+    seen.add(el.src);
+    todo.push(el.src);
+  });
+  return todo;
+}
+
 export function createImageStore(state) {
   /** 把项目内相对路径图片预读为 dataURL 进 imageMap（pages 限定子集：渐进加载按页预读用）。 */
   async function preloadRemoteImages(pages) {
     const list = Array.isArray(pages) ? pages : state.deck?.pages;
     if (!state.manifestPath || !list) return;
     const base = state.manifestPath.replace(/[^/]*$/, "");
-    const todo = [];
-    const seen = new Set();
-    walkElements(list, (el) => {
-      if (el.elementType !== "image" || !el.src || el.src.startsWith("data:")) return;
-      if (state.imageMap[el.src] || seen.has(el.src)) return;
-      seen.add(el.src);
-      todo.push(el.src);
-    });
+    const todo = pendingImageSrcs(state, list);
     await Promise.all(
       todo.map(async (src) => {
         try {
@@ -88,15 +97,7 @@ export function createImageStore(state) {
     if (!handle) return;
     const list = Array.isArray(pages) ? pages : state.deck?.pages;
     if (!list) return;
-    const seen = new Set();
-    const todo = [];
-    walkElements(list, (el) => {
-      if (el.elementType !== "image" || !el.src || el.src.startsWith("data:")) return;
-      if (state.imageMap[el.src] || seen.has(el.src)) return;
-      seen.add(el.src);
-      todo.push(el.src);
-    });
-    for (const src of todo) {
+    for (const src of pendingImageSrcs(state, list)) {
       const mime = extToMime(/\.([a-z0-9]+)$/i.exec(src)?.[1]);
       if (!mime) continue;
       const dataUrl = await readImageAsDataUrl(handle, src, mime);

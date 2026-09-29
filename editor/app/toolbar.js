@@ -14,7 +14,6 @@ import { showToast } from "./toast.js";
 import { isNarrow } from "../ui.js";
 import { dom } from "../dom.js";
 import { dialogs } from "../dialogs.js";
-import { createPage } from "../../packages/model/index.js";
 
 export function bindToolbar({ state, page, api, view, io, present, themeMode = null }) {
   const disposers = []; // 子绑定（菜单/浮层）的 destroy 集合
@@ -95,13 +94,7 @@ export function bindToolbar({ state, page, api, view, io, present, themeMode = n
       clickEls.push(el);
     };
 
-    on(dom.btnAddPage, () => {
-      api.beginChange();
-      state.deck.pages.push(createPage({}));
-      state.currentPage = state.deck.pages.length - 1;
-      state.selectedId = null;
-      view.render();
-    });
+    on(dom.btnAddPage, () => api.addPage());
 
     on(dom.btnUndo, () => io.applyHistory(state.history.undo(state.deck)));
     on(dom.btnRedo, () => io.applyHistory(state.history.redo()));

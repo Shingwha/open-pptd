@@ -20,14 +20,17 @@ import { fontMetricsMeasure, familiesOf } from "../../../packages/measure/index.
 
 let host = null;
 
+// 离屏宿主基础样式：不可见但参与布局（pre-wrap 下 \n 即换行，宽度由调用方设）。
+const HOST_CSS =
+  "position:fixed;left:-10000px;top:0;visibility:hidden;pointer-events:none;" +
+  "margin:0;padding:0;border:0;box-sizing:content-box;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;";
+
 /** 离屏测量宿主（单例，display 不可见但参与布局）。 */
 function ensureHost() {
   if (host && host.isConnected) return host;
   host = document.createElement("div");
   host.setAttribute("aria-hidden", "true");
-  host.style.cssText =
-    "position:fixed;left:-10000px;top:0;visibility:hidden;pointer-events:none;" +
-    "margin:0;padding:0;border:0;box-sizing:content-box;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;";
+  host.style.cssText = HOST_CSS;
   document.body.appendChild(host);
   return host;
 }
@@ -66,8 +69,7 @@ function domTextHeight(runs, style, maxWidth) {
   if (document.fonts && document.fonts.status && document.fonts.status !== "loaded") return null;
   const el = ensureHost();
   el.style.cssText =
-    "position:fixed;left:-10000px;top:0;visibility:hidden;pointer-events:none;" +
-    "margin:0;padding:0;border:0;box-sizing:content-box;white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;" +
+    HOST_CSS +
     (Number.isFinite(maxWidth) ? `width:${Math.max(1, maxWidth)}px;` : "width:auto;") +
     fontCss(style);
   el.innerHTML = runsToHtml(runs, style?.fontSize) || "";
