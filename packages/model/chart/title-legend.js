@@ -1,14 +1,15 @@
 // ============================================================================
-// model/chart/title-legend.js — 标题/图例有效配置（string | Config → 单一形态）
+// model/chart/title-legend.js — effective title/legend config (string | Config -> single form)
 // ----------------------------------------------------------------------------
-// 图表标题与坐标轴标题共用 resolveTitleLike；图例开关/方位/字号共用
-// resolveLegend（官方 legendOffTypes 默认表单源、缺省方位 bottom——此前
-// writer classic/chartex 两端 fallback 不一致：b vs t）。叶子模块，仅依赖 meta。
+// Chart titles and axis titles share resolveTitleLike; legend on/off, position and font
+// size share resolveLegend (single source for the official legendOffTypes default table;
+// default position bottom — previously the writer's classic and chartex fallbacks
+// disagreed: b vs t). A leaf module depending only on meta.
 // ============================================================================
 
 import { CHART_DEFAULTS } from "./meta.js";
 
-/** 标题类配置（官方 string | TitleConfig）→ 有效形态。 */
+/** Title-like config (official string | TitleConfig) -> effective form. */
 export function resolveTitleLike(cfg, { fallbackFontFamily = null, defaultSize = CHART_DEFAULTS.titleSize } = {}) {
   const c = cfg && typeof cfg === "object" ? cfg : null;
   return {
@@ -20,9 +21,11 @@ export function resolveTitleLike(cfg, { fallbackFontFamily = null, defaultSize =
 }
 
 /**
- * 图例有效配置（官方 LegendConfig）：legend:false 全局关；未配置按
- * legendOffTypes 默认表（全类型命中才默认关）；方位缺省 bottom。
- * ooxmlPos = OOXML legendPos 枚举投影（t/b/l/r），预览投影见 option/shared legendState。
+ * Effective legend config (official LegendConfig): legend:false turns it off globally;
+ * when unset it follows the legendOffTypes default table (off by default only when every
+ * type matches); position defaults to bottom.
+ * ooxmlPos = projection to the OOXML legendPos enum (t/b/l/r); the preview projection
+ * lives in option/shared legendState.
  */
 export function resolveLegend(el, types) {
   const cfg = el.legend && typeof el.legend === "object" ? el.legend : null;

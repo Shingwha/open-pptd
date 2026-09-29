@@ -1,15 +1,17 @@
 // ============================================================================
-// model/chart/tree.js — treemap/sunburst 父子表 → 树解析（唯一实现）
+// model/chart/tree.js — treemap/sunburst parent-child table -> tree parsing (single implementation)
 // ----------------------------------------------------------------------------
-// ECharts 预览（option/matrix.js 嵌套投影）与 chartEx 导出（writer/chart/
-// chartex.js 叶子路径行投影）共用同一套节点解析 / 子树求和 / levels 裁剪语义。
+// The ECharts preview (nesting projection in option/matrix.js) and the chartEx export
+// (leaf path/row projection in writer/chart/chartex.js) share the same node parsing,
+// subtree summation and levels trimming semantics.
 // ============================================================================
 
 /**
- * 解析父子表为森林。
- * @returns {{nodes, childrenOf, roots, subtreeSum}} nodes: 名 → {name,value,parent}；
- *   childrenOf: 名 → 子节点数组；roots: 父缺失/为空的节点（出现顺序）；
- *   subtreeSum(node): 叶子 = 数值化 value（非法计 0），中间节点 = 子节点和。
+ * Parse a parent-child table into a forest.
+ * @returns {{nodes, childrenOf, roots, subtreeSum}} nodes: name -> {name,value,parent};
+ *   childrenOf: name -> child array; roots: nodes whose parent is missing/empty (in
+ *   appearance order); subtreeSum(node): a leaf is its numeric value (invalid counts as
+ *   0), an intermediate node is the sum of its children.
  */
 export function parseHierarchy(el, s) {
   const rows = el.data?.rows || [];
@@ -43,7 +45,7 @@ export function parseHierarchy(el, s) {
   return { nodes, childrenOf, roots, subtreeSum };
 }
 
-/** series.levels → 显示层级数上限（非数值/非正 = 不限，null）。 */
+/** series.levels -> displayed-level cap (non-numeric/non-positive = unlimited, null). */
 export function resolveTreeLevels(s) {
   return Number.isFinite(s.levels) && s.levels > 0 ? Math.floor(s.levels) : null;
 }

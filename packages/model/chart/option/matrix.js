@@ -1,6 +1,6 @@
 // ============================================================================
-// model/chart/option/matrix.js — 矩阵/层级/流系 option（heatmap / treemap /
-// sunburst / sankey；纯函数）
+// model/chart/option/matrix.js — matrix / hierarchy / flow family option (heatmap /
+// treemap / sunburst / sankey; pure functions)
 // ----------------------------------------------------------------------------
 
 import { resolveColor } from "../../theme.js";
@@ -10,8 +10,9 @@ import { formatChartValue } from "../format.js";
 import { resolveDataLabels } from "../labels.js";
 import { AXIS_TEXT, chartStyleColors, echartsLabel } from "./shared.js";
 
-/** 父子表 → ECharts 树（node 带 itemStyle 层级色；levels 裁剪与 writer 同源。
- * 标签字色按瓦片亮度自动选深/浅（labels.color 配置优先）——深色瓦片深字不可读）。 */
+/** Parent-child table -> ECharts tree (nodes carry itemStyle hierarchy colors; levels trimming
+ * shares its source with the writer. The label color is picked dark/light from the tile
+ * luminance (an explicit labels.color config wins) — dark text on a dark tile is unreadable). */
 function buildEchartsTree(theme, el, s, labelCfg) {
   const { childrenOf, roots, subtreeSum } = parseHierarchy(el, s);
   const maxLevels = resolveTreeLevels(s);
@@ -43,10 +44,11 @@ export function buildMatrix(ctx) {
     const tree = buildEchartsTree(theme, el, s, labelCfg);
     const showValue = labelCfg?.content === "value";
     const showName = labelCfg?.content === "category" || labelCfg == null;
-    // content: value 时标签同样显示（显示数值）——此前 show 只看 showName，
-    // 配 value 会让预览整图无标签，与导出端 value=1 不一致
+    // With content: value the label is shown as well (displaying the number) — previously
+    // show only looked at showName, so configuring value left the whole preview unlabeled,
+    // disagreeing with the export side value=1
     const showLabel = showName || showValue;
-    // treemap 铺满布局模型矩形（I26：ECharts 默认 80% 宽高居中留白，PPT 端铺满）
+    // treemap fills the layout-model rectangle (I26: the ECharts default is 80% width/height centered, leaving margins while PPT fills the space)
     const [, , bw, bh] = el.bounds || [0, 0, 0, 0];
     const treemapRect = {
       left: layout.grid.left,
@@ -88,7 +90,8 @@ export function buildMatrix(ctx) {
       ...common,
       legend: { show: false },
       tooltip: { trigger: "item", formatter: (p) => `${xCats[p.value[0]]} / ${yCats[p.value[1]]}: ${p.value[2]}` },
-      // 网格 = 布局模型投影（色标条右带让位；此前此处写死 {48,40,16,36} 绕过模型）
+      // Grid = projection from the layout model (right-band yield for the colorbar; this used to
+      // hard-code {48,40,16,36}, bypassing the model)
       grid: layout.grid,
       xAxis: { type: "category", data: xCats, axisLine: { lineStyle: { color: axisColor } }, axisLabel: AXIS_TEXT, splitArea: { show: true, areaStyle: { color: ["#fff"] } } },
       yAxis: { type: "category", data: yCats, axisLine: { lineStyle: { color: axisColor } }, axisLabel: AXIS_TEXT, splitArea: { show: true, areaStyle: { color: ["#fff"] } } },
@@ -105,8 +108,8 @@ export function buildMatrix(ctx) {
       series: [{
         type: "heatmap",
         data,
-        // 热力图 p.value = [xi, yi, value]：标签必须取第 3 位（echartsLabel 的
-        // 散点口径取 p.value[1]，会把类目索引当数值渲染）
+        // Heatmap p.value = [xi, yi, value]: the label must take the third entry (the
+        // echartsLabel scatter convention takes p.value[1] and would render a category index as the value)
         ...(labelCfg
           ? {
               label: {
@@ -130,7 +133,8 @@ export function buildMatrix(ctx) {
     const flows = (s._values.flow || []).map((v) => Number(v ?? 0));
     const links = srcs.map((sr, i) => ({ source: sr, target: tgts[i], value: Math.max(0, flows[i]) }))
       .filter((l) => l.source !== l.target);
-    // Kahn 拓扑序（官方：节点按拓扑序排列；DAG 校验在模型层，预览宽容补尾）
+    // Kahn topological order (official: nodes are ordered topologically; DAG validation lives
+    // in the model layer, the preview leniently appends the remainder)
     const firstSeen = new Map();
     for (const n of [...srcs, ...tgts]) if (!firstSeen.has(n)) firstSeen.set(n, firstSeen.size);
     const indeg = new Map();
@@ -177,7 +181,7 @@ export function buildMatrix(ctx) {
         nodeWidth: 14,
         nodeGap: 10,
         label: { show: true, color: labelColor, fontSize: 11 },
-        // 透明度压低：漏斗类数据跨层交叉流多，0.45 时叠色发闷
+        // Opacity kept low: funnel-like data has many crossing flows, and 0.45 looks muddy when colors overlap
         lineStyle: { color: "gradient", opacity: 0.3 },
       }],
     };

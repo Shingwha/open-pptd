@@ -1,28 +1,34 @@
 // ============================================================================
-// model/chart/meta.js — 13 类型注册表与官方默认值（渲染器与 writer 共享，唯一实现）
+// model/chart/meta.js — 13-type registry and official defaults (shared by renderer and writer, single implementation)
 // ----------------------------------------------------------------------------
-// 对齐官方（references/pptd.md §Chart 1009-1500 行）：
-//   - 13 种系列类型，无顶层 type；pie.innerRadius > 0 = 环形（官方无 doughnut 类型）
-//   - 类型共存约束（§5.4）由 CHART_META.coexist 表达，validateChartSeries（resolve.js）消费
-//   - encode 语义键别名表供类型切换重映射（remapEncode，编辑器/属性面板共用）
+// Aligned with the official spec (references/pptd.md §Chart lines 1009-1500):
+//   - 13 series types, no top-level type; pie.innerRadius > 0 = doughnut (the official
+//     spec has no doughnut type)
+//   - type coexistence constraints (§5.4) are expressed by CHART_META.coexist and
+//     consumed by validateChartSeries (resolve.js)
+//   - the encode semantic-key alias table feeds type-switch remapping (remapEncode,
+//     shared by editor and property panel)
 //
-// 新增图表类型的操作路径：
-//   1. 本文件注册 CHART_META（route 导出路由 + encode + coexist）与 CHART_DEFAULTS；
-//      需要语义默认值时在 spec.js 落定，勿写进投影层
-//   2. resolve.js 确认 encode 通道；新通道改 axes.js seriesChannels
-//   3. model/chart/option/ 对应家族加 builder（cartesian/polar/matrix）
-//   4. writer 侧投影：classic 体系进 writer/chart/classic.js + ser.js；chartEx 体系进
-//      chartex.js；无原生类型走 image.js SSR 图片化（route: "image"）
-//   5. 编辑器面板字段（editor/types/chart.js + chart-editor.js）
-//   6. tests/projects/chart/pages/ 加回归页并在 deck.pptd pages: 清单登记，双端截图锁形态
+// How to add a chart type:
+//   1. register CHART_META (route export path + encode + coexist) and CHART_DEFAULTS
+//      in this file; put semantic defaults in spec.js, never in a projection layer
+//   2. confirm the encode channel in resolve.js; a new channel changes axes.js seriesChannels
+//   3. add a builder to the matching family under model/chart/option/ (cartesian/polar/matrix)
+//   4. writer projection: the classic family goes to writer/chart/classic.js + ser.js; the
+//      chartEx family to chartex.js; types with no native support go through image.js SSR
+//      rasterization (route: "image")
+//   5. editor panel fields (editor/types/chart.js + chart-editor.js)
+//   6. add a regression page under tests/projects/chart/pages/ and register it in the
+//      deck.pptd pages: list, then lock the form with screenshots on both sides
 // ============================================================================
 
 /**
- * 13 类型注册表（官方字段集 + 约束 + 导出路由）。
- * encode: 官方 encode 字段（? 结尾 = 可选）；coexist: 允许共存的类型集合；
- * route: 导出路由单源——classic（c:chartSpace）/ chartex（cx: 扩展，PPT 2016+）/
- * image（无原生类型，SSR 矢量图）。预览不区分；writer 派生类型表、编号口径、
- * mc 包装判定全部消费此处，禁止再各写一份类型清单。
+ * 13-type registry (official field set + constraints + export route).
+ * encode: official encode fields (trailing ? = optional); coexist: set of types allowed
+ * to coexist; route: single source for the export route — classic (c:chartSpace) /
+ * chartex (cx: extension, PPT 2016+) / image (no native type, SSR vector image).
+ * Preview does not distinguish; the writer's derived type table, numbering convention
+ * and mc-wrapping decision all consume this, so no second type list may be written.
  */
 export const CHART_META = {
   bar: { label: "柱状图", route: "classic", encode: { x: "x", y: "y" }, axes: "cartesian", coexist: ["bar", "line", "area", "scatter", "bubble", "candlestick"] },
@@ -40,8 +46,9 @@ export const CHART_META = {
   sankey: { label: "桑基图", route: "image", encode: { source: "source", target: "target", flow: "flow" }, axes: "none", coexist: ["sankey"] },
 };
 
-/** 图表元素 → 导出路由（'classic' | 'chartex' | 'image'；非图表/未知类型 null）。
- * 编号口径唯一定义：classic/chartex 产出 chart part 消耗编号，image 不消耗。 */
+/** Chart element -> export route ('classic' | 'chartex' | 'image'; null for non-chart/unknown types).
+ * Sole definition of the numbering convention: classic/chartex produce chart parts that
+ * consume numbers, image consumes none. */
 export function chartRouteOf(el) {
   if (!el || el.elementType !== "chart") return null;
   const t = el.series?.[0]?.type;
@@ -50,25 +57,27 @@ export function chartRouteOf(el) {
 
 export const CHART_TYPE_ORDER = Object.keys(CHART_META);
 
-/** 单系列独占类型（系列数组只能有 1 个元素；§5.4，validateChartSeries 消费）。 */
+/** Single-series-exclusive types (the series array may hold only 1 element; §5.4, consumed by validateChartSeries). */
 export const SOLO_TYPES = new Set(["pie", "waterfall", "heatmap", "treemap", "sunburst", "sankey", "radar"]);
 
-// —— 预览/导出共享默认值（单源；字号单位 pt，导出 sz = pt×100，预览 px 与 pt 1:1）——
-// 此前三类文字的默认字号两端各写一份且已漂移（标签 10/9、轴 11/9、图例 11/9）。
+// —— Shared preview/export defaults (single source; font size in pt, export sz = pt×100, preview px 1:1 with pt) ——
+// The three text defaults used to be written on both sides and had already drifted
+// (label 10/9, axis 11/9, legend 11/9).
 export const CHART_DEFAULTS = {
-  labelSize: 9,  // dataLabels 字号
-  axisSize: 9,   // 坐标轴刻度文字
-  legendSize: 9, // 图例文字
-  titleSize: 14, // 图表标题（官方 string | TitleConfig 缺省 14pt）
-  markerSize: 8, // 预览 marker symbolSize 缺省（导出端未配置不写 c:size，落平台默认）
-  // K 线涨跌缺省（对照 PowerPoint/Excel 原生：up=白底灰边 / down=黑底灰边，chart46 校准；
-  // 此前预览 color0/borderColor 写 #000000 系，与导出两端不一致）
+  labelSize: 9,  // dataLabels font size
+  axisSize: 9,   // axis tick labels
+  legendSize: 9, // legend text
+  titleSize: 14, // chart title (official string | TitleConfig default 14pt)
+  markerSize: 8, // preview marker symbolSize default (export writes no c:size when unset, falling back to the platform default)
+  // Candlestick up/down defaults (matching native PowerPoint/Excel: up = white fill gray
+  // border / down = black fill gray border, calibrated on chart46; preview previously wrote
+  // #000000-family color0/borderColor, disagreeing with the export)
   candlestick: { upFill: "#FFFFFF", upBorder: "#666666", downFill: "#404040", downBorder: "#666666" },
-  // 这些类型默认不显示图例（legend 未配置时）
+  // These types hide the legend by default (when legend is not configured)
   legendOffTypes: ["waterfall", "treemap", "sunburst", "sankey", "heatmap"],
 };
 
-/** encode 语义键别名表（类型切换时保留已有列引用，自动对齐默认列名）。 */
+/** encode semantic-key alias table (keeps existing column references when switching type, aligning to the default column names). */
 const SEMANTIC_KEYS = {
   x: ["x", "category", "date"],
   y: ["y", "value"],
@@ -79,8 +88,9 @@ const SEMANTIC_KEYS = {
 };
 
 /**
- * 按目标类型元数据重映射 encode（图表编辑器/属性面板共用）：
- * 旧列的语义别名命中则保留引用，否则回退目标类型默认列名。
+ * Remap encode by target-type metadata (shared by the chart editor and the property panel):
+ * if an old column hits one of the semantic aliases its reference is kept, otherwise it
+ * falls back to the target type's default column name.
  */
 export function remapEncode(oldEncode, meta) {
   const out = {};

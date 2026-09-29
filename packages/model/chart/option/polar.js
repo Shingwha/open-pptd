@@ -1,5 +1,5 @@
 // ============================================================================
-// model/chart/option/polar.js — 极坐标系 option（pie / radar；纯函数）
+// model/chart/option/polar.js — polar-coordinate option (pie / radar; pure functions)
 // ----------------------------------------------------------------------------
 
 import { resolveColor, themeChartPalette } from "../../theme.js";
@@ -18,21 +18,24 @@ export function buildPolar(ctx) {
       tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
       series: [{
         type: "pie",
-        // 半径/中心由布局模型投影（manualLayout inner 矩形内接），此前写死
-        // 72%/center 46% 与 PowerPoint 自动布局背离（02 页 PPT 饼显著更大）
+        // Radius/center projected by the layout model (inscribed in the manualLayout inner
+        // rectangle); previously hard-coded at 72% / center 46%, diverging from PowerPoint's
+        // automatic layout (the page-02 PPT pie came out clearly larger)
         radius: [inner * 100 + "%", `${layout.pie.radiusPct}%`],
         center: [`${layout.pie.centerX}%`, `${layout.pie.centerY}%`],
-        startAngle: 90 + (s.startAngle || 0), // 官方 0 = 12 点；ECharts 90 = 3 点
+        startAngle: 90 + (s.startAngle || 0), // official 0 = 12 o'clock; ECharts 90 = 3 o'clock
         avoidLabelOverlap: true,
-        // 环形图 PowerPoint 缺省把标签放环带内（doughnut 不支持 dLblPos，导出端
-        // 也省略元素），预览同步 inside——浅色标签（如白字）在深色环带上才可读，
-        // 外置会落在页面背景上隐形；实心饼保持外置 + 引导线（对齐导出 outEnd）
+        // PowerPoint puts doughnut labels inside the ring band by default (doughnut has no
+        // dLblPos support and the export also omits the element), so the preview follows with
+        // inside — a light label (e.g. white text) is only readable on a dark ring, while
+        // placing it outside makes it invisible against the page background; a solid pie keeps
+        // outside + leader line (matching the export outEnd)
         label: echartsLabel(theme, el, s, { position: inner > 0 ? "inside" : "outside", pie: true }),
         itemStyle: { borderColor: s.border?.color ? resolveColor(theme, s.border.color) : undefined, borderWidth: s.border?.width },
         data: cats.map((c, i) => ({
           name: c,
           value: s._values.value?.[i] ?? 0,
-          // 官方 fill：数组按点循环；单色 = 所有点同色；缺省 = 主题色循环
+          // Official fill: an array cycles per point; a single color makes all points the same; unset = theme color cycle
           itemStyle: { color: fills ? resolveColor(theme, fills[i % fills.length]) || pal[i % 6] : s.color || pal[i % 6] },
         })),
       }],

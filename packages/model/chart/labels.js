@@ -1,8 +1,8 @@
 // ============================================================================
-// model/chart/labels.js — 数据标签解析（官方 §3.3 链，渲染器与 writer 共享）
+// model/chart/labels.js — data label resolution (official §3.3 chain, shared by renderer and writer)
 // ----------------------------------------------------------------------------
 
-/** 各类型数据标签可用内容（编辑器样式面板与 resolveDataLabels 共用）。 */
+/** Content available per type for data labels (shared by the editor style panel and resolveDataLabels). */
 export const DATA_LABEL_CONTENTS = {
   bar: ["value"], line: ["value"], area: ["value"], scatter: ["value"], bubble: ["value"],
   radar: ["value"], heatmap: ["value"], candlestick: ["value"],
@@ -11,9 +11,9 @@ export const DATA_LABEL_CONTENTS = {
 };
 
 /**
- * 数据标签显示（官方 §3.3 链：series[i].dataLabels > Chart.dataLabels > 不显示）。
- * @returns {null | {content, numberFormat, color, fontSize, fontFamily}} 有效配置
- * （样式字段来自 DataLabelConfig extends TextStyle，供 writer/renderer 消费）
+ * Data label display (official §3.3 chain: series[i].dataLabels > Chart.dataLabels > not shown).
+ * @returns {null | {content, numberFormat, color, fontSize, fontFamily}} effective config
+ * (style fields come from DataLabelConfig extends TextStyle, consumed by writer/renderer)
  */
 export function resolveDataLabels(el, series, type) {
   const DEFAULTS = {
@@ -23,7 +23,7 @@ export function resolveDataLabels(el, series, type) {
   };
   const ALLOWED = DATA_LABEL_CONTENTS;
   const cfg = series?.dataLabels ?? el?.dataLabels ?? null;
-  if (!cfg) return null; // 官方默认不显示
+  if (!cfg) return null; // not shown by default per the official spec
   const show = typeof cfg === "boolean" ? cfg : cfg.show !== false;
   if (!show) return null;
   let content = typeof cfg === "object" ? cfg.content : undefined;

@@ -1,8 +1,8 @@
 // ============================================================================
-// model/chart/data.js — ChartData 表格工具（xlsx 嵌入与数据编辑器共用）
+// model/chart/data.js — ChartData table utilities (shared by xlsx embed and the data editor)
 // ============================================================================
 
-/** 图表数据 → xlsx 表格布局（行：表头 + 数据）。 */
+/** Chart data -> xlsx table layout (rows: header + data). */
 export function chartDataTable(el) {
   const data = el.data || { cols: [], rows: [] };
   const cols = data.cols || [];
@@ -13,7 +13,7 @@ export function chartDataTable(el) {
   return table;
 }
 
-/** 判断某列是否为数值列（供数据编辑器与导出用）。 */
+/** Test whether a column is numeric (used by the data editor and export). */
 export function isNumericColumn(table, colIdx) {
   for (let r = 1; r < table.length; r++) {
     const v = table[r][colIdx];
@@ -22,7 +22,7 @@ export function isNumericColumn(table, colIdx) {
   return true;
 }
 
-/** 0-based 列索引 → Excel 列字母（A B … Z AA AB；xlsx 引用与图表编辑器网格共用）。 */
+/** 0-based column index -> Excel column letter (A B … Z AA AB; shared by xlsx references and the chart editor grid). */
 export function colLetter(n) {
   let s = "";
   n += 1;

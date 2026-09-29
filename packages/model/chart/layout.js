@@ -1,36 +1,47 @@
 // ============================================================================
-// model/chart/layout.js — 图表布局语义单源（writer 导出与 renderer 预览共同投影）
+// model/chart/layout.js — chart layout semantics single source (writer export and renderer preview both project from it)
 // ----------------------------------------------------------------------------
-// 绘图区布局模型（I19）：预览 ECharts grid 与导出 c:plotArea manualLayout 的
-// 唯一几何定义处。此前预览固定网格、导出写 <c:layout/> 让 PowerPoint 自动布局，
-// 两端绘图区几何各一套体系（01/02 页饼图/柱状图大小明显背离）。
-// chartEx（waterfall/treemap/sunburst）平台无 plotArea 布局控制，plot 字段仅
-// 经典图表导出消费；预览侧 waterfall 仍消费 grid。
+// Plot-area layout model (I19): the only place the geometry of the preview ECharts
+// grid and the export c:plotArea manualLayout is defined. Previously the preview used
+// a fixed grid while the export wrote <c:layout/> to let PowerPoint lay out
+// automatically, so the two sides used unrelated plot-area geometry (page 01/02 pie
+// and bar charts clearly diverged in size).
+// chartEx (waterfall/treemap/sunburst) has no platform plotArea layout control, so the
+// plot field is consumed by classic chart export only; on the preview side waterfall
+// still consumes grid.
 
 import { toAxisArray, resolveChartDirection } from "./axes.js";
 import { resolveTitleLike, resolveLegend } from "./title-legend.js";
 
-/** 笛卡尔系基础边距（px）——绘图区布局模型的共同基底，轴标签拥挤估算
- * （option/axes.js）同样以此为基准。唯一定义处，option/shared.js 转 re-export。 */
+/** Cartesian base margins (px) — the common basis of the plot-area layout model, also
+ * used as the reference by the axis-label crowding estimate (option/axes.js). Single
+ * definition; option/shared.js re-exports it. */
 export const CHART_GRID = { left: 48, right: 24, top: 28, bottom: 36 };
 
-/** 让位系数（COM 截图校准的约定值，改动需 02/08 页双端对照回归）：
- * PowerPoint 在 manualLayout inner 矩形内给饼/雷达内接圆留的标签余量比例。 */
+/** Yield coefficients (convention values calibrated on COM screenshots; changing them
+ * requires a page 02/08 cross-side regression):
+ * the label margin ratio PowerPoint leaves inside the manualLayout inner rectangle for
+ * the pie/radar inscribed circle. */
 const PIE_FILL = 0.95;
 const RADAR_FILL = 0.9;
 
 /**
- * 绘图区布局单源（预览 grid 与导出 manualLayout 共同投影，唯一定义处）。
- * 输入 el.bounds（px；预览壳与 SSR 图片化、graphicFrame ext 三端同一尺寸口径）。
- * chrome：spec 预解析的标题/图例有效配置（resolveChartSpec 传入，避免重复解析）；
- * 直调（旧路径）时内部自行解析。
- * 输出：
- *   grid  — ECharts px 边距（预览与 SSR 共用；含标题 +24、竖排笛卡尔类目轴标题 +18 让位）
- *   plot  — chartSpace 0-1 分数矩形（writer 写 manualLayout layoutTarget=inner）
- *   pie/radar — ECharts %（radius 相对 min(w,h)/2，center 相对容器）
- * 让位条件与历史预览行为逐项对齐：标题让位全类型；类目轴标题让位仅竖排
- * bar/line/area/candlestick（scatter/bubble 数值 x 轴、waterfall/heatmap 走
- * chartEx 或矩阵家族，历史上不让位）；饼/雷达无轴标签，左右收窄为对称 24px。
+ * Plot-area layout single source (the preview grid and the export manualLayout both
+ * project from it; single definition).
+ * Input el.bounds (px; the preview shell, SSR rasterization and graphicFrame ext all use
+ * the same size convention). chrome: the pre-resolved effective title/legend config
+ * (passed by resolveChartSpec to avoid re-parsing); when called directly (legacy path)
+ * it is resolved internally.
+ * Output:
+ *   grid  — ECharts px margins (shared by preview and SSR; includes +24 for a title and
+ *           +18 yield for a vertical cartesian category-axis title)
+ *   plot  — chartSpace 0-1 fractional rectangle (writer writes manualLayout layoutTarget=inner)
+ *   pie/radar — ECharts % (radius relative to min(w,h)/2, center relative to the container)
+ * The yield conditions match the historical preview behavior item by item: title yield for
+ * all types; category-axis-title yield only for vertical bar/line/area/candlestick
+ * (scatter/bubble use a numeric x axis, waterfall/heatmap go through chartEx or the matrix
+ * family and historically do not yield); pie/radar have no axis labels, their left/right
+ * margins narrow symmetrically to 24px.
  */
 export function resolvePlotLayout(el, series, chrome = null) {
   const [, , bw0, bh0] = el.bounds || [];
@@ -55,11 +66,13 @@ export function resolvePlotLayout(el, series, chrome = null) {
   }
 
   const polar = primary === "pie" || primary === "radar";
-  // treemap/sunburst 无轴无图例（默认关），PPT 端铺满标题/图例带以下的全部空间
-  //（I26：此前 ECharts treemap 默认 80% 宽高居中，预览四周留白而 PPT 铺满）
+  // treemap/sunburst have no axes and no legend (off by default), so PPT fills the whole
+  // space below the title/legend bands (I26: previously the ECharts treemap defaulted to
+  // 80% width/height centered, leaving margins in the preview while PPT filled the space)
   const treeLike = primary === "treemap" || primary === "sunburst";
-  // heatmap：色标条占右带（colorbar 40 / 无 24），历史校准值自成一格（此前该
-  // 网格写死在 option/matrix.js 绕过布局模型）
+  // heatmap: the colorbar occupies a right band (40 with colorbar / 24 without); a
+  // historical calibration value that stands on its own (previously this grid was
+  // hard-coded in option/matrix.js, bypassing the layout model)
   const heatmapGrid = primary === "heatmap"
     ? { left: 48, right: series[0]?.colorbar !== false ? 40 : 24, top: 16, bottom: 36 }
     : null;
@@ -94,16 +107,20 @@ export function resolvePlotLayout(el, series, chrome = null) {
 }
 
 /**
- * 柱状布局语义单源（writer 导出与 renderer 预览共同投影，唯一定义处）。
- * 规范表示 = OOXML 口径：类目节距 = n×柱宽 + (n-1)×|overlap|%柱宽（组内）+ gapWidth%柱宽（组间）。
- *   - barWidth → gapWidth=(1-bw)/bw×100（bw=1 即满槽）；categoryGap → ×750（校准约定，
- *     文档默认 0.2×750=150 恰与 OOXML schema 默认自洽）；未配置 → 150
- *   - barGap → overlap=-×100；堆叠/百分比堆叠 → overlap=100；未配置 → null（导出省略元素，
- *     PowerPoint 落 schema 默认 0，语义相同）
- * 渲染端投影：echarts.barWidthPct = 100/(n + gapWidth/100 + (n-1)×|overlap|/100)、
- * barGapPct = |overlap|（堆叠柱共用同一柱位，n 取 1）。预览必须显式传换算结果，
- * 禁止透传 undefined 让 ECharts 用自家默认（gap 30%/categoryGap 20%），否则分组柱
- * 总宽超出类目槽、溢出到相邻类目，预览与导出漂移。
+ * Bar layout semantics single source (writer export and renderer preview both project
+ * from it; single definition).
+ * Canonical form = the OOXML convention: category pitch = n×barWidth + (n-1)×|overlap|%
+ * barWidth (within group) + gapWidth% barWidth (between groups).
+ *   - barWidth -> gapWidth=(1-bw)/bw×100 (bw=1 means a full slot); categoryGap -> ×750
+ *     (calibration convention; the doc default 0.2×750=150 is exactly consistent with the
+ *     OOXML schema default); unset -> 150
+ *   - barGap -> overlap=-×100; stacked/percent-stacked -> overlap=100; unset -> null (the
+ *     export omits the element and PowerPoint falls back to the schema default 0, same semantics)
+ * Render-side projection: echarts.barWidthPct = 100/(n + gapWidth/100 + (n-1)×|overlap|/100),
+ * barGapPct = |overlap| (stacked bars share one slot, n = 1). The preview must pass the
+ * converted result explicitly; passing undefined through would let ECharts use its own
+ * defaults (gap 30% / categoryGap 20%), making grouped bars exceed the category slot and
+ * overflow into neighboring categories, drifting from the export.
  */
 export function resolveBarLayout(chartEl, series) {
   const bars = series.filter((s) => s.type === "bar");
