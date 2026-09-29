@@ -1,19 +1,20 @@
 // ============================================================================
-// interaction/canvas.js — 元素手势执行器（选中框 / 拖动 / 缩放 / 旋转 / 框选 / 键盘微调）
+// interaction/canvas.js — element gesture executor (selection box / drag / resize / rotate / marquee / keyboard nudge)
 // ----------------------------------------------------------------------------
-// 手势的分类与仲裁在 interaction/stage.js（统一路由器），本模块只负责
-// 「执行」元素手势：路由器判定目标后调用 startGesture / startMarquee，之后的
-// pointermove/up 由这里自行监听。
+// Gesture classification and arbitration live in interaction/stage.js (the single
+// router); this module only *executes* element gestures: the router decides the
+// target and calls startGesture / startMarquee, after which this module listens
+// for pointermove/up itself.
 //
-// U1 选择模型：
-//   - 选中可以是「集合」（state.selection）。选中框渲染分两种形态（对齐设计稿
-//     editor-design-reference.html §02 样机）：
-//       单选 = .el-single 1px 实线环 + 四角 .h 方形控制点 + .rot 旋转柄
-//       多选/组 = 每个成员一圈 .member 细边框 + 一个 .mbounds 虚线包围盒 + 四角手柄
-//   - 框选 marquee（画布空白拖动）→ .marquee 虚线框，松手按 Shift 加选 / Ctrl 切换。
-//   - Ctrl/Alt + 拖动 = 复制拖动（阈值判断：拖动即复制，未拖动 = Ctrl 点击切换选中）。
-//   - 组元素（elementType:"group"）整体变换：移动/缩放同时作用于 children。
-//   - 几何统一走 coords.js 的 overlayGeom（模型坐标 → wrap 图层），控件恒定屏幕尺寸。
+// Selection model:
+//   - A selection is a set (state.selection). The selection box renders in two forms:
+//       single = .el-single 1px solid ring + four .h square corner handles + .rot handle
+//       multi/group = a thin .member border per member + one dashed .mbounds box + corner handles
+//   - Marquee (drag on blank canvas) → dashed .marquee box; on release Shift adds / Ctrl toggles.
+//   - Ctrl/Alt + drag = duplicate drag (threshold: a drag duplicates, no drag = Ctrl-click toggles).
+//   - Group elements (elementType:"group") transform as a whole: move/resize apply to children.
+//   - Geometry goes through coords.js overlayGeom (model coords → wrap layer); controls
+//     keep a constant on-screen size.
 // ============================================================================
 
 import { overlayGeom, layoutElementOf } from "../coords.js";
@@ -22,40 +23,40 @@ import { ICON_ROTATE } from "../icons.js";
 const CORNERS = ["nw", "ne", "sw", "se"];
 const CORNER_CURSOR = { nw: "nwse-resize", se: "nwse-resize", ne: "nesw-resize", sw: "nesw-resize" };
 const CORNER_CLASS = { nw: "tl", ne: "tr", sw: "bl", se: "br" };
-const GRID = 10; // 网格吸附步长（Shift+方向键）
-const MOVE_THRESHOLD = 3; // 起手势的位移阈值（px）：低于它视为点击
+const GRID = 10; // grid snap step (Shift+arrow)
+const MOVE_THRESHOLD = 3; // px threshold to start a gesture; below it counts as a click
 
 export function createCanvasController(canvas, opts) {
   const {
     getPage,
-    beginChange,       // () => void  变更前快照
-    endChange,         // () => void  变更结束（重渲染 + 属性面板刷新）
-    getSelected,       // () => id|null  主选中（兼容）
-    getSelectedElements, // () => element[]  全部选中元素
+    beginChange,       // () => void  snapshot before a change
+    endChange,         // () => void  end a change (re-render + property panel refresh)
+    getSelected,       // () => id|null  primary selection (compat)
+    getSelectedElements, // () => element[]  all selected elements
     getSelection,      // () => id[]
     select,            // (id, mode) => void
     selectMany,        // (ids, mode) => void
-    duplicateInPlace,  // () => void  复制选中（原位，供拖动复制）
-    deleteSelected,    // 键盘 Delete/Backspace
-    moveLayerEdge,     // (edge) => void  置于顶层/底层（键盘 ] / [）
+    duplicateInPlace,  // () => void  duplicate selection in place (for duplicate drag)
+    deleteSelected,    // keyboard Delete/Backspace
+    moveLayerEdge,     // (edge) => void  bring to front / send to back (keyboard ] / [)
   } = opts;
 
-  const wrapLayer = canvas.parentElement; // canvas-wrap：不缩放图层
-  let overlay = null;   // .sel-overlay（选中框 / 成员边框 / marquee 命中高亮）
-  let box = null;       // .sel-box（单选框 or 多选/组包围盒，手柄挂在它上面）
-  let memberNodes = []; // [{ el, node }] 多选成员细边框
+  const wrapLayer = canvas.parentElement; // canvas-wrap: the non-scaled layer
+  let overlay = null;   // .sel-overlay (selection box / member borders / marquee hit highlight)
+  let box = null;       // .sel-box (single box or multi/group bounds; handles hang off it)
+  let memberNodes = []; // [{ el, node }] multi-selection member thin borders
   let sizeBadge = null;
-  let marqueeEl = null; // .marquee 虚线框
-  let marquee = null;   // 框选状态
+  let marqueeEl = null; // .marquee dashed box
+  let marquee = null;   // marquee state
   let drag = null;
-  const ac = new AbortController(); // 生命周期：document 键盘监听经此一次解绑
+  const ac = new AbortController(); // lifecycle: document keyboard listener detached via this
 
   const scale = () => canvas._scale || 1;
   const elements = () => getPage().elements || [];
   const findElement = (id) => elements().find((el) => el.elementId === id);
   const nodeBy = (id) => canvas.querySelector(`[data-element-id="${CSS.escape(id)}"]`);
 
-  /** 选中项 → 受影响元素（组展开为 children）+ 需要画细边框的成员。 */
+  /** Selection → affected elements (groups expand to children) + members needing a thin border. */
   function selectionUnits() {
     const picked = getSelectedElements ? getSelectedElements() : [];
     const affected = [];
@@ -78,10 +79,13 @@ export function createCanvasController(canvas, opts) {
   }
 
   /**
-   * 元素视觉几何 [x,y,w,h]（模型坐标）——选中框/成员边框/框选命中的统一几何来源。
-   * 读 LayoutTree（RP-C / M6）：文本取 **declared**（作者框，可见内容锚定处；frame.h
-   * 是撑高值，用它会让空框高出文字）；表格等无文本语义元素取 frame（撑高后的实际高，
-   * 表格长高后选中框随之贴合）。布局树无该元素（如 group 组壳、模型未重绘）回退 el.bounds。
+   * Visual geometry [x,y,w,h] (model coords) — the single source for selection
+   * box / member borders / marquee hit tests. Reads the LayoutTree: text uses
+   * **declared** (the author box the visible content is anchored to; frame.h is
+   * the grown height and would leave the box taller than the text), while
+   * non-text elements such as tables use frame (the grown height, so the
+   * selection box hugs a table that grew). Falls back to el.bounds when the
+   * layout tree has no entry (e.g. a group shell, or the model has not re-rendered).
    */
   function geomOf(el) {
     const le = layoutElementOf(el.elementId);
@@ -105,7 +109,7 @@ export function createCanvasController(canvas, opts) {
     return [x1, y1, x2 - x1, y2 - y1];
   };
 
-  /** 选中框几何（模型坐标）：单选 = 元素几何（文本 declared / 其余 frame）；多选/组 = 包围盒。 */
+  /** Selection-box geometry (model coords): single = element geom (text declared / others frame); multi/group = bounds. */
   function boxModelBounds() {
     const picked = getSelectedElements ? getSelectedElements() : [];
     if (picked.length === 0) return null;
@@ -116,7 +120,7 @@ export function createCanvasController(canvas, opts) {
   }
 
   // --------------------------------------------------------------------------
-  // 选中框
+  // Selection box
   // --------------------------------------------------------------------------
   function refreshSelection() {
     if (overlay) overlay.remove();
@@ -131,7 +135,7 @@ export function createCanvasController(canvas, opts) {
     overlay.className = "sel-overlay";
     const isSingle = picked.length === 1 && picked[0].elementType !== "group";
 
-    // 多选/组：成员细边框（单选不画，避免与实线环重叠）
+    // Multi/group: thin member borders (not drawn for single, to avoid overlapping the solid ring)
     if (!isSingle) {
       for (const el of members) {
         const m = document.createElement("div");
@@ -144,7 +148,7 @@ export function createCanvasController(canvas, opts) {
     box = document.createElement("div");
     box.className = "sel-box " + (isSingle ? "el-single" : "mbounds");
 
-    // 四角控制点（方形，1px 主色描边；data-handle 供 stage.js 路由）
+    // Four corner handles (square, 1px accent outline; data-handle routed by stage.js)
     for (const dir of CORNERS) {
       const h = document.createElement("div");
       h.dataset.handle = dir;
@@ -154,7 +158,8 @@ export function createCanvasController(canvas, opts) {
       box.appendChild(h);
     }
 
-    // 旋转柄：仅单选（chart/table 不支持旋转）；置于框底中点（顶部让给快速条）
+    // Rotate handle: single selection only (chart/table cannot rotate); placed at
+    // the box's bottom center (the top is left to the quickbar)
     if (isSingle && !["chart", "table"].includes(picked[0].elementType)) {
       const stem = document.createElement("div");
       stem.className = "sel-rotate-stem";
@@ -175,7 +180,7 @@ export function createCanvasController(canvas, opts) {
     updateSelectionBox();
   }
 
-  /** 同步选中框 / 成员边框几何（拖动中高频调用，只改样式不重建 DOM）。 */
+  /** Sync selection box / member border geometry (called at high frequency while dragging; restyles, no DOM rebuild). */
   function updateSelectionBox() {
     if (!box) return;
     const picked = getSelectedElements ? getSelectedElements() : [];
@@ -200,7 +205,7 @@ export function createCanvasController(canvas, opts) {
     }
   }
 
-  /** 手势进行中显示 W×H（缩放）或角度（旋转）。 */
+  /** Show W×H (resize) or the angle (rotate) while a gesture is in progress. */
   function showBadge(text, rotation = 0) {
     if (!sizeBadge) return;
     sizeBadge.textContent = text;
@@ -209,7 +214,7 @@ export function createCanvasController(canvas, opts) {
   }
 
   // --------------------------------------------------------------------------
-  // 框选（marquee）：画布空白拖动
+  // Marquee selection: drag on blank canvas
   // --------------------------------------------------------------------------
   function startMarquee(e) {
     const cr = canvas.getBoundingClientRect();
@@ -226,7 +231,7 @@ export function createCanvasController(canvas, opts) {
     window.addEventListener("pointercancel", onMarqueeEnd);
   }
 
-  /** 客户区坐标 → 模型坐标（canvas 以中心为 origin 缩放，rect 已含缩放）。 */
+  /** Client coords → model coords (canvas scales about its center; rect already includes scale). */
   function toModel(clientX, clientY, cr, s) {
     return [(clientX - cr.left) / s, (clientY - cr.top) / s];
   }
@@ -241,7 +246,7 @@ export function createCanvasController(canvas, opts) {
   const hitTest = (rect) => {
     const [x, y, w, h] = rect;
     return elements()
-      .filter((el) => el.elementType !== "group") // 组成员由组代替命中
+      .filter((el) => el.elementType !== "group") // group members are hit via the group
       .filter((el) => {
         const b = geomOf(el);
         return b[0] < x + w && b[0] + b[2] > x && b[1] < y + h && b[1] + b[3] > y;
@@ -260,7 +265,7 @@ export function createCanvasController(canvas, opts) {
     marqueeEl.style.top = `${g.top}px`;
     marqueeEl.style.width = `${g.width}px`;
     marqueeEl.style.height = `${g.height}px`;
-    // 命中高亮：临时成员细边框（接管 overlay，清除原选中框）
+    // Hit highlight: temporary member thin borders (take over the overlay, clearing the existing selection box)
     if (overlay) overlay.remove();
     overlay = document.createElement("div");
     overlay.className = "sel-overlay";
@@ -316,7 +321,7 @@ export function createCanvasController(canvas, opts) {
       else if (m.additive) selectMany(ids, "add");
       else selectMany(ids, "replace");
     } else if (!m.additive && !m.ctrl) {
-      select(null, "replace"); // 空白单击 = 取消选中
+      select(null, "replace"); // single click on blank = deselect
     }
     refreshSelection();
   }
@@ -331,7 +336,7 @@ export function createCanvasController(canvas, opts) {
   }
 
   // --------------------------------------------------------------------------
-  // 拖动 / 缩放 / 旋转（由 interaction/stage.js 路由进入）
+  // Drag / resize / rotate (routed in from interaction/stage.js)
   //   mode = "move" | "rotate" | "nw"|"ne"|"sw"|"se"
   //   gopts = { copyOnMove, toggleOnTap }
   // --------------------------------------------------------------------------
@@ -346,7 +351,7 @@ export function createCanvasController(canvas, opts) {
       clientY: e.clientY,
       box0,
       affected: affected.map((el) => ({ el, x: el.bounds[0], y: el.bounds[1], w: el.bounds[2], h: el.bounds[3] })),
-      changed: false, // 首次真实位移才快照（纯点击选中不标脏、不入历史）
+      changed: false, // snapshot only on the first real movement (a pure select-click is not dirty and enters no history)
       copyOnMove: !!gopts.copyOnMove,
       toggleOnTap: !!gopts.toggleOnTap,
     };
@@ -364,9 +369,10 @@ export function createCanvasController(canvas, opts) {
     try {
       e.target.setPointerCapture?.(e.pointerId);
     } catch {
-      /* 部分元素（SVG/ECharts）不支持时忽略 */
+      /* ignored for elements that do not support it (SVG/ECharts) */
     }
-    // 自动行高的表格（无 rowHeights）纵向拖缩放 → 写入均分行高比例，转为受控最小行高
+    // Auto-height table (no rowHeights) resized vertically → write equal row-height
+    // ratios, converting it to a controlled minimum row height
     if (
       mode !== "move" && mode !== "rotate" &&
       affected.length === 1 && affected[0].elementType === "table" && !Array.isArray(affected[0].rowHeights)
@@ -382,7 +388,7 @@ export function createCanvasController(canvas, opts) {
     window.addEventListener("blur", onDragEnd);
   }
 
-  /** 拖动复制：把当前选中复制到原位（偏移 0），选中切到副本，并重设拖动基线。 */
+  /** Duplicate drag: copy the selection in place (offset 0), switch selection to the copy, and re-base the drag. */
   function retargetToCopy() {
     duplicateInPlace && duplicateInPlace();
     const { affected } = selectionUnits();
@@ -394,7 +400,7 @@ export function createCanvasController(canvas, opts) {
 
   function updateNodeGeom(el) {
     const node = nodeBy(el.elementId);
-    if (!node) return; // 组元素无独立节点
+    if (!node) return; // group elements have no standalone node
     node.style.left = `${el.bounds[0]}px`;
     node.style.top = `${el.bounds[1]}px`;
     node.style.width = `${el.bounds[2]}px`;
@@ -408,9 +414,9 @@ export function createCanvasController(canvas, opts) {
     if (!drag.changed) {
       if (Math.hypot(e.clientX - drag.clientX, e.clientY - drag.clientY) < MOVE_THRESHOLD) return;
       drag.changed = true;
-      beginChange(); // 首次真实位移前快照（orig 已捕获，模型尚未改动）
+      beginChange(); // snapshot before the first real movement (orig captured, model unchanged)
       if (drag.copyOnMove) {
-        retargetToCopy(); // Ctrl/Alt 拖动复制：副本就位后从当前指针继续拖动
+        retargetToCopy(); // Ctrl/Alt duplicate drag: once the copy is placed, keep dragging from the pointer
         drag.clientX = e.clientX;
         drag.clientY = e.clientY;
       }
@@ -442,7 +448,7 @@ export function createCanvasController(canvas, opts) {
       return;
     }
 
-    // 缩放：以选中包围盒为基准，整体按比例作用于每个受影响元素
+    // Resize: relative to the selection bounding box, applied proportionally to each affected element
     const box0 = drag.box0;
     const m = drag.mode;
     let nx = box0[0];
@@ -459,7 +465,7 @@ export function createCanvasController(canvas, opts) {
       nh = Math.max(8, Math.round(box0[3] - dy));
       ny = box0[1] + box0[3] - nh;
     }
-    // Alt + 角柄：等比缩放（以宽度为基准）
+    // Alt + corner handle: uniform scale (based on width)
     if (e.altKey && CORNERS.includes(m) && box0[2] > 0 && box0[3] > 0) {
       nh = Math.max(8, Math.round(nw * (box0[3] / box0[2])));
       if (m.includes("n")) ny = box0[1] + box0[3] - nh;
@@ -478,7 +484,7 @@ export function createCanvasController(canvas, opts) {
     showBadge(`${nw} × ${nh}`, single);
   }
 
-  /** 拖动中保持 SVG 图形按比例缩放（viewBox 不变，width/height 变化）。 */
+  /** Keep SVG shapes proportionally scaled while dragging (viewBox fixed, width/height change). */
   function syncSvgSize(node, bounds) {
     const svg = node.tagName === "svg" ? node : node.querySelector("svg");
     if (svg) {
@@ -496,22 +502,22 @@ export function createCanvasController(canvas, opts) {
     window.removeEventListener("pointercancel", onDragEnd);
     window.removeEventListener("blur", onDragEnd);
     overlay?.classList.remove("resizing");
-    // Ctrl 点击已选中元素（未拖动）：切换为取消选中
+    // Ctrl-click on an already-selected element (no drag): toggle to deselect
     if (d.toggleOnTap && !d.changed && select) {
       select(d.id, "toggle");
       return;
     }
-    if (d.changed) endChange(); // 全量重渲染校准（SVG 几何 / 图表重绘）
+    if (d.changed) endChange(); // full re-render to calibrate (SVG geometry / chart redraw)
   }
 
   // --------------------------------------------------------------------------
-  // 键盘：Delete 删除 / Esc 分层退出 / 方向键微调（1px / Alt 10px / Shift 网格吸附）
+  // Keyboard: Delete to delete / Esc to unwind layers / arrow-key nudge (1px / Alt 10px / Shift grid snap)
   // --------------------------------------------------------------------------
   document.addEventListener("keydown", (e) => {
     const tag = (e.target.tagName || "").toLowerCase();
     if (tag === "input" || tag === "textarea" || tag === "select" || e.target.isContentEditable) return;
 
-    // Esc 分层退出：先退框选 → 再退多选（收敛为主选中）→ 再取消选中
+    // Esc unwinds layers: marquee → multi-selection (collapse to primary) → deselect
     if (e.key === "Escape") {
       if (marquee) {
         cancelMarquee();
@@ -537,7 +543,7 @@ export function createCanvasController(canvas, opts) {
       deleteSelected && deleteSelected();
       return;
     }
-    // ] 置于顶层 / [ 置于底层（设计稿 §03 键位提示；B6）
+    // ] bring to front / [ send to back
     if (e.key === "]" || e.key === "[") {
       e.preventDefault();
       moveLayerEdge?.(e.key === "]" ? "front" : "back");
@@ -547,11 +553,11 @@ export function createCanvasController(canvas, opts) {
     const step = arrows[e.key];
     if (!step) return;
     e.preventDefault();
-    const base = e.altKey ? 10 : 1; // Alt = 10px 大步微调
+    const base = e.altKey ? 10 : 1; // Alt = 10px coarse nudge
     let dx = step[0] * base;
     let dy = step[1] * base;
     if (e.shiftKey) {
-      // Shift = 网格吸附：把主选中元素吸附到 10px 网格，其余随同一增量
+      // Shift = grid snap: snap the primary element onto the 10px grid, others follow by the same delta
       const primary = picked[0];
       const tx = Math.round((primary.bounds[0] + dx) / GRID) * GRID;
       const ty = Math.round((primary.bounds[1] + dy) / GRID) * GRID;
@@ -569,7 +575,7 @@ export function createCanvasController(canvas, opts) {
     endChange();
   }, { signal: ac.signal });
 
-  /** 释放（幂等）：解绑 document 键盘、结束进行中的手势、摘掉选中框与 marquee。 */
+  /** Release (idempotent): detach the document keyboard listener, end in-flight gestures, remove overlay and marquee. */
   function destroy() {
     ac.abort();
     cancelMarquee();
@@ -593,7 +599,8 @@ export function createCanvasController(canvas, opts) {
     startGesture,
     startMarquee,
     cancelMarquee,
-    // 捏合接管时由路由器调用：与正常松手等价（提交已发生的位移并重渲染）
+    // Called by the router when pinch takes over: equivalent to a normal release
+    // (commits the movement so far and re-renders)
     cancelGesture: onDragEnd,
     isGestureActive: () => !!drag,
     destroy,

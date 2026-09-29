@@ -1,20 +1,20 @@
 /* ============================================================================
-   present.css — 放映与截图模式（present + shot）
-   （U1/T5 由原 present + shot.css 合并；8 文件收敛，无加载顺序依赖）
+   present.css — presentation and screenshot modes (present + shot)
    ============================================================================ */
 
-/* ==== [present] ==== */
-/* ==== present — 放映模式 ==== */
+/* ==== present — presentation mode ==== */
 
 /* ============================================================================
-   放映模式（app/present.js）
+   Presentation mode (app/present.js)
    ----------------------------------------------------------------------------
-   黑场覆盖层：幻灯片按视口等比缩放居中；底部工具条无操作自动隐藏；
-   B 黑屏时幻灯片淡出、工具条仍可唤起（移动鼠标）。
-   注：黑底与 rgba 白为投影面固有配色，不套界面令牌；仅层级/尺寸走令牌。
+   Black backdrop: the slide is scaled to fit the viewport and centered; the bottom
+   bar auto-hides without interaction; on B blackout the slide fades out while the
+   bar can still be summoned (move the mouse).
+   Note: the black backdrop and rgba white are inherent projection colors and use no
+   UI tokens; only layers/sizes go through tokens.
    ============================================================================ */
 body.presenting { user-select: none; }
-body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免层叠/焦点干扰 */
+body.presenting .app { visibility: hidden; } /* hide the editor entirely to avoid stacking/focus interference */
 
 .present {
   position: fixed;
@@ -24,13 +24,14 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   overflow: hidden;
   cursor: default;
   touch-action: manipulation;
-  /* flex 居中：幻灯片（含 transform 缩放）始终以视口中心为锚 */
+  /* flex centering: the slide (including transform scaling) stays anchored to the viewport center */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* 幻灯片视口：transform 等比缩放（deck 实际画布 → 视口适配），flex 子项居中；尺寸为兜底，present.js 内联覆盖 */
+/* Slide viewport: transform-scales the deck's real canvas to fit; the flex child is
+   centered; the size here is a fallback, overwritten inline by present.js */
 .present-stage {
   position: relative;
   flex: none;
@@ -41,7 +42,7 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
 }
 .present.blackout .present-stage { opacity: 0; }
 
-/* 双缓冲图层：交叉淡化切页 */
+/* Double-buffered layers: cross-fade page transitions */
 .present-slide {
   position: absolute;
   left: 0;
@@ -57,7 +58,7 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
 .present-slide.on { opacity: 1; }
 .present-slide.no-anim { transition: none; }
 
-/* 顶部进度条 */
+/* Top progress bar */
 .present-progress {
   position: absolute;
   left: 0;
@@ -76,7 +77,7 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   transition: width var(--t-med) var(--ease), opacity var(--t-med) var(--ease), border-left-color var(--t-med) var(--ease);
 }
 
-/* 底部工具条（无操作自动隐藏） */
+/* Bottom bar (auto-hides without interaction) */
 .present-ui {
   position: absolute;
   left: 0;
@@ -134,7 +135,7 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
 }
 .present-btn-exit:hover { background: rgba(214, 69, 69, 0.95); }
 
-/* 底部快捷键提示：深色胶囊底，浅色/深色背景上都清晰 */
+/* Bottom shortcut hint: dark pill, legible on light and dark backdrops */
 .present-hint {
   position: absolute;
   left: 50%;
@@ -154,10 +155,9 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
 }
 
-/* ==== [shot] ==== */
-/* ==== shot — 无头截图模式（?shot=1） ==== */
+/* ==== shot — headless screenshot mode (?shot=1) ==== */
 
-/* ---------- 无头截图模式（?shot=1，open-pptd render 使用） ---------- */
+/* ---------- Headless screenshot mode (?shot=1, used by open-pptd render) ---------- */
 .shot-mode,
 .shot-mode body {
   margin: 0;

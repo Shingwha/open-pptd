@@ -1,8 +1,8 @@
 // ============================================================================
-// types/chart.js — 图表元素类型注册（13 种子类型共享同一实现）
+// types/chart.js — chart element type registration (13 sub-types share one impl)
 // ----------------------------------------------------------------------------
-// C3 对齐官方：菜单 = CHART_META 13 类型；官方无 doughnut 类型
-// （pie.innerRadius > 0 = 环形）；新建时 encode 用官方字段名。
+// Menu = the 13 CHART_META types. There is no separate doughnut type:
+// pie with innerRadius > 0 is the ring. New charts use the official encode keys.
 // ============================================================================
 
 import { svgIcon } from "../ui.js";
@@ -10,7 +10,7 @@ import { CHART_META, nextElementId, registerType, remapEncode } from "../../pack
 
 const CHART_TYPES = Object.entries(CHART_META).map(([k, v]) => [k, v.label]);
 
-/** 图表默认模型。encode 用官方字段名（x/y/category/value/size/high/low/close/open...）。 */
+/** Default chart model. encode uses the official keys (x/y/category/value/size/high/low/close/open…). */
 function chartItem(type, label, icon, cols, rows, extra = {}) {
   return {
     id: type,
@@ -26,7 +26,7 @@ function chartItem(type, label, icon, cols, rows, extra = {}) {
   };
 }
 
-/** 官方 encode 字段名 → 默认引用前 N 列。 */
+/** Official encode keys → reference the first N columns by default. */
 function defaultEncode(type, cols) {
   const meta = CHART_META[type];
   const enc = {};
@@ -78,7 +78,7 @@ registerType({
           set: (v) => {
             const s = el.series[0];
             s.type = v;
-            s.encode = remapEncode(s.encode || {}, CHART_META[v]); // 语义重映射，保留列引用
+            s.encode = remapEncode(s.encode || {}, CHART_META[v]); // semantic remap, keeps column refs
             if (v !== "pie" && s.innerRadius != null) delete s.innerRadius;
           } },
         { kind: "checks", items: [

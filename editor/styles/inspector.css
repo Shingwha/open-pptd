@@ -1,7 +1,7 @@
-/* ==== inspector — 右侧属性面板（含窄屏遮罩） ==== */
+/* ==== inspector — right property panel (with narrow-screen mask) ==== */
 
 /* ----------------------------------------------------------------------------
-   右侧属性面板（白底平面分区）
+   Right property panel (flat white sections)
    ---------------------------------------------------------------------------- */
 .inspector {
   width: 300px;
@@ -10,11 +10,12 @@
   border-left: 1px solid var(--line);
   overflow-y: auto;
   overflow-x: hidden;
-  /* 左右分栏：宽度动画（300↔0）+ 画布逐帧跟随（view.followStageWidth），
-     收起/展开全程平滑，画布同步放大缩小，无突变、无遮挡 */
+  /* Two columns: width animation (300↔0) plus frame-by-frame canvas follow
+     (view.followStageWidth); collapse/expand stays smooth with the canvas
+     resizing in step — no jump, no overlap */
   transition: width var(--t-med) var(--ease), opacity var(--t-med) var(--ease), border-left-color var(--t-med) var(--ease);
 }
-/* 内容固定宽：宽度动画期间内部不换行闪烁，仅被容器裁剪 */
+/* Fixed inner width: no reflow flicker during the width animation, just clipping by the container */
 .inspector > * { min-width: 300px; }
 #props { padding-bottom: var(--space-6); }
 body.inspector-collapsed .inspector {
@@ -26,7 +27,7 @@ body.inspector-collapsed #btn-inspector-toggle svg { transform: rotate(180deg); 
 #btn-inspector-toggle svg { transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease); }
 
 
-/* 窄屏属性面板遮罩（仅 ≤900px 出现 inspector-open 类，桌面端无影响） */
+/* Narrow-screen property-panel mask (inspector-open appears only ≤900px; no effect on desktop) */
 .inspector-mask {
   position: fixed;
   inset: 0;
@@ -67,7 +68,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   padding: 1px 9px;
 }
 
-/* —— 选中元素的头部（徽标 + id + 删除） —— */
+/* -- Selected element head (badge + id + delete) -- */
 .inspector-item {
   display: flex;
   align-items: center;
@@ -88,7 +89,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 }
 .inspector-item .btn-danger { flex: 0 0 auto; }
 
-/* —— 平面分组 —— */
+/* -- Flat groups -- */
 .prop-group {
   padding: 13px 14px;
   border-bottom: 1px solid var(--line);
@@ -107,7 +108,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .prop-group-title:hover { color: var(--primary); }
-/* 折叠指示：纯 CSS 人字形（朝下=展开），无需改 markup */
+/* Collapse chevron: pure CSS (pointing down = expanded), no markup change */
 .prop-group-title::after {
   content: "";
   width: 6px;
@@ -122,7 +123,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .prop-group.collapsed > :not(.prop-group-title) { display: none; }
 .prop-group.collapsed .prop-group-title::after { transform: rotate(-45deg); }
 
-/* —— 三合一颜色控件（colorField）：色块按钮 + 取色器 + hex + 主题色弹层 —— */
+/* -- Three-in-one color control (colorField): swatch button + picker + hex + theme-swatch popover -- */
 .color-field { display: flex; align-items: center; gap: 6px; min-width: 0; position: relative; }
 .color-swatch-btn {
   width: 26px; height: 26px; border-radius: var(--r-2); padding: 0; cursor: pointer; flex: none;
@@ -144,10 +145,11 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .color-hex:focus-visible { border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
-/* 主题色弹层：点击色块按钮展开（fixed 定位由 JS 按按钮位置计算，不受父容器裁剪） */
+/* Theme-swatch popover: opens from the swatch button (fixed positioning computed by
+   JS from the button position, so parent clipping does not apply) */
 .color-pop {
   position: fixed;
-  z-index: var(--z-toast); /* 高于对话框遮罩（--z-modal），弹层可覆盖在任何容器之上 */
+  z-index: var(--z-toast); /* above the dialog mask (--z-modal) so it can sit over any container */
   width: 216px;
   padding: var(--space-2);
   background: var(--panel);
@@ -158,7 +160,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-1);
 }
-/* hidden 属性优先于 display:grid（否则所有弹层常显） */
+/* hidden wins over display:grid (otherwise every popover stays visible) */
 .color-pop[hidden] { display: none; }
 .color-pop-item {
   display: flex;
@@ -178,7 +180,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .color-pop-chip { width: 18px; height: 18px; border-radius: var(--r-2); border: 1px solid var(--chip-border); flex: none; }
 .color-pop-name { font-size: var(--text-xs); color: var(--ink); }
 
-/* —— 字段行 —— */
+/* -- Field rows -- */
 .prop-field {
   display: flex;
   align-items: center;
@@ -189,7 +191,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .prop-field:last-child { margin-bottom: 0; }
 .prop-label { flex: 0 0 56px; color: var(--sub); }
 
-/* 多选「混合」占位（各元素取值不同）：斜体、只读、禁用 */
+/* Multi-selection mixed placeholder (values differ): italic, read-only, disabled */
 .mix,
 input.mix {
   color: var(--faint);
@@ -243,7 +245,7 @@ input.mix:disabled {
   line-height: 1.6;
 }
 
-/* —— 双列紧凑格（数值类）：label 上置 —— */
+/* -- Two-column compact cell (numeric): label on top -- */
 .prop-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -271,7 +273,7 @@ input.mix:disabled {
   outline: 1px solid var(--sel-ring); outline-offset: 0;
 }
 
-/* —— 图标工具行（对齐等） —— */
+/* -- Icon tool row (align etc.) -- */
 .prop-icon-row {
   display: flex;
   gap: var(--space-1);
@@ -308,7 +310,7 @@ input.mix:disabled {
   cursor: pointer;
   user-select: none;
 }
-/* 原生复选框改为纯 CSS 开关（无 markup 改动）：轨道 + 滑块 */
+/* Native checkbox restyled as a CSS switch (no markup change): track + knob */
 .prop-check input[type="checkbox"] {
   appearance: none;
   width: 30px;
@@ -351,7 +353,7 @@ input.mix:disabled {
   border-radius: var(--r-2);
   padding: var(--space-2) 10px;
 }
-/* 面板级提示（页面设置模式，未选中元素时） */
+/* Panel-level hint (page setup mode, no element selected) */
 .panel-hint {
   margin: 0 14px 14px;
 }

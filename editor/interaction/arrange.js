@@ -1,29 +1,30 @@
 // ============================================================================
-// interaction/arrange.js — 排列算法（对齐 / 分布 / 组展开位移）
+// interaction/arrange.js — arrangement algorithms (align / distribute / group translation)
 // ----------------------------------------------------------------------------
-// 属性面板（U1 对齐语义二义化）与右键菜单「对齐到选区 ▸ / 水平分布 / 垂直分布」
-// 共用同一份算法，避免两处漂移：
-//   单选 → 相对页面（PAGE_WIDTH/HEIGHT）
-//   多选 → 相对选区包围盒
-// 组元素（elementType:"group"）随 children 一起位移。
+// The property panel (ambiguous align semantics) and the context menu
+// ("align to selection ▸ / distribute horizontally / vertically") share this one
+// implementation so the two never drift:
+//   single selection  → relative to the page (PAGE_WIDTH/HEIGHT)
+//   multi selection   → relative to the selection's bounding box
+// Group elements (elementType:"group") translate together with their children.
 // ============================================================================
 
 import { PAGE_HEIGHT, PAGE_WIDTH } from "../../packages/model/index.js";
 
-/** 组元素组成员（非组返回空）。list = 当前页元素数组。 */
+/** Members of a group element (empty for non-groups). list = current page elements. */
 function groupMembers(el, list) {
   if (el?.elementType !== "group" || !Array.isArray(el.children)) return [];
   return el.children.map((id) => list.find((e) => e.elementId === id)).filter(Boolean);
 }
 
-/** 位移元素（含组成员）。 */
+/** Translate an element (including group members). */
 export function translate(el, dx, dy, list) {
   el.bounds[0] += dx;
   el.bounds[1] += dy;
   for (const m of groupMembers(el, list)) translate(m, dx, dy, list);
 }
 
-/** 选中集合的包围盒 [x, y, w, h]。 */
+/** Bounding box [x, y, w, h] of a selection. */
 function unionBounds(els) {
   let x1 = Infinity;
   let y1 = Infinity;
@@ -39,7 +40,7 @@ function unionBounds(els) {
   return [x1, y1, x2 - x1, y2 - y1];
 }
 
-/** 六向对齐（mode: left/hcenter/right/top/vcenter/bottom）。 */
+/** Six-way align (mode: left/hcenter/right/top/vcenter/bottom). */
 export function alignSelection(els, mode, list) {
   const ref = els.length > 1 ? unionBounds(els) : [0, 0, PAGE_WIDTH, PAGE_HEIGHT];
   for (const el of els) {
@@ -56,7 +57,7 @@ export function alignSelection(els, mode, list) {
   }
 }
 
-/** 分布（多选 ≥3）：axis "h" 水平 / "v" 垂直，两端元素不动。 */
+/** Distribute (≥3 selected): axis "h" horizontal / "v" vertical; the two ends stay put. */
 export function distribute(els, axis, list) {
   if (els.length < 3) return;
   const size = axis === "h" ? 2 : 3;
@@ -68,8 +69,9 @@ export function distribute(els, axis, list) {
   const spanEnd = last.bounds[start] + last.bounds[size];
   const totalSize = sorted.reduce((s, e) => s + e.bounds[size], 0);
   const gap = (spanEnd - spanStart - totalSize) / (sorted.length - 1);
-  // 元素总宽超过两端跨度（gap 为负）时不动：继续按负间距重排会把元素叠在一起，
-  // 视觉上是破坏性结果（PowerPoint 也会拒绝这种分布）
+  // If the items are wider than the end-to-end span (negative gap), do nothing:
+  // re-laying them out with a negative gap stacks them, a destructive result
+  // (PowerPoint refuses such a distribution too).
   if (gap < 0) return;
   let cursor = spanStart + first.bounds[size];
   for (let i = 1; i < sorted.length - 1; i += 1) {
@@ -82,7 +84,7 @@ export function distribute(els, axis, list) {
   }
 }
 
-/** 对齐模式（右键菜单二级菜单用；glyph 与属性面板按钮一致）。 */
+/** Align modes (for the context-menu submenu; glyphs match the property-panel buttons). */
 export const ALIGN_MODES = [
   ["left", "←", "左对齐"],
   ["hcenter", "↔", "水平居中"],

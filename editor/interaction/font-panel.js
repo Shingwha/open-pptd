@@ -1,29 +1,32 @@
 // ============================================================================
-// interaction/font-panel.js — 顶栏「字体」浮层
+// interaction/font-panel.js — topbar font popover
 // ----------------------------------------------------------------------------
-// 配色浮层同款外壳（锚定按钮下方右对齐、外点关闭、resize 重定位），
-// 单列滚动三段内容：
-//   1. 我的字体：库内字体行内预览（字节已在内存，零成本）+ 子集/嵌入开关 + 删除
-//   2. 内置字体库：注册表按分类分组；「预览」按需拉字节（Cache API 跨会话缓存，
-//      大字体首次有下载成本），「添加」入库；系统字体行复制注册名
-//   3. 添加条：本地文件 / 网络 URL（回车提交）
-// 每次变更即时 fontManager.syncToDeck()，无「完成」按钮（对齐配色浮层即时生效）。
+// Same shell as the color popover (anchored below the button, right-aligned,
+// outside-click close, reposition on resize), with three scrolling sections:
+//   1. My fonts: in-library rows with inline preview (bytes already in memory,
+//      zero cost) + subset/embed toggles + delete
+//   2. Built-in font library: registry grouped by category; "preview" fetches
+//      bytes on demand (Cache API, cross-session), "add" puts it in the library;
+//      system-font rows copy the registered name
+//   3. Add bar: local file / web URL (Enter submits)
+// Every change applies fontManager.syncToDeck() immediately; there is no "done"
+// button (matching the color popover's immediate effect).
 // ============================================================================
 
 import { showToast } from "../app/toast.js";
 import { attachPopover } from "../popover.js";
 import { fetchFontBytes, loadFontRegistry } from "../../packages/model/index.js";
 
-/** 内置库分类中文名（assets/fonts/registry.json 的 category）。 */
+/** Built-in library category labels (assets/fonts/registry.json `category`). */
 const CAT_LABEL = { sans: "黑体", serif: "宋/衬线", handwriting: "手写/书法", display: "标题/艺术", pixel: "像素" };
 
-/** 行内预览示例文字：汉字 + 拉丁 + 数字，一段看全三种字形特征。 */
+/** Inline preview sample: Han characters + Latin + digits, showing all three glyph families at once. */
 const PREVIEW_TEXT = "永 Aa 36";
 
-/** 已绑定的打开函数（bindFontPanel 注册；openFontPanel 供导出对话框等外部入口调用）。 */
+/** Currently bound open function (registered by bindFontPanel; openFontPanel serves external entry points such as export dialogs). */
 let openPanel = null;
 
-/** 打开字体浮层（未绑定时静默忽略）。 */
+/** Open the font popover (silently ignored when not bound). */
 export function openFontPanel() {
   openPanel?.();
 }
@@ -32,12 +35,12 @@ export function bindFontPanel({ state, io, anchor }) {
   const fm = io.fontManager;
   const ac = new AbortController();
   let panel = null;
-  let bodyEl = null; // 滚动列表区（重建内容时保留节点，滚动位置不丢）
+  let bodyEl = null; // scrolling list area (kept across content rebuilds so scroll position survives)
   let searchEl = null;
   let noMatchEl = null;
-  /** 已注册 FontFace 的内置库 family（预览态跨渲染记忆）。 */
+  /** Families whose FontFace is already registered (preview state remembered across renders). */
   const previewed = new Set();
-  /** 注册表：undefined=加载中，null=失败，对象=就绪。 */
+  /** Registry: undefined = loading, null = failed, object = ready. */
   let registry = undefined;
 
   loadFontRegistry()
@@ -49,14 +52,14 @@ export function bindFontPanel({ state, io, anchor }) {
 
   const isOpen = () => panel?.classList.contains("open");
 
-  /** 变更后统一收口：同步资源表 + 重渲染 + 重新套用搜索过滤。 */
+  /** Single funnel after a change: sync the resource table + re-render + re-apply search filter. */
   function commit() {
     fm.syncToDeck();
     render();
   }
 
   // --------------------------------------------------------------------------
-  // 构建（外壳一次，内容每次打开/变更重建）
+  // Build (shell once; content rebuilt on every open/change)
   // --------------------------------------------------------------------------
   function build() {
     panel = document.createElement("div");
@@ -95,7 +98,7 @@ export function bindFontPanel({ state, io, anchor }) {
     render();
   }
 
-  /** 底部添加条：本地文件（多选）+ 网络 URL（form 回车提交）。 */
+  /** Bottom add bar: local file (multi-select) + web URL (form submits on Enter). */
   function buildAddBar() {
     const bar = document.createElement("div");
     bar.className = "font-add";
@@ -160,7 +163,7 @@ export function bindFontPanel({ state, io, anchor }) {
   }
 
   // --------------------------------------------------------------------------
-  // 渲染
+  // Render
   // --------------------------------------------------------------------------
   function render() {
     if (!bodyEl) return;
@@ -171,7 +174,7 @@ export function bindFontPanel({ state, io, anchor }) {
     applySearch(q);
   }
 
-  /** 「我的字体」区：库内字体行（预览 + 元信息 + 开关 + 删除）。 */
+  /** "My fonts" section: in-library rows (preview + meta + toggles + delete). */
   function renderMyFonts() {
     const wrap = document.createElement("div");
     wrap.className = "font-secwrap";
@@ -221,7 +224,7 @@ export function bindFontPanel({ state, io, anchor }) {
     main.appendChild(info);
     row.appendChild(main);
 
-    // 未加载字体的恢复入口：url 字体重试拉取；file 字体重选本地文件
+    // Recovery entry for unloaded fonts: retry the URL for url fonts, re-pick the file for file fonts
     if (!f.bytes && f.source === "url" && f.url) {
       const retryBtn = mkBtn("重试", async (btn) => {
         btn.disabled = true;
@@ -256,7 +259,7 @@ export function bindFontPanel({ state, io, anchor }) {
       row.append(mkBtn("加载文件…", () => reloadInput.click()), reloadInput);
     }
 
-    // 子集 / 嵌入开关（chip，点击即翻转，静默生效）
+    // Subset / embed toggles (chips: click flips, applied silently)
     row.appendChild(mkChip("子集", "导出时只嵌入用到的字形，体积更小", f.subset, (on) => {
       f.subset = on;
       commit();
@@ -280,7 +283,7 @@ export function bindFontPanel({ state, io, anchor }) {
     return row;
   }
 
-  /** 「内置字体库」区：注册表分类分组 + 系统字体（按需预览 + 添加 / 复制）。 */
+  /** "Built-in library" section: registry grouped by category + system fonts (preview on demand + add / copy). */
   function renderLibrary() {
     const wrap = document.createElement("div");
     wrap.className = "font-secwrap";
@@ -331,7 +334,7 @@ export function bindFontPanel({ state, io, anchor }) {
     return wrap;
   }
 
-  /** 注册表字体行：预览文字（按需加载）+ 名称 + [预览] [添加/✓]。 */
+  /** Registry row: preview text (loaded on demand) + name + [preview] [add/✓]. */
   function registryRow(f) {
     const row = document.createElement("div");
     row.className = "font-item";
@@ -402,7 +405,7 @@ export function bindFontPanel({ state, io, anchor }) {
     return row;
   }
 
-  /** 系统字体行：无字节，仅复制注册名（粘贴到元素 fontFamily）。 */
+  /** System-font row: no bytes, only copies the registered name (paste into an element's fontFamily). */
   function systemFontRow(f) {
     const row = document.createElement("div");
     row.className = "font-item";
@@ -439,7 +442,8 @@ export function bindFontPanel({ state, io, anchor }) {
   }
 
   // --------------------------------------------------------------------------
-  // 搜索过滤（行 dataset.q 命中；隐藏空分组与空分区；全空显示无结果提示）
+  // Search filter (matches row dataset.q; hides empty groups and sections; shows
+  // the no-match hint when everything is filtered out)
   // --------------------------------------------------------------------------
   function applySearch(qOverride) {
     if (!panel || !bodyEl) return;
@@ -463,9 +467,9 @@ export function bindFontPanel({ state, io, anchor }) {
   }
 
   // --------------------------------------------------------------------------
-  // 小构件
+  // Small builders
   // --------------------------------------------------------------------------
-  /** 小文字按钮（btn btn-sm）；onClick(btn) 支持异步期间的按钮态。 */
+  /** Small text button (btn btn-sm); onClick(btn) supports async button states. */
   function mkBtn(text, onClick) {
     const btn = document.createElement("button");
     btn.type = "button";
@@ -475,7 +479,7 @@ export function bindFontPanel({ state, io, anchor }) {
     return btn;
   }
 
-  /** 开关 chip：胶囊按钮，active = 主色浅底（视觉对齐 add-cat 选中态）。 */
+  /** Toggle chip: pill button, active = accent tint (visually matching the add-cat active state). */
   function mkChip(text, title, on, onToggle) {
     const chip = document.createElement("button");
     chip.type = "button";
@@ -495,7 +499,8 @@ export function bindFontPanel({ state, io, anchor }) {
   }
 
   // --------------------------------------------------------------------------
-  // 开关（外壳对齐 theme-panel.js；定位/外点关闭/resize 重定位走 popover.js）
+  // Toggle (shell matches theme-panel.js; positioning / outside-click / resize
+  // repositioning go through popover.js)
   // --------------------------------------------------------------------------
   let popover = null;
 
@@ -526,7 +531,7 @@ export function bindFontPanel({ state, io, anchor }) {
   openPanel = open;
 
   return {
-    /** 释放：解绑锚点监听、摘掉浮层与全局关闭监听、注销外部入口。 */
+    /** Release: detach the anchor listener, drop the popover and global close listeners, unregister the external entry. */
     destroy() {
       ac.abort();
       popover?.destroy();

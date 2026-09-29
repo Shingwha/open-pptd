@@ -1,15 +1,16 @@
 // ============================================================================
-// types/icon.js — 图标元素类型 UI 分片注册（Font Awesome 免费库，SVG 图片嵌入导出）
+// types/icon.js — icon element UI shards (Font Awesome free set, SVG exported inline)
 // ----------------------------------------------------------------------------
-// render/toXml 分片分别由 packages/renderer/types、packages/writer/types 注册；
-// 图标选择走 openIconPicker（搜索 + FA 官方分类，约 2000 图标）。
+// The render/toXml shards are registered by packages/renderer/types and
+// packages/writer/types. Icon picking goes through openIconPicker (search plus
+// the official FA categories, ~2000 icons).
 // ============================================================================
 
 import { openIconPicker } from "../interaction/dialogs/icon-editor.js";
 import { getIconRegistrySync } from "../app/project/icons.js";
 import { nextElementId, registerType, resolveIconName } from "../../packages/model/index.js";
 
-/** 图标默认模型（官方 iconName 格式 "style:name"，前缀 fas/far/fab）。 */
+/** Default icon model (official iconName format "style:name", prefix fas/far/fab). */
 export function iconElement(raw = "fas:star", bounds = [380, 200, 72, 72]) {
   return {
     elementId: nextElementId("icon"),

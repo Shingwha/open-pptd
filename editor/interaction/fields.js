@@ -1,24 +1,25 @@
 // ============================================================================
-// interaction/fields.js — 声明式字段渲染器（属性面板 / 表格样式面板共用）
+// interaction/fields.js — declarative field renderer (property panel / table style panel)
 // ----------------------------------------------------------------------------
-// 布局规则唯一（与属性面板完全一致）：
-//   num      双列紧凑格（label 上置），两两成行     {kind:"num", label, get, set, min?, max?, step?}
-//   text     整行文本框                            {kind:"text", label, get, set, placeholder?}
-//   textarea 整行多行文本                          {kind:"textarea", label, get, set, placeholder?}
-//   select   整行下拉                              {kind:"select", label, options, get, set}
-//   color    整行颜色（色块弹层 + 取色器 + hex）    {kind:"color", label, get, set}
-//   checks   整行复选框组                          {kind:"checks", items:[{label, get, set}]}
-//   button   整行按钮                              {kind:"button", label, onClick, className?}
-//   hint     整行提示                              {kind:"hint", text}
-//
-// 控件工厂 h 由消费方提供（属性面板带提交事务；表格面板直接提交），
-// 字段只声明"调什么"，交互事务由消费方决定。
+// One layout rule (identical to the property panel):
+//   num      two-column compact cell (label on top), paired into rows
+//            {kind:"num", label, get, set, min?, max?, step?}
+//   text     full-width text input                  {kind:"text", label, get, set, placeholder?}
+//   textarea full-width multi-line text             {kind:"textarea", label, get, set, placeholder?}
+//   select   full-width dropdown                    {kind:"select", label, options, get, set}
+//   color    full-width color (swatch popover + picker + hex)  {kind:"color", label, get, set}
+//   checks   full-width checkbox group              {kind:"checks", items:[{label, get, set}]}
+//   button   full-width button                      {kind:"button", label, onClick, className?}
+//   hint     full-width hint                        {kind:"hint", text}
+// The control factory h is supplied by the consumer (the property panel adds a
+// commit transaction; the table panel commits directly). Fields only declare
+// *what to call*; the transaction policy belongs to the consumer.
 // ============================================================================
 
 import * as ui from "../ui.js";
 import { resolveColor } from "../../packages/model/index.js";
 
-/** 主题语义色色板（供 colorField swatches 使用，属性面板/表格/图表共用）。 */
+/** Theme semantic-color swatches (for colorField swatches; shared by property/table/chart panels). */
 export function themeSwatches(theme) {
   const c = theme?.colors || {};
   const keys = ["primary", "accent", "text", "muted", "line", "success", "warning", "danger", "primaryDeep", "primarySoft", "primaryTint", "accent3"];
@@ -26,12 +27,13 @@ export function themeSwatches(theme) {
 }
 
 /**
- * 声明式字段控件工厂（属性面板 / 表格样式面板 / 图表样式面板共用）。
+ * Declarative field-control factory (shared by property / table / chart style panels).
  * @param {object} opts
- *  - theme: 主题对象或取主题函数（colorField 的 resolve/swatches 数据源）
- *  - wrap(fn): 可选提交包装——属性面板用它包事务+即时刷新，对话框直接传 fn
- *  - onFocus/onBlur: 可选事务钩子（属性面板的 beginChange/endChange）
- *  - extra: 附加助手（属性面板的 fontOptions/openEditor 等）
+ *  - theme: theme object or getter (data source for colorField resolve/swatches)
+ *  - wrap(fn): optional commit wrapper — the property panel wraps it with the
+ *    transaction + immediate refresh; dialogs pass fn straight through
+ *  - onFocus/onBlur: optional transaction hooks (the property panel's beginChange/endChange)
+ *  - extra: extra helpers (the property panel's fontOptions/openEditor etc.)
  */
 export function fieldHandlers({ theme, wrap = (f) => f, onFocus, onBlur, extra = {} } = {}) {
   const themeOf = typeof theme === "function" ? theme : () => theme;
@@ -53,14 +55,14 @@ export function fieldHandlers({ theme, wrap = (f) => f, onFocus, onBlur, extra =
   };
 }
 
-/** 渲染一个分组（group 标题可折叠）。 */
+/** Render one group (its title collapsible). */
 export function renderGroup(group, h) {
   const g = ui.group(group.title || "");
   renderFields(g, group.fields || [], h);
   return g;
 }
 
-/** 渲染字段列表到容器（num 两两成行，其余整行）。 */
+/** Render a field list into a container (num pairs into rows, everything else full width). */
 function renderFields(g, fields, h) {
   let grid = null;
   const ensureGrid = () => {
@@ -75,7 +77,7 @@ function renderFields(g, fields, h) {
   for (const f of fields) {
     if (f.kind === "num") {
       ensureGrid().appendChild(ui.cell(f.label, h.numInput(f.get(), f.set, f)));
-      if (grid.children.length === 2) grid = null; // 两两成行
+      if (grid.children.length === 2) grid = null; // paired into rows
     } else {
       grid = null;
       const node = renderFullField(f, h);
@@ -84,7 +86,7 @@ function renderFields(g, fields, h) {
   }
 }
 
-/** 整行字段分派。 */
+/** Dispatch a full-width field. */
 function renderFullField(f, h) {
   switch (f.kind) {
     case "text":

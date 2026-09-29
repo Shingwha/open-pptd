@@ -1,7 +1,8 @@
 // ============================================================================
-// types/text.js — 文字元素类型 UI 分片注册（属性/快速条/菜单）
+// types/text.js — text element UI shards (props / quickbar / menu)
 // ----------------------------------------------------------------------------
-// render/toXml 分片分别由 packages/renderer/types、packages/writer/types 注册。
+// The render/toXml shards are registered by packages/renderer/types and
+// packages/writer/types respectively.
 // ============================================================================
 
 import { svgIcon } from "../ui.js";
@@ -48,7 +49,8 @@ registerType({
     return [{
       title: "文字",
       fields: [
-        // 内容：富文本 DSL 源码编辑（保留 <p>/<span> 标签与 \(...\) 公式，精确往返）
+        // Content: rich-text DSL source editing (keeps <p>/<span> tags and \(...\)
+        // formulas for an exact round trip)
         { kind: "textarea", label: "内容", rows: 4,
           get: () => el.content?.text || "",
           set: (v) => { if (!el.content) el.content = {}; el.content.text = v; },
@@ -118,7 +120,8 @@ registerType({
     h.select(ALIGN_OPTIONS, Array.isArray(c.align) ? c.align[0] : "left", (v) =>
       h.change(() => {
         if (!el.content) el.content = {};
-        // 垂直对齐缺省与官方一致（top），避免快速条调水平对齐时把垂直悄悄写成 middle
+        // Default vertical alignment is top (matches PowerPoint) so that changing
+        // horizontal alignment from the quickbar never silently writes "middle"
         el.content.align = [v, c.align?.[1] || "top"];
       })
     );

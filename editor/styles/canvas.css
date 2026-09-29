@@ -1,14 +1,9 @@
 /* ============================================================================
-   canvas.css — canvas — 画布区（舞台/选中框 + 悬浮快调条）
-   （U1/T5 由原 canvas + quickbar.css 合并；8 文件收敛，无加载顺序依赖）
+   canvas.css — canvas area (stage/selection box + floating quickbar)
    ============================================================================ */
 
-/* ==== [canvas] ==== */
-/* ==== canvas — 画布区与选中框 / 顶栏状态簇 / 页面错误框 ==== */
+/* ==== canvas — canvas area with selection box / topbar status cluster / page error box ==== */
 
-/* ----------------------------------------------------------------------------
-   画布区
-   ---------------------------------------------------------------------------- */
 .stage {
   position: relative;
   flex: 1;
@@ -23,8 +18,8 @@
 
 .canvas-wrap { position: relative; }
 
-/* 拖拽平移中（stage.js 加 .panning）：全舞台抓手光标；
-   空格抓手（.space-pan）：按住空格时任何位置均为可拖平移状态 */
+/* Dragging to pan (stage.js adds .panning): hand cursor across the whole stage;
+   space hand tool (.space-pan): while space is held, any position is draggable */
 .stage.panning,
 .stage.panning *,
 .stage.space-pan,
@@ -42,12 +37,12 @@
 }
 
 /* ----------------------------------------------------------------------------
-   选中框（interaction/canvas.js）：canvas-wrap 内的不缩放图层。
-   几何由 JS 按 canvas._scale 换算，边框 / 手柄恒定屏幕尺寸（任何缩放下
-   视觉一致、命中目标稳定）。对齐设计稿 editor-design-reference.html §02：
-     单选 .el-single（1px 实线环）+ 四角 .h 方形控制点 + .rot 旋转柄
-     多选/组 .member（成员细边框）+ .mbounds（虚线包围盒）+ 四角手柄
-     框选 .marquee（虚线框）
+   Selection box (interaction/canvas.js): a non-scaled layer inside canvas-wrap.
+   Geometry is computed by JS from canvas._scale; borders/handles keep a constant
+   on-screen size (visually consistent and stably hittable at any zoom):
+     single .el-single (1px solid ring) + four .h square handles + .rot rotate handle
+     multi/group .member (thin member border) + .mbounds (dashed bounds) + corner handles
+     marquee .marquee (dashed box)
    ---------------------------------------------------------------------------- */
 .sel-overlay {
   position: absolute;
@@ -62,19 +57,19 @@
   pointer-events: none;
 }
 
-/* 单选：1px 实线环（用环不用辉光）+ 淡主色底 */
+/* Single: 1px solid ring (ring, not a glow) + faint accent tint */
 .el-single {
   outline: 1px solid var(--sel-ring);
   outline-offset: 0;
   background: var(--sel-bg);
 }
 
-/* 多选/组：虚线包围盒（区分「包围盒」与「成员」） */
+/* Multi/group: dashed bounds (distinguishing "bounds" from "member") */
 .mbounds {
   border: 1px dashed var(--sel-ring);
 }
 
-/* 多选成员：1px 细边框（不铺底，避免遮挡内容） */
+/* Multi member: 1px thin border (no fill, so content is not obscured) */
 .member {
   position: absolute;
   box-sizing: border-box;
@@ -82,7 +77,7 @@
   pointer-events: none;
 }
 
-/* 框选 marquee：虚线框 + 极淡底 */
+/* Marquee: dashed box + very faint fill */
 .marquee {
   position: absolute;
   box-sizing: border-box;
@@ -91,7 +86,7 @@
   pointer-events: none;
 }
 
-/* 四角控制点：方形（视觉 7px，命中区 20px 保证可点） */
+/* Corner handles: square (7px visual, 20px hit area for reliable clicks) */
 .h {
   position: absolute;
   width: 20px;
@@ -115,8 +110,8 @@
 .h.br { right: -10px; bottom: -10px; }
 .h:hover::before { background: var(--sel-ring); }
 
-/* 旋转柄：连接杆 + 圆形箭头芯片（悬于框底中点下方，随元素旋转；
-   顶部空间整个让给快速条） */
+/* Rotate handle: stem + round arrow chip (below the box's bottom center, rotates
+   with the element; the space above is entirely left to the quickbar) */
 .sel-rotate-stem {
   position: absolute;
   left: 50%;
@@ -160,7 +155,7 @@
 }
 .sel-rotate-ic svg { width: 10px; height: 10px; }
 
-/* 尺寸 / 角度角标：仅手势进行中显示；随框旋转但自身反向补偿保持水平 */
+/* Size / angle badge: shown only during a gesture; rotates with the box but counter-rotates to stay level */
 .sel-size {
   position: absolute;
   right: 0;
@@ -181,20 +176,20 @@
 
 .canvas {
   position: relative;
-  /* 兜底尺寸：renderCanvas 按 deck.size 内联覆盖（海报等任意画布比例） */
+  /* Fallback size: renderCanvas overrides it inline from deck.size (posters etc.) */
   width: 960px;
   height: 540px;
-  /* 纸张底：深色主题下也是浅色纸面（版面可读），见 tokens.css --paper */
+  /* Paper backdrop: a light sheet even in dark mode (layout readability), see tokens.css --paper */
   background: var(--paper);
   box-shadow: var(--shadow-sm), var(--shadow-lg);
-  /* 缩放锚点居中：flex 居中的布局盒中心 = 视觉中心，左右完全对称 */
+  /* Zoom about the center: the flex-centered layout box center = the visual center, perfectly symmetric */
   transform-origin: center;
   overflow: hidden;
-  /* 触屏：捏合缩放 / 拖动元素在画布内自行处理，不让浏览器接管手势 */
+  /* Touch: pinch zoom / element drag are handled inside the canvas; do not hand gestures to the browser */
   touch-action: none;
 }
 
-/* 顶栏状态簇（原底部状态栏整组迁移，live-reload.js） */
+/* Topbar status cluster (the whole former bottom status bar moved here, live-reload.js) */
 .tb-status {
   display: flex;
   align-items: center;
@@ -227,7 +222,7 @@
   outline: 1px solid var(--sel-ring); outline-offset: 0;
 }
 
-/* 页面解析失败红框（renderer/page.js） */
+/* Page parse-failure red box (renderer/page.js) */
 .page-error {
   position: absolute;
   inset: 0;
@@ -243,7 +238,7 @@
   white-space: pre-line;
 }
 
-/* ==== 渐进加载：画布遮罩（启动空白 + 当前页资产未就绪期间盖住失败占位） ==== */
+/* ==== Progressive loading: canvas mask (covers the failure placeholder during blank startup and while the current page's assets are pending) ==== */
 .canvas-loading {
   position: absolute;
   inset: 0;
@@ -254,12 +249,8 @@
   animation: pptd-shimmer 1.2s infinite linear;
 }
 
-/* ==== [quickbar] ==== */
-/* ==== quickbar — 浮动快调条（选中元素时） ==== */
+/* ==== quickbar — floating quick-adjust bar (when an element is selected) ==== */
 
-/* ----------------------------------------------------------------------------
-   浮动快调条（选中元素时）
-   ---------------------------------------------------------------------------- */
 .quickbar {
   position: absolute;
   z-index: var(--z-dropdown);

@@ -1,21 +1,22 @@
 // ============================================================================
-// interaction/dialogs/icon-editor.js — 图标选择器（搜索 + FA 官方分类 + 懒加载网格）
+// interaction/dialogs/icon-editor.js — icon picker (search + FA official categories + lazy grid)
 // ----------------------------------------------------------------------------
-// 数据源 assets/icons/registry.json（Font Awesome Free，约 2000 图标）；
-// 缩略图经 ensureIcon 按需取 SVG（本地/CDN + Cache API，同编辑器预读链）。
+// Data source: assets/icons/registry.json (Font Awesome Free, ~2000 icons).
+// Thumbnails are fetched on demand via ensureIcon (local/CDN + Cache API, the
+// same preload chain as the editor).
 // ============================================================================
 
 import { showDialog } from "./base.js";
 import { getIconRegistry, ensureIcon, queryIconEntries } from "../../app/project/icons.js";
 import { iconThumb } from "../../../packages/renderer/index.js";
 
-/** 首屏渲染上限（全量 2000+ 网格会卡；输入关键词/选分类后缩小范围全渲染）。 */
+/** First-render cap (a full 2000+ grid would jank; typing a keyword or picking a category widens the range). */
 const RENDER_CAP = 96;
 
 /**
- * 渲染图标浏览器（搜索框 + 分类侧栏 + 结果网格）。
- * @param {HTMLElement} mount 挂载容器
- * @param {object} opts { current 当前 iconName, onPick(rawIconName) }
+ * Render the icon browser (search box + category sidebar + result grid).
+ * @param {HTMLElement} mount mount container
+ * @param {object} opts { current current iconName, onPick(rawIconName) }
  */
 async function renderIconBrowser(mount, { current = null, onPick } = {}) {
   mount.innerHTML = "";
@@ -39,11 +40,11 @@ async function renderIconBrowser(mount, { current = null, onPick } = {}) {
   root.appendChild(browser);
   mount.appendChild(root);
 
-  // 分类侧栏：全部 + FA 官方分类（label 排序，计数）
+  // Category sidebar: all + FA official categories (label-sorted, with counts)
   const catIds = Object.keys(registry.cats).sort((a, b) =>
     String(registry.cats[a]).localeCompare(String(registry.cats[b]))
   );
-  let activeCat = null; // null = 全部
+  let activeCat = null; // null = all
 
   function renderSidebar() {
     sidebar.innerHTML = "";
@@ -88,7 +89,7 @@ async function renderIconBrowser(mount, { current = null, onPick } = {}) {
         btn.closest(".dialog-overlay")?.remove();
       };
       grid.appendChild(btn);
-      // 懒加载缩略图（命中编辑器 iconMap 缓存则同步渲染）
+      // Lazy thumbnail (renders synchronously when the editor's iconMap cache hits)
       ensureIcon(item.raw).then((def) => {
         if (def && btn.isConnected) btn.innerHTML = iconThumb(def);
       });
@@ -109,8 +110,8 @@ async function renderIconBrowser(mount, { current = null, onPick } = {}) {
 }
 
 /**
- * 打开图标选择器对话框。
- * @param {object} opts { current 当前 iconName, onPick(rawIconName) }
+ * Open the icon picker dialog.
+ * @param {object} opts { current current iconName, onPick(rawIconName) }
  */
 export function openIconPicker(opts = {}) {
   const root = document.createElement("div");
