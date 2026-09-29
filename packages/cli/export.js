@@ -17,12 +17,67 @@ import { buildPptx, magicMatches } from "../writer/pptx.js";
 import { skipReasonText } from "../writer/font.js";
 import { decodeDataUrl, imageSize, safeFileName } from "../writer/util.js";
 import { ZipWriter } from "../writer/zip.js";
+import { paths } from "../paths.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-/** 技能根目录（assets/fonts 内置字体库相对此定位）。 */
+/** 技能根目录（assets/ 相对此定位）。 */
 export const SKILL_ROOT = join(__dirname, "..", "..");
-export const FONT_LIB_DIR = join(SKILL_ROOT, "assets", "fonts");
-export const ICON_LIB_DIR = join(SKILL_ROOT, "assets", "icons");
+
+// ----------------------------------------------------------------------------
+// 常量拆分（契约 5）：**注册表目录**（包内，只含 registry.json，与代码版本耦合）
+// 与**字节目录**（home 大件，可删可重下）分开。历史上两者共用 FONT_LIB_DIR/
+// ICON_LIB_DIR，资源外置后必须分离：注册表读包内（home 永不遮蔽），字节读 home
+// 优先、包内回退（现有安装零迁移）。
+// ----------------------------------------------------------------------------
+/** 包内字体注册表目录（只 registry.json）。 */
+export const FONT_REGISTRY_DIR = join(SKILL_ROOT, "assets", "fonts");
+/** 包内图标注册表目录（只 registry.json）。 */
+export const ICON_REGISTRY_DIR = join(SKILL_ROOT, "assets", "icons");
+/** home 字体字节目录（写盘目标）。 */
+export const FONT_BYTES_DIR = paths.fonts;
+/** home 图标字节目录（写盘目标）。 */
+export const ICON_BYTES_DIR = paths.icons;
+/** 兼容别名（外部脚本/既有调用方）：语义 = 包内注册表目录。 */
+export const FONT_LIB_DIR = FONT_REGISTRY_DIR;
+export const ICON_LIB_DIR = ICON_REGISTRY_DIR;
+
+/** home 字节目录 → 包内同名目录（读侧回退映射；同盘 rename 的读侧对称）。 */
+const READ_FALLBACKS = [
+  [FONT_BYTES_DIR, FONT_REGISTRY_DIR],
+  [ICON_BYTES_DIR, ICON_REGISTRY_DIR],
+];
+
+function fallbackPath(p) {
+  const norm = String(p).replace(/\\/g, "/");
+  for (const [from, to] of READ_FALLBACKS) {
+    const f = String(from).replace(/\\/g, "/").replace(/\/+$/, "");
+    const t = String(to).replace(/\\/g, "/").replace(/\/+$/, "");
+    if (f === t) continue;
+    if (norm === f) return to;
+    if (norm.startsWith(f + "/")) return join(to, norm.slice(f.length + 1));
+  }
+  return null;
+}
+
+/**
+ * writer 注入的 fs：把「读三级」落在解析层。
+ * writer 的字体/图标加载按 `join(fontDir|iconDir, name)` 读盘且本工单禁触其逻辑，
+ * 故回退在注入的 fs 内完成：home 缺文件（含 `registry.json`——按设计永不在 home，
+ * 只会落在包内）时改读包内同名路径。浏览器分支不经过本函数（Node 专用）。
+ */
+export function createResourceFs() {
+  return {
+    readFileSync(p, ...rest) {
+      try {
+        return readFileSync(p, ...rest);
+      } catch (err) {
+        const alt = fallbackPath(p);
+        if (alt) return readFileSync(alt, ...rest);
+        throw err;
+      }
+    },
+  };
+}
 
 const EXT_BY_EXTNAME = { ".png": "png", ".jpg": "jpg", ".jpeg": "jpg", ".gif": "gif" };
 
@@ -113,14 +168,14 @@ export async function exportProject({ manifest, outPath = null }) {
 }
 
 /** 导出 PPTX。字体嵌入统一由 writer 处理：deck.fonts 的 file/url 或注册表引用
- *  （{family: <注册名>}）→ 从内置字体库（FONT_LIB_DIR）取字 → 子集化 → EOT 嵌入。
+ *  （{family: <注册名>}）→ 从字体库取字（home 优先 → 包内回退）→ 子集化 → EOT 嵌入。
  *  fullFonts=true 时全量嵌入（跳过子集化，导出后可继续编辑，对应 --full-fonts）。 */
 export async function exportDeck({ manifest, outPath = null, embedFonts = true, fullFonts = false, theme = null }) {
   const { manifestText, deckDir, pageFiles } = loadProjectFiles(manifest);
   const deck = parseDeck(manifestText, pageFiles);
   // 导出前置闸门（v3 §4.4）：error 阻断导出，warning 报告后继续
-  const fontRegistry = JSON.parse(readFileSync(join(FONT_LIB_DIR, "registry.json"), "utf8"));
-  const iconRegistry = JSON.parse(readFileSync(join(ICON_LIB_DIR, "registry.json"), "utf8"));
+  const fontRegistry = JSON.parse(readFileSync(join(FONT_REGISTRY_DIR, "registry.json"), "utf8"));
+  const iconRegistry = JSON.parse(readFileSync(join(ICON_REGISTRY_DIR, "registry.json"), "utf8"));
   const report = validateDeck(deck, {
     fileExists: (rel) => existsSync(join(deckDir, rel)),
     fontRegistry,
@@ -152,10 +207,12 @@ export async function exportDeck({ manifest, outPath = null, embedFonts = true, 
     loadImage: createLoadImage(deckDir),
     embedFonts,
     fullFonts,
-    fontDir: FONT_LIB_DIR,
-    fs: { readFileSync },
+    // 字节读 home 优先 → 包内回退；registry.json 恒读包内（registryDir 显式指定）
+    fontDir: FONT_BYTES_DIR,
+    registryDir: FONT_REGISTRY_DIR,
+    fs: createResourceFs(),
     iconRegistry,
-    iconDir: ICON_LIB_DIR,
+    iconDir: ICON_BYTES_DIR,
     onFontSkipped: (list) => skipped.push(...list),
     onIconSkipped: (list) => skippedIcons.push(...list),
   });
@@ -169,5 +226,5 @@ export async function exportDeck({ manifest, outPath = null, embedFonts = true, 
   }
   const finalPath = outPath || join(deckDir, safeFileName(deck.title || "deck") + ".pptx");
   writeFileSync(finalPath, bytes);
-  return { bytes, outPath: finalPath };
+  return { bytes, outPath: finalPath, skipped, skippedIcons };
 }
