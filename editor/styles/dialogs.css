@@ -6,7 +6,7 @@
 .dialog-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(28, 37, 50, 0.45);
+  background: var(--mask);
   display: flex;
   align-items: center;
   justify-content: center;

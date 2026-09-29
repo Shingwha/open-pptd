@@ -31,7 +31,7 @@ body.inspector-collapsed #btn-inspector-toggle svg { transform: rotate(180deg); 
   position: fixed;
   inset: 0;
   z-index: var(--z-dropdown);
-  background: rgba(28, 37, 50, 0.42);
+  background: var(--mask);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s;
@@ -176,7 +176,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .color-pop-item:hover { background: var(--primary-soft); border-color: var(--primary-tint); }
 .color-pop-item:active { background: var(--primary-tint); }
 .color-pop-item:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
-.color-pop-chip { width: 18px; height: 18px; border-radius: var(--radius-sm); border: 1px solid rgba(0, 0, 0, 0.12); flex: none; }
+.color-pop-chip { width: 18px; height: 18px; border-radius: var(--radius-sm); border: 1px solid var(--chip-border); flex: none; }
 .color-pop-name { font-size: var(--text-xs); color: var(--ink); }
 
 /* —— 字段行 —— */

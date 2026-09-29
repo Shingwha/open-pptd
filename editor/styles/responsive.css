@@ -39,7 +39,7 @@
     border-left: 0;
     border-top: 1px solid var(--line);
     border-radius: 16px 16px 0 0;
-    box-shadow: 0 -8px 32px rgba(28, 37, 50, 0.16);
+    box-shadow: var(--shadow-sheet);
     transform: translateY(102%);
     transition: transform 0.22s ease;
   }

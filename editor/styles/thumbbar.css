@@ -71,8 +71,8 @@
   height: 18px;
   border: 0;
   border-radius: var(--radius-sm);
-  background: rgba(28, 37, 50, 0.65);
-  color: #fff;
+  background: var(--thumb-chip-bg);
+  color: var(--thumb-chip-ink);
   font-size: var(--text-xs);
   line-height: 1;
   cursor: pointer;
@@ -89,8 +89,8 @@
   bottom: 4px;
   font-size: var(--text-xs);
   font-weight: 600;
-  color: rgba(28, 37, 50, 0.6);
-  background: rgba(255, 255, 255, 0.85);
+  color: var(--thumb-num-ink);
+  background: var(--thumb-num-bg);
   border-radius: var(--radius-sm);
   padding: 1px 6px;
   pointer-events: none;
