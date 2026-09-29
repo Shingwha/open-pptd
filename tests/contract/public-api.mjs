@@ -238,7 +238,50 @@ async function main() {
     }
   }
 
-  console.log(`\n结果: ${fail === 0 ? "契约通过 ✅" : `契约破坏 ❌（${fail} 处）`}${skip ? `；待落地跳过 ${skip} 项（paths/config，W2/A3 后收紧）` : ""}`);
+  console.log("\n=== 6. 契约 5：paths / config（W2/A3 收紧）===");
+  {
+    const PATHS_SPEC = {
+      file: "packages/paths.js",
+      names: ["openPptdHome", "ensureHome", "paths", "resourceRoots", "resolveCliRoot", "contractRoot", "resolveResourceFile"],
+    };
+    const CONFIG_SPEC = { file: "packages/config.js", names: ["readConfig", "writeConfig", "CONFIG_VERSION"] };
+    for (const spec of [PATHS_SPEC, CONFIG_SPEC]) {
+      const abs = join(ROOT, spec.file);
+      if (!existsSync(abs)) {
+        bad(`${spec.file} 存在`, "文件缺失");
+        continue;
+      }
+      let mod;
+      try {
+        mod = await import(pathToFileURL(abs).href);
+      } catch (e) {
+        bad(`${spec.file} 可静态导入`, e.message);
+        continue;
+      }
+      const missing = spec.names.filter((n) => !(n in mod));
+      if (missing.length) bad(`${spec.file} 导出名齐全`, `缺 ${missing.join(", ")}`);
+      else ok(`${spec.file} 导出名齐全（${spec.names.length} 个）`);
+    }
+    const pmod = await import(pathToFileURL(join(ROOT, PATHS_SPEC.file)).href);
+    // registry 必须只有一根，且不含 home（版本耦合，永不被 home 遮蔽）
+    const reg = pmod.resourceRoots?.registry;
+    if (Array.isArray(reg) && reg.length === 1 && !reg.includes(pmod.paths?.home)) ok("resourceRoots.registry 仅一根且不含 home");
+    else bad("resourceRoots.registry 仅一根且不含 home", JSON.stringify(reg));
+    const fRoots = pmod.resourceRoots?.fonts;
+    if (Array.isArray(fRoots) && fRoots.length === 2 && fRoots[0] === pmod.paths.fonts && !fRoots.includes(reg?.[0])) {
+      ok("resourceRoots.fonts = [home/assets/fonts, 包内]（home 优先）");
+    } else bad("resourceRoots.fonts 顺序", JSON.stringify(fRoots));
+    const pathKeys = ["home", "assets", "fonts", "icons", "cli", "cliCurrent", "config", "state", "cache", "tmp"];
+    const lack = pathKeys.filter((k) => typeof pmod.paths?.[k] !== "string");
+    if (lack.length) bad("paths 目录字段齐全", `缺 ${lack.join(", ")}`);
+    else ok(`paths 目录字段齐全（${pathKeys.length} 个）`);
+    const cmod = await import(pathToFileURL(join(ROOT, CONFIG_SPEC.file)).href);
+    const cfg = cmod.readConfig();
+    if (cfg && typeof cfg.version === "number") ok("readConfig() 返回含 version 的配置");
+    else bad("readConfig() 返回含 version 的配置", JSON.stringify(cfg));
+  }
+
+  console.log(`\n结果: ${fail === 0 ? "契约通过 ✅" : `契约破坏 ❌（${fail} 处）`}${skip ? `；待落地跳过 ${skip} 项` : ""}`);
   if (pending.length) console.log(`待落地: ${pending.join("、")}`);
   process.exit(fail ? 1 : 0);
 }

@@ -16,5 +16,5 @@ export * from "./renderer/index.js";
 export * from "./writer/index.js";
 export * from "./server/index.js";
 export * from "./cli/index.js";
-
-// TODO(W2/A3): re-export paths/config
+export * from "./paths.js";
+export * from "./config.js";
