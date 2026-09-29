@@ -20,6 +20,15 @@ export const ICON_REGISTRY_DIR = join(PACKAGE_ROOT, "assets", "icons");
 /** 图标前缀 ↔ classic SVG 目录（与 model/icon-fa.js 的 STYLE_DIRS 同源）。 */
 export const ICON_STYLES = { fas: "solid", far: "regular", fab: "brands" };
 
+/** Package version (embedded in asset zip names). Missing/unreadable → "0.0.0". */
+export function packageVersion() {
+  try {
+    return JSON.parse(readFileSync(join(PACKAGE_ROOT, "package.json"), "utf8")).version || "0.0.0";
+  } catch {
+    return "0.0.0";
+  }
+}
+
 /** 读取包内字体注册表。 */
 export function readFontRegistry() {
   return JSON.parse(readFileSync(join(FONT_REGISTRY_DIR, "registry.json"), "utf8"));

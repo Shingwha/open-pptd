@@ -9,19 +9,11 @@
 // --json：stdout 只输出一行 JSON（人类文案走 stderr）。
 // ============================================================================
 
-import { existsSync, writeFileSync, rmSync, accessSync, constants, readFileSync } from "node:fs";
+import { existsSync, writeFileSync, rmSync, accessSync, constants } from "node:fs";
 import { join, dirname, delimiter } from "node:path";
-import { paths, PACKAGE_ROOT, resourceRoots, resolveCliRoot, contractRoot } from "../paths.js";
-import { readFontRegistry, readIconRegistry, fontReadyInfo, iconReadyInfo } from "./resource-status.js";
+import { paths, resourceRoots, resolveCliRoot, contractRoot } from "../paths.js";
+import { readFontRegistry, readIconRegistry, fontReadyInfo, iconReadyInfo, packageVersion } from "./resource-status.js";
 import { readConfig } from "../config.js";
-
-function packageVersion() {
-  try {
-    return JSON.parse(readFileSync(join(PACKAGE_ROOT, "package.json"), "utf8")).version || "0.0.0";
-  } catch {
-    return "0.0.0";
-  }
-}
 
 /** 最近已存在的祖先目录（探针写这里，避免为测可写性而新建 home）。 */
 function nearestExisting(dir) {

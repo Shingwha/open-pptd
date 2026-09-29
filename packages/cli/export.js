@@ -18,6 +18,7 @@ import { skipReasonText } from "../writer/font.js";
 import { decodeDataUrl, imageSize, safeFileName } from "../writer/util.js";
 import { ZipWriter } from "../writer/zip.js";
 import { paths } from "../paths.js";
+import { readFontRegistry, readIconRegistry } from "./resource-status.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 /** 技能根目录（assets/ 相对此定位）。 */
@@ -98,6 +99,11 @@ export function loadProjectFiles(manifest) {
   return { manifestText, manifestObj, deckDir, pageFiles };
 }
 
+/** 校验问题的位置前缀（"第N页 elementId"，两者可有可无）；check 与 export 闸门共用。 */
+export function issueLocation(issue) {
+  return [issue.page != null ? `第${issue.page}页` : null, issue.elementId].filter(Boolean).join(" ");
+}
+
 /** 图片加载器：src 为 dataURL 直接解码，否则按 deck 目录相对路径读文件。 */
 function createLoadImage(deckDir) {
   return (src) => {
@@ -174,20 +180,20 @@ export async function exportDeck({ manifest, outPath = null, embedFonts = true, 
   const { manifestText, deckDir, pageFiles } = loadProjectFiles(manifest);
   const deck = parseDeck(manifestText, pageFiles);
   // 导出前置闸门（v3 §4.4）：error 阻断导出，warning 报告后继续
-  const fontRegistry = JSON.parse(readFileSync(join(FONT_REGISTRY_DIR, "registry.json"), "utf8"));
-  const iconRegistry = JSON.parse(readFileSync(join(ICON_REGISTRY_DIR, "registry.json"), "utf8"));
+  const fontRegistry = readFontRegistry();
+  const iconRegistry = readIconRegistry();
   const report = validateDeck(deck, {
     fileExists: (rel) => existsSync(join(deckDir, rel)),
     fontRegistry,
     iconRegistry,
   });
   for (const issue of report.warnings) {
-    const at = [issue.page != null ? `第${issue.page}页` : null, issue.elementId].filter(Boolean).join(" ");
+    const at = issueLocation(issue);
     console.warn(`⚠ [${issue.rule}] ${at ? at + " " : ""}${issue.message}`);
   }
   if (report.errors.length) {
     const lines = report.errors.map((issue) => {
-      const at = [issue.page != null ? `第${issue.page}页` : null, issue.elementId].filter(Boolean).join(" ");
+      const at = issueLocation(issue);
       return `  ✗ [${issue.rule}] ${at ? at + " " : ""}${issue.message}`;
     });
     throw new Error(`deck 校验未通过（${report.errors.length} 个错误，先用 check 命令排查）:\n${lines.join("\n")}`);

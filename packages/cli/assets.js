@@ -17,20 +17,11 @@ import { existsSync, readFileSync, rmSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { inflateRawSync } from "node:zlib";
-import { paths, PACKAGE_ROOT, ensureHome, atomicWriteFile, dirSize } from "../paths.js";
-import { readFontRegistry, readIconRegistry, fontReadyInfo, iconReadyInfo } from "./resource-status.js";
+import { paths, ensureHome, atomicWriteFile, dirSize } from "../paths.js";
+import { readFontRegistry, readIconRegistry, fontReadyInfo, iconReadyInfo, packageVersion } from "./resource-status.js";
 import { downloadFonts, downloadIcons } from "./download.js";
 
 const RELEASES = "https://github.com/Shingwha/open-pptd/releases/latest/download";
-
-/** 包版本（资产 zip 名带版本号）。 */
-function packageVersion() {
-  try {
-    return JSON.parse(readFileSync(join(PACKAGE_ROOT, "package.json"), "utf8")).version || "0.0.0";
-  } catch {
-    return "0.0.0";
-  }
-}
 
 /** 资产目标定义：zip 名 / 解压落点 / 期望扩展名。 */
 export const ASSET_TARGETS = {

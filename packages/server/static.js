@@ -76,7 +76,6 @@ export function resolveResourceFile(pathname, resourceRoots) {
   return null;
 }
 
-
 /** 以静态文件响应一个已解析的文件路径（no-store，本地服务永远取最新）。 */
 export function sendFile(res, filePath) {
   const body = readFileSync(filePath);

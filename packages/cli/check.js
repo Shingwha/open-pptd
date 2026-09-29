@@ -7,20 +7,21 @@
 // 退出码：有 error 为 1（导出闸门同标准）；仅 warning 为 0。
 // ============================================================================
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { parseDeck } from "../model/pptd-io.js";
 import { validateDeck } from "../model/validate.js";
 import { layout } from "../layout/index.js";
 import { fontMetricsMeasure } from "../measure/index.js";
-import { loadProjectFiles, FONT_REGISTRY_DIR, ICON_REGISTRY_DIR } from "./export.js";
+import { loadProjectFiles, issueLocation } from "./export.js";
+import { readFontRegistry, readIconRegistry } from "./resource-status.js";
 
 /** 加载 deck 并执行校验（export 闸门复用本函数）。 */
 export function checkDeck(manifest) {
   const { manifestText, deckDir, pageFiles } = loadProjectFiles(manifest);
   const deck = parseDeck(manifestText, pageFiles);
-  const fontRegistry = JSON.parse(readFileSync(join(FONT_REGISTRY_DIR, "registry.json"), "utf8"));
-  const iconRegistry = JSON.parse(readFileSync(join(ICON_REGISTRY_DIR, "registry.json"), "utf8"));
+  const fontRegistry = readFontRegistry();
+  const iconRegistry = readIconRegistry();
   // 布局阶段：确定性纯函数度量（Node 端无 DOM），产出 overflow 事实供校验消费
   const layoutTree = layout(deck, fontMetricsMeasure);
   const report = validateDeck(deck, {
@@ -33,7 +34,7 @@ export function checkDeck(manifest) {
 }
 
 function formatIssue(issue) {
-  const at = [issue.page != null ? `第${issue.page}页` : null, issue.elementId].filter(Boolean).join(" ");
+  const at = issueLocation(issue);
   return `  ${issue.level === "error" ? "✗" : "⚠"} [${issue.rule}] ${at ? at + " " : ""}${issue.message}`;
 }
 
