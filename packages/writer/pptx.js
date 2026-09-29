@@ -1,10 +1,10 @@
 // ============================================================================
-// pptx.js — buildPptx(deck) 总入口（浏览器 + Node 双环境）
+// pptx.js — buildPptx(deck) main entry (browser + Node)
 // ----------------------------------------------------------------------------
-// 输入：统一数据模型 deck（见 packages/model/model.js + packages/model/theme.js）
-// 输出：Uint8Array（完整 PPTX 包）
-// 图片：options.imageMap = { [src]: dataUrl }（浏览器预读缓存）
-//       options.root = 项目根目录（Node 下按相对路径读文件）
+// Input: the unified data model deck (see packages/model/model.js + packages/model/theme.js)
+// Output: Uint8Array (a complete PPTX package)
+// Images: options.imageMap = { [src]: dataUrl } (browser preload cache)
+//         options.root = project root (Node reads files by relative path)
 // ============================================================================
 
 import { resolveTheme } from "../model/theme.js";
@@ -46,7 +46,7 @@ function defaultLoadImage(src, options) {
   return null;
 }
 
-/** 校验字节签名与扩展名一致（防止 SVG/WebP 字节伪装成 png 写入 PPT 导致文件损坏）。 */
+/** Validate that the byte signature matches the extension (prevents SVG/WebP bytes masquerading as png and corrupting the PPT). */
 export function magicMatches(bytes, ext) {
   if (!bytes || bytes.length < 8) return false;
   if (ext === "png") return bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
@@ -56,12 +56,12 @@ export function magicMatches(bytes, ext) {
 }
 
 /**
- * 构建 PPTX（异步：嵌入字体需要 fetch/预读字节）。
- * @param {object} deck 统一数据模型（{version,title,size,theme,fonts,pages}）
+ * Build the PPTX (async: embedding fonts needs fetch/preloaded bytes).
+ * @param {object} deck unified data model ({version,title,size,theme,fonts,pages})
  * @param {object} [options]
- *   - loadImage / imageMap / root：图片（同旧版）
- *   - fontFiles: { [family]: Uint8Array } 预读字体字节（浏览器/Node 均可）
- *   - fullFonts: boolean 嵌入字体全量嵌入（跳过子集化，导出后可继续编辑）
+ *   - loadImage / imageMap / root: images (as before)
+ *   - fontFiles: { [family]: Uint8Array } preloaded font bytes (browser or Node)
+ *   - fullFonts: boolean embed fonts in full (skip subsetting so the deck stays editable after export)
  * @returns {Promise<Uint8Array>}
  */
 export async function buildPptx(deck, options = {}) {
@@ -77,22 +77,22 @@ export async function buildPptx(deck, options = {}) {
   const zip = new ZipWriter();
   const allMedia = []; // { path, bytes }
 
-  // 嵌入字体：声明 → 子集化/EOT → fntdata 部件 + XML 注册片段
+  // Embedded fonts: declaration → subset/EOT → fntdata parts + XML registration fragments
   const embeddedFonts = await buildEmbeddedFonts(deck, options);
   if (embeddedFonts.skipped?.length && typeof options.onFontSkipped === "function") {
     options.onFontSkipped(embeddedFonts.skipped);
   }
 
-  // 图标预载：本地库/CDN/编辑器预读（iconDefs），未命中聚合告警（同字体语义）
+  // Icon preload: local library/CDN/editor preload (iconDefs); misses aggregate into a warning (same as fonts)
   const icons = await loadIconDefs(deck, options);
   registry.iconDefs = icons.defs;
   if (icons.skipped.length && typeof options.onIconSkipped === "function") {
     options.onIconSkipped(icons.skipped);
   }
 
-  // 图表全局编号：每页前缀和（slideN 内 registerChart 从 chartBase 继续）。
-  // 编号口径与 slide.js 的 registerChart 同源（chartRouteOf：classic/chartex 消耗
-  // 编号、image 图片化不消耗），两侧各写一份时曾整体错位、引用悬空（PowerPoint 空白）
+  // Global chart numbering: per-page prefix sums (registerChart inside slideN continues from
+  // chartBase). The numbering matches slide.js's registerChart (chartRouteOf: classic/chartex
+  // consume a number, image conversion does not).
   const isNumberedChart = (el) => {
     const r = chartRouteOf(el);
     return r === "classic" || r === "chartex";
@@ -105,7 +105,7 @@ export async function buildPptx(deck, options = {}) {
   }
   const chartTotal = running;
 
-  // chartEx 部件全局编号（与 registerChart 同序：每页 chart 元素顺序）
+  // Global chartEx part numbering (same order as registerChart: chart-element order per page)
   const chartExIds = [];
   {
     let n = 0;
@@ -116,14 +116,14 @@ export async function buildPptx(deck, options = {}) {
     });
   }
 
-  // 演讲者备注（官方 Page.notes）：任意页有备注 → 生成 notesSlides + notesMaster + theme2
-  // notesSlide 文件按页序号命名（notesSlideN.xml ↔ slideN.xml，PowerPoint 官方惯例）
+  // Speaker notes (official Page.notes): any page with notes → generate notesSlides + notesMaster + theme2
+  // notesSlide files are named by page index (notesSlideN.xml ↔ slideN.xml, PowerPoint convention)
   const notesSlides = pages
     .map((p, i) => (typeof p.notes === "string" && p.notes.trim() ? i + 1 : 0))
     .filter((n) => n > 0);
   const hasNotes = notesSlides.length > 0;
 
-  // 1. 固定部件
+  // 1. Fixed parts
   zip.add("[Content_Types].xml", buildContentTypes(slideCount, chartTotal, embeddedFonts.parts.length, chartExIds, notesSlides));
   zip.add("_rels/.rels", buildRootRels());
   zip.add("docProps/core.xml", buildCoreProps(deck.title || "未命名演示文稿"));
@@ -136,27 +136,27 @@ export async function buildPptx(deck, options = {}) {
   zip.add("ppt/slideLayouts/_rels/slideLayout1.xml.rels", buildSlideLayoutRels());
   zip.add("ppt/theme/theme1.xml", buildTheme(theme));
   if (hasNotes) {
-    // notesMaster 引用独立 theme2.xml（PowerPoint 官方行为，对照 notes-ref.pptx）
+    // notesMaster references a separate theme2.xml (official PowerPoint behavior)
     zip.add("ppt/theme/theme2.xml", buildTheme(theme));
     zip.add("ppt/notesMasters/notesMaster1.xml", buildNotesMaster(null));
     zip.add("ppt/notesMasters/_rels/notesMaster1.xml.rels", buildNotesMasterRels());
   }
 
-  // 1.5 字体部件
+  // 1.5 Font parts
   for (const part of embeddedFonts.parts) {
     zip.add(part.path, part.bytes);
   }
 
-  // 2. 每页 slide + 媒体 + 图表（媒体命名跨页全局唯一，避免同名覆盖）
+  // 2. Per-page slide + media + charts (media names are globally unique across pages to avoid collisions)
   let mediaBase = 0;
   pages.forEach((page, i) => {
-    const result = buildSlide(theme, page, i + 1, registry, { chartBase: chartPrefix[i], mediaBase, pageSize: size, fontMetrics: embeddedFonts.lineMetrics });
+    const result = buildSlide(theme, page, i + 1, registry, { chartBase: chartPrefix[i], mediaBase, pageSize: size });
     mediaBase = result.mediaCount;
     zip.add(`ppt/slides/slide${i + 1}.xml`, result.xml);
     zip.add(`ppt/slides/_rels/slide${i + 1}.xml.rels`, result.relsXml);
     if (result.notesXml) {
       zip.add(`ppt/notesSlides/notesSlide${i + 1}.xml`, result.notesXml);
-      // notesSlide rels：notesMaster（rId1）+ 所属 slide（rId2）
+      // notesSlide rels: notesMaster (rId1) + the owning slide (rId2)
       const notesRels =
         xmlHeader() +
         `<Relationships xmlns="${NS_REL}">` +
@@ -181,7 +181,7 @@ export async function buildPptx(deck, options = {}) {
   return zip.build();
 }
 
-/** 浏览器下载助手（pptx / zip / png 等任意字节）。 */
+/** Browser download helper (any bytes: pptx / zip / png). */
 export function downloadBlob(bytes, filename, mime = "application/octet-stream") {
   const blob = new Blob([bytes], { type: mime });
   const url = URL.createObjectURL(blob);
@@ -196,7 +196,7 @@ export function downloadBlob(bytes, filename, mime = "application/octet-stream")
 
 const PPTX_MIME = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
 
-/** 下载 .pptx。 */
+/** Download .pptx. */
 export function downloadPptx(bytes, filename) {
   downloadBlob(bytes, filename || "deck.pptx", PPTX_MIME);
 }

@@ -1,8 +1,8 @@
 // ============================================================================
-// text.js — 富文本树 → OOXML a:p 序列化（文字、表格单元格、图表文字共用）
+// text.js — rich-text tree → OOXML a:p serialization (shared by text, table cells, chart text)
 // ----------------------------------------------------------------------------
-// 继承链（PPTD 规范）：inline run 样式 > 段落样式 > content 字段 > $style > 默认。
-// 字体统一 resolveFont 到 {latin, ea}；颜色 token → schemeClr（可换主题）。
+// Inheritance chain (PPTD spec): inline run style > paragraph style > content field > $style > default.
+// Fonts are uniformly resolved by resolveFont to {latin, ea}; color tokens → schemeClr (theme-swappable).
 // ============================================================================
 
 import { esc, escAttr, el } from "./xml.js";
@@ -19,22 +19,22 @@ const M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math";
 const A14_NS = "http://schemas.microsoft.com/office/drawing/2010/main";
 const MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 
-// 数学区域字体（PowerPoint 原生公式存储结构：每个 m:r 的 a:rPr 显式声明
-// Cambria Math——缺失时 PowerPoint 回退到段落/单元格字体，表格内公式下标
-// 变微软雅黑的问题根因。仅声明 typeface（渲染只依赖 typeface，panose 等
-// 字体元数据为 PowerPoint 自写信息，不写更通用））
+// Math-region fonts (PowerPoint native formula storage: every m:r's a:rPr declares Cambria
+// Math explicitly — without it PowerPoint falls back to the paragraph/cell font, which is why
+// table formula subscripts turned Microsoft YaHei. Only typeface is declared (rendering depends
+// only on typeface; panose and other font metadata are PowerPoint's own bookkeeping))
 const MATH_FONT = '<a:latin typeface="Cambria Math"/><a:ea typeface="Cambria Math"/>';
 
-// —— 行距补偿：字体单倍行距系数（PowerPoint spcPct 的基数，见 paragraphProps 注释）——
-// 行高单源（spec 10 T3 / 方案 §3.1）：系数一律由 measure 度量表推导
-// （lineHeightMultiplierFor，与 layout/preview 同表同阶梯：注册字体实测 →
-// 系统字体常量 → 1.2 兜底）。此前优先 options.fontMetrics 现查（导出时从字体
-// 字节另算一份），两表可能漂移；现统一到 measure 单源。
+// -- Line-spacing compensation: font single-line-height factor (the base of PowerPoint's
+// spcPct, see paragraphProps) --
+// Single source: the factor is always derived from the measure metrics table
+// (lineHeightMultiplierFor, same table and same ladder as layout/preview: registered-font
+// measurement → system-font constant → 1.2 fallback), with no separate table for export.
 
-/** 段落字体 → 单倍行距系数（measure 度量表同表推导）。 */
+/** Paragraph font → single-line-height factor (derived from the same measure metrics table). */
 function lineFactorOf(theme, fontFamily) {
   const font = resolveFont(theme, fontFamily) || {};
-  // ea 优先（与旧 lineFactorOf 的查表顺序一致），其余走 measure 的 fallback 阶梯
+  // ea first, then fall through measure's fallback ladder
   return lineHeightMultiplierFor([font.ea, font.latin].filter(Boolean));
 }
 
@@ -43,7 +43,7 @@ function runAttrs(s) {
   if (s.bold) attrs.b = "1";
   if (s.italic) attrs.i = "1";
   if (s.underline) attrs.u = "sng";
-  if (s.strike) attrs.strike = "sngStrike"; // ST_TextStrikeType 合法值（"sng" 非法 → PowerPoint 判损修复）
+  if (s.strike) attrs.strike = "sngStrike"; // valid ST_TextStrikeType value ("sng" is invalid → PowerPoint repair)
   if (s.fontSize) attrs.sz = Math.round(s.fontSize * 100);
   if (s.letterSpacing) attrs.spc = Math.round(s.letterSpacing * 100);
   if (s.verticalAlign === "superscript") attrs.baseline = "30000";
@@ -54,19 +54,19 @@ function runAttrs(s) {
 function runXml(theme, s, hrefId) {
   const attrs = runAttrs(s);
   const kids = [];
-  // OOXML CT_TextCharacterProperties 子元素顺序（schema 严格，乱序会被 PowerPoint 判损修复）：
-  //   fill 组（solidFill/gradFill）→ effectLst → highlight → latin/ea/cs → hlinkClick
-  // 文字渐变优先于单色（官方 TextContent.gradient 作用于文字本身）
+  // OOXML CT_TextCharacterProperties child order (strict schema; out-of-order triggers repair):
+  //   fill group (solidFill/gradFill) → effectLst → highlight → latin/ea/cs → hlinkClick
+  // Text gradient takes precedence over solid (official TextContent.gradient applies to the glyphs)
   const fill =
     s.gradient && s.gradient.type === "gradient" && Array.isArray(s.gradient.stops)
       ? buildFill(theme, s.gradient)
       : solidFillElement(theme, s.color, s.opacity);
   if (fill) kids.push(fill);
-  // 文字阴影（官方 TextContent.shadow）
+  // Text shadow (official TextContent.shadow)
   const shdw = shadowElement(theme, s.shadow);
   if (shdw) kids.push(shdw);
   if (s.backgroundColor) {
-    // CT_Highlight = CT_Color：srgbClr/schemeClr 必须是直接子元素（包 solidFill 会被判损修复）
+    // CT_Highlight = CT_Color: srgbClr/schemeClr must be direct children (wrapping in solidFill triggers repair)
     kids.push(el("a:highlight", {}, colorElement(theme, s.backgroundColor)));
   }
   const font = resolveFont(theme, s.fontFamily);
@@ -79,9 +79,9 @@ function runXml(theme, s, hrefId) {
   return el("a:rPr", attrs, kids.join(""));
 }
 
-/** 构建单个 run（含样式）。hrefId 由外部注册后传入。 */
+/** Build a single run (with style). hrefId is registered externally and passed in. */
 export function buildRun(theme, run, baseStyle, registerLink) {
-  // 有效样式 = 基线（含段落并入）+ run 内联，与渲染端 runSpan 同一条 mergeRunStyle 链
+  // Effective style = base (with paragraph merged in) + run inline, the same mergeRunStyle chain as the renderer's runSpan
   const style = mergeRunStyle(baseStyle, null, run.style);
   let hrefId = null;
   if (run.href && registerLink) {
@@ -99,7 +99,7 @@ export function buildRun(theme, run, baseStyle, registerLink) {
   return chunks.join("");
 }
 
-/** 段落级样式 → a:pPr。base 为段落继承到的样式，factor 为段落字体的单倍行距系数。 */
+/** Paragraph-level style → a:pPr. base is the style the paragraph inherits; factor is the paragraph font's single-line-height factor. */
 function paragraphProps(style, factor) {
   const attrs = {};
   const algn = ooxmlTextAlign(style.textAlign);
@@ -107,12 +107,13 @@ function paragraphProps(style, factor) {
   if (style.marginLeft) attrs.marL = Math.round(style.marginLeft * 12700);
   if (style.marginRight) attrs.marR = Math.round(style.marginRight * 12700);
   const kids = [];
-  // 行距按 PPTD 字段语义映射 PowerPoint 原生行距类型：lineHeightPx（固定 px）→
-  // a:spcPts（「固定值」），lineHeight（倍数）→ a:spcPct（「多倍行距」）。
-  // 两类"倍数"的基数不同：PPTD/CSS 是字号（渲染端 line-height:N = 字号×N），而
-  // spcPct 是字体自然单倍行距（OS/2 度量：微软雅黑 1.32、宋体 1.00、Calibri 1.22），
-  // 直接 N×100% 导出会让 PowerPoint 行距比预览宽 20~30%——倍数需除以字体单倍系数
-  // 补偿（factor 来源见 lineFactorOf）。无显式行距也写（默认 1 = 官方默认 lineHeight 1）。
+  // Line spacing maps PPTD field semantics to native PowerPoint spacing types: lineHeightPx
+  // (fixed px) → a:spcPts ("Exactly"), lineHeight (multiple) → a:spcPct ("Multiple").
+  // The two "multiple" bases differ: PPTD/CSS uses font size (renderer line-height:N = size × N)
+  // while spcPct uses the font's natural single-line height (OS/2 metrics: YaHei 1.32, SimSun
+  // 1.00, Calibri 1.22). Exporting N×100% directly makes PowerPoint 20~30% looser than the
+  // preview, so the multiple is divided by the font factor as compensation (source: lineFactorOf).
+  // Spacing is written even without an explicit value (default 1 = official default lineHeight 1).
   if (style.lineHeightPx) {
     kids.push(el("a:lnSpc", {}, el("a:spcPts", { val: Math.round(style.lineHeightPx * 100) })));
   } else {
@@ -138,20 +139,20 @@ function paragraphProps(style, factor) {
 }
 
 /**
- * 构建段落 XML（调用方负责注册超链接）。
- * 公式 run（\(...\)）→ a14:m 包装的 m:oMath（PowerPoint 原生行内公式结构）：
- *   - 行内（与其他 run 混排）：<a14:m><m:oMath>…</m:oMath></a14:m>
- *   - 独占段落：<a14:m><m:oMathPara><m:oMathParaPr><m:jc/>…<m:oMath>…</m:oMath></m:oMathPara></a14:m>
- * @param {object} para 富文本段落 { style, listType, runs }
- * @param {object} base 基线样式
+ * Build paragraph XML (the caller registers hyperlinks).
+ * Formula runs (\(...\)) → a14:m-wrapped m:oMath (PowerPoint native inline formula structure):
+ *   - inline (mixed with other runs): <a14:m><m:oMath>…</m:oMath></a14:m>
+ *   - standalone paragraph: <a14:m><m:oMathPara><m:oMathParaPr><m:jc/>…<m:oMath>…</m:oMath></m:oMathPara></a14:m>
+ * @param {object} para rich-text paragraph { style, listType, runs }
+ * @param {object} base base style
  * @param {function} registerLink (url) => rId
- * @param {object} [options] { formulaFallback } 公式降级为纯文本（老 Office Fallback 副本）
+ * @param {object} [options] { formulaFallback } downgrade formulas to plain text (legacy Office Fallback copy)
  */
 export function buildParagraph(theme, para, base, registerLink, options = {}) {
-  // 段落样式并入 run 基线（mergeRunStyle 单源，渲染端 runSpan 同链）
+  // Paragraph style merged into the run base (mergeRunStyle single source, same chain as the renderer's runSpan)
   const style = mergeRunStyle(base, para.style);
-  if (para.listType) style.listType = para.listType; // 列表信息传给段落属性（buChar/缩进）
-  const factor = lineFactorOf(theme, style.fontFamily, options.fontMetrics);
+  if (para.listType) style.listType = para.listType; // list info passed to paragraph props (buChar/indent)
+  const factor = lineFactorOf(theme, style.fontFamily);
   const onlyFormulas = para.runs.length > 0 && para.runs.every((r) => r.formula);
   const runs = para.runs
     .map((run) =>
@@ -164,20 +165,21 @@ export function buildParagraph(theme, para, base, registerLink, options = {}) {
   return `<a:p>${paragraphProps(style, factor)}${runs}</a:p>`;
 }
 
-/** 给 OMML 每个 m:r 注入样式（a:rPr > solidFill / sz / Cambria Math 字体，PPT 官方 run 属性风格）。
- * 支持主题令牌（$primary 等）与 hex，切主题自动联动。公式只继承 color/font-size；
- * opacity（0~1，可选）= 文字透明度，a:alpha 加在颜色元素内部（PowerPoint 官方结构）。
- * 同时补齐 PowerPoint 原生公式存储结构（对照 PowerPoint 重存文件）：
- *   - 每个 m:r 显式声明 Cambria Math（缺失 → PowerPoint 回退段落/单元格字体，
- *     表格内公式下标变微软雅黑的问题根因）
- *   - m:nor（\text{} 普通文本 run）补显式非斜体 i="0"
- *   - 上下标/极限/算子/定界符等结构补 m:ctrlPr（控制属性，重存时 PowerPoint 总会补齐）
- *   - m:grow "1/0" → "on/off"（PowerPoint 存储值；mathml2omml 与官方 XSLT 字节一致输出 1/0）
- * （原 writer/formula.js injectRunStyle，废弃 elementType formula 后并入此处） */
+/** Inject style into every m:r of the OMML (a:rPr > solidFill / sz / Cambria Math, PowerPoint's
+ * native run-property style). Supports theme tokens ($primary etc.) and hex, wired to theme swaps.
+ * Formulas inherit only color/font-size; opacity (0~1, optional) = text transparency, with
+ * a:alpha inside the color element (official structure).
+ * Also completes PowerPoint's native formula storage:
+ *   - every m:r declares Cambria Math explicitly (otherwise PowerPoint falls back to the
+ *     paragraph/cell font, turning table formula subscripts into Microsoft YaHei)
+ *   - m:nor (\text{} plain-text runs) get an explicit non-italic i="0"
+ *   - structural elements (sub/sup/limit/nary/delimiter…) get m:ctrlPr (control properties that
+ *     PowerPoint always fills in on re-save)
+ *   - m:grow "1/0" → "on/off" (PowerPoint's stored values; mathml2omml matches the official XSLT bytes, emitting 1/0) */
 function injectRunStyle(omml, { color, fontSize, opacity } = {}, theme) {
   let fill = "";
   if (color) {
-    // OOXML 颜色值不允许 # 前缀（#1565C0 → 1565C0）；令牌经 resolveColor 解析
+    // OOXML color values must not carry a # prefix (#1565C0 → 1565C0); tokens are resolved by resolveColor
     const resolved = resolveColor(theme, color);
     const hex = resolved ? String(resolved).replace(/^#/, "").toUpperCase() : "";
     if (/^[0-9A-F]{6}$/.test(hex)) {
@@ -187,20 +189,20 @@ function injectRunStyle(omml, { color, fontSize, opacity } = {}, theme) {
     }
   }
   const szAttr = Number(fontSize) > 0 ? ` sz="${Math.round(Number(fontSize) * 100)}"` : "";
-  // 无显式色但需要透明度 → 默认文字色槽 tx1 + a:alpha（PowerPoint 官方结构）
+  // No explicit color but opacity needed → default text slot tx1 + a:alpha (official structure)
   if (!fill && opacity != null && opacity < 1) {
     fill = `<a:solidFill><a:schemeClr val="tx1"><a:alpha val="${Math.round(opacity * 100000)}"/></a:schemeClr></a:solidFill>`;
   }
-  // m:r 内：rPr（若有）之后、m:t 之前插入 a:rPr；无 rPr 则插在 <m:r> 后。
-  // 注意：无 fill/sz 时不提前返回——Cambria Math 字体声明必须无条件注入，
-  // 否则公式 run 缺失 typeface 时 PowerPoint 回退段落字体（微软雅黑复现）
+  // Inside m:r, insert a:rPr after the rPr (if any) and before m:t; with no rPr, right after <m:r>.
+  // Note: do not return early when there is no fill/sz — the Cambria Math declaration must always
+  // be injected, or a formula run lacking a typeface falls back to the paragraph font (YaHei)
   let out = omml.replace(/<m:r>(?:(<m:rPr>[\s\S]*?<\/m:rPr>))?(?=<m:t>([^<]*)<\/m:t>)/g, (_m, rpr, text) => {
-    // 显式斜体/正体声明（PowerPoint 原生存储结构，重存/编辑公式时总会写全）：
-    //   - 无 m:rPr 且纯字母（数学变量，如 P/a/x）→ i="1"
-    //   - m:nor（\text{} 普通文本）→ i="0"
-    //   - 其余（数字/运算符混合 run、\mathrm 等样式 run）→ 不写 i，
-    //     由 PowerPoint 数学引擎按字符类型逐字符处理（与重存行为一致，
-    //     避免 Q= / i=1 这类合并 run 被整体斜体化）
+    // Explicit italic/upright declaration (PowerPoint's native storage; always written on re-save/edit):
+    //   - no m:rPr and pure letters (math variables like P/a/x) → i="1"
+    //   - m:nor (\text{} plain text) → i="0"
+    //   - everything else (mixed number/operator runs, \mathrm style runs) → no i, letting
+    //     PowerPoint's math engine decide per character (matching re-save and avoiding merged
+    //     runs like Q= / i=1 being italicized wholesale)
     const italic = !rpr
       ? /^[A-Za-z]+$/.test(text)
         ? ' i="1"'
@@ -211,8 +213,9 @@ function injectRunStyle(omml, { color, fontSize, opacity } = {}, theme) {
     const rPr = `<a:rPr${szAttr}${italic}>${fill}${MATH_FONT}</a:rPr>`;
     return rpr ? `<m:r>${rpr}${rPr}` : `<m:r>${rPr}`;
   });
-  // 结构级 ctrlPr（PowerPoint 原生公式存储：m:sSubPr/m:naryPr/... 内含 m:ctrlPr）：
-  // 已有 Pr（naryPr/radPr/accPr/dPr/...）→ 内部末尾追加；无 Pr（sSub/sSup/limLow/...）→ 创建
+  // Structural ctrlPr (PowerPoint native formula storage: m:sSubPr/m:naryPr/... contain m:ctrlPr):
+  // an existing Pr (naryPr/radPr/accPr/dPr/...) gets it appended inside; otherwise (sSub/sSup/limLow/...)
+  // it is created
   const ctrlPr = `<m:ctrlPr><a:rPr${szAttr}>${fill}${MATH_FONT}</a:rPr></m:ctrlPr>`;
   const ctrlStructs = [
     ["m:sSub", "m:sSubPr"],
@@ -235,11 +238,11 @@ function injectRunStyle(omml, { color, fontSize, opacity } = {}, theme) {
     if (out.includes(prClose)) {
       out = out.replace(new RegExp(prClose, "g"), `${ctrlPr}${prClose}`);
     } else {
-      // lookahead 只断言不消费，替换串末尾不能再带 ">"，否则与原文残留的 ">" 叠加成 ">>"
+      // The lookahead asserts without consuming, so the replacement must not end with ">", or it would combine with the remaining ">" into ">>"
       out = out.replace(new RegExp(`<${tag}(?=[\\s>])`, "g"), `<${tag}><${prTag}>${ctrlPr}</${prTag}`);
     }
   }
-  // m:grow 值规范化（mathml2omml 与官方 XSLT 字节一致输出 1/0；PowerPoint 存储 on/off）
+  // m:grow value normalization (mathml2omml emits 1/0 to match the official XSLT bytes; PowerPoint stores on/off)
   out = out
     .replace(/<m:grow m:val="1"\/>/g, '<m:grow m:val="on"/>')
     .replace(/<m:grow m:val="0"\/>/g, '<m:grow m:val="off"/>');
@@ -247,19 +250,20 @@ function injectRunStyle(omml, { color, fontSize, opacity } = {}, theme) {
 }
 
 /**
- * 行内公式 run → a14:m 包装（PowerPoint 原生行内公式存储结构）。
- * 官方规范：公式只继承 color 和 font-size；解析失败/fallback 时降级为 LaTeX 源码文本。
+ * Inline formula run → a14:m wrapper (PowerPoint native inline formula storage).
+ * Official spec: formulas inherit only color and font-size; on parse failure/fallback they degrade
+ * to the LaTeX source text.
  */
 function buildFormulaRun(theme, run, baseStyle, { paraAlone = false, textAlign = null, fallback = false } = {}) {
   const color = run.style?.color || baseStyle.color;
   const fontSize = run.style?.fontSize || baseStyle.fontSize;
-  const opacity = baseStyle.opacity; // 元素级透明度（官方：颜色元素内 a:alpha）
+  const opacity = baseStyle.opacity; // element-level transparency (official: a:alpha inside the color element)
   const mml = latexToMathml(run.latex);
   if (!mml || fallback) {
     const rPr = runXml(theme, mergeRunStyle(baseStyle, null, run.style), null);
     return `<a:r>${rPr}<a:t>${esc(run.latex)}</a:t></a:r>`;
   }
-  // mathmlToOmml 输出已含 <m:oMath> 根（与官方 XSLT 字节一致），命名空间声明在根上
+  // mathmlToOmml output already has the <m:oMath> root (matching the official XSLT bytes); the namespace is declared on the root
   const omml = mathmlToOmml(mml).replace(/^<m:oMath>/, `<m:oMath xmlns:m="${M_NS}">`);
   const styled = injectRunStyle(omml, { color, fontSize, opacity }, theme);
   if (paraAlone) {
@@ -267,18 +271,19 @@ function buildFormulaRun(theme, run, baseStyle, { paraAlone = false, textAlign =
       textAlign === "center" || textAlign === "right"
         ? `<m:oMathParaPr><m:jc m:val="${textAlign}"/></m:oMathParaPr>`
         : "";
-    // 独占公式段落末尾补 endParaRPr（Cambria Math，PowerPoint 重存结构；
-    // 设置段落默认 run 属性，避免在 PowerPoint 中编辑时二次规范化）
+    // A standalone formula paragraph gets a trailing endParaRPr (Cambria Math, PowerPoint re-save
+    // structure) to set the paragraph's default run properties and avoid re-normalization on edit
     return `<a14:m xmlns:a14="${A14_NS}"><m:oMathPara xmlns:m="${M_NS}">${jc}${styled}</m:oMathPara></a14:m><a:endParaRPr dirty="0">${MATH_FONT}</a:endParaRPr>`;
   }
   return `<a14:m xmlns:a14="${A14_NS}">${styled}</a14:m>`;
 }
 
-/** 文本框 → p:sp XML；含公式时按 PowerPoint 原生结构包 mc:AlternateContent
- * （Choice = 公式版，Fallback = 公式降级为 LaTeX 源码文本的老 Office 兼容版）。
- * spPr 与 PowerPoint 原生文本框一致：xfrm + prstGeom rect + noFill
- * （CT_ShapeProperties 要求必须含几何；缺几何在部分 Office 实现中会
- *  被套上默认填充/边框，导致导出文本框出现莫名色块）。
+/** Text box → p:sp XML; when formulas are present, wrap in mc:AlternateContent per PowerPoint's
+ * native structure (Choice = formula version, Fallback = a legacy Office-compatible version with
+ * formulas degraded to LaTeX source text).
+ * spPr matches a native PowerPoint text box: xfrm + prstGeom rect + noFill (CT_ShapeProperties
+ * requires geometry; without it some Office implementations apply default fill/border, producing
+ * unexplained color blocks on exported text boxes).
  */
 export function textXml(theme, element, ctx) {
   const b = element.bounds;
@@ -296,10 +301,10 @@ export function textXml(theme, element, ctx) {
       el("p:spPr", {}, spPr),
       el("p:txBody", {}, inner),
     ].join(""));
-  // 元素级透明度（官方 Text.opacity）→ run 级填充 a:alpha（PowerPoint 存储结构）
-  const body = buildTextBody(theme, element.content, ctx.registerLink, { opacity: element.opacity, fontMetrics: ctx.fontMetrics });
+  // Element-level transparency (official Text.opacity) → run-level fill a:alpha (PowerPoint storage)
+  const body = buildTextBody(theme, element.content, ctx.registerLink, { opacity: element.opacity });
   if (body.includes("<a14:m")) {
-    const fallbackBody = buildTextBody(theme, element.content, ctx.registerLink, { formulaFallback: true, opacity: element.opacity, fontMetrics: ctx.fontMetrics });
+    const fallbackBody = buildTextBody(theme, element.content, ctx.registerLink, { formulaFallback: true, opacity: element.opacity });
     const choice = el("mc:Choice", { "xmlns:a14": A14_NS, Requires: "a14" }, buildSp(body));
     const fallback = el("mc:Fallback", {}, buildSp(fallbackBody));
     return el("mc:AlternateContent", { "xmlns:mc": MC_NS }, choice + fallback);
@@ -308,25 +313,26 @@ export function textXml(theme, element, ctx) {
 }
 
 /**
- * 构建完整 txBody。
- * @param {object} content 文本元素 content（text/style/color/fontSize/...）
+ * Build the full txBody.
+ * @param {object} content text element content (text/style/color/fontSize/...)
  * @param {function} registerLink (url) => rId
- * @param {object} [options] { formulaFallback } 公式降级为纯文本（Fallback 副本用）
+ * @param {object} [options] { formulaFallback } downgrade formulas to plain text (for the Fallback copy)
  */
 export function buildTextBody(theme, content, registerLink, options = {}) {
   const tree = parseRichText(content?.text || "");
   const base = computeBaseStyle(theme, content);
-  // 元素级透明度（官方 Text.opacity）→ 所有 run 的填充颜色内 a:alpha
+  // Element-level transparency (official Text.opacity) → a:alpha inside every run's fill color
   if (options.opacity != null) base.opacity = options.opacity;
   const bodyAttrs = { lIns: 0, tIns: 0, rIns: 0, bIns: 0, wrap: "square" };
   if (content?.wrap === false) bodyAttrs.wrap = "none";
   if (content?.textDirection === "vertical") bodyAttrs.vert = "eaVert";
-  // 垂直对齐（官方缺省 [left, top] → anchor "t"）
+  // Vertical align (official default [left, top] → anchor "t")
   const v = Array.isArray(content?.align) ? content.align[1] : "top";
   bodyAttrs.anchor = ooxmlAnchor(v) || "t";
-  // 自动调整：spAutoFit（PowerPoint 文本框原生默认，与编辑器「框随内容增高」一致）。
-  // 编辑器渲染后会把 bounds 高度同步为内容实际高度（app/view.js autoGrowTexts），
-  // 因此导出框高 = 内容高，打开 PPT 不缩字、不裁剪；编辑时 PowerPoint 按内容重新适配。
+  // Autofit: spAutoFit (PowerPoint's native text-box default, matching the editor's "box grows
+  // with content"). The editor syncs the bounds height to the content height after rendering, so
+  // the exported box height = content height: opening the PPT neither shrinks nor clips text, and
+  // PowerPoint re-adapts on edit.
   const paras = tree.paragraphs
     .map((p) => buildParagraph(theme, p, base, registerLink, options))
     .join("");

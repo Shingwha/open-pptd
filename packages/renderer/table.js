@@ -1,8 +1,8 @@
 // ============================================================================
-// renderer/table.js — 表格预览（内容高度自适应 + 官方继承链，与 writer 同源）
+// renderer/table.js — table preview (content-height adaptive + official inheritance chain, same source as writer)
 // ----------------------------------------------------------------------------
-// 样式优先级与 writer/table.js 一致：
-//   Cell 内联字段 > Cell.textStyle 引用 > 位置分类 > bodyStyles > cellStyle > 默认
+// Style priority matches writer/table.js:
+//   cell inline fields > Cell.textStyle ref > position class > bodyStyles > cellStyle > default
 // ============================================================================
 
 import { resolveColor, resolveFont, resolveTableStyle, resolveTableCellStyle, resolveTextStyle, cellTextStyle } from "../model/theme.js";
@@ -13,7 +13,7 @@ import { runSpan, applyParaStyle } from "./text.js";
 import { gradientCss } from "./gradient.js";
 import { createElementShell, boxShadowCss } from "./shell.js";
 
-/** 单边 CSS（null = 无边框；$ 颜色引用在消费端 resolveColor）。 */
+/** Single-side CSS (null = no border; $ color refs are resolved by resolveColor at the consumer). */
 function sideCss(theme, v) {
   if (!v) return "none";
   const color = resolveColor(theme, v.color ?? "#000000") || "#000000";
@@ -21,7 +21,7 @@ function sideCss(theme, v) {
   return `${v.width ?? 1}px ${style} ${color}`;
 }
 
-/** 展开网格 → 单元格最终样式（文字样式合并走 model 单源；covered 位返回 {covered:true}）。 */
+/** Expanded grid → final cell style (text-style merge comes from the model single source; a covered slot returns {covered:true}). */
 export function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) {
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
   const fill = cell?.fill ?? s.fill ?? tableFill ?? null;
@@ -37,22 +37,24 @@ export function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) 
 }
 
 export function renderTable(theme, el) {
-  // 几何来源：有 LayoutTree 事实（paintPage 注入的 el.layout.table）时用 layout 的
-  // 精确行高/列宽/总高（与校验、导出同一棵树）；否则回退 model 的最小行高估算
-  // （直接调用 renderTable 的旧路径，如编辑器工具链）。
+  // Geometry source: when LayoutTree facts exist (el.layout.table injected by paintPage)
+  // use the layout's exact row heights / column widths / total height (the same tree used
+  // by validation and export); otherwise fall back to the model's minimum row-height
+  // estimate (legacy callers that invoke renderTable directly, e.g. editor toolchain).
   const lt = el.layout?.table;
   const { rowHeights, columnWidths } = lt
     ? { rowHeights: lt.rowHeights, columnWidths: lt.columnWidths }
     : estimateTableLayout(el);
-  // 总高已知（layout 精确值）→ 外层容器高度预设，并把溢出放开：
-  // border-collapse 的外边框骑在表格边界上（约 1px 落在盒外），只设高度 + 默认
-  // overflow:hidden 会裁掉末行底边框（实测 tests/projects/table#9 第二张表）。
+  // Total height known (exact layout value) → preset the outer container height and
+  // release overflow: with border-collapse the outer border sits on the table edge
+  // (about 1px outside the box), so height alone + the default overflow:hidden would
+  // clip the last row's bottom border (measured: tests/projects/table#9, second table).
   const box = createElementShell(el, { height: false });
   if (lt) {
     box.style.height = `${lt.totalHeight}px`;
     box.style.overflow = "visible";
   }
-  // 官方 Table.shadow → 导出 a:tblPr > a:effectLst，预览 box-shadow 同源投影
+  // Official Table.shadow → exported a:tblPr > a:effectLst; preview projects the same source as box-shadow
   const shadow = boxShadowCss(theme, el.shadow);
   if (shadow) box.style.boxShadow = shadow;
 
@@ -61,7 +63,7 @@ export function renderTable(theme, el) {
   const colWs = columnWidths;
   const rowCount = rows.length;
   const colCount = colWs.length;
-  // 省略式 rows → 完整网格（covered 位输出空 td 占位，保持行列对齐）
+  // Omitted-style rows → full grid (covered slots emit an empty td placeholder to keep row/col alignment)
   const { grid } = tableGrid(rows, colCount);
 
   const table = document.createElement("table");
@@ -79,13 +81,13 @@ export function renderTable(theme, el) {
 
   grid.forEach((gRow, r) => {
     const tr = document.createElement("tr");
-    // 行高：min-height 语义（最小行高 = rowHeights 比例×bounds 或可读性底线），
-    // 内容排版超出时行自动增高（与 PowerPoint a:tr 行为一致）
+    // Row height: min-height semantics (minimum row height = rowHeights ratio × bounds or
+    // a readability floor); rows grow automatically when content exceeds it (matches PowerPoint a:tr)
     const rh = rowHeights[r] != null ? rowHeights[r] : 26;
     if (rh != null) tr.style.height = `${rh}px`;
     gRow.forEach((g, c) => {
       const cell = g.cell;
-      // 被合并覆盖位：输出空 td（保留行列结构，样式按分类链计算）
+      // Merge-covered slot: emit an empty td (keeps the row/col structure; style via the class chain)
       if (g.covered) {
         const f = cellFinal(theme, ts, r, c, rowCount, colCount, null, el.fill);
         const td = document.createElement("td");
@@ -95,7 +97,7 @@ export function renderTable(theme, el) {
       }
       const f = cellFinal(theme, ts, r, c, rowCount, colCount, cell, el.fill);
       const td = document.createElement("td");
-      // 富文本 + 公式：parseRichText + runSpan 与文本框同管线（\(...\) → KaTeX MathML）
+      // Rich text + formulas: parseRichText + runSpan share the text-box pipeline (\(...\) → KaTeX MathML)
       td.appendChild(renderCellContent(theme, cell?.text ?? "", f));
       td.style.cssText = tdCss(theme, f, false);
       if (cell?.rowSpan > 1) td.rowSpan = cell.rowSpan;
@@ -109,9 +111,9 @@ export function renderTable(theme, el) {
   return box;
 }
 
-/** td 内联样式（预览；covered 位无文字不显示背景文字样式）。 */
+/** td inline style (preview; covered slots have no text and skip text styles). */
 export function tdCss(theme, f, covered) {
-  // 填充：FillSpec 归一化（字符串色 / solid / gradient，与 writer buildFill 同源）
+  // Fill: FillSpec normalization (string color / solid / gradient, same source as writer buildFill)
   const fillSpec = normalizeFill(f.fill);
   const fillCss = fillSpec
     ? fillSpec.type === "solid"
@@ -123,7 +125,7 @@ export function tdCss(theme, f, covered) {
   const hAlign = cssTextAlign(f.align[0]) || "center";
   const vAlign = f.align[1] || "middle";
   const parts = [
-    // 逐边边框（BorderSpec 数组四边独立；预览与 writer 同源同序）
+    // Per-side borders (BorderSpec array, four independent sides; preview and writer share source and order)
     `border-top:${sideCss(theme, f.borders.top)}`,
     `border-right:${sideCss(theme, f.borders.right)}`,
     `border-bottom:${sideCss(theme, f.borders.bottom)}`,
@@ -132,12 +134,12 @@ export function tdCss(theme, f, covered) {
     `text-align:${hAlign}`,
     `vertical-align:${vAlign}`,
   ];
-  // distributed → justify + 末行拉伸（与文本框 textAlignCss 一致）
+  // distributed → justify + last-line stretch (same as the text box's textAlignCss)
   const alignLast = cssTextAlignLast(f.align[0]);
   if (alignLast) parts.push(`text-align-last:${alignLast}`);
   if (!covered) {
     parts.push(
-      // 加粗与导出 b="1"（700）同值：曾用 600，预览比导出轻一档
+      // Bold matches the exported b="1" (700) value (600 was used before, one step lighter than export)
       `font-weight:${f.bold ? "bold" : "400"}`,
       f.italic ? "font-style:italic" : "",
       `color:${resolveColor(theme, f.color) || "#000000"}`,
@@ -148,7 +150,7 @@ export function tdCss(theme, f, covered) {
       f.marginTop ? `padding-top:${TABLE_CELL_PAD + f.marginTop}px` : "",
     "overflow:hidden",
     "text-overflow:ellipsis",
-    // \n/<br> 硬断行（与导出 <a:br/> 同语义）：曾按 normal 折叠成空格致预览一行导出两行
+    // \n/<br> hard breaks (same semantics as the exported <a:br/>); normal would collapse them to spaces
     "white-space:pre-line",
   );
   }
@@ -156,11 +158,10 @@ export function tdCss(theme, f, covered) {
   return parts.filter(Boolean).join(";");
 }
 /**
- * 单元格富文本 → DOM（与 renderer/text.js 同管线：parseRichText + runSpan）。
- * 公式 \(...\) 由 runSpan → formulaSpan 走 KaTeX MathML 原生渲染；此前
- * richTextToHtml 只做 $key 替换，公式源码会原样显示。
- * 文字高亮（官方 CellStyle.backgroundColor，a:highlight 语义）：每段包
- * inline span 渲染在文字上，背景紧贴文字行。
+ * Cell rich text → DOM (same pipeline as renderer/text.js: parseRichText + runSpan).
+ * Formulas \(...\) go through runSpan → formulaSpan for native KaTeX MathML rendering.
+ * Text highlight (official CellStyle.backgroundColor, a:highlight semantics): each
+ * paragraph wraps its runs in an inline span so the background hugs the text line.
  */
 function renderCellContent(theme, text, f) {
   const tree = parseRichText(text || "");
@@ -172,8 +173,8 @@ function renderCellContent(theme, text, f) {
     gradient: null,
   };
   const root = document.createElement("div");
-  // 高度不预设：由内容决定，td 的 vertical-align（f.align[1]）负责垂直居中；
-  // 若设 height:100% 会撑满单元格使 td 的 vertical-align 失效
+  // Height is not preset: content decides it, and the td's vertical-align (f.align[1])
+  // centers vertically; height:100% would fill the cell and defeat that alignment
   const css = ["width:100%;box-sizing:border-box;overflow:hidden"];
   css.push(`font-size:${f.fontSize}px`);
   const color = resolveColor(theme, f.color);
@@ -187,7 +188,7 @@ function renderCellContent(theme, text, f) {
   const align0 = Array.isArray(f.align) ? f.align[0] : null;
   css.push(`text-align:${cssTextAlign(align0) || "center"}`);
   const alignLast = cssTextAlignLast(align0);
-  if (alignLast) css.push(`text-align-last:${alignLast}`); // distributed → 末行拉伸（与文本框一致）
+  if (alignLast) css.push(`text-align-last:${alignLast}`); // distributed → last-line stretch (same as text boxes)
   root.style.cssText = css.join(";");
 
   const hl = resolveColor(theme, f.backgroundColor);

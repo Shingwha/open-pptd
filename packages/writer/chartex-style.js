@@ -1,14 +1,13 @@
 // ============================================================================
-// writer/chartex-style.js — chartEx 样式部件（styleN.xml / colorsN.xml）
+// writer/chartex-style.js — chartEx style parts (styleN.xml / colorsN.xml)
 // ----------------------------------------------------------------------------
-// 对照用户手工参考（waterfall-color.pptx / treemap-color.pptx）：
-//   chartEx 部件必须带 chartStyle + chartColorStyle 两个关系（rId2/rId3），
-//   PowerPoint 打开时按 styleId/colorId 索引默认样式表。
-// 模板 = 官方默认样式（id="395" 图表样式 + id="10" 颜色循环），逐字节照抄
-// 参考文件（仅补 XML 声明，部分解析器需要）。
+// A chartEx part must carry two relationships, chartStyle + chartColorStyle (rId2/rId3), so
+// PowerPoint can index the default style sheets by styleId/colorId on open.
+// The templates are the official defaults (chart style id="395" + color cycle id="10"), copied
+// byte-for-byte from the reference files (only an XML declaration is added, needed by some parsers).
 // ============================================================================
 
-import { xmlHeader, hexToRgbVal } from "./xml.js";
+import { xmlHeader } from "./xml.js";
 import { CHART_DEFAULTS } from "../model/chart.js";
 
 const CHART_STYLE_XML =
@@ -20,9 +19,9 @@ const CHART_COLOR_STYLE_XML =
 const DATA_LABEL_SLOT =
   '<cs:dataLabel><cs:lnRef idx="0"/><cs:fillRef idx="0"/><cs:effectRef idx="0"/><cs:fontRef idx="minor"><a:schemeClr val="tx1"><a:lumMod val="65000"/><a:lumOff val="35000"/></a:schemeClr></cs:fontRef><cs:defRPr sz="1197"/></cs:dataLabel>';
 
-/** dataLabel 覆盖 = { colorHex, fontSize } | null（treemap/sunburst 瓦片标签）。
- * cs:dataLabel 槽是 PowerPoint 瓦片标签文字的权威色源（cx:dataLabels 的 txPr
- * 会被忽略）——labels 配了 color/fontSize 时覆盖默认 tx1-65% 深灰。 */
+/** dataLabel override = { colorHex, fontSize } | null (treemap/sunburst tile labels).
+ * The cs:dataLabel slot is PowerPoint's authoritative color source for tile-label text (a
+ * cx:dataLabels txPr is ignored) — when labels set color/fontSize, override the default tx1-65% gray. */
 export function buildChartStyleXml(dataLabel = null) {
   let xml = CHART_STYLE_XML;
   if (dataLabel && (dataLabel.colorHex || dataLabel.fontSize != null)) {

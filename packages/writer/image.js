@@ -1,22 +1,22 @@
 // ============================================================================
-// writer/image.js — 图片元素导出（p:pic，crop → fit → cropShape 全管线）
+// writer/image.js — image element export (p:pic, full crop → fit → cropShape pipeline)
 // ----------------------------------------------------------------------------
-// 官方渲染顺序：crop（srcRect 裁源图）→ fit（cover/contain/fill）→ cropShape
-// （spPr 几何轮廓裁剪）。crop 与 fit 的合成在源矩形上完成（a:srcRect），
-// cropShape 通过 spPr 的 prstGeom/custGeom 表达（PowerPoint 官方存储结构）。
+// Official render order: crop (srcRect crops the source) → fit (cover/contain/fill) → cropShape
+// (geometric outline crop via spPr). crop and fit are composed on the source rectangle
+// (a:srcRect); cropShape is expressed through spPr's prstGeom/custGeom (official PowerPoint storage).
 // ============================================================================
 
 import { el, escAttr } from "./xml.js";
 import { buildXfrm, buildFill, buildLn, buildShadow, buildShapeDefGeom } from "./drawing.js";
 
 /**
- * crop（源矩形裁切，比例）→ 与 fit 合成后的最终 a:srcRect 属性。
- * 语义与官方一致：先按比例裁源图，再按 fit 模式适配到 bounds。
- * @param {object} crop {left,top,right,bottom} 比例（默认 0；可为负 = 外扩透明边）
+ * crop (source-rectangle crop, ratios) → final a:srcRect attributes composed with fit.
+ * Same semantics as official: crop the source by ratio first, then adapt to bounds by fit mode.
+ * @param {object} crop {left,top,right,bottom} ratios (default 0; negative = outward transparent margin)
  * @param {"cover"|"contain"|"fill"} fitMode
- * @param {[number,number]} imgSize 源图原始尺寸
- * @param {[number,number]} boxSize bounds 尺寸
- * @returns {object|null} a:srcRect 属性（l/t/r/b 千分位）或 null（不裁）
+ * @param {[number,number]} imgSize source image native size
+ * @param {[number,number]} boxSize bounds size
+ * @returns {object|null} a:srcRect attributes (l/t/r/b thousandths) or null (no crop)
  */
 export function cropFitSrcRect(crop, fitMode, imgSize, boxSize) {
   const l = crop?.left || 0;
@@ -30,7 +30,7 @@ export function cropFitSrcRect(crop, fitMode, imgSize, boxSize) {
   const effW = 1 - l - r;
   const effH = 1 - t - b;
   if (fitMode === "fill" || !imgSize || !boxSize) {
-    // fill：裁切后直接拉伸铺满；无尺寸信息时同样只表达裁切
+    // fill: stretch to fill after cropping; with no size info, only express the crop
     if (!l && !t && !r && !b) return null;
     return {
       l: Math.round(l * 100000),
@@ -39,12 +39,12 @@ export function cropFitSrcRect(crop, fitMode, imgSize, boxSize) {
       b: Math.round(b * 100000),
     };
   }
-  // cover / contain 在「裁切后源矩形」内居中取适配框（源图纵横比 = imgSize）
+  // cover / contain take a centered fit box inside the cropped source rectangle (source aspect = imgSize)
   const aEff = (effW * imgSize[0]) / (effH * imgSize[1]);
   const aBox = boxSize[0] / boxSize[1];
   let outL, outT, outW, outH;
   if (aEff >= aBox) {
-    // 裁切后源图更宽 → 左右再裁（cover 语义；contain 时同样取居中适配框）
+    // Cropped source is wider → crop left/right further (cover semantics; contain also takes a centered fit box)
     outW = effH * (aBox * imgSize[1]) / imgSize[0];
     outH = effH;
     outL = l + (effW - outW) / 2;
@@ -63,7 +63,7 @@ export function cropFitSrcRect(crop, fitMode, imgSize, boxSize) {
   };
 }
 
-/** 图片元素 → p:pic XML。 */
+/** Image element → p:pic XML. */
 export function imageXml(theme, element, ctx) {
   const src = element.src;
   const loaded = ctx.loadImage(src);
@@ -76,15 +76,15 @@ export function imageXml(theme, element, ctx) {
   const fitMode = element.fit?.mode || "cover";
   const [bw, bh] = [element.bounds[2], element.bounds[3]];
 
-  // p:pic 的 blipFill 属于 presentationml 命名空间（p:blipFill），
-  // 而 buildFill 返回 a:blipFill（用于形状/背景填充）——此处必须替换前缀
+  // p:pic's blipFill lives in the presentationml namespace (p:blipFill), while buildFill returns
+  // a:blipFill (for shape/background fills) — so the prefix must be swapped here
   const toPicBlipFill = (aXml) =>
     aXml ? aXml.replace(/^<a:blipFill/, "<p:blipFill").replace(/<\/a:blipFill>$/, "</p:blipFill>") : "";
 
   let xfrm = buildXfrm(element.bounds, element.rotation, element.flip);
   let blipFill;
   if (fitMode === "contain" && loaded.size) {
-    // contain：裁切后的源矩形等比缩放到 bounds 内居中（不变形不留裁切）
+    // contain: uniformly scale the cropped source rectangle to fit inside bounds, centered (no distortion, no crop)
     const crop = element.crop || {};
     const l = crop.left || 0;
     const t = crop.top || 0;
@@ -104,7 +104,7 @@ export function imageXml(theme, element, ctx) {
     const cx = Math.round((bw - w) / 2);
     const cy = Math.round((bh - h) / 2);
     xfrm = buildXfrm([element.bounds[0] + cx, element.bounds[1] + cy, w, h], element.rotation, element.flip);
-    // contain 无需裁剪源图（等比缩放即完整显示）
+    // contain needs no source crop (uniform scaling already shows it fully)
     const sr = cropFitSrcRect(element.crop, "fill", loaded.size, [w, h]);
     blipFill = toPicBlipFill(
       el("p:blipFill", {}, [
@@ -117,7 +117,7 @@ export function imageXml(theme, element, ctx) {
       ].join(""))
     );
   } else {
-    // cover / fill：合成 crop + fit 的最终源矩形，拉伸铺满
+    // cover / fill: compose crop + fit into the final source rectangle and stretch to fill
     const sr = cropFitSrcRect(element.crop, fitMode, loaded.size, [bw, bh]);
     mediaRef.srcRect = sr;
     blipFill = toPicBlipFill(
@@ -126,7 +126,7 @@ export function imageXml(theme, element, ctx) {
   }
   const spPr = el("p:spPr", {}, [
     xfrm,
-    buildShapeDefGeom(element.cropShape), // 默认矩形（不裁剪）
+    buildShapeDefGeom(element.cropShape), // default rectangle (no crop)
     buildLn(theme, element.border),
     buildShadow(theme, element.shadow),
   ].join(""));

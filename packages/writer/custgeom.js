@@ -1,24 +1,27 @@
 // ============================================================================
-// writer/custgeom.js — 自定义路径（SVG path）→ a:custGeom（OOXML 自定义几何）
+// writer/custgeom.js — custom path (SVG path) → a:custGeom (OOXML custom geometry)
 // ----------------------------------------------------------------------------
-// PPTD shapeName:"custom" + viewBox + path（M/L/H/V/C/S/Q/A/Z）→ PowerPoint
-// 官方存储结构：a:path 用 viewBox 作为几何坐标系（w/h 属性），a:rect 框住
-// 整个几何 → PowerPoint 把该坐标系拉伸到形状 bounds（与预览一致）。
+// PPTD shapeName:"custom" + viewBox + path (M/L/H/V/C/S/Q/A/Z) → official PowerPoint
+// storage: a:path uses the viewBox as its geometry coordinate system (w/h attributes) and
+// a:rect bounds the whole geometry → PowerPoint stretches that coordinate system to the shape
+// bounds (matching the preview).
 //
-// 圆弧转换：SVG A（端点参数化）→ OOXML arcTo（圆心参数化），旋转角为 0 时
-// 直接输出 arcTo；旋转角非 0 时降级为三次贝塞尔近似（arcTo 不支持旋转椭圆）。
-// 镂空：SVG 非零环绕规则与 PowerPoint 一致，内外环方向相反即镂空，原样透传。
+// Arc conversion: SVG A (endpoint parameterization) → OOXML arcTo (center parameterization);
+// with a zero rotation angle it emits arcTo directly, otherwise it degrades to a cubic bezier
+// approximation (arcTo cannot express rotated ellipses).
+// Holes: SVG's nonzero winding rule matches PowerPoint — opposite inner/outer ring directions
+// produce a hole, passed through as-is.
 // ============================================================================
 
 import { el, angleToOOXML } from "./xml.js";
 
-/** 数值 → 整数（OOXML pt/角度取整）。 */
+/** Number → integer (OOXML pt/angle rounding). */
 const n = (v) => Math.round(v);
 
 /**
- * SVG path 命令流 → OOXML pathLst 片段（含 a:path 包裹）。
+ * SVG path command stream → OOXML pathLst fragment (including the a:path wrapper).
  * @param {Array<number>} viewBox [w, h]
- * @param {string} d SVG path d 字符串
+ * @param {string} d SVG path d string
  * @returns {string} a:pathLst XML
  */
 export function svgPathToOoxml(viewBox, d) {
@@ -26,12 +29,12 @@ export function svgPathToOoxml(viewBox, d) {
   const cmds = parseSvgPath(d);
   if (!cmds.length) return "";
 
-  let cx = 0; // 当前点
+  let cx = 0; // current point
   let cy = 0;
-  let sx = 0; // 子路径起点
+  let sx = 0; // subpath start
   let sy = 0;
   let lastCmd = "";
-  let lastCtrl = null; // 上一个 S/T 反射控制点 [x, y]
+  let lastCtrl = null; // reflection control point for the previous S/T [x, y]
 
   const kids = [];
   for (const [op, args] of cmds) {
@@ -84,7 +87,7 @@ export function svgPathToOoxml(viewBox, d) {
         break;
       }
       case "S": {
-        // 反射上一个 C 的第二控制点；无则用当前点
+        // Reflect the second control point of the previous C; otherwise use the current point
         const [c2x, c2y, x, y] = args;
         const [r1x, r1y] = lastCmd === "C" || lastCmd === "S" ? reflect(lastCtrl, cx, cy) : [cx, cy];
         kids.push(
@@ -131,8 +134,8 @@ export function svgPathToOoxml(viewBox, d) {
       }
       case "A": {
         const [rx, ry, rot, largeArc, sweep, x, y] = args;
-        // 近重合端点 = 整圆（官方示例 M500,0 A500,500 0 1 1 499,0）：拆两段 180° 弧
-        // 旋转角非 0 → 三次贝塞尔近似（arcTo 不支持旋转椭圆）
+        // Near-coincident endpoints = a full circle (official example M500,0 A500,500 0 1 1 499,0):
+        // split into two 180° arcs. Non-zero rotation → cubic bezier approximation (arcTo cannot rotate ellipses)
         for (const sub of splitArc(cx, cy, rx, ry, rot, largeArc, sweep, x, y)) {
           if (sub.rot % 360 === 0) {
             const arc = svgArcToOoxml(sub.x0, sub.y0, sub.rx, sub.ry, 0, sub.largeArc, sub.sweep, sub.x1, sub.y1);
@@ -171,7 +174,7 @@ export function svgPathToOoxml(viewBox, d) {
   return el("a:pathLst", {}, el("a:path", { w: n(vw), h: n(vh) }, kids.join("")));
 }
 
-/** 完整 a:custGeom（自定义形状几何；无调整值/手柄/连接点）。 */
+/** Full a:custGeom (custom shape geometry; no adjustments/handles/connection sites). */
 export function custGeomXml(viewBox, d) {
   const [vw, vh] = viewBox || [21600, 21600];
   return el("a:custGeom", {}, [
@@ -184,7 +187,7 @@ export function custGeomXml(viewBox, d) {
   ].join(""));
 }
 
-/** 反射控制点：p' = 2·当前点 − 控制点。 */
+/** Reflect a control point: p' = 2·current − control. */
 function reflect(ctrl, cx, cy) {
   return [2 * cx - ctrl[0], 2 * cy - ctrl[1]];
 }
@@ -194,21 +197,22 @@ function ptCmd(tag, x, y) {
 }
 
 /**
- * 弧 → 子弧列表：近重合端点（整圆，官方镂空示例用法）拆成两段 180° 弧；
- * 其余原样返回。整圆的 stAng 取 0（当前点即角度 0 位置），方向随 sweep 保持
- * （外环顺时针 / 内环逆时针 → PowerPoint 非零环绕镂空）。
+ * Arc → sub-arc list: near-coincident endpoints (a full circle, as in the official hole example)
+ * split into two 180° arcs; everything else is returned as-is. A full circle's stAng is 0 (the
+ * current point is at angle 0) and the direction follows sweep (outer clockwise / inner
+ * counter-clockwise → PowerPoint nonzero-winding holes).
  */
 export function splitArc(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
   rx = Math.abs(rx);
   ry = Math.abs(ry);
   if (rx === 0 || ry === 0) return [];
   const dist = Math.hypot(x1 - x0, y1 - y0);
-  const nearFull = dist < Math.max(rx, ry) * 0.005; // 端点重合/近重合
+  const nearFull = dist < Math.max(rx, ry) * 0.005; // endpoints coincident / near-coincident
   if (!nearFull) {
     return [{ x0, y0, rx, ry, rot: rotDeg, largeArc, sweep, x1, y1 }];
   }
-  if (!largeArc) return []; // 近重合 + 非大弧 = 微小弧（SVG 语义：近省略），不输出
-  // 整圆拆两段半弧：段1 st=0→±180°，段2 st=±180°→±360°（端点在椭圆上）
+  if (!largeArc) return []; // near-coincident + not a large arc = tiny arc (SVG: omitted), emit nothing
+  // Split a full circle into two half arcs: seg1 st=0→±180°, seg2 st=±180°→±360° (endpoints on the ellipse)
   const dir = sweep ? 1 : -1;
   const midX = x0 - 2 * rx * Math.cos((rotDeg * Math.PI) / 180);
   const midY = y0 - 2 * rx * Math.sin((rotDeg * Math.PI) / 180);
@@ -219,8 +223,9 @@ export function splitArc(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
 }
 
 /**
- * SVG A 命令（端点参数化）→ OOXML arcTo（圆心参数化）。
- * 旋转角为 0 时精确转换（W3C SVG 附录 F.6.5）；非 0 时返回 null（调用方降级贝塞尔）。
+ * SVG A command (endpoint parameterization) → OOXML arcTo (center parameterization).
+ * Exact conversion when the rotation angle is 0 (W3C SVG appendix F.6.5); returns null
+ * otherwise (the caller degrades to bezier).
  */
 export function svgArcToOoxml(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
   const c = svgArcCenter(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1);
@@ -234,8 +239,9 @@ export function svgArcToOoxml(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
 }
 
 /**
- * 圆心参数化（W3C SVG 附录 F.6.5，含半径修正），对任意旋转角有效。
- * 返回 { cx, cy, rx, ry, theta1, dTheta }；退化（半径 0 / 端点重合且非整圆）返回 null。
+ * Center parameterization (W3C SVG appendix F.6.5, with radius correction), valid for any
+ * rotation angle. Returns { cx, cy, rx, ry, theta1, dTheta }; null on degeneracy (radius 0 /
+ * coincident endpoints that are not a full circle).
  */
 function svgArcCenter(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
   rx = Math.abs(rx);
@@ -277,7 +283,7 @@ function svgArcCenter(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
   return { cx, cy, rx, ry, theta1, dTheta };
 }
 
-/** 旋转椭圆上的点（θ 弧度，含旋转 φ）。 */
+/** A point on the rotated ellipse (θ radians, including rotation φ). */
 function arcPoint(c, theta, phiDeg) {
   const phi = ((phiDeg % 360) * Math.PI) / 180;
   const ct = Math.cos(theta);
@@ -288,7 +294,7 @@ function arcPoint(c, theta, phiDeg) {
   ];
 }
 
-/** 弧（旋转非 0 时）→ 三次贝塞尔近似段列表 [{c1, c2, p}]。 */
+/** Arc (non-zero rotation) → cubic bezier approximation segments [{c1, c2, p}]. */
 export function arcToBezier(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
   const c = svgArcCenter(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1);
   if (!c) return null;
@@ -301,7 +307,7 @@ export function arcToBezier(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
     const p1 = arcPoint(c, a1, rotDeg);
     const alpha = (4 / 3) * Math.tan((a1 - a0) / 4);
     const phi = ((rotDeg % 360) * Math.PI) / 180;
-    // 椭圆弧切线方向（局部坐标系求导后旋转回原系）
+    // Elliptical-arc tangent direction (differentiate in local coords, then rotate back)
     const d0x = -c.rx * Math.sin(a0) * Math.cos(phi) - c.ry * Math.cos(a0) * Math.sin(phi);
     const d0y = -c.rx * Math.sin(a0) * Math.sin(phi) + c.ry * Math.cos(a0) * Math.cos(phi);
     const d1x = -c.rx * Math.sin(a1) * Math.cos(phi) - c.ry * Math.cos(a1) * Math.sin(phi);
@@ -314,12 +320,13 @@ export function arcToBezier(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
 }
 
 // ---------------------------------------------------------------------------
-// SVG path 解析（支持 M/L/H/V/C/S/Q/T/A/Z，绝对/相对，含隐式重复命令）
+// SVG path parsing (supports M/L/H/V/C/S/Q/T/A/Z, absolute/relative, implicit repeats)
 // ---------------------------------------------------------------------------
 const CMD_RE = /[MmLlHhVvCcSsQqTtAaZz]/;
 
 /**
- * 解析 SVG path d → 命令流 [[op, args], …]（op 大写绝对命令，坐标已换算为绝对）。
+ * Parse an SVG path d → command stream [[op, args], …] (op is the uppercase absolute command;
+ * coordinates are already converted to absolute).
  * @returns {Array<[string, number[]]>}
  */
 export function parseSvgPath(d) {
@@ -343,7 +350,7 @@ export function parseSvgPath(d) {
       cmd = tokens[i][0];
       i++;
     } else if (lastCmd) {
-      cmd = lastCmd; // 隐式重复上一命令（坐标沿用上一段的参数个数）
+      cmd = lastCmd; // implicitly repeat the previous command (arity taken from the previous segment)
     } else {
       break;
     }
@@ -357,7 +364,7 @@ export function parseSvgPath(d) {
       i++;
       consumed++;
     }
-    if (consumed < argCount) break; // 参数不足，截断
+    if (consumed < argCount) break; // truncated: not enough arguments
     if (op === "Z") {
       cmds.push(["Z", []]);
       cur = start;
@@ -365,7 +372,7 @@ export function parseSvgPath(d) {
       ctrl = null;
       continue;
     }
-    // 展开为绝对坐标（A 的 rx/ry/rot/largeArc/sweep 不动，xy 需换算）
+    // Expand to absolute coordinates (A's rx/ry/rot/largeArc/sweep are untouched; xy is converted)
     for (let k = 0; k < args.length; k += (op === "A" ? 7 : op === "C" ? 6 : op === "S" || op === "Q" ? 4 : op === "L" || op === "M" || op === "T" ? 2 : 1)) {
       const seg = args.slice(k, k + (op === "A" ? 7 : op === "C" ? 6 : op === "S" || op === "Q" ? 4 : op === "L" || op === "M" || op === "T" ? 2 : 1));
       if (seg.length < (op === "A" ? 7 : op === "C" ? 6 : op === "S" || op === "Q" ? 4 : op === "H" || op === "V" ? 1 : 2)) break;
@@ -384,7 +391,7 @@ export function parseSvgPath(d) {
       if (op === "M") {
         start = [abs[0], abs[1]];
         cur = start;
-        lastCmd = "L"; // M 后隐式命令为 L
+        lastCmd = "L"; // the implicit command after M is L
         ctrl = null;
       } else {
         if (op === "H") cur = [abs[0], cur[1]];

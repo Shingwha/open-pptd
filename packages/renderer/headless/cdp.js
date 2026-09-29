@@ -1,23 +1,23 @@
 // ============================================================================
-// renderer/headless/cdp.js — CDP 客户端（仅 Node 端使用）
+// renderer/headless/cdp.js — CDP client (Node-only)
 // ----------------------------------------------------------------------------
-// 基于 MiniWebSocket 的 Chrome DevTools Protocol 最小客户端：
-// 方法调用（id 配对）、事件分发、Runtime.evaluate 助手、/json 目标发现、
-// 渲染就绪（Runtime.addBinding 事件推送，无轮询）。
-// http.get 默认无 keep-alive，响应读完连接即关，句柄完全可控。
+// Minimal Chrome DevTools Protocol client over MiniWebSocket: method calls (id pairing),
+// event dispatch, a Runtime.evaluate helper, /json target discovery, and render-ready
+// signalling (Runtime.addBinding event push, no polling). http.get uses no keep-alive by
+// default, so the connection closes once the response is read and handles stay controllable.
 // ============================================================================
 
 import { get as httpGet } from "node:http";
 import { MiniWebSocket } from "./ws.js";
 
-/** 页面侧 paint 完成 → 调用本 CDP 绑定名通知宿主（与 editor/app/shot.js 同名约定）。 */
+/** The page signals paint completion by calling this CDP binding name (agreed name with editor/app/shot.js). */
 export const READY_BINDING = "pptdReady";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export function withTimeout(promise, ms, label) {
   return new Promise((resolve, reject) => {
-    // 必须在 promise 完成时 clearTimeout，否则定时器会一直挂在事件循环上阻塞进程退出
+    // Must clearTimeout when the promise settles, otherwise the timer stays on the event loop and blocks process exit
     const timer = setTimeout(() => reject(new Error(`${label}超时（${ms}ms）`)), ms);
     promise.then(
       (v) => {
@@ -32,7 +32,7 @@ export function withTimeout(promise, ms, label) {
   });
 }
 
-/** http.get 取 JSON（默认无 keep-alive，响应读完连接即关；2s 超时）。 */
+/** http.get JSON (no keep-alive by default; the connection closes after the response; 2s timeout). */
 function httpGetJson(port, path) {
   return new Promise((resolveJson, reject) => {
     const req = httpGet({ host: "127.0.0.1", port, path }, (res) => {
@@ -62,10 +62,10 @@ function createCdp(ws) {
       pending.delete(msg.id);
       return;
     }
-    // 无 id = CDP 事件（Runtime.bindingCalled 等）→ 分发给订阅者
+    // No id = a CDP event (Runtime.bindingCalled etc.) → dispatch to subscribers
     if (msg.method) for (const l of [...listeners]) l(msg);
   };
-  // 连接关闭（浏览器退出等）：settle 所有未完成请求，避免 await 永久挂起
+  // Connection closed (browser exit etc.): settle all pending requests so no await hangs forever
   ws.onclose = () => {
     const err = new Error("CDP 连接已关闭");
     for (const res of pending.values()) res({ error: err });
@@ -90,12 +90,12 @@ function createCdp(ws) {
     });
     return timeoutMs ? withTimeout(run, timeoutMs, "页面执行") : run;
   };
-  /** 订阅 CDP 事件（返回退订函数）。 */
+  /** Subscribe to CDP events (returns an unsubscribe function). */
   const onEvent = (cb) => {
     listeners.add(cb);
     return () => listeners.delete(cb);
   };
-  /** 等一条满足谓词的 CDP 事件（一次性；超时由调用方 withTimeout 兜底）。 */
+  /** Wait for one CDP event matching the predicate (one-shot; the caller's withTimeout handles the timeout). */
   const waitEvent = (method, pred = null) =>
     new Promise((resolve) => {
       const off = onEvent((msg) => {
@@ -108,7 +108,7 @@ function createCdp(ws) {
   return { send, evalJs, onEvent, waitEvent, close: () => ws.close() };
 }
 
-/** 发现调试端口上的 page 目标并建立 CDP 会话。 */
+/** Discover the page target on the debug port and establish a CDP session. */
 export async function connectCdp(dbgPort, timeoutMs) {
   const deadline = Date.now() + timeoutMs;
   let target = null;
@@ -131,9 +131,10 @@ export async function connectCdp(dbgPort, timeoutMs) {
 }
 
 /**
- * 注册渲染就绪绑定（供 shot 页 paint 完成后回调，替代 document.title 轮询）。
- * **必须在 Page.navigate 之前调用**：绑定先于文档脚本注入，页面首次 paint 完成
- * 的 bindingCalled 才不会丢失（否则只能靠二次探测）。
+ * Register the render-ready binding (the shot page calls back after paint, replacing
+ * document.title polling). MUST be called before Page.navigate: the binding is injected
+ * before the document scripts, so the bindingCalled for the first paint is not lost
+ * (otherwise it would require a second probe).
  */
 export async function enableReady(cdp) {
   await cdp.send("Runtime.enable");
@@ -141,9 +142,10 @@ export async function enableReady(cdp) {
 }
 
 /**
- * 等待页面 paint 完成（shot 装配调用 pptdReady 绑定）。
- * 事件推送，无轮询；payload === "error" 视为页面初始化失败。
- * 调用前须先 enableReady，且应在导航前注册监听（见 enableReady 注释）。
+ * Wait for the page to finish painting (the shot assembly calls the pptdReady binding).
+ * Event push, no polling; payload === "error" means page init failed.
+ * Must call enableReady first, and the listener should be registered before navigation
+ * (see enableReady).
  */
 export function waitReady(cdp, timeoutMs) {
   return withTimeout(

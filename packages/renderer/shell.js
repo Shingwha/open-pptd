@@ -1,14 +1,14 @@
 // ============================================================================
-// renderer/shell.js — 元素外壳（所有渲染器共用的定位 / 标记 / 变换）
+// renderer/shell.js — element shell (positioning / markers / transforms shared by all renderers)
 // ----------------------------------------------------------------------------
-// 每种元素的渲染器只负责「内容」，定位外壳统一由此创建：
-//   - bounds → position:absolute 定位（svg 走 width/height 属性 + overflow
-//     visible；div 走 cssText，height:false 时高度由内容决定，如表格）
-//   - data-element-id / data-element-type 标记（选中 / 拖动 / 快速条定位
-//     都靠它命中；interaction/canvas.js 拖动期间直接改 left/top/width/height，
-//     此外壳即两侧的共同契约）
-//   - rotation / flip 变换（OOXML 语义：先翻转后旋转 → transform 列表
-//     从右向左应用，scale 写在 rotate 之后）与 opacity
+// Each element renderer only owns "content"; the positioning shell is created here:
+//   - bounds → position:absolute (svg via width/height attributes + overflow:visible;
+//     div via cssText, where height:false lets content decide the height, e.g. tables)
+//   - data-element-id / data-element-type markers (selection / dragging / quick-bar
+//     lookup all hit these; interaction/canvas.js mutates left/top/width/height
+//     directly while dragging, so this shell is the shared contract between both sides)
+//   - rotation / flip transforms (OOXML semantics: flip before rotate → the transform
+//     list applies right-to-left, so scale is written after rotate) and opacity
 // ============================================================================
 
 import { resolveColor } from "../model/theme.js";
@@ -16,8 +16,9 @@ import { effectiveShadow } from "../model/style-spec.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-/** ShadowSpec → CSS box-shadow 值；无阴影返回 null（图片 / 图表框 / 表格共用；
- * 缺省值走 effectiveShadow 单源，与导出端 outerShdw 一致）。 */
+/** ShadowSpec → CSS shadow value; null when there is no shadow (shared by images /
+ * chart frames / tables; defaults come from the effectiveShadow single source, matching
+ * the exported outerShdw). The caller decides text-shadow vs box-shadow. */
 export function boxShadowCss(theme, shadow) {
   const eff = effectiveShadow(shadow);
   if (!eff) return null;
@@ -26,11 +27,11 @@ export function boxShadowCss(theme, shadow) {
 }
 
 /**
- * @param {object} el 元素模型（bounds / elementId / elementType / rotation / flip / opacity）
+ * @param {object} el element model (bounds / elementId / elementType / rotation / flip / opacity)
  * @param {object} [opts]
- *  - tag: "div"（默认）| "svg"
- *  - height: false 时不设高度（内容自适应，表格）
- *  - css: 附加 cssText 片段（图表的 background 等）
+ *  - tag: "div" (default) | "svg"
+ *  - height: when false, no height is set (content decides it, e.g. tables)
+ *  - css: extra cssText fragment (e.g. a chart's background)
  */
 export function createElementShell(el, { tag = "div", height = true, css = "" } = {}) {
   const [x, y, w, h] = el.bounds;

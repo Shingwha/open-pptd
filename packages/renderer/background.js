@@ -1,12 +1,12 @@
 // ============================================================================
-// renderer/background.js — 页面背景 → DOM（solid / gradient / image）
+// renderer/background.js — page background → DOM (solid / gradient / image)
 // ============================================================================
 
 import { resolveColor } from "../model/theme.js";
 import { normalizeFill } from "../model/style-spec.js";
 import { gradientCss } from "./gradient.js";
 
-/** 页面背景 → DOM（solid / gradient / image）。 */
+/** Page background → DOM (solid / gradient / image). */
 export function pageBackground(theme, background) {
   const node = document.createElement("div");
   node.style.cssText = "position:absolute;left:0;top:0;right:0;bottom:0;";
@@ -14,15 +14,15 @@ export function pageBackground(theme, background) {
     node.style.background = "#ffffff";
     return node;
   }
-  // FillSpec 归一化（normalizeFill 容忍字符串 / 旧 {color} 形态，与 writer buildFill 兼容一致）
+  // FillSpec normalization (normalizeFill tolerates strings / legacy {color}, consistent with writer buildFill)
   const fill = normalizeFill(background);
   if (fill?.type === "solid") {
     node.style.background = resolveColor(theme, fill.color) || "#ffffff";
   } else if (fill?.type === "gradient") {
-    // linear / radial（gradient.js 统一角度换算）；无效渐变回退白底
+    // linear / radial (gradient.js handles the angle conversion); an invalid gradient falls back to white
     node.style.background = gradientCss(theme, fill) || "#ffffff";
   } else if (fill?.type === "image") {
-    // contain 留白居中、露白底（与导出端"白底 p:bg + contain 居中底层图"同语义）
+    // contain letterboxes and centers on a white base (same semantics as the export's white p:bg + centered contain underlay image)
     node.style.backgroundColor = "#ffffff";
     node.style.backgroundImage = `url(${fill.src})`;
     node.style.backgroundSize = fill.fit?.mode || "cover";

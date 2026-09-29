@@ -1,7 +1,7 @@
 // ============================================================================
-// renderer/headless/browser.js — 浏览器发现与端口工具（仅 Node 端使用）
+// renderer/headless/browser.js — browser discovery and port helpers (Node-only)
 // ----------------------------------------------------------------------------
-// 与 tests/e2e 同一候选策略；SMOKE_CHROME 环境变量可覆盖。
+// Same candidate strategy as tests/e2e; the SMOKE_CHROME env var overrides it.
 // ============================================================================
 
 import { existsSync } from "node:fs";
@@ -21,7 +21,7 @@ const BROWSER_CANDIDATES = [
   "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
 ].filter(Boolean);
 
-/** 定位本机 Chrome/Edge 可执行文件。 */
+/** Locate the local Chrome/Edge executable. */
 export function findBrowser(browserPath = null) {
   if (browserPath) {
     if (!existsSync(browserPath)) throw new Error(`浏览器不存在: ${browserPath}`);
@@ -34,7 +34,7 @@ export function findBrowser(browserPath = null) {
   return hit;
 }
 
-/** 取一个随机空闲端口（remote-debugging 用；竞态概率可忽略）。 */
+/** Grab a random free port (for remote-debugging; the race probability is negligible). */
 export function freePort() {
   return new Promise((resolvePort, reject) => {
     const srv = createNetServer();

@@ -1,5 +1,5 @@
 // ============================================================================
-// writer/chart/axes.js — 轴 XML（官方 AxisConfig 全字段 → catAx/valAx；§5.3 轴数组规则）
+// writer/chart/axes.js — axis XML (full official AxisConfig → catAx/valAx; axis-array rules)
 // ----------------------------------------------------------------------------
 
 import { el, esc, hexToRgbVal } from "../xml.js";
@@ -7,15 +7,15 @@ import { resolveColor, resolveFont } from "../../model/theme.js";
 import { toAxisArray, seriesAxisIndex, CHART_DEFAULTS } from "../../model/chart.js";
 import { txPrXml, srgbClrXml } from "./style.js";
 
-/** LineStyleConfig | boolean → a:ln 元素（axisLine/gridLine 共用）。null = 不输出。 */
+/** LineStyleConfig | boolean → a:ln element (shared by axisLine/gridLine). null = emit nothing. */
 function axisLnXml(theme, cfg, fallbackColor, fallbackWidth = 0.75) {
-  if (cfg === false) return null; // 调用方决定省略或 noFill
+  if (cfg === false) return null; // the caller decides to omit or use noFill
   const o = typeof cfg === "object" ? cfg : {};
   const color = o.color ? resolveColor(theme, o.color) : resolveColor(theme, fallbackColor) || "#6b7280";
   const kids = [el("a:solidFill", {}, srgbClrXml(color))];
   const dash = { dash: "dash", dot: "dot" }[o.style];
   if (dash) kids.push(el("a:prstDash", { val: dash }));
-  // arrow（官方 axisLine.arrow → headEnd/tailEnd；CT_LineProperties 顺序 headEnd 在前）
+  // arrow (official axisLine.arrow → headEnd/tailEnd; CT_LineProperties order puts headEnd first)
   const arrow = typeof cfg === "object" ? cfg.arrow : null;
   const head = arrow === "start" || arrow === "both" || arrow === true ? "start" : null;
   const tail = arrow === "end" || arrow === "both" || arrow === true ? "end" : null;
@@ -25,9 +25,9 @@ function axisLnXml(theme, cfg, fallbackColor, fallbackWidth = 0.75) {
   return el("a:ln", { w: Math.round((o.width ?? fallbackWidth) * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, kids.join(""));
 }
 
-/** 轴标题（string | TitleConfig → c:title，schema 位置：axPos 之后）。
- * fontFamily 配置生效（此前写死 +mn-lt/+mn-ea 主题字体、配置被静默忽略——与
- * chartEx 轴标题语义对齐）；未配置时保持 +mn-lt/+mn-ea 主题引用不变。 */
+/** Axis title (string | TitleConfig → c:title; schema position: after axPos).
+ * A configured fontFamily takes effect (aligned with chartEx axis-title semantics); when unset it
+ * keeps the +mn-lt/+mn-ea theme references unchanged. */
 function axisTitleXml(theme, title, chartFontFamily = null) {
   const cfg = typeof title === "string" ? { text: title } : title || null;
   if (!cfg || !cfg.text) return "";
@@ -56,16 +56,16 @@ function axisTitleXml(theme, title, chartFontFamily = null) {
 }
 
 /**
- * 单轴 XML（官方 AxisConfig 全字段）。
+ * Single-axis XML (full official AxisConfig).
  * @param {object} p {theme, id, crossId, kind: "cat"|"val", pos, cfg, secondary, tickLabels, crosses, fontFamily}
- *   secondary: 次轴——类别轴 delete=1（数据不重复，仅用于配轴）；数值轴换侧
- *   fontFamily: chart.fontFamily（轴标题 fontFamily 兜底）
+ *   secondary: secondary axis — the category axis gets delete=1 (data is not duplicated; it only pairs the axis); the value axis switches sides
+ *   fontFamily: chart.fontFamily (axis-title fontFamily fallback)
  */
 function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, tickLabels = true, crosses = "autoZero", valNumFmt = null, fontFamily = null }) {
   const show = cfg.show !== false;
   const kids = [
     el("c:axId", { val: id }),
-    // CT_Scaling 顺序：logBase → orientation → max → min
+    // CT_Scaling order: logBase → orientation → max → min
     el("c:scaling", {}, [
       cfg.reverse ? el("c:orientation", { val: "maxMin" }) : el("c:orientation", { val: "minMax" }),
       kind === "val" && cfg.max != null ? el("c:max", { val: cfg.max }) : "",
@@ -75,30 +75,31 @@ function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, t
     el("c:axPos", { val: pos }),
     axisTitleXml(theme, cfg.title, fontFamily),
   ];
-  // majorGridlines（数值轴；gridLine: false → 不输出）
+  // majorGridlines (value axis; gridLine: false → not emitted)
   const gridCfg = kind === "val" ? cfg.gridLine : null;
   if (kind === "val" && gridCfg !== false) {
     const ln = axisLnXml(theme, gridCfg, theme.colors?.line || "#e5e7eb", 0.5);
     kids.push(el("c:majorGridlines", {}, ln ? el("c:spPr", {}, ln) : ""));
   }
-  // numFmt（数值轴 label.numberFormat；percentStacked 堆叠时数值轴为 0-1 占比，
-  // 缺省 General 会显示 0.2 小数，写 0% 与预览/原生 PowerPoint 一致）
+  // numFmt (value-axis label.numberFormat; with percentStacked the value axis is a 0-1 share, and
+  // the default General would show decimals like 0.2, so 0% matches the preview/native PowerPoint)
   const numFmt = (kind === "val" && cfg.label && typeof cfg.label === "object" && cfg.label.numberFormat)
     ? cfg.label.numberFormat
     : kind === "val" && valNumFmt ? valNumFmt
     : null;
   kids.push(el("c:numFmt", { formatCode: numFmt || "General", sourceLinked: numFmt ? "0" : "0" }));
   kids.push(el("c:majorTickMark", { val: "none" }), el("c:minorTickMark", { val: "none" }));
-  // tickLblPos：label: false → none
+  // tickLblPos: label: false → none
   kids.push(el("c:tickLblPos", { val: tickLabels && cfg.label !== false ? "nextTo" : "none" }));
-  // spPr：axisLine（默认画主题线；false → noFill 隐藏）
+  // spPr: axisLine (draws the theme line by default; false → noFill to hide)
   const axisLn = cfg.axisLine === false ? el("a:ln", {}, el("a:noFill")) : axisLnXml(theme, cfg.axisLine, theme.colors?.line || "#d8dce1", 0.75);
   if (axisLn) kids.push(el("c:spPr", {}, axisLn));
-  // txPr（label 样式）
+  // txPr (label style)
   kids.push(txPrXml(theme, CHART_DEFAULTS.axisSize * 100, "tx1", cfg.label && typeof cfg.label === "object" ? cfg.label : null));
   kids.push(el("c:crossAx", { val: crossId }));
-  // 次值轴必须 crosses=max（交叉在类目轴最大处=换侧成立）；autoZero 会让 PowerPoint 把次轴
-  // 交叉到类目 0 位置，与 axPos 冲突导致次轴布局错乱（刻度串位、折线映射失效）
+  // A secondary value axis must use crosses=max (crossing at the category axis maximum makes the side
+  // switch work); autoZero makes PowerPoint cross at category 0, conflicting with axPos and scrambling
+  // the secondary-axis layout (ticks misaligned, line mapping broken)
   kids.push(el("c:crosses", { val: crosses }));
   if (kind === "val") kids.push(el("c:crossBetween", { val: "between" }));
   else kids.push(el("c:auto", { val: "1" }), el("c:lblAlgn", { val: "ctr" }), el("c:lblOffset", { val: "100" }), el("c:noMultiLvlLbl", { val: "0" }));
@@ -106,7 +107,7 @@ function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, t
 }
 
 /**
- * radar 轴组（spokeAxis 已折算为两个 AxisConfig；radar 无次轴，固定 cat(1)+val(2)）。
+ * radar axis group (spokeAxis already reduced to two AxisConfigs; radar has no secondary axis, fixed cat(1)+val(2)).
  */
 export function buildRadarAxesXml(theme, catCfg, valCfg, fontFamily = null) {
   return axisXml(theme, { id: 1, crossId: 2, kind: "cat", pos: "b", cfg: catCfg, fontFamily }) +
@@ -114,14 +115,14 @@ export function buildRadarAxesXml(theme, catCfg, valCfg, fontFamily = null) {
 }
 
 /**
- * 整图轴组（官方 §5.3 轴数组规则）：主轴 (1,2)；有系列用 index>0 →
- * 次轴 (3,4)（数值轴换侧 + 隐藏类别轴），与用户参考 chart43/47/48 结构一致。
+ * Whole-chart axis group (axis-array rules): primary (1,2); any series with index>0 →
+ * secondary (3,4) (the value axis switches sides + the category axis is hidden).
  * @param {object} p {theme, el, series, horizontal, axes: "catVal"|"valVal", valNumFmt}
- *   valNumFmt: 主数值轴缺省格式（percentStacked → "0%"），用户 label.numberFormat 优先
+ *   valNumFmt: primary value-axis default format (percentStacked → "0%"); a user label.numberFormat wins
  */
 export function buildAxesXml(theme, el, series, horizontal, mode = "catVal", { valNumFmt = null } = {}) {
   const maxIdx = Math.max(0, ...series.map((s) => seriesAxisIndex(s, horizontal)));
-  // 轴配置：垂直图 = xAxis→类别 / yAxis→数值；水平图 = yAxis→类别 / xAxis→数值
+  // Axis config: vertical charts = xAxis→category / yAxis→value; horizontal = yAxis→category / xAxis→value
   const xAxes = toAxisArray(el.xAxis);
   const yAxes = toAxisArray(el.yAxis);
   const catCfg = horizontal ? yAxes[0] : xAxes[0];
@@ -132,7 +133,7 @@ export function buildAxesXml(theme, el, series, horizontal, mode = "catVal", { v
   const out = [];
   const ff = el.fontFamily || null;
   if (mode === "valVal") {
-    // scatter/bubble：双数值轴
+    // scatter/bubble: dual value axes
     out.push(axisXml(theme, { id: 1, crossId: 2, kind: "val", pos: "b", cfg: xAxes[0], fontFamily: ff }));
     out.push(axisXml(theme, { id: 2, crossId: 1, kind: "val", pos: "l", cfg: yAxes[0], fontFamily: ff }));
     for (let i = 1; i <= maxIdx; i++) {
@@ -142,16 +143,16 @@ export function buildAxesXml(theme, el, series, horizontal, mode = "catVal", { v
     }
     return out.join("");
   }
-  // catVal（bar/line/area/candlestick/radar 等）
+  // catVal (bar/line/area/candlestick/radar etc.)
   out.push(axisXml(theme, { id: 1, crossId: 2, kind: "cat", pos: catPos, cfg: catCfg, fontFamily: ff }));
   out.push(axisXml(theme, { id: 2, crossId: 1, kind: "val", pos: valPos, cfg: valCfg, valNumFmt, fontFamily: ff }));
   for (let i = 1; i <= maxIdx; i++) {
-    // 次轴 ID 分配必须与 groupAxisId 的约定一致（类别轴=1+i*2、数值轴=2+i*2）：
-    // 图表组按"类别轴在前、数值轴在后"引用 [1+i*2, 2+i*2]，若 valAx 抢了 1+i*2，
-    // PowerPoint 会把数值轴当类别轴解析，次轴对方位整体翻转（刻度横排、折线映射失效）
+    // Secondary-axis ID assignment must match groupAxisId's convention (category=1+i*2, value=2+i*2):
+    // chart groups reference [1+i*2, 2+i*2] with category first and value second; if a valAx grabbed
+    // 1+i*2, PowerPoint would parse the value axis as a category axis and flip the secondary axis
     const catId = 1 + i * 2;
     const valId = 2 + i * 2;
-    // 次轴：数值轴换侧（crosses=max）+ 隐藏类别轴（配轴用，delete=1），对照原生 PowerPoint 结构
+    // Secondary axis: value axis switches sides (crosses=max) + the category axis is hidden (pairing only, delete=1)
     out.push(axisXml(theme, { id: valId, crossId: catId, kind: "val", pos: secValPos, cfg: horizontal ? xAxes[i] || {} : yAxes[i] || {}, secondary: false, crosses: "max", fontFamily: ff }));
     out.push(axisXml(theme, { id: catId, crossId: valId, kind: "cat", pos: catPos, cfg: horizontal ? yAxes[i] || {} : xAxes[i] || {}, secondary: true, fontFamily: ff }));
   }

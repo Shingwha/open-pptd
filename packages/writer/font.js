@@ -1,29 +1,29 @@
 // ============================================================================
-// writer/font.js — 字体嵌入装配（deck 声明 → fntdata 部件 + XML 注册片段）
+// writer/font.js — font embedding assembly (deck declarations → fntdata parts + XML registration)
 // ----------------------------------------------------------------------------
-// 流程：collectFontSpecs 收集声明（资源表 + 组件槽内联）→ loadFontBytes 加载
-// → fontToFntdata（fsType 校验 / 子集化 / EOT 封装）→ 输出 fntdata 部件 +
-// embeddedFontLst XML + font 关系。4 处注册由 parts.js / pptx.js 完成。
+// Flow: collectFontSpecs collects declarations (resource table + inline component slots) →
+// loadFontBytes loads → fontToFntdata (fsType check / subsetting / EOT packaging) → emit fntdata
+// parts + embeddedFontLst XML + font relationships. The 4 registrations happen in parts.js / pptx.js.
 //
-// 字体字节来源（双端）：
-//   - options.fontFiles[family]：预读缓存（Node 导出层 / 浏览器编辑器）
-//   - spec.url：fetch（CDN，需 CORS；Node 18+ 全局 fetch）
-//   - spec.file：仅 Node 端由调用方预读为 fontFiles（cli/export.js）
+// Font byte sources (both ends):
+//   - options.fontFiles[family]: preload cache (Node export layer / browser editor)
+//   - spec.url: fetch (CDN, needs CORS; Node 18+ global fetch)
+//   - spec.file: preloaded into fontFiles by the caller on Node only (cli/export.js)
 // ============================================================================
 
-import { parseFontInfo, checkEmbeddable, buildEot, subsetTtf, fontLineFactor, fontKey } from "../model/font.js";
+import { parseFontInfo, checkEmbeddable, buildEot, subsetTtf } from "../model/font.js";
 import { parseFontResources } from "../model/font.js";
 import { loadFontRegistry, findFont, fontFileUrl } from "../model/font-registry.js";
 import { escAttr } from "./xml.js";
 
 /**
- * 从 deck.fonts 收集嵌入字体规格（按 family 去重）：
- *   - 字体资源表项（除组件槽外的任意键，带 file/url）
- *   - 组件槽内联对象（{ family, file/url, subset }）
- *   - 无 file/url 的对象项（{ family: <注册名> }）：标记 needRegistry，
- *     由 buildEmbeddedFonts 按注册表（family/key）解析——命中则自动嵌入，
- *     未命中则跳过（视为系统字体声明，不嵌入）
- * 组件槽字符串（系统字体名或资源 key）不产生嵌入。
+ * Collect embedded-font specs from deck.fonts (deduplicated by family):
+ *   - font resource table entries (any key other than component slots, with file/url)
+ *   - inline component-slot objects ({ family, file/url, subset })
+ *   - object entries without file/url ({ family: <registry name> }): marked needRegistry and
+ *     resolved by buildEmbeddedFonts through the registry (family/key) — a hit embeds
+ *     automatically, a miss is skipped (treated as a system-font declaration)
+ * Component-slot strings (system font names or resource keys) never produce an embed.
  */
 export function collectFontSpecs(deck) {
   const fonts = deck?.fonts;
@@ -39,27 +39,28 @@ export function collectFontSpecs(deck) {
       family,
       file: v.file || null,
       url: v.url || null,
-      subset: v.subset == null ? null : !!v.subset, // null = 未显式指定，取注册表建议
+      subset: v.subset == null ? null : !!v.subset, // null = not explicitly set, take the registry's advice
       needRegistry: !(v.file || v.url),
     });
   };
-  for (const res of Object.values(parseFontResources(fonts))) push(res); // 资源表（扩展字段）
+  for (const res of Object.values(parseFontResources(fonts))) push(res); // resource table (extended fields)
   return specs;
 }
 
 /**
- * 收集 deck 全部文本字符（子集化用）。
- * 深度遍历整页（含 notes），不按元素类型/字段枚举——text 的 content.text、
- * table 顶层 rows、chart 的 data.cols/rows/title/series、未来新增的任何
- * 承载文字的字段一律覆盖（曾因按类型枚举漏收 table.rows / chart 文字，
- * 表格/图表里子集缺的字被 PowerPoint 逐字回退成微软雅黑）。
- * 另收 ASCII 可见字符基线：图表数值标签/轴刻度由 PowerPoint 按数字格式渲染，
- * 不经过任何文本字段，纯中文 deck 的子集会缺数字标点。
- * 字体 cmap 里不存在的字符 subsetTtf 会安全跳过，多收无副作用（体积略增）。
+ * Collect every text character in the deck (for subsetting).
+ * Deep-walks whole pages (including notes) instead of enumerating by element type/field — text's
+ * content.text, table top-level rows, chart data.cols/rows/title/series, and any future field
+ * carrying text are all covered (enumerating by type used to miss table.rows / chart text and
+ * subset-missing glyphs fell back per character to Microsoft YaHei).
+ * Also collects an ASCII printable baseline: chart value labels / axis ticks are rendered by
+ * PowerPoint from number formats without passing through any text field, so an all-Chinese deck's
+ * subset would lack numeric punctuation.
+ * subsetTtf safely skips characters absent from the font cmap, so over-collecting is harmless (slightly larger size).
  */
 export function collectTextChars(deck) {
   const chars = new Set();
-  for (let c = 0x20; c <= 0x7e; c++) chars.add(c); // ASCII 基线
+  for (let c = 0x20; c <= 0x7e; c++) chars.add(c); // ASCII baseline
   const seen = new Set();
   const walk = (v) => {
     if (typeof v === "string") {
@@ -67,7 +68,7 @@ export function collectTextChars(deck) {
     } else if (Array.isArray(v)) {
       v.forEach(walk);
     } else if (v && typeof v === "object") {
-      if (seen.has(v)) return; // 防循环引用
+      if (seen.has(v)) return; // guard against cycles
       seen.add(v);
       Object.values(v).forEach(walk);
     }
@@ -77,17 +78,17 @@ export function collectTextChars(deck) {
 }
 
 /**
- * 加载字体字节：fontFiles 预读 > 库内 file（Node 注入 fs 读 / 浏览器 fetch）> url（fetch）。
- * 失败返回 null。
- * options.fontDir: assets/fonts 绝对路径（Node 端，由调用方注入 fs.readFileSync）
- * options.fs: { readFileSync } Node 文件系统（不注入则浏览器 fetch）
+ * Load font bytes: fontFiles preload > library file (Node injects fs read / browser fetch) > url (fetch).
+ * Returns null on failure.
+ * options.fontDir: absolute assets/fonts path (Node side; the caller injects fs.readFileSync)
+ * options.fs: { readFileSync } Node filesystem (without it, the browser fetches)
  */
 export async function loadFontBytes(spec, options = {}) {
   if (options.fontFiles?.[spec.family]) return new Uint8Array(options.fontFiles[spec.family]);
   if (spec.file) {
     try {
       if (options.fontDir && options.fs?.readFileSync) {
-        // Node：file 一律指内置字体库内文件名（注册表解析产物；不支持项目内自定义字体）
+        // Node: file always refers to a name inside the bundled font library (a registry resolution result; project-local custom fonts are unsupported)
         return new Uint8Array(options.fs.readFileSync(joinPath(options.fontDir, spec.file)));
       }
       const res = await fetch(fontFileUrl(spec.file));
@@ -113,31 +114,29 @@ export async function loadFontBytes(spec, options = {}) {
   return null;
 }
 
-/** 无依赖路径拼接（Node 端也可能没有 path 模块注入）。 */
+/** Dependency-free path join (the Node side may also lack an injected path module). */
 function joinPath(dir, file) {
   return `${dir.replace(/[\\/]+$/, "")}/${file.replace(/^[\\/]+/, "")}`;
 }
 
 /**
- * 单个字体 → fntdata EOT 字节：子集化（TrueType）或全量（CFF 回退）。
- * @returns {{ bytes: Uint8Array, subset: boolean, info: object, lineFactor: number|null }}
+ * Single font → fntdata EOT bytes: subset (TrueType) or full (CFF fallback).
+ * @returns {{ bytes: Uint8Array, subset: boolean, info: object }}
  */
 export function fontToFntdata(bytes, chars, wantSubset) {
   const info = parseFontInfo(bytes);
-  // 单倍行距系数取原始全量字节实测（行距导出补偿，见 buildEmbeddedFonts.lineMetrics）
-  const lineFactor = fontLineFactor(bytes);
   if (wantSubset) {
     try {
       const subset = subsetTtf(bytes, chars);
-      return { bytes: buildEot(subset, parseFontInfo(subset), 0x1), subset: true, info, lineFactor };
+      return { bytes: buildEot(subset, parseFontInfo(subset), 0x1), subset: true, info };
     } catch (e) {
       console.warn(`[font] ${info.family} 子集化不可用（${e.message}），回退全量嵌入`);
     }
   }
-  return { bytes: buildEot(bytes, info, 0), subset: false, info, lineFactor };
+  return { bytes: buildEot(bytes, info, 0), subset: false, info };
 }
 
-/** skipped 原因 → 用户提示文案。 */
+/** skipped reason → user-facing message. */
 export function skipReasonText(r) {
   switch (r.reason) {
     case "not-in-registry":
@@ -156,23 +155,23 @@ export function skipReasonText(r) {
 }
 
 /**
- * 装配嵌入字体：收集 → 加载 → 校验 → 子集化/EOT → 部件 + XML 片段。
- * @param {object} options embedFonts=false 时跳过嵌入（声明保留，仅本次导出不嵌）；
- *   fullFonts=true 时所有嵌入字体全量嵌入（覆盖 deck.fonts / 注册表的 subset 建议，
- *   仅本次导出生效，不回写声明——对应 PowerPoint「嵌入所有字符（便于编辑）」）
+ * Assemble embedded fonts: collect → load → validate → subset/EOT → parts + XML fragments.
+ * @param {object} options embedFonts=false skips embedding (declarations kept, this export only);
+ *   fullFonts=true embeds every font in full (overriding deck.fonts / registry subset advice for
+ *   this export only, never written back — PowerPoint's "embed all characters (for editing)")
  * @returns {Promise<{ parts: {path,bytes}[], lstXml: string, rels: {id,target}[],
- *                     subsetMode: boolean, skipped: {family,reason,detail?}[],
- *                     lineMetrics: Record<string, number> }>}}
+ *                     subsetMode: boolean, skipped: {family,reason,detail?}[] }>}}
  */
 export async function buildEmbeddedFonts(deck, options = {}) {
-  const empty = { parts: [], lstXml: "", rels: [], subsetMode: false, skipped: [], lineMetrics: {} };
+  const empty = { parts: [], lstXml: "", rels: [], subsetMode: false, skipped: [] };
   if (options.embedFonts === false) return empty;
   const specs = collectFontSpecs(deck);
   if (!specs.length) return empty;
 
   const skipped = [];
-  // 注册表解析：无 file/url 的 spec → 按 family/key 命中注册表自动补库内文件；
-  // 未命中 → 系统字体声明，不嵌入（跳过）。注册表加载失败时同样跳过这些项。
+  // Registry resolution: specs without file/url look up the registry by family/key to fill in a
+  // library file automatically; a miss is a system-font declaration and is skipped (same when the
+  // registry fails to load).
   if (specs.some((s) => s.needRegistry)) {
     let registry = null;
     try {
@@ -190,8 +189,6 @@ export async function buildEmbeddedFonts(deck, options = {}) {
       }
       spec.file = hit.file;
       if (spec.subset == null) spec.subset = hit.subset !== false;
-      // 注册表条目的全部可引用名（family/key/aliases），行距系数按这些名字注册
-      spec.names = [hit.family, hit.key, ...(hit.aliases || [])];
     }
   }
 
@@ -199,7 +196,6 @@ export async function buildEmbeddedFonts(deck, options = {}) {
   const parts = [];
   const rels = [];
   const lstItems = [];
-  const lineMetrics = {}; // fontKey(字体名) → 单倍行距系数（嵌入字体实测）
   let subsetMode = false;
 
   for (const spec of specs) {
@@ -220,14 +216,6 @@ export async function buildEmbeddedFonts(deck, options = {}) {
       skipped.push({ family: spec.family, reason: "embed-failed", detail: e.message });
       continue;
     }
-    // 单倍行距系数（实测自原始字节）：按声明名/注册表名/字体内部名全部注册，
-    // 供段落行距导出补偿（writer/text.js）。嵌入受限（restricted）时同样注册——
-    // 查看端会回退本机同名字体，度量一致。新字体进库即自适应，零维护。
-    if (result.lineFactor) {
-      for (const name of new Set([spec.family, result.info.family, ...(spec.names || [])])) {
-        lineMetrics[fontKey(name)] = result.lineFactor;
-      }
-    }
     const check = checkEmbeddable(result.info.fsType);
     if (!check.ok) {
       console.warn(`[font] 跳过「${spec.family}」: ${check.reason}`);
@@ -235,7 +223,7 @@ export async function buildEmbeddedFonts(deck, options = {}) {
       continue;
     }
     if (spec.family !== result.info.family) {
-      // 声明族名与字体注册名（name 表 ID16 优先/ID1 回退）不一致时，页面按声明名引用会失配
+      // A declared family name that differs from the font's registered name (name table ID16 preferred / ID1 fallback) would mismatch when a page references the declared name
       console.warn(
         `[font] 声明族名「${spec.family}」与字体注册名「${result.info.family}」不一致：` +
         `页面 fontFamily 请引用注册名「${result.info.family}」，否则 PowerPoint 不认嵌入字体`
@@ -244,10 +232,10 @@ export async function buildEmbeddedFonts(deck, options = {}) {
     const n = parts.length + 1;
     parts.push({ path: `ppt/fonts/font${n}.fntdata`, bytes: result.bytes });
     rels.push({ id: `rIdFont${n}`, target: `fonts/font${n}.fntdata` });
-    // 单文件族 = 该族唯一字面 → 注册到全部四个样式槽（同一 rId，零重复字节）。
-    // 按 OS/2 元数据只挑一个槽会让其余槽缺席：查看机未装字体时，对应 (bold, italic)
-    // 组合的 run 查不到槽即静默替换字体——得意黑（400 斜体）的全 bold deck 曾因此
-    // 整段替换成默认黑体。子元素顺序为 CT_EmbeddedFontListEntry 固定序列，不可乱。
+    // A single-file family = that family's only face → register it into all four style slots (same
+    // rId, zero duplicate bytes). Picking one slot from OS/2 metadata leaves the others absent: on a
+    // viewer without the font, a run with the matching (bold, italic) combination finds no slot and
+    // is silently substituted. Child order is the fixed CT_EmbeddedFontListEntry sequence.
     lstItems.push(
       `<p:embeddedFont><p:font typeface="${escAttr(result.info.family)}"/>` +
       ["regular", "bold", "italic", "boldItalic"]
@@ -264,6 +252,5 @@ export async function buildEmbeddedFonts(deck, options = {}) {
     rels,
     subsetMode,
     skipped,
-    lineMetrics,
   };
 }

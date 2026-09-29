@@ -1,8 +1,8 @@
 // ============================================================================
-// slide.js — slideN.xml 生成（骨架 + 元素分派）
+// slide.js — slideN.xml generation (skeleton + element dispatch)
 // ----------------------------------------------------------------------------
-// 每种元素类型的 OOXML 生成在独立模块（text/shape/line/image/table/chart），
-// 本文件只负责：spTree 骨架、背景、rels、媒体/图表收集，以及分派到各元素实现。
+// OOXML generation for each element type lives in its own module (text/shape/line/image/table/chart);
+// this file only owns the spTree skeleton, background, rels, media/chart collection, and dispatch.
 // ============================================================================
 
 import { el, esc, xmlHeader } from "./xml.js";
@@ -17,7 +17,7 @@ import { TINY_PNG } from "./chart/types.js";
 import { getType } from "./types/index.js";
 
 // ----------------------------------------------------------------------------
-// 元素 → XML（经类型注册表分派；未注册类型回退占位警告）
+// Element → XML (dispatched via the type registry; unregistered types warn and are skipped)
 // ----------------------------------------------------------------------------
 export function elementToXml(theme, element, ctx) {
   const def = getType(element.elementType);
@@ -27,7 +27,7 @@ export function elementToXml(theme, element, ctx) {
 }
 
 // ----------------------------------------------------------------------------
-// slideN.xml 骨架
+// slideN.xml skeleton
 // ----------------------------------------------------------------------------
 export function buildSlide(theme, page, slideIndex, registry, options = {}) {
   const rels = [{ id: "rId1", type: "slideLayout", target: "../slideLayouts/slideLayout1.xml" }];
@@ -39,9 +39,9 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
   let linkCounter = 0;
   let chartCounter = options.chartBase || 0;
 
-  // 演讲者备注（官方 Page.notes）→ notesSlideN.xml（有备注才生成）
-  // 对照用户 notes-ref.pptx 实测：grpSpPr 带 xfrm + 3 占位符
-  // （sldImg 图像占位 / body 备注文字 / sldNum 页码），bodyPr 为空
+  // Speaker notes (official Page.notes) → notesSlideN.xml (generated only when notes exist)
+  // Structure: grpSpPr with xfrm + 3 placeholders (sldImg image / body notes text / sldNum page
+  // number), with an empty bodyPr
   const notesText = typeof page.notes === "string" ? page.notes.trim() : "";
   let notesXml = null;
   if (notesText) {
@@ -71,10 +71,8 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
   }
 
   const ctx = {
-    // 页面尺寸（deck.size）：背景图 cover 裁剪等按实际页面计算，缺省 960×540
+    // Page size (deck.size): background image cover cropping etc. is computed against the actual page; default 960×540
     pageSize: Array.isArray(options.pageSize) ? options.pageSize : [PAGE_WIDTH, PAGE_HEIGHT],
-    // 嵌入字体实测单倍行距系数（fontKey(字体名) → 系数）：行距导出补偿用
-    fontMetrics: options.fontMetrics || null,
     nextId: () => idCounter++,
     registerLink(url) {
       if (links.has(url)) return links.get(url);
@@ -87,7 +85,7 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
     loadImage(src) {
       return registry.loadImage ? registry.loadImage(src) : null;
     },
-    // 图标预载缓存（Map，loadIconDefs 产物）：iconXml 按 raw iconName 查 {inner,w,h}
+    // Icon preload cache (a Map produced by loadIconDefs): iconXml looks up {inner,w,h} by raw iconName
     iconDefs: registry.iconDefs || null,
     addMedia(bytes, ext) {
       mediaCounter += 1;
@@ -99,9 +97,9 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
       rels.push({ id, type: "image", target: `../media/${name}.${ext}` });
       return { id, path, ext };
     },
-    // heatmap/sankey 图片化（路由单源 chartRouteOf === "image"：先于 registerChart
-    // 调用，不消耗图表编号——Content_Types 按连续 id 声明 chartN.xml，编号空隙会
-    // 声明缺失部件）
+    // heatmap/sankey image conversion (route single source chartRouteOf === "image": called
+    // before registerChart, consuming no chart number — Content_Types declares chartN.xml by
+    // consecutive ids, so a gap would declare a missing part)
     collectChartImage(theme, el) {
       if (chartRouteOf(el) !== "image") return null;
       const svgBytes = buildChartImageBytes(theme, el);
@@ -122,14 +120,14 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
       }
       return id;
     },
-    // 经典/chartEx 部件收集（toXml 已按路由先行分流，image 到不了这里）；
-    // parts 为空 = 未知类型兜底 → 返回 false 跳过，不留悬空引用
+    // Classic/chartEx part collection (toXml already routed image away before reaching here);
+    // empty parts = unknown-type fallback → return false and skip, leaving no dangling reference
     collectChart(theme, el, chartId) {
       const parts = buildChartParts(theme, el, chartId);
       if (!parts) return false;
       if (parts.chartEx) {
-        // chartEx 扩展体系（waterfall/treemap/sunburst）：独立命名 + Worksheet xlsx
-        // + style/colors 样式部件（rId2/rId3，PowerPoint 按此索引默认样式表）
+        // chartEx extension system (waterfall/treemap/sunburst): separate naming + a Worksheet xlsx
+        // + style/colors parts (rId2/rId3, by which PowerPoint indexes the default style sheets)
         chartParts.push({
           id: chartId,
           chartEx: true,
@@ -160,7 +158,7 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
   };
 
   const elements = (page.elements || []).map((e) => elementToXml(theme, e, ctx)).join("");
-  // 背景图 contain 时 underlay 非空：垫在 spTree 最底层（z 序最低）
+  // With a contain background image, underlay is non-empty: layered at the spTree bottom (lowest z-order)
   const { bg: bgXml, underlay } = page.background ? backgroundXml(theme, page.background, ctx) : { bg: "", underlay: "" };
 
   const spTree =
@@ -197,7 +195,7 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
 }
 
 function relType(type) {
-  // 完整 URL（如 chartEx 关系类型）原样输出；相对名拼 officeDocument 前缀
+  // A full URL (e.g. the chartEx relationship type) is emitted as-is; a relative name gets the officeDocument prefix
   if (String(type).includes("://")) return type;
   return `${NS_R}/` + type;
 }

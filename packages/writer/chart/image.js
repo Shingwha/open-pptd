@@ -1,12 +1,12 @@
 // ============================================================================
-// writer/chart/image.js — heatmap/sankey 图片化导出（ECharts SSR → 矢量 SVG）
+// writer/chart/image.js — heatmap/sankey image-conversion export (ECharts SSR → vector SVG)
 // ----------------------------------------------------------------------------
-// PowerPoint 无这两类的原生/扩展图表类型；按 pptd.md §chart「导出为图片按 Image
-// 处理」口径，导出时用与预览同源的 model option（chart/option/）SSR 出 SVG，
-// 以 a:blip(PNG 占位) + svgBlip(真实矢量) 图片部件嵌入（PowerPoint 2016+/WPS
-// 新版/LibreOffice 显示矢量，旧版显示占位图；数据不可在 PPT 内再编辑）。
-// 零新增依赖：复用 packages/vendor/echarts.mjs（renderer 与 writer 的中立共享
-// vendor 区；构建为无 DOM 依赖的纯 ESM）。
+// PowerPoint has no native/extension chart type for these two; per pptd.md §chart ("export as image,
+// treated as Image"), the export SSR-renders an SVG from the same preview model options
+// (chart/option/) and embeds it as image parts: a:blip (PNG placeholder) + svgBlip (real vector)
+// (PowerPoint 2016+/new WPS/LibreOffice show the vector, older versions the placeholder; the data
+// is no longer editable inside the PPT). No new dependency: it reuses packages/vendor/echarts.mjs
+// (the neutral shared vendor area for renderer and writer, built as DOM-free pure ESM).
 // ============================================================================
 
 import * as echarts from "../../vendor/echarts.mjs";
@@ -14,10 +14,7 @@ import { buildChartOption } from "../../model/chart/option/index.js";
 import { resolveColor } from "../../model/theme.js";
 import { encodeUtf8 } from "../../model/bytes.js";
 
-/** 需要图片化导出的类型（PowerPoint 无对应原生类型）。 */
-export const IMAGE_CHART_TYPES = ["heatmap", "sankey"];
-
-/** 图表元素 → SVG 字符串（与预览同一份 option 单源；尺寸 = bounds pt→px 1:1）。 */
+/** Chart element → SVG string (the same option single source as the preview; size = bounds pt→px 1:1). */
 export function buildChartImageSvg(theme, el) {
   const [, , w, h] = el.bounds;
   const width = Math.max(1, Math.round(w));
@@ -45,10 +42,10 @@ function normalizeImageFill(theme, el) {
   if (typeof fill === "object" && typeof fill.color === "string") {
     return resolveColor(theme, fill.color) || null;
   }
-  return null; // 渐变框暂不图片化（罕见，保持简单）
+  return null; // gradient frames are not image-converted (rare; keep it simple)
 }
 
-/** 图片化部件载荷（UTF-8 字节）。 */
+/** Image-conversion part payload (UTF-8 bytes). */
 export function buildChartImageBytes(theme, el) {
   return encodeUtf8(buildChartImageSvg(theme, el));
 }

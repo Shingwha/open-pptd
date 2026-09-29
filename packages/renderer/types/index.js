@@ -1,8 +1,8 @@
 // ============================================================================
-// renderer/types/index.js — render 分片注册入口（引入即注册全部类型的 render）
+// renderer/types/index.js — render fragment registration entry (importing registers every type's render)
 // ----------------------------------------------------------------------------
-// 装配：渲染链路（renderer/page.js）只需引入本模块即可获得全部类型的
-// render 分派；UI 分片（label/menu/props...）由 editor/types/ 另行注册。
+// Wiring: the render path (renderer/page.js) only needs this module to get render dispatch
+// for every type; UI fragments (label/menu/props...) are registered separately by editor/types/.
 // ============================================================================
 
 import { registerType } from "../../model/registry.js";
