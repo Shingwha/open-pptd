@@ -254,12 +254,14 @@ export function createEditorState() {
     duplicateInPlace() {
       return ops.duplicateSelected(0);
     },
+    /** 层序移动。dir = 数组索引增量，数组顺序即绘制顺序（越靠后画得越靠上层）：
+     *  dir=+1 前移一层（上移，B5 修正方向——此前上移/下移标签与 z 序相反）。 */
     moveLayer(dir) {
       const list = elements();
       const idxs = selectedElements()
         .map((el) => list.indexOf(el))
         .filter((i) => i >= 0)
-        .sort((a, b) => (dir < 0 ? a - b : b - a)); // 上行从低到高，下行从高到低
+        .sort((a, b) => (dir > 0 ? b - a : a - b)); // 上移从高到低、下移从低到高，避免互相踩位
       for (const idx of idxs) {
         const to = idx + dir;
         if (to < 0 || to >= list.length) continue;

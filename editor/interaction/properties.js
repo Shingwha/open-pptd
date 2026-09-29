@@ -176,9 +176,10 @@ export function bindProperties(panel, api) {
     const g = ui.group("层级");
     const row = document.createElement("div");
     row.className = "prop-actions";
+    // 数组顺序 = 绘制顺序（越靠后越在上层）：上移 = 索引 +1（B5 修正，此前与 z 序相反）
     row.append(
-      ui.button("上移一层", () => { beginChange(); moveLayer(-1); endChange(); }),
-      ui.button("下移一层", () => { beginChange(); moveLayer(1); endChange(); })
+      ui.button("上移一层", () => { beginChange(); moveLayer(1); endChange(); }),
+      ui.button("下移一层", () => { beginChange(); moveLayer(-1); endChange(); })
     );
     g.appendChild(row);
     return g;
