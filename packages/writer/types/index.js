@@ -1,8 +1,8 @@
 // ============================================================================
-// writer/types/index.js — toXml 注册入口（引入即注册全部类型的 toXml）
+// writer/types/index.js — toXml registration entry (importing registers every type's toXml)
 // ----------------------------------------------------------------------------
-// 装配：导出链路（writer/slide.js）只需引入本模块即可获得全部类型的
-// toXml 分派；render / UI 分片由 renderer/types 与 editor/types 另行注册。
+// Wiring: the export path (writer/slide.js) only needs this module to get toXml dispatch
+// for every type; render / UI fragments are registered separately by renderer/types and editor/types.
 // ============================================================================
 
 import { registerType } from "../../model/registry.js";
@@ -25,8 +25,8 @@ registerType({ type: "table", toXml: tableXml });
 registerType({
   type: "chart",
 
-  // 导出路由单源 chartRouteOf：image 先行收集媒体（不消耗图表编号），
-  // classic/chartex 注册 chart part 后输出 graphicFrame，无路由 = 跳过
+  // Route single source chartRouteOf: image collects media first (no chart number consumed);
+  // classic/chartex register the chart part then emit a graphicFrame; no route = skip
   toXml(theme, el, ctx) {
     if (!ctx.registerChart || !ctx.collectChart) {
       console.warn(`[writer] 图表 ${el.elementId} 缺少图表部件上下文，已跳过`);
@@ -43,7 +43,7 @@ registerType({
     }
     const chartId = ctx.registerChart();
     const ok = ctx.collectChart(theme, el, chartId);
-    if (!ok) return ""; // 类型暂不支持原生导出（预览正常，导出跳过该元素）
+    if (!ok) return ""; // type not yet natively exportable (preview is fine; export skips this element)
     return chartXml(theme, el, ctx, chartId);
   },
 });

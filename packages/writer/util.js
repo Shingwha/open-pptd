@@ -1,10 +1,10 @@
 // ============================================================================
-// util.js — 图片尺寸解析 / dataURL 解码（零依赖）
+// util.js — image size parsing / dataURL decoding (zero dependencies)
 // ============================================================================
 
 import { base64ToBytes, bytesToBase64, encodeUtf8 } from "../model/bytes.js";
 
-/** 解析 PNG/JPEG/GIF 图片字节的像素尺寸 [w, h]。失败返回 null。 */
+/** Parse pixel dimensions [w, h] from PNG/JPEG/GIF bytes. Returns null on failure. */
 export function imageSize(bytes) {
   if (!bytes || bytes.length < 24) return null;
   const isPng = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
@@ -40,7 +40,7 @@ function jpegSize(bytes) {
     }
     const segLen = (bytes[i + 2] << 8) | bytes[i + 3];
     if (segLen < 2) return null;
-    // SOF0-3, SOF5-7, SOF9-11, SOF13-15（非差分、非渐进需要看 marker）
+    // SOF0-3, SOF5-7, SOF9-11, SOF13-15 (marker tells apart non-differential, non-progressive)
     const isSof = marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc;
     if (isSof) {
       const height = (bytes[i + 5] << 8) | bytes[i + 6];
@@ -53,7 +53,7 @@ function jpegSize(bytes) {
   return null;
 }
 
-/** 解码 data URL → { bytes: Uint8Array, ext }。非 data URL 返回 null。 */
+/** Decode a data URL → { bytes: Uint8Array, ext }. Returns null for a non-data URL. */
 export function decodeDataUrl(dataUrl) {
   if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:")) return null;
   const comma = dataUrl.indexOf(",");
@@ -69,28 +69,28 @@ export function decodeDataUrl(dataUrl) {
     bytes = encodeUtf8(decodeURIComponent(body));
   }
   const ext = mimeToExt(mime);
-  if (!ext) return null; // 不支持的格式（svg/webp/…）直接拒绝
+  if (!ext) return null; // reject unsupported formats (svg/webp/…) outright
   return { bytes, ext };
 }
 
 function mimeToExt(mime) {
   const map = { "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif" };
-  // svg/webp 等 PPT 不支持（Content_Types 无声明且字节不匹配），一律拒绝
+  // svg/webp etc. are unsupported by PPT (no Content_Types declaration and no byte match), rejected outright
   return map[mime] || null;
 }
 
-/** 图片扩展名 → MIME（"png" / ".png" 均可）；不支持返回 null。 */
+/** Image extension → MIME ("png" / ".png" both accepted); null when unsupported. */
 export function extToMime(ext) {
   const e = String(ext || "").toLowerCase().replace(/^\./, "");
   return { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif" }[e] || null;
 }
 
-/** 字节 + MIME → data URL（decodeDataUrl 的逆；编辑器图片预读/句柄读取共用）。 */
+/** Bytes + MIME → data URL (the inverse of decodeDataUrl; shared by editor image preload / handle reads). */
 export function dataUrlOf(buf, mime) {
   return `data:${mime};base64,${bytesToBase64(new Uint8Array(buf))}`;
 }
 
-/** 文件名非法字符替换为下划线（Windows 保留字符 + 引号/尖括号；导出命名共用）。 */
+/** Replace illegal filename characters with underscores (Windows reserved chars + quotes/angle brackets; shared for export naming). */
 export function safeFileName(name) {
   return String(name ?? "").replace(/[\\/:*?"<>|]/g, "_");
 }

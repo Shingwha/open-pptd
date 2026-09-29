@@ -1,8 +1,9 @@
 // ============================================================================
-// zip.js — 最小 ZIP 写入器（零依赖，store 无压缩方法）
+// zip.js — minimal ZIP writer (zero dependencies, store method / no compression)
 // ----------------------------------------------------------------------------
-// PPTX 允许 method 0（stored），无需压缩库。CRC32 用标准查表法。
-// 文件名一律 UTF-8 编码（设置 flag bit 11；encodeUtf8 单源在 model/bytes.js）。
+// PPTX accepts method 0 (stored), so no compression library is needed. CRC32 uses the
+// standard lookup table. Filenames are always UTF-8 encoded (flag bit 11 set; encodeUtf8
+// has a single source in model/bytes.js).
 // ============================================================================
 
 import { encodeUtf8 } from "../model/bytes.js";
@@ -32,7 +33,7 @@ export class ZipWriter {
     this.entries = []; // { name, data: Uint8Array, mtime }
   }
 
-  /** 添加一个文件条目。name 为 ZIP 内路径（正斜杠）。data 可为 string/Uint8Array。 */
+  /** Add a file entry. name is the in-ZIP path (forward slashes). data may be a string/Uint8Array. */
   add(name, data) {
     const bytes = typeof data === "string" ? encodeUtf8(data) : data;
     this.entries.push({ name, data: bytes });

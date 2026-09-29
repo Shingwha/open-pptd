@@ -1,7 +1,8 @@
 // ============================================================================
-// drawing.js — 通用 OOXML 绘制片段（xfrm / fill / border / shadow）
+// drawing.js — shared OOXML drawing fragments (xfrm / fill / border / shadow)
 // ----------------------------------------------------------------------------
-// 形状、文本边框、图片边框、表格填充共用；统一来自 packages/model 的 fill 模型。
+// Shared by shapes, text borders, image borders and table fills; all driven by the
+// packages/model fill model.
 // ============================================================================
 
 import { el, hexToRgbVal, angleToOOXML } from "./xml.js";
@@ -12,9 +13,10 @@ import { SUPPORTED_SHAPES } from "../model/model.js";
 import { custGeomXml } from "./custgeom.js";
 
 /**
- * 预置几何 → a:prstGeom。
- * 与 PowerPoint 存储一致：未显式设置 adjustments 时输出空 avLst（用预设内置默认），
- * 显式设置时按 adjNames 写 gd（仅当元素级 adjustments 非空）。
+ * Preset geometry → a:prstGeom.
+ * Matching PowerPoint storage: with no explicit adjustments, emit an empty avLst (using the
+ * preset's built-in defaults); when explicitly set, write gd entries by adjNames (only when
+ * element-level adjustments are non-empty).
  */
 export function buildPresetGeom(shapeName, adjustments) {
   const def = SUPPORTED_SHAPES[shapeName];
@@ -29,8 +31,8 @@ export function buildPresetGeom(shapeName, adjustments) {
 }
 
 /**
- * ShapeDef（shapeName/adjustments/viewBox/path，见官方 Image.cropShape）→ 几何元素。
- * custom 走 a:custGeom；缺省回退矩形。
+ * ShapeDef (shapeName/adjustments/viewBox/path, see the official Image.cropShape) → geometry element.
+ * custom goes through a:custGeom; the default falls back to a rectangle.
  */
 export function buildShapeDefGeom(shapeDef) {
   if (!shapeDef) return el("a:prstGeom", { prst: "rect" });
@@ -41,12 +43,12 @@ export function buildShapeDefGeom(shapeDef) {
   return buildPresetGeom(shapeDef.shapeName, shapeDef.adjustments);
 }
 
-/** 颜色 → OOXML 填充元素。主题 token 优先 schemeClr（可换主题），其余 srgbClr。
- * opacity（0~1，可选）：文字/元素透明度——a:alpha 修饰符加在颜色元素内部
- * （PowerPoint 官方存储结构，见 tests/projects/text/reference/test-text.pptx 透明文字）。 */
+/** Color → OOXML fill element. Theme tokens prefer schemeClr (theme-swappable), others srgbClr.
+ * opacity (0~1, optional): text/element transparency — the a:alpha modifier goes inside the
+ * color element (official PowerPoint storage). */
 const TOKEN_SLOT = { text: "dk2", bg: "lt2", primary: "accent1", accent: "accent2" };
 
-/** 合并 hex 自带 alpha 与元素 opacity（0~1）→ a:alpha val（1/1000 %）。 */
+/** Merge the hex's own alpha with element opacity (0~1) → a:alpha val (1/1000 %). */
 function alphaVal(hex, opacity) {
   let a = 1;
   if (hex && hex.length === 9) a = parseInt(hex.slice(7, 9), 16) / 255;
@@ -60,8 +62,8 @@ export function colorElement(theme, color, opacity) {
   if (typeof color === "string" && color.startsWith("$")) {
     const key = color.slice(1);
     if (TOKEN_SLOT[key]) return el("a:schemeClr", { val: TOKEN_SLOT[key] }, alphaVal(null, opacity));
-    // 主题 colors 的其余键：PowerPoint 对背景中 schemeClr 的 tint/shade 渲染不稳定，
-    // 派生色键（primarySoft 等）导出直接用解析后的具体色值（= 预览所见）
+    // Other theme colors keys: PowerPoint renders schemeClr tint/shade in backgrounds unreliably,
+    // so derived color keys (primarySoft etc.) export the resolved concrete value (= the preview shows)
     return solidRgb(resolveColor(theme, color), opacity);
   }
   if (typeof color === "string" && color.startsWith("#")) {
@@ -70,8 +72,8 @@ export function colorElement(theme, color, opacity) {
   return "";
 }
 
-/** 颜色 → 完整 a:solidFill 元素（rPr / a:ln / a:outerShdw 等填充位置必须包裹）。
- * 无显式色但需要透明度时，用默认文字色槽 tx1 + a:alpha（PowerPoint 官方结构）。 */
+/** Color → a full a:solidFill element (required wherever a fill sits: rPr / a:ln / a:outerShdw).
+ * With no explicit color but opacity needed, use the default text slot tx1 + a:alpha (official structure). */
 export function solidFillElement(theme, color, opacity) {
   let inner;
   if (color == null && opacity != null && opacity < 1) {
@@ -88,9 +90,10 @@ function solidRgb(hex, opacity) {
 }
 
 /**
- * 已解析的具体色（hex/HEX8，不含 $token）→ a:solidFill（chart 系列色专用，
- * 调用方需先 resolveColor）。与 colorElement/alphaVal 的语义差异（历史行为，勿合并）：
- * alpha 为显式值时无条件写 a:alpha（含 100000）；HEX8 自带 alpha **覆盖** alpha 参数。
+ * Resolved concrete color (hex/HEX8, no $token) → a:solidFill (chart series colors only; the
+ * caller must resolveColor first). Semantic differences from colorElement/alphaVal (keep apart):
+ * an explicit alpha writes a:alpha unconditionally (including 100000), and a HEX8's own alpha
+ * OVERRIDES the alpha argument.
  */
 export function solidFillResolved(hex, alpha = null) {
   let rgb = hex;
@@ -106,7 +109,7 @@ export function solidFillResolved(hex, alpha = null) {
   return el("a:solidFill", {}, inner);
 }
 
-/** 位置与尺寸（bounds=[x,y,w,h]，pt → EMU）。rotation 为度；flip=[水平, 垂直]。 */
+/** Position and size (bounds=[x,y,w,h], pt → EMU). rotation in degrees; flip=[horizontal, vertical]. */
 export function buildXfrm(bounds, rotation, flip) {
   const [x, y, w, h] = bounds;
   const off = el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) });
@@ -120,9 +123,10 @@ export function buildXfrm(bounds, rotation, flip) {
   return el("a:xfrm", attrs, off + ext);
 }
 
-/** 阴影 → a:effectLst 唯一实现（dist/dir/blurRad 只在此计算，缺省值统一来自
- * effectiveShadow；offset [x,y] 向下为正 → dist/dir 顺时针，向下 = 5400000）。
- * CT_OuterShadowEffect 子元素 = 颜色元素本身（包 solidFill 会判损修复）。 */
+/** Shadow → a:effectLst, the single implementation (dist/dir/blurRad are computed only here;
+ * defaults come from effectiveShadow; offset [x,y] with down positive → dist/dir clockwise,
+ * down = 5400000). CT_OuterShadowEffect's child is the color element itself (wrapping it in
+ * solidFill triggers repair). */
 function shadowEffectLst(theme, shadow, baseAttrs, opacity) {
   const eff = effectiveShadow(shadow);
   if (!eff) return "";
@@ -135,29 +139,28 @@ function shadowEffectLst(theme, shadow, baseAttrs, opacity) {
   return el("a:effectLst", {}, el("a:outerShdw", attrs, colorElement(theme, eff.color, opacity)));
 }
 
-/** 文字阴影 → a:effectLst（无 algn/rotWithShape 属性；text.js 用）。 */
+/** Text shadow → a:effectLst (no algn/rotWithShape attributes; used by text.js). */
 export function shadowElement(theme, shadow) {
   return shadowEffectLst(theme, shadow, {}, null);
 }
 
 /**
- * 填充 → OOXML。入参经 normalizeFill 单源归一化（model/style-spec）：
- *  - string（hex / $token）/ 旧 { color } 形态 → solid
+ * Fill → OOXML. The input is normalized by normalizeFill (single source in model/style-spec):
+ *  - string (hex / $token) / legacy { color } → solid
  *  - { type:"solid", color }
  *  - { type:"gradient", gradientType, stops, angle }
- *  - { type:"image", src, fit, crop, opacity }（媒体由调用方注册）
- * @param {number} [opacity] 元素级透明度（0~1）：solid/gradient 颜色内注入 a:alpha
+ *  - { type:"image", src, fit, crop, opacity } (media registered by the caller)
+ * @param {number} [opacity] element-level transparency (0~1): injects a:alpha into solid/gradient colors
  */
 export function buildFill(theme, fill, mediaRef = null, opacity = null) {
   fill = normalizeFill(fill);
   if (!fill) return "";
   if (fill.type === "solid") {
-    // 官方 SolidFill（{type: "solid", color}）——此前依赖旧 fill.color 兼容分支，
-    // 清理后一度丢失（表格填充/页面背景全空，2026-08-10 回归）
+    // Official SolidFill ({type:"solid", color}) — previously relied on a legacy fill.color compat branch
     return el("a:solidFill", {}, colorElement(theme, fill.color, opacity));
   }
   if (fill.type === "gradient") {
-    // a:gs pos 单位 = 千分之一百分比（100% = 100000），与 PowerPoint 官方输出一致
+    // a:gs pos unit = thousandths of a percent (100% = 100000), matching official PowerPoint output
     const stops = (fill.stops || []).map((s) =>
       el("a:gs", { pos: Math.round((s.position ?? 0) * 100000) }, colorElement(theme, s.color, opacity))
     ).join("");
@@ -172,11 +175,11 @@ export function buildFill(theme, fill, mediaRef = null, opacity = null) {
   if (fill.type === "image") {
     if (!mediaRef) return "";
     const kids = [el("a:blip", { "r:embed": mediaRef.id })];
-    // 元素级透明度（官方：图片透明度 = a:blip 内 a:alphaModFix）
+    // Element-level transparency (official: image transparency = a:alphaModFix inside a:blip)
     if (fill.opacity != null && fill.opacity < 1) {
       kids.push(el("a:alphaModFix", { amt: Math.round(fill.opacity * 100000) }));
     }
-    // 调用方已算好的最终 srcRect（元素级 crop+cover 合成）优先，否则按普通 cover 计算
+    // A caller-computed final srcRect (element crop+cover composed) takes priority; otherwise compute plain cover
     if (mediaRef.srcRect) {
       kids.push(el("a:srcRect", mediaRef.srcRect));
     } else {
@@ -192,8 +195,9 @@ export function buildFill(theme, fill, mediaRef = null, opacity = null) {
       }
       const mode = fill.fit?.mode || "cover";
       if (mode !== "fill") {
-        // cover / contain（填充上下文无法表达 contain 留白，统一等比裁剪 = cover）：
-        // 通过 srcRect 裁剪源图，使目标容器完全覆盖
+        // cover / contain (a fill context cannot express contain letterboxing, so both map to
+        // proportional cropping = cover): crop the source via srcRect so the target container is
+        // fully covered
         const size = mediaRef.size;
         const cw = mediaRef.containerW || fill.containerW || 960;
         const ch = mediaRef.containerH || fill.containerH || 540;
@@ -210,16 +214,16 @@ export function buildFill(theme, fill, mediaRef = null, opacity = null) {
 }
 
 /**
- * cover：计算源矩形裁剪量（OOXML a:srcRect 语义）。
- * l/t/r/b = 从各边缘向内的裁剪比例（千分位），使目标容器完全覆盖。
+ * cover: compute the source-rectangle crop (OOXML a:srcRect semantics).
+ * l/t/r/b = inward crop ratio from each edge (thousandths), so the target container is fully covered.
  */
 export function coverSrcRect(imgW, imgH, boxW, boxH) {
   if (!imgW || !imgH || !boxW || !boxH) return null;
   const scale = Math.max(boxW / imgW, boxH / imgH);
   const srcW = boxW / scale;
   const srcH = boxH / scale;
-  const l = (imgW - srcW) / 2 / imgW; // 左裁 = 右裁（对称）
-  const t = (imgH - srcH) / 2 / imgH; // 顶裁 = 底裁（对称）
+  const l = (imgW - srcW) / 2 / imgW; // left crop = right crop (symmetric)
+  const t = (imgH - srcH) / 2 / imgH; // top crop = bottom crop (symmetric)
   return {
     l: Math.round(l * 100000),
     t: Math.round(t * 100000),
@@ -228,7 +232,7 @@ export function coverSrcRect(imgW, imgH, boxW, boxH) {
   };
 }
 
-/** 边框 → a:ln。 */
+/** Border → a:ln. */
 export function buildLn(theme, border, opacity = null) {
   if (!border) return "";
   const w = Math.round((border.width ?? 1) * 12700);
@@ -238,8 +242,8 @@ export function buildLn(theme, border, opacity = null) {
   return el("a:ln", { w, cap: "flat", cmpd: "sng", algn: "ctr" }, kids.join(""));
 }
 
-/** 形状/表格阴影 → a:effectLst。shadow: {blur, color, offset:[x,y]}。
- * algn="tl" 与 PowerPoint 官方输出一致（缺省 algn="b" 阴影方向不对）。 */
+/** Shape/table shadow → a:effectLst. shadow: {blur, color, offset:[x,y]}.
+ * algn="tl" matches official PowerPoint output (the default algn="b" points the shadow the wrong way). */
 export function buildShadow(theme, shadow, opacity = null) {
   return shadowEffectLst(theme, shadow, { algn: "tl", rotWithShape: 0 }, opacity);
 }

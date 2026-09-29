@@ -1,12 +1,11 @@
 // ============================================================================
-// writer/chart/classic.js — 经典 c:chartSpace 图表导出主装配
+// writer/chart/classic.js — classic c:chartSpace chart export main assembly
 // ----------------------------------------------------------------------------
-// C3 对齐官方（对照 tests/projects/chart/reference/test-chart-all.pptx 由 python-pptx 生成的
-// 8 类型参考骨架）：
-//   3. chart XML 必须声明 <c:externalData r:id="rId1"> → 指向嵌入 xlsx
-//   4. strCache/numCache 必须写入（不打开数据表也能显示）
-//   5. schema 元素顺序严格（PowerPoint 校验）
-//   6. 图表文字用 +mn-lt/+mn-ea 绑定主题 minor 字体
+// Aligned with the official (python-pptx-generated 8-type reference skeleton):
+//   - the chart XML must declare <c:externalData r:id="rId1"> → pointing at the embedded xlsx
+//   - strCache/numCache must be written (so values show without opening the data sheet)
+//   - schema element order is strict (PowerPoint validates it)
+//   - chart text binds the theme minor font via +mn-lt/+mn-ea
 // ============================================================================
 
 import { el, esc, xmlHeader } from "../xml.js";
@@ -22,23 +21,23 @@ import { buildAxesXml, buildRadarAxesXml } from "./axes.js";
 import { buildChartExParts } from "./chartex.js";
 
 /**
- * 构建图表部件（chartN.xml + rels + xlsx）。
- * @returns {{xml, relsXml, xlsx, unsupported: string[]} | null} unsupported 非空
- *  时 xml/rels 为空（预览正常，导出跳过该元素并警告）。
+ * Build chart parts (chartN.xml + rels + xlsx).
+ * @returns {{xml, relsXml, xlsx, unsupported: string[]} | null} when unsupported is non-empty,
+ *  xml/rels are empty (the preview is fine; export skips this element with a warning).
  */
 export function buildChartParts(theme, chartEl, chartIndex) {
-  // 有效语义单源（spec：归一化系列/标题/图例/布局/柱宽/气泡），本函数只做 OOXML 投影
+  // Effective-semantics single source (spec: normalized series/title/legend/layout/bar-width/bubble); this function only projects to OOXML
   const spec = resolveChartSpec(theme, chartEl);
   const series = spec.series;
   const types = spec.types;
   const layout = spec.layout;
-  // 路由单源 CHART_META.route：无 route = 未知类型（预览正常，导出跳过并警告）
+  // Route single source CHART_META.route: no route = unknown type (preview is fine; export skips with a warning)
   const unsupported = types.filter((t) => !CHART_META[t]?.route);
   if (unsupported.length) {
     console.warn(`[writer] 图表 ${chartEl.elementId} 类型 ${unsupported.join("/")} 暂不支持原生导出（待官方参考比对），已跳过`);
     return null;
   }
-  // chartEx 体系（waterfall/treemap/sunburst 独占系列数组；路由单源 CHART_META.route）
+  // chartEx system (waterfall/treemap/sunburst take over the series array; route single source CHART_META.route)
   if (types.some((t) => CHART_META[t]?.route === "chartex")) {
     return buildChartExParts(spec, chartIndex);
   }
@@ -46,33 +45,33 @@ export function buildChartParts(theme, chartEl, chartIndex) {
   const table = chartDataTable(chartEl);
   const rowCount = table.length;
   const dataRows = Math.max(0, rowCount - 1);
-  // 方向（官方 §Chart 方向规则）：bar/waterfall 由 xAxis/yAxis.type 决定
+  // Direction (official chart direction rules): for bar/waterfall it comes from xAxis/yAxis.type
   const horizontal = resolveChartDirection(chartEl, series);
   const sheetOrder = buildSheetOrder(chartEl, series, horizontal);
-  // 重排后：原列号 → 新列号
+  // After reordering: old column index → new column index
   const newIdxOf = new Map(sheetOrder.map((old, ni) => [old, ni]));
 
   const sheetRange = (colIdx) => {
     const L = colLetter(newIdxOf.get(colIdx) ?? 0);
     return dataRows > 0 ? `Sheet1!$${L}$2:$${L}$${rowCount}` : `Sheet1!$${L}$1:$${L}$1`;
   };
-  // 系列名引用列：按类型取主值列（分类列放 A，系列名列须为值列）
+  // Series-name reference column: the primary value column per type (the category column goes to A; the series-name column must be a value column)
   const NAME_CH = { bar: "y", line: "y", area: "y", radar: "y", scatter: "y", bubble: "y", candlestick: "high", pie: "value" };
   sheetRange.nameCol = (s) => {
-    // 水平柱：数值通道在 x
+    // Horizontal bars: the value channel is x
     const ch = horizontal && s.type === "bar" ? "x" : (NAME_CH[s.type] ?? "y");
     return newIdxOf.get(s._cols[ch]) ?? 0;
   };
-  sheetRange.colHeader = (colIdx) => newIdxOf.get(colIdx) ?? 0; // 列头引用（股价图各通道列）
+  sheetRange.colHeader = (colIdx) => newIdxOf.get(colIdx) ?? 0; // column-header reference (candlestick channels)
   sheetRange.rowEnd = () => rowCount;
-  // 数据标签 + 全局 fontFamily 注入（官方链：label.fontFamily > Chart.fontFamily）
+  // Data labels + global fontFamily injection (official chain: label.fontFamily > Chart.fontFamily)
   const labelsOf = (s, type) => {
     const l = resolveDataLabels(chartEl, s, type);
     if (!l) return null;
     return { ...l, fontFamily: l.fontFamily || chartEl.fontFamily || null };
   };
 
-  // 按类型分组输出 chartElems（混合图共享轴）
+  // Group chartElems by type (mixed charts share axes)
   const groups = new Map();
   for (const s of series) {
     if (!groups.has(s.type)) groups.set(s.type, []);
@@ -81,12 +80,12 @@ export function buildChartParts(theme, chartEl, chartIndex) {
 
   const chartElems = [];
   let serCounter = 0;
-  // 柱宽/槽宽语义（spec.barLayout 单源，renderer 预览投影同一结果）
+  // Bar/slot width semantics (spec.barLayout single source; the renderer preview projects the same result)
   const barLayout = spec.barLayout;
   const isStacked = barLayout.stacked;
   const isPercent = barLayout.percent;
   const isStream = series.some((s) => s.stack === "stream");
-  // 组轴索引（官方 §5.3：垂直图 yAxisIndex / 水平图 xAxisIndex）
+  // Group axis indices (vertical charts use yAxisIndex, horizontal use xAxisIndex)
   const groupAxisId = (s) => {
     const i = seriesAxisIndex(s, horizontal);
     return [1 + i * 2, 2 + i * 2];
@@ -102,8 +101,9 @@ export function buildChartParts(theme, chartEl, chartIndex) {
         el("c:varyColors", { val: "0" }),
         (() => {
           const ss = [];
-          // 横向柱（barDir=bar）PowerPoint 自下而上绘制、图例倒序显示（Excel 经典行为），
-          // 反转发射顺序可同时修正组内柱序与图例序（此前与预览双双相反，15 页实测）
+          // Horizontal bars (barDir=bar) are drawn bottom-up by PowerPoint and show the legend in
+          // reverse (classic Excel behavior); reversing the emission order fixes both the in-group
+          // bar order and the legend order at once
           const ordered = horizontal ? [...groupSeries].reverse() : groupSeries;
           for (const s of ordered) {
             const chs = seriesChannels(s, horizontal);
@@ -112,15 +112,15 @@ export function buildChartParts(theme, chartEl, chartIndex) {
           return ss.join("");
         })(),
       ];
-      // ECMA-376 CT_BarChart 顺序：… ser* → dLbls? → gapWidth? → overlap? → serLines? → axId×2
-      // gapWidth 必须先于 overlap（PowerPoint 严格按 schema 解析，顺序颠倒会弹「修复」）
+      // ECMA-376 CT_BarChart order: … ser* → dLbls? → gapWidth? → overlap? → serLines? → axId×2
+      // gapWidth must precede overlap (PowerPoint parses strictly by schema; reversed order pops a repair dialog)
       if (barLayout.hasGapWidthConfig) kids.push(el("c:gapWidth", { val: barLayout.gapWidth }));
       if (barLayout.overlap != null) kids.push(el("c:overlap", { val: barLayout.overlap }));
       kids.push(el("c:axId", { val: catId }), el("c:axId", { val: valId }));
       chartElems.push(el("c:barChart", {}, kids.join("")));
     } else if (type === "line" || type === "area") {
-      // grouping 与 bar 同源（model resolveBarLayout 判定 stack/percent）：
-      // 此前写死 "standard"，stack: value/percent 导出丢失，叠积图变从 0 重叠绘制（04 页实测）
+      // grouping shares the bar source (model resolveBarLayout decides stack/percent); hardcoding
+      // "standard" would drop stack: value/percent and redraw stacked charts overlapping from 0
       const grouping = isPercent ? "percentStacked" : isStacked ? "stacked" : "standard";
       const kids = [
         el("c:grouping", { val: grouping }),
@@ -129,8 +129,8 @@ export function buildChartParts(theme, chartEl, chartIndex) {
             const ss = [];
             for (const s of groupSeries) {
               const chs = seriesChannels(s, false);
-              // 股价图叠加线（均线）：未配 marker 时显式写 symbol none——省略元素会让
-              // PowerPoint 落平台默认 ✕ 标记，与预览无标记不一致
+              // Candlestick overlay line (moving average): without a marker, symbol none is written
+              // explicitly; omitting the element lets PowerPoint show its default ✕ marker
               ss.push(type === "line"
                 ? lineSerXml(theme, s, sheetRange, serCounter++, labelsOf(s, "line"), chs, { suppressMarker: spec.primary === "candlestick" })
                 : areaSerXml(theme, s, sheetRange, serCounter++, labelsOf(s, "area"), chs));
@@ -138,7 +138,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
             return ss.join("");
           })(),
       ];
-      // smooth 已逐系列显式写（c:smooth 0/1），组级不再写——「任一系列平滑→全组连带平滑」废止
+      // smooth is written explicitly per series (c:smooth 0/1); the group-level value is gone, so "any smoothed series smooths the whole group" no longer applies
       kids.push(el("c:axId", { val: catId }), el("c:axId", { val: valId }));
       chartElems.push(el(`c:${type === "area" ? "areaChart" : "lineChart"}`, {}, kids.join("")));
     } else if (type === "scatter") {
@@ -156,9 +156,9 @@ export function buildChartParts(theme, chartEl, chartIndex) {
         ].join(""))
       );
     } else if (type === "bubble") {
-      // 气泡尺寸有效语义（spec.bubble 单源：预览直径与导出归一化写值、bubbleScale
-      // 反解同一模型——此前 writer 复制一份映射并直接改写 s._values.size，model
-      // 归一化结果被导出副作用污染）
+      // Effective bubble-size semantics (spec.bubble single source: preview diameter and export
+      // normalized values, bubbleScale inverted from the same model; previously the writer duplicated
+      // the mapping and mutated s._values.size, polluting the model result as an export side effect)
       const bub = spec.bubble;
       chartElems.push(
         el("c:bubbleChart", {}, [
@@ -176,8 +176,9 @@ export function buildChartParts(theme, chartEl, chartIndex) {
         ].join(""))
       );
     } else if (type === "candlestick") {
-      // PowerPoint 原生 = c:stockChart：1 系列展开 3/4 个 c:ser + hiLowLines
-      // + upDownBars（仅 OHLC）。overlay 系列（line 均线）走各自 chart 元素共享轴。
+      // PowerPoint native = c:stockChart: 1 series expands into 3/4 c:ser + hiLowLines +
+      // upDownBars (OHLC only). Overlay series (line moving averages) use their own chart element
+      // sharing the axes.
       const isOHLC = groupSeries[0]._cols.open != null;
       const colHeaders = chartEl.data?.cols || [];
       const kids = [];
@@ -205,9 +206,9 @@ export function buildChartParts(theme, chartEl, chartIndex) {
       if (isDonut) kids.push(el("c:holeSize", { val: Math.max(1, Math.min(90, Math.round(innerRadius * 100))) }));
       chartElems.push(el(`c:${isDonut ? "doughnutChart" : "pieChart"}`, {}, kids.join("")));
     } else if (type === "radar") {
-      // radarStyle：marker=线+点，filled=带填充。PowerPoint 无 per-series 混合样式
-      // （ filled 时全部系列填充），任一系列声明 areaColor（模型层缺省派生 lineColor
-      // 半透明，与预览一致）即整图 filled；此前写死 marker 致填充丢失（08/20 页实测）
+      // radarStyle: marker = line + dots, filled = filled. PowerPoint has no per-series mixed style
+      // (filled means every series is filled); any series declaring areaColor (the model derives a
+      // translucent lineColor by default, matching the preview) makes the whole chart filled
       const hasFill = groupSeries.some((s) => s.areaColor);
       chartElems.push(
         el("c:radarChart", {}, [
@@ -228,7 +229,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
     }
   }
 
-  // 轴（官方 AxisConfig 全字段；radar 的 spokeAxis 映射到 catAx/valAx）
+  // Axes (full official AxisConfig; radar's spokeAxis maps to catAx/valAx)
   const primary = spec.primary;
   let axes = "";
   if (primary === "pie") {
@@ -236,17 +237,17 @@ export function buildChartParts(theme, chartEl, chartIndex) {
   } else if (primary === "scatter" || primary === "bubble") {
     axes = buildAxesXml(theme, chartEl, series, false, "valVal");
   } else if (primary === "radar") {
-    // spokeAxis：min/max → valAx scaling；label/axisLine/gridLine → 两轴；show:false → 双轴隐藏
+    // spokeAxis: min/max → valAx scaling; label/axisLine/gridLine → both axes; show:false → hide both
     const spoke = (chartEl.spokeAxis && typeof chartEl.spokeAxis === "object" ? chartEl.spokeAxis : {});
     const catCfg = { ...(spoke.show === false ? { show: false } : {}), label: spoke.label, axisLine: spoke.axisLine };
     const valCfg = { min: spoke.min, max: spoke.max, label: spoke.label, axisLine: spoke.axisLine, gridLine: spoke.gridLine, ...(spoke.show === false ? { show: false } : {}) };
     axes = buildRadarAxesXml(theme, catCfg, valCfg, chartEl.fontFamily);
   } else {
-    // percentStacked 数值轴缺省格式 0%（预览渲染 0%-100%，General 会显示 0.2 小数）
+    // percentStacked value-axis default format 0% (the preview renders 0%-100%; General would show decimals like 0.2)
     axes = buildAxesXml(theme, chartEl, series, horizontal, "catVal", { valNumFmt: isPercent ? "0%" : null });
   }
 
-  // 标题（有效配置 spec.title；rich 字符样式与 chartEx 轴标题同源 richCharStyleXml）
+  // Title (effective config spec.title; the rich character style shares richCharStyleXml with chartEx axis titles)
   const t = spec.title;
   const titleXml = t.text
     ? (
@@ -257,7 +258,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
     )
     : `<c:autoTitleDeleted val="1"/>`;
 
-  // 图例（有效配置 spec.legend：开关/方位/字号单源；官方 LegendConfig 样式消费）
+  // Legend (effective config spec.legend: on/position/size single source; consumes official LegendConfig)
   const lg = spec.legend;
   let legendXml = "";
   if (lg.on) {
@@ -265,18 +266,18 @@ export function buildChartParts(theme, chartEl, chartIndex) {
     legendXml = `<c:legend><c:legendPos val="${lg.ooxmlPos}"/><c:overlay val="0"/>${txPrXml(theme, Math.round(lg.size * 100), "tx1", { ...(lg.color ? { color: lg.color } : {}), ...(legendFontFamily ? { fontFamily: legendFontFamily } : {}) })}</c:legend>`;
   }
 
-  // nullHandling（多系列取第一个非空；官方 radar 默认 connect）
+  // nullHandling (first non-null across series; official radar default is connect)
   const nh = series.map((s) => s.nullHandling).find((v) => v) || (primary === "radar" ? "connect" : "gap");
   const disp = nh === "zero" ? "zero" : nh === "connect" ? "span" : "gap";
 
-  // 图表框（官方 Chart.fill/border/shadow → chartSpace spPr，独立于系列色；
-  // 与 chartEx cx:spPr 同构共用 chartSpaceSpPrXml。对照用户参考：</c:chart> 后
-  // c:spPr → c:txPr → c:externalData）
+  // Chart frame (official Chart.fill/border/shadow → chartSpace spPr, independent of series colors;
+  // isomorphic with chartEx cx:spPr and sharing chartSpaceSpPrXml). Order after </c:chart>:
+  // c:spPr → c:txPr → c:externalData
   const frameSpPr = chartSpaceSpPrXml(theme, chartEl, "c");
 
-  // 绘图区几何单源（I19）：与预览同一布局模型投影 manualLayout（layoutTarget=inner，
-  // x/y/w/h 为 chartSpace 0-1 分数）。此前写 <c:layout/> 让 PowerPoint 自动布局，
-  // 绘图区几何与预览固定网格两套体系（01 页 PPT 绘图区更高更满、02 页饼显著更大）
+  // Plot-area geometry single source: project manualLayout from the same layout model as the preview
+  // (layoutTarget=inner; x/y/w/h are chartSpace 0-1 fractions). Letting PowerPoint auto-layout with
+  // <c:layout/> would be a second geometry system diverging from the preview's fixed grid
   const frac5 = (v) => String(Number(v.toFixed(5)));
   const plotAreaLayoutXml =
     `<c:layout><c:manualLayout>` +

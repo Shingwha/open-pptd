@@ -1,20 +1,20 @@
 // ============================================================================
-// writer/table.js — 表格导出（p:graphicFrame + a:tbl，原生可编辑）
+// writer/table.js — table export (p:graphicFrame + a:tbl, natively editable)
 // ----------------------------------------------------------------------------
-// 样式消费严格按官方继承链（Style Priority §1.2 表格单元格）：
-//   富文本标签 > span 内联 > 段落 > Cell 内联字段 > Cell.textStyle 引用 >
-//   位置分类（rowOverColumn 仲裁）> bodyStyles 循环 > cellStyle 基底 > 默认
+// Style consumption follows the official inheritance chain exactly (Style Priority, table cells):
+//   rich-text tags > span inline > paragraph > cell inline fields > Cell.textStyle ref >
+//   position class (rowOverColumn arbitration) > bodyStyles loop > cellStyle base > default
 //
-// 合并单元格（PowerPoint 原生结构，对照用户手工合并文件）：
-//   - rowSpan/colSpan 是 <a:tc> 的属性（不是 tcPr！）
-//   - 被合并覆盖的位置**不省略**，输出空占位格 <a:tc vMerge="1">（被行合并
-//     覆盖）或 hMerge="1"（被列合并覆盖），斜向覆盖两者都写
-//   - 每行 tc 数量必须与 gridCol 数量一致（完整网格）
-//   PPTD YAML 层的省略规则由 tableGrid 展开还原（packages/model/table.js）
+// Merged cells (PowerPoint native structure):
+//   - rowSpan/colSpan are attributes of <a:tc> (not tcPr!)
+//   - covered positions are NOT omitted: emit an empty placeholder <a:tc vMerge="1"> (covered by
+//     a row merge) or hMerge="1" (covered by a column merge); diagonal covers write both
+//   - each row's tc count must equal the gridCol count (full grid)
+//   The PPTD YAML omission rules are expanded by tableGrid (packages/model/table.js)
 //
-// 边框：CT_TableCellProperties 的 lnL/lnR/lnT/lnB 直接承载 CT_LineProperties
-//   （w/cap/cmpd/algn 属性在 lnL 上，不能包 a:ln）
-// 对齐：cell.align > 分类 align > 官方默认 [center, middle]
+// Border: CT_TableCellProperties' lnL/lnR/lnT/lnB carry CT_LineProperties directly
+//   (the w/cap/cmpd/algn attributes live on lnL; a:ln cannot wrap it)
+// Align: cell.align > class align > official default [center, middle]
 // ============================================================================
 
 import { el, escAttr } from "./xml.js";
@@ -27,9 +27,9 @@ import { borderSides, dashSpec, normalizeFill, ooxmlAnchor } from "../model/styl
 import { colorElement, buildFill, buildShadow } from "./drawing.js";
 
 /**
- * 单边边框 XML：<a:lnX w cap cmpd algn>（CT_LineProperties 直接承载在线元素上）。
- * 子元素顺序（CT_LineProperties schema）：fill 组 → prstDash → headEnd/tailEnd。
- * 无边框 → 空 <a:lnX/>（PowerPoint 重存行为一致）。
+ * Single-side border XML: <a:lnX w cap cmpd algn> (CT_LineProperties carried directly on the line element).
+ * Child order (CT_LineProperties schema): fill group → prstDash → headEnd/tailEnd.
+ * No border → an empty <a:lnX/> (matching PowerPoint re-save behavior).
  */
 function lnSide(theme, side, b) {
   if (!b) return el(side);
@@ -44,14 +44,15 @@ export function tableXml(theme, tableEl, ctx) {
   const [x, y, w] = tableEl.bounds;
   const ts = resolveTableStyle(theme, tableEl.style);
   const rows = Array.isArray(tableEl.rows) ? tableEl.rows : [];
-  // 行高单源（spec 10 T3 / 方案 §3.1）：消费 measure 的精确 rowHeights——与 preview
-  // （layout→paint）同一张度量表推导；不再用 model 的 min 语义（旧行为：PowerPoint
-  // 按内容自动增高，与预览像素漂移）。列宽比例两处同值（measure 内部即 estimateTableLayout）。
+  // Row-height single source: consume measure's exact rowHeights — derived from the same metrics
+  // table as the preview (layout→paint); no longer the model's min semantics (which let PowerPoint
+  // auto-grow by content and drift from the preview by pixels). Column-width ratios match
+  // (measure internally is estimateTableLayout).
   const { rowHeights, columnWidths } = measureTable(tableEl);
   const colWs = columnWidths;
   const rowCount = rows.length;
   const colCount = colWs.length;
-  // PPTD 省略式 rows → 完整网格（covered 位输出 vMerge/hMerge 占位格）
+  // PPTD omitted-style rows → full grid (covered slots emit vMerge/hMerge placeholders)
   const { grid } = tableGrid(rows, colCount);
 
   const gridCols = colWs
@@ -59,8 +60,8 @@ export function tableXml(theme, tableEl, ctx) {
     .join("");
   const trs = grid
     .map((gRow, r) => {
-      // 行高：min-height 语义（最小行高 = rowHeights 比例×bounds 或可读性底线），
-      // 内容排版超出时由 PowerPoint 按内容自动增高（与预览端 tr 行为一致）
+      // Row height: min-height semantics (minimum row height = rowHeights ratio × bounds or a
+      // readability floor); PowerPoint grows it by content when exceeded (matching the preview's tr)
       const rh = rowHeights[r] != null ? rowHeights[r] : 26;
       const trAttrs = { h: Math.round(Math.max(0.01, rh) * 12700) };
       const tcs = gRow
@@ -71,10 +72,10 @@ export function tableXml(theme, tableEl, ctx) {
     .join("");
 
   const tbl = el("a:tbl", {}, [
-    // 引用 theme1.xml 中定义的空白表格样式（无边框/无填充，不覆盖手绘），
-    // 让 PowerPoint 有样式可循，单元格级 ln 边框才会渲染
-    // 官方 Table.shadow → a:tblPr > a:effectLst；**顺序：effectLst 在 tableStyleId 之前**
-    // （对照用户 table-shadow-ref.pptx 实测；写反会触发 PowerPoint 修复）
+    // Reference the blank table style defined in theme1.xml (no border/fill, does not override
+    // hand-drawn content) so PowerPoint has a style to follow and cell-level ln borders render.
+    // Official Table.shadow → a:tblPr > a:effectLst; ORDER: effectLst before tableStyleId
+    // (writing them reversed triggers PowerPoint repair)
     el("a:tblPr", { firstRow: "0", bandRow: "0", horzBanding: "0" },
       (tableEl.shadow ? buildShadow(theme, tableEl.shadow) : "") +
       el("a:tableStyleId", {}, "{00000000-0000-0000-0000-000000000000}")),
@@ -91,7 +92,7 @@ export function tableXml(theme, tableEl, ctx) {
       ]),
       el("p:xfrm", {}, [
         el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) }),
-        // 图形框高度 = bounds 高度（建议框）；表格实际显示高度由各行排版高度决定
+        // Graphic-frame height = bounds height (suggested box); the table's actual height comes from each row's laid-out height
         el("a:ext", { cx: Math.round(w * 12700), cy: Math.round((tableEl.bounds[3] ?? 0) * 12700) }),
       ]),
       el("a:graphic", {}, el("a:graphicData", { uri: "http://schemas.openxmlformats.org/drawingml/2006/table" }, tbl)),
@@ -99,23 +100,24 @@ export function tableXml(theme, tableEl, ctx) {
   );
 }
 
-/** 单元格 tcPr 公共部分（边框 + 填充 + 对齐；rowSpan/colSpan 不在 tcPr）。 */
+/** Shared cell tcPr parts (border + fill + align; rowSpan/colSpan are not in tcPr). */
 function tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, cell, cellAlign) {
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
   const kids = [];
-  // OOXML 严格顺序：tcPr 内 lnL/lnR/lnT/lnB 必须先于填充，否则 PowerPoint 忽略边框
-  // 边框解析（borderSides 内建默认语义）：全链未设置（undefined）→ 文档默认 1px 黑；
-  // 显式 null → 四边清除；数组 [上下,左右] / [上,右,下,左]；单 Border → 四边相同
+  // Strict OOXML order: lnL/lnR/lnT/lnB must precede the fill inside tcPr, or PowerPoint ignores
+  // the borders. Border resolution (borderSides built-in defaults): the whole chain unset
+  // (undefined) → document default 1px black; explicit null → all four sides cleared; an array
+  // [top/bottom, left/right] or [top,right,bottom,left]; a single Border → all four sides alike
   const borders = borderSides(cell?.border ?? s.border);
-  // XML 边名直连命名边（曾误把 [上,右,下,左] 数组下标直连 lnL/lnR/lnT/lnB，边框整体旋转）
+  // XML side names map directly to named sides (array indices must not be wired straight to lnL/lnR/lnT/lnB, which rotated every border)
   for (const [side, b] of [["a:lnL", borders.left], ["a:lnR", borders.right], ["a:lnT", borders.top], ["a:lnB", borders.bottom]]) {
     kids.push(lnSide(theme, side, b));
   }
-  // 填充：单元格内联 > 分类样式 > cellStyle > Table.fill > 透明（normalizeFill 单源归一化）
+  // Fill: cell inline > class style > cellStyle > Table.fill > transparent (normalizeFill single source)
   const fill = normalizeFill(cell?.fill ?? s.fill ?? tableFill ?? null);
   if (fill) kids.push(buildFill(theme, fill));
   const align = cellAlign ?? s.align ?? ["center", "middle"];
-  // 内边距与预览同一常量（model/table.js，pt → EMU）；此前硬编码 3.6pt/0 与预览 9/5px 漂移
+  // Padding uses the same constants as the preview (model/table.js, pt → EMU); hardcoding 3.6pt/0 drifted from the preview's 9/5px
   const attrs = {
     marL: TABLE_CELL_PAD_X * 12700,
     marR: TABLE_CELL_PAD_X * 12700,
@@ -127,12 +129,12 @@ function tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, cell, cellAlign
 }
 
 function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill) {
-  // 单元格文字样式合并 → model 单源 cellTextStyle（与预览 cellFinal 同一实现）
+  // Cell text-style merge → model single source cellTextStyle (same implementation as the preview's cellFinal)
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
   const text = cell?.text ?? "";
   const tree = parseRichText(text);
 
-  // 文字基线（对齐：cell.align > 分类 align > 官方默认 [center, middle]）
+  // Text base (align: cell.align > class align > official default [center, middle])
   const base = cellTextStyle(theme, ts, r, c, rowCount, colCount, cell);
   const align = cell?.align ?? s.align ?? ["center", "middle"];
   base.textAlign = align[0];
@@ -144,8 +146,8 @@ function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill) {
     `<a:lstStyle/>${paras}</a:txBody>`;
 
   const tcPr = tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, cell, align).xml;
-  // rowSpan/gridSpan 是 <a:tc> 的属性（PowerPoint 原生结构；横向跨度叫 gridSpan，
-  // 不是 colSpan——写 colSpan 会被 PowerPoint 忽略，只剩 rowSpan 生效）
+  // rowSpan/gridSpan are attributes of <a:tc> (PowerPoint native structure; the horizontal span is
+  // gridSpan, not colSpan — colSpan is ignored by PowerPoint and only rowSpan takes effect)
   const tcAttrs = {};
   if (cell?.rowSpan > 1) tcAttrs.rowSpan = cell.rowSpan;
   if (cell?.colSpan > 1) tcAttrs.gridSpan = cell.colSpan;
@@ -153,29 +155,28 @@ function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill) {
 }
 
 /**
- * 被合并覆盖的占位格（python-pptx 官方 merge 输出对照，check-table-修改后.pptx
- * 用户手工文件验证）：
- *   - 主格右侧同行：rowSpan=主格.rowSpan + hMerge="1"（接力覆盖下方列）
- *   - 主格下方行首格：gridSpan=主格.colSpan + vMerge="1"（接力覆盖右侧行）
- *   - 主格下方行其余格：hMerge="1" vMerge="1"（双从属，跨度 1×1）
- * 内容为空 txBody；tcPr 按分类样式计算（保持边框/填充视觉连续）。
+ * Placeholder cell covered by a merge:
+ *   - same row to the right of the owner: rowSpan=owner.rowSpan + hMerge="1" (keeps covering rows below)
+ *   - first cell of a row below the owner: gridSpan=owner.colSpan + vMerge="1" (keeps covering columns)
+ *   - remaining cells below the owner: hMerge="1" vMerge="1" (double subordinate, 1×1 span)
+ * Body is an empty txBody; tcPr is computed by class style (keeping border/fill visually continuous).
  */
 function mergePlaceholderTc(theme, g, r, c, ts, rowCount, colCount, tableFill) {
   const attrs = {};
-  const owner = g.owner; // {cell, r, c}：合并主格
+  const owner = g.owner; // {cell, r, c}: the merge owner cell
   const ownerCell = owner?.cell;
   const rs = ownerCell?.rowSpan || 1;
   const cs = ownerCell?.colSpan || 1;
   if (owner && owner.r === r && c > owner.c) {
-    // 主格右侧同行：垂直方向仍被覆盖 → 继承 rowSpan
+    // Same row to the right of the owner: still covered vertically → inherit rowSpan
     if (rs > 1) attrs.rowSpan = rs;
     attrs.hMerge = "1";
   } else if (owner && r > owner.r && c === owner.c) {
-    // 主格下方行首格：水平方向仍被覆盖 → 继承 gridSpan
+    // First cell of a row below the owner: still covered horizontally → inherit gridSpan
     if (cs > 1) attrs.gridSpan = cs;
     attrs.vMerge = "1";
   } else if (owner && r > owner.r && c > owner.c) {
-    // 斜向占位：双从属，跨度 1×1
+    // Diagonal placeholder: double subordinate, 1×1 span
     attrs.hMerge = "1";
     attrs.vMerge = "1";
   }

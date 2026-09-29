@@ -1,16 +1,17 @@
 // ============================================================================
-// writer/chart.js — 图表导出公共出口（barrel；按 exportKind 路由）
+// writer/chart.js — chart export public entry (barrel; routed by export kind)
 // ----------------------------------------------------------------------------
-// 按职责拆分（chart/ 目录，本文件只做 re-export，公共导出面与拆分前一致）：
-//   chart/types.js    导出体系分组（经典 8 类 / chartEx 3 类 / 占位 PNG）
-//   chart/xlsx.js     嵌入 xlsx 工作表（完整部件 + candlestick 列重排）
-//   chart/style.js    公共样式片段（fill/ln/txPr/dLbls/marker/srgbClr）
-//   chart/ser.js      各类型 c:ser 系列构造
-//   chart/axes.js     catAx/valAx + §5.3 轴数组（次轴换侧/ID 约定）+ radar 轴组
-//   chart/classic.js  经典 c:chartSpace 主装配（buildChartParts）
-//   chart/chartex.js  chartEx 扩展体系（waterfall/treemap/sunburst）
-//   chart/frame.js    slide graphicFrame（chartEx mc:AlternateContent 包装）
-// 消费方一律 import 本文件（writer/chart.js），不深引 chart/ 内部。
+// Split by responsibility under chart/ (this file only re-exports; the public surface is
+// unchanged from before the split):
+//   chart/types.js    export grouping (8 classic / 3 chartEx / placeholder PNG)
+//   chart/xlsx.js     embedded xlsx worksheet (full part + candlestick column reorder)
+//   chart/style.js    shared style fragments (fill/ln/txPr/dLbls/marker/srgbClr)
+//   chart/ser.js      per-type c:ser series construction
+//   chart/axes.js     catAx/valAx + axis-array rules (secondary-axis side/ID conventions) + radar axis group
+//   chart/classic.js  classic c:chartSpace main assembly (buildChartParts)
+//   chart/chartex.js  chartEx extension system (waterfall/treemap/sunburst)
+//   chart/frame.js    slide graphicFrame (chartEx mc:AlternateContent wrapper)
+// Consumers always import this file (writer/chart.js) and never deep-import chart/ internals.
 // ============================================================================
 
 export { buildChartParts } from "./chart/classic.js";

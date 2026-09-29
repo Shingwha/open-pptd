@@ -1,14 +1,14 @@
 // ============================================================================
-// writer/chart/frame.js — 图表元素 → slide 内 graphicFrame（含 chartEx mc 包装）
+// writer/chart/frame.js — chart element → in-slide graphicFrame (including the chartEx mc wrapper)
 // ----------------------------------------------------------------------------
 
 import { el, escAttr } from "../xml.js";
 import { chartRouteOf } from "../../model/chart.js";
 import { TINY_PNG } from "./types.js";
 
-/** 图表元素 → slide 内 graphicFrame（引用 chart part，媒体/部件由 pptx.js 汇总）。
- * heatmap/sankey 图片化（路由 image，调用方传 imgRef）→ p:pic（PNG 占位 +
- * svgBlip 矢量，PowerPoint 2016+/WPS 新版/LibreOffice 显示矢量，旧版显示占位图）。 */
+/** Chart element → in-slide graphicFrame (references the chart part; media/parts are gathered by pptx.js).
+ * heatmap/sankey image conversion (route image, caller passes imgRef) → p:pic (PNG placeholder +
+ * svgBlip vector; PowerPoint 2016+/new WPS/LibreOffice show the vector, older versions the placeholder). */
 export function chartXml(theme, chartEl, ctx, chartId, imgRef = null) {
   const [x, y, w, h] = chartEl.bounds;
   if (imgRef) {
@@ -35,8 +35,7 @@ export function chartXml(theme, chartEl, ctx, chartId, imgRef = null) {
       el("p:spPr", {}, xfrm + el("a:prstGeom", { prst: "rect" }, el("a:avLst"))),
     ].join(""));
   }
-  // chartEx 判定单源 chartRouteOf（model CHART_META.route——此前本处与
-  // classic.js 各判一次）
+  // chartEx detection single source chartRouteOf (model CHART_META.route)
   const isChartEx = chartRouteOf(chartEl) === "chartex";
   const rId = ctx.chartRef ? ctx.chartRef(chartId, isChartEx ? "chartEx" : "chart") : "rIdChart1";
   const uri = isChartEx
@@ -47,8 +46,8 @@ export function chartXml(theme, chartEl, ctx, chartId, imgRef = null) {
     : el("c:chart", { "r:id": rId, "xmlns:c": "http://schemas.openxmlformats.org/drawingml/2006/chart" });
   const frameId = ctx.nextId();
   const name = escAttr(chartEl.elementId);
-  // graphicFrame 的 p:xfrm 内直接放 off/ext（pic 的 spPr 才需要 a:xfrm 包裹——
-  // 双层包裹是非法结构，PowerPoint 忽略变换致图表零尺寸不可见）
+  // graphicFrame's p:xfrm holds off/ext directly (only a pic's spPr needs the a:xfrm wrapper —
+  // double-wrapping is invalid and PowerPoint ignores the transform, leaving a zero-size invisible chart)
   const xfrm =
     el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) }) +
     el("a:ext", { cx: Math.round(w * 12700), cy: Math.round(h * 12700) });
@@ -62,10 +61,10 @@ export function chartXml(theme, chartEl, ctx, chartId, imgRef = null) {
     el("a:graphic", {}, el("a:graphicData", { uri }, inner)),
   ].join(""));
   if (!isChartEx) return graphicFrame;
-  // chartEx（PowerPoint 2016+ 新图表）：官方结构 = mc:AlternateContent 包裹，
-  // Choice Requires="cx4"（2016/5/10 chartex 命名空间）+ Fallback 预览图
-  // （对照用户 waterfall-color.pptx 实测）。缺 Fallback 违反 mc 规范（必含
-  // Choice + Fallback），Fallback 用 1×1 透明 PNG 占位（生成不了图表截图）。
+  // chartEx (PowerPoint 2016+ charts): official structure = an mc:AlternateContent wrapper with
+  // Choice Requires="cx4" (the 2016/5/10 chartex namespace) + a Fallback preview image. Missing
+  // Fallback violates the mc spec (which requires Choice + Fallback); the Fallback uses a 1×1
+  // transparent PNG placeholder (a chart screenshot cannot be generated).
   const media = ctx.addMedia(TINY_PNG, "png");
   const fallbackPic = el("p:pic", {}, [
     el("p:nvPicPr", {}, [

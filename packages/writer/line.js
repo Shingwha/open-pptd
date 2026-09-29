@@ -1,11 +1,11 @@
 // ============================================================================
-// writer/line.js — 线条元素导出
+// writer/line.js — line element export
 // ----------------------------------------------------------------------------
-// 直线（2 点）：p:cxnSp + prstGeom straightConnector1 + xfrm 旋转（已验证零修复）；
-// 曲线（多点）：p:sp + a:custGeom（viewBox 坐标系，moveTo + lnTo/cubicBezTo）。
-//   ⚠ 不能用 cxnSp + custGeom：PowerPoint 直接判定文件损坏拒开（实测 0x80070570）；
-//   PowerPoint 自身的自由曲线/曲线连接符也是 p:sp + custGeom。
-// curve: sharp/round = 折线（lnTo 全部点），smooth = 贝塞尔（首尾锚点 + 中间控制点）。
+// Straight line (2 points): p:cxnSp + prstGeom straightConnector1 + xfrm rotation.
+// Curve (multiple points): p:sp + a:custGeom (viewBox coordinate system, moveTo + lnTo/cubicBezTo).
+//   WARNING: do not use cxnSp + custGeom — PowerPoint declares the file corrupt and refuses to
+//   open it (error 0x80070570); PowerPoint's own freeform/curved connectors are p:sp + custGeom.
+// curve: sharp/round = polyline (lnTo every point), smooth = bezier (endpoint anchors + middle control points).
 // ============================================================================
 
 import { el, escAttr, angleToOOXML } from "./xml.js";
@@ -14,22 +14,22 @@ import { parsePoints, smoothSegments } from "../model/geometry.js";
 import { dashSpec, ooxmlArrow } from "../model/style-spec.js";
 import { svgPathToOoxml } from "./custgeom.js";
 
-/** 线条元素 → XML（多点曲线为 p:sp+custGeom，2 点直线为 p:cxnSp）。 */
+/** Line element → XML (multi-point curves are p:sp+custGeom; 2-point lines are p:cxnSp). */
 export function lineXml(theme, element, ctx) {
   const b = element.bounds;
   const pts = parsePoints(element.points, element.viewBox || [1, 1], b);
   if (!pts || pts.length < 2) return "";
-  // 相对 bounds 原点（custGeom 坐标系 = viewBox，随 bounds 拉伸）
+  // Relative to the bounds origin (the custGeom coordinate system is the viewBox, stretched to bounds)
   const rel = pts.map(([px, py]) => [px - b[0], py - b[1]]);
   const curve = element.curve || "round";
   const [vw, vh] = element.viewBox || [1, 1];
-  // 曲线路径点换算到 viewBox 坐标系（xfrm ext = bounds 尺寸，viewBox 空间拉伸到 bounds）
+  // Map curve path points into the viewBox coordinate system (xfrm ext = bounds size; the viewBox space stretches to bounds)
   const toVb = ([px, py]) => [(px / b[2]) * vw, (py / b[3]) * vh];
 
   let geom;
   if (rel.length > 2) {
-    // 曲线：custGeom（viewBox 坐标系，随 bounds 拉伸）
-    // smooth = 贝塞尔（首尾锚点 + 中间控制点）；sharp/round = 经过全部点的折线
+    // Curve: custGeom (viewBox coordinate system, stretched to bounds)
+    // smooth = bezier (endpoint anchors + middle control points); sharp/round = polyline through every point
     const relVb = rel.map(toVb);
     let d;
     if (curve === "smooth") {
@@ -47,7 +47,7 @@ export function lineXml(theme, element, ctx) {
       d = `M ${relVb[0][0]},${relVb[0][1]} L ${relVb.slice(1).map(([px, py]) => `${px},${py}`).join(" L ")}`;
     }
     geom = [
-      // 多点线条必须有 xfrm（off/ext = bounds），否则 PowerPoint 视为 0×0 不可见
+      // Multi-point lines must have an xfrm (off/ext = bounds), otherwise PowerPoint sees 0×0 and they are invisible
       buildXfrm(element.bounds, element.rotation, element.flip),
       el("a:custGeom", {}, [
         "<a:avLst/>",
@@ -57,13 +57,14 @@ export function lineXml(theme, element, ctx) {
         el("a:rect", { l: 0, t: 0, r: Math.round(vw), b: Math.round(vh) }),
         svgPathToOoxml(element.viewBox, d),
       ].join("")),
-      // 曲线形状无填充（PowerPoint 自由曲线默认无线条色外填充）
+      // Curved shapes have no fill (PowerPoint freeform defaults to no fill beyond the line color)
       "<a:noFill/>",
     ].join("");
   } else {
-    // 直线：straightConnector1 + 旋转（起点→终点）
-    // off 用绝对坐标反推：旋转中心 = off + (len/2, 0)，线段端点必须精确落在 P0/P1。
-    // 旋转中心 c = (off.x + len/2, off.y)，端点 = c ± (len/2·cosθ, len/2·sinθ)（顺时针，y 向下）
+    // Straight line: straightConnector1 + rotation (start→end)
+    // off is derived backwards from absolute coordinates: rotation center = off + (len/2, 0) and
+    // the segment endpoints must land exactly on P0/P1. Center c = (off.x + len/2, off.y),
+    // endpoints = c ± (len/2·cosθ, len/2·sinθ) (clockwise, y down)
     // → off = (P0.x − len/2·(1−cosθ), P0.y + len/2·sinθ)
     const [x1, y1] = rel[0];
     const [x2, y2] = rel[1];
@@ -71,11 +72,11 @@ export function lineXml(theme, element, ctx) {
     const dy = y2 - y1;
     const len = Math.hypot(dx, dy) || 1;
     let angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
-    if (angleDeg < 0) angleDeg += 360; // ST_Angle 有效域 [0, 360)
+    if (angleDeg < 0) angleDeg += 360; // ST_Angle valid range [0, 360)
     const rad = (angleDeg * Math.PI) / 180;
     const cosA = Math.cos(rad);
     const sinA = Math.sin(rad);
-    const p0x = x1 + b[0]; // P0 页面绝对坐标
+    const p0x = x1 + b[0]; // P0 in absolute page coordinates
     const p0y = y1 + b[1];
     const off = el("a:off", {
       x: Math.round((p0x - (len / 2) * (1 - cosA)) * 12700),
@@ -92,8 +93,9 @@ export function lineXml(theme, element, ctx) {
   const lnKids = [buildFill(theme, border.color ?? "#000000")];
   const dash = dashSpec(border.style)?.ooxml;
   if (dash) lnKids.push(el("a:prstDash", { val: dash }));
-  // 拐角连接与预览 stroke-linejoin 一致（round=圆角，其余=尖角）。OOXML 缺省是
-  // round，多点 sharp 折线不显式写 miter 会被 PowerPoint 画成圆角（预览≠导出）
+  // Join matches the preview's stroke-linejoin (round = rounded, otherwise miter). The OOXML
+  // default is round, so a multi-point sharp polyline without an explicit miter would be drawn
+  // rounded by PowerPoint (preview ≠ export)
   if (rel.length > 2) lnKids.push(curve === "round" ? el("a:round") : el("a:miter"));
   if (element.arrow) {
     const [start, end] = element.arrow;
@@ -102,7 +104,7 @@ export function lineXml(theme, element, ctx) {
   }
   const ln = el("a:ln", { w: Math.round((border.width ?? 1) * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, lnKids.join(""));
   if (rel.length > 2) {
-    // 多点曲线 → p:sp + custGeom（cxnSp + custGeom 会被 PowerPoint 判定为损坏拒开）
+    // Multi-point curve → p:sp + custGeom (cxnSp + custGeom would be declared corrupt and refused)
     return el("p:sp", {}, [
       el("p:nvSpPr", {}, [
         el("p:cNvPr", { id: ctx.nextId(), name: escAttr(element.elementId) }),
@@ -110,7 +112,7 @@ export function lineXml(theme, element, ctx) {
         el("p:nvPr"),
       ]),
       el("p:spPr", {}, [geom, ln].join("")),
-      // 空正文（与 PowerPoint 自由曲线一致；p:sp 需要 txBody）
+      // Empty body (matching PowerPoint freeform; p:sp requires a txBody)
       el("p:txBody", {}, '<a:bodyPr/><a:lstStyle/><a:p><a:pPr algn="ctr"/></a:p>'),
     ].join(""));
   }

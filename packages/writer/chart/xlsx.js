@@ -1,10 +1,10 @@
 // ============================================================================
-// writer/chart/xlsx.js — 嵌入 xlsx 工作表构建（完整部件，缺一 PowerPoint 报损）
+// writer/chart/xlsx.js — embedded xlsx worksheet construction (a complete part; missing one file breaks PowerPoint)
 // ----------------------------------------------------------------------------
-// 硬约束（对照 python-pptx 参考骨架 + WPS 实测）：
-//   - 必须完整部件（Content_Types/rels/docProps/xl workbook/worksheet/
-//     sharedStrings/styles/theme）→ 缺部件 PowerPoint 报「数据文件已损毁」
-//   - 嵌入文件名必须 ASCII：Microsoft_Excel_SheetN.xlsx（WPS 严格解析）
+// Hard constraints:
+//   - Every part is required (Content_Types/rels/docProps/xl workbook/worksheet/
+//     sharedStrings/styles/theme) — a missing part makes PowerPoint report "data file is corrupt"
+//   - The embedded filename must be ASCII: Microsoft_Excel_SheetN.xlsx (WPS parses it strictly)
 // ============================================================================
 
 import { el, esc, xmlHeader } from "../xml.js";
@@ -13,37 +13,39 @@ import { DEFAULT_FONT } from "../../model/theme.js";
 import { ZipWriter } from "../zip.js";
 
 /**
- * 工作表列重排（candlestick 需要 open/high/low/close 连续 4 列，PowerPoint
- * 股价图按列范围识别；水平柱的分类列在 y 通道）：
- *   A 列 = 分类列；candlestick 列组连续；其余系列引用列按系列顺序；未引用列尾随。
- * @returns {number[]} 新列序（原列索引数组）
+ * Worksheet column reordering (candlestick needs open/high/low/close as 4 consecutive columns,
+ * which PowerPoint stock charts identify by column range; the horizontal-bar category column is in
+ * the y channel):
+ *   column A = category; candlestick column group contiguous; other referenced columns in series
+ *   order; unreferenced columns trailing.
+ * @returns {number[]} new column order (array of original column indices)
  */
 export function buildSheetOrder(el, series, horizontal = false) {
   const cols = el.data?.cols || [];
   const order = [];
   const push = (ci) => { if (ci >= 0 && !order.includes(ci)) order.push(ci); };
-  // 1. 分类列（第一个系列的 x/category；水平柱 = y 通道）
+  // 1. Category column (the first series' x/category; horizontal bars = the y channel)
   const catSeries = series.find((s) => (horizontal ? s._cols.y != null : (s._cols.x != null || s._cols.category != null)));
   if (catSeries) push(horizontal ? catSeries._cols.y : (catSeries._cols.x ?? catSeries._cols.category));
-  // 2. candlestick 列组
+  // 2. Candlestick column group
   for (const s of series) {
     if (s.type !== "candlestick") continue;
     for (const ch of ["open", "high", "low", "close"]) push(s._cols[ch]);
   }
-  // 3. 其余系列引用列
+  // 3. Other referenced columns
   for (const s of series) {
     if (s.type === "candlestick") continue;
     for (const ch of Object.keys(s._cols)) push(s._cols[ch]);
   }
-  // 4. 未引用列尾随
+  // 4. Unreferenced columns trailing
   cols.forEach((_, ci) => push(ci));
   return order;
 }
 
 export function buildChartXlsx(chartEl, fonts, sheetOrder) {
   const f = fonts?.latin || DEFAULT_FONT;
-  const table = chartDataTable(chartEl); // [表头行, 数据行...]
-  // 列重排（candlestick 等）
+  const table = chartDataTable(chartEl); // [header row, data rows...]
+  // Column reorder (candlestick etc.)
   const order = sheetOrder || table[0].map((_, i) => i);
   const reordered = table.map((row) => order.map((ci) => row[ci]));
   const rows = reordered.length;

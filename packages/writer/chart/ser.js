@@ -1,5 +1,5 @@
 // ============================================================================
-// writer/chart/ser.js — 各类型 c:ser 系列构造（对照 python-pptx 参考骨架）
+// writer/chart/ser.js — per-type c:ser series construction
 // ----------------------------------------------------------------------------
 
 import { el, esc } from "../xml.js";
@@ -7,7 +7,7 @@ import { hexA, colLetter, CHART_DEFAULTS } from "../../model/chart.js";
 import { buildFill } from "../drawing.js";
 import { fillXml, lnXml, dLblsXml, markerXml } from "./style.js";
 
-/** 系列/单元格描边 → a:ln（宽度默认 1pt；color 缺省回退 border.color）。 */
+/** Series/cell outline → a:ln (width defaults to 1pt; color falls back to border.color). */
 function borderLnXml(theme, border, color = border?.color) {
   return el("a:ln", { w: Math.round((border?.width ?? 1) * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, fillXml(theme, color));
 }
@@ -52,15 +52,15 @@ export function valRefXml(ch, sheetRange) {
   return el("c:val", {}, numRefXml(sheetRange(ch.col), ch.vals));
 }
 
-/** c:ser 公共前奏：idx/order + 系列名 tx（strRef；此前 9 个构造器各写一遍）。
- * 注意 bar 传 s._index（I23 横向柱序修正的字节级结果），其余传发射序 idx。 */
+/** Shared c:ser prelude: idx/order + series-name tx (strRef), extracted from the 9 constructors.
+ * Note: bar passes s._index (the horizontal-bar order fix), others pass the emission index. */
 function serPreludeXml(name, idxVal, nameColIdx) {
   return [el("c:idx", { val: idxVal }), el("c:order", { val: idxVal }), seriesNameXml(name, nameColIdx)];
 }
 
 export function barSerXml(theme, s, sheetRange, idx, labels, chs) {
   const kids = serPreludeXml(s.name, s._index, sheetRange.nameCol(s));
-  // s.color = fill || 主题色循环默认（模型解析）；fillXml 统一字符串色 + 渐变
+  // s.color = fill || theme color-cycle default (model-resolved); fillXml unifies string colors + gradients
   if (s.color) {
     const spPr = [fillXml(theme, s.color)];
     if (s.border && s.border.color) {
@@ -80,12 +80,12 @@ export function lineSerXml(theme, s, sheetRange, idx, labels, chs, opts = null) 
   if (spPr.length) kids.push(el("c:spPr", {}, spPr.join("")));
   const marker = markerXml(theme, s.marker, s.color);
   if (marker) kids.push(marker);
-  // suppressMarker：股价图叠加线未配 marker 时显式写 none——省略元素 PowerPoint
-  // 会落平台默认 ✕ 标记（与预览无标记不一致）
+  // suppressMarker: a candlestick overlay line without a marker explicitly writes none — omitting the
+  // element lets PowerPoint fall to its default ✕ marker (mismatching the preview's no marker)
   else if (opts?.suppressMarker) kids.push(el("c:marker", {}, el("c:symbol", { val: "none" })));
   if (labels) kids.push(dLblsXml(theme, labels));
   kids.push(catRefXml(chs.cat, sheetRange), valRefXml(chs.val, sheetRange));
-  // 每系列显式 smooth 0/1（此前非平滑系列不写元素，会继承组级 smooth=1 被连带平滑）
+  // Explicit per-series smooth 0/1 (a non-smoothed series without the element would inherit group smooth=1 and be smoothed too)
   kids.push(el("c:smooth", { val: s.smooth ? "1" : "0" }));
   return el("c:ser", {}, kids.join(""));
 }
@@ -100,18 +100,19 @@ export function areaSerXml(theme, s, sheetRange, idx, labels, chs) {
   if (spPr.length) kids.push(el("c:spPr", {}, spPr.join("")));
   if (labels) kids.push(dLblsXml(theme, labels));
   kids.push(catRefXml(chs.cat, sheetRange), valRefXml(chs.val, sheetRange));
-  // 面积图 smooth 同折线：显式写（此前 areaSerXml 不写 c:smooth，平滑导出静默丢失）
+  // Area series smooth like lines: written explicitly (otherwise a smoothed area export would silently drop it)
   kids.push(el("c:smooth", { val: s.smooth ? "1" : "0" }));
   return el("c:ser", {}, kids.join(""));
 }
 
 export function scatterSerXml(theme, s, sheetRange, idx, labels, chs) {
   const kids = serPreludeXml(s.name, idx, sheetRange.nameCol(s));
-  // s.color = fill || 主题色循环默认（模型解析）——不配 fill 也要写 spPr，
-  // 否则 PowerPoint 对 bubbleChart 等不自动区分系列色（06 页实测只有一种气泡）。
-  // 散点语义 = 仅 marker 不连线：scatterStyle 虽为 lineMarker（OOXML 无纯散点值），
-  // 原生「仅带数据标记的散点图」即靠 ser 级 ln noFill 抑制连线，缺省会被连线（05 页实测）。
-  // CT_ScatterSer 只允许一个 spPr（fill + ln 同元素，写两个会触发 PowerPoint 修复）。
+  // s.color = fill || theme color-cycle default (model-resolved) — write spPr even without a fill, or
+  // PowerPoint will not auto-differentiate series colors for bubbleChart etc. (yielding a single bubble color).
+  // Scatter semantics = markers only, no connecting lines: even though scatterStyle is lineMarker (OOXML
+  // has no pure-scatter value), the native "scatter with markers only" suppresses lines via a ser-level
+  // ln noFill; otherwise lines appear.
+  // CT_ScatterSer allows only one spPr (fill + ln in the same element; two triggers PowerPoint repair).
   const spPrKids = [];
   if (s.color) spPrKids.push(fillXml(theme, s.color));
   spPrKids.push(el("a:ln", {}, el("a:noFill")));
@@ -128,14 +129,13 @@ export function scatterSerXml(theme, s, sheetRange, idx, labels, chs) {
 
 export function bubbleSerXml(theme, s, sheetRange, idx, labels, sizeVals = null) {
   const kids = serPreludeXml(s.name, idx, sheetRange.nameCol(s));
-  // s.color = fill || 主题色循环默认（同 scatter）
+  // s.color = fill || theme color-cycle default (same as scatter)
   if (s.color) kids.push(el("c:spPr", {}, fillXml(theme, s.color)));
   if (labels) kids.push(dLblsXml(theme, labels));
   kids.push(
     el("c:xVal", {}, numRefXml(sheetRange(s._cols.x), s._values.x)),
     el("c:yVal", {}, numRefXml(sheetRange(s._cols.y), s._values.y)),
-    // 归一化写值（spec.bubble.writes：100×(d/dmax)²）；此前由 writer 预处理改写
-    // s._values.size 传入
+    // Normalized write values (spec.bubble.writes: 100×(d/dmax)²), passed in as sizeVals
     el("c:bubbleSize", {}, numRefXml(sheetRange(s._cols.size), sizeVals || s._values.size)),
     el("c:bubble3D", { val: "0" })
   );
@@ -143,11 +143,11 @@ export function bubbleSerXml(theme, s, sheetRange, idx, labels, sizeVals = null)
 }
 
 /**
- * 股价图系列（对照用户 PowerPoint 手工文件 chart45/46：**1 个 candlestick 系列
- * 展开为 3/4 个 c:ser**——HLC（无 open）或 OHLC 每列一个 ser，cat 共享）：
- *   ser: idx/order + tx(列头) + spPr(ln noFill) + marker(symbol none) + cat + val + smooth 0
- * colHeaders：图例显示名用各通道列头（开盘/最高/最低/收盘），若用系列名会
- * K线×N 污染图例（07/21 页实测，原生股价图即按列头显示）。
+ * Candlestick series (1 candlestick series expands into 3/4 c:ser — one per column for HLC
+ * (no open) or OHLC, sharing cat):
+ *   ser: idx/order + tx(column header) + spPr(ln noFill) + marker(symbol none) + cat + val + smooth 0
+ * colHeaders: legend names use each channel's column header (open/high/low/close); using the series
+ * name would pollute the legend with K-line×N (native stock charts display by column header).
  */
 export function candlestickSerXml(theme, s, sheetRange, serIdx, labels, colHeaders = []) {
   const chs = s._cols.open != null ? ["open", "high", "low", "close"] : ["high", "low", "close"];
@@ -170,8 +170,8 @@ export function candlestickSerXml(theme, s, sheetRange, serIdx, labels, colHeade
   }).join("");
 }
 
-/** upBars/downBars（对照用户文件 chart46：Excel 默认 up=lt1 白底灰边 / down=dk1 75%
- * 黑底灰边；缺省色单源 CHART_DEFAULTS.candlestick，与预览同源）。 */
+/** upBars/downBars (Excel default up = lt1 white with a gray edge / down = dk1 75% black with a gray
+ * edge; default colors come from the CHART_DEFAULTS.candlestick single source, shared with the preview). */
 export function upDownBarsXml(theme, s) {
   const up = s.upBars || {};
   const down = s.downBars || {};
@@ -191,7 +191,7 @@ export function upDownBarsXml(theme, s) {
 
 export function pieSerXml(theme, s, sheetRange, idx, labels, palette) {
   const fills = Array.isArray(s.fill) ? s.fill : null;
-  // 官方 fill：数组按点循环；单色字符串 = 所有点同色；缺省 = color 或主题色循环
+  // Official fill: an array cycles per point; a single-color string = all points alike; default = color or the theme cycle
   const ptFill = (r) => {
     if (typeof s.fill === "string") return s.fill;
     if (fills) return fills[r % fills.length];
@@ -213,8 +213,8 @@ export function pieSerXml(theme, s, sheetRange, idx, labels, palette) {
     el("c:spPr", {}, fillXml(theme, s.color)),
     pts,
   ];
-  // 饼图标签外置（对齐预览 outside+引导线）；环形图（doughnut）不支持 dLblPos
-  // （PowerPoint UI 灰置，写入触发修复），回退默认 bestFit
+  // Pie labels outside (matching the preview's outside + leader lines); doughnuts do not support
+  // dLblPos (grayed out in PowerPoint's UI; writing it triggers repair), so fall back to the default bestFit
   if (labels) kids.push(dLblsXml(theme, labels, null, (s.innerRadius || 0) > 0 ? null : "outEnd"));
   const chs = { cat: { col: s._cols.category, vals: s._cats }, val: { col: s._cols.value, vals: s._values.value } };
   kids.push(catRefXml(chs.cat, sheetRange), valRefXml(chs.val, sheetRange));

@@ -1,14 +1,13 @@
 // ============================================================================
-// writer/chart/chartex.js — chartEx 扩展体系（waterfall / treemap / sunburst）
-// PowerPoint 2016+ 新图表（cx: 命名空间），对照用户手工参考
-// （tests/projects/chart/reference/test-chart-all-powerpoint.pptx chartEx1/2/6）：
-//   - 数据：cx:data > cx:strDim（每级一列，lvl 从最深到最浅）+ cx:numDim
-//   - 层级：treemap/sunburst 用多级 lvl（扁平表 = 叶子路径行）；
-//     waterfall 用 cx:subtotals idx 标记汇总行（官方 isTotal 语义）
-//   - series layoutId 决定类型（treemap/sunburst/waterfall）
-//   - 引用：slide graphicData uri=chartex + cx:chart；rels type chartEx；
-//     ContentType application/vnd.ms-office.chartex+xml；
-//     xlsx 命名 Microsoft_Excel_WorksheetN.xlsx
+// writer/chart/chartex.js — chartEx extension system (waterfall / treemap / sunburst)
+// PowerPoint 2016+ charts (cx: namespace):
+//   - data: cx:data > cx:strDim (one column per level, lvl from deepest to shallowest) + cx:numDim
+//   - hierarchy: treemap/sunburst use multi-level lvl (a flat table = leaf-path rows);
+//     waterfall marks total rows via cx:subtotals idx (official isTotal semantics)
+//   - series layoutId determines the type (treemap/sunburst/waterfall)
+//   - references: slide graphicData uri=chartex + cx:chart; rels type chartEx;
+//     ContentType application/vnd.ms-office.chartex+xml;
+//     xlsx named Microsoft_Excel_WorksheetN.xlsx
 // ============================================================================
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "../xml.js";
@@ -18,18 +17,17 @@ import { buildChartXlsx } from "./xlsx.js";
 import { chartSpaceSpPrXml, richCharStyleXml } from "./style.js";
 import { buildChartStyleXml, buildChartColorStyleXml } from "../chartex-style.js";
 
-/** cx 字符样式（字号/颜色/字体；a: 段与经典 c:title 的 rich 同构——内层字符样式
- * 单源 richCharStyleXml。参考文件里 chartEx 全是默认样式无实例可抄，结构按
- * chartex schema 写，由 COM 打开无修复弹窗 + 渲染生效验证。 */
+/** cx character style (size/color/font; the a: segment is isomorphic with the classic c:title
+ * rich — the inner character style has a single source, richCharStyleXml). The structure follows
+ * the chartex schema. */
 function cxCharStyleXml(theme, { fontSize, color, fontFamily, defaultSize }) {
   const sz = Math.round((fontSize != null ? fontSize : defaultSize) * 100);
   return { sz, inner: richCharStyleXml(theme, { color, fontFamily }) };
 }
 
-/** cx:txPr —— dataLabels 的字号/颜色/字体透传（treemap/sunburst 瓦片标签）。
- * schema（CT_DataLabels sequence）txPr 在 visibility 之前——此前写在 visibility
- * 之后，被 PowerPoint 宽容解析丢弃，曾误判"平台忽略 txPr"换 cs:dataLabel 槽。
- * 不配置时省略。 */
+/** cx:txPr — passes through dataLabels size/color/font (treemap/sunburst tile labels).
+ * Schema (CT_DataLabels sequence): txPr precedes visibility — after it, PowerPoint's lenient parsing
+ * would drop it. Omitted when nothing is configured. */
 function dataLabelsTxPrXml(theme, labels) {
   if (labels.fontSize == null && !labels.color && !labels.fontFamily) return "";
   const fonts = resolveFont(theme, labels.fontFamily || null);
@@ -40,7 +38,7 @@ function dataLabelsTxPrXml(theme, labels) {
   return `<cx:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="${sz}">${fill}<a:latin typeface="${escAttr(fonts.latin)}"/><a:ea typeface="${escAttr(fonts.ea)}"/></a:defRPr></a:pPr><a:endParaRPr lang="zh-CN"/></a:p></cx:txPr>`;
 }
 
-/** cx:tx > cx:rich 富文本块（标题/轴标题样式承载，I27；有文本才调用——空元素泄漏占位）。 */
+/** cx:tx > cx:rich rich-text block (carries title/axis-title styles; only called when there is text — an empty element leaks a placeholder). */
 function cxRichXml(theme, text, style) {
   const { sz, inner } = cxCharStyleXml(theme, style);
   return `<cx:rich><a:bodyPr/><a:lstStyle/>` +
@@ -48,9 +46,10 @@ function cxRichXml(theme, text, style) {
     `<a:r><a:rPr lang="zh-CN" sz="${sz}">${inner}</a:rPr><a:t>${esc(text)}</a:t></a:r></a:p></cx:rich>`;
 }
 
-/** 父子表 → 叶子路径行（[最深...最浅] 每级一列，浅层列用最浅值补齐）。
- *  levels: 官方 Treemap/Sunburst.levels——显示层级数；超出部分聚合到边界层。
- *  节点解析/子树求和与预览 ECharts 树同源（model parseHierarchy）。 */
+/** Parent-child table → leaf-path rows ([deepest...shallowest], one column per level, shallow
+ * columns padded with the shallowest value).
+ *  levels: official Treemap/Sunburst.levels — the displayed level count; anything beyond aggregates
+ *  to the boundary level. Node parsing / subtree sums share the preview's ECharts tree (model parseHierarchy). */
 export function buildHierarchyRows(el, s, maxLevels = null) {
   const { childrenOf, roots, subtreeSum } = parseHierarchy(el, s);
   const paths = [];
@@ -65,7 +64,7 @@ export function buildHierarchyRows(el, s, maxLevels = null) {
   };
   for (const root of roots) walk(root, []);
   const depth = Math.max(0, ...paths.map((x) => x.path.length));
-  // 每行：[叶子(最深) ... 根(最浅)]，浅路径用最浅值补齐
+    // Each row: [leaf(deepest) ... root(shallowest)], shallow positions padded with the shallowest value
   const leafRows = paths.map(({ path, value }) => {
     const rev = [...path].reverse();
     while (rev.length < depth) rev.push(rev[rev.length - 1]);
@@ -75,9 +74,9 @@ export function buildHierarchyRows(el, s, maxLevels = null) {
 }
 
 /**
- * cx:strDim（多级分类，一个 strDim 含全部 lvl；f 引用整段列范围——对照用户
- * chartEx1：<cx:strDim type="cat"><cx:f>Sheet1!$A$2:$C$17</cx:f><cx:lvl>×N）。
- * levelValues: 每级一个数组（最深级在前，对应最左列）。
+ * cx:strDim (multi-level categories; one strDim carries every lvl, with f referencing the whole
+ * column range: <cx:strDim type="cat"><cx:f>Sheet1!$A$2:$C$17</cx:f><cx:lvl>×N).
+ * levelValues: one array per level (deepest first, corresponding to the leftmost column).
  */
 function cxStrDimXml(colStart, colEnd, levelValues, rowCount) {
   const f = rowCount > 1
@@ -92,8 +91,8 @@ function cxStrDimXml(colStart, colEnd, levelValues, rowCount) {
   return `<cx:strDim type="cat"><cx:f>${f}</cx:f>${lvls}</cx:strDim>`;
 }
 
-/** cx:numDim（type: "val" 数值 / "size" 面积——treemap/sunburst 用 size）。
- *  空值省略 cx:pt（对照 waterfall-color.pptx：ptCount 含空位但 pt 只写有值的）。 */
+/** cx:numDim (type: "val" for values / "size" for area — treemap/sunburst use size).
+ *  Empty values omit cx:pt (ptCount includes the slots, but only valued points are written). */
 function cxNumDimXml(dimType, colLetter, values, formatCode, rowCount) {
   const f = rowCount > 1
     ? `Sheet1!$${colLetter}$2:$${colLetter}$${rowCount}`
@@ -105,10 +104,10 @@ function cxNumDimXml(dimType, colLetter, values, formatCode, rowCount) {
   return `<cx:numDim type="${dimType}"><cx:f>${f}</cx:f>${lvl}</cx:numDim>`;
 }
 
-/** 逐点色 cx:dataPt（对照用户 treemap-color.pptx 实测）：
+/** Per-point color cx:dataPt:
  *  <cx:dataPt idx="N"><cx:spPr><a:solidFill><a:srgbClr …/></a:solidFill></cx:spPr></cx:dataPt>
- *  HEX 解析走 model parseHexColor（与经典 srgbClrXml 同源；HEX8 透明同样生效——
- *  此前本函数只认 HEX6，HEX8 静默丢色）。 */
+ *  HEX parsing goes through model parseHexColor (same source as the classic srgbClrXml; HEX8
+ *  transparency also applies). */
 function cxDataPtXml(idx, color) {
   const parsed = parseHexColor(color);
   if (!parsed) return "";
@@ -119,23 +118,24 @@ function cxDataPtXml(idx, color) {
 }
 
 /**
- * treemap/sunburst fill → cx:dataPt 逐点色 + 逐点标签色（对照用户
- * treemap-color.pptx 实测）。idx = 整棵树先根 DFS 节点编号（根=0，含中间节点；
- * 叶子按其祖先链前置子树累加）。颜色按官方派生规则（hierarchyColor；与
- * renderer 同源）。标签：未配置 labels.color 时深色瓦片（labelColorOn 判定）
- * 逐点 cx:dataLabel 下发白字——权威色源 cs:dataLabel 槽只能全图一色，瓦片
- * 逐级加深需逐点覆盖（schema CT_DataLabel：idx + txPr）。
+ * treemap/sunburst fill → per-point cx:dataPt colors + per-point label colors. idx = preorder DFS
+ * node numbering over the whole tree (root=0, including intermediate nodes; leaves add the
+ * preceding subtree of their ancestor chain). Colors follow the official derivation rule
+ * (hierarchyColor, same source as the renderer). Labels: when labels.color is unset, dark tiles
+ * (decided by labelColorOn) get per-point cx:dataLabel white text — the authoritative cs:dataLabel
+ * slot can only hold one color for the whole chart, so progressively darker tiles need per-point
+ * overrides (schema CT_DataLabel: idx + txPr).
  */
 function buildTreePointsAndLabels(theme, s, leafRows, labels) {
   if (s.fill == null) return { dataPoints: "", pointLabels: "" };
-  // 按 leafRows（每行 rev=[最深...根]）构建树（children 顺序 = 行序，与 PowerPoint 一致）
-  const rootMap = new Map(); // 根名 → {name, children, isLeaf}
+  // Build the tree from leafRows (each rev=[deepest...root]); child order = row order, matching PowerPoint
+  const rootMap = new Map(); // root name → {name, children, isLeaf}
   const nodeOf = (name) => {
     if (!rootMap.has(name)) rootMap.set(name, { name, children: [], isLeaf: true });
     return rootMap.get(name);
   };
   for (const { rev } of leafRows) {
-    // rev[0]=最深 ... rev[n-1]=根；从根向下挂（补齐产生的连续同名去重，防自挂环）
+    // rev[0]=deepest ... rev[n-1]=root; attach from the root down (dedupe consecutive duplicates from padding to avoid self-cycles)
     const path = [];
     for (const name of [...rev].reverse()) {
       if (path[path.length - 1] !== name) path.push(name);
@@ -149,14 +149,14 @@ function buildTreePointsAndLabels(theme, s, leafRows, labels) {
       parent = node;
     }
   }
-  // 叶子 = 无子节点的节点（含 levels 聚合后的边界节点）
+  // Leaves = nodes with no children (including boundary nodes after levels aggregation)
   for (const node of rootMap.values()) {
     node.isLeaf = node.children.length === 0;
   }
   const roots = [...new Set(leafRows.map(({ rev }) => rev[rev.length - 1]))]
     .map((name) => rootMap.get(name));
   const rootOrder = new Map(roots.map((r, i) => [r.name, i]));
-  // 先根 DFS 编号 + 记录每节点（层级/根序），供逐点标签色计算
+  // Preorder DFS numbering + record each node (level/root order) for per-point label color computation
   let counter = 0;
   const idxOfNode = new Map();
   const nodesInOrder = []; // {node, level, rootIdx}
@@ -166,14 +166,14 @@ function buildTreePointsAndLabels(theme, s, leafRows, labels) {
     for (const ch of node.children) walk(ch, level + 1, rootIdx);
   };
   for (const root of roots) walk(root, 0, rootOrder.get(root.name));
-  // 每个 leafRows 行（叶子路径）→ 该叶子节点的 idx
+  // Each leafRows row (leaf path) → that leaf node's idx
   const dataPoints = leafRows.map(({ rev }) => {
-    const node = nodeOf(rev[0]); // rev[0] = 最深 = 该行叶子
+    const node = nodeOf(rev[0]); // rev[0] = deepest = this row's leaf
     const c = hierarchyColor(theme, s, rootOrder.get(rev[rev.length - 1]), rev.length - 1);
     if (!c) return "";
     return cxDataPtXml(idxOfNode.get(node), c);
   }).join("");
-  // 逐点白字标签（深色瓦片；未配置 labels.color 时生效）
+  // Per-point white labels (dark tiles; effective when labels.color is unset)
   const autoLabel = labels && labels.color == null;
   const sz = Math.round(((labels?.fontSize ?? CHART_DEFAULTS.labelSize)) * 100);
   const pointLabels = autoLabel
@@ -186,8 +186,9 @@ function buildTreePointsAndLabels(theme, s, leafRows, labels) {
   return { dataPoints, pointLabels };
 }
 
-/** waterfall 三分类色 → cx:dataPt 逐点色（chartEx 无逐点边框，border 忽略）。
- * 未配置分类色也逐点下发（waterfallColorOf 缺省主题色板），与预览一致。 */
+/** waterfall three-category colors → per-point cx:dataPt colors (chartEx has no per-point border;
+ * border is ignored). Even without configured category colors, per-point colors are emitted
+ * (waterfallColorOf's default theme palette), matching the preview. */
 function buildWaterfallDataPoints(theme, s, rows) {
   const isTotalCol = s._cols.isTotal;
   return rows.map((r, i) => {
@@ -198,9 +199,9 @@ function buildWaterfallDataPoints(theme, s, rows) {
 }
 
 /**
- * chartEx 部件（waterfall/treemap/sunburst）。入参为 spec 单源
- * （resolveChartSpec 结果；语义——标题/图例/层级树/瀑布分类——全部来自 model，
- * 本函数只做 cx: 方言投影）。
+ * chartEx parts (waterfall/treemap/sunburst). Input is the spec single source (resolveChartSpec
+ * result; semantics — title/legend/hierarchy tree/waterfall categories — all come from model;
+ * this function only projects to the cx: dialect).
  * @returns {{chartEx: true, xml, relsXml, xlsx, styleXml, colorsXml}} | null
  */
 export function buildChartExParts(spec, chartIndex) {
@@ -211,26 +212,26 @@ export function buildChartExParts(spec, chartIndex) {
   const type = s.type;
   const data = chartEl.data || { cols: [], rows: [] };
   const rows = data.rows || [];
-  let rowCount = rows.length + 1; // +表头
+  let rowCount = rows.length + 1; // + header
 
-  // 数据布局（dims XML）
+  // Data layout (dims XML)
   let dims = { main: "", extra: "" };
   let layoutPr = "";
   let dataLabels = "";
   let dataPoints = "";
-  let sizeLetter = "B"; // treemap/sunburst 的 size 列（层级列后一列），series tx 引用
+  let sizeLetter = "B"; // treemap/sunburst size column (one after the level columns), referenced by the series tx
   const labels = resolveDataLabels(chartEl, s, type);
 
   if (type === "waterfall") {
-    // xlsx: [A=cat, B=val, C=汇总列]；subtotals = isTotal 行索引（0-based）
+    // xlsx: [A=cat, B=val, C=total column]; subtotals = isTotal row indices (0-based)
     const cats = rows.map((r) => String(r[s._cols.x] ?? ""));
     const vals = rows.map((r) => Number(r[s._cols.y] ?? 0));
     const isTotalCol = s._cols.isTotal;
     const subIdx = isTotalCol != null
       ? rows.map((r, i) => (r[isTotalCol] === true ? i : -1)).filter((i) => i >= 0)
       : [];
-    // 汇总列值（官方结构：isTotal 语义双通道——第二 dataset + 隐藏 series；
-    // 对照用户 waterfall-color.pptx：data id=1 引用 C 列，true 行写 1）
+    // Total-column values (official structure: isTotal is a dual channel — a second dataset + a
+    // hidden series; data id=1 references column C and true rows write 1)
     const totals = rows.map((r) => (isTotalCol != null && r[isTotalCol] === true ? 1 : null));
     const dataMain =
       cxStrDimXml("A", "A", [cats], rowCount) +
@@ -245,29 +246,29 @@ export function buildChartExParts(spec, chartIndex) {
     layoutPr = subIdx.length
       ? `<cx:layoutPr><cx:subtotals>${subIdx.map((i) => `<cx:idx val="${i}"/>`).join("")}</cx:subtotals></cx:layoutPr>`
       : `<cx:layoutPr><cx:aggregation/></cx:layoutPr>`;
-    // schema（CT_DataLabels sequence）：txPr 在 visibility 之前（此前写反，元素
-    // 被 PowerPoint 宽容解析丢弃，曾误判"平台忽略 cx:txPr"）
+    // schema (CT_DataLabels sequence): txPr precedes visibility (written after it, PowerPoint's
+    // lenient parsing would drop the element)
     dataLabels = labels
       ? `<cx:dataLabels pos="outEnd"><cx:visibility seriesName="0" categoryName="${labels.content === "category" ? "1" : "0"}" value="${labels.content === "value" ? "1" : "0"}"/></cx:dataLabels>`
       : "";
-    // 三分类色（官方 totalBars/increaseBars/decreaseBars → cx:dataPt 逐点色；
-    // 未配置也逐点下发 waterfallColorOf 缺省色板——此前留空落 PowerPoint 平台
-    // 缺省绿/蓝/橙，与预览主题色板不一致）
+    // Three-category colors (official totalBars/increaseBars/decreaseBars → per-point cx:dataPt; even
+    // without configuration, waterfallColorOf's default palette is emitted — leaving it empty would
+    // fall to PowerPoint's default green/blue/orange, mismatching the preview's theme palette)
     dataPoints = buildWaterfallDataPoints(theme, s, rows);
   } else {
-    // treemap / sunburst：xlsx = [级0(最深)...级N-1(根), size]
-    // levels（官方）：显示层级数，超出部分聚合到边界层
+    // treemap / sunburst: xlsx = [level0(deepest)...levelN-1(root), size]
+    // levels (official): the displayed level count; anything beyond aggregates to the boundary level
     const maxLevels = resolveTreeLevels(s);
     const { depth, leafRows } = buildHierarchyRows(chartEl, s, maxLevels);
     if (depth === 0) return null;
-    rowCount = leafRows.length + 1; // 层级表行数（叶子行 + 表头）
+    rowCount = leafRows.length + 1; // level-table row count (leaf rows + header)
     const levelCols = [];
     for (let L = 0; L < depth; L++) {
       levelCols.push(leafRows.map((x) => x.rev[L] ?? ""));
     }
     const sizes = leafRows.map((x) => Number(x.value ?? 0));
     const colLetters = Array.from({ length: depth }, (_, i) => colLetter(i));
-    sizeLetter = colLetter(depth); // 层级列后一列
+    sizeLetter = colLetter(depth); // one column after the level columns
     dims = {
       main:
         cxStrDimXml("A", colLetters[depth - 1], levelCols, rowCount) +
@@ -275,12 +276,12 @@ export function buildChartExParts(spec, chartIndex) {
       extra: "",
     };
     layoutPr = type === "treemap" ? `<cx:layoutPr><cx:parentLabelLayout val="overlapping"/></cx:layoutPr>` : "";
-    // fill 颜色（官方派生规则 → cx:dataPoint 逐叶色）：
-    //   单值/1D 数组按根节点循环，子节点沿 HSL.L 每级 -10；2D 数组外层按根、内层按级
+    // fill colors (official derivation → per-leaf cx:dataPoint): a single value / 1D array cycles per
+    // root and children step -10 along HSL.L per level; a 2D array is outer-by-root, inner-by-level
     const { dataPoints: treePts, pointLabels } = buildTreePointsAndLabels(theme, s, leafRows, labels);
     dataPoints = treePts;
-    // dataLabels（schema 顺序：txPr → visibility → dataLabel*）。未配置 labels.color
-    // 时深色瓦片逐点下发白字（labelColorOn 按亮度选色），浅色瓦片保持平台默认深字
+    // dataLabels (schema order: txPr → visibility → dataLabel*). With labels.color unset, dark tiles
+    // get per-point white text (labelColorOn picks by luminance) and light tiles keep the platform default dark text
     dataLabels = labels
       ? `<cx:dataLabels pos="${type === "sunburst" ? "ctr" : "inEnd"}">${dataLabelsTxPrXml(theme, labels)}<cx:visibility seriesName="0" categoryName="${labels.content === "category" ? "1" : "0"}" value="${labels.content === "value" ? "1" : "0"}"/>${pointLabels}</cx:dataLabels>`
       : "";
@@ -299,11 +300,10 @@ export function buildChartExParts(spec, chartIndex) {
       defaultSize: CHART_DEFAULTS.titleSize,
     })}</cx:tx></cx:title>`
     : "";
-  // 无标题时省略 cx:title——空元素 `<cx:title/>` 会让 PowerPoint 渲染「图表标题」
-  // 占位文字（09/11/12/17/19/21 页实测；cx:title 在 cx:chart 下可省略，省略不触发修复）
-  // 图例（I27）：pos 必须是 t/b/l/r 枚举（spec.legend.ooxmlPos，缺省 bottom——此前
-  // 本端缺省 t，与 classic/预览分叉）；配了字号/颜色/字体时以 cx:txPr 缺省字符样式
-  // 承载（同经典 c:txPr 思路）
+  // Omit cx:title when there is no title — an empty `<cx:title/>` makes PowerPoint render the
+  // "Chart Title" placeholder (cx:title is omittable under cx:chart without triggering repair).
+  // Legend: pos must be one of t/b/l/r (spec.legend.ooxmlPos, default bottom); with a configured
+  // size/color/font it is carried by a cx:txPr default character style (same idea as the classic c:txPr)
   const lg = spec.legend;
   let legendXml = "";
   if (lg.on) {
@@ -318,14 +318,14 @@ export function buildChartExParts(spec, chartIndex) {
     legendXml = `<cx:legend pos="${lg.ooxmlPos}" align="ctr" overlay="0">${legendTxPr}</cx:legend>`;
   }
 
-  // 轴（waterfall：分类 + 数值）。轴标题映射（I28）：xAxis→类目轴、yAxis→数值轴，
-  // 语义与预览 cartesianAxes 一致；有文本才写 cx:title（空元素泄漏「坐标轴标题」
-  // 占位文字，坑 3）。schema（MS-ODRAWXML CT_Axis）：title 紧跟 scaling、在
-  // gridlines/tickLabels 之前；CT_AxisTitle 无 pos/align/overlay 属性（带属性
-  // PowerPoint 直接拒开），位置由平台沿轴自动排布
+  // Axes (waterfall: category + value). Axis-title mapping: xAxis→category axis, yAxis→value axis,
+  // matching the preview's cartesianAxes; cx:title is written only when there is text (an empty
+  // element leaks the "Axis Title" placeholder). Schema (MS-ODRAWXML CT_Axis): title immediately
+  // follows scaling and precedes gridlines/tickLabels; CT_AxisTitle has no pos/align/overlay
+  // attributes (those make PowerPoint refuse to open), and the platform places it along the axis
   let axes = "";
   if (type === "waterfall") {
-    // 轴标题有效配置（resolveTitleLike，与经典轴标题/图表标题同源）
+    // Effective axis-title config (resolveTitleLike, same source as classic axis/chart titles)
     const cxAxisTitleXml = (axisCfg) => {
       const c = axisCfg && typeof axisCfg === "object" ? axisCfg : null;
       const t = c ? resolveTitleLike(c.title, { fallbackFontFamily: chartEl.fontFamily || null, defaultSize: CHART_DEFAULTS.axisSize }) : null;
@@ -344,16 +344,15 @@ export function buildChartExParts(spec, chartIndex) {
       `<cx:axis id="1"><cx:valScaling/>${cxAxisTitleXml(yCfg)}<cx:majorGridlines/><cx:tickLabels/></cx:axis>`;
   }
 
-  // 系列默认格式覆盖（官方结构：cx:fmtOvrs > fmtOvr idx=0 → accent1，
-  // 对照 waterfall-color.pptx）
+  // Series default format override (official structure: cx:fmtOvrs > fmtOvr idx=0 → accent1)
   const fmtOvrs =
     `<cx:fmtOvrs><cx:fmtOvr idx="0"><cx:spPr><a:solidFill><a:schemeClr val="accent1"/></a:solidFill></cx:spPr></cx:fmtOvr></cx:fmtOvrs>`;
 
-  // 图表框（官方 Chart.fill/border/shadow → cx:chartSpace spPr；与经典 c:spPr
-  // 同构共用 chartSpaceSpPrXml）
+  // Chart frame (official Chart.fill/border/shadow → cx:chartSpace spPr; isomorphic with the classic
+  // c:spPr and sharing chartSpaceSpPrXml)
   const frameSpPr = chartSpaceSpPrXml(theme, chartEl, "cx");
 
-  // 隐藏系列（waterfall 汇总列：hidden="1" + dataId=1，对照 waterfall-color.pptx）
+  // Hidden series (waterfall total column: hidden="1" + dataId=1)
   const isTotalCol = s._cols.isTotal;
   const totalSeriesXml = (type === "waterfall" && isTotalCol != null)
     ? `<cx:series layoutId="waterfall" hidden="1" uniqueId="${guid()}" formatIdx="1">` +
@@ -413,18 +412,19 @@ export function buildChartExParts(spec, chartIndex) {
     xml,
     relsXml,
     xlsx: buildChartExXlsx(chartEl, s, type),
-    // 瓦片标签字色源 = chartStyle part 的 cs:dataLabel 槽（COM 实测 PowerPoint
-    // 唯一生效的标签色源）。labels.color 配置 → 直接覆盖；未配置 → 按首根 0 层
-    // 瓦片亮度自动选白/默认（深色瓦片深字不可读）。逐点 cx:dataLabel 一并下发
-    // （见 buildTreePointsAndLabels），供支持逐点样式的渲染端精细覆盖
+    // Tile-label color source = the chartStyle part's cs:dataLabel slot (PowerPoint's only effective
+    // label-color source). A configured labels.color overrides directly; otherwise the first root's
+    // level-0 tile luminance auto-selects white/default (dark tiles would have unreadable dark text).
+    // Per-point cx:dataLabel is emitted too (see buildTreePointsAndLabels) for renderers supporting it
     styleXml: buildChartStyleXml(labelSlotFor(theme, s, type, labels)),
     colorsXml: buildChartColorStyleXml(),
   };
 }
 
-/** treemap/sunburst 瓦片标签槽覆盖参数；其余类型返回 null（保持默认深字）。
- * labels.color 配置 → 直接覆盖；否则字色按首根 0 层瓦片亮度自动选（深色瓦片
- * 返回白字、浅色瓦片 null 保持平台深字），字号配置随槽透传。 */
+/** treemap/sunburst tile-label slot override; other types return null (keep the default dark text).
+ * A configured labels.color overrides directly; otherwise the text color follows the first root's
+ * level-0 tile luminance (white for dark tiles, null for light tiles to keep the platform dark text);
+ * a configured font size passes through. */
 function labelSlotFor(theme, s, type, labels) {
   if ((type !== "treemap" && type !== "sunburst") || !labels) return null;
   const rootColor = hierarchyColor(theme, s, 0, 0);
@@ -438,15 +438,15 @@ function labelSlotFor(theme, s, type, labels) {
   return null;
 }
 
-/** chartEx 专用 xlsx：瀑布图 [cat, val, 汇总列]；树/旭日 [级0..级N, size]（叶子路径）。 */
+/** chartEx-specific xlsx: waterfall [cat, val, total column]; tree/sunburst [level0..levelN, size] (leaf paths). */
 function buildChartExXlsx(chartEl, s, type) {
   const fonts = { latin: DEFAULT_FONT };
   const data = chartEl.data || { cols: [], rows: [] };
   const rows = data.rows || [];
   let table;
   if (type === "waterfall") {
-    // 表头 = 测试页列名（对照用户参考：A1=项目 B1=金额 C1=汇总）；
-    // 汇总列 true 行写 1（isTotal 标记，官方数据布局）
+    // Header = the test page's column names (A1=item B1=amount C1=total); true rows in the total
+    // column write 1 (the isTotal marker, official data layout)
     const srcCols = data.cols || [];
     const xIdx = s._cols.x ?? 0;
     const yIdx = s._cols.y ?? 1;
@@ -464,16 +464,16 @@ function buildChartExXlsx(chartEl, s, type) {
   } else {
     const maxLevels = resolveTreeLevels(s);
     const { depth, leafRows } = buildHierarchyRows(chartEl, s, maxLevels);
-    // xlsx 列序 = 根在前（PowerPoint 官方布局，对照 treemap-color.pptx：A=父…最右=叶子）
+    // xlsx column order = root first (official layout: A=parent … rightmost=leaf)
     const header = [];
-    for (let L = depth - 1; L >= 0; L--) header.push(`级${L + 1}`); // 级depth(根)…级1(叶子)
+    for (let L = depth - 1; L >= 0; L--) header.push(`级${L + 1}`); // levelDepth(root)…level1(leaf)
     header.push("值");
     table = [header];
     for (const { rev, value } of leafRows) {
-      table.push([...[...rev].reverse(), value ?? null]); // [根…叶子, 值]
+      table.push([...[...rev].reverse(), value ?? null]); // [root…leaf, value]
     }
   }
-  // 真实表头作为 cols（原 bug：map 成 C1/C2 单元格坐标 → xlsx 表头错乱）
+  // Real headers become cols (mapping them to C1/C2 cell coordinates would scramble the xlsx header)
   const cols = table[0];
   return buildChartXlsx({ data: { cols, rows: table.slice(1) } }, fonts, null);
 }

@@ -1,10 +1,10 @@
 // ============================================================================
-// writer/chart/types.js — 图表导出体系分组与 chartEx 占位图
+// writer/chart/types.js — chartEx fallback placeholder image
 // ----------------------------------------------------------------------------
-// 类型分组单源是 CHART_META.route（model 路由单源），本文件不再缓存派生清单。
+// Chart-type grouping has a single source in CHART_META.route (model); this file caches no derived list.
 // ============================================================================
 
-/** 1×1 透明 PNG（chartEx mc:Fallback 占位预览图）。 */
+/** 1×1 transparent PNG (chartEx mc:Fallback placeholder preview). */
 export const TINY_PNG = (() => {
   const b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
   if (typeof Buffer !== "undefined") return new Uint8Array(Buffer.from(b64, "base64"));

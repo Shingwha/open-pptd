@@ -1,22 +1,22 @@
 // ============================================================================
-// xml.js — XML 生成工具
+// xml.js — XML generation helpers
 // ----------------------------------------------------------------------------
-// esc/escAttr 转义是全仓唯一实现（packages/model/escape.js，v3 #1 禁止第三份），
-// 此处 re-export 保持 writer 侧 import 路径不变。
+// esc/escAttr escaping has a single repository-wide implementation (packages/model/escape.js;
+// a third copy is forbidden), so this re-export keeps writer-side import paths stable.
 // ============================================================================
 
 import { esc, escAttr } from "../model/escape.js";
 
 export { esc, escAttr };
 
-/** 生成 XML 声明头。 */
+/** Build the XML declaration header. */
 export function xmlHeader(standalone = true) {
   return `<?xml version="1.0" encoding="UTF-8" standalone="${standalone ? "yes" : "no"}"?>`;
 }
 
 /**
- * 便捷元素构造：el("a:solidFill", {}, [el("a:srgbClr", {val:"2563EB"})])
- * attrs 为对象，children 为字符串数组或字符串。
+ * Convenience element builder: el("a:solidFill", {}, [el("a:srgbClr", {val:"2563EB"})]).
+ * attrs is an object; children is a string array or a string.
  */
 export function el(name, attrs = {}, children = "") {
   const attrStr = Object.entries(attrs)
@@ -28,15 +28,15 @@ export function el(name, attrs = {}, children = "") {
   return `<${name}${attrStr}>${kids}</${name}>`;
 }
 
-/** 颜色 #RRGGBB → srgbClr 的 val（大写、去 #）。 */
+/** Color #RRGGBB → srgbClr val (uppercase, without #). */
 export function hexToRgbVal(hex) {
   if (!hex) return "000000";
   let h = String(hex).replace("#", "");
-  if (h.length === 8) h = h.slice(0, 6); // 丢弃 alpha（OOXML srgbClr 无 alpha）
+  if (h.length === 8) h = h.slice(0, 6); // drop alpha (OOXML srgbClr has none)
   return h.toUpperCase();
 }
 
-/** 角度（度）→ OOXML 60000 单位。 */
+/** Angle (degrees) → OOXML 60000-unit value. */
 export function angleToOOXML(deg) {
   return Math.round(deg * 60000);
 }

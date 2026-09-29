@@ -1,11 +1,11 @@
 // ============================================================================
-// parts.js — PPTX 固定部件生成（Content_Types / rels / docProps /
-//           presentation / slideMaster / slideLayout / theme）
+// parts.js — PPTX fixed-part generation (Content_Types / rels / docProps /
+//           presentation / slideMaster / slideLayout / theme)
 // ----------------------------------------------------------------------------
-// 经验要点（第一版实测）：
-//   - sldMasterId id=2147483648，sldLayoutId id=2147483649（必须 >= 0x80000000）
-//   - slideMaster rels 必须含 theme 关系（rId2）
-//   - theme1.xml 的 clrScheme 决定"导出后在 PowerPoint 里换主题"的联动范围
+// Key points:
+//   - sldMasterId id=2147483648, sldLayoutId id=2147483649 (must be >= 0x80000000)
+//   - slideMaster rels must include the theme relationship (rId2)
+//   - theme1.xml's clrScheme defines how far "switch theme in PowerPoint after export" reaches
 // ============================================================================
 
 import { esc, el, xmlHeader, hexToRgbVal } from "./xml.js";
@@ -17,8 +17,8 @@ export const NS_R = "http://schemas.openxmlformats.org/officeDocument/2006/relat
 export const NS_REL = "http://schemas.openxmlformats.org/package/2006/relationships";
 export const NS_CONTENT_TYPES = "http://schemas.openxmlformats.org/package/2006/content-types";
 
-// 取字体：OOXML 三槽位统一用 latin，中文符号由 ea 槽承载。
-// 缺省 = DEFAULT_FONT（官方 Style Priority 默认值，系统自带、仅声明不嵌入）。
+// Font accessor: the three OOXML slots all use latin; ea carries CJK symbols.
+// Default = DEFAULT_FONT (official Style Priority default; system-provided, declared but not embedded).
 const F = (fonts) => fonts?.latin || DEFAULT_FONT;
 
 // ----------------------------------------------------------------------------
@@ -35,7 +35,7 @@ export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0, cha
     el("Default", { Extension: "svg", ContentType: "image/svg+xml" }),
     el("Default", { Extension: "xlsx", ContentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
   ];
-  // ⚠️ fntdata Default 必须出现在 Types 内（根元素后）；插到根元素前 = 非法 XML（PowerPoint 0x80CB9110）
+  // fntdata Default must appear inside Types (after the root element); before the root = invalid XML (PowerPoint 0x80CB9110)
   if (fontCount > 0) defaults.push(el("Default", { Extension: "fntdata", ContentType: "application/x-fontdata" }));
   const overrides = [
     el("Override", { PartName: "/ppt/presentation.xml", ContentType: "application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml" }),
@@ -70,11 +70,11 @@ export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0, cha
     overrides.push(
       el("Override", { PartName: "/ppt/notesMasters/notesMaster1.xml", ContentType: "application/vnd.openxmlformats-officedocument.presentationml.notesMaster+xml" })
     );
-    // notesMaster 引用独立 theme2.xml（PowerPoint 官方行为，对照 notes-ref.pptx）
+    // notesMaster references a separate theme2.xml (official PowerPoint behavior)
     overrides.push(
       el("Override", { PartName: "/ppt/theme/theme2.xml", ContentType: "application/vnd.openxmlformats-officedocument.theme+xml" })
     );
-    // 按实际带备注的页号声明（notesSlideN.xml ↔ slideN.xml，与文件命名一致）
+    // Declare by the actual pages carrying notes (notesSlideN.xml ↔ slideN.xml, matching file naming)
     for (const n of notesSlides) {
       overrides.push(
         el("Override", { PartName: `/ppt/notesSlides/notesSlide${n}.xml`, ContentType: "application/vnd.openxmlformats-officedocument.presentationml.notesSlide+xml" })
@@ -157,7 +157,7 @@ export function buildPresentation(title, slideCount, size, fonts, embedded = nul
     sldIds.push(el("p:sldId", { id: String(256 + i), "r:id": `rId${i + 2}` }));
   }
   const attrs = embedded?.lstXml ? ` embedTrueTypeFonts="1"${embedded.subsetMode ? ' saveSubsetFonts="1"' : ""}` : "";
-  // schema 顺序：sldMasterIdLst → notesMasterIdLst → sldIdLst → sldSz → notesSz（对照 notes-ref.pptx）
+  // Schema order: sldMasterIdLst → notesMasterIdLst → sldIdLst → sldSz → notesSz
   const notesMasterIdLst = hasNotes
     ? `<p:notesMasterIdLst><p:notesMasterId r:id="rIdNotesMaster"/></p:notesMasterIdLst>`
     : "";
@@ -169,7 +169,7 @@ export function buildPresentation(title, slideCount, size, fonts, embedded = nul
     `<p:sldIdLst>${sldIds.join("")}</p:sldIdLst>` +
     `<p:sldSz cx="${cx}" cy="${cy}" type="screen16x9"/>` +
     `<p:notesSz cx="6858000" cy="9144000"/>` +
-    // embeddedFontLst 必须在 notesSz 之后（schema 顺序，坑 2）
+    // embeddedFontLst must come after notesSz (schema order)
     (embedded?.lstXml || "") +
     `<p:defaultTextStyle><a:defPPr><a:defRPr lang="zh-CN">` +
     `<a:latin typeface="${f}"/><a:ea typeface="${f}"/><a:cs typeface="${f}"/>` +
@@ -196,20 +196,20 @@ export function buildPresentationRels(slideCount, fontRels = [], hasNotes = fals
 }
 
 // ----------------------------------------------------------------------------
-// ppt/notesMasters/notesMaster1.xml（演讲者备注母版）
-// 对照用户 notes-ref.pptx 实测：bgRef + 6 占位符（hdr/dt/sldImg/body/ftr/sldNum）
-// + 9 级 notesStyle；rels 引用独立 theme2.xml（PowerPoint 官方行为）
+// ppt/notesMasters/notesMaster1.xml (speaker-notes master)
+// bgRef + 6 placeholders (hdr/dt/sldImg/body/ftr/sldNum) + 9-level notesStyle;
+// rels reference a separate theme2.xml (official PowerPoint behavior)
 // ----------------------------------------------------------------------------
 export function buildNotesMaster(fonts) {
   const f = F(fonts);
-  // notesMaster 占位符外壳（body 为空时落默认空段落，与 PowerPoint 重存一致）
+  // notesMaster placeholder shell (an empty body falls back to a default empty paragraph, matching PowerPoint re-save)
   const ph = (id, name, phXml, body, extra = "") =>
     `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="${name}"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr>${phXml}</p:nvPr></p:nvSpPr>` +
     `<p:spPr>${extra}</p:spPr>` +
     `<p:txBody><a:bodyPr vert="horz" lIns="91440" tIns="45720" rIns="91440" bIns="45720" rtlCol="0"/><a:lstStyle/>${body || '<a:p><a:endParaRPr lang="zh-CN" altLang="en-US"/></a:p>'}</p:txBody></p:sp>`;
   const xfrm = (x, y, w, h) =>
     `<a:xfrm><a:off x="${x}" y="${y}"/><a:ext cx="${w}" cy="${h}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom>`;
-  // notesStyle 9 级（官方结构：marL 逐级递增 + 主题字体槽 +mn-lt/+mn-ea/+mn-cs）
+  // 9-level notesStyle (official: marL grows per level + theme font slots +mn-lt/+mn-ea/+mn-cs)
   const lvl = (n, marL) =>
     `<a:lvl${n}pPr marL="${marL}" algn="l" defTabSz="914400" rtl="0" eaLnBrk="1" latinLnBrk="0" hangingPunct="1">` +
     `<a:defRPr sz="1200" kern="1200"><a:solidFill><a:schemeClr val="tx1"/></a:solidFill>` +
@@ -314,8 +314,8 @@ export function buildSlideLayoutRels() {
 // ----------------------------------------------------------------------------
 // ppt/theme/theme1.xml
 // ----------------------------------------------------------------------------
-// clrScheme 语义槽位（第二版核心）：渲染器/导出器用同一映射，
-// 元素默认色尽量写 schemeClr → 导出后在 PowerPoint 里可换主题。
+// clrScheme semantic slots: renderer and exporter share the same mapping, and element default
+// colors use schemeClr where possible so the theme can be swapped in PowerPoint after export.
 export function themeColorSlots(theme) {
   const c = theme.colors;
   return {
@@ -325,7 +325,7 @@ export function themeColorSlots(theme) {
     lt2: c.bg,
     accent1: c.primary,
     accent2: c.accent,
-    // accent3-6：colors 显式键回退（success/warning/danger/primaryDeep 为默认主题推荐值）
+    // accent3-6: fall back to explicit colors keys (success/warning/danger/primaryDeep are default-theme recommendations)
     accent3: c.accent3 || c.success || c.primary,
     accent4: c.accent4 || c.warning || c.accent,
     accent5: c.accent5 || c.danger || c.primary,
@@ -404,7 +404,7 @@ export function buildTheme(theme) {
   return (
     xmlHeader() +
     `<a:theme xmlns:a="${NS_A}" name="open-pptd">` +
-    // tableStyleLst 属于 themeElements（fmtScheme 之后），不可放外面
+    // tableStyleLst belongs to themeElements (after fmtScheme) and cannot go outside
     `<a:themeElements>${clrScheme}${fontScheme}${fmtScheme}` +
     `<a:tableStyleLst>` +
     `<a:tblStyle id="{00000000-0000-0000-0000-000000000000}" styleName="Blank">` +
