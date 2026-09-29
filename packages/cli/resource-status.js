@@ -49,11 +49,6 @@ export function fontReadyInfo(registry) {
   return { ready: fonts.filter(fontFileReady).length, total: fonts.length };
 }
 
-/** 被“命中注册表但本地字节缺失/尺寸不符”的字体清单（补下载目标）。 */
-export function missingFonts(registry) {
-  return (registry?.fonts || []).filter((f) => !fontFileReady(f));
-}
-
 /** 图标就绪统计：按风格目录合并候选根（home + 包内）去重后的本地 SVG 数。 */
 export function iconReadyInfo(registry) {
   const per = {};
