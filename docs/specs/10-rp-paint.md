@@ -1,7 +1,7 @@
 # Spec RP-B · rp-paint：paint 纯化 + capture 协议清理（W5）
 
 > agent 代号 RP-B，分支 `feat/rp-paint`。深读：`docs/specs/ref/render-pipeline-plan.md` §3.3/§3.4/§4 场景 A/C、§5 M3/M4；总裁定见 `08-render-pipeline.md`。
-> 前置：W4 全部合并（A6 ui-u2 + RP-A rp-foundations）。**这是风险主峰，黄金基线 diff 是唯一验收权威。**
+> 前置：W4 全部合并（A7 ui-restore——spec 06 的 A6 ui-u2 已被用户否决，由 spec 12 接替——+ RP-A rp-foundations）。**这是风险主峰，黄金基线 diff 是唯一验收权威。**
 
 ## 目标
 
