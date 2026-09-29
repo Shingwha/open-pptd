@@ -1,12 +1,13 @@
 // ============================================================================
 // tests/regression/theme-presets.mjs — 主题预设一致性回归
 // ----------------------------------------------------------------------------
-// 守护两处色值同步：packages/model/theme-presets.js（权威源）↔ references/design.md
-// 同时回归 normalizeTheme 字符串预设解析行为。
+// 守护两处色值同步：packages/model/theme-presets.js（权威源）↔ design.md 色值表
+// （design.md 已随内容面迁至 open-pptd-skill 仓；该比对迁入技能仓 drift-guard，
+//  本仓无文档时 §2 优雅跳过）。同时回归 normalizeTheme 字符串预设解析行为。
 // 运行：node tests/regression/theme-presets.mjs
 // ============================================================================
 
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { DEFAULT_THEME, THEME_PALETTES, normalizeTheme, themeChartPalette } from "../../packages/model/theme.js";
 
@@ -33,22 +34,30 @@ const consult = THEME_PALETTES.consult.colors;
 ok(KEYS.every((k) => DEFAULT_THEME.colors[k] === consult[k]), "DEFAULT_THEME.colors == consult（默认主题 = 第 1 套）");
 
 console.log("== 2. references/design.md 色值表与代码一致 ==");
-const md = readFileSync(resolve("references/design.md"), "utf8");
-const mainTbl = md.split("Primary and chart series colors")[1].split("The remaining 11 keys")[0];
-for (const row of mainTbl.split("\n").filter((l) => /^\| (consult|tech|orange|green|red|purple|mono|brown|morandi|sakura) \|/.test(l))) {
-  const c = row.split("|").map((s) => s.trim());
-  const code = ["primary", "accent", "accent3", "accent4", "accent5", "accent6"].map((k) => THEME_PALETTES[c[1]].colors[k].toUpperCase());
-  ok(JSON.stringify(c.slice(2, 8)) === JSON.stringify(code), `design.md 主色表 ${c[1]}`);
-}
-const restTbl = md.split("The remaining 11 keys")[1].split("> Usage:")[0];
-for (const row of restTbl.split("\n").filter((l) => /^\| (text|muted|line|success|warning|danger|primarySoft|primaryTint|primaryDeep) \|/.test(l))) {
-  const c = row.split("|").map((s) => s.trim());
-  for (let i = 0; i < 10; i++) {
-    const doc = c[i + 2].toUpperCase();
-    const code = THEME_PALETTES[ORDER[i]].colors[c[1]].toUpperCase();
-    if (doc !== code) ok(false, `design.md ${c[1]} ${ORDER[i]}: ${doc} vs ${code}`);
+const designMd = resolve("references/design.md");
+if (!existsSync(designMd)) {
+  // 内容面（SKILL.md + references/）已迁至独立技能仓 open-pptd-skill：本仓不再持有
+  // design.md，该文档与引擎的色值同步改由技能仓的 drift-guard 守护（§2 的等价比对已
+  // 移入 drift-guard.yml 第 ⑤ 项）。此处优雅跳过而非误报 ENOENT。
+  console.log("  – 跳过：references/design.md 不在本仓（内容面已迁 open-pptd-skill）");
+} else {
+  const md = readFileSync(designMd, "utf8");
+  const mainTbl = md.split("Primary and chart series colors")[1].split("The remaining 11 keys")[0];
+  for (const row of mainTbl.split("\n").filter((l) => /^\| (consult|tech|orange|green|red|purple|mono|brown|morandi|sakura) \|/.test(l))) {
+    const c = row.split("|").map((s) => s.trim());
+    const code = ["primary", "accent", "accent3", "accent4", "accent5", "accent6"].map((k) => THEME_PALETTES[c[1]].colors[k].toUpperCase());
+    ok(JSON.stringify(c.slice(2, 8)) === JSON.stringify(code), `design.md 主色表 ${c[1]}`);
   }
-  ok(true, `design.md 扩展键表 ${c[1]} × 10 套`);
+  const restTbl = md.split("The remaining 11 keys")[1].split("> Usage:")[0];
+  for (const row of restTbl.split("\n").filter((l) => /^\| (text|muted|line|success|warning|danger|primarySoft|primaryTint|primaryDeep) \|/.test(l))) {
+    const c = row.split("|").map((s) => s.trim());
+    for (let i = 0; i < 10; i++) {
+      const doc = c[i + 2].toUpperCase();
+      const code = THEME_PALETTES[ORDER[i]].colors[c[1]].toUpperCase();
+      if (doc !== code) ok(false, `design.md ${c[1]} ${ORDER[i]}: ${doc} vs ${code}`);
+    }
+    ok(true, `design.md 扩展键表 ${c[1]} × 10 套`);
+  }
 }
 
 console.log("== 3. normalizeTheme 字符串预设解析（不再静默回退）==");

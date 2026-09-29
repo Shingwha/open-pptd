@@ -2,7 +2,10 @@
 # Release 发布流水线：校验版本 → 回归测试 → 白名单打包 → 发布 Release
 #   - push v* 形如 v1.0.1 的 tag 自动触发（版本号必须与 package.json 一致）
 #   - 任何一步失败都不会发布（坏提交不会进 release）
-#   - 产物: open-pptd-v<version>.zip（顶层目录 open-pptd/，解压到 skills 文件夹即用）
+#   - 产物: dist/ 全部资产一起上传 —— open-pptd-v<ver>.zip（顶层目录 open-pptd/，解压到
+#     skills 文件夹即用）、open-pptd-icons-v<ver>.zip、open-pptd-fonts-v<ver>.zip
+#     （后两者以本地工作树实际存在的本体为准，CI 无本体时自动跳过）、install.ps1/
+#     install.sh、SHA256SUMS（覆盖全部 zip）
 # ============================================================================
 name: Release
 
@@ -61,7 +64,7 @@ jobs:
           if [ "$(git tag -l --format='%(objecttype)' "$GITHUB_REF_NAME")" = "tag" ]; then
             git tag -l --format='%(contents)' "$GITHUB_REF_NAME" > release-notes.md
             # --title 必须显式指定：--notes-file 时 gh 会把 notes 第一行当标题
-            gh release create "$GITHUB_REF_NAME" dist/*.zip --notes-file release-notes.md --title "$GITHUB_REF_NAME"
+            gh release create "$GITHUB_REF_NAME" dist/* --notes-file release-notes.md --title "$GITHUB_REF_NAME"
           else
-            gh release create "$GITHUB_REF_NAME" dist/*.zip --generate-notes --title "$GITHUB_REF_NAME"
+            gh release create "$GITHUB_REF_NAME" dist/* --generate-notes --title "$GITHUB_REF_NAME"
           fi
