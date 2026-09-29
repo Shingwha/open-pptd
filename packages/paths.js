@@ -25,6 +25,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export const PACKAGE_ROOT = resolve(__dirname, "..");
 
 /**
+ * In-package registry dirs (registry.json only; version-coupled with the code, so home never
+ * shadows them). These are also the in-package fallback roots for font/icon bytes (the package
+ * ships only registry.json there; large bytes live in home). Single source for cli/export.js and
+ * cli/resource-status.js — downstream must not rebuild these paths itself.
+ */
+export const FONT_REGISTRY_DIR = join(PACKAGE_ROOT, "assets", "fonts");
+export const ICON_REGISTRY_DIR = join(PACKAGE_ROOT, "assets", "icons");
+
+/**
  * Resource home: `$OPEN_PPTD_HOME` first (used verbatim; Node does not expand `~`),
  * otherwise `os.homedir()/.open-pptd`.
  * @returns {string}
@@ -55,8 +64,8 @@ export const paths = Object.freeze({
  *   registry     : **single root only** — the package root (version-coupled; home never shadows)
  */
 export const resourceRoots = Object.freeze({
-  fonts: Object.freeze([paths.fonts, join(PACKAGE_ROOT, "assets", "fonts")]),
-  icons: Object.freeze([paths.icons, join(PACKAGE_ROOT, "assets", "icons")]),
+  fonts: Object.freeze([paths.fonts, FONT_REGISTRY_DIR]),
+  icons: Object.freeze([paths.icons, ICON_REGISTRY_DIR]),
   registry: Object.freeze([PACKAGE_ROOT]),
 });
 
@@ -91,6 +100,18 @@ export function resolveResourceFile(kind, rel = "") {
     if (existsSync(p)) return p;
   }
   return null;
+}
+
+/**
+ * Is a resource-relative path the version-coupled registry manifest (`registry.json`)?
+ * The registry always resolves from the package root only (home never shadows it); this is the
+ * single-source predicate shared by server/static.js (URL resolution) and cli/assets.js (zip
+ * extraction must drop any registry.json entry).
+ * @param {string} rel path relative to a resource root (e.g. "fonts/registry.json")
+ * @returns {boolean}
+ */
+export function isRegistryPath(rel) {
+  return /(^|\/)registry\.json$/i.test(String(rel || ""));
 }
 
 /**

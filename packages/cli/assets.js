@@ -17,7 +17,7 @@ import { existsSync, readFileSync, rmSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { inflateRawSync } from "node:zlib";
-import { paths, ensureHome, atomicWriteFile, dirSize } from "../paths.js";
+import { paths, ensureHome, atomicWriteFile, dirSize, isRegistryPath } from "../paths.js";
 import { readFontRegistry, readIconRegistry, fontReadyInfo, iconReadyInfo, packageVersion } from "./resource-status.js";
 import { downloadFonts, downloadIcons } from "./download.js";
 
@@ -90,7 +90,7 @@ export function extractZipTo(bytes, destDir, { verifyExt = null } = {}) {
     if (e.name.endsWith("/")) continue;
     const rel = safeRelPath(e.name);
     if (!rel) continue;
-    if (/(^|\/)registry\.json$/i.test(rel)) continue; // the registry never enters assets/
+    if (isRegistryPath(rel)) continue; // the registry never enters assets/
     const dest = join(destDir, rel);
     if (!dest.startsWith(destDir)) continue; // second traversal guard
     atomicWriteFile(dest, e.data);
@@ -104,6 +104,10 @@ export function extractZipTo(bytes, destDir, { verifyExt = null } = {}) {
 // ---------------------------------------------------------------------------
 // Download + SHA256 verification
 // ---------------------------------------------------------------------------
+// Timeout note: this is a single-request budget for one release zip (connect + body together).
+// It is intentionally not merged with cli/download.js's two-stage per-file timeouts (connect
+// 10s, then a separate body budget with mirror-health tracking): unifying would change the
+// granularity and the failure-classification behavior of the per-file downloader.
 async function fetchBytes(url, timeoutMs = 60000) {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), timeoutMs);

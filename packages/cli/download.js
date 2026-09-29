@@ -24,6 +24,11 @@ import { ICON_STYLES } from "./resource-status.js";
 const FONT_CONNECT_TIMEOUT_MS = 10000;
 const FONT_BODY_TIMEOUT_MS = 60000;
 const FONT_DOWNLOAD_CONCURRENCY = 6;
+// Two-stage timeout (connect, then body) is deliberate and intentionally kept separate from
+// assets.js#fetchBytes (one whole-request budget for a release zip) and from fetchWithTimeout
+// below (icons): the font path clears the connect timer after headers so a slow large body is
+// not misclassified as a dead mirror, which a single shared helper cannot express without
+// changing the mirror-health-tracking behavior.
 
 function isFontMagic(buf) {
   return buf.length >= 4 && (buf.subarray(0, 4).toString("latin1") === "OTTO" || buf.subarray(0, 4).equals(Buffer.from([0, 1, 0, 0])));
@@ -127,6 +132,8 @@ export async function downloadFonts(reg, name = "all") {
 // ---------------------------------------------------------------------------
 // Icons
 // ---------------------------------------------------------------------------
+// Icon per-file fetch: same two-stage idea as the font path but a smaller body budget passed
+// per call; kept local (not unified with assets.js#fetchBytes) for the reason above.
 async function fetchWithTimeout(url, bodyMs) {
   const ctl = new AbortController();
   const connectTimer = setTimeout(() => ctl.abort(), 10_000);

@@ -7,6 +7,7 @@
 
 import { readFileSync, statSync, existsSync } from "node:fs";
 import { join, normalize, sep, extname } from "node:path";
+import { isRegistryPath } from "../paths.js";
 
 export const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -58,7 +59,10 @@ function resolveUnder(base, pathname) {
 }
 
 /**
- * Multi-root resolution for resource requests (/assets/**):
+ * Multi-root resolution for resource requests (/assets/**). Named `resolveStaticFile` (not
+ * `resolveResourceFile`) to avoid any confusion with the contract-surface
+ * `paths.resolveResourceFile(kind, rel)` — different signature and layer (this one resolves a
+ * URL pathname against injected roots; that one resolves a relative path against resourceRoots).
  *   · `registry.json` → **package root only** (version-coupled, home never shadows)
  *   · `fonts/**`      → resourceRoots.fonts (home first, then package fallback)
  *   · `icons/**`      → resourceRoots.icons
@@ -66,12 +70,12 @@ function resolveUnder(base, pathname) {
  * @param {{fonts:string[],icons:string[],registry:string[]}} resourceRoots
  * @returns {string|null}
  */
-export function resolveResourceFile(pathname, resourceRoots) {
+export function resolveStaticFile(pathname, resourceRoots) {
   if (!resourceRoots || !pathname.startsWith("/assets/")) return null;
   const rel = pathname.slice("/assets/".length);
   if (!rel || rel.includes("\0")) return null;
   // registry: package root only (pathname is relative to the package root, so use the full /assets/... path)
-  if (/(^|\/)registry\.json$/i.test(rel)) return resolveFile(resourceRoots.registry || [], pathname);
+  if (isRegistryPath(rel)) return resolveFile(resourceRoots.registry || [], pathname);
   if (rel.startsWith("fonts/")) return resolveFile(resourceRoots.fonts || [], rel.slice("fonts/".length));
   if (rel.startsWith("icons/")) return resolveFile(resourceRoots.icons || [], rel.slice("icons/".length));
   return null;

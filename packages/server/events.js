@@ -16,6 +16,11 @@ const POLL_INTERVAL_MS = 800;
  * Recursively scan a directory and return a fingerprint (relative path + mtimeMs
  * + size, sorted and joined). Hidden dirs (.git etc.) and node_modules are
  * excluded so unrelated writes do not trigger a refresh.
+ *
+ * Intentionally not shared with editor/app/project/handle-io.js#fingerprint: same change
+ * semantics, but this one walks Node fs (server-side polling) while that one iterates a
+ * browser FileSystemDirectoryHandle. Unifying would force a shared package across the
+ * editor→packages boundary for no runtime gain (different APIs, different environments).
  */
 export function dirFingerprint(root) {
   const parts = [];
