@@ -13,21 +13,12 @@ import { parseRichText } from "../model/richtext.js";
 import { computeBaseStyle, mergeRunStyle } from "../model/style.js";
 import { latexToMathml } from "../model/latex.js";
 import { resolveColor, resolveFont } from "../model/theme.js";
-import { cssTextAlign, cssTextAlignLast, effectiveShadow, LIST_INDENT } from "../model/style-spec.js";
+import { cssTextAlign, cssTextAlignLast, LIST_INDENT } from "../model/style-spec.js";
 import { gradientCss } from "./gradient.js";
-import { createElementShell } from "./shell.js";
+import { createElementShell, boxShadowCss } from "./shell.js";
 
 const DEFAULT_FONT_SIZE = 18;
 const DEFAULT_LINE_HEIGHT = 1;
-
-/** 文字阴影 → CSS text-shadow（offset [x,y] 向下为正，与 OOXML dist/dir 同向；
- * 缺省值走 effectiveShadow 单源——无 color 曾生成非法 CSS 致整条阴影被丢弃）。 */
-function shadowCss(theme, shadow) {
-  const eff = effectiveShadow(shadow);
-  if (!eff) return null;
-  const color = resolveColor(theme, eff.color) || eff.color;
-  return `${eff.dx}px ${eff.dy}px ${eff.blur}px ${color}`;
-}
 
 /**
  * run 层：有效样式 = 基线 + 段落样式 + run 内联（mergeRunStyle 统一合并，
@@ -156,8 +147,8 @@ function renderTextContent(theme, content) {
     css.push(`background:${grad}`);
     css.push("-webkit-background-clip:text;background-clip:text;color:transparent");
   }
-  // 文字阴影
-  const shadow = shadowCss(theme, base.shadow);
+  // 文字阴影（boxShadowCss 单源：与 box-shadow 共用同一 offset/blur/color 值）
+  const shadow = boxShadowCss(theme, base.shadow);
   if (shadow) css.push(`text-shadow:${shadow}`);
   // 垂直文字 / 不换行（官方 textDirection / wrap）
   if (content?.textDirection === "vertical") css.push("writing-mode:vertical-rl;text-orientation:upright");

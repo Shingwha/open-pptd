@@ -7,6 +7,11 @@ import { hexA, colLetter, CHART_DEFAULTS } from "../../model/chart.js";
 import { buildFill } from "../drawing.js";
 import { fillXml, lnXml, dLblsXml, markerXml } from "./style.js";
 
+/** 系列/单元格描边 → a:ln（宽度默认 1pt；color 缺省回退 border.color）。 */
+function borderLnXml(theme, border, color = border?.color) {
+  return el("a:ln", { w: Math.round((border?.width ?? 1) * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, fillXml(theme, color));
+}
+
 export function strRefXml(sheetRef, values) {
   return el("c:strRef", {}, [
     el("c:f", {}, sheetRef),
@@ -59,8 +64,7 @@ export function barSerXml(theme, s, sheetRange, idx, labels, chs) {
   if (s.color) {
     const spPr = [fillXml(theme, s.color)];
     if (s.border && s.border.color) {
-      const w = Math.round((s.border.width ?? 1) * 12700);
-      spPr.push(el("a:ln", { w, cap: "flat", cmpd: "sng", algn: "ctr" }, fillXml(theme, s.border.color)));
+      spPr.push(borderLnXml(theme, s.border));
     }
     if (spPr.length) kids.push(el("c:spPr", {}, spPr.join("")));
   }
@@ -173,10 +177,10 @@ export function upDownBarsXml(theme, s) {
   const down = s.downBars || {};
   const cs = CHART_DEFAULTS.candlestick;
   const upSpPr = [fillXml(theme, up.fill || cs.upFill)];
-  const upLn = el("a:ln", { w: Math.round((up.border?.width ?? 1) * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, fillXml(theme, up.border?.color || cs.upBorder));
+  const upLn = borderLnXml(theme, up.border, up.border?.color || cs.upBorder);
   upSpPr.push(upLn);
   const downSpPr = [fillXml(theme, down.fill || cs.downFill)];
-  const downLn = el("a:ln", { w: Math.round((down.border?.width ?? 1) * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, fillXml(theme, down.border?.color || cs.downBorder));
+  const downLn = borderLnXml(theme, down.border, down.border?.color || cs.downBorder);
   downSpPr.push(downLn);
   return el("c:upDownBars", {}, [
     el("c:gapWidth", { val: "150" }),
@@ -196,8 +200,7 @@ export function pieSerXml(theme, s, sheetRange, idx, labels, palette) {
   const pts = (s._values.value || []).map((_, r) => {
     const spPrKids = [fillXml(theme, ptFill(r))];
     if (s.border && s.border.color) {
-      const w = Math.round((s.border.width ?? 1) * 12700);
-      spPrKids.push(el("a:ln", { w, cap: "flat", cmpd: "sng", algn: "ctr" }, fillXml(theme, s.border.color)));
+      spPrKids.push(borderLnXml(theme, s.border));
     }
     return el("c:dPt", {}, [
       el("c:idx", { val: r }),

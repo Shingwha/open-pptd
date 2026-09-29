@@ -202,14 +202,11 @@ export function buildPresentationRels(slideCount, fontRels = [], hasNotes = fals
 // ----------------------------------------------------------------------------
 export function buildNotesMaster(fonts) {
   const f = F(fonts);
+  // notesMaster 占位符外壳（body 为空时落默认空段落，与 PowerPoint 重存一致）
   const ph = (id, name, phXml, body, extra = "") =>
     `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="${name}"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr>${phXml}</p:nvPr></p:nvSpPr>` +
     `<p:spPr>${extra}</p:spPr>` +
-    `<p:txBody><a:bodyPr vert="horz" lIns="91440" tIns="45720" rIns="91440" bIns="45720" rtlCol="0"/><a:lstStyle/><a:p><a:endParaRPr lang="zh-CN" altLang="en-US"/></a:p></p:txBody></p:sp>`;
-  const bodyPh = (id, name, phXml, body, extra = "") =>
-    `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="${name}"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr>${phXml}</p:nvPr></p:nvSpPr>` +
-    `<p:spPr>${extra}</p:spPr>` +
-    `<p:txBody><a:bodyPr vert="horz" lIns="91440" tIns="45720" rIns="91440" bIns="45720" rtlCol="0"/><a:lstStyle/>${body}</p:txBody></p:sp>`;
+    `<p:txBody><a:bodyPr vert="horz" lIns="91440" tIns="45720" rIns="91440" bIns="45720" rtlCol="0"/><a:lstStyle/>${body || '<a:p><a:endParaRPr lang="zh-CN" altLang="en-US"/></a:p>'}</p:txBody></p:sp>`;
   const xfrm = (x, y, w, h) =>
     `<a:xfrm><a:off x="${x}" y="${y}"/><a:ext cx="${w}" cy="${h}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom>`;
   // notesStyle 9 级（官方结构：marL 逐级递增 + 主题字体槽 +mn-lt/+mn-ea/+mn-cs）
@@ -230,7 +227,7 @@ export function buildNotesMaster(fonts) {
     ph(2, "页眉占位符 1", `<p:ph type="hdr" sz="quarter"/>`, "", xfrm(0, 0, 2971800, 458788)) +
     ph(3, "日期占位符 2", `<p:ph type="dt" idx="1"/>`, "", xfrm(3884613, 0, 2971800, 458788)) +
     ph(4, "幻灯片图像占位符 3", `<p:ph type="sldImg" idx="2"/>`, "", xfrm(685800, 1143000, 5486400, 3086100) + `<a:noFill/><a:ln w="12700"><a:solidFill><a:prstClr val="black"/></a:solidFill></a:ln>`) +
-    bodyPh(5, "备注占位符 4", `<p:ph type="body" sz="quarter" idx="3"/>`,
+    ph(5, "备注占位符 4", `<p:ph type="body" sz="quarter" idx="3"/>`,
       `<a:p><a:pPr lvl="0"/><a:endParaRPr lang="zh-CN" altLang="en-US"/></a:p>`, xfrm(685800, 4400550, 5486400, 3600450)) +
     ph(6, "页脚占位符 5", `<p:ph type="ftr" sz="quarter" idx="4"/>`, "", xfrm(0, 8685213, 2971800, 458787)) +
     ph(7, "灯片编号占位符 6", `<p:ph type="sldNum" sz="quarter" idx="5"/>`, "", xfrm(3884613, 8685213, 2971800, 458787)) +
