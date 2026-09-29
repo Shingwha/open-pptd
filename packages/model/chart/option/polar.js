@@ -2,9 +2,8 @@
 // model/chart/option/polar.js — 极坐标系 option（pie / radar；纯函数）
 // ----------------------------------------------------------------------------
 
-import { resolveColor } from "../../theme.js";
+import { resolveColor, themeChartPalette } from "../../theme.js";
 import { dashSpec } from "../../style-spec.js";
-import { themeChartPalette } from "../../theme.js";
 import { chartStyleColors, echartsLabel, markerSymbol, seriesColor } from "./shared.js";
 
 export function buildPolar(ctx) {
