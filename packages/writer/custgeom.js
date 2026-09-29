@@ -14,6 +14,7 @@
 // ============================================================================
 
 import { el, angleToOOXML } from "./xml.js";
+import { parseSvgPath } from "../model/svg-path.js";
 
 /** Number → integer (OOXML pt/angle rounding). */
 const n = (v) => Math.round(v);
@@ -320,92 +321,8 @@ export function arcToBezier(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
 }
 
 // ---------------------------------------------------------------------------
-// SVG path parsing (supports M/L/H/V/C/S/Q/T/A/Z, absolute/relative, implicit repeats)
+// SVG path parsing lives in model/svg-path.js (shared lexer + arity table with the
+// renderer clip-path scaler). Re-exported here so existing custgeom.js#parseSvgPath
+// consumers and the preset-shapes regression keep their import path.
 // ---------------------------------------------------------------------------
-const CMD_RE = /[MmLlHhVvCcSsQqTtAaZz]/;
-
-/**
- * Parse an SVG path d → command stream [[op, args], …] (op is the uppercase absolute command;
- * coordinates are already converted to absolute).
- * @returns {Array<[string, number[]]>}
- */
-export function parseSvgPath(d) {
-  if (typeof d !== "string" || !d.trim()) return [];
-  const tokens = [];
-  const re = /([MmLlHhVvCcSsQqTtAaZz])|(-?\d*\.?\d+(?:[eE][+-]?\d+)?)/g;
-  let m;
-  while ((m = re.exec(d))) {
-    if (m[1]) tokens.push([m[1], null]);
-    else tokens.push([null, parseFloat(m[2])]);
-  }
-  const cmds = [];
-  let i = 0;
-  let cur = [0, 0];
-  let start = [0, 0];
-  let lastCmd = "";
-  let ctrl = null;
-  while (i < tokens.length) {
-    let cmd;
-    if (tokens[i][0]) {
-      cmd = tokens[i][0];
-      i++;
-    } else if (lastCmd) {
-      cmd = lastCmd; // implicitly repeat the previous command (arity taken from the previous segment)
-    } else {
-      break;
-    }
-    const rel = cmd !== cmd.toUpperCase();
-    const op = cmd.toUpperCase();
-    const args = [];
-    const argCount = { M: 2, L: 2, H: 1, V: 1, C: 6, S: 4, Q: 4, T: 2, A: 7, Z: 0 }[op];
-    let consumed = 0;
-    while (consumed < argCount && i < tokens.length && !tokens[i][0]) {
-      args.push(tokens[i][1]);
-      i++;
-      consumed++;
-    }
-    if (consumed < argCount) break; // truncated: not enough arguments
-    if (op === "Z") {
-      cmds.push(["Z", []]);
-      cur = start;
-      lastCmd = "";
-      ctrl = null;
-      continue;
-    }
-    // Expand to absolute coordinates (A's rx/ry/rot/largeArc/sweep are untouched; xy is converted)
-    for (let k = 0; k < args.length; k += (op === "A" ? 7 : op === "C" ? 6 : op === "S" || op === "Q" ? 4 : op === "L" || op === "M" || op === "T" ? 2 : 1)) {
-      const seg = args.slice(k, k + (op === "A" ? 7 : op === "C" ? 6 : op === "S" || op === "Q" ? 4 : op === "L" || op === "M" || op === "T" ? 2 : 1));
-      if (seg.length < (op === "A" ? 7 : op === "C" ? 6 : op === "S" || op === "Q" ? 4 : op === "H" || op === "V" ? 1 : 2)) break;
-      let abs;
-      if (op === "A") {
-        const [rx, ry, rot, la, sw, x, y] = seg;
-        abs = [rx, ry, rot, la, sw, rel ? cur[0] + x : x, rel ? cur[1] + y : y];
-      } else if (op === "H") {
-        abs = [rel ? cur[0] + seg[0] : seg[0]];
-      } else if (op === "V") {
-        abs = [rel ? cur[1] + seg[0] : seg[0]];
-      } else {
-        abs = seg.map((v, idx) => (rel && idx % 2 === 0 ? cur[0] + v : rel && idx % 2 === 1 ? cur[1] + v : v));
-      }
-      cmds.push([op, abs]);
-      if (op === "M") {
-        start = [abs[0], abs[1]];
-        cur = start;
-        lastCmd = "L"; // the implicit command after M is L
-        ctrl = null;
-      } else {
-        if (op === "H") cur = [abs[0], cur[1]];
-        else if (op === "V") cur = [cur[0], abs[0]];
-        else if (op === "C") cur = [abs[4], abs[5]];
-        else if (op === "S") cur = [abs[2], abs[3]];
-        else if (op === "Q") cur = [abs[2], abs[3]];
-        else if (op === "T") cur = [abs[0], abs[1]];
-        else if (op === "A") cur = [abs[5], abs[6]];
-        else cur = [abs[0], abs[1]];
-        lastCmd = op;
-        ctrl = null;
-      }
-    }
-  }
-  return cmds;
-}
+export { parseSvgPath };

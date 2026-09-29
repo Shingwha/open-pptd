@@ -60,6 +60,9 @@ export { walkElements, collectImageSrcs } from "./walk.js";
 export { shapePaths, shapeMenuIcon } from "./preset-geometry.js";
 export { PRESET_SHAPES } from "./preset-geometry.data.js";
 
+// ---- SVG paths (svg-path.js: shared lexer + arity table for the renderer scaler and writer custGeom) ----
+export { parseSvgPath, scaleSvgPath } from "./svg-path.js";
+
 // ---- Table model (table.js: grid / merge & split / layout estimate / validation) ----
 export {
   tableGrid,
