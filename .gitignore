@@ -22,3 +22,8 @@ assets/icons/brands/
 # 本地工具运行痕迹（ZCode 会话目录）
 .zcode/
 examples/*/deck.pptx
+
+# 黄金基线：PNG 本体与漂移可视化不入库（几十 MB），只入库 manifest.json（每页指纹）
+# （tests/tools/golden-render.mjs 重新生成 png/；golden-diff.mjs 落 out/ 供目检）
+tests/golden/png/
+tests/golden/out/

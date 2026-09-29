@@ -3,8 +3,13 @@
 // ----------------------------------------------------------------------------
 // 扫描 packages/ 与 editor/ 下全部 .js/.mjs 的 import 语句与源码，断言：
 //   1. packages/model 不得 import 任何兄弟包（packages/ 内其他目录）；
-//   2. packages/writer、packages/renderer 跨包 import 只允许进入 packages/model
-//      与 packages/vendor（中立共享 vendor 区，如 echarts.mjs）；
+//   2. 允许的跨包 import 边表（spec 09 T0/T5，渲染管线三段式）：
+//        writer   → model | vendor | measure
+//        renderer → model | vendor | layout
+//        layout   → model | measure
+//        measure  → model
+//      其余跨包方向一律违规。表里含 vendor（中立共享 vendor 区，如 echarts.mjs）；
+//      "存在即检查"：目标包目录尚不存在时不报错（edge 表先行，新包随后落地）。
 //   3. editor/ 不得 import packages/server、packages/cli（P1 才建，规则先写上）；
 //   4. 环境全局（vendor/ 子目录豁免）：
 //      - packages/model、packages/writer：禁 window./document./require(/裸 fs./node: 来源
@@ -12,6 +17,8 @@
 //      - packages/renderer（headless 之外）：DOM 是其输出目标（v3 §3「renderer 仍输出
 //        DOM」），允许 window./document.；仍禁 require(/裸 fs./node: 来源，防 Node API
 //        渗入浏览器预览链路。
+//      - packages/measure、packages/layout（渲染管线新包）：双端纯函数，无 headless
+//        豁免——禁 window./document./require(/裸 fs./node:（与 model/writer 同档）。
 //      - packages/renderer/headless/：Node 专用子目录（无头截图链路），豁免环境全局
 //        与 node: import 检查，但仍受 import 图规则约束（不得反向 import editor/）。
 //   5. 包级 barrel（packages/index.js 与 packages/*/index.js）不得 import editor/
@@ -56,7 +63,14 @@ const rel = (p) => relative(ROOT, p).split(sep).join("/");
 const inVendor = (r) => r.split("/").includes("vendor");
 const inHeadless = (r) => r.startsWith("packages/renderer/headless/"); // Node 专用子目录（无头截图链路）
 // 双端包（浏览器 + Node 都可跑，需环境纯净）；server/cli 是 Node 专用，不受环境全局与 node: 来源约束
-const DUAL_END_PKGS = new Set(["model", "writer", "renderer"]);
+const DUAL_END_PKGS = new Set(["model", "writer", "renderer", "measure", "layout"]);
+// 允许的跨包 import 边（spec 09 T0/T5 目标态；model 单独按"不得引任何兄弟包"处理）
+const ALLOWED_CROSS = {
+  writer: ["model", "vendor", "measure"],
+  renderer: ["model", "vendor", "layout"],
+  layout: ["model", "measure"],
+  measure: ["model"],
+};
 const pkgOf = (r) => (r.startsWith("packages/") ? r.split("/")[1] : null);
 
 // ---- import 语句提取（静态 from / 副作用 import / 动态 import()）----
@@ -145,9 +159,9 @@ for (const abs of files) {
       const targetPkg = pkgOf(targetRel);
       if (pkg === "model" && targetPkg && targetPkg !== "model") {
         violations.push(`${r}:${line}  model 不得 import 兄弟包 packages/${targetPkg}（${source}）`);
-      } else if ((pkg === "writer" || pkg === "renderer") && targetPkg && targetPkg !== pkg && targetPkg !== "model" && targetPkg !== "vendor" && !allowlisted(r, lineText, line, source)) {
-        // packages/vendor/ = 中立共享 vendor 区（如 echarts.mjs），writer/renderer 均可引
-        violations.push(`${r}:${line}  packages/${pkg} 只允许 import ../model 与 ../vendor（实际指向 packages/${targetPkg}：${source}）`);
+      } else if (ALLOWED_CROSS[pkg] && targetPkg && targetPkg !== pkg && !ALLOWED_CROSS[pkg].includes(targetPkg) && !allowlisted(r, lineText, line, source)) {
+        // 跨包边表（spec 09 T0/T5）：不在允许集内的跨包方向一律违规
+        violations.push(`${r}:${line}  packages/${pkg} 只允许 import ${ALLOWED_CROSS[pkg].map((t) => t === "vendor" ? "../vendor" : "../" + t).join(" / ")}（实际指向 packages/${targetPkg}：${source}）`);
       } else if (!pkg && r.startsWith("editor/") && (targetRel.startsWith("packages/server/") || targetRel.startsWith("packages/cli/") || targetRel === "packages/server" || targetRel === "packages/cli")) {
         violations.push(`${r}:${line}  editor 不得 import packages/server、packages/cli（${source}）`);
       }

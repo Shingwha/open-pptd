@@ -81,4 +81,55 @@ try {
 rmSync(dir, { recursive: true, force: true });
 check("导出闸门阻断坏 deck", blocked);
 
+// ---- 5. 几何事实（LayoutTree overflow）：传 layout 后越界/重叠更准（spec 09 T4）----
+// 行为变更（方案 §6 白名单）：旧「文本溢出 2 倍阈值」启发式删除，改消费 layout 事实。
+import { layout } from "../../packages/layout/index.js";
+
+const geoDeck = {
+  version: "v2",
+  title: "geo",
+  size: [960, 540],
+  pages: [
+    {
+      elements: [
+        // 文本声明高 30，内容远超 → layout 撑高后压下方 shape，并纵向越界
+        { elementId: "t1", elementType: "text", bounds: [40, 480, 200, 30], content: { text: "很长的中文内容用于验证溢出与重叠事实。".repeat(6), fontSize: 18 } },
+        { elementId: "box", elementType: "shape", shapeName: "rect", bounds: [40, 500, 200, 40] },
+      ],
+    },
+  ],
+};
+const noLayout = validateDeck(geoDeck);
+const withLayout = validateDeck(geoDeck, { layout: layout(geoDeck) });
+const hasGeo = (r) => r.warnings.some((w) => w.rule === "geometry" && (w.message.includes("实际几何") || w.message.includes("重叠")));
+check("未传 layout：不报布局越界/重叠（旧启发式已删）", !hasGeo(noLayout));
+check("传 layout：报出内容撑高后的重叠", hasGeo(withLayout));
+check("传 layout：报出实际几何越界", withLayout.warnings.some((w) => w.rule === "geometry" && w.message.includes("超出画布")));
+
+// 表格长高压下方元素（方案 §3.2 免费副产品）
+const tblDeck = {
+  version: "v2",
+  title: "tbl",
+  size: [960, 540],
+  pages: [
+    {
+      elements: [
+        {
+          elementId: "tb",
+          elementType: "table",
+          bounds: [60, 100, 300, 40],
+          rows: [
+            [{ text: "表头" }, { text: "说明" }],
+            [{ text: "很长的单元格中文内容需要换行很多行来把表格撑高一些" }, { text: "x" }],
+          ],
+          columnWidths: [0.5, 0.5],
+        },
+        { elementId: "under", elementType: "shape", shapeName: "rect", bounds: [60, 130, 300, 30] },
+      ],
+    },
+  ],
+};
+const tblReport = validateDeck(tblDeck, { layout: layout(tblDeck) });
+check("表格撑高后压下方元素被抓", tblReport.warnings.some((w) => w.elementId === "tb" && w.message.includes("重叠")));
+
 process.exit(ok ? 0 : 1);

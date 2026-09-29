@@ -9,6 +9,8 @@
 //   - opts.fileExists(rel)  相对路径资源存在性（CLI 传 fs 实现）
 //   - opts.fontRegistry     字体注册表对象（cli/fonts.js loadRegistry 的产物）
 //   - opts.iconRegistry     FA 图标注册表对象（assets/icons/registry.json）
+//   - opts.layout           LayoutTree（packages/layout）：传入时消费 overflow 事实
+//                           输出越界/重叠问题；未传时跳过该类检查（spec 09 T4）
 // ============================================================================
 
 import { normalizeTheme, resolveColor, resolveTextStyle } from "./theme.js";
@@ -30,7 +32,7 @@ export function registerRule(fn) {
 /**
  * 校验 deck 模型。
  * @param {object} deck parseDeck 产物（{version,title,size,theme,fonts,pages}）
- * @param {object} [opts] { fileExists?, fontRegistry?, iconRegistry? }
+ * @param {object} [opts] { fileExists?, fontRegistry?, iconRegistry?, layout? }
  * @returns {{ errors: object[], warnings: object[], perPage: Map<number, object[]> }}
  */
 export function validateDeck(deck, opts = {}) {
@@ -250,31 +252,31 @@ registerRule((deck, ctx, report) => {
   });
 });
 
-// ---- 几何启发式：文本溢出保守估算（仅强信号才报）----
+// ---- 几何事实：LayoutTree 溢出/重叠消费（spec 09 T4 / 方案 §4 场景 D）----
+// 旧「文本溢出保守估算」启发式（按 ∑ 估宽、超框高 2 倍才报）已删除：估算粗且
+// 忽略 lineHeightPx。改为消费 layout 阶段的 overflow 事实（确定性高度），未传
+// opts.layout 时跳过本类检查（其余检查不变）。
 registerRule((deck, ctx, report) => {
-  const stripRich = (s) =>
-    String(s)
-      .replace(/\\\([\s\S]*?\\\)/g, "∑") // \(latex\) 按一个宽字符估算
-      .replace(/<[^>]+>/g, ""); // 富文本标签
-  walkElements(deck?.pages, (el, page, pageIdx) => {
-    if (el.elementType !== "text" || el.content?.text == null) return;
-    const b = el.bounds;
-    if (!Array.isArray(b) || b.length !== 4 || b[2] <= 0 || b[3] <= 0) return;
-    const content = el.content;
-    const fontSize = typeof content.fontSize === "number" ? content.fontSize : 18;
-    const lineHeight = typeof content.lineHeight === "number" ? content.lineHeight : 1;
-    let lines = 0;
-    for (const rawLine of stripRich(String(content.text)).split(/\r?\n/)) {
-      let width = 0;
-      for (const ch of rawLine) width += ch.charCodeAt(0) > 0xff ? fontSize * 0.95 : fontSize * 0.5;
-      lines += Math.max(1, Math.ceil(width / b[2]));
+  const lt = ctx.opts.layout;
+  if (!lt) return;
+  for (const page of lt.pages || []) {
+    const pageNo = page.index + 1;
+    for (const le of page.elements || []) {
+      const ov = le.overflow || {};
+      const f = le.frame || { x: 0, y: 0, w: 0, h: 0 };
+      if (ov.page) {
+        report({ level: "warning", rule: "geometry", page: pageNo, elementId: le.elementId, message: `元素实际几何完全超出画布（frame [${fmt4(f)}]，画布 ${lt.pageSize.w}×${lt.pageSize.h}）` });
+      } else if (ov.x || ov.y) {
+        report({ level: "warning", rule: "geometry", page: pageNo, elementId: le.elementId, message: `元素实际几何超出画布（frame [${fmt4(f)}]，画布 ${lt.pageSize.w}×${lt.pageSize.h}${le.grown ? "，内容撑高后越界" : ""}）` });
+      }
+      for (const hit of ov.overlaps || []) {
+        report({ level: "warning", rule: "geometry", page: pageNo, elementId: le.elementId, message: `元素内容撑高后与「${hit.elementId}」重叠（实际高 ${Math.round(f.h)} vs 声明 ${Math.round(le.declared.h)}）` });
+      }
     }
-    const estHeight = lines * fontSize * lineHeight;
-    // 保守阈值：估算高度超过框高 2 倍才报（估算偏粗 + 导出 spAutoFit 自适应增高，仅提示）
-    if (estHeight > b[3] * 2) {
-      report({ level: "warning", rule: "geometry", page: pageIdx + 1, elementId: el.elementId, message: `文本可能溢出（估算高 ${Math.round(estHeight)} vs 框高 ${b[3]}，导出将自动增高）` });
-    }
-  });
+  }
+  function fmt4(f) {
+    return [f.x, f.y, f.w, Math.round(f.h)].join(", ");
+  }
 });
 
 // ---- 对比度：文本 vs 背景的 WCAG 相对亮度比（gradient/image 背景跳过）----
