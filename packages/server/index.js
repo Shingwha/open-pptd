@@ -17,6 +17,7 @@ import { fileURLToPath } from "node:url";
 import { resolveFile, resolveResourceFile, sendFile } from "./static.js";
 import { resourceRoots as DEFAULT_RESOURCE_ROOTS } from "../paths.js";
 import { handleSave, handlePing } from "./api.js";
+import { createExportImageHandler } from "./export-image.js";
 import { createSseHub } from "./events.js";
 import { buildManifest } from "./gallery.js";
 
@@ -30,7 +31,11 @@ export function createServer(options = {}) {
   const resourceRoots = options.resourceRoots || DEFAULT_RESOURCE_ROOTS;
   // 可选虚拟挂载：/project/<path> → projectRoot 下的真实文件（--project <dir>）
   const projectRoot = options.projectRoot ? normalize(resolve(options.projectRoot)) : null;
-  const sse = projectRoot ? createSseHub(projectRoot) : null;
+  // liveReload:false 供一次性出图临时 server 使用（无 SSE 轮询，导出后目录可安全删除）
+  const sse = projectRoot && options.liveReload !== false ? createSseHub(projectRoot) : null;
+  // 图片导出端点（RP-C / M5）：capture 优先——GET 探测浏览器、POST 无头出图。
+  // 处理器与 server 同源，startServer 由本模块注入（renderDeck 需要临时静态 server）。
+  const exportImage = createExportImageHandler({ startServer });
 
   return http.createServer((req, res) => {
     try {
@@ -54,6 +59,17 @@ export function createServer(options = {}) {
       // 探活 API：本地 serve 独有（GitHub Pages 上 404）
       if (pathname === "/api/ping") {
         handlePing(res);
+        return;
+      }
+      // 图片导出（capture 优先）：GET = 能力探测，POST = 无头出图（RP-C / M5）
+      if (pathname === "/api/export-image") {
+        exportImage(req, res).catch((err) => {
+          try {
+            res.writeHead(500, { "Content-Type": "application/json; charset=utf-8" }).end(JSON.stringify({ ok: false, error: String(err?.message || err) }));
+          } catch {
+            /* 响应已结束 */
+          }
+        });
         return;
       }
       // 画廊索引：动态扫描 examples/ 生成（用户丢进文件夹即见；磁盘上的静态
