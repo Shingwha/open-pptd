@@ -38,7 +38,7 @@ body.presenting .app { visibility: hidden; } /* hide the editor entirely to avoi
   width: 960px;
   height: 540px;
   transform-origin: center;
-  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
 }
 .present.blackout .present-stage { opacity: 0; }
 
@@ -52,7 +52,7 @@ body.presenting .app { visibility: hidden; } /* hide the editor entirely to avoi
   background: #fff;
   overflow: hidden;
   opacity: 0;
-  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
   pointer-events: none;
 }
 .present-slide.on { opacity: 1; }
@@ -74,7 +74,7 @@ body.presenting .app { visibility: hidden; } /* hide the editor entirely to avoi
   width: 0;
   background: #fff;
   opacity: 0.85;
-  transition: width var(--t-med) var(--ease), opacity var(--t-med) var(--ease), border-left-color var(--t-med) var(--ease);
+  transition: width var(--dur-med) var(--ease), opacity var(--dur-med) var(--ease), border-left-color var(--dur-med) var(--ease);
 }
 
 /* Bottom bar (auto-hides without interaction) */
@@ -93,7 +93,7 @@ body.presenting .app { visibility: hidden; } /* hide the editor entirely to avoi
   color: #fff;
   font-size: var(--text-sm);
   opacity: 1;
-  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
 }
 .present.ui-hidden .present-ui,
 .present.ui-hidden .present-hint {
@@ -106,13 +106,13 @@ body.presenting .app { visibility: hidden; } /* hide the editor entirely to avoi
   height: var(--control-h);
   padding: 0 var(--space-3);
   border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
   font-size: var(--text-sm);
   cursor: pointer;
   white-space: nowrap;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .present-btn:hover { background: rgba(255, 255, 255, 0.2); }
 .present-btn:active { background: rgba(255, 255, 255, 0.28); }
@@ -149,10 +149,10 @@ body.presenting .app { visibility: hidden; } /* hide the editor entirely to avoi
   pointer-events: none;
   background: rgba(15, 18, 24, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   padding: 6px var(--space-4);
   backdrop-filter: blur(6px);
-  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
 }
 
 /* ==== shot — headless screenshot mode (?shot=1) ==== */

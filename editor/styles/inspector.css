@@ -13,7 +13,7 @@
   /* Two columns: width animation (300↔0) plus frame-by-frame canvas follow
      (view.followStageWidth); collapse/expand stays smooth with the canvas
      resizing in step — no jump, no overlap */
-  transition: width var(--t-med) var(--ease), opacity var(--t-med) var(--ease), border-left-color var(--t-med) var(--ease);
+  transition: width var(--dur-med) var(--ease), opacity var(--dur-med) var(--ease), border-left-color var(--dur-med) var(--ease);
 }
 /* Fixed inner width: no reflow flicker during the width animation, just clipping by the container */
 .inspector > * { min-width: 300px; }
@@ -24,7 +24,7 @@ body.inspector-collapsed .inspector {
   border-left-color: transparent;
 }
 body.inspector-collapsed #btn-inspector-toggle svg { transform: rotate(180deg); }
-#btn-inspector-toggle svg { transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease); }
+#btn-inspector-toggle svg { transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease); }
 
 
 /* Narrow-screen property-panel mask (inspector-open appears only ≤900px; no effect on desktop) */
@@ -35,7 +35,7 @@ body.inspector-collapsed #btn-inspector-toggle svg { transform: rotate(180deg); 
   background: var(--mask);
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
 }
 body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 
@@ -64,7 +64,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   font-weight: 700;
   color: var(--primary);
   background: var(--primary-soft);
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   padding: 1px 9px;
 }
 
@@ -105,7 +105,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .prop-group-title:hover { color: var(--primary); }
 /* Collapse chevron: pure CSS (pointing down = expanded), no markup change */
@@ -117,7 +117,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   border-right: 1.5px solid var(--faint);
   border-bottom: 1.5px solid var(--faint);
   transform: rotate(45deg);
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .prop-group-title:hover::after { border-color: var(--primary); }
 .prop-group.collapsed > :not(.prop-group-title) { display: none; }
@@ -126,23 +126,23 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 /* -- Three-in-one color control (colorField): swatch button + picker + hex + theme-swatch popover -- */
 .color-field { display: flex; align-items: center; gap: 6px; min-width: 0; position: relative; }
 .color-swatch-btn {
-  width: 26px; height: 26px; border-radius: var(--r-2); padding: 0; cursor: pointer; flex: none;
+  width: 26px; height: 26px; border-radius: var(--radius); padding: 0; cursor: pointer; flex: none;
   border: 1px solid var(--line-strong);
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .color-swatch-btn:hover { border-color: var(--primary); }
 .color-swatch-btn:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .color-field input[type="color"] {
   width: 30px; height: 26px; padding: 0; border: 1px solid var(--line-strong);
-  border-radius: var(--r-2); background: none; cursor: pointer; flex: none;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  border-radius: var(--radius); background: none; cursor: pointer; flex: none;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .color-field input[type="color"]:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .color-hex {
   flex: 1; min-width: 0; font-size: var(--text-xs); padding: 3px 7px;
-  border: 1px solid var(--line-strong); border-radius: var(--r-2);
+  border: 1px solid var(--line-strong); border-radius: var(--radius);
   background: var(--bg); color: var(--ink); outline: none; font-family: ui-monospace, monospace;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .color-hex:focus-visible { border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 /* Theme-swatch popover: opens from the swatch button (fixed positioning computed by
@@ -154,7 +154,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   padding: var(--space-2);
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -168,16 +168,16 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   gap: 7px;
   padding: 5px 7px;
   border: 1px solid transparent;
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
   background: none;
   cursor: pointer;
   text-align: left;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .color-pop-item:hover { background: var(--primary-soft); border-color: var(--primary-tint); }
 .color-pop-item:active { background: var(--primary-tint); }
 .color-pop-item:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
-.color-pop-chip { width: 18px; height: 18px; border-radius: var(--r-2); border: 1px solid var(--chip-border); flex: none; }
+.color-pop-chip { width: 18px; height: 18px; border-radius: var(--radius); border: 1px solid var(--chip-border); flex: none; }
 .color-pop-name { font-size: var(--text-xs); color: var(--ink); }
 
 /* -- Field rows -- */
@@ -210,13 +210,13 @@ input.mix:disabled {
   flex: 1;
   min-width: 0;
   border: 1px solid var(--line-strong);
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
   padding: 0 var(--space-2);
   font-size: var(--text-md);
   color: var(--ink);
   background: var(--panel);
   outline: none;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .prop-field input[type="number"],
 .prop-field input[type="text"],
@@ -234,7 +234,7 @@ input.mix:disabled {
   height: var(--control-h);
   padding: 2px;
   border: 1px solid var(--line-strong);
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
   background: var(--panel);
   cursor: pointer;
 }
@@ -258,14 +258,14 @@ input.mix:disabled {
 .prop-cell select {
   width: 100%;
   border: 1px solid var(--line-strong);
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
   padding: 0 var(--space-2);
   font-size: var(--text-md);
   color: var(--ink);
   background: var(--panel);
   outline: none;
   height: var(--control-h);
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .prop-cell input:focus-visible,
 .prop-cell select:focus-visible {
@@ -284,13 +284,13 @@ input.mix:disabled {
   height: var(--control-h);
   padding: 0;
   border: 1px solid var(--line-strong);
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
   background: var(--panel);
   color: var(--sub);
   font-size: var(--text-md);
   cursor: pointer;
   line-height: 1;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .prop-icon-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
 .prop-icon-btn:active { background: var(--primary-tint); }
@@ -315,12 +315,12 @@ input.mix:disabled {
   appearance: none;
   width: 30px;
   height: 18px;
-  border-radius: var(--r-3);
+  border-radius: var(--radius-lg);
   background: var(--line-strong);
   position: relative;
   cursor: pointer;
   flex: none;
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .prop-check input[type="checkbox"]::before {
   content: "";
@@ -331,7 +331,7 @@ input.mix:disabled {
   height: 14px;
   border-radius: 50%;
   background: var(--panel);
-  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
 }
 .prop-check input[type="checkbox"]:checked { background: var(--primary); }
 .prop-check input[type="checkbox"]:checked::before { transform: translateX(12px); }
@@ -350,7 +350,7 @@ input.mix:disabled {
   line-height: 1.6;
   background: var(--bg);
   border: 1px dashed var(--line-strong);
-  border-radius: var(--r-2);
+  border-radius: var(--radius);
   padding: var(--space-2) 10px;
 }
 /* Panel-level hint (page setup mode, no element selected) */

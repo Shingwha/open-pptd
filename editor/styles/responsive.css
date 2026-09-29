@@ -40,10 +40,10 @@
     height: 55dvh;
     border-left: 0;
     border-top: 1px solid var(--line);
-    border-radius: var(--r-3) var(--r-3) 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     box-shadow: var(--shadow-sheet);
     transform: translateY(102%);
-    transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+    transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
   }
   body.inspector-open .inspector { transform: none; }
   /* Handle a leftover desktop collapsed class (window resized across breakpoints):
@@ -62,7 +62,7 @@
     transform: translateX(-50%);
     width: 36px;
     height: 4px;
-    border-radius: var(--r-1);
+    border-radius: var(--radius-sm);
     background: var(--line-strong);
     z-index: var(--z-sticky);
     pointer-events: none;
@@ -78,7 +78,7 @@
     bottom: 130px;
     width: auto;
     max-height: 56vh;
-    border-radius: var(--r-3);
+    border-radius: var(--radius-lg);
   }
 
   /* -- Quickbar: docked to the bottom, horizontally scrollable (JS skips left/top positioning, see view.js) -- */
@@ -97,22 +97,22 @@
   /* -- Thumbbar: miniaturized -- */
   body .thumbbar { height: 64px; padding: 0 var(--space-2); gap: 6px; }
   body .thumb { width: 88px; height: 50px; }
-  body .thumb .thumb-num { font-size: var(--f-xs); padding: 0 5px; left: 2px; bottom: 2px; }
+  body .thumb .thumb-num { font-size: var(--text-xs); padding: 0 5px; left: 2px; bottom: 2px; }
   body .thumb .thumb-del { top: 2px; right: 2px; width: 16px; height: 16px; }
-  body .thumb-add { width: 34px; height: 34px; font-size: var(--f-lg); }
-  body .thumbbar-meta { font-size: var(--f-xs); padding-right: 2px; }
+  body .thumb-add { width: 34px; height: 34px; font-size: var(--text-lg); }
+  body .thumbbar-meta { font-size: var(--text-xs); padding-right: 2px; }
 
   /* -- Dialogs: bottom sheet -- */
   body .dialog-overlay { align-items: flex-end; }
   body .dialog {
     width: 100vw;
     max-width: 100vw;
-    border-radius: var(--r-3) var(--r-3) 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     max-height: 92vh;
   }
   body .icon-grid { min-height: 40vh; }
   body .icon-browser .icon-grid { min-height: 40vh; }
-  body .data-table input { font-size: var(--f-md); }
+  body .data-table input { font-size: var(--text-md); }
 
   /* -- Presentation UI: compressed -- */
   body .present-hint { display: none; }
