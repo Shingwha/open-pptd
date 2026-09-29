@@ -39,6 +39,7 @@ export function createEditorState() {
     projectName: "", // 本地项目文件夹名（顶栏/状态栏显示）
     dirty: false, // 编辑器是否有未保存修改（自动刷新前检查，防丢更新）
     savedDeck: null, // 最后一次加载/保存时的 deck 基线（撤销/重做回该状态即视为已保存）
+    clipboard: null, // 元素剪贴板（copySelected 快照；page.elements 片段数组）
   };
 
   // ---- selectedId 兼容访问器（getter 返回主选中，setter 支持旧的单值赋值）----
@@ -250,6 +251,65 @@ export function createEditorState() {
         const [el] = list.splice(idx, 1);
         list.splice(to, 0, el);
       }
+    },
+    /** 置于顶层（edge="front"）/ 置于底层（edge="back"）：相对整页元素，保持相对次序。 */
+    moveLayerEdge(edge) {
+      const list = elements();
+      const picked = selectedElements();
+      if (picked.length === 0) return;
+      const front = edge !== "back";
+      // 保持选中项之间的原有先后：置顶从前往后取出后 append；置底从后往前取出后 unshift
+      const ordered = picked.slice().sort((a, b) => list.indexOf(a) - list.indexOf(b));
+      const seq = front ? ordered : ordered.slice().reverse();
+      for (const el of seq) {
+        const from = list.indexOf(el);
+        if (from < 0) continue;
+        list.splice(from, 1);
+        if (front) list.push(el);
+        else list.unshift(el);
+      }
+    },
+
+    // ---- 剪贴板（右键菜单「粘贴」/ Ctrl+C / Ctrl+V）----
+    /** 复制选中到剪贴板（含组成员，深拷贝；返回是否写入）。 */
+    copySelected() {
+      const picked = selectedElements();
+      if (picked.length === 0) return false;
+      const ids = new Set(picked.map((el) => el.elementId));
+      for (const el of picked) {
+        if (el.elementType === "group" && Array.isArray(el.children)) {
+          for (const cid of el.children) ids.add(cid);
+        }
+      }
+      const list = elements();
+      state.clipboard = list.filter((el) => ids.has(el.elementId)).map((el) => JSON.parse(JSON.stringify(el)));
+      return state.clipboard.length > 0;
+    },
+    /** 粘贴剪贴板（+24 偏移、新 elementId、组 children 重映射），选中新副本并返回其 id。 */
+    pasteClipboard(offset = 24) {
+      const clip = Array.isArray(state.clipboard) ? state.clipboard : [];
+      if (clip.length === 0) return [];
+      // 组内成员 id（这些副本不直接进入选中集，随组一起选中）
+      const memberIds = new Set();
+      for (const src of clip) {
+        if (Array.isArray(src.children)) for (const cid of src.children) memberIds.add(cid);
+      }
+      const map = new Map();
+      const copies = clip.map((src) => {
+        const copy = JSON.parse(JSON.stringify(src));
+        copy.elementId = nextElementId(src.elementType);
+        copy.bounds = [copy.bounds[0] + offset, copy.bounds[1] + offset, copy.bounds[2], copy.bounds[3]];
+        map.set(src.elementId, copy.elementId);
+        return { src, copy };
+      });
+      const list = elements();
+      for (const { copy } of copies) {
+        if (Array.isArray(copy.children)) copy.children = copy.children.map((cid) => map.get(cid)).filter(Boolean);
+        list.push(copy);
+      }
+      const topIds = copies.filter(({ src }) => !memberIds.has(src.elementId)).map(({ copy }) => copy.elementId);
+      ops.selectMany(topIds);
+      return topIds;
     },
 
     // ---- 组合 ----

@@ -483,6 +483,41 @@ body:not(.inspector-collapsed) #btn-inspector-open {
 .toast-info::before { background: var(--primary); }
 
 
+/* ----------------------------------------------------------------------------
+   Menu 原语（components/menu.js）——右键上下文菜单 / ⋮ 溢出菜单
+   取值对齐设计稿 editor-design-reference.html §03（.menu/.mi/.msep/.dis/.k）
+---------------------------------------------------------------------------- */
+.menu {
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-2);
+  box-shadow: var(--sh-pop);
+  padding: 4px;
+  min-width: 186px;
+  font-size: var(--f-sm);
+}
+.menu[hidden] { display: none; }
+.mi {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: var(--r-1);
+  cursor: pointer;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.mi:hover { background: var(--hover); }
+.mi .k { margin-left: auto; color: var(--faint); font-size: var(--f-xs); font-family: var(--mono); }
+.mi .mi-ic { width: 14px; height: 14px; color: var(--sub); display: inline-flex; }
+.mi .mi-ic svg { width: 14px; height: 14px; }
+.msep { height: 1px; background: var(--line); margin: 4px 2px; }
+.mi.dis { color: var(--disabled); pointer-events: none; }
+/* 二级菜单：条目标签 + ▸，浮层由 components/menu.js 定位（fixed，越界向左翻） */
+.mi.has-sub { position: relative; }
+.menu .submenu { position: fixed; z-index: var(--z-dropdown); }
+
 /* 顶栏「文件」菜单（toolbar.js bindFileMenu；浮层模式同配色面板） */
 .file-menu {
   position: fixed;

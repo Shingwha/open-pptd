@@ -24,6 +24,7 @@ import { createPresent } from "./app/present.js";
 import { clearToasts } from "./app/toast.js";
 import { createCanvasController } from "./interaction/canvas.js";
 import { createStageController } from "./interaction/stage.js";
+import { bindContextMenu } from "./interaction/contextmenu.js";
 import { makeZoomCtlDraggable } from "./app/view/zoom-ctl.js";
 import { bindProperties } from "./interaction/properties.js";
 import { injectIcons } from "./icons.js";
@@ -89,7 +90,7 @@ export function createEditor(rootEl, options = {}) {
   // --------------------------------------------------------------------------
   // 装配（原 main.js initEditor 的闭包化）
   // --------------------------------------------------------------------------
-  const { state, page, selected, selectedElements, ops } = createEditorState();
+  const { state, page, selected, selectedElements, groupOf, ops } = createEditorState();
   const api = createEditorApi({ state, page, selected, selectedElements, ops });
 
   // 对外事件：dirty/selectionChange 在每次渲染后按状态变化派发
@@ -141,6 +142,10 @@ export function createEditor(rootEl, options = {}) {
     zoomReset: () => view.zoomReset(),
   });
   disposers.push(() => stage.destroy?.());
+
+  // 画布右键上下文菜单（三态：单选 / 多选 / 空白页级）
+  const contextMenu = bindContextMenu({ stage: dom.stage, api, state, page, groupOf, view });
+  disposers.push(() => contextMenu.destroy?.());
 
   // 缩放控件：拖拽换位（位置持久化，双击百分比归位）
   const zoomCtl = makeZoomCtlDraggable(dom.stage, dom.zoomCtl);

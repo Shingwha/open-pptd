@@ -77,6 +77,21 @@ export function createEditorApi({ state, page, selected, selectedElements, ops }
       ops.moveLayer(dir);
       view.render();
     },
+    /** 置于顶层 / 置于底层（edge: "front"|"back"；右键菜单用）。 */
+    moveLayerEdge: (edge) => {
+      ops.beginChange();
+      ops.moveLayerEdge(edge);
+      view.render();
+    },
+    /** 复制选中到剪贴板 / 粘贴（右键菜单 + Ctrl+C/V）。 */
+    copySelected: () => ops.copySelected(),
+    pasteClipboard: () => {
+      if (!Array.isArray(state.clipboard) || state.clipboard.length === 0) return [];
+      ops.beginChange();
+      const ids = ops.pasteClipboard();
+      view.render();
+      return ids;
+    },
     /** 组合 / 取消组合（Ctrl+G / Ctrl+Shift+G）。 */
     group: () => {
       ops.beginChange();
