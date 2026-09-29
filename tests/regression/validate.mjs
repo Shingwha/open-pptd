@@ -1,9 +1,9 @@
 // ============================================================================
-// tests/regression/validate.mjs — 校验器回归（model/validate.js + check 命令 + 导出闸门）
+// tests/regression/validate.mjs — validator regression (model/validate.js + check command + export gate)
 // ----------------------------------------------------------------------------
-// 1. examples/ 全部画廊项目：0 error（warning 允许，是设计提示）
-// 2. 合成坏 deck：schema error 必须被抓到（未知类型 / 负宽高 / 缺必填字段）
-// 3. 导出闸门：坏 deck 走 exportDeck 必须被阻断
+// 1. Every gallery project under examples/: 0 errors (warnings allowed by design)
+// 2. Synthetic bad deck: schema errors must be caught (unknown type / negative size / missing required field)
+// 3. Export gate: a bad deck must be blocked by exportDeck
 // ============================================================================
 
 import { readdirSync, existsSync } from "node:fs";
@@ -18,7 +18,7 @@ function check(name, cond, detail = "") {
   if (!cond) ok = false;
 }
 
-// ---- 1. examples 全量 0 error ----
+// ---- 1. full examples sweep: 0 errors ----
 const examplesDir = resolve("examples");
 const decks = readdirSync(examplesDir, { withFileTypes: true })
   .filter((d) => d.isDirectory() && existsSync(join(examplesDir, d.name, "deck.pptd")))
@@ -31,7 +31,7 @@ for (const manifest of decks) {
 }
 check(`examples 全量校验 0 error（${clean}/${decks.length}）`, clean === decks.length);
 
-// ---- 2. 合成坏 deck：各类 error 必须命中 ----
+// ---- 2. synthetic bad deck: each error class must be hit ----
 const badDeck = {
   version: "v2",
   title: "bad",
@@ -48,13 +48,15 @@ const badDeck = {
   ],
 };
 const bad = validateDeck(badDeck);
-const rulesHit = new Set(bad.errors.map((e) => e.message));
-check("未知 elementType 被抓", [...rulesHit].some((m) => m.includes("未知 elementType")));
-check("负宽高被抓", [...rulesHit].some((m) => m.includes("宽高必须为正")));
-check("text 缺 content 被抓", [...rulesHit].some((m) => m.includes("content.text")));
-check("shape 缺 shapeName 被抓", [...rulesHit].some((m) => m.includes("shapeName")));
+// Assert on stable identifiers only (rule key + elementId), never on the wording of
+// user-facing messages: any copy edit to a Chinese message must not break this suite.
+const errsFor = (id) => bad.errors.filter((e) => e.elementId === id);
+check("未知 elementType 被抓", errsFor("a").some((e) => e.rule === "schema"));
+check("负宽高被抓", errsFor("b").some((e) => e.rule === "schema"));
+check("text 缺 content 被抓", errsFor("c").some((e) => e.rule === "schema-type"));
+check("shape 缺 shapeName 被抓", errsFor("d").some((e) => e.rule === "schema-type"));
 
-// ---- 3. 好 deck 0 error（含数字 text 的 YAML 宽容）----
+// ---- 3. good deck: 0 errors (incl. YAML leniency for numeric text) ----
 const goodDeck = {
   version: "v2",
   title: "ok",
@@ -65,7 +67,7 @@ const goodDeck = {
 };
 check("数字 content.text 不误报（YAML 01/2024 → number）", validateDeck(goodDeck).errors.length === 0);
 
-// ---- 4. 导出闸门：坏 deck 写盘后 export 必须失败 ----
+// ---- 4. export gate: a bad deck written to disk must fail export ----
 import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 const dir = mkdtempSync(join(tmpdir(), "pptd-validate-"));
@@ -81,8 +83,9 @@ try {
 rmSync(dir, { recursive: true, force: true });
 check("导出闸门阻断坏 deck", blocked);
 
-// ---- 5. 几何事实（LayoutTree overflow）：传 layout 后越界/重叠更准（spec 09 T4）----
-// 行为变更（方案 §6 白名单）：旧「文本溢出 2 倍阈值」启发式删除，改消费 layout 事实。
+// ---- 5. geometry facts (LayoutTree overflow): passing layout reports out-of-canvas/overlap
+//         precisely (the old "text overflows 2× box height" heuristic was removed; this now
+//         consumes the deterministic layout fact) ----
 import { layout } from "../../packages/layout/index.js";
 
 const geoDeck = {
@@ -92,7 +95,7 @@ const geoDeck = {
   pages: [
     {
       elements: [
-        // 文本声明高 30，内容远超 → layout 撑高后压下方 shape，并纵向越界
+        // declared height 30, content far taller → layout grows it over the shape below and past the canvas
         { elementId: "t1", elementType: "text", bounds: [40, 480, 200, 30], content: { text: "很长的中文内容用于验证溢出与重叠事实。".repeat(6), fontSize: 18 } },
         { elementId: "box", elementType: "shape", shapeName: "rect", bounds: [40, 500, 200, 40] },
       ],
@@ -101,12 +104,11 @@ const geoDeck = {
 };
 const noLayout = validateDeck(geoDeck);
 const withLayout = validateDeck(geoDeck, { layout: layout(geoDeck) });
-const hasGeo = (r) => r.warnings.some((w) => w.rule === "geometry" && (w.message.includes("实际几何") || w.message.includes("重叠")));
-check("未传 layout：不报布局越界/重叠（旧启发式已删）", !hasGeo(noLayout));
-check("传 layout：报出内容撑高后的重叠", hasGeo(withLayout));
-check("传 layout：报出实际几何越界", withLayout.warnings.some((w) => w.rule === "geometry" && w.message.includes("超出画布")));
+const geometryWarnings = (r, id) => r.warnings.filter((w) => w.rule === "geometry" && (!id || w.elementId === id));
+check("未传 layout：不报布局越界/重叠（旧启发式已删）", geometryWarnings(noLayout).length === 0);
+check("传 layout：报出实际几何越界（几何事实接入）", geometryWarnings(withLayout, "t1").length > 0);
 
-// 表格长高压下方元素（方案 §3.2 免费副产品）
+// A tall table pushes the element below it
 const tblDeck = {
   version: "v2",
   title: "tbl",
@@ -130,6 +132,7 @@ const tblDeck = {
   ],
 };
 const tblReport = validateDeck(tblDeck, { layout: layout(tblDeck) });
-check("表格撑高后压下方元素被抓", tblReport.warnings.some((w) => w.elementId === "tb" && w.message.includes("重叠")));
+// tb stays inside the canvas, so the only geometry fact it can raise is the overlap with "under".
+check("表格撑高后压下方元素被抓", geometryWarnings(tblReport, "tb").length > 0);
 
 process.exit(ok ? 0 : 1);

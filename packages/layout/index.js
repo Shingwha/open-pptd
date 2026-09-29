@@ -1,25 +1,26 @@
 // ============================================================================
-// layout/index.js — 布局阶段（方案 §2/§3.2，M2）
+// layout/index.js — layout stage
 // ----------------------------------------------------------------------------
 // layout(deck, measure?) → LayoutTree
 //
-// LayoutTree 是「每个元素最终的几何事实」——与 Deck 平行的纯数据树：
+// LayoutTree is "the final geometry fact of every element" — a pure data tree parallel to Deck:
 //   { pageSize: {w,h}, pages: [ { index, elements: [LayoutElement] } ] }
 //   LayoutElement = {
 //     elementId, elementType,
-//     declared: {x,y,w,h},          // 作者声明（el.bounds，模型永不写回）
-//     frame:    {x,y,w,h},          // 排版事实（h = 内容撑开后的实际值）
+//     declared: {x,y,w,h},          // author declaration (el.bounds; the model is never written back)
+//     frame:    {x,y,w,h},          // layout fact (h = the actual grown value)
 //     grown: boolean,               // frame.h > declared.h
 //     text?:  { lines, contentHeight },
 //     table?: { columnWidths, rowHeights, totalHeight },
 //     overflow: { x, y, page, overlaps: [{elementId, rect}] },
 //   }
 //
-// 三铁律：layout 之后无测量（paint 只读本树）；模型永不写回（只读 el.bounds）；
-// MeasurePort 默认确定性纯函数。group 组壳跳过、逐成员布局（裁定 §2.4——
-// 成员元素本就在 page.elements 中，renderer renderPage 对组壳返回 null 同语义）。
-// 图表尺寸透传（model/chart/layout.js 单源保留，I20/I22 不动）。
-// 双端纯函数：本文件禁 node:/fs/window./document.（dep-graph 强制）。
+// Invariants: no measurement after layout (paint only reads this tree); the model is never
+// written back (el.bounds is read-only); MeasurePort defaults to a deterministic pure function.
+// Group shells are skipped and each member laid out individually (members already live in
+// page.elements; renderer renderPage returns null for shells with the same semantics).
+// Chart size passes through (single-sourced in model/chart/layout.js).
+// Dual-end pure functions: this file forbids node:/fs/window./document. (enforced by dep-graph).
 // ============================================================================
 
 import { deckSize } from "../model/model.js";
@@ -27,23 +28,23 @@ import { normalizeTheme, resolveFont } from "../model/theme.js";
 import { computeBaseStyle } from "../model/style.js";
 import { fontMetricsMeasure, runsFromRichText, familiesOf } from "../measure/index.js";
 
-const EPS = 0.5; // 高度增长判定容差（亚像素抖动不算增长）
+const EPS = 0.5; // growth tolerance (sub-pixel jitter does not count as growth)
 
-/** 主题：已规范化（含 colors）则原样，否则 normalizeTheme。 */
+/** Theme: return as-is when already normalized (has colors), otherwise normalizeTheme. */
 function themeOf(deck) {
   const t = deck?.theme;
   if (t && typeof t === "object" && t.colors) return t;
   return normalizeTheme(t);
 }
 
-/** 元素声明几何 [x,y,w,h] → {x,y,w,h}（非法回退 0 尺寸）。 */
+/** Declared element geometry [x,y,w,h] → {x,y,w,h} (invalid values fall back to zero size). */
 function declaredOf(el) {
   const b = Array.isArray(el?.bounds) ? el.bounds : [0, 0, 0, 0];
   return { x: num(b[0]), y: num(b[1]), w: Math.max(0, num(b[2])), h: Math.max(0, num(b[3])) };
 }
 const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
 
-/** 文本元素 → { frame, text }。 */
+/** Text element → { frame, text }. */
 function layoutText(theme, el, measure) {
   const d = declaredOf(el);
   const content = el.content || {};
@@ -63,7 +64,7 @@ function layoutText(theme, el, measure) {
   };
 }
 
-/** 表格元素 → { frame, table }。 */
+/** Table element → { frame, table }. */
 function layoutTable(el, measure) {
   const d = declaredOf(el);
   const t = measure.measureTable(el);
@@ -75,7 +76,7 @@ function layoutTable(el, measure) {
   };
 }
 
-/** 两个矩形相交区域（无交集返回 null）。 */
+/** Intersection of two rectangles (null when disjoint). */
 function intersection(a, b) {
   const x = Math.max(a.x, b.x);
   const y = Math.max(a.y, b.y);
@@ -86,9 +87,9 @@ function intersection(a, b) {
 }
 
 /**
- * 布局整个 deck。
- * @param {object} deck 解析后（或已 resolve）的 deck；theme 未规范化时内部处理
- * @param {typeof fontMetricsMeasure} [measure] MeasurePort（缺省确定性纯函数实现）
+ * Lay out the whole deck.
+ * @param {object} deck parsed (or already resolved) deck; theme is normalized internally if needed
+ * @param {typeof fontMetricsMeasure} [measure] MeasurePort (defaults to the deterministic pure-function implementation)
  * @returns {object} LayoutTree
  */
 export function layout(deck, measure = fontMetricsMeasure) {
@@ -99,12 +100,12 @@ export function layout(deck, measure = fontMetricsMeasure) {
     const elements = [];
     for (const el of page?.elements || []) {
       if (!el) continue;
-      if (el.elementType === "group") continue; // 组壳跳过，逐成员布局（成员本就在此数组）
+      if (el.elementType === "group") continue; // skip the shell, lay out its members (they are in this array)
       const d = declaredOf(el);
       let part;
       if (el.elementType === "text") part = layoutText(theme, el, measure);
       else if (el.elementType === "table") part = layoutTable(el, measure);
-      else part = { frame: { ...d }, grown: false }; // shape/line/image/icon/chart：尺寸透传
+      else part = { frame: { ...d }, grown: false }; // shape/line/image/icon/chart: size passes through
       elements.push({
         elementId: el.elementId,
         elementType: el.elementType,
@@ -116,14 +117,15 @@ export function layout(deck, measure = fontMetricsMeasure) {
         overflow: { x: false, y: false, page: false, overlaps: [] },
       });
     }
-    // 越界事实 + 增长压下方元素检测
+    // Out-of-canvas facts + grown-content overlap detection with elements below
     for (const le of elements) {
       const f = le.frame;
       le.overflow.x = f.x < 0 || f.x + f.w > W;
       le.overflow.y = f.y < 0 || f.y + f.h > H;
       le.overflow.page = f.x + f.w <= 0 || f.y + f.h <= 0 || f.x >= W || f.y >= H;
       if (!le.grown) continue;
-      // 增长区域 = 声明底边以下、实际底边以上的一条带（表格长高压下方元素的免费副产品）
+      // Growth region = the strip between the declared bottom and the actual bottom (the free
+      // by-product that catches a tall table pushing the element below it)
       const strip = { x: f.x, y: le.declared.y + le.declared.h, w: f.w, h: f.h - le.declared.h };
       for (const other of elements) {
         if (other === le) continue;

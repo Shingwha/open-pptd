@@ -1,20 +1,21 @@
 #!/usr/bin/env node
 // ============================================================================
-// tests/tools/golden-diff.mjs — 黄金基线漂移比对（spec 09 T2 / M3 守门）
+// tests/tools/golden-diff.mjs — golden baseline drift comparison (spec 09 T2 / M3 gate)
 // ----------------------------------------------------------------------------
-// 按与 golden-render 完全相同的流程重渲当前代码 → 与 tests/golden/manifest.json
-// 的每页指纹比对 → 输出"一致 / 漂移"清单。漂移页把当前图与像素差图落
-// tests/golden/out/ 供 Read 目检。
+// Re-renders the current code through exactly the golden-render flow → compares each page
+// fingerprint against tests/golden/manifest.json → reports "match / drift" lists. Drifted
+// pages write the current image and a pixel-diff image to tests/golden/out/ for Read review.
 //
-// 判定：dHash 汉明距离 > TOL 或 aHash > TOL → 漂移；相等哈希再比 sha256 记
-// "字节一致 / 感知一致"。已知行为变更页用 --whitelist <file>（JSON 字符串数组：
-// "project/key" 或 "project/key#page"）登记，登记项计为"已知漂移"不计失败。
+// Verdict: dHash hamming distance > TOL or aHash > TOL → drift; when the hashes are equal it
+// also compares sha256 to record "byte-identical / perceptually identical". Known behavior-change
+// pages are registered with --whitelist <file> (a JSON string array: "project/key" or
+// "project/key#page"); registered entries count as "known drift" and are not failures.
 //
-// 用法：
+// Usage:
 //   node tests/tools/golden-diff.mjs
 //   node tests/tools/golden-diff.mjs --whitelist tests/golden/whitelist.json
-//   node tests/tools/golden-diff.mjs --filter table     # 只比对匹配项目
-// 退出码：0 = 无未登记漂移；1 = 有未登记漂移（或基线缺失）。
+//   node tests/tools/golden-diff.mjs --filter table     # compare only matching projects
+// Exit code: 0 = no unregistered drift; 1 = unregistered drift (or a missing baseline).
 // ============================================================================
 
 import { readFileSync, existsSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
@@ -108,7 +109,7 @@ for (const entry of projects) {
       curPng: files[i],
     };
     (item.whitelisted ? known : drift).push(item);
-    // 落可视化产物
+    // Persist visualization artifacts
     try {
       const basePng = join(GOLDEN_DIR, "png", base.pngDir, `deck-${String(i + 1).padStart(2, "0")}.png`);
       writeFileSync(join(OUT, `${entry.pngDir}-p${String(i + 1).padStart(2, "0")}-current.png`), readFileSync(files[i]));
@@ -125,7 +126,7 @@ for (const entry of projects) {
   }
 }
 
-// 基线里有、当前发现里没有的项目（目录被删）也要报
+// Projects present in the baseline but not in the current discovery (directory deleted) must also be reported
 for (const key of Object.keys(manifest.projects)) {
   if (FILTER && !key.includes(FILTER)) continue;
   if (!projects.some((p) => p.key === key)) { missingProjects++; drift.push({ key, page: 0, reason: "项目目录缺失（基线存在）" }); }

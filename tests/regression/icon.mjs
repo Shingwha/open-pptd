@@ -1,12 +1,13 @@
 // ============================================================================
-// tests/regression/icon.mjs — 图标回归（Font Awesome Free，SVG 嵌入，预览=导出同源）
+// tests/regression/icon.mjs — icon regression (Font Awesome Free, SVG embedding, preview == export)
 // ----------------------------------------------------------------------------
-// 数据：tests/fixtures/icons/<style>/*.svg（vendor 的 FA SVG，git 跟踪，CI 离线确定）；
-//       解析走 assets/icons/registry.json（元数据入库）。
-// 覆盖：解析（三前缀/别名/bs: 已移除）、SVG 归一化（剥注释/currentColor）、
-//       fill 注入（solid/HEX8/线性/径向/三停渐变）、宽 viewBox、导出结构
-//       （media 计数 / svgBlip 官方 ext / rels / Content_Types）、未知图标跳过聚合。
-// 运行：node tests/regression/icon.mjs
+// Data: tests/fixtures/icons/<style>/*.svg (vendored FA SVGs, git-tracked, offline-deterministic);
+//       resolution reads assets/icons/registry.json (metadata is committed).
+// Covers: resolution (three prefixes / aliases / removed bs:), SVG normalization (strip
+//         comments / currentColor), fill injection (solid/HEX8/linear/radial/three-stop
+//         gradient), wide viewBox, export structure (media count / official svgBlip ext /
+//         rels / Content_Types), unknown-icon skip aggregation.
+// Usage: node tests/regression/icon.mjs
 // ============================================================================
 
 import { readFileSync, readdirSync } from "node:fs";
@@ -31,7 +32,7 @@ const ok = (cond, msg) => {
 
 const registry = JSON.parse(readFileSync(join(ICON_LIB_DIR, "registry.json"), "utf8"));
 
-/** fixture 解析：loadIconDefs 的 loadIconSvg 注入（vendor 包直读）。 */
+/** fixture resolution: injected as loadIconSvg into loadIconDefs (reads vendored SVG directly). */
 const loadFixtureSvg = async (hit) => {
   try {
     return readFileSync(join(FIXTURE_DIR, hit.dir, `${hit.name}.svg`), "utf8");
@@ -64,7 +65,8 @@ console.log("== 2. SVG 归一化（剥注释 / currentColor / viewBox） ==");
   const noMeta = normalizeIconSvg(text, null);
   ok(noMeta && noMeta.w >= 576, "无 hit 时从 viewBox 文本回退解析（含扩展）");
   ok(normalizeIconSvg("<not-svg/>", null) === null, "非 SVG → null");
-  // 内容越界扩展：FA fire 路径 y 从 -26.4 起，viewBox 必须扩到完全包含（否则尖端被裁）
+  // Content overflow: FA fire starts at y=-26.4, so the viewBox must expand to fully
+  // contain it (otherwise the tip is clipped)
   const fire = normalizeIconSvg(readFileSync(join(FIXTURE_DIR, "solid", "fire.svg"), "utf8"), { w: 448, h: 512 });
   ok(fire.vy < 0 && fire.h > 512 && fire.vx === 0, `fire 越界扩展（vy=${fire.vy}, h=${fire.h}）`);
   const houseVb = normalizeIconSvg(readFileSync(join(FIXTURE_DIR, "solid", "house.svg"), "utf8"), { w: 512, h: 512 });
@@ -113,14 +115,14 @@ console.log("== 5. loadIconDefs（vendor 集合 / 编辑器预读缓存优先）
   ok(r.defs.size === 5 && r.skipped.length === 0, "5 个名字全部命中（含别名 home）");
   ok(r.defs.get("fas:home").inner === r.defs.get("fas:house").inner, "别名与主名共享同一 def");
   ok(r.defs.get("fas:arrows-left-right").w >= 576, "宽图标 w ≥ 576（含越界扩展）");
-  // 编辑器预读缓存（iconDefs）优先：loadIconSvg 不可达也能命中
+  // Editor pre-read cache (iconDefs) wins: resolvable even when loadIconSvg is unreachable
   const r2 = await loadIconDefs(deck, { iconRegistry: registry, loadIconSvg: async () => null, iconDefs: Object.fromEntries(r.defs) });
   ok(r2.defs.size === 5 && r2.skipped.length === 0, "iconDefs 预读缓存直接命中");
 }
 
 console.log("== 6. buildPptx 全量导出（fixture 页） ==");
 {
-  // 收集 fixture 全集：<style>/<name>.svg
+  // Collect the whole fixture set: <style>/<name>.svg
   const icons = [];
   for (const style of Object.keys(STYLE_DIRS)) {
     for (const f of readdirSync(join(FIXTURE_DIR, STYLE_DIRS[style]))) {
@@ -147,7 +149,7 @@ console.log("== 6. buildPptx 全量导出（fixture 页） ==");
   });
   ok(bytes.length > 10000 && skippedByCb.length === 0, `PPTX 生成（${(bytes.length / 1024).toFixed(0)}KB），零跳过`);
 
-  // 结构断言：解 zip 找 media/*.svg 与 slide1（writer 产物 store/deflate 双方法）
+  // Structure assertions: unzip to find media/*.svg and slide1 (writer emits store/deflate)
   const { unzipSync } = await import("node:zlib");
   const zipEntries = {};
   {
@@ -170,7 +172,8 @@ console.log("== 6. buildPptx 全量导出（fixture 页） ==");
   ok(media.length === icons.length, `media SVG 数 ${media.length} = fixture 数 ${icons.length}`);
   const slide1 = zipEntries["ppt/slides/slide1.xml"].toString("utf8");
   ok((slide1.match(/asvg:svgBlip/g) || []).length === icons.length, "svgBlip 数 = 图标数（官方 ext uri）");
-  // xfrm fit 矩形：fire（448×544 瘦高）在 56×56 bounds 内实绘宽应 < 56px（533400 EMU）——防 PPT 非等比拉伸回归
+  // xfrm fit rect: fire (448×544, tall) must draw narrower than 56px (533400 EMU) inside a
+  // 56×56 bounds — guards against PowerPoint non-uniform stretching
   {
     const fireIdx2 = icons.indexOf("fas:fire");
     const pics = slide1.split("<p:pic>").slice(1);
@@ -181,9 +184,10 @@ console.log("== 6. buildPptx 全量导出（fixture 页） ==");
   ok(slide1.includes("{96DAC541-7B7A-43D3-8B79-37D633B846F1}"), "MS-OI29500 SVG 扩展 uri");
   const ct = zipEntries["[Content_Types].xml"].toString("utf8");
   ok(ct.includes('Extension="svg"'), "Content_Types 声明 svg");
-  // 抽样：solid 图标 fill 注入 + 自身 viewBox；宽图标 viewBox 保留（元素顺序 = media 编号顺序）
+  // Spot check: solid icon fill injection + own viewBox; wide icon keeps its viewBox
+  // (element order = media numbering order)
   const sampleIdx = icons.indexOf("fas:house");
-  const expectedFill = (sampleIdx % 2 ? "#2563EB" : DEFAULT_THEME.colors.text).toUpperCase(); // 与上方 fill 交替逻辑一致
+  const expectedFill = (sampleIdx % 2 ? "#2563EB" : DEFAULT_THEME.colors.text).toUpperCase(); // mirrors the alternating fill above
   const houseSvg = zipEntries[`ppt/media/image${sampleIdx + 1}.svg`].toString("utf8");
   ok(houseSvg.toUpperCase().includes(`FILL="${expectedFill}"`) && houseSvg.startsWith('<svg viewBox="0 0 512 512" width="512" height="512"'), "fas:house 导出（fill 注入 + viewBox + 显式宽高）");
   const wideIdx = icons.indexOf("fas:arrows-left-right");

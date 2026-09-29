@@ -1,11 +1,13 @@
 // ============================================================================
-// measure/index.js — packages/measure 包级入口（契约 4 入口 open-pptd/measure）
+// measure/index.js — packages/measure package entry (contract 4 entry open-pptd/measure)
 // ----------------------------------------------------------------------------
-// MeasurePort 接口 + 默认确定性实现 fontMetricsMeasure（纯函数，Node/CLI/CI 可跑）。
-// 三铁律之「MeasurePort 默认确定性纯函数」；domMeasure 只是浏览器可选精修适配器
-// （adapters/dom.js 本波次仅接口桩，M6 接线）。
+// The MeasurePort interface plus the default deterministic implementation
+// fontMetricsMeasure (pure functions, runnable on Node/CLI/CI). This is the
+// "MeasurePort defaults to a deterministic pure function" invariant; domMeasure is
+// only an optional browser-side refinement adapter (adapters/dom.js is still a stub).
 //
-// 双端纯函数：本 barrel 及传递闭包禁 node:/fs/window./document.（dep-graph 强制）。
+// Dual-end pure functions: this barrel and its transitive closure forbid
+// node:/fs/window./document. (enforced by dep-graph).
 // ============================================================================
 
 import { measureTextRuns, measureCell, measureTable, lineHeightMultiplierFor } from "./font-metrics.js";
@@ -21,7 +23,7 @@ export {
 export { createMetricsTable, defaultMetricsTable, metricKey, METRICS_VERSION } from "./metrics-table.js";
 
 /**
- * MeasurePort 默认实现（字体度量表驱动）。
+ * Default MeasurePort implementation (driven by the font metrics table).
  * @typedef {object} MeasurePort
  * @property {(runs, style, maxWidth, fonts?) => {lines:number,height:number}} measureTextRuns
  * @property {(cell, colWidth, fonts?) => number} measureCell

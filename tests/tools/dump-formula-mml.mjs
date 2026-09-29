@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // ============================================================================
-// dump-formula-mml.mjs — 公式语料 → KaTeX MathML（tests/fixtures/formula/）
+// dump-formula-mml.mjs — formula corpus → KaTeX MathML (tests/fixtures/formula/)
 // ----------------------------------------------------------------------------
-// 用法: npm run test:fixtures（或 node tests/tools/dump-formula-mml.mjs）
-// 读取 tests/fixtures/formula/formulas.txt（# 注释、每行一个 LaTeX），
-// 用仓库内 vendored KaTeX（packages/model/vendor/katex.mjs，与编辑器同源）输出
-// mml-XX.xml（XX = 用例序号 01..N，与 omml-ai/ 对应）。
-// KaTeX 解析失败会以 FAIL 列出（不中断，可继续对照其余用例）。
+// Usage: npm run test:fixtures (or node tests/tools/dump-formula-mml.mjs)
+// Reads tests/fixtures/formula/formulas.txt (# comments, one LaTeX per line) and,
+// with the vendored KaTeX (packages/model/vendor/katex.mjs, same source as the
+// editor), writes mml-XX.xml (XX = case number 01..N, matching omml-ai/).
+// A KaTeX parse failure is listed as FAIL (it does not abort; the other cases still run).
 // ============================================================================
 
 import { readFileSync, writeFileSync, mkdirSync } from "fs";

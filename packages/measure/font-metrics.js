@@ -1,17 +1,20 @@
 // ============================================================================
-// measure/font-metrics.js — 确定性排版度量纯函数（方案 §3.1，默认 MeasurePort）
+// measure/font-metrics.js — deterministic typographic measurement pure functions (default MeasurePort)
 // ----------------------------------------------------------------------------
-// 输入 = 富文本 runs + 样式 + 字体度量；输出 = 几何。零 DOM、零 Node API，
-// Node/CLI/CI 可跑可快照（三铁律之「MeasurePort 默认确定性纯函数」）。
+// Input = rich-text runs + style + font metrics; output = geometry. Zero DOM, zero Node
+// APIs, so it runs and snapshots on Node/CLI/CI (the "MeasurePort defaults to a
+// deterministic pure function" invariant).
 //
 //   measureTextRuns(runs, style, maxWidth, fonts) → { lines, height }
-//   measureCell(cell, colWidth, fonts)           → number（单元格内容高 px）
+//   measureCell(cell, colWidth, fonts)           → number (cell content height in px)
 //   measureTable(table, fonts)                   → { columnWidths, rowHeights, totalHeight }
 //
-// 断行：贪心按字宽类（CJK ≈ cjkWidth em、拉丁 ≈ latinWidth em、公式按简化式），
-// **宁高勿低**——安全余量系数（默认 1.06，metrics-data.json 可配）乘在最终高度。
-// 行高单源：lineHeightPx > fontSize × lineHeight（与 writer spcPct 补偿同表推导，
-// 补偿后两端有效行高同为 fontSize × lineHeight）。LaTeX 维持方案简化式。
+// Wrapping: greedy by character-width class (CJK ≈ cjkWidth em, Latin ≈ latinWidth em,
+// formulas via the closed form), biased to over- rather than under-estimate — a safety
+// factor (default 1.06, configurable in metrics-data.json) multiplies the final height.
+// Single source of line height: lineHeightPx > fontSize × lineHeight (derived from the same
+// table as the writer's spcPct compensation, so both ends end up at fontSize × lineHeight).
+// LaTeX keeps the simplified closed form.
 // ============================================================================
 
 import { parseRichText } from "../model/richtext.js";
@@ -21,16 +24,16 @@ import { defaultMetricsTable } from "./metrics-table.js";
 
 const DEFAULT_FONT_SIZE = 18;
 const DEFAULT_LINE_HEIGHT = 1;
-const FORMULA_LINE_FACTOR = 1.6; // 独占段落公式行高倍数（方案 §3.1 简化式）
-const SPACE_EM = 0.3; // 空格宽（em）
+const FORMULA_LINE_FACTOR = 1.6; // line-height multiplier for a formula-only paragraph
+const SPACE_EM = 0.3; // space width (em)
 
-// 宽字符（CJK/假名/全角/emoji）：≈1 em
+// Wide characters (CJK/kana/fullwidth/emoji): ≈1 em
 const WIDE_RE =
   /[\u1100-\u115F\u2E80-\u303E\u3041-\u33FF\u3400-\u4DBF\u4E00-\u9FFF\uA000-\uA4CF\uAC00-\uD7A3\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFF60\uFFE0-\uFFE6]|[\u{1F300}-\u{1FAFF}]/u;
 
 const isWide = (ch) => WIDE_RE.test(ch);
 
-/** fontFamily（字符串 | {latin,ea} | 数组）→ 名字数组。 */
+/** fontFamily (string | {latin,ea} | array) → array of names. */
 export function familiesOf(fontFamily) {
   if (!fontFamily) return [];
   if (typeof fontFamily === "string") return [fontFamily];
@@ -39,19 +42,19 @@ export function familiesOf(fontFamily) {
   return [];
 }
 
-/** 单个字符的宽度（px）：按宽/窄类与度量表字宽类加权。 */
+/** Width of a single character (px): wide/narrow class × the table's width class. */
 function charWidth(ch, fontSize, m) {
   if (ch === "\t") return fontSize * m.latinWidth * 4;
   if (ch === " ") return fontSize * SPACE_EM;
   return isWide(ch) ? fontSize * m.cjkWidth : fontSize * m.latinWidth;
 }
 
-/** 行内公式简化宽度：0.5em × max(2, 长度/4)（方案 §3.1）。 */
+/** Simplified inline-formula width: 0.5em × max(2, length/4). */
 function formulaWidth(latex, fontSize) {
   return 0.5 * fontSize * Math.max(2, String(latex || "").length / 4);
 }
 
-/** 富文本 → 扁平 run（段落间硬断行；公式 run 标 formula）。 */
+/** Rich text → flat runs (hard line break between paragraphs; formula runs flagged). */
 export function runsFromRichText(text) {
   const tree = parseRichText(text == null ? "" : String(text));
   const runs = [];
@@ -64,11 +67,11 @@ export function runsFromRichText(text) {
 }
 
 /**
- * 断行 + 行高：rich text runs → { lines, height }。
+ * Wrapping + line height: rich-text runs → { lines, height }.
  * @param {Array<{text?, formula?, latex?, style?: {fontSize?, bold?, italic?}}>} runs
- * @param {{fontSize?, lineHeight?, lineHeightPx?, fontFamily?}} style 基础样式（已解析具体字族）
- * @param {number} maxWidth 可用宽度 px
- * @param {object} [fonts] 度量表（缺省包内单例）
+ * @param {{fontSize?, lineHeight?, lineHeightPx?, fontFamily?}} style base style (font family already resolved)
+ * @param {number} maxWidth available width in px
+ * @param {object} [fonts] metrics table (defaults to the in-package singleton)
  * @returns {{ lines: number, height: number, maxFontSize: number }}
  */
 export function measureTextRuns(runs, style = {}, maxWidth = Infinity, fonts = defaultMetricsTable) {
@@ -79,8 +82,9 @@ export function measureTextRuns(runs, style = {}, maxWidth = Infinity, fonts = d
   const m = table.metricsFor(families.length ? families : null);
   const width = Math.max(1, numOr(maxWidth, 1));
 
-  // 展平为原子：CJK 单字可断行；拉丁按「词」聚合（浏览器在词边界断行，贪心
-  // 字符级会高估每行容量 → 行数偏少 → 高度偏低，这里对齐浏览器的断行机会）
+  // Flatten to atoms: CJK breaks per character; Latin is grouped into "words" (a browser
+  // breaks at word boundaries, so greedy per-character would overestimate per-line capacity
+  // → too few lines → too low a height; grouping matches the browser's break opportunities)
   const atoms = [];
   let maxFontSize = baseSize;
   const pushText = (str, fs) => {
@@ -120,7 +124,7 @@ export function measureTextRuns(runs, style = {}, maxWidth = Infinity, fonts = d
     pushText(String(run.text ?? ""), fs);
   }
 
-  // 贪心断行（断点：CJK 单字前 / 词前 / 空格处；行首空格丢弃）
+  // Greedy wrapping (break before a CJK character / a word / at a space; leading spaces dropped)
   const lines = [];
   let cur = { width: 0, maxFs: baseSize, hasText: false, hasFormula: false, hasNonFormula: false };
   const flush = () => {
@@ -129,7 +133,7 @@ export function measureTextRuns(runs, style = {}, maxWidth = Infinity, fonts = d
   };
   for (const a of atoms) {
     if (a.kind === "nl") { flush(); continue; }
-    if (a.kind === "space" && !cur.hasText) continue; // 行首空格折叠
+    if (a.kind === "space" && !cur.hasText) continue; // collapse leading spaces
     if (cur.hasText && cur.width + a.w > width) flush();
     cur.width += a.w;
     cur.maxFs = Math.max(cur.maxFs, a.fs ?? baseSize);
@@ -142,7 +146,7 @@ export function measureTextRuns(runs, style = {}, maxWidth = Infinity, fonts = d
   let height = 0;
   for (const ln of lines) {
     const base = style.lineHeightPx != null ? style.lineHeightPx : ln.maxFs * lhm;
-    // 纯公式行（含公式、无普通字符）按 1.6 倍行高
+    // A formula-only line (has a formula, no plain characters) uses 1.6× the line height
     const formulaOnly = ln.hasFormula && !ln.hasNonFormula;
     height += formulaOnly ? base * FORMULA_LINE_FACTOR : base;
   }
@@ -152,7 +156,7 @@ export function measureTextRuns(runs, style = {}, maxWidth = Infinity, fonts = d
 
 
 /**
- * 单元格内容高（px）：colWidth（含 padding）内排版 + 上下内边距。
+ * Cell content height (px): laid out within colWidth (padding included) plus top/bottom padding.
  * @param {{text?: string, fontSize?, lineHeight?, lineHeightPx?, fontFamily?}} cell
  * @param {number} colWidth px
  * @param {object} [fonts]
@@ -171,9 +175,10 @@ export function measureCell(cell, colWidth, fonts = defaultMetricsTable) {
 }
 
 /**
- * 表格布局：列宽（比例）+ 精确行高 + 总高（R3 的确定值）。
- * 行高 = max(model 最小行高, 该行内容高)；rowSpan>1 的内容按跨行数摊分。
- * @param {object} table 表格元素（rows/columnWidths/rowHeights/bounds/fill/style）
+ * Table layout: column widths (ratios) + exact row heights + total height (the deterministic value).
+ * Row height = max(model minimum row height, content height of that row); content of a rowSpan>1
+ * cell is split across the spanned rows.
+ * @param {object} table table element (rows/columnWidths/rowHeights/bounds/fill/style)
  * @param {object} [fonts]
  * @returns {{ columnWidths: number[], columnWidthsPx: number[], rowHeights: number[], totalHeight: number }}
  */

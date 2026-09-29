@@ -1,18 +1,18 @@
 // ============================================================================
-// tests/contract/public-api.mjs — 包级公共契约测试（契约 4，见 docs/embedding.md）
+// tests/contract/public-api.mjs — package-level public contract test (contract 4, see docs/embedding.md)
 // ----------------------------------------------------------------------------
-// 断言：
-//   1. 五个已存在 barrel 的导出名齐全（与 spec 01 T1 清单逐一比对）；
-//   2. CONTRACT_VERSION === 2，且与 contract.json 的 contractVersion 一致；
-//   3. contract.json 可解析；entries 与 package.json exports 的对应条目一一对应
-//      （双向，防口径漂移）；entries 指向的已存在文件存在（paths/config 落地前
-//      打印 SKIP —— W2/A3 后收紧为 FAIL）；
-//   4. model/renderer/writer 三个双端 barrel 可静态导入，且源文件不含 Node/DOM
-//      全局（浏览器安全约束，与 dep-graph 既有四条互补）；
-//   5. W1.5 扁平再导出清单（editor 消费面）与 editor 入口（open-pptd/editor）：
-//      editor barrel 依赖 DOM、无法在 Node 静态导入，改用文本断言（剥离注释后
-//      必须出现再导出语句）+ 被引源文件与其导出名存在。
-// 用法：node tests/contract/public-api.mjs（非零码退出 = 契约破坏）
+// Asserts:
+//   1. Every export name of the five existing barrels is present (checked against the spec 01 T1 list);
+//   2. CONTRACT_VERSION === 2 and matches contract.json's contractVersion;
+//   3. contract.json parses; entries correspond one-to-one with the package.json exports entries
+//      (both directions, guards against drift); the files an entry points at exist;
+//   4. the three dual-end barrels (model/renderer/writer) import statically and their sources contain
+//      no Node/DOM globals (browser safety constraint, complementing dep-graph);
+//   5. the W1.5 flat re-export list (editor consumption surface) and the editor entry
+//      (open-pptd/editor): the editor barrel depends on the DOM and cannot be imported statically in
+//      Node, so it is checked textually (after stripping comments, the re-export statement must
+//      appear) plus the source files and their export names must exist.
+// Usage: node tests/contract/public-api.mjs (non-zero exit = contract broken)
 // ============================================================================
 
 import { readFileSync, existsSync } from "node:fs";
@@ -34,7 +34,7 @@ const skipTo = (name, detail) => {
 };
 
 // ---------------------------------------------------------------------------
-// spec 01 T1 的冻结导出清单（函数 / 命名空间对象 / 常量 三类）
+// spec 01 T1 frozen export list (three classes: functions / namespace objects / constants)
 // ---------------------------------------------------------------------------
 const BARRELS = {
   "packages/model/index.js": {
@@ -50,7 +50,7 @@ const BARRELS = {
       "PAGE_WIDTH", "PAGE_HEIGHT", "PAGE_TYPES", "SUPPORTED_SHAPES", "ELEMENT_TYPES",
       "DEFAULT_THEME", "DEFAULT_FONT", "THEME_PALETTES", "PRESET_SHAPES",
     ],
-    // 命名空间抽查（spec 01 T1 点名要求）
+    // namespace spot checks (explicitly named by spec 01 T1)
     namespaceSpot: [
       ["chart", "CHART_META"], ["chart", "buildChartOption"], ["chart", "resolveChartSpec"],
       ["icons", "loadIconRegistry"], ["fonts", "loadFontRegistry"], ["bytes", "encodeUtf8"],
@@ -67,7 +67,7 @@ const BARRELS = {
     ],
   },
   "packages/writer/index.js": {
-    // ZipWriter 是 class（typeof "function"），与函数同检
+    // ZipWriter is a class (typeof "function"), checked alongside the functions
     fns: ["buildPptx", "downloadPptx", "downloadBlob", "magicMatches", "ZipWriter"],
     objs: ["xml", "parts", "text"],
     consts: [],
@@ -87,7 +87,7 @@ const BARRELS = {
   },
 };
 
-// 双端 barrel：源文件不得出现 Node 专用来源或 DOM 全局（T1「浏览器安全约束」）
+// Dual-end barrels: the source must contain no Node-only source or DOM global (T1 "browser safety constraint")
 const DUAL_END = ["packages/model/index.js", "packages/renderer/index.js", "packages/writer/index.js"];
 const PURITY_PATTERNS = [
   [/\bfrom\s*["']node:/, "node: import"],
@@ -98,7 +98,7 @@ const PURITY_PATTERNS = [
   [/\bheadless\//, "headless/ 引用"],
 ];
 
-// W1.5 扁平再导出清单（editor 消费面；只断言存在，类型随源文件）
+// W1.5 flat re-export list (editor consumption surface; only existence is asserted, types follow the source)
 const FLAT = {
   "packages/model/index.js": [
     "syncElementId", "normalizeTheme", "resolveTableStyle", "themeChartPalette",
@@ -115,7 +115,7 @@ const FLAT = {
   "packages/writer/index.js": ["imageSize", "decodeDataUrl", "extToMime", "dataUrlOf", "safeFileName"],
 };
 
-// editor 入口（契约 1/2/3 的对外面；DOM 依赖，文本断言）
+// editor entry (the public face of contracts 1/2/3; DOM-dependent, checked textually)
 const EDITOR_ENTRY = {
   barrel: "editor/index.js",
   exports: [
@@ -179,7 +179,8 @@ async function main() {
   if (contract.contractVersion === rootMod.CONTRACT_VERSION) ok("contract.json contractVersion 与 CONTRACT_VERSION 一致（2）");
   else bad("contract.json contractVersion", `${contract.contractVersion} ≠ ${rootMod.CONTRACT_VERSION}`);
 
-  // 双向：entries 每个 key 在 exports 有对应项；exports 里非逃生舱/非元数据项都在 entries
+  // Both directions: every entries key has a matching exports item; every non-escape-hatch,
+  // non-metadata exports item appears in entries
   const META_SUBPATHS = new Set([".", "./editor/index.html", "./package.json", "./internal/*"]);
   const entryKeys = Object.keys(contract.entries || {});
   const drift = [];
@@ -263,7 +264,7 @@ async function main() {
       else ok(`${spec.file} 导出名齐全（${spec.names.length} 个）`);
     }
     const pmod = await import(pathToFileURL(join(ROOT, PATHS_SPEC.file)).href);
-    // registry 必须只有一根，且不含 home（版本耦合，永不被 home 遮蔽）
+    // registry must have exactly one root and must not include home (version-coupled, never shadowed by home)
     const reg = pmod.resourceRoots?.registry;
     if (Array.isArray(reg) && reg.length === 1 && !reg.includes(pmod.paths?.home)) ok("resourceRoots.registry 仅一根且不含 home");
     else bad("resourceRoots.registry 仅一根且不含 home", JSON.stringify(reg));
@@ -306,13 +307,13 @@ async function main() {
       for (const n of spec.fns) if (n in mod && typeof mod[n] !== "function") bad(`${spec.file}#${n} 应为函数`, `实际 ${typeof mod[n]}`);
       for (const n of spec.objs) if (n in mod && (typeof mod[n] !== "object" || mod[n] === null)) bad(`${spec.file}#${n} 应为对象`, `实际 ${typeof mod[n]}`);
     }
-    // 包根再导出面：measure 命名空间 + layout 函数
+    // Package-root re-exports: the measure namespace + the layout function
     const root = await import(pathToFileURL(join(ROOT, "packages/index.js")).href);
     if (root.measure && typeof root.measure.measureTextRuns === "function") ok("packages/index.js 再导出 measure 命名空间");
     else bad("packages/index.js 再导出 measure 命名空间", `measure=${typeof root.measure}`);
     if (typeof root.layout === "function") ok("packages/index.js 再导出 layout 函数");
     else bad("packages/index.js 再导出 layout 函数", `layout=${typeof root.layout}`);
-    // entries ↔ exports 对应由 §3 双向比对自动覆盖（entries 新增 measure/layout）
+    // entries ↔ exports correspondence is covered automatically by the §3 two-way comparison
   }
 
   console.log(`\n结果: ${fail === 0 ? "契约通过 ✅" : `契约破坏 ❌（${fail} 处）`}${skip ? `；待落地跳过 ${skip} 项` : ""}`);

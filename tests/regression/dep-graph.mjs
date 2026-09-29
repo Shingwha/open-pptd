@@ -1,29 +1,32 @@
 // ============================================================================
-// tests/regression/dep-graph.mjs — 依赖方向与环境全局静态扫描（v3 P0，CI 强制）
+// tests/regression/dep-graph.mjs — dependency direction + environment globals static scan (v3 P0, CI-enforced)
 // ----------------------------------------------------------------------------
-// 扫描 packages/ 与 editor/ 下全部 .js/.mjs 的 import 语句与源码，断言：
-//   1. packages/model 不得 import 任何兄弟包（packages/ 内其他目录）；
-//   2. 允许的跨包 import 边表（spec 09 T0/T5，渲染管线三段式）：
+// Scans every .js/.mjs under packages/ and editor/ for imports and source, asserting:
+//   1. packages/model must not import any sibling package (another directory under packages/);
+//   2. the allowed cross-package import edge table (spec 09 T0/T5, three-stage render pipeline):
 //        writer   → model | vendor | measure
 //        renderer → model | vendor | layout
 //        layout   → model | measure
 //        measure  → model
-//      其余跨包方向一律违规。表里含 vendor（中立共享 vendor 区，如 echarts.mjs）；
-//      "存在即检查"：目标包目录尚不存在时不报错（edge 表先行，新包随后落地）。
-//   3. editor/ 不得 import packages/server、packages/cli（P1 才建，规则先写上）；
-//   4. 环境全局（vendor/ 子目录豁免）：
-//      - packages/model、packages/writer：禁 window./document./require(/裸 fs./node: 来源
-//        （双端包，Node CLI 链路不能带浏览器全局，浏览器链路不能带 Node 全局）；
-//      - packages/renderer（headless 之外）：DOM 是其输出目标（v3 §3「renderer 仍输出
-//        DOM」），允许 window./document.；仍禁 require(/裸 fs./node: 来源，防 Node API
-//        渗入浏览器预览链路。
-//      - packages/measure、packages/layout（渲染管线新包）：双端纯函数，无 headless
-//        豁免——禁 window./document./require(/裸 fs./node:（与 model/writer 同档）。
-//      - packages/renderer/headless/：Node 专用子目录（无头截图链路），豁免环境全局
-//        与 node: import 检查，但仍受 import 图规则约束（不得反向 import editor/）。
-//   5. 包级 barrel（packages/index.js 与 packages/*/index.js）不得 import editor/
-//      （spec 01 T5：包级入口是「契约 4」的对外面，依赖方向只允许 editor → packages）。
-// 用法：node tests/regression/dep-graph.mjs（失败打印违规文件与行号，非零码退出）
+//      Any other cross-package direction is a violation. The table includes vendor (the neutral
+//      shared vendor area, e.g. echarts.mjs); "exists means checked": a missing target package
+//      directory is not an error (the edge table lands first, packages follow).
+//   3. editor/ must not import packages/server or packages/cli (built at P1; the rule is written early);
+//   4. environment globals (vendor/ subdirectories exempt):
+//      - packages/model, packages/writer: forbid window./document./require(/bare fs./node: sources
+//        (dual-end packages: the Node CLI path must not carry browser globals and the browser path
+//        must not carry Node globals);
+//      - packages/renderer (outside headless): DOM is its output target (v3 §3 "renderer still emits
+//        DOM"), so window./document. are allowed; require(/bare fs./node: sources stay forbidden to
+//        keep Node APIs out of the browser preview path.
+//      - packages/measure, packages/layout (new pipeline packages): dual-end pure functions with no
+//        headless exemption — forbid window./document./require(/bare fs./node: (same tier as model/writer).
+//      - packages/renderer/headless/: Node-only subdirectory (headless screenshot path), exempt from
+//        environment-global and node: import checks, but still bound by the import graph rules (must
+//        not import editor/).
+//   5. package barrels (packages/index.js and packages/*/index.js) must not import editor/
+//      (spec 01 T5: the package entry is the "contract 4" public face; dependencies only flow editor → packages).
+// Usage: node tests/regression/dep-graph.mjs (prints offending file and line, non-zero exit on failure)
 // ============================================================================
 
 import { readdirSync, readFileSync, existsSync } from "node:fs";
@@ -32,22 +35,22 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
-// ---- 既存有意豁免（逐一登记，新增豁免须附理由）----
+// ---- Intentional existing exemptions (registered one by one; new ones need a reason) ----
 const ALLOWLIST = [
   {
     file: "packages/writer/pptx.js",
     pattern: /\bdocument\./,
-    reason: "downloadPptx 浏览器下载助手（仅浏览器端调用，Node 导出链路不触达）",
+    reason: "downloadPptx browser download helper (browser-only call, the Node export path never reaches it)",
   },
   {
     file: "packages/model/font-registry.js",
     pattern: /^path$/,
     kind: "import",
-    reason: "Node 端 fontDir 分支的惰性 path 导入（依赖注入，浏览器端走 fetch 不触达）",
+    reason: "lazy path import in the Node fontDir branch (dependency injection; the browser path uses fetch)",
   },
 ];
 
-// ---- 收集待扫描文件 ----
+// ---- Collect files to scan ----
 function walk(dir, out = []) {
   if (!existsSync(dir)) return out;
   for (const e of readdirSync(dir, { withFileTypes: true })) {
@@ -61,10 +64,11 @@ const files = [...walk(join(ROOT, "packages")), ...walk(join(ROOT, "editor"))];
 
 const rel = (p) => relative(ROOT, p).split(sep).join("/");
 const inVendor = (r) => r.split("/").includes("vendor");
-const inHeadless = (r) => r.startsWith("packages/renderer/headless/"); // Node 专用子目录（无头截图链路）
-// 双端包（浏览器 + Node 都可跑，需环境纯净）；server/cli 是 Node 专用，不受环境全局与 node: 来源约束
+const inHeadless = (r) => r.startsWith("packages/renderer/headless/"); // Node-only subdirectory (headless screenshot path)
+// Dual-end packages (run in both browser and Node, must stay environment-pure); server/cli are
+// Node-only and are not bound by the environment-global / node: source rules
 const DUAL_END_PKGS = new Set(["model", "writer", "renderer", "measure", "layout"]);
-// 允许的跨包 import 边（spec 09 T0/T5 目标态；model 单独按"不得引任何兄弟包"处理）
+// Allowed cross-package import edges (spec 09 T0/T5 target state; model is handled separately as "no sibling imports")
 const ALLOWED_CROSS = {
   writer: ["model", "vendor", "measure"],
   renderer: ["model", "vendor", "layout"],
@@ -73,7 +77,7 @@ const ALLOWED_CROSS = {
 };
 const pkgOf = (r) => (r.startsWith("packages/") ? r.split("/")[1] : null);
 
-// ---- import 语句提取（静态 from / 副作用 import / 动态 import()）----
+// ---- Import extraction (static from / side-effect import / dynamic import()) ----
 const IMPORT_RE = /(?:\bfrom|\bimport)\s*(?:\(\s*)?["']([^"']+)["']/g;
 
 function importsOf(src) {
@@ -85,12 +89,13 @@ function importsOf(src) {
   return out;
 }
 
-// ---- 注释剥离（保行号：注释内容替换为空格，字符串/正则原样保留）----
-// 正则字面量用常见启发式：/ 前一个有效字符是运算符/括号/关键字边界时按正则处理。
+// ---- Comment stripping (preserves line numbers: comment text becomes spaces, strings/regex kept) ----
+// Regex literals use a common heuristic: a / is a regex start when the previous significant char is
+// an operator/bracket/keyword boundary.
 function stripComments(src) {
   let out = "";
   let i = 0, state = null; // null | "'" | '"' | '`' | '//' | '/*' | 'regex'
-  let last = ""; // 上一个非空白有效字符（判断除法 vs 正则）
+  let last = ""; // previous significant char (distinguishes division from regex)
   const regexPrev = (ch) => ch === "" || "(,=:[!&|?{};+-*%<>^~".includes(ch);
   while (i < src.length) {
     const c = src[i], n = src[i + 1];
@@ -127,12 +132,12 @@ function stripComments(src) {
   return out;
 }
 
-// ---- 环境全局模式 ----
+// ---- Environment global patterns ----
 const ENV_PATTERNS = [
   { id: "window.", re: /\bwindow\./ },
   { id: "document.", re: /\bdocument\./ },
   { id: "require(", re: /\brequire\s*\(/ },
-  { id: "fs.", re: /(?<![\w$.])fs\./ }, // 裸 fs. 全局；options.fs. 依赖注入不算
+  { id: "fs.", re: /(?<![\w$.])fs\./ }, // bare fs. global; options.fs. is dependency injection
 ];
 
 const violations = [];
@@ -150,7 +155,7 @@ for (const abs of files) {
   const src = readFileSync(abs, "utf8");
   const pkg = pkgOf(r);
 
-  // ---- import 图检查 ----
+  // ---- import graph check ----
   for (const { source, line } of importsOf(src)) {
     importCount++;
     const lineText = src.split("\n")[line - 1] || "";
@@ -160,26 +165,27 @@ for (const abs of files) {
       if (pkg === "model" && targetPkg && targetPkg !== "model") {
         violations.push(`${r}:${line}  model 不得 import 兄弟包 packages/${targetPkg}（${source}）`);
       } else if (ALLOWED_CROSS[pkg] && targetPkg && targetPkg !== pkg && !ALLOWED_CROSS[pkg].includes(targetPkg) && !allowlisted(r, lineText, line, source)) {
-        // 跨包边表（spec 09 T0/T5）：不在允许集内的跨包方向一律违规
+        // Cross-package edge table (spec 09 T0/T5): any direction outside the allowed set is a violation
         violations.push(`${r}:${line}  packages/${pkg} 只允许 import ${ALLOWED_CROSS[pkg].map((t) => t === "vendor" ? "../vendor" : "../" + t).join(" / ")}（实际指向 packages/${targetPkg}：${source}）`);
       } else if (!pkg && r.startsWith("editor/") && (targetRel.startsWith("packages/server/") || targetRel.startsWith("packages/cli/") || targetRel === "packages/server" || targetRel === "packages/cli")) {
         violations.push(`${r}:${line}  editor 不得 import packages/server、packages/cli（${source}）`);
       }
-      // 规则 6（spec W1.5）：editor 只准经包级入口（packages/<pkg>/index.js）消费引擎，
-      // 深路径自契约 4 起不保证稳定（3.0 移除）
+      // Rule 6 (spec W1.5): editor may only consume the engine through package entries
+      // (packages/<pkg>/index.js); deep paths are not guaranteed stable since contract 4 (removed in 3.0)
       if (!pkg && r.startsWith("editor/") && targetRel.startsWith("packages/")) {
         const m = targetRel.match(/^packages\/([^/]+)\/(.+)$/);
         if (m && m[2] !== "index.js") {
           violations.push(`${r}:${line}  editor 不得深路径 import packages/${m[1]}/${m[2]}，请走包级入口 packages/${m[1]}/index.js（契约 4）`);
         }
       }
-      // packages 内文件不得反向 import editor/（依赖方向只允许 editor → packages）
+      // Files under packages/ must not import editor/ (dependencies only flow editor → packages)
       if (pkg && targetRel.startsWith("editor/")) {
         violations.push(`${r}:${line}  packages/${pkg} 不得 import editor/（${source}）`);
       }
     } else {
-      // 非相对来源检查仅针对双端包（model/writer/renderer；server/cli 是 Node 专用，天然用 node:）：
-      // node: 一律禁（非 vendor、非 headless）；裸来源（Node 内置/第三方）登记豁免才放行
+      // Non-relative sources are only checked for dual-end packages (model/writer/renderer; server/cli are
+      // Node-only and legitimately use node:): node: is always forbidden (non-vendor, non-headless); a bare
+      // source (Node builtin / third party) is allowed only when registered in the allowlist
       if (DUAL_END_PKGS.has(pkg) && !inVendor(r) && !inHeadless(r)) {
         if (source.startsWith("node:")) {
           violations.push(`${r}:${line}  packages/${pkg} 出现 node: import 来源（${source}）`);
@@ -190,14 +196,14 @@ for (const abs of files) {
     }
   }
 
-  // ---- 环境全局检查（仅双端包；vendor 与 headless 豁免；renderer 允许浏览器全局）----
+  // ---- Environment global check (dual-end packages only; vendor and headless exempt; renderer allows browser globals) ----
   if (DUAL_END_PKGS.has(pkg) && !inVendor(r) && !inHeadless(r)) {
     const isRenderer = pkg === "renderer";
     const stripped = stripComments(src);
     const lines = stripped.split("\n");
     for (let n = 0; n < lines.length; n++) {
       for (const { id, re } of ENV_PATTERNS) {
-        if (isRenderer && (id === "window." || id === "document.")) continue; // DOM 是 renderer 的输出目标
+        if (isRenderer && (id === "window." || id === "document.")) continue; // DOM is renderer's output target
         if (!re.test(lines[n])) continue;
         if (allowlisted(r, lines[n], n + 1, id)) continue;
         violations.push(`${r}:${n + 1}  packages/${pkg} 出现环境全局 ${id}（${lines[n].trim().slice(0, 80)}）`);
@@ -206,9 +212,10 @@ for (const abs of files) {
   }
 }
 
-// ---- 追加规则 5：包级 barrel 不得 import editor/（纯增量，spec 01 T5）----
-// 既存分支（packages 内文件不得反向 import editor/）会覆盖同一违规，这里对包级入口
-// 再显式断言一次（入口是对外契约面，值得单独可见）：命中时两条规则各报一行。
+// ---- Extra rule 5: package barrels must not import editor/ (purely additive, spec 01 T5) ----
+// The existing branch (files under packages/ must not import editor/) already covers the same
+// violation; this asserts it once more explicitly for package entries (the public contract face,
+// worth making separately visible): a hit reports one line per rule.
 const BARREL_RE = /^packages\/(?:index\.js|[^/]+\/index\.js)$/;
 const barrels = files.filter((abs) => BARREL_RE.test(rel(abs)));
 for (const abs of barrels) {
@@ -222,7 +229,7 @@ for (const abs of barrels) {
   }
 }
 
-// ---- 汇总 ----
+// ---- Summary ----
 console.log(`dep-graph: 扫描 ${files.length} 个文件，${importCount} 处 import（含包级 barrel ${barrels.length} 个）`);
 if (exemptions.length) {
   console.log(`  登记豁免 ${exemptions.length} 处：`);

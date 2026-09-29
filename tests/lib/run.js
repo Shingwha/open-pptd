@@ -1,11 +1,11 @@
 // ============================================================================
-// tests/lib/run.js — 子进程执行辅助（run-all 用）
+// tests/lib/run.js — subprocess helper for the regression runner
 // ============================================================================
 
 import { spawn } from "node:child_process";
 import { resolve } from "node:path";
 
-/** 执行命令（shell），返回 { code, stdout, stderr }。 */
+/** Run a shell command, resolve with { code, stdout, stderr }. */
 export function run(cmd, { timeout = 300000 } = {}) {
   return new Promise((done) => {
     const child = spawn(cmd, { shell: true, cwd: resolve(".") });

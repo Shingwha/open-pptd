@@ -1,13 +1,14 @@
 // ============================================================================
-// tests/regression/line.mjs — 线条导出回归（多点曲线 xfrm + smooth 末锚点）
+// tests/regression/line.mjs — line export regression (multi-point curve xfrm + smooth last anchor)
 // ----------------------------------------------------------------------------
-// 覆盖：
-//   1. smoothSegments 分段纯函数（n=3..8，含 n ≡ 2 (mod 3) 的孤立末锚点场景）
-//   2. 多点曲线（smooth/sharp/round）导出必须带 a:xfrm（off/ext = bounds），
-//      此前缺失 xfrm 导致 PowerPoint 中线条不可见/整页异常
-//   3. smooth 曲线在 n=5 时末锚点不得丢失（此前被静默丢弃，曲线断头）
-//   4. 2 点直线仍走 straightConnector1 + 旋转（不回归）
-// 运行：node tests/regression/line.mjs
+// Covers:
+//   1. smoothSegments pure function (n=3..8, including the n ≡ 2 (mod 3) lone last-anchor case)
+//   2. Multi-point curves (smooth/sharp/round) must emit a:xfrm (off/ext = bounds);
+//      a missing xfrm makes the line invisible / breaks the whole page in PowerPoint
+//   3. smooth curve at n=5 must not drop the last anchor (it used to be silently dropped,
+//      leaving the curve headless)
+//   4. 2-point straight lines still use straightConnector1 + rotation (no regression)
+// Usage: node tests/regression/line.mjs
 // ============================================================================
 
 import { smoothSegments } from "../../packages/model/geometry.js";
@@ -103,7 +104,7 @@ function endpointCheck(xml, p0, p1, label) {
   return d1 < 1.5 && d2 < 1.5;
 }
 {
-  // 水平：off 必须等于 P0 绝对坐标（此前误用相对坐标导致画到左上角）
+  // Horizontal: off must equal P0's absolute coordinate (a relative-coordinate bug drew to the top-left)
   const xml = lineXml(theme, line("0,1 420,1", "round", [60, 240, 420, 2], [420, 2]), ctx);
   ok(xml.includes('prst="straightConnector1"'), "2 点直线：仍走 straightConnector1");
   ok(xml.includes('<a:off x="762000" y="3060700"/>'), "水平线：off = P0 绝对坐标 (60,241) EMU（不再画到左上角）");
@@ -112,25 +113,25 @@ function endpointCheck(xml, p0, p1, label) {
   endpointCheck(xml, [60, 241], [480, 241], "水平线");
 }
 {
-  // 垂直：90° 旋转，off 上移半长
+  // Vertical: 90° rotation, off shifts up by half the length
   const xml = lineXml(theme, line("1,0 1,160", "round", [60, 300, 2, 160], [2, 160]), ctx);
   ok(xml.includes('<a:off x="-241300" y="4826000"/>'), "垂直线：off = (−19, 380) EMU（精确反推）");
   ok(xml.includes('rot="5400000"'), "垂直线：rot=90°");
   endpointCheck(xml, [61, 300], [61, 460], "垂直线");
 }
 {
-  // 斜线（右下）
+  // Diagonal (down-right)
   const xml = lineXml(theme, line("0,0 180,60", "round", [112, 160, 180, 60], [180, 60]), ctx);
   endpointCheck(xml, [112, 160], [292, 220], "斜线右下");
 }
 {
-  // 左上斜线（此前 flipH 分支；现归一化角度，无 flipH）
+  // Up-left diagonal (formerly the flipH branch; angles are normalized now, no flipH)
   const xml = lineXml(theme, line("200,0 0,120", "round", [500, 100, 200, 120], [200, 120]), ctx);
   ok(!xml.includes("flipH"), "左上斜线：不再输出 flipH");
   endpointCheck(xml, [700, 100], [500, 220], "斜线左上");
 }
 {
-  // 箭头不回归 + 端点仍正确
+  // Arrow end must survive, endpoints still correct
   const xml = lineXml(theme, line("0,1 420,1", "round", [60, 240, 420, 2], [420, 2], { arrow: [null, "arrow"] }), ctx);
   ok(xml.includes("<a:tailEnd"), "2 点直线：箭头 tailEnd 保留");
   ok(!xml.includes("flipH"), "带箭头直线：无 flipH");

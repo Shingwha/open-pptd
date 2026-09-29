@@ -1,18 +1,19 @@
 #!/usr/bin/env node
 // ============================================================================
-// tests/tools/golden-render.mjs — 黄金基线生成（spec 09 T2）
+// tests/tools/golden-render.mjs — golden baseline generation (spec 09 T2)
 // ----------------------------------------------------------------------------
-// 用**现役旧管线**（renderer/headless renderDeck + 本机 Chrome/Edge）把全部
-// examples（15 套）与 tests/projects（9 套）逐页渲染为 PNG：
-//   tests/golden/png/<source>__<name>/deck-NN.png   （gitignore，不入库）
-//   tests/golden/manifest.json                       （每页 dHash/aHash + 尺寸 +
-//                                                     源 deck 哈希，入库）
-// 入库的只有感知哈希 + 元数据；PNG 本体体积大，gitignore。
+// Uses the live pipeline (renderer/headless renderDeck + local Chrome/Edge) to render
+// every page of all examples (15) and tests/projects (9) to PNG:
+//   tests/golden/png/<source>__<name>/deck-NN.png   (gitignored, not committed)
+//   tests/golden/manifest.json                       (per-page dHash/aHash + size +
+//                                                     source deck hash, committed)
+// Only the perceptual hashes + metadata are committed; the PNG bodies are large and gitignored.
 //
-// 用法：
-//   node tests/tools/golden-render.mjs               # 全量重建基线
-//   node tests/tools/golden-render.mjs --filter chart  # 只重建匹配项目（谨慎：会替换基线子集）
-// 依赖：本机 Chrome/Edge（SMOKE_CHROME 可指定）；需网络字体时自动 fetch（与 CLI render 同）。
+// Usage:
+//   node tests/tools/golden-render.mjs               # rebuild the whole baseline
+//   node tests/tools/golden-render.mjs --filter chart  # rebuild matching projects only (careful: replaces a baseline subset)
+// Depends on a local Chrome/Edge (SMOKE_CHROME can point at it); web fonts are fetched as needed
+// (same as CLI render).
 // ============================================================================
 
 import { mkdirSync, writeFileSync, existsSync, rmSync, readFileSync } from "node:fs";
@@ -35,7 +36,7 @@ if (!projects.length) {
   process.exit(1);
 }
 
-// 已有基线（--filter 增量时合并保留其它项目）
+// Existing baseline (a --filter incremental run merges and keeps the other projects)
 const prev = existsSync(MANIFEST) ? JSON.parse(readFileSync(MANIFEST, "utf8")) : null;
 const manifest = {
   version: 1,

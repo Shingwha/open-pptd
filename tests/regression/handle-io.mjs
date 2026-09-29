@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 // ============================================================================
-// handle-io.mjs — 本地项目句柄读写回归（纯 Node，mock 句柄）
+// handle-io.mjs — local project handle read/write regression (pure Node, mock handles)
 // ----------------------------------------------------------------------------
-// handle-io.js 的全部函数只依赖句柄接口（getFileHandle/getDirectoryHandle/
-// getFile/createWritable），用内存 mock 即可全覆盖：
-//   1. readProject：manifest+pages 读取、缺页容忍、无 deck.pptd 报错
-//   2. hasDeck 轻校验
-//   3. writeFiles：文本/嵌套目录/base64 媒体写回
-//   4. fingerprint：稳定、写入后变化（实时刷新轮询的判定基础）
+// Every handle-io.js function depends only on the handle interface
+// (getFileHandle/getDirectoryHandle/getFile/createWritable), so an in-memory mock
+// covers it fully:
+//   1. readProject: manifest + pages, missing-page tolerance, error when deck.pptd is absent
+//   2. hasDeck light check
+//   3. writeFiles: text / nested directories / base64 media write-back
+//   4. fingerprint: stable, changes after a write (basis for the live-refresh poll)
 // ============================================================================
 
 import { readProject, hasDeck, writeFiles, fingerprint } from "../../editor/app/project/handle-io.js";
@@ -18,7 +19,7 @@ function log(name, pass, detail = "") {
   console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? "  " + detail : ""}`);
 }
 
-// ---------------------------------------------------------------- 内存 mock 句柄
+// ---------------------------------------------------------------- in-memory mock handles
 const notFound = () => Object.assign(new Error("NotFoundError"), { name: "NotFoundError", code: 8 });
 
 class MockFile {
@@ -81,7 +82,7 @@ class MockDir {
   async isSameEntry(other) { return other === this; }
 }
 
-/** 组一个最小项目目录：deck.pptd + pages/1.page。 */
+/** Build a minimal project directory: deck.pptd + pages/1.page. */
 function makeProject({ extraManifestPages = [] } = {}) {
   const dir = new MockDir("测试项目");
   const pageList = ["pages/1.page", ...extraManifestPages].map((p) => `  - ${p}`).join("\n");
@@ -98,7 +99,7 @@ function makeProject({ extraManifestPages = [] } = {}) {
   const { manifestText, pageTexts, missing } = await readProject(dir);
   log("readProject 读 manifest + 页面", manifestText.includes("句柄测试") && pageTexts.get("pages/1.page")?.includes("pageType") && missing === 0);
 
-  const dir2 = makeProject({ extraManifestPages: ["pages/2.page"] }); // manifest 列了但文件不存在
+  const dir2 = makeProject({ extraManifestPages: ["pages/2.page"] }); // listed in manifest but missing on disk
   const r2 = await readProject(dir2);
   log("readProject 缺页容忍（missing 计数）", r2.missing === 1 && r2.pageTexts.size === 1);
 
@@ -117,11 +118,11 @@ function makeProject({ extraManifestPages = [] } = {}) {
 // ---------------------------------------------------------------- 2) writeFiles
 {
   const dir = makeProject();
-  const b64 = btoa("hello"); // 模拟 persistDataUrlImages 的 {path, b64}
+  const b64 = btoa("hello"); // mimics persistDataUrlImages' {path, b64}
   const count = await writeFiles(dir, [
     { path: "deck.pptd", content: "version: v2\ntitle: 改后\npages:\n  - pages/1.page\n  - pages/9.page\n" },
-    { path: "pages/9.page", content: "pageType: content\nelements: []\n" }, // 嵌套目录已存在
-    { path: "media/img.png", content: null, b64 }, // 嵌套目录不存在 + 二进制
+    { path: "pages/9.page", content: "pageType: content\nelements: []\n" }, // nested directory already exists
+    { path: "media/img.png", content: null, b64 }, // nested directory absent + binary
   ]);
   const manifest = await dir.children.get("deck.pptd").getFile();
   const imgFile = await dir.children.get("media").children.get("img.png").getFile();

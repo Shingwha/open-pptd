@@ -1,9 +1,10 @@
 // ============================================================================
-// tests/regression/package-integrity.mjs — PPTX 包内引用一致性检查
+// tests/regression/package-integrity.mjs — PPTX in-package reference integrity
 // ----------------------------------------------------------------------------
-// PowerPoint 弹「修复」的头号原因：rels/rId 引用缺失、Target 部件不存在、
-// [Content_Types] 未声明扩展名、超链接缺 TargetMode。
-// 用法：node tests/regression/package-integrity.mjs <out.pptx> [slideCount]
+// The top cause of PowerPoint's "repair" prompt: missing rels/rId references,
+// a rels Target part that does not exist, an extension not declared in
+// [Content_Types], or a hyperlink without TargetMode.
+// Usage: node tests/regression/package-integrity.mjs <out.pptx> [slideCount]
 // ============================================================================
 
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -24,7 +25,7 @@ const files = unzip(bytes, dir);
 const read = (p) => readFileSync(join(dir, p), "utf8");
 let fail = 0;
 
-// 1. slide XML 引用的 rId 是否都在对应 rels 中定义
+// 1. Every rId referenced by slide XML must be defined in the matching rels
 for (let i = 1; i <= slideCount; i++) {
   const slide = read(`ppt/slides/slide${i}.xml`);
   const rels = read(`ppt/slides/_rels/slide${i}.xml.rels`);
@@ -36,7 +37,7 @@ for (let i = 1; i <= slideCount; i++) {
       fail++;
     }
   }
-  // rels Target 部件是否存在（外链跳过）
+  // rels Target part must exist (external links skipped)
   for (const m of rels.matchAll(/Target="([^"]+)"/g)) {
     const t = m[1];
     if (/^(https?:|mailto:)/.test(t) || t.startsWith("/")) continue;
@@ -46,7 +47,7 @@ for (let i = 1; i <= slideCount; i++) {
       fail++;
     }
   }
-  // 超链接 rels 必须 External
+  // Hyperlink rels must be External
   for (const m of rels.matchAll(/<Relationship[^>]*Type="[^"]*\/hyperlink"[^>]*\/>/g)) {
     if (!/TargetMode="External"/.test(m[0])) {
       console.log(`✗ slide${i} 超链接 rels 缺 TargetMode=External: ${m[0].slice(0, 120)}`);
@@ -55,14 +56,14 @@ for (let i = 1; i <= slideCount; i++) {
   }
 }
 
-// 1.5 notesSlide 回指校验：slideN → notesSlideX 必须存在，且 notesSlideX 的 rels 必须指回 slideN
-// （同时抓住「引用缺失」与「备注错位挂到错误页」两类问题）
+// 1.5 notesSlide back-reference: slideN → notesSlideX must exist, and notesSlideX's rels
+// must point back to slideN (catches both a missing reference and a note attached to the wrong page)
 for (const f of files.filter((f) => f.startsWith("ppt/slides/_rels/") && f.endsWith(".rels"))) {
   const i = f.match(/slide(\d+)\.xml\.rels$/)?.[1];
   if (!i) continue;
   const rels = read(f);
   const m = rels.match(/notesSlide(\d+)\.xml/);
-  if (!m) continue; // 该页无备注
+  if (!m) continue; // no notes on this page
   const x = m[1];
   const notesFile = `ppt/notesSlides/notesSlide${x}.xml`;
   if (!files.includes(notesFile)) {
@@ -77,7 +78,7 @@ for (const f of files.filter((f) => f.startsWith("ppt/slides/_rels/") && f.endsW
   }
 }
 
-// 1.6 图表子元素顺序（ECMA-376 CT_BarChart：gapWidth 必须先于 overlap）
+// 1.6 chart child-element order (ECMA-376 CT_BarChart: gapWidth must precede overlap)
 for (const f of files.filter((f) => /^ppt\/charts\/chart\d+\.xml$/.test(f))) {
   const xml = read(f);
   for (const m of xml.matchAll(/<c:barChart>([\s\S]*?)<\/c:barChart>/g)) {
@@ -91,7 +92,7 @@ for (const f of files.filter((f) => /^ppt\/charts\/chart\d+\.xml$/.test(f))) {
   }
 }
 
-// 2. presentation.xml.rels 引用的 slide/主题等部件存在（Target 相对 ppt/ 目录）
+// 2. Parts referenced by presentation.xml.rels (slides/theme/...) must exist (Target relative to ppt/)
 const prez = read("ppt/_rels/presentation.xml.rels");
 for (const m of prez.matchAll(/Target="([^"]+)"/g)) {
   const t = m[1];
@@ -103,7 +104,7 @@ for (const m of prez.matchAll(/Target="([^"]+)"/g)) {
   }
 }
 
-// 3. [Content_Types] 覆盖所有部件的扩展名
+// 3. [Content_Types] covers every part's extension
 const ct = read("[Content_Types].xml");
 for (const f of files) {
   if (f === "[Content_Types].xml" || f === "_rels/.rels") continue;
@@ -116,7 +117,7 @@ for (const f of files) {
   }
 }
 
-// 4. 所有 XML 部件良构
+// 4. All XML parts are well-formed / readable
 for (const f of files.filter((f) => f.endsWith(".xml") || f.endsWith(".rels"))) {
   try {
     read(f);
