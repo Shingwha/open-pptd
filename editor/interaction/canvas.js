@@ -16,7 +16,7 @@
 //   - 几何统一走 coords.js 的 overlayGeom（模型坐标 → wrap 图层），控件恒定屏幕尺寸。
 // ============================================================================
 
-import { overlayGeom } from "../coords.js";
+import { overlayGeom, layoutElementOf } from "../coords.js";
 import { ICON_ROTATE } from "../icons.js";
 
 const CORNERS = ["nw", "ne", "sw", "se"];
@@ -77,13 +77,26 @@ export function createCanvasController(canvas, opts) {
     return { picked, affected, members };
   }
 
+  /**
+   * 元素视觉几何 [x,y,w,h]（模型坐标）——选中框/成员边框/框选命中的统一几何来源。
+   * 读 LayoutTree（RP-C / M6）：文本取 **declared**（作者框，可见内容锚定处；frame.h
+   * 是撑高值，用它会让空框高出文字）；表格等无文本语义元素取 frame（撑高后的实际高，
+   * 表格长高后选中框随之贴合）。布局树无该元素（如 group 组壳、模型未重绘）回退 el.bounds。
+   */
+  function geomOf(el) {
+    const le = layoutElementOf(el.elementId);
+    if (!le) return el.bounds || [0, 0, 0, 0];
+    const b = el.elementType === "text" ? le.declared : le.frame;
+    return [b.x, b.y, b.w, b.h];
+  }
+
   const unionOf = (els) => {
     let x1 = Infinity;
     let y1 = Infinity;
     let x2 = -Infinity;
     let y2 = -Infinity;
     for (const el of els) {
-      const b = el.bounds || [0, 0, 0, 0];
+      const b = geomOf(el);
       x1 = Math.min(x1, b[0]);
       y1 = Math.min(y1, b[1]);
       x2 = Math.max(x2, b[0] + b[2]);
@@ -92,18 +105,12 @@ export function createCanvasController(canvas, opts) {
     return [x1, y1, x2 - x1, y2 - y1];
   };
 
-  /** 选中框几何（模型坐标）：单选 = 元素框（表格用实测高）；多选/组 = 包围盒。 */
+  /** 选中框几何（模型坐标）：单选 = 元素几何（文本 declared / 其余 frame）；多选/组 = 包围盒。 */
   function boxModelBounds() {
     const picked = getSelectedElements ? getSelectedElements() : [];
     if (picked.length === 0) return null;
     if (picked.length === 1 && picked[0].elementType !== "group") {
-      const el = picked[0];
-      let h = el.bounds[3];
-      if (el.elementType === "table") {
-        const node = nodeBy(el.elementId);
-        if (node && node.offsetHeight > 0) h = node.offsetHeight;
-      }
-      return [el.bounds[0], el.bounds[1], el.bounds[2], h];
+      return geomOf(picked[0]);
     }
     return unionOf(picked);
   }
@@ -184,12 +191,7 @@ export function createCanvasController(canvas, opts) {
     box.style.transform = single && picked[0].rotation ? `rotate(${picked[0].rotation}deg)` : "";
 
     for (const { el, node } of memberNodes) {
-      let h = el.bounds[3];
-      if (el.elementType === "table") {
-        const n = nodeBy(el.elementId);
-        if (n && n.offsetHeight > 0) h = n.offsetHeight;
-      }
-      const mg = overlayGeom(canvas, wrapLayer, [el.bounds[0], el.bounds[1], el.bounds[2], h]);
+      const mg = overlayGeom(canvas, wrapLayer, geomOf(el));
       node.style.left = `${mg.left}px`;
       node.style.top = `${mg.top}px`;
       node.style.width = `${mg.width}px`;
@@ -241,7 +243,7 @@ export function createCanvasController(canvas, opts) {
     return elements()
       .filter((el) => el.elementType !== "group") // 组成员由组代替命中
       .filter((el) => {
-        const b = el.bounds;
+        const b = geomOf(el);
         return b[0] < x + w && b[0] + b[2] > x && b[1] < y + h && b[1] + b[3] > y;
       })
       .map((el) => el.elementId);
@@ -270,7 +272,7 @@ export function createCanvasController(canvas, opts) {
       if (!el) continue;
       const m = document.createElement("div");
       m.className = "member";
-      const mg = overlayGeom(canvas, wrapLayer, el.bounds);
+      const mg = overlayGeom(canvas, wrapLayer, geomOf(el));
       m.style.left = `${mg.left}px`;
       m.style.top = `${mg.top}px`;
       m.style.width = `${mg.width}px`;

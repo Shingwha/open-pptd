@@ -10,12 +10,22 @@
 
 import { getType } from "../../types/index.js";
 import { quickbarColor, quickbarSelect, quickbarBtn, quickbarTextBtn, isNarrow } from "../../ui.js";
-import { relRect } from "../../coords.js";
+import { relRect, setLayoutPage } from "../../coords.js";
 import { createViewport, deckSize } from "./viewport.js";
 import { createThumbnails } from "./thumbnails.js";
 import { dom } from "../../dom.js";
 import { resolveColor } from "../../../packages/model/index.js";
-import { renderPage } from "../../../packages/renderer/index.js";
+import { layout } from "../../../packages/layout/index.js";
+import { paintPage } from "../../../packages/renderer/index.js";
+import { showToast } from "../toast.js";
+import { createDomMeasure, isDomMeasureAvailable } from "./dom-measure.js";
+
+// 编辑器布局用的 MeasurePort：浏览器内接 DOM 精修适配器（M6），否则回退纯函数
+const measurePort = isDomMeasureAvailable() ? createDomMeasure() : undefined;
+
+// 越界轻提示去重（每页记上一次数量；同一状态不重复弹）
+const lastOverflow = new Map();
+let overflowDeck = null;
 
 export function createView({ state, page, selected, api, controller, props }) {
   // 模块严格模式下裸调用 render() 时 this 为 undefined，统一经 viewObj 自引用
@@ -92,12 +102,36 @@ export function createView({ state, page, selected, api, controller, props }) {
     viewport.applyScale();
     // transform-origin 为 center：flex 居中 + 中心锚点缩放，视觉左右/上下对称，无需 margin 补偿
     const pg = page();
-    // renderPage 适配器内部 layout → paintPage：文本/表格已按 LayoutTree frame 撑高，
-    // 渲染后不再有 DOM 测量写回（spec 10 T1/T2：布局之后无测量、模型永不写回）
-    renderPage(canvas, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
+    // resolve → layout → paint：几何事实在 layout 一次性算定（RP-C / M6）。
+    // 编辑器内用 domMeasure 精修文本残差（结果只进 layout，不进模型）；
+    // 同一棵 LayoutTree 交给选中框/参考线（coords.setLayoutPage），paint 与选中框不再各算一套。
+    const tree = layout({ ...state.deck, theme: state.theme ?? state.deck.theme, pages: [pg] }, measurePort);
+    paintPage(tree.pages[0], {
+      container: canvas,
+      page: pg,
+      theme: state.theme,
+      imageMap: state.imageMap,
+      iconMap: state.iconMap,
+    });
+    setLayoutPage(tree.pages[0]);
+    notifyOverflow(state.currentPage, tree.pages[0]);
     controller.refreshSelection();
     // 渐进加载遮罩：当前页资产未就绪时盖住失败占位（资产到位经 refreshPage 重渲染移除）
     if (dom.canvasLoading) dom.canvasLoading.hidden = !state.pagesPending?.has(pg);
+  }
+
+  /** 越界事实 → 轻提示（消费 layout overflow；同一数量不重复弹，非常驻浮层）。 */
+  function notifyOverflow(pageIndex, layoutPageNode) {
+    if (overflowDeck !== state.deck) {
+      overflowDeck = state.deck;
+      lastOverflow.clear();
+    }
+    const count = (layoutPageNode?.elements || []).filter((e) => e.overflow?.x || e.overflow?.y).length;
+    const prev = lastOverflow.get(pageIndex);
+    if (count > 0 && count !== prev) {
+      showToast(`⚠ 本页 ${count} 个元素超出画布范围`, "info", 4000);
+    }
+    lastOverflow.set(pageIndex, count);
   }
 
   // --------------------------------------------------------------------------
