@@ -66,7 +66,7 @@ node bin/open-pptd.js fonts download 得意黑   # 按需，导出前跑
 - 「把这份大纲做成演示文稿」+ 粘贴大纲
 - 「做一张白露节气主题海报」
 
-AI 会按 `SKILL.md` 的工作流交付**两样东西**：可编辑的 PPTD 项目目录（manifest + pages + media），以及直接可发的 `.pptx`（字体嵌入、转场就绪）。
+AI 会按 open-pptd 技能（`open-pptd-skill` 仓，含 SKILL.md 与 references/ 方法论）的工作流交付**两样东西**：可编辑的 PPTD 项目目录（manifest + pages + media），以及直接可发的 `.pptx`（字体嵌入、转场就绪）。
 
 想实时围观生成过程，让 AI 起本地预览服务（或自己跑）：
 
