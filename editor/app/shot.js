@@ -1,24 +1,27 @@
 // ============================================================================
-// app/shot.js — headless screenshot mode (?shot=1, used by `open-pptd render`)
+// app/shot.js — headless screenshot driver (?shot=1, used by `open-pptd render`)
 // ----------------------------------------------------------------------------
-// Skips the whole editor UI and paints each page straight into a bare container
-// sized to the deck itself (960×540 when size is missing) — same paint pipeline
-// as the editor preview (layout → renderer/page.js paintPage + the same font
-// files + the same imageMap).
-// Public contract (for the CDP driver in packages/renderer/headless/shoot.js):
+// No assembly of its own: it mounts createEditor with the non-interactive
+// capability (chrome:"shot" → interactive:false) on a fixed, deck-sized
+// #shot-root paint surface. State, api, project IO (load / fonts / images / live
+// channel) and the paint channel (renderPage → layout → paintPage + the same
+// imageMap / iconMap / theme / font files as the editor preview) are therefore
+// the editor's own code path, not a parallel one (spec 22 S5).
+//
+// The driver only owns the CDP-facing contract:
 //   window.__pptdShot = { count, goto(index), width, height }
 //   window.pptdReady("ready")   = current page painted and stable, ready to shoot
 //                                 (injected via CDP Runtime.addBinding; skipped outside CDP)
 //   window.pptdReady("error")   = initialization failed
 //   document.title === "PPTD_READY" / "PPTD_ERROR" is kept as an observable (manual/walkthrough use)
+// ?shot=1 semantics are unchanged: .shot-mode on <html> (zero chrome, no
+// transitions, #editor-app display:none) and a bare body-level #shot-root.
 // This module is not loaded when the editor is opened normally (no ?shot=1).
 // ============================================================================
 
-import { createEditorState } from "./state.js";
-import { createIo } from "./project/io.js";
+import { createEditor } from "../editor.js";
 import { httpSource } from "./project/source.js";
 import { SHOT_READY_TITLE, deckSize } from "../../packages/model/index.js";
-import { renderPage } from "../../packages/renderer/index.js";
 
 export const READY_TITLE = SHOT_READY_TITLE;
 
@@ -49,22 +52,29 @@ async function runShot(deckUrl) {
   if (!deckUrl) throw new Error("shot 模式需要 ?deck= 参数");
   document.documentElement.classList.add("shot-mode");
 
-  // Minimal assembly: state + io (only the load/font/image pipeline; view is a
-  // stub and all UI stays hidden. refreshPage is called by finishLoad's
-  // progressive load, so the stub must provide it).
-  const { state, ops } = createEditorState();
-  // Single read source: screenshot mode always goes over HTTP (loadDeck passes deckUrl as the read hint)
-  const io = createIo({ state, ops, view: { render() {}, refreshPage() {} }, source: httpSource({}) });
-
+  // Paint surface: fixed at the viewport origin, sized to the deck by the
+  // headless view (it doubles as createEditor's mount point).
   const root = document.createElement("div");
   root.id = "shot-root";
   document.body.appendChild(root);
   root.style.cssText = "position:fixed;left:0;top:0;overflow:hidden;background:#fff;";
 
+  // Standard assembly, non-interactive. ready rejects when the deck cannot be
+  // loaded (the headless bootstrap propagates instead of showing an error state).
+  const { state, view, ready } = createEditor(root, {
+    source: httpSource({}),
+    deckUrl,
+    chrome: "shot",
+    interactive: false,
+  });
+  await ready;
+
+  const [deckW, deckH] = deckSize(state.deck);
+
   /** Paint one page and wait for the frame to settle: fonts ready + images decoded + double rAF (charts drawn synchronously with animation:false). */
-  async function render(index) {
-    const page = state.deck.pages[index];
-    renderPage(root, page, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
+  async function goto(index) {
+    const i = Math.max(0, Math.min(state.deck.pages.length - 1, index));
+    view.render(i); // the headless paint view (renderPage over the shared pipeline)
     const imgs = [...root.querySelectorAll("img")];
     await Promise.all([
       document.fonts.ready,
@@ -73,21 +83,13 @@ async function runShot(deckUrl) {
       ),
     ]);
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-  }
-
-  async function goto(index) {
-    const i = Math.max(0, Math.min(state.deck.pages.length - 1, index));
-    await render(i);
     document.title = READY_TITLE;
     notifyReady("ready"); // CDP ready event (replaces title polling)
     return i;
   }
 
-  await io.loadDeck(deckUrl, { silent: true });
-  // Container = the deck's own size (960×540 fallback when size is missing/invalid), supporting any canvas ratio (e.g. a 3:4 poster)
-  const [deckW, deckH] = deckSize(state.deck);
-  root.style.width = `${deckW}px`;
-  root.style.height = `${deckH}px`;
+  // Container width/height are set by the paint view; the contract reports the
+  // deck's own size (960×540 fallback), supporting any canvas ratio (e.g. a 3:4 poster)
   window.__pptdShot = { count: state.deck.pages.length, goto, width: deckW, height: deckH };
   await goto(0); // CDP only starts per-page driving after the first page is ready
 }
