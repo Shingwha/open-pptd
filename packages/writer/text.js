@@ -11,7 +11,7 @@ import { resolveFont, resolveColor } from "../model/theme.js";
 import { latexToMathml } from "../model/latex.js";
 import { mathmlToOmml } from "../model/mathml2omml.js";
 import { computeBaseStyle, mergeRunStyle } from "../model/style.js";
-import { fontKey } from "../model/font.js";
+import { lineHeightMultiplierFor } from "../measure/index.js";
 import { colorElement, solidFillElement, buildXfrm, buildFill, shadowElement } from "./drawing.js";
 import { ooxmlTextAlign, ooxmlAnchor, LIST_INDENT } from "../model/style-spec.js";
 
@@ -26,20 +26,16 @@ const MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 const MATH_FONT = '<a:latin typeface="Cambria Math"/><a:ea typeface="Cambria Math"/>';
 
 // —— 行距补偿：字体单倍行距系数（PowerPoint spcPct 的基数，见 paragraphProps 注释）——
-// 全自适应：嵌入字体（含全部内置库字体）导出时从真实字节解析实测值
-// （buildEmbeddedFonts.lineMetrics，新字体零维护）；未嵌入字体（系统字体等，
-// 导出时无字节可测）兜底 1.2（中西文常见单倍系数）。
-const DEFAULT_LINE_FACTOR = 1.2;
+// 行高单源（spec 10 T3 / 方案 §3.1）：系数一律由 measure 度量表推导
+// （lineHeightMultiplierFor，与 layout/preview 同表同阶梯：注册字体实测 →
+// 系统字体常量 → 1.2 兜底）。此前优先 options.fontMetrics 现查（导出时从字体
+// 字节另算一份），两表可能漂移；现统一到 measure 单源。
 
-/** 段落字体 → 单倍行距系数：嵌入字体实测（ctx.fontMetrics）> 兜底 1.2。 */
-function lineFactorOf(theme, fontFamily, metrics) {
+/** 段落字体 → 单倍行距系数（measure 度量表同表推导）。 */
+function lineFactorOf(theme, fontFamily) {
   const font = resolveFont(theme, fontFamily) || {};
-  for (const name of [font.ea, font.latin]) {
-    if (!name) continue;
-    const key = fontKey(name);
-    if (metrics && metrics[key] != null) return metrics[key];
-  }
-  return DEFAULT_LINE_FACTOR;
+  // ea 优先（与旧 lineFactorOf 的查表顺序一致），其余走 measure 的 fallback 阶梯
+  return lineHeightMultiplierFor([font.ea, font.latin].filter(Boolean));
 }
 
 function runAttrs(s) {

@@ -14,7 +14,7 @@ import { existsSync, mkdirSync, writeFileSync, rmSync, readdirSync, statSync, mk
 import { join, dirname, basename, extname, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { findBrowser, freePort } from "./browser.js";
-import { connectCdp, waitReady, withTimeout, sleep } from "./cdp.js";
+import { connectCdp, enableReady, waitReady, withTimeout, sleep } from "./cdp.js";
 
 /**
  * 逐页渲染 deck 为 PNG。
@@ -87,7 +87,7 @@ export async function renderDeck({
       `--remote-debugging-port=${dbgPort}`,
       `--user-data-dir=${profileDir}`,
       "--window-size=960,540",
-      pageUrl,
+      "about:blank", // 先空白页：装配就绪绑定后再导航，避免首个 bindingCalled 丢失
     ],
     { stdio: "ignore" }
   );
@@ -97,9 +97,12 @@ export async function renderDeck({
   try {
     log(`渲染 ${manifestPath}（${browser}）`);
     cdp = await connectCdp(dbgPort, timeoutMs);
-    await cdp.send("Runtime.enable");
     await cdp.send("Page.enable");
-    await waitReady(cdp, timeoutMs); // 首页就绪
+    await enableReady(cdp); // Runtime.enable + addBinding（须在导航前）
+    // 先注册就绪监听再导航：页面 paint 完成后回调绑定 → 事件推送（无轮询）
+    const ready = waitReady(cdp, timeoutMs);
+    await cdp.send("Page.navigate", { url: pageUrl });
+    await ready;
 
     // 视口 = deck 自身尺寸（width/height 由 shot 契约带回），deviceScaleFactor 只放大
     // 输出分辨率。若把 scale 乘进 width/height，CSS 视口会大于容器，内容缩在左上角、

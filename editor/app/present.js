@@ -15,7 +15,7 @@
 
 import { ICON_FULLSCREEN } from "../icons.js";
 import { deckSize } from "../../packages/model/index.js";
-import { autoGrowTexts, disposeChartInstances, renderPage } from "../../packages/renderer/index.js";
+import { disposeChartInstances, renderPage } from "../../packages/renderer/index.js";
 
 const FADE_MS = 260; // 与导出 PPTX 的 <p:fade/> 过渡节奏一致
 const UI_HIDE_MS = 1800; // 鼠标停止移动后隐藏底部工具条
@@ -82,13 +82,13 @@ export function createPresent({ state, view }) {
     document.body.appendChild(root);
   }
 
-  /** 渲染某页到图层（图表实例先释放，与编辑器画布同一渲染管线）。 */
+  /** 渲染某页到图层（图表实例先释放，与编辑器画布同一渲染管线）。
+   * 高度由 layout frame 决定，不再写回模型（spec 10：模型永不写回）。 */
   function renderLayer(layer, i) {
     disposeChartInstances(layer);
     layer.innerHTML = "";
     const pg = state.deck.pages[i];
     renderPage(layer, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
-    autoGrowTexts(pg, layer, { writeBack: true }); // 写回模型：放映与导出高度一致
   }
 
   /** 切页：新页渲染进空闲图层 → 交叉淡化 → 清理旧图层。 */

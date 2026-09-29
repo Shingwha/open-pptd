@@ -11,7 +11,6 @@
 import { getType } from "../../types/index.js";
 import { quickbarColor, quickbarSelect, quickbarBtn, quickbarTextBtn, isNarrow } from "../../ui.js";
 import { relRect } from "../../coords.js";
-import { applyMeasurements } from "./measure.js";
 import { createViewport, deckSize } from "./viewport.js";
 import { createThumbnails } from "./thumbnails.js";
 import { dom } from "../../dom.js";
@@ -93,8 +92,9 @@ export function createView({ state, page, selected, api, controller, props }) {
     viewport.applyScale();
     // transform-origin 为 center：flex 居中 + 中心锚点缩放，视觉左右/上下对称，无需 margin 补偿
     const pg = page();
+    // renderPage 适配器内部 layout → paintPage：文本/表格已按 LayoutTree frame 撑高，
+    // 渲染后不再有 DOM 测量写回（spec 10 T1/T2：布局之后无测量、模型永不写回）
     renderPage(canvas, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
-    applyMeasurements(pg, canvas);
     controller.refreshSelection();
     // 渐进加载遮罩：当前页资产未就绪时盖住失败占位（资产到位经 refreshPage 重渲染移除）
     if (dom.canvasLoading) dom.canvasLoading.hidden = !state.pagesPending?.has(pg);
