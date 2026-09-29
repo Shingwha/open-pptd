@@ -10,6 +10,7 @@
 // ============================================================================
 
 import { listRecent } from "./project/handle-store.js";
+import { menuLabel } from "../components/menu.js";
 import { attachPopover } from "../popover.js";
 
 /**
@@ -17,6 +18,7 @@ import { attachPopover } from "../popover.js";
  * @param anchor the trigger button (click toggles open/close)
  * @param renderBody async ({ menu, item, sep, label, appendRecents }) => void
  *   called on every open (content is refreshed each time, so the recent list never goes stale)
+ *   `label` is the shared section-title primitive (components/menu.js menuLabel)
  */
 export function createFileMenu(anchor, renderBody) {
   let menu = null;
@@ -51,18 +53,11 @@ export function createFileMenu(anchor, renderBody) {
     return el;
   }
 
-  function label(text) {
-    const el = document.createElement("div");
-    el.className = "file-menu-label";
-    el.textContent = text;
-    return el;
-  }
-
   /** "Recent" section (not rendered when there are no entries). onPick(entry) is defined by the caller. */
   async function appendRecents(menu, onPick) {
     const recents = await listRecent();
     if (!recents.length) return;
-    menu.append(sep(), label("最近打开"));
+    menu.append(sep(), menuLabel("最近打开"));
     for (const entry of recents) {
       menu.appendChild(item(entry.name, { hint: timeAgo(entry.ts), onClick: () => onPick(entry) }));
     }
@@ -86,7 +81,7 @@ export function createFileMenu(anchor, renderBody) {
       popover = attachPopover(anchor, menu, { align: "left", isOpen, close });
     }
     menu.innerHTML = "";
-    await renderBody({ menu, item, sep, label, appendRecents });
+    await renderBody({ menu, item, sep, label: menuLabel, appendRecents });
     menu.classList.add("open");
     popover.position(); // show first, then position: offsetWidth only has a value once visible
   }
