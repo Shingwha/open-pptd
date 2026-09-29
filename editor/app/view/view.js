@@ -53,6 +53,7 @@ export function createView({ state, page, selected, api, controller, props }) {
     getZoom: viewport.getZoom,
     renderThumbnails: thumbnails.renderThumbnails,
     refreshPage,
+    destroy,
   });
 
   // --------------------------------------------------------------------------
@@ -206,6 +207,12 @@ export function createView({ state, page, selected, api, controller, props }) {
   function updateButtons() {
     dom.btnUndo.disabled = !state.history.canUndo();
     dom.btnRedo.disabled = !state.history.canRedo();
+  }
+
+  /** 释放：缩略条图表实例 + 监听、视口动画（destroy 用；幂等）。 */
+  function destroy() {
+    thumbnails.destroy?.();
+    viewport.destroy?.();
   }
 
   return viewObj;

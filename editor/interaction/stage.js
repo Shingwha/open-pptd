@@ -26,7 +26,12 @@ export function createStageController(stage, opts) {
     onActivate,   // (id) => void  双击元素进编辑器
     panBy, setZoom, getZoom, zoomReset,
   } = opts;
-  if (!stage) return;
+  if (!stage) return { destroy() {} };
+
+  // 生命周期：全部监听经 signal 注册，destroy() 一次解绑（可重复挂载/销毁）
+  const ac = new AbortController();
+  const on = (target, type, handler, o) =>
+    target.addEventListener(type, handler, { ...(typeof o === "boolean" ? { capture: o } : o || {}), signal: ac.signal });
 
   // 悬浮控件自带点击 / 滚动行为，不参与舞台手势
   const FLOATING =
@@ -41,7 +46,8 @@ export function createStageController(stage, opts) {
 
   // 触屏：空白面阻止浏览器手势（页面回弹 / 双击缩放），指针事件才能完整送达。
   // 元素与手柄由 .canvas 的 touch-action:none 覆盖。
-  stage.addEventListener(
+  on(
+    stage,
     "touchstart",
     (e) => {
       if (!isFloating(e.target) && !handleMode(e.target) && !e.target.closest("[data-element-id]")) {
@@ -59,14 +65,14 @@ export function createStageController(stage, opts) {
     const tag = (e.target.tagName || "").toLowerCase();
     return tag === "input" || tag === "textarea" || tag === "select" || e.target.isContentEditable;
   };
-  document.addEventListener("keydown", (e) => {
+  on(document, "keydown", (e) => {
     // 输入控件与按钮上的空格保留原生行为（无障碍）
     if (e.code !== "Space" || e.repeat || isTyping(e) || e.target.closest?.("button")) return;
     spacePan = true;
     stage.classList.add("space-pan");
     e.preventDefault(); // 阻止页面滚动
   });
-  document.addEventListener("keyup", (e) => {
+  on(document, "keyup", (e) => {
     if (e.code !== "Space") return;
     spacePan = false;
     stage.classList.remove("space-pan");
@@ -108,7 +114,8 @@ export function createStageController(stage, opts) {
     return repeat;
   }
 
-  stage.addEventListener(
+  on(
+    stage,
     "pointerdown",
     (e) => {
       if (isFloating(e.target)) return;
@@ -152,7 +159,7 @@ export function createStageController(stage, opts) {
     true // capture：先于 ECharts/zrender 等元素内部事件
   );
 
-  window.addEventListener("pointermove", (e) => {
+  on(window, "pointermove", (e) => {
     if (!pointers.has(e.pointerId)) return;
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pinch && pointers.size >= 2) {
@@ -182,9 +189,9 @@ export function createStageController(stage, opts) {
     tapPan = null;
     stage.classList.remove("panning");
   }
-  window.addEventListener("pointerup", endPointer);
-  window.addEventListener("pointercancel", endPointer);
-  window.addEventListener("blur", () => {
+  on(window, "pointerup", endPointer);
+  on(window, "pointercancel", endPointer);
+  on(window, "blur", () => {
     pointers.clear();
     pinch = null;
     tapPan = null;
@@ -195,7 +202,8 @@ export function createStageController(stage, opts) {
   // --------------------------------------------------------------------------
   // 滚轮：Ctrl/⌘ = 锚点缩放（防浏览器页面缩放），否则 = 平移
   // --------------------------------------------------------------------------
-  stage.addEventListener(
+  on(
+    stage,
     "wheel",
     (e) => {
       if (isFloating(e.target)) return; // 浮层（添加菜单列表等）保持原生滚动
@@ -213,7 +221,8 @@ export function createStageController(stage, opts) {
   // --------------------------------------------------------------------------
   // 双击：元素 → 进编辑器；空白 → 还原适配视图（缩放 + 平移一起归零）
   // --------------------------------------------------------------------------
-  stage.addEventListener(
+  on(
+    stage,
     "dblclick",
     (e) => {
       if (isFloating(e.target)) return;
@@ -223,4 +232,16 @@ export function createStageController(stage, opts) {
     },
     true
   );
+
+  return {
+    /** 释放全部监听与手势状态（幂等）。 */
+    destroy() {
+      ac.abort();
+      pointers.clear();
+      pinch = null;
+      tapPan = null;
+      spacePan = false;
+      stage.classList.remove("panning", "space-pan");
+    },
+  };
 }

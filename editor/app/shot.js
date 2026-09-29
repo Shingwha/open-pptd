@@ -12,6 +12,7 @@
 
 import { createEditorState } from "./state.js";
 import { createIo } from "./project/io.js";
+import { httpSource } from "./project/source.js";
 import { renderPage } from "../../packages/renderer/page.js";
 import { deckSize, SHOT_READY_TITLE } from "../../packages/model/model.js";
 
@@ -24,7 +25,8 @@ export async function initShot(deckUrl) {
   // 最小装配：state + io（仅用加载/字体/图片管线；view 用空桩，UI 全部隐藏。
   // refreshPage 为 finishLoad 渐进加载所调用，桩上必须存在）
   const { state } = createEditorState();
-  const io = createIo({ state, view: { render() {}, refreshPage() {} } });
+  // 只读单源：截图模式固定走 HTTP（loadDeck 传入 deckUrl 作为读取 hint）
+  const io = createIo({ state, view: { render() {}, refreshPage() {} }, source: httpSource({}) });
 
   const root = document.createElement("div");
   root.id = "shot-root";

@@ -1,150 +1,49 @@
 // ============================================================================
-// main.js — 入口（组合根）
+// main.js — standalone 入口（薄组合根）
 // ----------------------------------------------------------------------------
-// 编辑器装配：把 state / api / controller / props / view / io /
-// toolbar / keyboard 组装起来并启动。业务逻辑都在对应模块里：
-//   app/state.js    状态 + 纯模型操作
-//   app/view/view.js     渲染编排（画布/缩略条/面板/快速条）
-//   app/project/io.js       加载/保存/导出/图片
-//   app/toolbar.js  顶栏 + 添加菜单
-//   app/keyboard.js 全局快捷键
-//   types/          元素类型注册表（新增元素类型入口）
+// 只负责"从哪里打开、挂到哪、暴露哪些测试钩子"，编辑器装配全部在 editor.js：
+//   - ?shot=1        → 无头截图模式（app/shot.js，跳过编辑器 UI）
+//   - ?deck=<项目>    → createEditor + httpSource({ deckUrl })
+//   - 有会话恢复标记  → 续开上次本地项目（授权有效直开，否则弹恢复卡片）
+//   - 否则           → 空白编辑器
+//
+// 对外契约（零行为变化，消费端见 tests/e2e/incremental-load.mjs、
+// packages/renderer/headless/shoot.js）：
+//   window.__pptdEditor = ed.api   编辑器操作门面
+//   window.__pptdIo     = ed.io    项目 IO（e2e 调 saveProject() 验证写回）
+//   window.__pptdShot              shot 截图模式专用（由 app/shot.js 设置）
 // ============================================================================
 
-import { createEditorState } from "./app/state.js";
-import { createEditorApi } from "./app/api.js";
-import { createView } from "./app/view/view.js";
-import { createIo } from "./app/project/io.js";
-import { bindToolbar } from "./app/toolbar.js";
-import { bindKeyboard } from "./app/keyboard.js";
-import { createPresent } from "./app/present.js";
+import { createEditor } from "./editor.js";
+import { httpSource } from "./app/project/source.js";
 import { showToast } from "./app/toast.js";
-import { createCanvasController } from "./interaction/canvas.js";
-import { createStageController } from "./interaction/stage.js";
-import { SHOT_ERROR_TITLE } from "../packages/model/model.js";
-import { makeZoomCtlDraggable } from "./app/view/zoom-ctl.js";
-import { bindProperties } from "./interaction/properties.js";
 import { ensurePermission } from "./app/project/handle-io.js";
-import { getRecent, getPendingProjectId, clearPendingProject, addRecent, setPendingProject } from "./app/project/handle-store.js";
-import { injectIcons } from "./icons.js";
-import { dom } from "./dom.js";
+import {
+  getRecent,
+  getPendingProjectId,
+  clearPendingProject,
+  addRecent,
+  setPendingProject,
+} from "./app/project/handle-store.js";
 import { showDialog } from "./interaction/dialogs/base.js";
+import { SHOT_ERROR_TITLE } from "../packages/model/model.js";
 
 // 仓库根 URL（本文件位于 <root>/editor/，../ 即站点根）
 const ROOT = new URL("../", import.meta.url).href;
 
-// ----------------------------------------------------------------------------
-// 编辑器装配（懒初始化：进入 #edit 才执行，画廊模式零开销）
-// ----------------------------------------------------------------------------
-let editorReady = false;
-let io = null;
-
-function initEditor(deckUrl, { blankToast = true } = {}) {
-  if (editorReady) {
-    // 已装配：仅切换项目
-    if (deckUrl) {
-      io.loadDeck(deckUrl).catch((err) => {
-        showToast(`加载失败: ${err.message}`, "danger");
-        console.error(err);
-        dom.canvasLoading.hidden = true; // 撤掉启动遮罩，露出错误态
-      });
-    }
-    return;
-  }
-  editorReady = true;
-
-  const { state, page, selected, ops } = createEditorState();
-
-  const api = createEditorApi({ state, page, selected, ops });
-
-  // 元素手势执行器（拖动/缩放/旋转；不含视口手势，见下方 stage 路由器）
-  const controller = createCanvasController(dom.canvas, { ...api });
-
-  const props = bindProperties(dom.props, api);
-  const view = createView({ state, page, selected, api, controller, props });
-  api.bind({ controller, view });
-
-  // 舞台手势路由器：视口平移/缩放（空白拖动、空格/中键、滚轮、捏合）
-  // + 元素手势分发 + 点击空白取消选中 + 双击（元素进编辑 / 空白还原视图）
-  createStageController(dom.stage, {
-    element: controller,
-    select: api.select,
-    getSelected: api.getSelected,
-    deselect: () => api.select(null),
-    onActivate: (id) => {
-      // 双击：图表/表格进入数据编辑
-      const el = page().elements.find((e) => e.elementId === id);
-      if (!el) return;
-      ops.beginChange();
-      api.openEditor(el);
-    },
-    panBy: (dx, dy) => view.panBy(dx, dy),
-    setZoom: (z, anchor) => view.setZoom(z, anchor),
-    getZoom: () => view.getZoom(),
-    zoomReset: () => view.zoomReset(),
-  });
-  // 缩放控件：拖拽换位（位置持久化，双击百分比归位）
-  makeZoomCtlDraggable(dom.stage, dom.zoomCtl);
-
-  io = createIo({ state, view }); // 模块级 io：二次进入时复用（loadDeck）
-  api.fontOptions = () => io.fontManager.fontOptions(); // 元素字体下拉选项（延迟绑定，运行时取）
-
-  // 放映模式（顶栏「放映」按钮 + F5 进入；present 暴露在 api 上供测试）
-  const present = createPresent({ state, view });
-  api.present = present;
-  view.afterRender = () => {
-    ops.syncDirty(); // 撤销/重做、内容改回保存值后重算 dirty（与保存基线等值比较）
-    io.renderStatusBar(); // 状态栏（dirty 圆点等）随每次渲染刷新
-    present.sync(); // 放映中：实时刷新/窗口缩放时同步当前放映页
-  };
-  bindToolbar({ state, page, api, view, io, present });
-  bindKeyboard({ state, api, io, present });
-
-  // 实时刷新（统一项目模式）：本地挂载时订阅 server 推送；部署模式自动不启用
-  io.connectLiveReload();
-
-  // ------------------------------------------------------------------------
-  // 对外契约（window 调试/测试钩子，v3 #9 正式化——重命名/删除需同步更新消费端）：
-  //   window.__pptdEditor = api   编辑器操作门面（e2e 读 state.deck 页数等）
-  //   window.__pptdIo     = io    项目 IO（e2e 调 saveProject() 验证写回）
-  //   window.__pptdShot           shot 截图模式专用，契约见 app/shot.js 文件头
-  // 消费端：tests/e2e/incremental-load.mjs、
-  //         packages/renderer/headless/shoot.js（CDP 驱动）
-  // ------------------------------------------------------------------------
-  window.__pptdEditor = api;
-  window.__pptdIo = io;
-  // resize：rAF 防抖 + 全量渲染（跨断点拖动窗口时缩略图尺寸 / 快速条定位同步）
-  let resizeRaf = 0;
-  window.addEventListener("resize", () => {
-    cancelAnimationFrame(resizeRaf);
-    resizeRaf = requestAnimationFrame(() => view.render());
-  });
-
-  if (deckUrl) {
-    io.loadDeck(deckUrl).catch((err) => {
-      showToast(`加载失败: ${err.message}`, "danger");
-      console.error(err);
-      dom.canvasLoading.hidden = true; // 撤掉启动遮罩，露出错误态
-    });
-  } else {
-    // 空白编辑器：与「文件 → 新建空白」同一路径（一页空白 content，用户从零开始）
-    io.newProject({ toast: Boolean(blankToast) });
-  }
-}
-
-// ----------------------------------------------------------------------------
-// 本地项目会话恢复：上次打开的本地项目（画廊跳转 / 编辑器刷新）——授权仍有效
-// 则直接续开；否则弹恢复卡片，点「打开」在用户手势里重新授权（浏览器要求）。
-// ----------------------------------------------------------------------------
-async function restorePendingProject() {
-  const id = getPendingProjectId();
-  if (!id) return false;
-  const entry = await getRecent(id);
+/**
+ * 本地项目会话恢复：上次打开的本地项目（画廊跳转 / 编辑器刷新）——授权仍有效
+ * 则直接续开；否则弹恢复卡片，点「打开」在用户手势里重新授权（浏览器要求）。
+ * @param {object} io 编辑器 io 面
+ * @param {string|null} pendingId 启动前捕获的待恢复条目 id（空白初始化会清标记）
+ */
+async function restorePendingProject(io, pendingId) {
+  if (!pendingId) return false;
+  const entry = await getRecent(pendingId);
   if (!entry?.handle) {
     clearPendingProject();
     return false;
   }
-  initEditor(null, { blankToast: false }); // 空白垫底，恢复失败也能用
   let granted = false;
   try {
     granted = (await entry.handle.queryPermission({ mode: "readwrite" })) === "granted";
@@ -159,13 +58,13 @@ async function restorePendingProject() {
       showToast(`恢复项目失败: ${err.message}`, "danger");
     }
   }
-  showRestoreCard(entry);
+  showRestoreCard(io, entry);
   return true;
 }
 
 /** 恢复卡片：项目名 + [新建空白 / 打开项目]（打开在点击手势里请求授权）。
  * 走 showDialog 基础设施；无 ✕ / 遮罩关闭——必须显式二选一（误关会丢会话入口）。 */
-function showRestoreCard(entry) {
+function showRestoreCard(io, entry) {
   const hint = document.createElement("div");
   hint.className = "prop-hint";
   hint.textContent = `上次打开的「${entry.name}」。浏览器要求重新授权后才能访问该文件夹。`;
@@ -211,10 +110,9 @@ function showRestoreCard(entry) {
 }
 
 // ----------------------------------------------------------------------------
-// 启动：?deck= 加载指定项目；有会话恢复标记则续开本地项目；否则空白编辑器
+// 启动：?shot=1 截图；?deck= 加载指定项目；有会话恢复标记则续开；否则空白
 // ----------------------------------------------------------------------------
 async function boot() {
-  injectIcons(); // 顶栏图标占位（data-icon）注入实际 SVG（图标单一来源 icons.js）
   const params = new URLSearchParams(location.search);
   const deckParam = params.get("deck");
   const deckUrl = deckParam ? (/^https?:/.test(deckParam) ? deckParam : new URL(deckParam, ROOT).href) : null;
@@ -228,13 +126,26 @@ async function boot() {
       });
     return;
   }
+
+  // 空白初始化会清掉会话标记，故先捕获待恢复 id
+  const pendingId = deckUrl ? null : getPendingProjectId();
+  const root = document.getElementById("pptd-root") || document.body;
+  const ed = createEditor(root, {
+    source: httpSource({ deckUrl }),
+    deckUrl: deckUrl || null, // ?deck= 存在时加载它；否则 createEditor 静默空白
+    chrome: "full",
+  });
+
+  // 对外测试钩子（ui-shots.mjs / incremental-load.mjs / shoot.js 依赖）
+  window.__pptdEditor = ed.api;
+  window.__pptdIo = ed.io;
+
   if (deckUrl) {
     clearPendingProject(); // URL 项目优先，清掉本地项目会话标记
-    initEditor(deckUrl);
     return;
   }
-  if (await restorePendingProject()) return;
-  initEditor(null);
+  if (await restorePendingProject(ed.io, pendingId)) return;
+  showToast("已新建空白演示", "info");
 }
 
 boot();

@@ -18,6 +18,7 @@
 // ============================================================================
 
 import { showDialog, buildCellInput, button } from "./base.js";
+import { dialogs } from "../../dialogs.js";
 import { tableGrid, tryMerge, trySplit, normalizeCells, validateDims, estimateTableLayout } from "../../../packages/model/table.js";
 import { resolveColor, resolveTableStyle } from "../../../packages/model/theme.js";
 import * as ui from "../../ui.js";
@@ -139,7 +140,7 @@ export function openTableEditor(el, { onChange }) {
         if (!grid.isRegion() || (grid.regionRows() === 1 && grid.regionCols() === 1)) return;
         const s = grid.getSel();
         const err = tryMerge(rows, s.r1, s.c1, s.r2, s.c2, cols);
-        if (err) { alert(err); return; }
+        if (err) { dialogs.alert(err); return; }
         grid.setSel({ r: s.r1, c: s.c1 });
         render();
         commit();
@@ -149,7 +150,7 @@ export function openTableEditor(el, { onChange }) {
         const s = grid.getSel();
         if (!s || s.r1 != null) return;
         const err = trySplit(rows, s.r, s.c, cols);
-        if (err) { alert(err); return; }
+        if (err) { dialogs.alert(err); return; }
         render();
         commit();
       }, { disabled: true });
@@ -201,7 +202,7 @@ export function openTableEditor(el, { onChange }) {
         const e = s + span - 1;
         // 主格在区间内但覆盖出区间，或主格在区间外但覆盖进区间 → 禁止
         if ((s >= a1 && s <= a2 && e > a2) || (s < a1 && e >= a1)) {
-          alert(axis === "row" ? "选区涉及跨行合并单元格，请先拆分再删除行" : "选区涉及跨列合并单元格，请先拆分再删除列");
+          dialogs.alert(axis === "row" ? "选区涉及跨行合并单元格，请先拆分再删除行" : "选区涉及跨列合并单元格，请先拆分再删除列");
           return true;
         }
       }
@@ -221,7 +222,7 @@ export function openTableEditor(el, { onChange }) {
         if (span <= 1) continue;
         const s = axis === "row" ? r : c;
         if (s < at && at <= s + span - 1) {
-          alert(axis === "row" ? "插入位置与跨行合并单元格冲突，请先拆分" : "插入位置与跨列合并单元格冲突，请先拆分");
+          dialogs.alert(axis === "row" ? "插入位置与跨行合并单元格冲突，请先拆分" : "插入位置与跨列合并单元格冲突，请先拆分");
           return true;
         }
       }

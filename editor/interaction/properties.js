@@ -236,5 +236,12 @@ export function bindProperties(panel, api) {
     panel.appendChild(hint);
   }
 
-  return { refresh };
+  return {
+    refresh,
+    /** 释放：清空面板 DOM（绑定的监听都挂在面板子节点上，随之回收）。 */
+    destroy() {
+      panel.innerHTML = "";
+      txActive = false;
+    },
+  };
 }

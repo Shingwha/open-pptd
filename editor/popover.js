@@ -22,9 +22,10 @@
  * @param opts.flip    下方空间不足且上方足够时向上弹出
  * @param opts.isOpen  () => boolean
  * @param opts.close   () => void
- * @returns {{ position: () => void }}
+ * @returns {{ position: () => void, destroy: () => void }}
  */
 export function attachPopover(anchor, panel, { align = "left", gap = 8, width = 0, height = 0, flip = false, isOpen, close } = {}) {
+  const ac = new AbortController();
   function position() {
     const r = anchor.getBoundingClientRect();
     let top = r.bottom + gap;
@@ -50,13 +51,17 @@ export function attachPopover(anchor, panel, { align = "left", gap = 8, width = 
     if (!isOpen()) return;
     if (panel.contains(e.target) || anchor.contains(e.target)) return;
     close();
-  });
+  }, { signal: ac.signal });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && isOpen()) close();
-  });
+  }, { signal: ac.signal });
   window.addEventListener("resize", () => {
     if (isOpen()) position();
-  });
+  }, { signal: ac.signal });
 
-  return { position };
+  return {
+    position,
+    /** 解绑全局关闭/重定位监听（浮层 DOM 由调用方移除）。 */
+    destroy: () => ac.abort(),
+  };
 }

@@ -49,6 +49,7 @@ const HEX_RE = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 export function bindThemePanel({ state, api, io, anchor }) {
   let panel = null;
   let popover = null;
+  const ac = new AbortController();
 
   const isOpen = () => panel?.classList.contains("open");
 
@@ -233,5 +234,16 @@ export function bindThemePanel({ state, api, io, anchor }) {
   anchor.addEventListener("click", (e) => {
     e.stopPropagation();
     toggle();
-  });
+  }, { signal: ac.signal });
+
+  return {
+    /** 释放：解绑锚点监听、摘掉浮层与全局关闭监听。 */
+    destroy() {
+      ac.abort();
+      popover?.destroy();
+      popover = null;
+      panel?.remove();
+      panel = null;
+    },
+  };
 }

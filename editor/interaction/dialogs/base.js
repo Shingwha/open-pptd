@@ -4,6 +4,15 @@
 // 图表编辑器与表格编辑器共用；showDialog 是唯一弹窗入口。
 // ============================================================================
 
+// 打开的模态框登记（destroy 时统一关闭，避免 DOM 残留）
+const openOverlays = new Set();
+
+/** 关闭并移除当前全部模态框（createEditor destroy 用）。 */
+export function closeAllDialogs() {
+  for (const overlay of [...openOverlays]) overlay.remove();
+  openOverlays.clear();
+}
+
 /** 通用模态框：标题 + body + 底部按钮（默认单「完成」；点遮罩/✕ 关闭）。
  * actions: { doneText, onDone, buttons, panelClass, closeBtn, overlayClose }
  *   buttons      自定义底部按钮组（替代默认完成按钮，关闭走返回的 close()）
@@ -18,7 +27,10 @@ export function showDialog(title, buildBody, actions) {
   const head = document.createElement("div");
   head.className = "dialog-head";
   head.innerHTML = `<strong>${title}</strong>`;
-  const close = () => overlay.remove();
+  const close = () => {
+    overlay.remove();
+    openOverlays.delete(overlay);
+  };
   if (actions?.closeBtn !== false) {
     const closeBtn = document.createElement("button");
     closeBtn.className = "btn btn-sm";
@@ -47,6 +59,7 @@ export function showDialog(title, buildBody, actions) {
   panel.append(head, body, foot);
   overlay.appendChild(panel);
   document.body.appendChild(overlay);
+  openOverlays.add(overlay);
   if (actions?.overlayClose !== false) {
     overlay.addEventListener("pointerdown", (e) => {
       if (e.target === overlay) close();

@@ -1,12 +1,14 @@
 // ============================================================================
 // app/project/saver.js — 保存与导出
 // ----------------------------------------------------------------------------
-// 保存项目（统一入口 saveProject）：
-//   - 本地挂载模式：POST /api/save 批量写回磁盘（文本 utf8 / 图片 base64）
-//   - 部署模式（/api/save 不存在）：降级打包下载项目 zip 备份
+// 保存项目（统一入口 saveProject）：写回一律经注入的 ProjectSource
+// （app/project/source.js），本模块不再出现 fetch("/api/save") 字面量：
+//   - source.capabilities.writable === false → 直接降级「下载项目 zip」
+//   - write() 抛错（部署模式无 /api/save 端点）→ 同样降级 zip（行为保留）
+//   - 本地句柄项目的写回失败 → 明确报错（不静默降级，行为保留）
 // 导出 PPTX（exportPptx）：对话框勾选字体嵌入 + 嵌入范围（子集/完整）→ buildPptx → 下载。
 // 依赖注入：images（dataURL 图片落盘）、fontManager（字体库同步/嵌入）、
-// onSaved（保存成功后抑制 SSE 刷新回环）、renderStatusBar。
+// source（运输）、onSaved（保存成功后抑制 SSE 刷新回环）、renderStatusBar。
 // ============================================================================
 
 import { serializeDeck } from "../../../packages/model/pptd-io.js";
@@ -18,14 +20,13 @@ import { ZipWriter } from "../../../packages/writer/zip.js";
 import { showToast } from "../toast.js";
 import { showDialog } from "../../interaction/dialogs/base.js";
 import { openFontPanel } from "../../interaction/font-panel.js";
-import { writeFiles } from "./handle-io.js";
 import { createImageExporter } from "../export-image.js";
 import { mediaFilesOfDeck } from "./images.js";
 
 /** 字节数 → 人类可读（MB 一位小数 / KB 取整）。 */
 const fmtSize = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`);
 
-export function createProjectSaver({ state, images, fontManager, renderStatusBar, onSaved }) {
+export function createProjectSaver({ state, images, fontManager, renderStatusBar, onSaved, onError, source }) {
   /** 保存成功：当前 deck 记为已落盘基线（撤销回它即恢复干净，不再一律标脏）。 */
   const markSaved = () => {
     state.savedDeck = structuredClone(state.deck);
@@ -179,37 +180,38 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
       manifestName: state.manifestPath?.split("/").pop() || "deck.pptd",
     }).map((f) => ({ path: f.path, content: f.content }));
     files.push(...mediaFiles);
-    // 本地项目句柄：直接经句柄写回所选文件夹（不经服务器）
-    if (state.projectHandle) {
+    // 传输接缝：ProjectSource.write（HTTP POST /api/save 或句柄写回，由装配决定）
+    const writable = source && source.capabilities?.writable !== false;
+    if (writable) {
       try {
-        const count = await writeFiles(state.projectHandle, files);
+        const count = await source.write(files.map(toSourceFile));
         markSaved();
-        onSaved(); // 抑制轮询触发的自动刷新回环
+        onSaved(); // 抑制轮询/推送触发的自动刷新回环
         renderStatusBar();
-        showToast(`已保存 ${count} 个文件到 ${state.projectName || "项目文件夹"}`, "success");
+        showToast(
+          state.projectHandle
+            ? `已保存 ${count} 个文件到 ${state.projectName || "项目文件夹"}`
+            : `已保存 ${count} 个文件到项目目录`,
+          "success"
+        );
+        return;
       } catch (err) {
-        showToast(`保存失败: ${err.message}`, "danger");
-        console.error(err);
+        if (state.projectHandle) {
+          // 句柄写回失败：明确报错（不降级下载，行为保留）
+          showToast(`保存失败: ${err.message}`, "danger");
+          console.error(err);
+          onError?.(err);
+          return;
+        }
+        // URL 模式写回失败（部署模式无 /api/save）：降级为下载项目 zip
       }
-      return;
     }
-    // URL 模式：POST /api/save 写回挂载目录
-    try {
-      const res = await fetch("/api/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ files }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      markSaved();
-      onSaved(); // 抑制自己保存触发的 SSE 刷新
-      renderStatusBar();
-      showToast(`已保存 ${data.count} 个文件到项目目录`, "success");
-    } catch (err) {
-      // 部署模式（无 /api/save）或写回失败：降级为下载项目 zip
-      saveProjectAsZip(files);
-    }
+    saveProjectAsZip(files);
+  }
+
+  /** 内部保存条目 → ProjectSource.write 契约（text / bytes）。 */
+  function toSourceFile(f) {
+    return f.b64 != null ? { path: f.path, bytes: base64ToBytes(f.b64) } : { path: f.path, text: f.content };
   }
 
   /** 部署模式保存：打包下载（原实现 saveProject 的 zip 路径）。 */

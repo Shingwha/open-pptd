@@ -10,7 +10,8 @@
 const POS_KEY = "pptd.zoomCtlPos";
 
 export function makeZoomCtlDraggable(stage, ctl) {
-  if (!stage || !ctl) return;
+  if (!stage || !ctl) return { destroy() {} };
+  const ac = new AbortController();
 
   /** 设置为显式坐标定位（接管 CSS 停靠样式），并 clamp 进舞台保持完整可见。 */
   function place(left, top) {
@@ -78,7 +79,7 @@ export function makeZoomCtlDraggable(stage, ctl) {
     ctl.addEventListener("pointermove", onMove);
     ctl.addEventListener("pointerup", onUp);
     ctl.addEventListener("pointercancel", onUp);
-  });
+  }, { signal: ac.signal });
 
   // 双击百分比标签：恢复默认停靠（画布底部中央）
   ctl.querySelector(".zoom-label")?.addEventListener("dblclick", () => {
@@ -93,7 +94,7 @@ export function makeZoomCtlDraggable(stage, ctl) {
     } catch {
       /* 忽略 */
     }
-  });
+  }, { signal: ac.signal });
 
   // 窗口尺寸变化：自定义位置重新 clamp 进舞台（停靠态不动）
   window.addEventListener("resize", () => {
@@ -101,5 +102,7 @@ export function makeZoomCtlDraggable(stage, ctl) {
     const r = ctl.getBoundingClientRect();
     const s = stage.getBoundingClientRect();
     place(r.left - s.left, r.top - s.top);
-  });
+  }, { signal: ac.signal });
+
+  return { destroy: () => ac.abort() };
 }
