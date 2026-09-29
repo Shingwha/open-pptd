@@ -1,8 +1,8 @@
 // ============================================================================
 // dom.js — static skeleton element registry (the single entry for the page skeleton)
 // ----------------------------------------------------------------------------
-// Modules never call document.getElementById for skeleton ids; they read
-// dom.<name>.
+// Modules never call document.getElementById/querySelector for skeleton elements;
+// they read dom.<name> (or, for regions that carry no id, dom.query(selector)).
 // Lookups are lazy (first access) and cached: the skeleton is authored once by
 // editor/index.html and never replaced, so caching is safe. The authoritative id
 // contract is editor/index.html; register new skeleton elements here.
@@ -10,8 +10,8 @@
 // Scope and the one fallback: createEditor mounts on #pptd-root, which in
 // editor/index.html is an empty container while the skeleton is a sibling in
 // <body>. Every lookup therefore resolves "mount subtree first, document
-// fallback", and that fallback policy lives ONLY here — no module carries its own
-// equivalent.
+// fallback", and that fallback policy lives ONLY here (byId / query) — no module
+// carries its own equivalent.
 //
 // The skeleton deliberately stays a <body>-level sibling of #pptd-root: nesting
 // it inside the mount point would change three observable things at once — the
@@ -93,11 +93,14 @@ export function createDom(rootEl) {
 
   /** Resolve a skeleton element by id (mount subtree first, then document). */
   const byId = (id) => resolve(`id:${id}`, (r) => findById(r, id));
+  /** Resolve a skeleton region by CSS selector (mount subtree first, then document). */
+  const query = (selector) => resolve(`sel:${selector}`, (r) => r.querySelector(selector));
 
   const dom = Object.defineProperties(
     {},
     Object.fromEntries(Object.entries(IDS).map(([name, id]) => [name, { get: () => byId(id), enumerable: true }]))
   );
+  dom.query = query;
   /** Switch scope and clear the cache (createEditor mount / destroy restore). */
   dom.rebind = (next) => {
     cache.clear();

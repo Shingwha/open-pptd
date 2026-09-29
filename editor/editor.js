@@ -157,7 +157,7 @@ export function createEditor(rootEl, options = {}) {
   disposers.push(() => contextMenu.destroy?.());
 
   // Zoom control: drag-to-move (position persisted, double-click the percentage resets)
-  const zoomCtl = makeZoomCtlDraggable(dom.stage, dom.zoomCtl);
+  const zoomCtl = makeZoomCtlDraggable(dom.stage, dom.zoomCtl, dom.zoomLabel);
   disposers.push(() => zoomCtl.destroy?.());
 
   const io = createIo({
@@ -224,7 +224,7 @@ export function createEditor(rootEl, options = {}) {
   );
 
   // chrome trimming (embedded/object form): hide host-hostile outbound navigation and the given regions
-  const chromeHidden = applyChrome(mount, chrome);
+  const chromeHidden = applyChrome(chrome);
 
   // --------------------------------------------------------------------------
   // Initial load: deck → use directly; deckUrl → read(url); both omitted → follow
@@ -271,18 +271,18 @@ export function createEditor(rootEl, options = {}) {
   // --------------------------------------------------------------------------
   // chrome trimming
   // --------------------------------------------------------------------------
-  function applyChrome(hostEl, spec) {
+  function applyChrome(spec) {
     const obj = spec === "embedded" ? CHROME_PRESETS.embedded : spec === "full" || !spec ? null : spec;
     if (!obj) return [];
-    const q = (sel) => hostEl.querySelector?.(sel) || document.querySelector(sel);
+    // Skeleton region pickers; the scope-first / document-fallback policy is dom.js's (single point)
     const map = {
-      topbar: () => q(".topbar"),
-      brand: () => q(".brand-home"),
-      github: () => q(".topbar-actions a[href^='http']"),
-      thumbbar: () => q("footer.thumbbar"),
-      quickbar: () => q("#quickbar"),
-      zoom: () => q("#zoom-ctl"),
-      inspector: () => q("aside.inspector"),
+      topbar: () => dom.query(".topbar"),
+      brand: () => dom.query(".brand-home"),
+      github: () => dom.query(".topbar-actions a[href^='http']"),
+      thumbbar: () => dom.query("footer.thumbbar"),
+      quickbar: () => dom.quickbar,
+      zoom: () => dom.zoomCtl,
+      inspector: () => dom.query("aside.inspector"),
     };
     const hidden = [];
     for (const [key, pick] of Object.entries(map)) {
