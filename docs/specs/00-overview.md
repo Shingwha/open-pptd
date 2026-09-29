@@ -16,6 +16,7 @@ open-pptd 当前 v1.5.0（本仓库）。本次重构目标：
 | 技能拆分：`SKILL.md` + `references/` 迁出为独立纯文本技能仓 | |
 | 发布基础设施：仓库根 `install.ps1`/`install.sh`（raw URL 一键安装）+ 资产包 + SHA256SUMS | |
 | UI 重构两刀 U1（地基）/ U2（信息架构），按设计参考稿落地 | |
+| 渲染管线三段式：黄金基线 + measure/layout 新包 + paint 纯化 + capture 清理 + 图片导出统一 + 编辑器布局适配（08–11） | paint-svg 第二绘制后端、Canvas 后端、图表 I20/I22（2.x backlog）；writer OOXML 内部、PPTD 格式、CLI 命令面 |
 
 版本目标：**2.0.0**（W5 由 lead 统一 bump，agent 不得改 version）。
 
@@ -36,8 +37,11 @@ open-pptd 当前 v1.5.0（本仓库）。本次重构目标：
 | W2 ∥ | A3 resources-cli | `03-resources-cli.md` | `packages/paths.js`、`packages/config.js`、`packages/server/*`、`packages/cli/*`、`packages/model/{font-registry,icon-fa}.js`（仅 Node 分支）、`packages/writer/font.js`、`packages/index.js`（仅追加 paths/config 再导出）、`tests/regression/resource-paths.mjs` |
 | W2 ∥ | A4 skill-release | `04-skill-release.md` | 仓 1：`SKILL.md`、`references/`（删除）、`scripts/pack-release.mjs`、`scripts/install/**`、`install.ps1`、`install.sh`、`.github/workflows/*`、`tests/regression/package-integrity.mjs`（如需）；仓 2：`../open-pptd-skill` 全仓（新建） |
 | W3 | A5 ui-u1 | `05-ui-u1.md` | `editor/**`、`tests/tools/ui-shots.mjs`（如需）；**红线：`packages/` 零 diff** |
-| W4 | A6 ui-u2 | `06-ui-u2.md` | 同 A5 |
-| W5 | lead | — | 版本 2.0.0、CHANGELOG、全量回归、汇总 |
+| W4 ∥ | A6 ui-u2 | `06-ui-u2.md` | 同 A5 |
+| W4 ∥ | RP-A rp-foundations | `09-rp-foundations.md` | `packages/measure/**`、`packages/layout/**`（新建）、`packages/model/validate.js`、`package.json`（仅 exports 增 2 条）、`contract.json`（仅 entries 增 2 条）、`tests/contract/public-api.mjs`、`tests/regression/{validate,dep-graph}.mjs` + 新套件、`tests/run-all.mjs`、`tests/tools/golden-*.mjs`、`tests/golden/**`、`.gitignore`、`scripts/gen-font-metrics.mjs`（新）、`docs/embedding.md` |
+| W5 | RP-B rp-paint | `10-rp-paint.md` | `packages/renderer/**`、`packages/writer/**`（仅接口对齐）、`editor/app/view/{view,measure}.js`、`editor/app/{present,shot,export-image}.js`、`editor/types/*.js`、`tests/e2e/render.mjs` |
+| W6 | RP-C rp-editor-export | `11-rp-editor-export.md` | `editor/app/export-image.js`、`editor/interaction/{canvas,stage,coords}.js`、`editor/app/state.js`（仅 syncDirty 特例）、`packages/server/**`（出图端点） |
+| W7 | lead | — | 终验（含黄金 diff 复核）、版本 2.0.0、CHANGELOG、汇总 |
 
 跨波次文件移交（已授权，不属于冲突）：
 - `package.json` 的 `exports` map 由 A1 在 W1 一次写全（含 `./editor`、`./paths`、`./config` 条目，目标文件随后续波次落地）。

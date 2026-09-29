@@ -14,6 +14,7 @@
 | 6 | 句柄/增量/包完整 | `handle-io.mjs`、`e2e/incremental-load.mjs`、`package-integrity.mjs` 全绿 |
 | 7 | UI 波次隔离 | `git diff main -- packages/` 为空（仅 U1/U2） |
 | 8 | 资源解析（W2 起） | 删 `~/.open-pptd`（或用 OPEN_PPTD_HOME 指向空目录）后 CLI 与 serve 照常；home 存在过期 registry.json 不影响行为 |
+| 9 | 渲染黄金基线（W5 起） | `node tests/tools/golden-diff.mjs`：非表格页哈希全一致；表格页差异逐页目检进白名单；非白名单漂移 = 打回 |
 
 ## 每波门禁（lead 合并前执行）
 
