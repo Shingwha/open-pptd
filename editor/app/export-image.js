@@ -17,7 +17,7 @@
 
 import { showToast } from "./toast.js";
 import { bytesToBase64, deckSize } from "../../packages/model/index.js";
-import { autoGrowTexts, disposeChartInstances, renderPage } from "../../packages/renderer/index.js";
+import { disposeChartInstances, renderPage } from "../../packages/renderer/index.js";
 import { ZipWriter, dataUrlOf, downloadBlob, safeFileName } from "../../packages/writer/index.js";
 
 const DEFAULT_SCALE = 2; // 输出倍率缺省（1|2|3；倍率含义 = 画布逻辑尺寸 × N 像素）
@@ -133,7 +133,6 @@ export function createImageExporter({ state }) {
         iconMap: state.iconMap,
         pixelRatio: scale,
       });
-      autoGrowTexts(page, holder);
       const failed = await embedResources(holder);
       const blob = await rasterize(holder, w, h, scale);
       return { blob, failed };

@@ -37,9 +37,16 @@ export function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) 
 }
 
 export function renderTable(theme, el) {
-  const { rowHeights, columnWidths } = estimateTableLayout(el);
-  // 高度不预设：由内容决定（含边框线），避免底部边框被 overflow:hidden 裁剪
+  // 几何来源：有 LayoutTree 事实（paintPage 注入的 el.layout.table）时用 layout 的
+  // 精确行高/列宽/总高（与校验、导出同一棵树）；否则回退 model 的最小行高估算
+  // （直接调用 renderTable 的旧路径，如编辑器工具链）。
+  const lt = el.layout?.table;
+  const { rowHeights, columnWidths } = lt
+    ? { rowHeights: lt.rowHeights, columnWidths: lt.columnWidths }
+    : estimateTableLayout(el);
+  // 总高已知 → 外层容器高度预设（精确值），底部边框不再被 overflow:hidden 裁掉
   const box = createElementShell(el, { height: false });
+  if (lt) box.style.height = `${lt.totalHeight}px`;
   // 官方 Table.shadow → 导出 a:tblPr > a:effectLst，预览 box-shadow 同源投影
   const shadow = boxShadowCss(theme, el.shadow);
   if (shadow) box.style.boxShadow = shadow;
