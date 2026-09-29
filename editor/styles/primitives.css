@@ -951,17 +951,6 @@ body:not(.inspector-collapsed) #btn-inspector-open {
 .style-panel .prop-group:first-child { border-radius: var(--r-3) var(--r-3) 0 0; }
 .style-panel .prop-hint { margin: 10px; }
 
-.series-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
-.series-item {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 44px 90px 30px;
-  gap: 6px;
-  align-items: center;
-}
-.series-item input { padding: var(--space-1) 6px; font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--r-2); }
-.series-item input[type="color"] { width: 40px; height: 26px; padding: 1px; }
-.series-item select { padding: var(--space-1); font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--r-2); }
-
 /* 滚动条 */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: var(--r-2); }

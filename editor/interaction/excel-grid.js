@@ -11,21 +11,10 @@
 // 组件负责新选区与重建；样式面板等外部联动走 afterRender / onSelect。
 // ============================================================================
 
-import { button } from "./dialogs/base.js";
+import { button, buildCellInput } from "./dialogs/base.js";
 import { dialogs } from "../dialogs.js";
 import { bindExcelDragSelect } from "./drag-select.js";
-
-/** 列字母（Excel 式：A B … Z AA AB）。 */
-function colLetter(i) {
-  let s = "";
-  i += 1;
-  while (i > 0) {
-    const m = (i - 1) % 26;
-    s = String.fromCharCode(65 + m) + s;
-    i = Math.floor((i - 1) / 26);
-  }
-  return s;
-}
+import { colLetter } from "../../packages/model/index.js";
 
 /** 数据列最小宽度（px）：Excel 式固定列宽——列多时表格超宽出现横向滚动，不挤压。 */
 const MIN_COL_W = 96;
@@ -220,24 +209,10 @@ export function createExcelGrid(opts) {
         }
         if (rs > 1) td.rowSpan = rs;
         if (cs > 1) td.colSpan = cs;
-        const input = document.createElement("input");
-        input.type = "text";
-        input.value = cellValue(r, c) ?? "";
-        const ph = cellPlaceholder(r, c);
-        if (ph) input.placeholder = ph;
+        // Shared cell input: focus-select + Enter moves to the cell below
+        const input = buildCellInput(cellValue(r, c), cellPlaceholder(r, c), () => onCellChange(r, c, input.value));
         const icss = inputCss(r, c);
         if (icss) input.style.cssText = icss;
-        // Enter 向下跳格 + 聚焦全选
-        input.addEventListener("focus", () => input.select());
-        input.addEventListener("keydown", (e) => {
-          if (e.key !== "Enter") return;
-          e.preventDefault();
-          const nextTr = tr.nextElementSibling;
-          const nextInput = nextTr?.children?.[c + 1]?.querySelector("input");
-          if (nextInput) { nextInput.focus(); nextInput.select(); }
-          else input.blur();
-        });
-        input.addEventListener("change", () => onCellChange(r, c, input.value));
         td.appendChild(input);
         tr.appendChild(td);
       }

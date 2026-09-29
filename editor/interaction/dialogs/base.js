@@ -69,7 +69,7 @@ export function showDialog(title, buildBody, actions) {
 }
 
 // ----------------------------------------------------------------------------
-// 单元格交互（Enter 向下跳格 + 聚焦全选）
+// 单元格交互（focus 全选 + Enter 向下跳格）
 // ----------------------------------------------------------------------------
 function wireCellNav(input) {
   input.addEventListener("focus", () => input.select());
@@ -79,14 +79,13 @@ function wireCellNav(input) {
     const td = input.closest("td");
     const tr = td?.closest("tr");
     if (!tr) return;
+    // 下一行同列单元格（行头占位第 0 列，故按 td 在行内的位置取），
+    // 无下一行或下一格无输入（如被合并覆盖）时收起焦点
     const idx = Array.from(tr.children).indexOf(td);
-    const nextTr = tr.nextElementSibling;
-    if (nextTr) {
-      const nextInput = nextTr.children[idx]?.querySelector("input");
-      if (nextInput) {
-        nextInput.focus();
-        nextInput.select();
-      }
+    const nextInput = tr.nextElementSibling?.children?.[idx]?.querySelector("input");
+    if (nextInput) {
+      nextInput.focus();
+      nextInput.select();
     } else {
       input.blur();
     }

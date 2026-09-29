@@ -339,7 +339,7 @@ html:has(.gallery-view) {
   background: var(--bg);
 }
 .series-title { font-size: var(--text-sm); font-weight: 700; color: var(--ink); margin-bottom: var(--space-2); }
-.series-list { display: flex; flex-direction: column; gap: var(--space-1); max-height: 148px; overflow-y: auto; }
+.series-list { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: 10px; max-height: 148px; overflow-y: auto; }
 .series-item {
   display: flex;
   align-items: center;
@@ -355,8 +355,9 @@ html:has(.gallery-view) {
 .series-item .color-swatch-btn { width: 20px; height: 20px; border-radius: var(--r-2); }
 .series-item .color-field input[type="color"] { width: 24px; height: 20px; border-radius: var(--r-2); }
 .series-item .color-hex { width: 52px; flex: none; padding: 2px var(--space-1); font-size: var(--text-xs); }
+.series-item input { padding: var(--space-1) 6px; font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--r-2); }
 .series-item input[type="text"] { flex: 1; min-width: 60px; }
-.series-item select { max-width: 120px; }
+.series-item select { padding: var(--space-1); font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--r-2); max-width: 120px; }
 .series-item .btn-ghost { flex: none; }
 
 /* —— Excel 式数据网格组件（excel-grid.js，表格/图表共用） —— */

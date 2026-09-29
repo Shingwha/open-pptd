@@ -33,9 +33,10 @@
 
 import { getType } from "../types/index.js";
 import * as ui from "../ui.js";
-import { renderGroup, fieldHandlers, themeSwatches } from "./fields.js";
+import { renderGroup, fieldHandlers } from "./fields.js";
 import { ALIGN_MODES, alignSelection, distribute, translate } from "./arrange.js";
-import { PAGE_TYPES, resolveColor } from "../../packages/model/index.js";
+import { BACKGROUND_TYPES, backgroundColorFields, setBackgroundType } from "./dialogs/page-background.js";
+import { PAGE_TYPES } from "../../packages/model/index.js";
 
 /** 无「变换」分区的类型（官方限制：不支持整体旋转/翻转/透明度）。 */
 const NO_TRANSFORM = new Set(["table", "chart", "group"]);
@@ -436,41 +437,11 @@ export function bindProperties(panel, api) {
     g2.appendChild(
       ui.field("类型", ui.selectInput(PAGE_TYPES.map((t) => [t, t]), pg.pageType || "content", (v) => commit(() => { pg.pageType = v; })))
     );
-    const bgType = pg.background?.type || "none";
     g2.appendChild(
-      ui.field("背景", ui.selectInput([["none", "无"], ["solid", "纯色"], ["gradient", "渐变"]], bgType, (v) =>
-        commit(() => {
-          if (v === "none") delete pg.background;
-          else if (v === "solid") pg.background = { type: "solid", color: pg.background?.color || "$bg" };
-          else if (v === "gradient") {
-            pg.background = {
-              type: "gradient",
-              gradientType: "linear",
-              angle: 90,
-              stops: [
-                { position: 0, color: pg.background?.color || "$primary" },
-                { position: 1, color: "#ffffff" },
-              ],
-            };
-          }
-        })
-      ))
+      ui.field("背景", ui.selectInput(BACKGROUND_TYPES, pg.background?.type || "none", (v) => commit(() => setBackgroundType(pg, v))))
     );
-    if (pg.background?.type === "solid") {
-      g2.appendChild(
-        ui.field("颜色", ui.colorField(pg.background.color, (v) => commit(() => { pg.background.color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches(state.theme) }))
-      );
-    } else if (pg.background?.type === "gradient") {
-      g2.appendChild(
-        ui.field("起始色", ui.colorField(pg.background.stops?.[0]?.color, (v) => commit(() => { pg.background.stops[0].color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches(state.theme) }))
-      );
-      g2.appendChild(
-        ui.field("结束色", ui.colorField(pg.background.stops?.[1]?.color, (v) => commit(() => { pg.background.stops[1].color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches(state.theme) }))
-      );
-      g2.appendChild(
-        ui.field("角度", ui.numInput(pg.background.angle ?? 0, (v) => commit(() => { pg.background.angle = v; }), { min: 0, max: 360, step: 15 }))
-      );
-    }
+    // 颜色/角度字段与页面背景对话框同源（dialogs/page-background.js）
+    for (const node of backgroundColorFields(pg, { commit, theme: state.theme })) g2.appendChild(node);
     panel.appendChild(g2);
 
     const hint = document.createElement("div");
