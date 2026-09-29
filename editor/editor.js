@@ -31,7 +31,7 @@ import { dom } from "./dom.js";
 import { applyThemeTokens } from "./theme.js";
 import { configureDialogs, resetDialogs } from "./dialogs.js";
 import { closeAllDialogs } from "./interaction/dialogs/base.js";
-import { disposeChartInstances } from "../packages/renderer/page.js";
+import { disposeChartInstances } from "../packages/renderer/index.js";
 
 // chrome 预设：embedded = 裁剪宿主敌意的外链导航（品牌回画廊 / GitHub 新窗口）
 const CHROME_PRESETS = {

@@ -11,17 +11,13 @@
 // source（运输）、onSaved（保存成功后抑制 SSE 刷新回环）、renderStatusBar。
 // ============================================================================
 
-import { serializeDeck } from "../../../packages/model/pptd-io.js";
-import { base64ToBytes } from "../../../packages/model/bytes.js";
-import { deckSize } from "../../../packages/model/model.js";
-import { buildPptx, downloadPptx, downloadBlob } from "../../../packages/writer/pptx.js";
-import { safeFileName } from "../../../packages/writer/util.js";
-import { ZipWriter } from "../../../packages/writer/zip.js";
 import { showToast } from "../toast.js";
 import { showDialog } from "../../interaction/dialogs/base.js";
 import { openFontPanel } from "../../interaction/font-panel.js";
 import { createImageExporter } from "../export-image.js";
 import { mediaFilesOfDeck } from "./images.js";
+import { base64ToBytes, deckSize, serializeDeck } from "../../../packages/model/index.js";
+import { ZipWriter, buildPptx, downloadBlob, downloadPptx, safeFileName } from "../../../packages/writer/index.js";
 
 /** 字节数 → 人类可读（MB 一位小数 / KB 取整）。 */
 const fmtSize = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`);

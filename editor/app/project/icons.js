@@ -1,3 +1,4 @@
+import { fetchIconSvg, loadIconRegistry, normalizeIconSvg, resolveIconName } from "../../../packages/model/index.js";
 // ============================================================================
 // app/project/icons.js — FA 图标预读与按需加载（模式同 images.js 的 imageMap）
 // ----------------------------------------------------------------------------
@@ -10,7 +11,6 @@
 // ensureIcon(raw) 供选择器/新增元素按需取单个。
 // ============================================================================
 
-import { loadIconRegistry, resolveIconName, fetchIconSvg, normalizeIconSvg } from "../../../packages/model/icon-fa.js";
 
 let iconMap = null; // bindIconMap 绑定后有效（= state.iconMap）
 let registryPromise = null;

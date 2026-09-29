@@ -6,10 +6,9 @@
 // dataURL 内嵌图片无需预读；保存时落为 media/ 文件并重写 el.src。
 // ============================================================================
 
-import { decodeDataUrl, extToMime, dataUrlOf } from "../../../packages/writer/util.js";
-import { bytesToBase64 } from "../../../packages/model/bytes.js";
-import { walkElements } from "../../../packages/model/walk.js";
 import { readImageAsDataUrl } from "./handle-io.js";
+import { bytesToBase64, walkElements } from "../../../packages/model/index.js";
+import { dataUrlOf, decodeDataUrl, extToMime } from "../../../packages/writer/index.js";
 
 /** dataURL → { mime, ext, bytes }（mime 由解码结果推断，与 writer 侧共享实现）。 */
 function decodeDataUrlInfo(dataUrl) {

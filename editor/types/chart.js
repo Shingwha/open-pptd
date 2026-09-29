@@ -5,11 +5,8 @@
 // （pie.innerRadius > 0 = 环形）；新建时 encode 用官方字段名。
 // ============================================================================
 
-import { registerType } from "../../packages/model/registry.js";
-import { nextElementId } from "../../packages/model/model.js";
-import { CHART_META } from "../../packages/model/chart.js";
-import { remapEncode } from "../../packages/model/chart.js";
 import { svgIcon } from "../ui.js";
+import { CHART_META, nextElementId, registerType, remapEncode } from "../../packages/model/index.js";
 
 const CHART_TYPES = Object.entries(CHART_META).map(([k, v]) => [k, v.label]);
 

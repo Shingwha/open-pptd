@@ -5,11 +5,8 @@
 // 求值器按 24×24 实时生成，与画布/导出几何同源。
 // ============================================================================
 
-import { registerType } from "../../packages/model/registry.js";
-import { nextElementId, SUPPORTED_SHAPES } from "../../packages/model/model.js";
-import { PRESET_SHAPES } from "../../packages/model/preset-geometry.data.js";
-import { shapeMenuIcon } from "../../packages/model/preset-geometry.js";
 import { svgIcon } from "../ui.js";
+import { PRESET_SHAPES, SUPPORTED_SHAPES, nextElementId, registerType, shapeMenuIcon } from "../../packages/model/index.js";
 
 /** 形状默认模型（调整值不预设——与 PowerPoint 一致：未设置 = 预设内置默认）。 */
 function shapeItem(name) {

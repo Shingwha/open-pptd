@@ -26,7 +26,7 @@ import {
   setPendingProject,
 } from "./app/project/handle-store.js";
 import { showDialog } from "./interaction/dialogs/base.js";
-import { SHOT_ERROR_TITLE } from "../packages/model/model.js";
+import { SHOT_ERROR_TITLE } from "../packages/model/index.js";
 
 // 仓库根 URL（本文件位于 <root>/editor/，../ 即站点根）
 const ROOT = new URL("../", import.meta.url).href;

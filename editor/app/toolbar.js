@@ -5,7 +5,6 @@
 // 菜单自动出现，无需在此改任何代码。
 // ============================================================================
 
-import { createPage } from "../../packages/model/model.js";
 import { bindAddMenu } from "../interaction/add-menu.js";
 import { bindThemePanel } from "../interaction/theme-panel.js";
 import { bindFontPanel } from "../interaction/font-panel.js";
@@ -15,6 +14,7 @@ import { showToast } from "./toast.js";
 import { isNarrow } from "../ui.js";
 import { dom } from "../dom.js";
 import { dialogs } from "../dialogs.js";
+import { createPage } from "../../packages/model/index.js";
 
 export function bindToolbar({ state, page, api, view, io, present }) {
   const disposers = []; // 子绑定（菜单/浮层）的 destroy 集合

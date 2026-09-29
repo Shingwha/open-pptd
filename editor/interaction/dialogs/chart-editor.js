@@ -9,12 +9,21 @@
 //   - 类型切换：语义键重映射（remapEncode）+ 共存约束警告（validateChartSeries）
 // ============================================================================
 
-import { CHART_META, CHART_TYPE_ORDER, validateChartSeries, remapEncode, DATA_LABEL_CONTENTS, colLetter, NUMBER_FORMAT_CODES } from "../../../packages/model/chart.js";
-import { resolveColor, themeChartPalette } from "../../../packages/model/theme.js";
 import { showDialog, buildCellInput, button } from "./base.js";
 import { renderGroup, themeSwatches, fieldHandlers } from "../fields.js";
 import { createExcelGrid } from "../excel-grid.js";
 import * as ui from "../../ui.js";
+import {
+  CHART_META,
+  CHART_TYPE_ORDER,
+  DATA_LABEL_CONTENTS,
+  NUMBER_FORMAT_CODES,
+  colLetter,
+  remapEncode,
+  resolveColor,
+  themeChartPalette,
+  validateChartSeries,
+} from "../../../packages/model/index.js";
 
 const LEGEND_POS = [["bottom", "底部"], ["top", "顶部"], ["right", "右侧"], ["left", "左侧"]];
 const LABEL_CONTENT = [["value", "数值"], ["percentage", "百分比"], ["category", "分类名"]];

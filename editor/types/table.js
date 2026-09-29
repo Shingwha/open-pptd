@@ -2,9 +2,8 @@
 // types/table.js — 表格元素类型注册
 // ============================================================================
 
-import { registerType } from "../../packages/model/registry.js";
-import { nextElementId } from "../../packages/model/model.js";
 import { svgIcon } from "../ui.js";
+import { nextElementId, registerType } from "../../packages/model/index.js";
 
 registerType({
   type: "table",

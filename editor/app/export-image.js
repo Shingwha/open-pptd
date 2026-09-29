@@ -15,13 +15,10 @@
 // 字体：fontLibrary 有字节的全部内嵌 @font-face；系统字体由本机渲染无需内嵌。
 // ============================================================================
 
-import { renderPage, disposeChartInstances, autoGrowTexts } from "../../packages/renderer/page.js";
-import { ZipWriter } from "../../packages/writer/zip.js";
-import { downloadBlob } from "../../packages/writer/pptx.js";
-import { bytesToBase64 } from "../../packages/model/bytes.js";
-import { deckSize } from "../../packages/model/model.js";
-import { safeFileName, dataUrlOf } from "../../packages/writer/util.js";
 import { showToast } from "./toast.js";
+import { bytesToBase64, deckSize } from "../../packages/model/index.js";
+import { autoGrowTexts, disposeChartInstances, renderPage } from "../../packages/renderer/index.js";
+import { ZipWriter, dataUrlOf, downloadBlob, safeFileName } from "../../packages/writer/index.js";
 
 const DEFAULT_SCALE = 2; // 输出倍率缺省（1|2|3；倍率含义 = 画布逻辑尺寸 × N 像素）
 

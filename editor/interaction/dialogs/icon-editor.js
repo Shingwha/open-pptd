@@ -6,8 +6,8 @@
 // ============================================================================
 
 import { showDialog } from "./base.js";
-import { iconThumb } from "../../../packages/renderer/icon.js";
 import { getIconRegistry, ensureIcon, queryIconEntries } from "../../app/project/icons.js";
+import { iconThumb } from "../../../packages/renderer/index.js";
 
 /** 首屏渲染上限（全量 2000+ 网格会卡；输入关键词/选分类后缩小范围全渲染）。 */
 const RENDER_CAP = 96;

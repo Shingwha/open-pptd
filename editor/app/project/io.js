@@ -18,11 +18,10 @@ import { createProjectSaver } from "./saver.js";
 import { memorySource, directoryHandleSource, delegatingSource } from "./source.js";
 import { pickProjectFolder, ensurePermission } from "./handle-io.js";
 import { addRecent, setPendingProject, clearPendingProject } from "./handle-store.js";
-import { createDeck, createPage, syncElementId } from "../../../packages/model/model.js";
-import { normalizeTheme } from "../../../packages/model/theme.js";
 import { createHistory } from "../../interaction/history.js";
 import { dialogs } from "../../dialogs.js";
 import { showToast } from "../toast.js";
+import { createDeck, createPage, normalizeTheme, syncElementId } from "../../../packages/model/index.js";
 
 export function createIo({ state, view, source, onSaved, onDeckChange, onError }) {
   const fontManager = createFontManager(state);

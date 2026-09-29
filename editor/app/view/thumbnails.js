@@ -5,9 +5,9 @@
 // renderThumbnails 只重建缩略图内容；页面切换/删除经 reload 回调触发全量渲染。
 // ============================================================================
 
-import { renderPage, disposeChartInstances } from "../../../packages/renderer/page.js";
-import { deckSize } from "../../../packages/model/model.js";
 import { dom } from "../../dom.js";
+import { deckSize } from "../../../packages/model/index.js";
+import { disposeChartInstances, renderPage } from "../../../packages/renderer/index.js";
 
 // 兜底卡框：仅元素不可测（如隐藏态渲染）时使用；实际尺寸由 CSS 断点决定、渲染时实测
 const THUMB_W = 140;

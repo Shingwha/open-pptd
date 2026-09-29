@@ -8,8 +8,6 @@
 // 各自持有状态与 DOM 接线，这里只做编排与画布重建。
 // ============================================================================
 
-import { renderPage } from "../../../packages/renderer/page.js";
-import { resolveColor } from "../../../packages/model/theme.js";
 import { getType } from "../../types/index.js";
 import { quickbarColor, quickbarSelect, quickbarBtn, quickbarTextBtn, isNarrow } from "../../ui.js";
 import { relRect } from "../../coords.js";
@@ -17,6 +15,8 @@ import { applyMeasurements } from "./measure.js";
 import { createViewport, deckSize } from "./viewport.js";
 import { createThumbnails } from "./thumbnails.js";
 import { dom } from "../../dom.js";
+import { resolveColor } from "../../../packages/model/index.js";
+import { renderPage } from "../../../packages/renderer/index.js";
 
 export function createView({ state, page, selected, api, controller, props }) {
   // 模块严格模式下裸调用 render() 时 this 为 undefined，统一经 viewObj 自引用

@@ -4,9 +4,8 @@
 // render/toXml 分片分别由 packages/renderer/types、packages/writer/types 注册。
 // ============================================================================
 
-import { registerType } from "../../packages/model/registry.js";
-import { nextElementId } from "../../packages/model/model.js";
 import { svgIcon } from "../ui.js";
+import { nextElementId, registerType } from "../../packages/model/index.js";
 
 const FONT_SIZE_OPTIONS = ["", 12, 14, 16, 18, 20, 24, 28, 32, 40, 48];
 const ALIGN_OPTIONS = [

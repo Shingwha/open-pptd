@@ -10,9 +10,9 @@
 // 事务：beginChange → applyTheme → endChange（全量渲染）。
 // ============================================================================
 
-import { THEME_PALETTES, resolveColor, mergePaletteColors } from "../../packages/model/theme.js";
 import { showToast } from "../app/toast.js";
 import { attachPopover } from "../popover.js";
+import { THEME_PALETTES, mergePaletteColors, resolveColor } from "../../packages/model/index.js";
 
 /** 语义色中文名（17 键全集；accent1/2 = primary/accent，不单独列）。 */
 const KEY_LABELS = {

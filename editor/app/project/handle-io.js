@@ -1,3 +1,5 @@
+import { base64ToBytes, yaml } from "../../../packages/model/index.js";
+import { dataUrlOf } from "../../../packages/writer/index.js";
 // ============================================================================
 // app/project/handle-io.js — 本地项目句柄读写（File System Access API）
 // ----------------------------------------------------------------------------
@@ -9,9 +11,6 @@
 // createWritable/queryPermission），Node 测试用 mock 句柄即可覆盖。
 // ============================================================================
 
-import * as yaml from "../../../packages/model/vendor/js-yaml.mjs";
-import { base64ToBytes } from "../../../packages/model/bytes.js";
-import { dataUrlOf } from "../../../packages/writer/util.js";
 
 /** 调起系统文件夹选择框（需用户手势）。取消返回 null。 */
 export async function pickProjectFolder() {

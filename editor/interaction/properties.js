@@ -23,10 +23,9 @@
 // ============================================================================
 
 import { getType } from "../types/index.js";
-import { PAGE_TYPES, PAGE_WIDTH, PAGE_HEIGHT } from "../../packages/model/model.js";
-import { resolveColor } from "../../packages/model/theme.js";
 import * as ui from "../ui.js";
 import { renderGroup, fieldHandlers, themeSwatches } from "./fields.js";
+import { PAGE_HEIGHT, PAGE_TYPES, PAGE_WIDTH, resolveColor } from "../../packages/model/index.js";
 
 export function bindProperties(panel, api) {
   const { state, page, getSelectedElement, beginChange, endChange, deleteSelected, duplicateSelected, moveLayer } = api;

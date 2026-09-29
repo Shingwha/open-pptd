@@ -16,11 +16,16 @@
 //     title: 站酷小薇                                                          # 组件槽引用
 // ============================================================================
 
-import { parseFontInfo } from "../../../packages/model/font.js";
-import { parseFontResources } from "../../../packages/model/font.js";
-import { loadFontRegistry, findFont, fontFileUrl, fetchFontBytes } from "../../../packages/model/font-registry.js";
-import { safeFileName } from "../../../packages/writer/util.js";
 import { showToast } from "../toast.js";
+import {
+  fetchFontBytes,
+  findFont,
+  fontFileUrl,
+  loadFontRegistry,
+  parseFontInfo,
+  parseFontResources,
+} from "../../../packages/model/index.js";
+import { safeFileName } from "../../../packages/writer/index.js";
 
 /** 系统字体池（design.md §4 系统字体；元素 fontFamily 下拉兜底选项）。 */
 export const SYSTEM_FONTS = ["Microsoft YaHei", "KaiTi", "SimSun", "SimHei", "FangSong", "YouYuan"];

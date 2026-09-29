@@ -12,11 +12,10 @@
 // ============================================================================
 
 import { buildAddItems } from "../types/index.js";
-import { SUPPORTED_SHAPES } from "../../packages/model/model.js";
-import { shapeMenuIcon } from "../../packages/model/preset-geometry.js";
 import { iconElement } from "../types/icon.js";
 import { getIconRegistry, ensureIcon, queryIconEntries } from "../app/project/icons.js";
-import { iconThumb } from "../../packages/renderer/icon.js";
+import { SUPPORTED_SHAPES, shapeMenuIcon } from "../../packages/model/index.js";
+import { iconThumb } from "../../packages/renderer/index.js";
 
 const RECENT_KEY = "pptd-add-recent";
 const RECENT_MAX = 8;

@@ -13,8 +13,8 @@
 import { createEditorState } from "./state.js";
 import { createIo } from "./project/io.js";
 import { httpSource } from "./project/source.js";
-import { renderPage } from "../../packages/renderer/page.js";
-import { deckSize, SHOT_READY_TITLE } from "../../packages/model/model.js";
+import { SHOT_READY_TITLE, deckSize } from "../../packages/model/index.js";
+import { renderPage } from "../../packages/renderer/index.js";
 
 export const READY_TITLE = SHOT_READY_TITLE;
 

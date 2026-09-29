@@ -7,8 +7,8 @@
 // 引入一行。渲染器 / writer / 属性面板 / 快速条 / 添加菜单全部自动接入。
 // ============================================================================
 
-import "../../packages/renderer/types/index.js";
-import "../../packages/writer/types/index.js";
+import "../../packages/renderer/index.js";
+import "../../packages/writer/index.js";
 
 import "./text.js";
 import "./shape.js";
@@ -18,5 +18,5 @@ import "./image.js";
 import "./table.js";
 import "./chart.js";
 
-export { registerType, getType, allTypes } from "../../packages/model/registry.js";
+export { registerType, getType, allTypes } from "../../packages/model/index.js";
 export { buildAddItems } from "./menu.js";

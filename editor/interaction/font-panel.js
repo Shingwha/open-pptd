@@ -10,9 +10,9 @@
 // 每次变更即时 fontManager.syncToDeck()，无「完成」按钮（对齐配色浮层即时生效）。
 // ============================================================================
 
-import { loadFontRegistry, fetchFontBytes } from "../../packages/model/font-registry.js";
 import { showToast } from "../app/toast.js";
 import { attachPopover } from "../popover.js";
+import { fetchFontBytes, loadFontRegistry } from "../../packages/model/index.js";
 
 /** 内置库分类中文名（assets/fonts/registry.json 的 category）。 */
 const CAT_LABEL = { sans: "黑体", serif: "宋/衬线", handwriting: "手写/书法", display: "标题/艺术", pixel: "像素" };

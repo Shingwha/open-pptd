@@ -10,12 +10,6 @@
 // 缩略图懒加载（滚动到才拉）+ ResizeObserver 随卡片宽度重渲染。
 // ============================================================================
 
-import * as yaml from "../packages/model/vendor/js-yaml.mjs";
-import { parseDeck } from "../packages/model/pptd-io.js";
-import { resolveTheme } from "../packages/model/theme.js";
-import { deckSize } from "../packages/model/model.js";
-import { parseFontResources } from "../packages/model/font.js";
-import { renderPage, disposeChartInstances } from "../packages/renderer/page.js";
 import { fetchProjectTexts } from "./app/project/project-cache.js";
 import { preloadIcons } from "./app/project/icons.js";
 import { pickProjectFolder, hasDeck } from "./app/project/handle-io.js";
@@ -24,6 +18,8 @@ import { registerRegistryFontFace } from "./app/project/font-manager.js";
 import { createFileMenu } from "./app/file-menu.js";
 import { showToast } from "./app/toast.js";
 import { injectIcons } from "./icons.js";
+import { deckSize, parseDeck, parseFontResources, resolveTheme, yaml } from "../packages/model/index.js";
+import { disposeChartInstances, renderPage } from "../packages/renderer/index.js";
 
 injectIcons(); // 顶栏图标占位（data-icon）注入实际 SVG（图标单一来源 icons.js）
 

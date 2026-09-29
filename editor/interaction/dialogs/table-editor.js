@@ -19,12 +19,20 @@
 
 import { showDialog, buildCellInput, button } from "./base.js";
 import { dialogs } from "../../dialogs.js";
-import { tableGrid, tryMerge, trySplit, normalizeCells, validateDims, estimateTableLayout } from "../../../packages/model/table.js";
-import { resolveColor, resolveTableStyle } from "../../../packages/model/theme.js";
 import * as ui from "../../ui.js";
-import { cellFinal, tdCss } from "../../../packages/renderer/table.js";
 import { renderGroup, fieldHandlers } from "../fields.js";
 import { createExcelGrid } from "../excel-grid.js";
+import {
+  estimateTableLayout,
+  normalizeCells,
+  resolveColor,
+  resolveTableStyle,
+  tableGrid,
+  tryMerge,
+  trySplit,
+  validateDims,
+} from "../../../packages/model/index.js";
+import { cellFinal, tdCss } from "../../../packages/renderer/index.js";
 
 const H_ALIGNS = [["left", "左"], ["center", "居中"], ["right", "右"], ["justify", "两端"]];
 const V_ALIGNS = [["top", "上"], ["middle", "中"], ["bottom", "下"]];

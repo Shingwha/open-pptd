@@ -5,11 +5,9 @@
 // 图标选择走 openIconPicker（搜索 + FA 官方分类，约 2000 图标）。
 // ============================================================================
 
-import { registerType } from "../../packages/model/registry.js";
-import { nextElementId } from "../../packages/model/model.js";
-import { resolveIconName } from "../../packages/model/icon-fa.js";
 import { openIconPicker } from "../interaction/dialogs/icon-editor.js";
 import { getIconRegistrySync } from "../app/project/icons.js";
+import { nextElementId, registerType, resolveIconName } from "../../packages/model/index.js";
 
 /** 图标默认模型（官方 iconName 格式 "style:name"，前缀 fas/far/fab）。 */
 export function iconElement(raw = "fas:star", bounds = [380, 200, 72, 72]) {

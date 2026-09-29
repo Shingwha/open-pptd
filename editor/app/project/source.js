@@ -19,15 +19,19 @@
 // （loader.js 与外部装配共用同一份逻辑）。
 // ============================================================================
 
-import * as yaml from "../../../packages/model/vendor/js-yaml.mjs";
-import { parseDeck } from "../../../packages/model/pptd-io.js";
-import { resolveTheme, DEFAULT_THEME } from "../../../packages/model/theme.js";
-import { syncElementId } from "../../../packages/model/model.js";
-import { bytesToBase64, base64ToBytes } from "../../../packages/model/bytes.js";
-import { extToMime } from "../../../packages/writer/util.js";
 import { createHistory } from "../../interaction/history.js";
 import { fetchProjectTexts } from "./project-cache.js";
 import { readProject, writeFiles, fingerprint, readImageAsDataUrl } from "./handle-io.js";
+import {
+  DEFAULT_THEME,
+  base64ToBytes,
+  bytesToBase64,
+  parseDeck,
+  resolveTheme,
+  syncElementId,
+  yaml,
+} from "../../../packages/model/index.js";
+import { extToMime } from "../../../packages/writer/index.js";
 
 // 编辑器站点根（本文件位于 <root>/editor/app/project/，../../../ 即 editor/）
 const EDITOR_BASE = new URL("../../", import.meta.url).href;

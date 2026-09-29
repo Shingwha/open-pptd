@@ -9,11 +9,11 @@
 // source（运输）、connect（项目就绪后订阅实时刷新）、renderStatusBar（加载后刷新状态栏）。
 // ============================================================================
 
-import { resolveTheme, DEFAULT_THEME } from "../../../packages/model/theme.js";
 import { applyDeck as applyDeckToState } from "./source.js";
 import { dialogs } from "../../dialogs.js";
 import { showToast } from "../toast.js";
 import { preloadIcons } from "./icons.js";
+import { DEFAULT_THEME, resolveTheme } from "../../../packages/model/index.js";
 
 export function createLoader({ state, view, images, fontManager, source, connect, renderStatusBar, onDeckChange, onError }) {
   const $ = (id) => document.getElementById(id);

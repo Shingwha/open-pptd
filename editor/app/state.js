@@ -6,7 +6,7 @@
 // ============================================================================
 
 import { createHistory } from "../interaction/history.js";
-import { nextElementId } from "../../packages/model/model.js";
+import { nextElementId } from "../../packages/model/index.js";
 
 export function createEditorState() {
   const state = {
