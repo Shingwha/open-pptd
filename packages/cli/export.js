@@ -18,25 +18,22 @@ import { buildPptx, magicMatches } from "../writer/pptx.js";
 import { skipReasonText } from "../writer/font.js";
 import { decodeDataUrl, imageSize, safeFileName } from "../writer/util.js";
 import { ZipWriter } from "../writer/zip.js";
-import { paths } from "../paths.js";
+import { paths, FONT_REGISTRY_DIR, ICON_REGISTRY_DIR } from "../paths.js";
 import { readFontRegistry, readIconRegistry } from "./resource-status.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-/** Skill root dir (assets/ is located relative to this). */
+/** Skill root dir (assets/ is located relative to this); kept as an export for existing deep importers. */
 export const SKILL_ROOT = join(__dirname, "..", "..");
 
 // ----------------------------------------------------------------------------
 // Constant split (contract 5): **registry dirs** (in-package, registry.json only,
 // version-coupled) are separate from **byte dirs** (large files in home, deletable
-// and re-downloadable). Historically both shared FONT_LIB_DIR/ICON_LIB_DIR; after
-// resources were externalized they must split: the registry reads from the package
-// (home never shadows it), bytes read home-first with package fallback (zero
-// migration for existing installs).
+// and re-downloadable). The registry dirs are single-sourced in packages/paths.js
+// (FONT_REGISTRY_DIR/ICON_REGISTRY_DIR) and re-exported here for compatibility;
+// the writer reads registry.json from the package (home never shadows it), while
+// bytes read home-first with package fallback (zero migration for existing installs).
 // ----------------------------------------------------------------------------
-/** Font registry dir inside the package (registry.json only). */
-export const FONT_REGISTRY_DIR = join(SKILL_ROOT, "assets", "fonts");
-/** Icon registry dir inside the package (registry.json only). */
-export const ICON_REGISTRY_DIR = join(SKILL_ROOT, "assets", "icons");
+export { FONT_REGISTRY_DIR, ICON_REGISTRY_DIR };
 /** Font bytes dir in home (write target). */
 export const FONT_BYTES_DIR = paths.fonts;
 /** Icon bytes dir in home (write target). */

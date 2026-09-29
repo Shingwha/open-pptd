@@ -12,12 +12,11 @@
 
 import { readFileSync, statSync, existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { PACKAGE_ROOT, resourceRoots, resolveResourceFile } from "../paths.js";
+import { PACKAGE_ROOT, resourceRoots, resolveResourceFile, FONT_REGISTRY_DIR, ICON_REGISTRY_DIR } from "../paths.js";
 
-/** Font registry dir inside the package (registry.json only). */
-export const FONT_REGISTRY_DIR = join(PACKAGE_ROOT, "assets", "fonts");
-/** Icon registry dir inside the package (registry.json only). */
-export const ICON_REGISTRY_DIR = join(PACKAGE_ROOT, "assets", "icons");
+// In-package registry dirs (registry.json only) are single-sourced in packages/paths.js;
+// re-exported here so existing deep importers keep working.
+export { FONT_REGISTRY_DIR, ICON_REGISTRY_DIR };
 
 /** Icon prefix ↔ classic SVG dir (same source as STYLE_DIRS in model/icon-fa.js). */
 export const ICON_STYLES = { fas: "solid", far: "regular", fab: "brands" };

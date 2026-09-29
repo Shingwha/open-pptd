@@ -25,6 +25,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export const PACKAGE_ROOT = resolve(__dirname, "..");
 
 /**
+ * In-package registry dirs (registry.json only; version-coupled with the code, so home never
+ * shadows them). These are also the in-package fallback roots for font/icon bytes (the package
+ * ships only registry.json there; large bytes live in home). Single source for cli/export.js and
+ * cli/resource-status.js — downstream must not rebuild these paths itself.
+ */
+export const FONT_REGISTRY_DIR = join(PACKAGE_ROOT, "assets", "fonts");
+export const ICON_REGISTRY_DIR = join(PACKAGE_ROOT, "assets", "icons");
+
+/**
  * Resource home: `$OPEN_PPTD_HOME` first (used verbatim; Node does not expand `~`),
  * otherwise `os.homedir()/.open-pptd`.
  * @returns {string}
@@ -55,8 +64,8 @@ export const paths = Object.freeze({
  *   registry     : **single root only** — the package root (version-coupled; home never shadows)
  */
 export const resourceRoots = Object.freeze({
-  fonts: Object.freeze([paths.fonts, join(PACKAGE_ROOT, "assets", "fonts")]),
-  icons: Object.freeze([paths.icons, join(PACKAGE_ROOT, "assets", "icons")]),
+  fonts: Object.freeze([paths.fonts, FONT_REGISTRY_DIR]),
+  icons: Object.freeze([paths.icons, ICON_REGISTRY_DIR]),
   registry: Object.freeze([PACKAGE_ROOT]),
 });
 
