@@ -59,7 +59,10 @@ function resolveUnder(base, pathname) {
 }
 
 /**
- * Multi-root resolution for resource requests (/assets/**):
+ * Multi-root resolution for resource requests (/assets/**). Named `resolveStaticFile` (not
+ * `resolveResourceFile`) to avoid any confusion with the contract-surface
+ * `paths.resolveResourceFile(kind, rel)` — different signature and layer (this one resolves a
+ * URL pathname against injected roots; that one resolves a relative path against resourceRoots).
  *   · `registry.json` → **package root only** (version-coupled, home never shadows)
  *   · `fonts/**`      → resourceRoots.fonts (home first, then package fallback)
  *   · `icons/**`      → resourceRoots.icons
@@ -67,7 +70,7 @@ function resolveUnder(base, pathname) {
  * @param {{fonts:string[],icons:string[],registry:string[]}} resourceRoots
  * @returns {string|null}
  */
-export function resolveResourceFile(pathname, resourceRoots) {
+export function resolveStaticFile(pathname, resourceRoots) {
   if (!resourceRoots || !pathname.startsWith("/assets/")) return null;
   const rel = pathname.slice("/assets/".length);
   if (!rel || rel.includes("\0")) return null;

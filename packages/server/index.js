@@ -16,7 +16,7 @@ import http from "node:http";
 import { existsSync } from "node:fs";
 import { join, normalize, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolveFile, resolveResourceFile, sendFile } from "./static.js";
+import { resolveFile, resolveStaticFile, sendFile } from "./static.js";
 import { resourceRoots as DEFAULT_RESOURCE_ROOTS } from "../paths.js";
 import { handleSave, handlePing } from "./api.js";
 import { createExportImageHandler } from "./export-image.js";
@@ -93,7 +93,7 @@ export function createServer(options = {}) {
       // Resource request (/assets/**) → multi-root resolution (home first, then package fallback; registry is package-only)
       let filePath = null;
       if (pathname.startsWith("/assets/")) {
-        filePath = resolveResourceFile(pathname, resourceRoots) || resolveFile(base, pathname);
+        filePath = resolveStaticFile(pathname, resourceRoots) || resolveFile(base, pathname);
       } else {
         // Directory path → index.html inside (same as GitHub Pages: <root>/index.html is the gallery)
         filePath = resolveFile(base, pathname);
