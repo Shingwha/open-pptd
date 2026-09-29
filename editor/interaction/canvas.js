@@ -37,6 +37,7 @@ export function createCanvasController(canvas, opts) {
     selectMany,        // (ids, mode) => void
     duplicateInPlace,  // () => void  复制选中（原位，供拖动复制）
     deleteSelected,    // 键盘 Delete/Backspace
+    moveLayerEdge,     // (edge) => void  置于顶层/底层（键盘 ] / [）
   } = opts;
 
   const wrapLayer = canvas.parentElement; // canvas-wrap：不缩放图层
@@ -532,6 +533,12 @@ export function createCanvasController(canvas, opts) {
     if (e.key === "Delete" || e.key === "Backspace") {
       e.preventDefault();
       deleteSelected && deleteSelected();
+      return;
+    }
+    // ] 置于顶层 / [ 置于底层（设计稿 §03 键位提示；B6）
+    if (e.key === "]" || e.key === "[") {
+      e.preventDefault();
+      moveLayerEdge?.(e.key === "]" ? "front" : "back");
       return;
     }
     const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
