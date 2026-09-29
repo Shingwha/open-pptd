@@ -1,15 +1,16 @@
 // ============================================================================
-// coords.js — 模型 / 节点坐标换算（选中框、快速条定位等浮层共用）
+// coords.js — model / node coordinate conversion (shared by selection box, quickbar positioning etc.)
 // ----------------------------------------------------------------------------
-// 画布（#canvas）以中心为 transform-origin 缩放，模型 (0,0) 的视觉位置
-// ≠ canvas-wrap (0,0)；「模型坐标 → 屏幕/图层坐标」的换算历史上散落在
-// 多处各写一套，这里是唯一实现。
+// The canvas (#canvas) scales around its center as transform-origin, so the visual
+// position of model (0,0) differs from canvas-wrap (0,0); "model coords →
+// screen/layer coords" used to be reimplemented at several sites — this is the only
+// implementation.
 // ============================================================================
 
 /**
- * 模型 bounds → wrap 图层视觉几何。
- * 取 canvas 与 wrap 的 rect 差作为视觉原点（同时自动抵消 wrap 的平移
- * translate 与中心锚点缩放偏移）。
+ * Model bounds → wrap-layer visual geometry.
+ * Uses the rect difference between canvas and wrap as the visual origin (this also
+ * cancels the wrap's translate pan and the center-anchored scale offset).
  * @returns {{s:number, left:number, top:number, width:number, height:number}}
  */
 export function overlayGeom(canvas, wrap, bounds) {
@@ -26,7 +27,7 @@ export function overlayGeom(canvas, wrap, bounds) {
   };
 }
 
-/** rect 相对 base 的偏移矩形（如元素节点 → 舞台坐标系）。 */
+/** Offset rect of rect relative to base (e.g. an element node → the stage coordinate system). */
 export function relRect(rect, base) {
   return {
     left: rect.left - base.left,
@@ -37,19 +38,21 @@ export function relRect(rect, base) {
 }
 
 // ----------------------------------------------------------------------------
-// LayoutTree 当前页（RP-C / M6）：排版事实的唯一几何来源。
-// 由 view.js 在每次画布绘制时写入（paint 与选中框读同一棵树 → 不会各算一套）；
-// 选中框/对齐参考线据此取 frame，不再读 DOM 实测（offsetHeight）或 el.bounds
-// 现算。group 组壳不在 LayoutTree 内（layout 跳过组壳），取不到时调用方回退。
+// LayoutTree for the current page (RP-C / M6): the single geometric source of
+// layout facts. Written by view.js on every canvas paint (paint and the selection
+// box read the same tree, so they cannot compute separately); the selection
+// box/alignment guides read frames from it instead of measuring the DOM
+// (offsetHeight) or recomputing el.bounds. Group shells are not in the LayoutTree
+// (layout skips them), so callers fall back when they are missing.
 // ----------------------------------------------------------------------------
 let _layoutPage = null;
 
-/** 写入当前页 LayoutTree.pages[i]（每次画布重绘后调用）。 */
+/** Write the current page's LayoutTree.pages[i] (called after every canvas repaint). */
 export function setLayoutPage(page) {
   _layoutPage = page || null;
 }
 
-/** 按 elementId 取 LayoutElement（无当前树或未命中 → null）。 */
+/** Look up a LayoutElement by elementId (null when there is no current tree or no match). */
 export function layoutElementOf(elementId) {
   if (!_layoutPage || !elementId) return null;
   return _layoutPage.elements?.find((le) => le.elementId === elementId) || null;

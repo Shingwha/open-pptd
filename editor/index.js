@@ -1,17 +1,20 @@
 // ============================================================================
-// editor/index.js — 编辑器包级 barrel（契约 4 入口 open-pptd/editor）
+// editor/index.js — editor package barrel (contract 4 entry `open-pptd/editor`)
 // ----------------------------------------------------------------------------
-// 纯再导出，零逻辑：下游经此入口挂载/控制编辑器，不感知内部文件布局。
-// createEditor 完整签名见 docs/embedding.md（契约 1/2/3）。
-// 红线：本文件只面向浏览器（依赖 DOM），Node 侧消费方不得 import 本入口。
+// Pure re-exports, zero logic: downstream mounts/controls the editor through this
+// entry and is unaware of the internal file layout. The full createEditor
+// signature is in docs/embedding.md (contracts 1/2/3).
+// Red line: this file is browser-only (depends on DOM); Node consumers must not
+// import this entry.
 // ============================================================================
 
-// ---- 可挂载编辑器（契约 1）----
+// ---- mountable editor (contract 1) ----
 export { createEditor } from "./editor.js";
 
-// ---- 主题注入（契约 3）----
-// 含三态主题模式（浅 / 深 / 跟随系统，B3）：宿主可用 bindThemeMode 自管，
-// 也可继续经 applyThemeTokens 注入 mode 覆盖（注入优先于内置板）。
+// ---- theme injection (contract 3) ----
+// Includes the tri-state theme mode (light / dark / follow system, B3): the host
+// may manage it via bindThemeMode, or keep injecting a mode override through
+// applyThemeTokens (injection wins over the built-in palette).
 export {
   TOKENS,
   defaultTokens,
@@ -24,7 +27,7 @@ export {
   THEME_MODE_KEY,
 } from "./theme.js";
 
-// ---- 传输接缝（契约 2：ProjectSource 三实现 + 内存外观）----
+// ---- transport seam (contract 2: three ProjectSource impls + in-memory facade) ----
 export {
   httpSource,
   directoryHandleSource,

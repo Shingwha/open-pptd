@@ -1,17 +1,20 @@
 // ============================================================================
-// editor/editor.js — createEditor：可挂载、可销毁的编辑器实例（契约 1）
+// editor/editor.js — createEditor: a mountable, destroyable editor instance (contract 1)
 // ----------------------------------------------------------------------------
-// 把原 main.js 顶层 boot()/initEditor() 的装配逻辑整体搬入并闭包化：
+// Moves the whole assembly logic of the old main.js boot()/initEditor() in here and
+// closes it over:
 //   createEditor(rootEl, { source, deck?, deckUrl?, theme?, chrome?, dialogs?, locale?, on? })
 //     → { ready, destroy, api, io, state, view }
 //
-// rootEl 是挂载点：dom 引用优先落在它的子树内，未命中的 id 回退 document
-// （静态骨架仍在 index.html；嵌入式可传空容器）。destroy() 幂等：移除本实例
-// 创建/接管的 DOM、解绑全部 window/document 监听、关闭推送通道、释放图表实例、
-// 清空 dom 缓存并还原主题与对话框默认实现。
+// rootEl is the mount point: dom refs prefer its subtree, falling back to document
+// for unmatched ids (the static skeleton is still in index.html; an embedded caller
+// may pass an empty container). destroy() is idempotent: it removes DOM created or
+// taken over by this instance, unbinds all window/document listeners, closes push
+// channels, releases chart instances, clears the dom cache and restores the theme
+// and default dialogs.
 //
-// 对外行为零变化：standalone 的 main.js 仍以 ?deck= 打开、?shot=1 截图、
-// window.__pptdEditor/__pptdIo 由 main.js 继续暴露。
+// Zero external behavior change: standalone main.js still opens with ?deck=,
+// screenshots with ?shot=1, and main.js keeps exposing window.__pptdEditor/__pptdIo.
 // ============================================================================
 
 import { createEditorState } from "./app/state.js";
@@ -34,23 +37,23 @@ import { configureDialogs, resetDialogs } from "./dialogs.js";
 import { closeAllDialogs } from "./interaction/dialogs/base.js";
 import { disposeChartInstances } from "../packages/renderer/index.js";
 
-// chrome 预设：embedded = 裁剪宿主敌意的外链导航（品牌回画廊 / GitHub 新窗口）
+// chrome presets: embedded = trims host-hostile outbound navigation (brand back to gallery / GitHub new window)
 const CHROME_PRESETS = {
   full: null,
   embedded: { topbar: true, brand: false, github: false, thumbbar: true, quickbar: true, zoom: true, inspector: true },
 };
 
 /**
- * 在 rootEl 上装配一个编辑器实例。
- * @param {HTMLElement} rootEl 挂载点
+ * Assemble an editor instance on rootEl.
+ * @param {HTMLElement} rootEl mount point
  * @param {object} options
- *   source*    ProjectSource（必填）
- *   deck?      { manifestText, pageFiles, manifestPath? } 初始文档（省略则读 source）
- *   deckUrl?   经 source.read(deckUrl) 加载的项目 URL（standalone 的 ?deck= 用）
+ *   source*    ProjectSource (required)
+ *   deck?      { manifestText, pageFiles, manifestPath? } initial document (otherwise read from source)
+ *   deckUrl?   project URL loaded via source.read(deckUrl) (standalone ?deck=)
  *   theme?     { tokens?: Record<string,string>, mode?: "light"|"dark" }
  *   chrome?    "full" | "embedded" | { topbar?, brand?, github?, thumbbar?, quickbar?, zoom?, inspector? }
- *   dialogs?   宿主实现 { alert, confirm }（覆盖原生弹窗，见 editor/dialogs.js）
- *   locale?    "zh-CN"（默认；当前无 i18n 资源，仅记录）
+ *   dialogs?   host implementation { alert, confirm } (overrides native dialogs, see editor/dialogs.js)
+ *   locale?    "zh-CN" (default; no i18n resources yet, recorded only)
  *   on?        { ready?, dirty?, saved?, error?, deckChange?, selectionChange? }
  * @returns {{ ready: Promise<void>, destroy(): void, api: object, io: object, state: object, view: object }}
  */
@@ -70,7 +73,7 @@ export function createEditor(rootEl, options = {}) {
   const mount = rootEl || (typeof document !== "undefined" ? document.body : null);
   if (!mount) throw new Error("createEditor: 需要可用的 rootEl");
 
-  // 挂载点作用域（未命中 id 回退 document，见 dom.js）
+  // Mount-point scope (unmatched ids fall back to document, see dom.js)
   dom.rebind(mount);
   injectIcons(mount);
   if (dialogsImpl) configureDialogs(dialogsImpl);
@@ -79,7 +82,8 @@ export function createEditor(rootEl, options = {}) {
   let destroyed = false;
 
   // --------------------------------------------------------------------------
-  // 主题注入（契约 3）：mode/tokens 落到共同祖先（骨架在 body，挂载点可为空容器）
+  // Theme injection (contract 3): mode/tokens land on the common ancestor (the
+  // skeleton is in body, the mount point may be an empty container)
   // --------------------------------------------------------------------------
   const themeHost =
     mount.contains && mount.contains(document.getElementById("editor-app"))
@@ -87,18 +91,20 @@ export function createEditor(rootEl, options = {}) {
       : document.documentElement;
   const restoreTheme = theme ? applyThemeTokens(themeHost, theme) : null;
 
-  // 三态主题（B3：浅 / 深 / 跟随系统）：宿主注入 mode 时交给宿主（注入优先于内置板），
-  // 否则编辑器自管（localStorage 持久化 + prefers-color-scheme 跟随，落在 data-pptd-theme）
+  // Tri-state theme (B3: light / dark / follow system): when the host injects a
+  // mode, defer to the host (injection wins over the built-in palette); otherwise
+  // the editor manages it (localStorage persistence + prefers-color-scheme
+  // following, applied on data-pptd-theme)
   const themeMode = theme?.mode ? null : bindThemeMode();
   disposers.push(() => themeMode?.destroy());
 
   // --------------------------------------------------------------------------
-  // 装配（原 main.js initEditor 的闭包化）
+  // Assembly (the closure of the old main.js initEditor)
   // --------------------------------------------------------------------------
   const { state, page, selected, selectedElements, groupOf, ops } = createEditorState();
   const api = createEditorApi({ state, page, selected, selectedElements, ops });
 
-  // 对外事件：dirty/selectionChange 在每次渲染后按状态变化派发
+  // Public events: dirty/selectionChange dispatched after each render when the state changed
   let lastDirty = null;
   let lastSelected = null;
   const emitEvents = () => {
@@ -120,7 +126,7 @@ export function createEditor(rootEl, options = {}) {
     }
   };
 
-  // 元素手势执行器（拖动/缩放/旋转；不含视口手势，见 stage 路由器）
+  // Element gesture executor (drag/resize/rotate; viewport gestures are in the stage router)
   const controller = createCanvasController(dom.canvas, { ...api });
 
   const props = bindProperties(dom.props, api);
@@ -128,7 +134,7 @@ export function createEditor(rootEl, options = {}) {
   api.bind({ controller, view });
   disposers.push(() => view.destroy?.());
 
-  // 舞台手势路由器：视口平移/缩放 + 元素手势分发 + 点击空白取消选中 + 双击
+  // Stage gesture router: viewport pan/zoom + element gesture dispatch + click-empty deselect + double-click
   const stage = createStageController(dom.stage, {
     element: controller,
     select: api.select,
@@ -148,11 +154,11 @@ export function createEditor(rootEl, options = {}) {
   });
   disposers.push(() => stage.destroy?.());
 
-  // 画布右键上下文菜单（三态：单选 / 多选 / 空白页级）
+  // Canvas right-click context menu (three states: single-select / multi-select / empty page-level)
   const contextMenu = bindContextMenu({ stage: dom.stage, api, state, page, groupOf, view });
   disposers.push(() => contextMenu.destroy?.());
 
-  // 缩放控件：拖拽换位（位置持久化，双击百分比归位）
+  // Zoom control: drag-to-move (position persisted, double-click the percentage resets)
   const zoomCtl = makeZoomCtlDraggable(dom.stage, dom.zoomCtl);
   disposers.push(() => zoomCtl.destroy?.());
 
@@ -182,17 +188,17 @@ export function createEditor(rootEl, options = {}) {
       }
     },
   });
-  api.fontOptions = () => io.fontManager.fontOptions(); // 元素字体下拉选项（延迟绑定）
+  api.fontOptions = () => io.fontManager.fontOptions(); // element font dropdown options (late-bound)
 
-  // 放映模式（顶栏「放映」按钮 + F5 进入）
+  // Present mode (topbar "Present" button + F5)
   const present = createPresent({ state, view });
   api.present = present;
   disposers.push(() => present.destroy?.());
 
   view.afterRender = () => {
-    ops.syncDirty(); // 撤销/重做、内容改回保存值后重算 dirty
-    io.renderStatusBar(); // 状态栏（dirty 圆点等）随每次渲染刷新
-    present.sync(); // 放映中：实时刷新/窗口缩放时同步当前放映页
+    ops.syncDirty(); // recompute dirty after undo/redo or editing back to the saved value
+    io.renderStatusBar(); // statusbar (dirty dot etc.) refreshed on every render
+    present.sync(); // while presenting: sync the current page on live refresh/window resize
     emitEvents();
   };
 
@@ -203,10 +209,10 @@ export function createEditor(rootEl, options = {}) {
   disposers.push(() => props.destroy?.());
   disposers.push(() => controller.destroy?.());
 
-  // 实时刷新（统一项目模式）：项目就绪后订阅推送/轮询
+  // Live reload (unified project mode): subscribe to push/polling once the project is ready
   io.connectLiveReload();
 
-  // resize：rAF 防抖 + 全量渲染（跨断点拖动窗口时缩略图尺寸 / 快速条定位同步）
+  // resize: rAF debounce + full render (thumbnail sizes / quickbar positioning sync when dragging the window across breakpoints)
   const resizeAc = new AbortController();
   let resizeRaf = 0;
   window.addEventListener(
@@ -218,12 +224,13 @@ export function createEditor(rootEl, options = {}) {
     { signal: resizeAc.signal }
   );
 
-  // chrome 裁剪（embedded/对象态）：隐藏宿主敌意的外链导航与指定区域
+  // chrome trimming (embedded/object form): hide host-hostile outbound navigation and the given regions
   const chromeHidden = applyChrome(mount, chrome);
 
   // --------------------------------------------------------------------------
-  // 初始加载：deck → 直接用；deckUrl → read(url)；都省略 → 按契约走 source.read()
-  // （source.read 失败 = 无既定项目 → 静默空白，与既有 initEditor(null) 一致）
+  // Initial load: deck → use directly; deckUrl → read(url); both omitted → follow
+  // the contract via source.read() (a source.read failure = no established project
+  // → blank silently, matching the existing initEditor(null))
   // --------------------------------------------------------------------------
   const ready = bootstrap().then(() => {
     if (destroyed) return;
@@ -252,18 +259,18 @@ export function createEditor(rootEl, options = {}) {
       const data = await source.read();
       await io.loadDeckData(data, { silent: true });
     } catch {
-      // 无既定项目：空白编辑器（与「文件 → 新建空白」同一路径）
+      // No established project: blank editor (same path as "File → new blank")
       await io.newProject({ toast: false });
     }
   }
 
   function showLoadError(err) {
     on.error?.(err);
-    if (dom.canvasLoading) dom.canvasLoading.hidden = true; // 撤掉启动遮罩，露出错误态
+    if (dom.canvasLoading) dom.canvasLoading.hidden = true; // drop the startup mask, revealing the error state
   }
 
   // --------------------------------------------------------------------------
-  // chrome 裁剪
+  // chrome trimming
   // --------------------------------------------------------------------------
   function applyChrome(hostEl, spec) {
     const obj = spec === "embedded" ? CHROME_PRESETS.embedded : spec === "full" || !spec ? null : spec;
@@ -292,13 +299,13 @@ export function createEditor(rootEl, options = {}) {
   }
 
   // --------------------------------------------------------------------------
-  // destroy（幂等）
+  // destroy (idempotent)
   // --------------------------------------------------------------------------
   function destroy() {
     if (destroyed) return;
     destroyed = true;
 
-    // 1) 子绑定（键盘/舞台/工具栏/浮层/子控制器）逐项释放
+    // 1) Child bindings (keyboard/stage/toolbar/popovers/sub-controllers) released one by one
     for (const d of disposers.splice(0)) {
       try {
         d();
@@ -306,38 +313,38 @@ export function createEditor(rootEl, options = {}) {
         console.warn("[editor] destroy 子项异常:", err?.message || err);
       }
     }
-    // 2) 实时通道 + 状态栏按钮监听
+    // 2) Live channel + statusbar button listeners
     try {
       io.destroy?.();
     } catch (err) {
       console.warn("[editor] destroy io 异常:", err?.message || err);
     }
-    // 3) window 级监听与 rAF
+    // 3) window-level listeners and rAF
     resizeAc.abort();
     cancelAnimationFrame(resizeRaf);
-    // 4) 图表实例（画布）+ 动态 DOM 清理
+    // 4) Chart instances (canvas) + dynamic DOM cleanup
     try {
       disposeChartInstances(dom.canvas);
     } catch {
-      /* 画布已不在文档中 */
+      /* the canvas is no longer in the document */
     }
     closeAllDialogs();
     clearToasts();
     if (dom.quickbar) dom.quickbar.innerHTML = "";
-    // 5) chrome 隐藏还原
+    // 5) Restore chrome-hidden elements
     for (const [el, prev] of chromeHidden) el.style.display = prev || "";
-    // 6) 主题还原
+    // 6) Restore theme
     restoreTheme?.();
     resetDialogs();
-    // 7) 挂载点是独立容器（非 body/html）时清空其内容
+    // 7) When the mount point is a standalone container (not body/html), clear its content
     if (mount && mount !== document.body && mount !== document.documentElement) {
       try {
         if (mount.contains(document.getElementById("editor-app"))) mount.innerHTML = "";
       } catch {
-        /* 忽略 */
+        /* ignore */
       }
     }
-    // 8) dom 缓存还原到 document 级默认实例
+    // 8) Restore the dom cache to the document-level default instance
     dom.clear();
     dom.rebind(document);
   }

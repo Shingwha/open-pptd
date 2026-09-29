@@ -1,18 +1,20 @@
 // ============================================================================
-// dom.js — 编辑器骨架元素引用（editor/index.html 静态 id 的单一入口）
+// dom.js — editor skeleton element refs (the single entry for editor/index.html static ids)
 // ----------------------------------------------------------------------------
-// 各模块不再各自 document.getElementById("...")，统一经 dom.xxx 取
-// （懒查询 + 缓存：骨架元素创建后不会被替换，缓存安全）。
-// id 契约见 editor/index.html；新增静态骨架元素时在此登记。
+// Modules no longer each call document.getElementById("..."); they go through
+// dom.xxx (lazy lookup + cache: skeleton elements are never replaced after
+// creation, so caching is safe). The id contract is in editor/index.html; register
+// new static skeleton elements here.
 //
-// createDom(rootEl) 工厂：查询优先落在 rootEl 子树内，未命中回退 document
-// （过渡期设计——静态骨架仍在文档里，嵌入式挂载点 rootEl 可为空容器）。
-// 默认实例 `dom` 仍是模块级单例（现名导出不变），未迁移调用点继续工作；
-// createEditor 经 dom.rebind(rootEl) 把默认实例挂到自己的挂载点，
-// destroy 时 dom.rebind(document) 还原。
+// createDom(rootEl) factory: lookups prefer the rootEl subtree and fall back to
+// document (a transition design — the static skeleton is still in the document,
+// while an embedded mount point may be an empty container). The default instance
+// `dom` is still a module-level singleton (same named export), so unmigrated call
+// sites keep working; createEditor binds the default instance to its own mount
+// point via dom.rebind(rootEl), and restores it with dom.rebind(document) on destroy.
 // ============================================================================
 
-/** 属性名 → index.html 元素 id。 */
+/** Property name → index.html element id. */
 const IDS = {
   stage: "stage",
   canvas: "canvas",
@@ -49,14 +51,14 @@ const IDS = {
 };
 
 /**
- * 按 rootEl 建一个 dom 引用工厂。
- * @param {HTMLElement|Document} [rootEl] 作用域（默认 document）
+ * Build a dom ref factory scoped to rootEl.
+ * @param {HTMLElement|Document} [rootEl] scope (document by default)
  */
 export function createDom(rootEl) {
   const cache = new Map();
   let scope = rootEl || document;
 
-  /** 按 id 取元素（rootEl 子树优先，回退 document；首次查询后缓存）。 */
+  /** Look up an element by id (rootEl subtree first, then document; cached after the first lookup). */
   function byId(id) {
     if (cache.has(id)) return cache.get(id);
     let el = null;
@@ -76,15 +78,15 @@ export function createDom(rootEl) {
     {},
     Object.fromEntries(Object.entries(IDS).map(([name, id]) => [name, { get: () => byId(id), enumerable: true }]))
   );
-  /** 切换作用域并清缓存（createEditor 挂载 / destroy 还原）。 */
+  /** Switch scope and clear the cache (createEditor mount / destroy restore). */
   dom.rebind = (next) => {
     cache.clear();
     scope = next || document;
   };
-  /** 清空缓存（destroy 用）。 */
+  /** Clear the cache (used by destroy). */
   dom.clear = () => cache.clear();
   return dom;
 }
 
-/** 默认实例（模块级单例，未迁移调用点继续工作）。 */
+/** Default instance (module-level singleton; unmigrated call sites keep working). */
 export const dom = createDom(typeof document !== "undefined" ? document : null);
