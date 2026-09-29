@@ -253,8 +253,10 @@ install_asset() { # kind zipname
       warn "$_kind asset SHA256 mismatch; skipping"; rm -f "$_path"; return 0
     fi
   fi
-  mkdir -p "$HOME_DIR/assets"
-  unzip -q -o "$_path" -d "$HOME_DIR/assets"
+  # Asset zips keep their inner structure (icons: solid/regular/brands; fonts: *.ttf),
+  # so extract into assets/<kind> to land at ~/.open-pptd/assets/<kind>.
+  mkdir -p "$HOME_DIR/assets/$_kind"
+  unzip -q -o "$_path" -d "$HOME_DIR/assets/$_kind"
   rm -f "$_path"
   good "$_kind assets installed into $HOME_DIR/assets"
 }

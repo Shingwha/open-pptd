@@ -2,14 +2,22 @@
 // ============================================================================
 // pack-release.mjs — 按「运行时白名单」把 skill 打包为发布 zip
 // ----------------------------------------------------------------------------
-// 产物: dist/open-pptd-v<version>.zip，顶层目录 open-pptd/，
-//       解压到 skills 文件夹即得 <skills 文件夹>/open-pptd/。
+// 产物（dist/）：
+//   open-pptd-v<version>.zip         运行时（顶层目录 open-pptd/，解压到 skills 即用）
+//   open-pptd-icons-v<version>.zip   图标全量（solid/regular/brands/*.svg，不含 registry.json）
+//   open-pptd-fonts-v<version>.zip   字体全量（*.ttf，不含 registry.json）
+//   install.ps1 / install.sh         安装脚本副本（release 页可直接下载）
+//   SHA256SUMS                       覆盖以上全部 zip
 //
-// 白名单是发布内容的单一事实来源：tests/、docs/、examples/、.github/、
+// 白名单是运行时发布内容的单一事实来源：tests/、docs/、examples/、.github/、
 // scripts/、图标源文件与 .gitignore 一律不进包；字体文件本体不入包
 // （约 155MB，装好后经 CLI 按需下载）。
 // 内容面（技能文档与知识库）已迁至独立技能仓 open-pptd-skill，本包只发运行时；
 // contract.json 入包（契约清单，供仓 3 与契约测试读取）。
+//
+// 资源本体（assets/fonts/*.ttf、assets/icons/{solid,regular,brands}/*.svg）不入 git，
+// 故资产 zip 以**本地工作树实际存在的文件**为准：本体缺失（如 CI）时跳过对应 zip
+// 并打印明确警告，绝不因此失败（CI 上产 runtime zip + SHA256SUMS 即为合法产物）。
 //
 // 文件清单取自 git ls-files（仅 git 跟踪文件，本地未跟踪杂物不会混入）。
 // zip 容器自建：结构同 packages/writer/zip.js（复用其 crc32），压缩方法用
@@ -19,7 +27,8 @@
 // ============================================================================
 
 import { execSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { deflateRawSync } from "node:zlib";
@@ -169,14 +178,85 @@ function buildZip(entries) {
   return Buffer.concat(chunks);
 }
 
-// ---- 打包 ----
-const zip = buildZip(files);
 const outDir = path.join(ROOT, "dist");
 mkdirSync(outDir, { recursive: true });
-const outPath = path.join(outDir, `open-pptd-v${version}.zip`);
-writeFileSync(outPath, zip);
-
-const rawTotal = files.reduce((s, f) => s + f.data.length, 0);
 const mb = (n) => (n / 1024 / 1024).toFixed(2);
-console.log(`✓ ${outPath}`);
-console.log(`  ${files.length} 个文件，${mb(rawTotal)}MB → 压缩后 ${mb(zip.length)}MB`);
+const produced = []; // { file, entries }
+
+// ---- 1) 运行时 zip（白名单 ∪ contract.json）----
+const runtimePath = path.join(outDir, `open-pptd-v${version}.zip`);
+writeFileSync(runtimePath, buildZip(files));
+produced.push(runtimePath);
+const rawTotal = files.reduce((s, f) => s + f.data.length, 0);
+console.log(`✓ ${runtimePath}`);
+console.log(`  ${files.length} 个文件，${mb(rawTotal)}MB → 压缩后 ${mb(statSync(runtimePath).size)}MB`);
+
+// ---- 2) 资产 zip：以本地工作树实际存在的本体为准，缺失则跳过（不失败）----
+function walkFiles(dir) {
+  const out = [];
+  if (!existsSync(dir)) return out;
+  for (const ent of readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, ent.name);
+    if (ent.isDirectory()) out.push(...walkFiles(p));
+    else if (ent.isFile()) out.push(p);
+  }
+  return out;
+}
+
+function packAssets(label, zipName, entries) {
+  if (!entries.length) {
+    console.warn(`! 跳过 ${label}：本地工作树无本体文件（CI/未下载时正常），不产 ${zipName}`);
+    return;
+  }
+  const outPath = path.join(outDir, zipName);
+  writeFileSync(outPath, buildZip(entries));
+  produced.push(outPath);
+  const raw = entries.reduce((s, e) => s + e.data.length, 0);
+  console.log(`✓ ${outPath}`);
+  console.log(`  ${entries.length} 个文件，${mb(raw)}MB → 压缩后 ${mb(statSync(outPath).size)}MB`);
+}
+
+// 图标：assets/icons/{solid,regular,brands}/**/*.svg（不含 registry.json；保持目录结构，
+// 条目名相对 assets/icons → solid/…、regular/…、brands/…，install 脚本解到 assets/icons）
+const iconsRoot = path.join(ROOT, "assets", "icons");
+const iconEntries = walkFiles(iconsRoot)
+  .filter((p) => p.endsWith(".svg"))
+  .map((p) => ({ rel: path.relative(iconsRoot, p).split(path.sep).join("/"), abs: p }))
+  .sort((a, b) => a.rel.localeCompare(b.rel))
+  .map(({ rel, abs }) => ({ name: rel, data: readFileSync(abs), mtime: statSync(abs).mtime }));
+packAssets("图标资产包", `open-pptd-icons-v${version}.zip`, iconEntries);
+
+// 字体：assets/fonts/*.ttf（不含 registry.json；条目名 = 文件名，install 脚本解到 assets/fonts）
+const fontsRoot = path.join(ROOT, "assets", "fonts");
+const fontEntries = (existsSync(fontsRoot) ? readdirSync(fontsRoot, { withFileTypes: true }) : [])
+  .filter((e) => e.isFile() && e.name.toLowerCase().endsWith(".ttf"))
+  .map((e) => e.name)
+  .sort()
+  .map((name) => {
+    const abs = path.join(fontsRoot, name);
+    return { name, data: readFileSync(abs), mtime: statSync(abs).mtime };
+  });
+packAssets("字体资产包", `open-pptd-fonts-v${version}.zip`, fontEntries);
+
+// ---- 3) 安装脚本副本（release 页可直接下载）----
+for (const s of ["install.ps1", "install.sh"]) {
+  const src = path.join(ROOT, s);
+  if (!existsSync(src)) {
+    console.warn(`! 跳过 ${s}：仓库根未找到`);
+    continue;
+  }
+  copyFileSync(src, path.join(outDir, s));
+  console.log(`✓ ${path.join(outDir, s)}`);
+}
+
+// ---- 4) SHA256SUMS（覆盖全部产出 zip）----
+const sumsLines = produced
+  .map((p) => path.basename(p))
+  .sort()
+  .map((name) => `${createHash("sha256").update(readFileSync(path.join(outDir, name))).digest("hex")}  ${name}`);
+const sumsPath = path.join(outDir, "SHA256SUMS");
+writeFileSync(sumsPath, sumsLines.join("\n") + "\n");
+console.log(`✓ ${sumsPath}（${sumsLines.length} 项）`);
+if (produced.length < 3) {
+  console.warn("! 本次仅产出运行时 zip（缺图标/字体本体）；CI 上这是合法产物，本机补全本体后可产五件套");
+}

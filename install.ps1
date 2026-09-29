@@ -252,7 +252,9 @@ public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wP
   function Install-Asset([string]$kind, [string]$zipName) {
     $url = "$GhBase/releases/download/v$Version/$zipName"
     $zip = Join-Path $TmpRoot $zipName
-    $dest = Join-Path $HomeDir "assets"
+    # Asset zips keep their inner structure (icons: solid/regular/brands; fonts: *.ttf),
+    # so extract into assets\<kind> to land at ~/.open-pptd/assets/<kind>.
+    $dest = Join-Path $HomeDir "assets\$kind"
     try {
       Download $url $zip
       if ($SumsText -or (Test-Path $sumsPath)) {
