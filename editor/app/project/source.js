@@ -10,7 +10,7 @@
 //   capabilities: { writable, liveWatch, binary }
 //   read(hint?):  Promise<{ manifestText, pageFiles: Map, media?, missing? }>
 //   write(files): Promise<number>   files: [{ path, text? , bytes? }]
-//   readMedia?(path): Promise<Uint8Array|null>
+//   readMedia?(path): Promise<Uint8Array|null>   path is project-relative
 //   watch?(cb, hooks?): () => void  returns an unsubscribe function
 //
 // The engine ships three implementations (httpSource / directoryHandleSource /
@@ -70,13 +70,16 @@ function withBase(base, path) {
  */
 export function httpSource({ base = "", deckUrl = null } = {}) {
   const deckUrlOf = () => (typeof deckUrl === "function" ? deckUrl() : deckUrl);
+  // Manifest URL of the last read: readMedia resolves project-relative paths against
+  // it (i.e. against the project directory), which is what preview/export expect.
+  let manifestUrl = null;
 
   return {
     capabilities: { writable: true, liveWatch: true, binary: true },
 
     /** hint names this read's project URL (optional; defaults to the deckUrl given at construction). */
     async read(hint) {
-      const manifestUrl = resolveDeckUrl(hint || deckUrlOf(), base);
+      manifestUrl = resolveDeckUrl(hint || deckUrlOf(), base);
       if (!manifestUrl) throw new Error("httpSource 未指定 deckUrl");
       const { manifestText, pageTexts, missing = 0 } = await fetchProjectTexts(manifestUrl, yaml.load);
       return { manifestText, pageFiles: pageTexts, missing, manifestPath: manifestUrl };
@@ -100,7 +103,10 @@ export function httpSource({ base = "", deckUrl = null } = {}) {
 
     async readMedia(path) {
       try {
-        const res = await fetch(withBase(base, path));
+        // project-relative path → URL: against the manifest read last (project dir);
+        // before any read, fall back to the site prefix (the construction-time base)
+        const url = manifestUrl ? new URL(path, manifestUrl).href : withBase(base, path);
+        const res = await fetch(url);
         if (!res.ok) return null;
         return new Uint8Array(await res.arrayBuffer());
       } catch {
