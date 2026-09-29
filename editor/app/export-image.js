@@ -15,8 +15,9 @@
 // Audit (kills silent white images): before serializing, scan for elements that
 // cannot enter an image — cross-origin images without CORS, a canvas tainted by
 // cross-origin content, tags foreignObject cannot handle — producing an
-// `ExportImageResult { png, droppedElements[] }`; the UI toast states "N 个元素未
-// 能导出", and the per-element list goes to the console and the return value.
+// `ExportImageResult { png, droppedElements[] }`; the UI toast reports how many
+// elements could not be exported, and the per-element list goes to both the
+// console and the return value.
 //
 // Three hard constraints from the browser security model (measured on the
 // fallback path; do not revert):
