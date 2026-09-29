@@ -1,12 +1,15 @@
 // ============================================================================
-// app/project/io.js — 项目模式装配根（加载 / 保存 / 导出 / 图片 / 实时刷新）
+// app/project/io.js — project-mode assembly root (load / save / export / images / live reload)
 // ----------------------------------------------------------------------------
-// 项目来源经一个 ProjectSource 外观统一（由 createEditor / shot 装配注入）：
-//   - 注入的 source（默认 httpSource；嵌入场景可为宿主实现）承担 URL 项目读写
-//   - 本地文件夹项目（File System Access 句柄）由 directoryHandleSource 承担，
-//     经 delegatingSource 在两者之间按 state.projectHandle 自动路由
-// loader / saver / live-reload 只认这个外观，各自不再 fetch。
-// 编辑器外壳（main/toolbar/keyboard/api/shot）零感知。
+// The project source is unified behind one ProjectSource facade (injected by the
+// createEditor / shot assembly):
+//   - the injected source (httpSource by default; a host impl when embedded) owns
+//     URL project reads/writes
+//   - local folder projects (File System Access handles) are owned by
+//     directoryHandleSource, and delegatingSource routes between the two
+//     automatically based on state.projectHandle
+// loader / saver / live-reload only know this facade and no longer fetch
+// themselves. The editor shell (main/toolbar/keyboard/api/shot) is unaware of it.
 // ============================================================================
 
 import { createFontManager } from "./font-manager.js";
@@ -26,9 +29,9 @@ import { createDeck, createPage, normalizeTheme, syncElementId } from "../../../
 export function createIo({ state, view, source, onSaved, onDeckChange, onError }) {
   const fontManager = createFontManager(state);
   const images = createImageStore(state);
-  bindIconMap(state.iconMap); // 图标预读缓存绑定（icons.js 模块单例，渲染/导出共用）
+  bindIconMap(state.iconMap); // bind the icon preload cache (icons.js module singleton, shared by render/export)
 
-  // 传输接缝：注入的 source 为 URL 模式默认源；句柄项目自动路由到 directoryHandleSource
+  // Transport seam: the injected source is the URL-mode default; handle projects route to directoryHandleSource
   const baseSource = source || memorySource({});
   const projectSource = delegatingSource({
     base: baseSource,
@@ -36,8 +39,9 @@ export function createIo({ state, view, source, onSaved, onDeckChange, onError }
     currentHandle: () => state.projectHandle,
   });
 
-  // 装配顺序：loader/saver 的回调闭包引用 live，直到首次加载/保存时才执行，
-  // 彼时 live 已赋值（const live 会触发 TDZ，故用 let 声明）。
+  // Assembly order: loader/saver callbacks close over `live`, but only run on the
+  // first load/save, by which time `live` is assigned (a const would hit the TDZ,
+  // hence `let`).
   let live;
   const loader = createLoader({
     state,
@@ -45,8 +49,8 @@ export function createIo({ state, view, source, onSaved, onDeckChange, onError }
     images,
     fontManager,
     source: projectSource,
-    connect: () => live.connectLiveReload(), // 项目就绪后订阅实时刷新（幂等）
-    renderStatusBar: () => live.renderStatusBar(), // 加载后刷新状态栏
+    connect: () => live.connectLiveReload(), // subscribe to live reload once the project is ready (idempotent)
+    renderStatusBar: () => live.renderStatusBar(), // refresh the statusbar after load
     onDeckChange,
     onError,
   });
@@ -57,8 +61,8 @@ export function createIo({ state, view, source, onSaved, onDeckChange, onError }
     source: projectSource,
     renderStatusBar: () => live.renderStatusBar(),
     onSaved: () => {
-      live.suppressRefreshes(); // 保存后抑制刷新回环
-      onSaved?.(); // 对外事件（createEditor options.on.saved）
+      live.suppressRefreshes(); // suppress the refresh loop after saving
+      onSaved?.(); // public event (createEditor options.on.saved)
     },
     onError,
   });
@@ -67,12 +71,13 @@ export function createIo({ state, view, source, onSaved, onDeckChange, onError }
     source: projectSource,
     reload: () => loader.loadDeck(state.manifestPath, { keepPage: true, silent: true }),
     reloadHandle: () => loader.loadDeckFromHandle(state.projectHandle, { keepPage: true, silent: true }),
-    manualReload: loader.manualReload, // 顶栏「实时」标记点击
+    manualReload: loader.manualReload, // topbar "live" marker click
   });
 
   /**
-   * 打开一个已持有的本地项目句柄（「打开本地项目」新选 / 最近列表共用）：
-   * 授权 → 加载 → 记最近 + 会话恢复标记（刷新编辑器页可续开）。
+   * Open a local project handle we already hold (used by both "open local
+   * project" and the recent list): grant → load → record recent + session-restore
+   * marker (an editor refresh can reopen it).
    */
   async function openProjectHandle(handle) {
     if (!(await ensurePermission(handle))) {
@@ -80,23 +85,25 @@ export function createIo({ state, view, source, onSaved, onDeckChange, onError }
       return false;
     }
     await loader.loadDeckFromHandle(handle);
-    history.replaceState(null, "", location.pathname); // 清掉旧 ?deck=，刷新走会话恢复
+    history.replaceState(null, "", location.pathname); // drop the old ?deck=, refresh goes through session restore
     const entry = await addRecent(handle);
     if (entry) setPendingProject(entry.id);
     return true;
   }
 
-  /** 打开本地项目：系统文件夹选择框（官方控件）→ openProjectHandle。 */
+  /** Open a local project: OS folder picker (official control) → openProjectHandle. */
   async function openLocalProject() {
     const handle = await pickProjectFolder();
-    if (!handle) return false; // 用户取消
+    if (!handle) return false; // user cancelled
     return openProjectHandle(handle);
   }
 
   /**
-   * 新建空白演示（应用菜单「＋ 新建空白」与编辑器空白启动共用）：
-   * dirty 确认后重置为空白项目，断开实时通道、清会话恢复标记（刷新页面回到
-   * 空白而不是旧项目）。toast:false 供编辑器首次空白启动复用（不弹提示）。
+   * New blank deck (the "＋ new blank" app menu and blank editor startup share
+   * it): after a dirty confirmation, reset to a blank project, disconnect the
+   * live channel and clear the session-restore marker (a page refresh returns to
+   * blank instead of the old project). toast:false is reused by the editor's
+   * first blank startup (no toast).
    */
   async function newProject({ toast = true } = {}) {
     if (state.dirty && !(await dialogs.confirm("编辑器有未保存的修改，新建将放弃这些修改。确定继续？"))) return false;
@@ -106,18 +113,18 @@ export function createIo({ state, view, source, onSaved, onDeckChange, onError }
     state.manifestPath = null;
     state.projectHandle = null;
     state.projectName = "";
-    loader.setBrandFile(""); // 顶栏回到「未命名」，清掉旧项目名残留
+    loader.setBrandFile(""); // topbar back to "unnamed", clearing the old project name
     state.currentPage = 0;
     state.selectedId = null;
     state.dirty = false;
-    state.savedDeck = structuredClone(state.deck); // 空白项目基线（撤销/重做等值比较）
+    state.savedDeck = structuredClone(state.deck); // blank-project baseline (undo/redo equality compare)
     state.history = createHistory();
     syncElementId(state.deck);
     images.rebuildImageMap();
     clearPendingProject();
     history.replaceState(null, "", location.pathname);
     view.render();
-    live.connectLiveReload(); // 空白项目：断开旧实时通道（内部按无项目处理）
+    live.connectLiveReload(); // blank project: disconnect the old live channel (internally treated as no project)
     try {
       onDeckChange?.(state.deck);
     } catch (err) {
@@ -147,7 +154,7 @@ export function createIo({ state, view, source, onSaved, onDeckChange, onError }
     preloadRemoteImages: images.preloadRemoteImages,
     renderStatusBar: live.renderStatusBar,
     fontManager,
-    source: projectSource, // 传输接缝外观（宿主/测试可读；内部读写已全部经它）
+    source: projectSource, // transport facade (hosts/tests can read it; all internal IO goes through it)
     destroy: () => live.destroy(),
   };
 }

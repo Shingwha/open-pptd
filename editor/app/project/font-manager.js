@@ -1,39 +1,40 @@
 // ============================================================================
-// app/project/font-manager.js — 编辑器字体库（本地文件 / 网络 URL / 内置库）
+// app/project/font-manager.js — editor font library (local files / remote URLs / built-in registry)
 // ----------------------------------------------------------------------------
-// 职责：
-//   - 添加字体（<input type=file> 读字节 / fetch URL / 内置注册表）→ parseFontInfo
-//     取名 → FontFace 注册（预览立即生效，渲染器 CSS font-family 自动匹配）
-//   - 删除 / 嵌入勾选 / 子集化勾选
-//   - 保存项目时同步到 deck.fonts 资源表（key = family，带 file/url/subset）
-//   - 加载项目时从资源表恢复：url 字体自动 fetch 注册；file 字体待用户重新选择
-//   - 导出时按「嵌入勾选」生成 options.fontFiles
-// 管理界面（浮层）见 interaction/font-panel.js，本模块只承担数据层。
+// Responsibilities:
+//   - add fonts (<input type=file> bytes / fetch URL / built-in registry) → parseFontInfo
+//     name → FontFace registration (preview takes effect immediately, renderer CSS font-family matches)
+//   - remove / embed checkbox / subset checkbox
+//   - sync to the deck.fonts resource table on save (key = family, with file/url/subset)
+//   - restore from the resource table on load: url fonts are fetched and registered
+//     automatically; file fonts wait for the user to re-pick them
+//   - on export build options.fontFiles from the embed checkboxes
+// The management UI (popover) lives in interaction/font-panel.js; this module is data only.
 //
-// PPTD 格式（见 references/pptd.md）：
+// PPTD format (see references/pptd.md):
 //   fonts:
-//     站酷小薇: { family: ZCOOL XiaoWei, file: fonts/xxx.ttf, subset: true }   # 资源表
-//     title: 站酷小薇                                                          # 组件槽引用
+//     <slot-key>: { family: <registry-family>, file: fonts/xxx.ttf, subset: true }   # resource table
+//     title: <slot-key>                                                              # component slot reference
 // ============================================================================
 
 import { showToast } from "../toast.js";
 import {
   fetchFontBytes,
   findFont,
-  fontFileUrl,
   loadFontRegistry,
   parseFontInfo,
   parseFontResources,
 } from "../../../packages/model/index.js";
 import { safeFileName } from "../../../packages/writer/index.js";
 
-/** 系统字体池（design.md §4 系统字体；元素 fontFamily 下拉兜底选项）。 */
+/** System font pool (design.md §4; fallback options for the element fontFamily dropdown). */
 export const SYSTEM_FONTS = ["Microsoft YaHei", "KaiTi", "SimSun", "SimHei", "FangSong", "YouYuan"];
 
 /**
- * 注册表字体 → 拉字节 + FontFace 注册（无状态，画廊/编辑器共用）：
- * 本地库文件优先、线上源回退。返回 { hit, bytes }；未命中注册表或字节不可用
- * 返回 null（调用方自行降级到系统字体）。
+ * Registry font → fetch bytes + register FontFace (stateless, shared by the
+ * gallery and the editor): the local library file wins, the remote source is the
+ * fallback. Returns { hit, bytes }; returns null when the registry has no match
+ * or the bytes are unavailable (the caller falls back to a system font).
  */
 export async function registerRegistryFontFace(keyOrFamily) {
   const registry = await loadFontRegistry();
@@ -48,14 +49,14 @@ export async function registerRegistryFontFace(keyOrFamily) {
 }
 
 export function createFontManager(state) {
-  /** FontFace 注册：family 必须与渲染器 CSS font-family 完全一致（parseFontInfo 取 name 表）。 */
+  /** FontFace registration: family must match the renderer CSS font-family exactly (parseFontInfo reads the name table). */
   async function registerFace(family, bytes) {
     const face = new FontFace(family, bytes);
     await face.load();
     document.fonts.add(face);
   }
 
-  /** 添加本地字体文件 → 返回 family；失败抛错。 */
+  /** Add a local font file → returns family; throws on failure. */
   async function addLocalFile(file) {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const info = parseFontInfo(bytes);
@@ -67,7 +68,7 @@ export function createFontManager(state) {
     return info.family;
   }
 
-  /** 添加网络字体 URL → 返回 family；失败抛错。 */
+  /** Add a remote font URL → returns family; throws on failure. */
   async function addUrl(url) {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -81,12 +82,12 @@ export function createFontManager(state) {
     return info.family;
   }
 
-  /** 内置字体库：从 assets/fonts/ 加载注册表字体 → FontFace 注册 + 加入库。 */
+  /** Built-in font library: load a registry font from assets/fonts/ → register FontFace + add to the library. */
   async function addRegistryFont(keyOrFamily) {
     const registry = await loadFontRegistry();
     const hit = findFont(registry, keyOrFamily);
     if (!hit) throw new Error(`注册表未找到: ${keyOrFamily}`);
-    if (state.fontLibrary[hit.family]) return hit.family; // 已加载
+    if (state.fontLibrary[hit.family]) return hit.family; // already loaded
     const bytes = await fetchFontBytes(hit);
     if (!bytes) throw new Error(`字体文件不可用: ${hit.family}（本地缺失且线上源不可达）`);
     const info = parseFontInfo(bytes);
@@ -98,7 +99,7 @@ export function createFontManager(state) {
     return info.family;
   }
 
-  /** 重新加载本地文件到已有条目（file 字体打开项目后 bytes 缺失时）。 */
+  /** Reload a local file into an existing entry (when a file font has no bytes after opening the project). */
   async function reloadLocalFile(family, file) {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const info = parseFontInfo(bytes);
@@ -111,7 +112,7 @@ export function createFontManager(state) {
     delete state.fontLibrary[family];
   }
 
-  /** 导出用：嵌入勾选的字体字节（key = family）。 */
+  /** Export: bytes of the embed-checked fonts (key = family). */
   function exportFontFiles() {
     const files = {};
     for (const [family, f] of Object.entries(state.fontLibrary)) {
@@ -120,7 +121,7 @@ export function createFontManager(state) {
     return files;
   }
 
-  /** 元素 fontFamily 下拉选项：资源表 key + 库字体 + 系统字体池。 */
+  /** Element fontFamily dropdown options: resource-table keys + library fonts + system font pool. */
   function fontOptions() {
     const opts = [["", "默认"]];
     for (const [key] of Object.entries(state.theme?.fontResources || {})) {
@@ -135,12 +136,13 @@ export function createFontManager(state) {
     return opts;
   }
 
-  /** 保存项目：嵌入勾选的字体 → deck.fonts 资源表（key = family）。
-   *  注册表字体只写 {family, subset}（无 file/url，导出自动从内置库取字）；
-   *  url 字体写 url；本地文件写 file（仅编辑器内可用，CLI 导出需注册表或 url）。 */
+  /** Save project: embed-checked fonts → deck.fonts resource table (key = family).
+   *  Registry fonts only write {family, subset} (no file/url; export pulls the glyphs
+   *  from the built-in library); url fonts write url; local files write file (usable
+   *  only inside the editor — CLI export needs a registry entry or a url). */
   function syncToDeck() {
     const fonts = state.deck.fonts || (state.deck.fonts = {});
-    // 资源表只保留合法声明（对象 + family 字段）；清理 v1 组件槽（字符串值）等杂物
+    // The resource table only keeps valid declarations (object + family field); clean v1 component slots (string values) and other junk
     for (const key of Object.keys(fonts)) {
       const v = fonts[key];
       if (!v || typeof v !== "object" || !(v.family || v.name)) delete fonts[key];
@@ -154,14 +156,14 @@ export function createFontManager(state) {
     }
   }
 
-  /** 加载项目：从 deck.fonts 资源表恢复库条目（url 自动拉取；注册表 family 自动从内置库加载；file 待用户重选）。 */
+  /** Load project: restore library entries from deck.fonts (url fetched automatically; registry families loaded from the built-in library; file fonts await re-pick). */
   async function restoreFromDeck() {
     const resources = parseFontResources(state.deck?.fonts);
     let registry = null;
     try {
       registry = await loadFontRegistry();
     } catch {
-      /* 注册表不可用时注册表引用字体跳过自动加载 */
+      /* when the registry is unavailable, registry-referenced fonts skip auto-loading */
     }
     for (const [key, res] of Object.entries(resources)) {
       const family = res.family || key;
@@ -178,9 +180,9 @@ export function createFontManager(state) {
           showToast(`网络字体加载失败: ${family}`, "danger");
         }
       } else if (registry) {
-        // 注册表引用（{family: <注册名>}）：从内置字体库自动加载预览（本地缺失时线上回退）
+        // Registry reference ({family: <registry-name>}): auto-load the preview from the built-in library (remote fallback when the local file is missing)
         const hit = findFont(registry, family);
-        if (!hit) continue; // 非注册表引用（file 字体）：待用户重新选择本地文件
+        if (!hit) continue; // not a registry reference (a file font): wait for the user to re-pick the local file
         try {
           const bytes = await fetchFontBytes(hit);
           if (!bytes) throw new Error("字体字节不可用");

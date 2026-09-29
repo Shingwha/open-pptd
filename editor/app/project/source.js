@@ -1,22 +1,24 @@
 // ============================================================================
-// app/project/source.js — 传输接缝（ProjectSource 契约 + 三个实现）
+// app/project/source.js — transport seam (ProjectSource contract + three implementations)
 // ----------------------------------------------------------------------------
-// 编辑器对"项目从哪里来、写到哪里去"只依赖这个鸭子类型接口（与 handle-io.js
-// 的思路一致），不再出现 fetch("/api/save") 或 new EventSource("/events") 这类
-// 根绝对路径字面量——宿主（同源 iframe / IPC / 内存）可注入自己的实现。
+// The editor depends only on this duck-typed interface for "where a project comes
+// from and goes to" (same idea as handle-io.js); no more root-absolute path
+// literals like fetch("/api/save") or new EventSource("/events") — a host
+// (same-origin iframe / IPC / memory) can inject its own implementation.
 //
-// ProjectSource（契约 v2，见 docs/specs/ref/integration-plan.md 附录 D.3）：
+// ProjectSource (contract v2):
 //   capabilities: { writable, liveWatch, binary }
 //   read(hint?):  Promise<{ manifestText, pageFiles: Map, media?, missing? }>
 //   write(files): Promise<number>   files: [{ path, text? , bytes? }]
 //   readMedia?(path): Promise<Uint8Array|null>
-//   watch?(cb, hooks?): () => void  返回退订函数
+//   watch?(cb, hooks?): () => void  returns an unsubscribe function
 //
-// 引擎内置三个实现（httpSource / directoryHandleSource / memorySource）；
-// 适配仓的 dshSource 在仓外实现，同一套用例。
+// The engine ships three implementations (httpSource / directoryHandleSource /
+// memorySource); the adapter repo's dshSource is implemented out of tree against
+// the same test cases.
 //
-// 另导出 applyDeck(deckData, ctx)：把读取结果应用到编辑器状态
-// （loader.js 与外部装配共用同一份逻辑）。
+// Also exports applyDeck(deckData, ctx): applies a read result to the editor
+// state (loader.js and external assembly share one implementation).
 // ============================================================================
 
 import { createHistory } from "../../interaction/history.js";
@@ -33,24 +35,24 @@ import {
 } from "../../../packages/model/index.js";
 import { extToMime } from "../../../packages/writer/index.js";
 
-// 编辑器站点根（本文件位于 <root>/editor/app/project/，../../../ 即 editor/）
+// Editor site root (this file lives in <root>/editor/app/project/, so ../../../ is editor/)
 const EDITOR_BASE = new URL("../../", import.meta.url).href;
 
-/** deckUrl 归一为绝对 URL（http(s) 原样；否则相对 base 或编辑器站点根解析）。 */
+/** Normalize a deckUrl to an absolute URL (http(s) as-is; otherwise resolved against base or the editor site root). */
 function resolveDeckUrl(deckUrl, base = "") {
   if (!deckUrl) return null;
-  if (/^[a-z][a-z0-9+.-]*:/i.test(deckUrl)) return deckUrl; // 已是绝对 URL
+  if (/^[a-z][a-z0-9+.-]*:/i.test(deckUrl)) return deckUrl; // already an absolute URL
   if (base) {
     try {
       return new URL(deckUrl, new URL(base, document.baseURI || EDITOR_BASE)).href;
     } catch {
-      /* 落到编辑器站点根 */
+      /* fall through to the editor site root */
     }
   }
   return new URL(deckUrl, EDITOR_BASE).href;
 }
 
-/** 相对路径挂到 base 前缀（base 为空时原样返回，行为等于此前的根绝对路径）。 */
+/** Prefix a relative path with base (returned as-is when base is empty, matching the old root-absolute behavior). */
 function withBase(base, path) {
   if (!path) return path;
   if (/^[a-z][a-z0-9+.-]*:/i.test(path)) return path;
@@ -58,12 +60,12 @@ function withBase(base, path) {
 }
 
 // ----------------------------------------------------------------------------
-// 实现 1：httpSource —— 现有 serve 的 fetch / SSE 模式（base 参数化）
+// Implementation 1: httpSource — the existing serve fetch / SSE mode (parameterized base)
 // ----------------------------------------------------------------------------
 /**
  * @param {{ base?: string, deckUrl?: string }} [opts]
- *   base    站点前缀（默认 ""，即当前 serve 行为的根绝对路径）
- *   deckUrl 项目 manifest 位置（绝对 URL、相对 base 的路径，或 () => string）
+ *   base    site prefix (default "", i.e. the current serve behavior's root-absolute path)
+ *   deckUrl project manifest location (absolute URL, a path relative to base, or () => string)
  */
 export function httpSource({ base = "", deckUrl = null } = {}) {
   const deckUrlOf = () => (typeof deckUrl === "function" ? deckUrl() : deckUrl);
@@ -71,7 +73,7 @@ export function httpSource({ base = "", deckUrl = null } = {}) {
   return {
     capabilities: { writable: true, liveWatch: true, binary: true },
 
-    /** hint 指定本次读取的项目 URL（可省，默认用构造时的 deckUrl）。 */
+    /** hint names this read's project URL (optional; defaults to the deckUrl given at construction). */
     async read(hint) {
       const manifestUrl = resolveDeckUrl(hint || deckUrlOf(), base);
       if (!manifestUrl) throw new Error("httpSource 未指定 deckUrl");
@@ -79,7 +81,7 @@ export function httpSource({ base = "", deckUrl = null } = {}) {
       return { manifestText, pageFiles: pageTexts, missing, manifestPath: manifestUrl };
     },
 
-    /** 批量写回（POST /api/save；body 口径与既有服务端一致：文本 content / 图片 b64）。 */
+    /** Batch write-back (POST /api/save; body shape matches the existing server: text content / image b64). */
     async write(files) {
       const res = await fetch(withBase(base, "/api/save"), {
         method: "POST",
@@ -106,17 +108,17 @@ export function httpSource({ base = "", deckUrl = null } = {}) {
     },
 
     /**
-     * 订阅服务端变更推送（SSE）。
-     * @param {() => void} cb 收到变更推送
+     * Subscribe to server change pushes (SSE).
+     * @param {() => void} cb invoked on a change push
      * @param {{ onOpen?: () => void, onError?: () => void }} [hooks]
-     * @returns {() => void} 退订函数
+     * @returns {() => void} unsubscribe function
      */
     watch(cb, hooks = {}) {
       let es = null;
       try {
         es = new EventSource(withBase(base, "/events"));
       } catch {
-        return () => {}; // 无 /events 端点（部署模式）或异常环境：不启用
+        return () => {}; // no /events endpoint (deploy mode) or an exotic environment: disabled
       }
       let opened = false;
       es.onopen = () => {
@@ -124,7 +126,7 @@ export function httpSource({ base = "", deckUrl = null } = {}) {
         hooks.onOpen?.();
       };
       es.onerror = () => {
-        // 部署模式：/events 404 → 未打开过则放弃（本地 serve 断线由 EventSource 自动重连）
+        // Deploy mode: /events 404 → give up if it never opened (a local serve drop is auto-reconnected by EventSource)
         if (!opened && es) {
           es.close();
           es = null;
@@ -141,11 +143,12 @@ export function httpSource({ base = "", deckUrl = null } = {}) {
 }
 
 // ----------------------------------------------------------------------------
-// 实现 2：directoryHandleSource —— 浏览器 File System Access 句柄模式
+// Implementation 2: directoryHandleSource — browser File System Access handle mode
 // ----------------------------------------------------------------------------
 /**
- * 包装 editor/app/project/handle-io.js（该文件本身不改，鸭子类型设计已正确）。
- * File System Access 无推送通道 → liveWatch=false，由 live-reload 回退指纹轮询。
+ * Wraps editor/app/project/handle-io.js (that file is unchanged; its duck-typed
+ * design is already correct). File System Access has no push channel →
+ * liveWatch=false; live-reload falls back to fingerprint polling.
  */
 export function directoryHandleSource(handle) {
   const dir = handle;
@@ -175,7 +178,7 @@ export function directoryHandleSource(handle) {
       return comma < 0 ? null : base64ToBytes(dataUrl.slice(comma + 1));
     },
 
-    /** 指纹（live-reload 轮询用；语义同 handle-io.fingerprint）。 */
+    /** Fingerprint (used by live-reload polling; same semantics as handle-io.fingerprint). */
     fingerprint() {
       return fingerprint(dir);
     },
@@ -183,11 +186,11 @@ export function directoryHandleSource(handle) {
 }
 
 // ----------------------------------------------------------------------------
-// 实现 3：memorySource —— 测试与嵌入（无 IO）
+// Implementation 3: memorySource — tests and embedding (no IO)
 // ----------------------------------------------------------------------------
 /**
  * @param {{ files?: Record<string, string|Uint8Array>, writable?: boolean }} [opts]
- *   files 以路径为键的内存项目（"deck.pptd" + "pages/*.page" + 二进制媒体）
+ *   files an in-memory project keyed by path ("deck.pptd" + "pages/*.page" + binary media)
  */
 export function memorySource({ files = {}, writable = true } = {}) {
   const store = new Map();
@@ -230,14 +233,14 @@ export function memorySource({ files = {}, writable = true } = {}) {
 }
 
 // ----------------------------------------------------------------------------
-// 读取结果 → 编辑器状态（loader 与外部装配共用）
+// Read result → editor state (shared by loader and external assembly)
 // ----------------------------------------------------------------------------
 /**
- * 把一份已读取的项目应用到编辑器状态：重置历史/选中/页面/图片映射/id 计数器并
- * 渲染状态栏（loadDeck 与手动刷新共用）。
+ * Apply a read project to editor state: reset history/selection/pages/image map/
+ * id counter and render the statusbar (shared by loadDeck and manual refresh).
  * @param {{ manifestText, pageFiles, manifestPath?, handle?, projectName? }} deckData
  * @param {{ state, images, renderStatusBar, setBrandFile, applyTheme? }} ctx
- *        依赖注入的编辑器上下文（images.rebuildImageMap / 顶栏品牌 / 状态栏）
+ *        the injected editor context (images.rebuildImageMap / topbar brand / statusbar)
  */
 export function applyDeck(deckData, ctx) {
   const { state, images, renderStatusBar, setBrandFile } = ctx;
@@ -247,7 +250,7 @@ export function applyDeck(deckData, ctx) {
   state.projectHandle = handle;
   state.projectName = projectName;
   setBrandFile(handle ? projectName : manifestPath);
-  // 主题：loader 的 applyTheme 优先（保持单一实现）；外部调用方无此依赖时用内联等价实现
+  // Theme: prefer loader's applyTheme (stays the single implementation); external callers without that dep use the inline equivalent
   if (typeof ctx.applyTheme === "function") {
     ctx.applyTheme(state.deck.theme || DEFAULT_THEME);
   } else {
@@ -261,17 +264,18 @@ export function applyDeck(deckData, ctx) {
   state.currentPage = 0;
   state.selectedId = null;
   state.history = createHistory();
-  state.savedDeck = structuredClone(state.deck); // 保存基线：撤销/重做回它即视为无未保存修改
-  state.dirty = false; // 刚从磁盘/服务器加载，无未保存修改
+  state.savedDeck = structuredClone(state.deck); // save baseline: undo/redo back to it means no unsaved changes
+  state.dirty = false; // just loaded from disk/server, no unsaved changes
   syncElementId(state.deck);
   images.rebuildImageMap();
   renderStatusBar();
 }
 
 /**
- * 委托源：把读写路由到"当前项目来源"（句柄模式优先，否则用装配时注入的源）。
- * createIo 用它把 standalone 的「URL 项目 ↔ 本地句柄项目」双来源收敛到一个
- * ProjectSource 外观上，loader/saver/live-reload 只认这个外观。
+ * Delegating source: routes reads/writes to the "current project source"
+ * (handle mode wins, otherwise the source injected at assembly). createIo uses it
+ * to converge standalone's two sources ("URL project ↔ local handle project")
+ * onto one ProjectSource facade, which loader/saver/live-reload only know.
  */
 export function delegatingSource({ base, handleSource, currentHandle }) {
   const chosen = () => (currentHandle() ? handleSource(currentHandle()) : base);
@@ -284,7 +288,7 @@ export function delegatingSource({ base, handleSource, currentHandle }) {
     readMedia: (path) => chosen().readMedia?.(path) ?? Promise.resolve(null),
     watch: (cb, hooks) => chosen().watch?.(cb, hooks) ?? (() => {}),
     fingerprint: () => chosen().fingerprint?.() ?? Promise.resolve(null),
-    /** 句柄项目读取（loader.loadDeckFromHandle 用；无句柄则回退普通 read）。 */
+    /** Handle-project read (used by loader.loadDeckFromHandle; falls back to a plain read when there is no handle). */
     readFromHandle: (handle) => handleSource(handle).read(),
   };
 }

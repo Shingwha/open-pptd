@@ -1,28 +1,38 @@
 // ============================================================================
-// app/export-image.js — 导出图片（capture 优先 + foreignObject 回退 + 逐元素体检）
+// app/export-image.js — image export (capture first + foreignObject fallback + per-element audit)
 // ----------------------------------------------------------------------------
-// 两条出图路径（RP-C / M5 统一；spec 08 §2 修订 1）：
-//   1) capture 优先（本地 serve / 有浏览器）：POST /api/export-image，把**当前
-//      编辑现场**序列化成临时项目（deck.pptd + pages + media + fonts），由
-//      packages/server 复用 renderer/headless 的无头 Chrome 逐页截图。探测不到
-//      端点（部署态 404）或本机无 Chrome/Edge、或调用失败/超时 → 回退路径 2。
-//   2) foreignObject 回退（部署态 GitHub Pages / 无浏览器）：离屏渲染整页 →
-//      资源自包含化（含**逐元素体检**）→ SVG <foreignObject> → canvas 2x 栅格化。
+// Two output paths (unified by RP-C / M5; spec 08 §2 revision 1):
+//   1) capture first (local serve / browser available): POST /api/export-image,
+//      which serializes the **current editing session** into a temp project
+//      (deck.pptd + pages + media + fonts) and lets packages/server reuse
+//      renderer/headless's headless Chrome to screenshot each page. If the
+//      endpoint is missing (404 in deploy mode) or there is no local Chrome/Edge,
+//      or the call fails/times out → fall back to path 2.
+//   2) foreignObject fallback (GitHub Pages deploy / no browser): render the whole
+//      page offscreen → make resources self-contained (including the **per-element
+//      audit**) → SVG <foreignObject> → canvas rasterization at 2x.
 //
-// 体检（消灭静默白图）：序列化前扫出无法进入图片的元素——无 CORS 的外链图、
-// 被跨域污染的 canvas、foreignObject 不支持的标签——产出
-// `ExportImageResult { png, droppedElements[] }`，UI toast 明示「N 个元素未能导出」，
-// 逐元素清单同时进 console 与返回值。
+// Audit (kills silent white images): before serializing, scan for elements that
+// cannot enter an image — cross-origin images without CORS, a canvas tainted by
+// cross-origin content, tags foreignObject cannot handle — producing an
+// `ExportImageResult { png, droppedElements[] }`; the UI toast states "N 个元素未
+// 能导出", and the per-element list goes to the console and the return value.
 //
-// 浏览器安全模型的三个硬约束（回退路径实测结论，勿改回）：
-//   1. SVG 必须以 data: URL 加载——blob: URL 会污染 canvas（toBlob 抛 SecurityError）
-//   2. foreignObject 里不能有 <img>——即使 data: 源也会让整张 SVG 解码失败；
-//      位图一律改写为 div + background:url(data:...) 载体（cover/contain 与
-//      object-fit 语义一一对应）
-//   3. SVG 内不得残留任何 http 引用（同源也算跨域，直接污染）——图片与图片
-//      背景全部转 dataURL；无 CORS 授权的外链图转不了（导出为空白，计数提示）
-// 字体：回退路径 fontLibrary 有字节的全部内嵌 @font-face；capture 路径把有字节的
-// 库字体写进临时项目（headless 现场复现预览字体），系统字体由本机渲染无需内嵌。
+// Three hard constraints from the browser security model (measured on the
+// fallback path; do not revert):
+//   1. The SVG must be loaded as a data: URL — a blob: URL taints the canvas
+//      (toBlob throws SecurityError)
+//   2. foreignObject must not contain <img> — even a data: source makes the whole
+//      SVG fail to decode; bitmaps are rewritten into div + background:url(data:...)
+//      carriers (cover/contain map 1:1 to object-fit)
+//   3. The SVG must not retain any http reference (same-origin counts as
+//      cross-origin and taints directly) — images and image backgrounds are all
+//      converted to dataURLs; cross-origin images without CORS cannot be
+//      converted (exported blank, counted and reported)
+// Fonts: the fallback path embeds every fontLibrary entry that has bytes as
+// @font-face; the capture path writes byte-bearing library fonts into the temp
+// project (headless reproduces the preview fonts on site); system fonts are
+// rendered by the local machine and need no embedding.
 // ============================================================================
 
 import { showToast } from "./toast.js";
@@ -31,24 +41,24 @@ import { disposeChartInstances, renderPage } from "../../packages/renderer/index
 import { ZipWriter, dataUrlOf, downloadBlob, safeFileName } from "../../packages/writer/index.js";
 import { mediaFilesOfDeck } from "./project/images.js";
 
-const DEFAULT_SCALE = 2; // 输出倍率缺省（1|2|3；倍率含义 = 画布逻辑尺寸 × N 像素）
-const PROBE_TIMEOUT_MS = 3000; // capture 端点探测超时（3s 级，超时即回退）
-const CAPTURE_BASE_TIMEOUT_MS = 30000; // capture 单页基准超时
-const CAPTURE_MAX_TIMEOUT_MS = 180000; // capture 总超时上限
+const DEFAULT_SCALE = 2; // default output multiplier (1|2|3; multiplier = canvas logical size × N pixels)
+const PROBE_TIMEOUT_MS = 3000; // capture endpoint probe timeout (3s scale; on timeout fall back)
+const CAPTURE_BASE_TIMEOUT_MS = 30000; // capture per-page base timeout
+const CAPTURE_MAX_TIMEOUT_MS = 180000; // capture total timeout ceiling
 
-/** 强制回退开关（走查/测试用）：window.__pptdForceImageFallback 或 ?imgFallback=1。 */
+/** Forced-fallback switch (walkthrough/testing): window.__pptdForceImageFallback or ?imgFallback=1. */
 function forceFallback() {
   try {
     if (globalThis.__pptdForceImageFallback) return true;
     if (typeof location !== "undefined" && new URLSearchParams(location.search).get("imgFallback") === "1") return true;
   } catch {
-    /* 非浏览器环境忽略 */
+    /* ignore outside a browser */
   }
   return false;
 }
 
 export function createImageExporter({ state }) {
-  /** 内嵌字体 @font-face（回退路径用；结果缓存——同项目内字体集稳定）。 */
+  /** Embedded-font @font-face (fallback path; result cached — the font set is stable within a project). */
   let fontFaceCache = null;
   function fontFaceCss() {
     if (fontFaceCache != null) return fontFaceCache;
@@ -62,9 +72,9 @@ export function createImageExporter({ state }) {
   }
 
   // --------------------------------------------------------------------------
-  // 路径 1：capture（server 端点 + headless）
+  // Path 1: capture (server endpoint + headless)
   // --------------------------------------------------------------------------
-  /** 端点能力探测：存在且本机有可用浏览器才返回 true（失败/超时/无浏览器 → false）。 */
+  /** Endpoint capability probe: true only when the endpoint exists and a usable browser is present (failure/timeout/no browser → false). */
   async function probeCapture() {
     if (typeof fetch !== "function") return false;
     const controller = new AbortController();
@@ -75,19 +85,19 @@ export function createImageExporter({ state }) {
       const info = await res.json();
       return !!(info?.ok && info?.capture && info?.browser);
     } catch {
-      return false; // 部署态 404 / 网络失败 / 超时
+      return false; // 404 in deploy mode / network failure / timeout
     } finally {
       clearTimeout(timer);
     }
   }
 
-  /** 当前编辑现场 → capture 端点请求体（PPTD 文件 + media + fonts 字节）。 */
+  /** Current editing session → capture endpoint request body (PPTD files + media + font bytes). */
   function buildCapturePayload(indices, scale) {
     const total = state.deck.pages.length;
     const all = indices.length === total && indices.every((v, i) => v === i);
-    const snapshot = JSON.parse(JSON.stringify(state.deck)); // 快照：导出不改变编辑现场
-    const files = mediaFilesOfDeck(snapshot, state.imageMap); // 重写 dataURL → media/，返回字节
-    // 库字体（有字节的）写入临时项目：headless 侧按 deck.fonts 资源表加载 → 与预览同字体
+    const snapshot = JSON.parse(JSON.stringify(state.deck)); // snapshot: exporting does not change the editing session
+    const files = mediaFilesOfDeck(snapshot, state.imageMap); // rewrite dataURLs → media/, returning bytes
+    // Library fonts (those with bytes) are written into the temp project: headless loads them via deck.fonts → same fonts as the preview
     for (const [family, f] of Object.entries(state.fontLibrary || {})) {
       if (!f?.bytes) continue;
       const rel = typeof f.file === "string" && f.file ? f.file : `fonts/${safeFileName(family)}.ttf`;
@@ -100,7 +110,7 @@ export function createImageExporter({ state }) {
     return { manifestName, files, scale, ...(all ? { all: true } : { pages: indices.map((i) => i + 1) }) };
   }
 
-  /** POST capture 端点；任何失败（非 2xx / 缺页 / 超时）返回 null 由调用方回退。 */
+  /** POST to the capture endpoint; any failure (non-2xx / missing page / timeout) returns null so the caller falls back. */
   async function capturePages(indices, scale) {
     const payload = buildCapturePayload(indices, scale);
     const controller = new AbortController();
@@ -120,7 +130,7 @@ export function createImageExporter({ state }) {
       const results = [];
       for (const i of indices) {
         const hit = byPage.get(i + 1);
-        if (!hit?.b64) return null; // 缺页 → 整体回退（宁可慢，不要半成品）
+        if (!hit?.b64) return null; // missing page → fall back entirely (better slow than half-done)
         results.push({ index: i, png: base64ToBytes(hit.b64), droppedElements: [], source: "capture" });
       }
       return results;
@@ -133,9 +143,9 @@ export function createImageExporter({ state }) {
   }
 
   // --------------------------------------------------------------------------
-  // 路径 2：foreignObject（部署态 / capture 不可用）+ 逐元素体检
+  // Path 2: foreignObject (deploy mode / capture unavailable) + per-element audit
   // --------------------------------------------------------------------------
-  /** 任意 URL → dataURL（同源 / 允许 CORS 的外链可转；否则抛错由调用方计数）。 */
+  /** Any URL → dataURL (same-origin / CORS-enabled cross-origin converts; otherwise throws and the caller counts it). */
   async function urlToDataUrl(url) {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -143,7 +153,7 @@ export function createImageExporter({ state }) {
     return dataUrlOf(await blob.arrayBuffer(), blob.type || "application/octet-stream");
   }
 
-  /** <img>/<canvas> → div 背景图载体（保留原内联尺寸样式；object-fit → background-size）。 */
+  /** <img>/<canvas> → div background-image carrier (keeps the original inline size styles; object-fit → background-size). */
   function toCarrier(styleText, dataUrl, fit) {
     const div = document.createElement("div");
     div.style.cssText = styleText;
@@ -154,23 +164,25 @@ export function createImageExporter({ state }) {
     return div;
   }
 
-  /** 节点所属元素 id（体检报告定位用）。 */
+  /** Element id owning a node (for locating entries in the audit report). */
   function elementIdOf(node) {
     return node?.closest?.("[data-element-id]")?.dataset?.elementId || null;
   }
 
   /**
-   * 自包含化：位图元素改写为 div 背景图载体、图片背景转 dataURL；**逐元素体检**——
-   * 返回无法进入图片的元素清单（{ elementId, tag, reason }），消灭静默白图。
+   * Make self-contained: rewrite bitmap elements into div background-image carriers
+   * and convert image backgrounds to dataURLs; **per-element audit** — returns the
+   * list of elements that cannot enter an image ({ elementId, tag, reason }),
+   * killing silent white images.
    */
   async function embedResources(container) {
     const dropped = [];
-    // foreignObject 不支持的媒体标签（留着会让整张 SVG 解码失败/整块空白）
+    // Media tags foreignObject cannot handle (leaving them makes the whole SVG fail to decode / go blank)
     for (const node of [...container.querySelectorAll("video,iframe,object,embed,audio")]) {
       dropped.push({ elementId: elementIdOf(node), tag: node.tagName.toLowerCase(), reason: "foreignObject 不支持该元素" });
       node.remove();
     }
-    // 图表：ECharts canvas 截图（animation:false 同步绘制，init 即成帧）
+    // Charts: screenshot the ECharts canvas (drawn synchronously with animation:false, so init already yields a frame)
     for (const cv of [...container.querySelectorAll("canvas")]) {
       let dataUrl = null;
       try {
@@ -182,7 +194,7 @@ export function createImageExporter({ state }) {
       }
       cv.replaceWith(toCarrier(cv.style.cssText, dataUrl, "fill"));
     }
-    // 图片元素：src → dataURL → 背景图载体
+    // Image elements: src → dataURL → background carrier
     for (const img of [...container.querySelectorAll("img")]) {
       const src = img.src || "";
       if (src.startsWith("data:")) {
@@ -194,10 +206,10 @@ export function createImageExporter({ state }) {
         img.replaceWith(toCarrier(img.style.cssText, dataUrl, img.style.objectFit || "cover"));
       } catch {
         dropped.push({ elementId: elementIdOf(img), tag: "img", reason: `外链图片无法内嵌（无跨域授权）：${src}` });
-        img.remove(); // 留着也无法渲染，还会因 http 引用污染 canvas
+        img.remove(); // cannot render anyway, and an http reference would taint the canvas
       }
     }
-    // 页面背景 image fill 的 url()（renderPage 的首子节点即背景层）
+    // Page background image fill url() (renderPage's first child node is the background layer)
     const bgNode = container.firstElementChild;
     const m = /^url\("?([^")]+)"?\)$/.exec(bgNode?.style?.backgroundImage || "");
     if (m && !m[1].startsWith("data:")) {
@@ -211,7 +223,7 @@ export function createImageExporter({ state }) {
     return dropped;
   }
 
-  /** 整页 DOM → PNG Blob（data URL SVG → foreignObject → N 倍 canvas 栅格化）。 */
+  /** Whole-page DOM → PNG Blob (data URL SVG → foreignObject → Nx canvas rasterization). */
   async function rasterize(container, w, h, scale) {
     const xml = new XMLSerializer().serializeToString(container);
     const svg =
@@ -235,12 +247,12 @@ export function createImageExporter({ state }) {
   }
 
   /**
-   * 回退路径：渲染一页并栅格化。
+   * Fallback path: render one page and rasterize it.
    * @returns {Promise<ExportImageResult>} { png: Blob, droppedElements: [{elementId,tag,reason}] }
    */
   async function pageToPng(page, scale) {
     const [w, h] = deckSize(state.deck);
-    // 视口外但不 display:none（保证布局、字体与图表的正常渲染）
+    // Offscreen but not display:none (keeps layout, fonts and charts rendering normally)
     const clipper = document.createElement("div");
     clipper.style.cssText = "position:fixed;left:-10000px;top:0;";
     const holder = document.createElement("div");
@@ -248,7 +260,7 @@ export function createImageExporter({ state }) {
     clipper.appendChild(holder);
     document.body.appendChild(clipper);
     try {
-      // pixelRatio——图表按导出倍率初始化像素（echarts 默认跟屏幕 DPR，1x 屏导出会糊）
+      // pixelRatio — charts initialize pixels at the export multiplier (echarts defaults to screen DPR, so a 1x screen exports blurry)
       renderPage(holder, page, state.deck, state.theme, {
         imageMap: state.imageMap,
         iconMap: state.iconMap,
@@ -263,7 +275,7 @@ export function createImageExporter({ state }) {
     }
   }
 
-  /** 回退路径整体：逐页 pageToPng → 统一为字节（与 capture 路径同形，便于打包/断言）。 */
+  /** Whole fallback path: pageToPng per page → normalized to bytes (same shape as the capture path, for packaging/assertions). */
   async function foreignObjectPages(indices, scale) {
     const results = [];
     for (const i of indices) {
@@ -279,12 +291,12 @@ export function createImageExporter({ state }) {
   }
 
   // --------------------------------------------------------------------------
-  // 统一入口
+  // Unified entry
   // --------------------------------------------------------------------------
   /**
-   * 导出图片。opts.pages：页码数组（0 起，缺省当前页）；opts.scale：1|2|3 倍率（缺省 2）；
-   * opts.mode："zip"（缺省）多页打包 / "files" 逐张下载。
-   * 返回 ExportImageResult[]（含 source 与 droppedElements，供走查/测试断言）。
+   * Export images. opts.pages: page indexes (0-based, default current page); opts.scale: 1|2|3 (default 2);
+   * opts.mode: "zip" (default) multi-page bundle / "files" one download each.
+   * Returns ExportImageResult[] (with source and droppedElements, for walkthrough/test assertions).
    */
   async function exportImages(opts = {}) {
     if (!state.deck?.pages?.length) return [];
@@ -296,7 +308,7 @@ export function createImageExporter({ state }) {
     const base = safeFileName(state.deck.title || "deck");
     showToast(indices.length > 1 ? `正在导出 ${indices.length} 页图片…` : "正在导出图片…", "info", 8000);
     try {
-      // capture 优先：探测失败 / 无浏览器 / 调用失败 → 回退（forceFallback 供走查强制回退）
+      // capture first: probe failure / no browser / call failure → fall back (forceFallback is for walkthroughs)
       let results = !forceFallback() && (await probeCapture()) ? await capturePages(indices, scale) : null;
       if (!results) results = await foreignObjectPages(indices, scale);
 
@@ -321,7 +333,7 @@ export function createImageExporter({ state }) {
         console.warn(`[export] ${dropped.length} 个元素未能导出：`, dropped);
         showToast(`⚠ ${dropped.length} 个元素未能导出（清单见控制台）`, "danger", 6000);
       }
-      state.lastImageExport = results; // 走查/测试读取 droppedElements
+      state.lastImageExport = results; // walkthrough/tests read droppedElements
       return results;
     } catch (err) {
       showToast(`导出图片失败: ${err.message}`, "danger");

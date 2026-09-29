@@ -1,14 +1,16 @@
 // ============================================================================
-// app/project/saver.js — 保存与导出
+// app/project/saver.js — saving and exporting
 // ----------------------------------------------------------------------------
-// 保存项目（统一入口 saveProject）：写回一律经注入的 ProjectSource
-// （app/project/source.js），本模块不再出现 fetch("/api/save") 字面量：
-//   - source.capabilities.writable === false → 直接降级「下载项目 zip」
-//   - write() 抛错（部署模式无 /api/save 端点）→ 同样降级 zip（行为保留）
-//   - 本地句柄项目的写回失败 → 明确报错（不静默降级，行为保留）
-// 导出 PPTX（exportPptx）：对话框勾选字体嵌入 + 嵌入范围（子集/完整）→ buildPptx → 下载。
-// 依赖注入：images（dataURL 图片落盘）、fontManager（字体库同步/嵌入）、
-// source（运输）、onSaved（保存成功后抑制 SSE 刷新回环）、renderStatusBar。
+// Save project (single entry saveProject): writes always go through the injected
+// ProjectSource (app/project/source.js); this module no longer contains a
+// fetch("/api/save") literal:
+//   - source.capabilities.writable === false → degrade straight to "download project zip"
+//   - write() throws (no /api/save endpoint in deploy mode) → degrade to zip too (behavior kept)
+//   - a write-back failure for a local handle project → explicit error (no silent degrade, behavior kept)
+// Export PPTX (exportPptx): dialog with the font-embed checkbox + embed scope
+// (subset/full) → buildPptx → download. Dependency injection: images (dataURL
+// image persistence), fontManager (font library sync/embed), source (transport),
+// onSaved (suppress the SSE refresh loop after a successful save), renderStatusBar.
 // ============================================================================
 
 import { showToast } from "../toast.js";
@@ -19,19 +21,19 @@ import { mediaFilesOfDeck } from "./images.js";
 import { base64ToBytes, deckSize, serializeDeck } from "../../../packages/model/index.js";
 import { ZipWriter, buildPptx, downloadBlob, downloadPptx, safeFileName } from "../../../packages/writer/index.js";
 
-/** 字节数 → 人类可读（MB 一位小数 / KB 取整）。 */
+/** Byte count → human-readable (MB to one decimal / KB rounded). */
 const fmtSize = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`);
 
 export function createProjectSaver({ state, images, fontManager, renderStatusBar, onSaved, onError, source }) {
-  /** 保存成功：当前 deck 记为已落盘基线（撤销回它即恢复干净，不再一律标脏）。 */
+  /** Save succeeded: record the current deck as the on-disk baseline (undo back to it = clean, not blanket-dirty). */
   const markSaved = () => {
     state.savedDeck = structuredClone(state.deck);
     state.dirty = false;
   };
   // --------------------------------------------------------------------------
-  // 导出（PPTX 对话框 / 项目包 zip 直达，入口在顶栏「文件」菜单）
+  // Export (PPTX dialog / project zip direct; entry points in the topbar File menu)
   // --------------------------------------------------------------------------
-  /** 导出 PPTX 对话框：嵌入字体勾选（默认开）+ 嵌入范围（子集/完整）+ 字体管理入口。 */
+  /** Export PPTX dialog: font-embed checkbox (on by default) + embed scope (subset/full) + font-manager entry. */
   function openExportDialog() {
     const wrap = document.createElement("div");
     wrap.className = "export-pptx-opts";
@@ -43,7 +45,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     label.append(embedCb, document.createTextNode("嵌入字体（文件更大，换机打开不丢字体）"));
     wrap.appendChild(label);
 
-    // —— 嵌入范围：子集（缺省，仅已用字形）/ 完整（全量，导出后可继续编辑新文字）——
+    // —— Embed scope: subset (default, only used glyphs) / full (everything, so new text can be edited after export) ——
     let fullFonts = false;
     const scope = document.createElement("div");
     scope.className = "export-pptx-scope";
@@ -80,7 +82,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
         ? `当前 ${embedded.length} 个字体将嵌入（${embedded.join(" / ")}）`
         : "当前没有待嵌入字体；可在「字体管理」中添加本地或网络字体。";
       if (fullFonts && embedded.length) {
-        // 全量增量按字体库字节估算（个别字体字节未预载时为下限）
+        // The full-scope delta is estimated from font-library bytes (a lower bound when some font bytes are not preloaded)
         const bytes = embedded.reduce((n, k) => n + (state.fontLibrary[k].bytes?.length || 0), 0);
         if (bytes) text += `；完整模式预计 +${fmtSize(bytes)}`;
       }
@@ -93,7 +95,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     mgrBtn.textContent = "字体管理…";
     mgrBtn.addEventListener("click", () => {
       close();
-      openFontPanel(); // 关导出框、开字体浮层（不再叠加两层遮罩）
+      openFontPanel(); // close the export box, open the font popover (no stacked masks)
     });
     wrap.appendChild(mgrBtn);
     const { close } = showDialog("导出 PPTX", wrap, {
@@ -111,7 +113,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
         const skipped = [];
         const bytes = await buildPptx(state.deck, {
           imageMap: state.imageMap,
-          iconDefs: state.iconMap, // 图标预读缓存（icons.js；未预载项由 loadIconDefs 回源补齐）
+          iconDefs: state.iconMap, // icon preload cache (icons.js; loadIconDefs fills in un-preloaded entries)
           fontFiles: embedFonts ? fontManager.exportFontFiles() : null,
           embedFonts,
           fullFonts,
@@ -132,17 +134,20 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
   }
 
   /**
-   * 导出项目包（zip）：deck.pptd + pages/ + media/，命名与 CLI export-project 一致。
-   * 语义说明（v3 #6）：与 CLI `export-project` 的差异是刻意的——CLI 原样打包
-   * 磁盘文件（保留注释/格式，反映磁盘现状）；浏览器导出的是**当前编辑现场**
-   * （可能含未保存修改），必须经模型重序列化，故注释/原始格式不保留。
-   * 「磁盘原样」以 CLI 为准，「编辑现场快照」以浏览器为准，两侧不再对齐实现。
+   * Export the project bundle (zip): deck.pptd + pages/ + media/, named the same
+   * as CLI export-project. Semantics note (v3 #6): the difference from CLI
+   * `export-project` is intentional — the CLI packages disk files as-is (keeping
+   * comments/formatting, reflecting disk state); the browser exports the
+   * **current editing session** (possibly with unsaved changes), which must be
+   * re-serialized from the model, so comments/raw formatting are not preserved.
+   * "Disk as-is" is the CLI's job, "editing-session snapshot" the browser's; the
+   * two no longer align implementations.
    */
   async function doExportZip() {
     try {
-      fontManager.syncToDeck(); // 字体资源表 → deck.fonts，随包带上
-      // 对快照做图片收集与序列化——导出不改变当前编辑现场
-      // （imageMap 同时覆盖内嵌 dataURL 与已落盘化的相对路径引用，zip 里都有字节）
+      fontManager.syncToDeck(); // font resource table → deck.fonts, carried in the bundle
+      // Collect images and serialize the snapshot — exporting does not change the current editing session
+      // (imageMap covers both inline dataURLs and persisted relative-path references, so the zip has all bytes)
       const snapshot = JSON.parse(JSON.stringify(state.deck));
       const mediaFiles = mediaFilesOfDeck(snapshot, state.imageMap);
       const files = serializeDeck(snapshot, {
@@ -166,23 +171,23 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
   }
 
   // --------------------------------------------------------------------------
-  // 保存项目
+  // Save project
   // --------------------------------------------------------------------------
   async function saveProject() {
-    fontManager.syncToDeck(); // 字体库（嵌入勾选）→ deck.fonts 资源表，随项目落盘
-    // dataURL 图片先落盘化（重写 el.src 为 media/ 路径），序列化后的页面干净引用媒体文件
+    fontManager.syncToDeck(); // font library (embed checkboxes) → deck.fonts resource table, persisted with the project
+    // Persist dataURL images first (rewrite el.src to media/ paths); the serialized pages reference media files cleanly
     const mediaFiles = images.persistDataUrlImages();
     const files = serializeDeck(state.deck, {
       manifestName: state.manifestPath?.split("/").pop() || "deck.pptd",
     }).map((f) => ({ path: f.path, content: f.content }));
     files.push(...mediaFiles);
-    // 传输接缝：ProjectSource.write（HTTP POST /api/save 或句柄写回，由装配决定）
+    // Transport seam: ProjectSource.write (HTTP POST /api/save or handle write-back, decided by assembly)
     const writable = source && source.capabilities?.writable !== false;
     if (writable) {
       try {
         const count = await source.write(files.map(toSourceFile));
         markSaved();
-        onSaved(); // 抑制轮询/推送触发的自动刷新回环
+        onSaved(); // suppress the auto-refresh loop triggered by polling/push
         renderStatusBar();
         showToast(
           state.projectHandle
@@ -193,24 +198,24 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
         return;
       } catch (err) {
         if (state.projectHandle) {
-          // 句柄写回失败：明确报错（不降级下载，行为保留）
+          // Handle write-back failed: report explicitly (no degrade-to-download, behavior kept)
           showToast(`保存失败: ${err.message}`, "danger");
           console.error(err);
           onError?.(err);
           return;
         }
-        // URL 模式写回失败（部署模式无 /api/save）：降级为下载项目 zip
+        // URL-mode write-back failed (no /api/save in deploy mode): degrade to downloading the project zip
       }
     }
     saveProjectAsZip(files);
   }
 
-  /** 内部保存条目 → ProjectSource.write 契约（text / bytes）。 */
+  /** Internal save entry → ProjectSource.write contract (text / bytes). */
   function toSourceFile(f) {
     return f.b64 != null ? { path: f.path, bytes: base64ToBytes(f.b64) } : { path: f.path, text: f.content };
   }
 
-  /** 部署模式保存：打包下载（原实现 saveProject 的 zip 路径）。 */
+  /** Deploy-mode save: package and download (the zip path of the original saveProject). */
   async function saveProjectAsZip(files) {
     try {
       const zip = new ZipWriter();
@@ -228,16 +233,16 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     }
   }
 
-  // 图片导出（纯前端，独立模块：离屏渲染 → foreignObject → 按倍率 PNG）
+  // Image export (pure front end, standalone module: offscreen render → foreignObject → PNG at the chosen multiplier)
   const imageExporter = createImageExporter({ state });
 
-  /** 导出图片对话框：任意勾选页面（多选）+ 倍率（1x/2x/3x，默认 2x，按画布尺寸显示输出像素）。 */
+  /** Image-export dialog: arbitrary page checkboxes (multi-select) + multiplier (1x/2x/3x, default 2x, showing output pixels for the canvas size). */
   function openImageExportDialog() {
     const [dw, dh] = deckSize(state.deck);
     const wrap = document.createElement("div");
     wrap.className = "export-img-opts";
 
-    // —— 范围：页面 chips 多选（默认当前页），全选/清空快捷钮 + 已选计数 ——
+    // —— Scope: page chips (default current page), select-all/clear shortcuts + selected count ——
     const selected = new Set([state.currentPage]);
     const pagesHead = document.createElement("div");
     pagesHead.className = "export-img-head";
@@ -274,7 +279,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     });
     renderHead();
 
-    // —— 打包方式：zip 打包（缺省）/ 逐张下载 ——
+    // —— Packaging: zip bundle (default) / one download each ——
     let mode = "zip";
     const modeBox = document.createElement("div");
     modeBox.className = "export-img-chips";
@@ -294,7 +299,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
       return chip;
     });
 
-    // —— 倍率：单选 chips，标注输出像素 ——
+    // —— Multiplier: single-select chips annotated with output pixels ——
     let scale = 2;
     const scaleBox = document.createElement("div");
     scaleBox.className = "export-img-chips";

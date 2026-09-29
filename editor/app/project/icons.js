@@ -1,28 +1,29 @@
 // ============================================================================
-// app/project/icons.js — FA 图标预读与按需加载（模式同 images.js 的 imageMap）
+// app/project/icons.js — FA icon preload and on-demand loading (same pattern as images.js imageMap)
 // ----------------------------------------------------------------------------
-// state.iconMap: { [rawIconName]: {inner, w, h} }（normalizeIconSvg 产物）。
-// 渲染端（renderer/icon.js 经 renderPage opts.iconMap）与导出端
-// （saver → buildPptx options.iconDefs）共用同一份缓存。
+// state.iconMap: { [rawIconName]: {inner, w, h} } (the normalizeIconSvg product).
+// The render side (renderer/icon.js via renderPage opts.iconMap) and the export
+// side (saver → buildPptx options.iconDefs) share this one cache.
 //
-// 模块级单例（编辑器单实例）：bindIconMap(state.iconMap) 由 io 装配时调用一次；
-// preloadIcons(deck.pages) 在 deck 加载后预读全部图标（live-reload 自动补新）；
-// ensureIcon(raw) 供选择器/新增元素按需取单个。
+// Module-level singleton (single editor instance): bindIconMap(state.iconMap) is
+// called once during io assembly; preloadIcons(deck.pages) preloads every icon
+// after the deck loads (live-reload fills in new ones); ensureIcon(raw) fetches a
+// single icon on demand for pickers/newly added elements.
 // ============================================================================
 
 import { fetchIconSvg, loadIconRegistry, normalizeIconSvg, resolveIconName } from "../../../packages/model/index.js";
 
-let iconMap = null; // bindIconMap 绑定后有效（= state.iconMap）
+let iconMap = null; // valid after bindIconMap (= state.iconMap)
 let registryPromise = null;
-let registrySync = null; // getIconRegistry resolve 后的同步快照
-const pending = new Map(); // raw → Promise（去重并发请求）
+let registrySync = null; // synchronous snapshot once getIconRegistry resolves
+const pending = new Map(); // raw → Promise (dedupes concurrent requests)
 
-/** 绑定渲染缓存映射（io.js 装配时调用一次）。 */
+/** Bind the render cache map (called once during io.js assembly). */
 export function bindIconMap(map) {
   iconMap = map;
 }
 
-/** 注册表（单例 Promise；resolve 后同步快照可用）。 */
+/** Registry (singleton promise; a synchronous snapshot is available once it resolves). */
 export function getIconRegistry() {
   if (!registryPromise) {
     registryPromise = loadIconRegistry().then((reg) => {
@@ -33,12 +34,12 @@ export function getIconRegistry() {
   return registryPromise;
 }
 
-/** 注册表同步快照（已加载返回对象，未加载返回 null；props hint 等尽力而为场景）。 */
+/** Synchronous registry snapshot (the object once loaded, null before; for best-effort cases like props hints). */
 export function getIconRegistrySync() {
   return registrySync;
 }
 
-/** 取单个图标（命中缓存直接返回；失败返回 null 并记 console.warn）。map 缺省用绑定映射。 */
+/** Fetch a single icon (a cache hit returns immediately; failure logs console.warn and returns null). map defaults to the bound map. */
 export async function ensureIcon(raw, map = iconMap) {
   if (!raw || !map) return null;
   if (map[raw]?.inner) return map[raw];
@@ -63,8 +64,8 @@ export async function ensureIcon(raw, map = iconMap) {
   return p;
 }
 
-/** 页面集全量预读（loader finishLoad / live-reload 后调用；已有项自动跳过）。
- * 画廊等无编辑器 state 的场景传显式 map。 */
+/** Preload a whole set of pages (called after loader finishLoad / live-reload; existing entries are skipped).
+ *  Callers without editor state, such as the gallery, pass an explicit map. */
 export async function preloadIcons(pages, map = iconMap) {
   if (!map || !Array.isArray(pages)) return;
   const names = new Set();
@@ -77,9 +78,10 @@ export async function preloadIcons(pages, map = iconMap) {
 }
 
 /**
- * 图标目录查询（选择器对话框与添加面板共用）：关键词 + 分类过滤，按风格展开
- * （far 与 fas 并列为两个可选条目）。q 匹配 name/label/aliases/search terms。
- * @returns {{entries: Array<{raw,name,prefix,label}>, total: number}} total 为过滤后图标数（展开前）
+ * Icon catalog query (shared by the picker dialog and the add panel): keyword +
+ * category filter, expanded by style (far and fas listed as two selectable
+ * entries). q matches name/label/aliases/search terms.
+ * @returns {{entries: Array<{raw,name,prefix,label}>, total: number}} total is the icon count after filtering (before expansion)
  */
 export function queryIconEntries(registry, { q = "", cat = null, cap = Infinity } = {}) {
   const kw = String(q || "").trim().toLowerCase();

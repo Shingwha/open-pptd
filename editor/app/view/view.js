@@ -1,11 +1,12 @@
 // ============================================================================
-// app/view/view.js — 渲染编排（画布 / 缩略条 / 属性面板 / 快速条 / 按钮状态）
+// app/view/view.js — render orchestration (canvas / thumbnail bar / property panel / quickbar / button state)
 // ----------------------------------------------------------------------------
-// 所有"把模型画到屏幕上"的入口集中在这里：render() 全量刷新，
-// renderCanvas / renderThumbnails / renderProps / renderQuickbar / updateButtons
-// 可单独调用（轻量选中、窗口缩放等场景）。
-// 视口（缩放/平移）与缩略条是独立关注点，拆在 viewport.js / thumbnails.js，
-// 各自持有状态与 DOM 接线，这里只做编排与画布重建。
+// Every entry that "paints the model onto the screen" is centralized here: render()
+// is a full refresh, while renderCanvas / renderThumbnails / renderProps /
+// renderQuickbar / updateButtons can be called individually (lightweight selection,
+// window resize, etc.). Viewport (zoom/pan) and the thumbnail bar are separate
+// concerns split into viewport.js / thumbnails.js, each owning its state and DOM
+// wiring; this file only orchestrates and rebuilds the canvas.
 // ============================================================================
 
 import { getType } from "../../types/index.js";
@@ -20,19 +21,20 @@ import { paintPage } from "../../../packages/renderer/index.js";
 import { showToast } from "../toast.js";
 import { createDomMeasure, isDomMeasureAvailable } from "./dom-measure.js";
 
-// 编辑器布局用的 MeasurePort：浏览器内接 DOM 精修适配器（M6），否则回退纯函数
+// MeasurePort for editor layout: the DOM refinement adapter (M6) in a browser, otherwise the pure function
 const measurePort = isDomMeasureAvailable() ? createDomMeasure() : undefined;
 
-// 越界轻提示去重（每页记上一次数量；同一状态不重复弹）
+// Out-of-bounds hint dedupe (remember the last count per page; the same state does not re-toast)
 const lastOverflow = new Map();
 let overflowDeck = null;
 
 export function createView({ state, page, selected, api, controller, props }) {
-  // 模块严格模式下裸调用 render() 时 this 为 undefined，统一经 viewObj 自引用
+  // Under strict mode a bare render() call has this === undefined, so self-reference through viewObj
   const viewObj = {};
 
-  // 视口：缩放/平移状态与 transform 应用。缩放后比例变了需重建画布，
-  // 平移只改 transform —— repaint 回调由这里注入。
+  // Viewport: zoom/pan state and transform application. A zoom change needs a
+  // canvas rebuild, while panning only changes the transform — the repaint
+  // callback is injected here.
   const viewport = createViewport({
     stage: dom.stage,
     canvas: dom.canvas,
@@ -42,10 +44,10 @@ export function createView({ state, page, selected, api, controller, props }) {
     repaint: () => renderCanvas(),
     getSize: () => deckSize(state),
   });
-  // 缩略条：页面切换/删除后需全量刷新，经 reload 回调回到 render()
+  // Thumbnail bar: a page switch/delete needs a full refresh, going back to render() via the reload callback
   const thumbnails = createThumbnails({ state, api, reload: () => viewObj.render() });
 
-  // 方法表：render() 内部裸调用其他渲染函数，同时允许外部在 viewObj 上挂钩子
+  // Method table: render() calls the other render functions bare, while allowing external hooks to be attached on viewObj
   Object.assign(viewObj, {
     render,
     renderCanvas,
@@ -66,22 +68,23 @@ export function createView({ state, page, selected, api, controller, props }) {
   });
 
   // --------------------------------------------------------------------------
-  // 全量刷新
+  // Full refresh
   // --------------------------------------------------------------------------
   function render() {
-    if (!state.deck) return; // 加载失败/未完成时安全跳过（resize 等外部触发）
+    if (!state.deck) return; // load failed/incomplete: skip safely (external triggers such as resize)
     thumbnails.renderThumbnails();
     renderCanvas();
     renderProps();
     renderQuickbar();
     updateButtons();
     viewport.renderZoom();
-    // 外部注册的每渲染钩子（状态栏 dirty 圆点等），见 main.js 装配
+    // Externally registered per-render hook (statusbar dirty dot etc.), see the main.js assembly
     viewObj.afterRender?.();
   }
 
   // --------------------------------------------------------------------------
-  // 渐进加载：单页资产就绪后的定向刷新（该页缩略图骨架→实渲染；当前页连画布）
+  // Progressive loading: targeted refresh once a single page's assets are ready
+  // (that page's thumbnail skeleton → real render; the current page also redoes the canvas)
   // --------------------------------------------------------------------------
   function refreshPage(pg) {
     if (!state.deck) return;
@@ -90,21 +93,21 @@ export function createView({ state, page, selected, api, controller, props }) {
   }
 
   // --------------------------------------------------------------------------
-  // 画布
+  // Canvas
   // --------------------------------------------------------------------------
   function renderCanvas() {
     if (!state.deck) return;
     const canvas = dom.canvas;
-    // 画布尺寸跟随 deck 实际画布（内联覆盖 canvas.css 的 960×540 兜底）
+    // Canvas size follows the deck's real canvas (inline override of the 960×540 fallback in canvas.css)
     const [pw, ph] = deckSize(state);
     canvas.style.width = `${pw}px`;
     canvas.style.height = `${ph}px`;
     viewport.applyScale();
-    // transform-origin 为 center：flex 居中 + 中心锚点缩放，视觉左右/上下对称，无需 margin 补偿
+    // transform-origin is center: flex centering + center-anchored scaling is visually symmetric, no margin compensation needed
     const pg = page();
-    // resolve → layout → paint：几何事实在 layout 一次性算定（RP-C / M6）。
-    // 编辑器内用 domMeasure 精修文本残差（结果只进 layout，不进模型）；
-    // 同一棵 LayoutTree 交给选中框/参考线（coords.setLayoutPage），paint 与选中框不再各算一套。
+    // resolve → layout → paint: geometry facts are decided once in layout (RP-C / M6).
+    // In the editor, domMeasure refines the text residual (the result only feeds layout, not the model);
+    // the same LayoutTree is handed to the selection box/guides (coords.setLayoutPage), so paint and the selection box no longer compute separately.
     const tree = layout({ ...state.deck, theme: state.theme ?? state.deck.theme, pages: [pg] }, measurePort);
     paintPage(tree.pages[0], {
       container: canvas,
@@ -116,11 +119,11 @@ export function createView({ state, page, selected, api, controller, props }) {
     setLayoutPage(tree.pages[0]);
     notifyOverflow(state.currentPage, tree.pages[0]);
     controller.refreshSelection();
-    // 渐进加载遮罩：当前页资产未就绪时盖住失败占位（资产到位经 refreshPage 重渲染移除）
+    // Progressive-load mask: cover the failure placeholder while the current page's assets are not ready (assets landing re-render via refreshPage)
     if (dom.canvasLoading) dom.canvasLoading.hidden = !state.pagesPending?.has(pg);
   }
 
-  /** 越界事实 → 轻提示（消费 layout overflow；同一数量不重复弹，非常驻浮层）。 */
+  /** Out-of-bounds fact → light toast (consumes layout overflow; the same count is not re-toasted; not a persistent overlay). */
   function notifyOverflow(pageIndex, layoutPageNode) {
     if (overflowDeck !== state.deck) {
       overflowDeck = state.deck;
@@ -135,7 +138,7 @@ export function createView({ state, page, selected, api, controller, props }) {
   }
 
   // --------------------------------------------------------------------------
-  // 属性面板（元素属性 + 页面设置）
+  // Property panel (element properties + page settings)
   // --------------------------------------------------------------------------
   function renderProps() {
     const el = selected();
@@ -156,14 +159,14 @@ export function createView({ state, page, selected, api, controller, props }) {
   }
 
   // --------------------------------------------------------------------------
-  // 浮动快调条（选中元素时跟随显示的高频操作）
+  // Floating quickbar (high-frequency actions shown while an element is selected)
   // --------------------------------------------------------------------------
   function renderQuickbar() {
     const qb = dom.quickbar;
     const el = selected();
     const canvas = dom.canvas;
     const stage = dom.stage;
-    // 快调条只在单选时出现（多选的批量操作在属性面板 / 右键菜单，U2 收口）
+    // The quickbar only appears on a single selection (batch actions for multi-select live in the property panel / context menu, U2 consolidation)
     const node = el && state.selection?.size === 1 ? canvas.querySelector(`[data-element-id="${CSS.escape(el.elementId)}"]`) : null;
     if (!el || !node) {
       qb.classList.remove("show");
@@ -172,7 +175,7 @@ export function createView({ state, page, selected, api, controller, props }) {
     }
     qb.innerHTML = "";
 
-    // 控件助手：所有方法直接把控件挂到快速条（类型模块只管"调什么"，不管挂载）
+    // Control helpers: all methods append the control to the quickbar (type modules only say "what", not "where to mount")
     const h = {
       label(text) {
         const s = document.createElement("span");
@@ -180,7 +183,7 @@ export function createView({ state, page, selected, api, controller, props }) {
         s.textContent = text;
         qb.appendChild(s);
       },
-      // 颜色：令牌（$primary 等）解析为具体 hex 回填，展示当前真实颜色
+      // Color: tokens ($primary etc.) resolve to a concrete hex, showing the current real color
       color(value, onCommit) {
         qb.appendChild(quickbarColor(resolveColor(state.theme, value) || "", onCommit));
       },
@@ -196,7 +199,7 @@ export function createView({ state, page, selected, api, controller, props }) {
       openEditor: api.openEditor,
     };
 
-    // 类型徽标 + 类型专属控件 + 删除
+    // Type badge + type-specific controls + delete
     const def = getType(el.elementType);
     const badge = document.createElement("span");
     badge.className = "qb-type";
@@ -205,30 +208,30 @@ export function createView({ state, page, selected, api, controller, props }) {
     if (def?.quickbar) def.quickbar(el, h);
     qb.appendChild(quickbarTextBtn("删除", "删除元素", () => api.deleteSelected()));
 
-    // 定位：元素上方居中；空间不足（贴近画布顶部）时放到元素下方
-    // （节点 → 舞台坐标换算统一走 coords.js）
+    // Position: centered above the element; when there is not enough room (near the canvas top) it goes below
+    // (node → stage coordinate conversion goes through coords.js)
     const r = relRect(node.getBoundingClientRect(), stage.getBoundingClientRect());
     const x = r.left + r.width / 2;
     const y = r.top;
     qb.classList.add("show");
-    // 窄屏：吸底横滑定位由 CSS 负责，清掉残留的内联定位（跨断点拖动窗口时）
+    // Narrow: CSS owns the bottom-docked horizontal layout, so clear any leftover inline positioning (when the window crosses breakpoints)
     if (isNarrow()) {
       qb.style.left = "";
       qb.style.top = "";
       return;
     }
-    // 边界 clamp：按快速条自身宽度（含 translateX(-50%)）约束，避免溢出画布区/屏幕
+    // Edge clamp: constrained by the quickbar's own width (including translateX(-50%)) to avoid spilling out of the canvas area/screen
     const qbW = qb.offsetWidth;
     const half = qbW / 2;
     const minLeft = half + 8;
     const maxLeft = Math.max(minLeft, stage.getBoundingClientRect().width - half - 8);
     qb.style.left = `${Math.max(minLeft, Math.min(x, maxLeft))}px`;
-    // 上方定位：紧贴元素顶缘（旋转手柄在框底，顶部空间整个让给快速条）；
-    // 放不下时翻到元素下方，需让出底边旋转手柄区（连接杆 16 + 手柄 26 + 间距 10 = 52px）
+    // Above placement: flush to the element's top edge (the rotate handle is at the box bottom, so the whole top space goes to the quickbar);
+    // when it does not fit, flip below the element, leaving room for the bottom rotate-handle zone (connector 16 + handle 26 + gap 10 = 52px)
     const topY = y - qb.offsetHeight - 12;
     qb.style.top = topY >= 8 ? `${topY}px` : `${y + r.height + 52}px`;
-    // 与底部中央缩放控件避让：矩形相交时上移到控件上方（元素恰好拖到画布底部时）。
-    // 舞台坐标以 sRect 为基准换算（zoom-ctl 的 rect 是客户区坐标）
+    // Avoid the bottom-center zoom control: when the rectangles intersect, move up above the control (element dragged exactly to the canvas bottom).
+    // Stage coordinates are converted from sRect (the zoom-ctl rect is in client coords)
     const zc = dom.zoomCtl;
     if (zc) {
       const sRect = stage.getBoundingClientRect();
@@ -241,14 +244,14 @@ export function createView({ state, page, selected, api, controller, props }) {
   }
 
   // --------------------------------------------------------------------------
-  // 按钮状态
+  // Button state
   // --------------------------------------------------------------------------
   function updateButtons() {
     dom.btnUndo.disabled = !state.history.canUndo();
     dom.btnRedo.disabled = !state.history.canRedo();
   }
 
-  /** 释放：缩略条图表实例 + 监听、视口动画（destroy 用；幂等）。 */
+  /** Release: thumbnail chart instances + listeners, viewport animation (destroy; idempotent). */
   function destroy() {
     thumbnails.destroy?.();
     viewport.destroy?.();

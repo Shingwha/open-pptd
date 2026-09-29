@@ -1,13 +1,18 @@
 // ============================================================================
-// app/view/thumbnails.js — 底部缩略条：渲染 + 页面多选 + 拖排序 + 右键菜单
+// app/view/thumbnails.js — bottom thumbnail bar: render + page multi-select + drag-sort + context menu
 // ----------------------------------------------------------------------------
-// B2（U2-lite 移植：a06f3c5 功能部分，布局/尺寸保持原版 140×79）：
-//   - 页面多选：点选切换当前页并清空页选择；Shift = 范围选择；Ctrl/⌘ = 切换单页
-//   - 拖动排序：拖卡片（阈值触发）→ 落点竖线指示（.drop-before/.drop-after）→ 松手
-//     写入模型，走 api.movePage（beginChange 快照）→ 可 Ctrl+Z 撤销
-//   - 右键菜单：复制页 / 删除页 / 新建页 / 页面背景…（多选时批量复制 N / 删除 N）
-// 统计文案沿用原版式样（当前页 / 总页数）；缩略卡尺寸沿用原版 CSS 断点（140×79）。
-// 关注点独立：指针接线在创建时挂一次（AbortController 生命周期），renderThumbnails 只重建卡片内容。
+// B2 (U2-lite port: the feature part of a06f3c5, layout/size kept at the original 140×79):
+//   - page multi-select: click switches the current page and clears the page selection;
+//     Shift = range select; Ctrl/⌘ = toggle one page
+//   - drag-sort: drag a card (threshold-triggered) → drop line indicator
+//     (.drop-before/.drop-after) → release writes the model via api.movePage
+//     (beginChange snapshot) → Ctrl+Z can undo
+//   - context menu: duplicate page / delete page / new page / page background…
+//     (batch duplicate N / delete N when multi-selected)
+// The stat text keeps the original style (current page / total); thumbnail card
+// size keeps the original CSS breakpoints (140×79). Concerns stay separate:
+// pointer wiring is attached once at creation (AbortController lifetime) while
+// renderThumbnails only rebuilds card content.
 // ============================================================================
 
 import { dom } from "../../dom.js";
@@ -16,22 +21,23 @@ import { disposeChartInstances, renderPage } from "../../../packages/renderer/in
 import { menuItem, menuSeparator, openMenuAt } from "../../components/menu.js";
 import { openPageBackgroundDialog } from "../../interaction/dialogs/page-background.js";
 
-// 兜底卡框：仅元素不可测（如隐藏态渲染）时使用；实际尺寸由 CSS 断点决定、渲染时实测
+// Fallback card box: used only when an element cannot be measured (e.g. rendered
+// hidden); the real size is decided by the CSS breakpoint and measured at render.
 const THUMB_W = 140;
 const THUMB_H = 79;
 
 export function createThumbnails({ state, api, reload }) {
   const bar = dom.pageThumbs;
-  const ac = new AbortController(); // 生命周期：拖拽/滚轮监听经此一次解绑
+  const ac = new AbortController(); // lifetime: drag/wheel listeners are unbound once through this
 
-  /** 页面多选集合（存页对象引用；每次渲染剔除已不存在的页） */
+  /** Page multi-select set (stores page object refs; prunes pages that no longer exist on each render) */
   const pageSel = new Set();
-  let anchorPage = null; // Shift 范围选择的锚点（最后一次点选的页）
+  let anchorPage = null; // Shift range-select anchor (the last clicked page)
 
-  /** 页面索引（-1 = 不在当前 deck） */
+  /** Page index (-1 = not in the current deck) */
   const indexOfPage = (pg) => (state.deck?.pages || []).indexOf(pg);
 
-  /** 选中的页面索引（升序） */
+  /** Selected page indexes (ascending) */
   function selectedIndexes() {
     return [...pageSel].map(indexOfPage).filter((i) => i >= 0).sort((a, b) => a - b);
   }
@@ -42,7 +48,7 @@ export function createThumbnails({ state, api, reload }) {
   }
 
   // --------------------------------------------------------------------------
-  // 指针接线（拖排序 / 拖拽横向滚动 / 多选点击 / 右键菜单）
+  // Pointer wiring (drag-sort / horizontal drag-scroll / multi-select click / context menu)
   // --------------------------------------------------------------------------
   let thumbDrag = null; // { x, y, startScroll, moved, card, index, drop }
   let suppressClick = false;
@@ -51,7 +57,7 @@ export function createThumbnails({ state, api, reload }) {
     return document.elementFromPoint(x, y)?.closest(".thumb") || null;
   }
 
-  /** 落点：命中卡片的左半 → 插到它前面，右半 → 插到它后面。 */
+  /** Drop point: left half of a hit card → insert before it, right half → insert after it. */
   function computeDropIndex(x, y) {
     const target = thumbAt(x, y);
     const cards = [...bar.querySelectorAll(".thumb")];
@@ -68,7 +74,7 @@ export function createThumbnails({ state, api, reload }) {
   }
 
   if (bar) {
-    // 垂直滚轮 → 横向滚动（容器无溢出时不劫持，避免影响页面滚动）
+    // Vertical wheel → horizontal scroll (not hijacked when the container has no overflow, so page scroll is unaffected)
     bar.addEventListener(
       "wheel",
       (e) => {
@@ -81,7 +87,7 @@ export function createThumbnails({ state, api, reload }) {
 
     bar.addEventListener("pointerdown", (e) => {
       if (e.button !== 0) return;
-      if (e.target.closest("button")) return; // 删除按钮：正常点击
+      if (e.target.closest("button")) return; // delete button: a normal click
       const card = e.target.closest(".thumb");
       thumbDrag = {
         x: e.clientX,
@@ -101,14 +107,14 @@ export function createThumbnails({ state, api, reload }) {
       if (!thumbDrag.moved && Math.hypot(dx, dy) > 4) thumbDrag.moved = true;
       if (!thumbDrag.moved) return;
       if (thumbDrag.index >= 0) {
-        // 拖排序：落点指示（松手才写模型）
+        // Drag-sort: drop indicator (the model is written only on release)
         bar.classList.add("reordering");
         thumbDrag.drop = computeDropIndex(e.clientX, e.clientY);
         paintDrop(thumbDrag.drop);
         if (e.clientX < bar.getBoundingClientRect().left + 24) bar.scrollLeft -= 8;
         else if (e.clientX > bar.getBoundingClientRect().right - 24) bar.scrollLeft += 8;
       } else {
-        // 空白处拖动 = 横向滚动
+        // Dragging empty space = horizontal scroll
         bar.scrollLeft = thumbDrag.startScroll - dx;
       }
     }, { signal: ac.signal });
@@ -120,16 +126,16 @@ export function createThumbnails({ state, api, reload }) {
       for (const c of bar.querySelectorAll(".thumb")) c.classList.remove("drop-before", "drop-after");
       bar.classList.remove("reordering");
       if (!d.moved) return;
-      suppressClick = true; // 吞掉紧随的一次 click（避免误切换页面）
+      suppressClick = true; // swallow the click that immediately follows (avoids an accidental page switch)
       setTimeout(() => (suppressClick = false), 160);
       if (d.index < 0 || !d.drop) return;
-      // 目标索引换算：移除原页后，落点在其后的索引要 -1
+      // Target index conversion: after removing the original page, a drop point past it shifts by -1
       let to = d.drop.index;
       if (to > d.index) to -= 1;
       api.movePage(d.index, to);
     }, { signal: ac.signal });
 
-    // 右键菜单（页面级）
+    // Context menu (page level)
     bar.addEventListener("contextmenu", (e) => {
       const card = e.target.closest(".thumb");
       e.preventDefault();
@@ -149,7 +155,7 @@ export function createThumbnails({ state, api, reload }) {
     }, { signal: ac.signal });
   }
 
-  /** 页面级菜单：复制页 / 删除页 / 新建页 / 页面背景…（多选时给「N 页」批量项）。 */
+  /** Page-level menu: duplicate / delete / new / page background… (batch items labeled "N pages" when multi-selected). */
   function openPageMenu(x, y, indexes, targetIndex) {
     const map = targetIndex >= 0 ? indexes : [];
     const n = map.length;
@@ -179,7 +185,7 @@ export function createThumbnails({ state, api, reload }) {
   }
 
   // --------------------------------------------------------------------------
-  // 渲染
+  // Rendering
   // --------------------------------------------------------------------------
   function renderThumbnails() {
     if (!state.deck) return;
@@ -192,11 +198,11 @@ export function createThumbnails({ state, api, reload }) {
       thumb.className = "thumb" + (i === state.currentPage ? " active" : "") + (multi ? " multi" : "");
       thumb.dataset.pageIndex = String(i);
       thumb.title = `第 ${i + 1} 页`;
-      bar.appendChild(thumb); // 先入条再测：卡框尺寸由 CSS 断点决定，运行时实测（含边框内容盒）
+      bar.appendChild(thumb); // insert before measuring: the card size is decided by the CSS breakpoint and measured at runtime (border-box content)
       const mini = document.createElement("div");
       mini.className = "thumb-canvas";
-      // 按画布实际比例 contain 进卡框实测内容盒（16:9 恰好铺满；竖版海报左右居中、上下留边）。
-      // 不能用常量：窄屏卡框更小，若按桌面 140×79 定位 mini 会下坠溢出。
+      // Contain the canvas's real ratio into the measured card content box (16:9 fills exactly; a portrait poster centers with top/bottom padding).
+      // Not a constant: the narrow-screen card box is smaller, so positioning mini at the desktop 140×79 would sink and overflow.
       const [pw, ph] = deckSize(state.deck);
       const bw = thumb.clientWidth || THUMB_W;
       const bh = thumb.clientHeight || THUMB_H;
@@ -207,7 +213,7 @@ export function createThumbnails({ state, api, reload }) {
       mini.style.position = "absolute";
       mini.style.left = `${Math.round((bw - pw * s) / 2)}px`;
       mini.style.top = `${Math.round((bh - ph * s) / 2)}px`;
-      // 渐进加载中：骨架屏占位（页码/删除/点击照常；资产到位后 refreshThumb 定点替换）
+      // Progressive loading: skeleton placeholder (page number/delete/click still work; refreshThumb swaps it in place once assets land)
       const skeleton = state.pagesPending?.has(pg) ? document.createElement("div") : null;
       if (skeleton) skeleton.className = "thumb-skeleton";
       else renderPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
@@ -227,11 +233,11 @@ export function createThumbnails({ state, api, reload }) {
       thumb.addEventListener("click", (e) => onThumbClick(e, pg, i));
     });
     renderStat();
-    // 当前页自动滚入视野（页面多时保持可见，不强制滚动已可见的）
+    // Scroll the current page into view automatically (keeps it visible with many pages; visible cards are not force-scrolled)
     bar.querySelector(".thumb.active")?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
 
-  /** 点击：Shift = 范围选择；Ctrl/⌘ = 切换单页；其余 = 切换当前页并清空页选择。 */
+  /** Click: Shift = range select; Ctrl/⌘ = toggle one page; otherwise switch the current page and clear the page selection. */
   function onThumbClick(e, pg, i) {
     if (suppressClick) return;
     if (e.shiftKey && anchorPage && indexOfPage(anchorPage) >= 0) {
@@ -257,18 +263,18 @@ export function createThumbnails({ state, api, reload }) {
     reload();
   }
 
-  /** 状态条右侧统计：原版式样（当前页 / 总页数）。 */
+  /** Statusbar stat: original style (current page / total). */
   function renderStat() {
     if (!dom.pageCount) return;
     const total = state.deck?.pages?.length || 0;
     dom.pageCount.textContent = `${state.currentPage + 1} / ${total}`;
   }
 
-  /** 渐进加载定点刷新：单页资产就绪后替换该页缩略图（骨架 → 实渲染）。 */
+  /** Progressive-load targeted refresh: replace one page's thumbnail once its assets are ready (skeleton → real render). */
   function refreshThumb(pg) {
     if (!state.deck) return;
     const i = state.deck.pages.indexOf(pg);
-    if (i < 0) return; // 加载中被删除/换 deck
+    if (i < 0) return; // deleted or deck swapped while loading
     const thumb = bar.children[i];
     if (!thumb?.classList.contains("thumb")) return;
     disposeChartInstances(thumb);
@@ -280,7 +286,7 @@ export function createThumbnails({ state, api, reload }) {
   return {
     renderThumbnails,
     refreshThumb,
-    /** 释放：解绑拖拽/滚轮监听、销毁缩略图图表实例并清空缩略条 DOM。 */
+    /** Release: unbind drag/wheel listeners, dispose thumbnail chart instances and clear the bar DOM. */
     destroy() {
       ac.abort();
       thumbDrag = null;

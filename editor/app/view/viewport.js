@@ -1,15 +1,15 @@
 // ============================================================================
-// app/view/viewport.js — 画布视口：缩放/平移状态 + transform 应用
+// app/view/viewport.js — canvas viewport: zoom/pan state + transform application
 // ----------------------------------------------------------------------------
-// 触屏捏合 / Ctrl+滚轮 / 缩放控件 / 画布外拖拽平移（interaction/stage.js）
-// 均经 setZoom / panBy 进入这里；平移量作用在 canvas-wrap 上（屏幕像素），
-// 不影响元素命中与导出。1 = 适配视口。
+// Touch pinch / Ctrl+wheel / the zoom control / dragging outside the canvas to pan
+// (interaction/stage.js) all enter through setZoom / panBy here; the pan amount is
+// applied to canvas-wrap (screen pixels) and does not affect element hit-testing
+// or export. 1 = fit to viewport.
 // ============================================================================
 
 import { deckSize as deckSizeOf } from "../../../packages/model/index.js";
 
-
-/** deck 画布尺寸（size 缺省回退 960×540）；适配缩放/平移限位均按实际比例计算。 */
+/** Deck canvas size (falls back to 960×540 when size is missing); fit scaling and pan clamping use the real ratio. */
 export function deckSize(state) {
   return deckSizeOf(state.deck);
 }
@@ -20,13 +20,14 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
   let panY = 0;
   const ZOOM_MIN = 0.25;
   const ZOOM_MAX = 4;
-  // 平移余量：画布小于舞台（适配态）时仍允许轻微挪动的范围
+  // Pan slack: how far the canvas can still be nudged when it is smaller than the stage (fit state)
   const PAN_SLACK = 60;
 
   /**
-   * 锚点缩放：anchor（客户区坐标）下的内容点在缩放前后保持不动。
-   * 捏合取两指中点、Ctrl+滚轮取光标位置；不传 anchor 则绕画布中心。
-   * 推导：pan' = pan·k + (anchor − 舞台中心)·(1 − k)，k = 新旧缩放比。
+   * Anchor zoom: the content point under anchor (client coords) stays put across
+   * the zoom. A pinch uses the midpoint of the two fingers, Ctrl+wheel the cursor
+   * position; with no anchor it zooms around the canvas center.
+   * Derivation: pan' = pan·k + (anchor − stage center)·(1 − k), k = new/old zoom ratio.
    */
   function setZoom(z, anchor) {
     const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z));
@@ -37,24 +38,24 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
       panY = panY * k + (anchor.y - r.top - r.height / 2) * (1 - k);
     }
     zoom = next;
-    repaint(); // 比例变了 → 重建画布（DOM 由调用方决定）
+    repaint(); // ratio changed → rebuild the canvas (DOM decided by the caller)
     renderZoom();
   }
 
   function panBy(dx, dy) {
     panX += dx;
     panY += dy;
-    applyScale(); // 只重设 transform，不重建页面 DOM，拖拽逐帧可承受
+    applyScale(); // only reset the transform, no page DOM rebuild — affordable per drag frame
   }
 
-  // 还原到适配视图：缩放与平移一起归零
+  // Restore to fit view: zero both zoom and pan
   function zoomReset() {
     panX = 0;
     panY = 0;
     setZoom(1);
   }
 
-  // 缩放控件百分比显示
+  // Zoom control percentage display
   function renderZoom() {
     if (zoomLabel) zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
   }
@@ -66,9 +67,10 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
     return Math.min(w / pw, h / ph, 1.2);
   }
 
-  // 计算并应用画布缩放（fitScale × zoom → transform + 控制器同步）
-  // 平移 clamp 在此统一执行：画布超出舞台的部分可拖到边缘内，
-  // 未超出（适配态）只允许 ±PAN_SLACK 的轻微挪动，画布永远不会拖离视野
+  // Compute and apply the canvas scale (fitScale × zoom → transform + controller sync).
+  // Pan clamping is executed here in one place: the part of the canvas beyond the
+  // stage can be dragged to the edge, the part within (fit state) allows only a
+  // slight ±PAN_SLACK nudge, so the canvas is never dragged out of view
   function applyScale() {
     const [pw, ph] = getSize();
     const s = fitScale() * zoom;
@@ -81,10 +83,11 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
     controller.setScale(s);
   }
 
-  // 面板宽度动画期间逐帧跟随舞台宽度重算缩放：
-  // 桌面收起/展开时 CSS 平滑改变 .inspector 宽度，stage 同步变宽，
-  // 若只在动画开始时算一次，画布尺寸会与舞台脱节（视觉突变）。
-  // 每帧只更新 transform，不重建页面 DOM，开销可忽略。
+  // Recompute the scale every frame while the panel width animates:
+  // collapsing/expanding on desktop changes .inspector width via CSS and the stage
+  // widens with it; computing once at the animation start would detach the canvas
+  // size from the stage (a visual jump). Each frame only updates the transform, no
+  // page DOM rebuild, so the cost is negligible.
   let scaleRaf = 0;
   function followStageWidth(duration = 260) {
     cancelAnimationFrame(scaleRaf);
@@ -106,7 +109,7 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
     zoomIn: () => setZoom(zoom * 1.25),
     zoomOut: () => setZoom(zoom / 1.25),
     getZoom: () => zoom,
-    /** 释放：取消进行中的宽度跟随动画（无窗口级监听）。 */
+    /** Release: cancel the in-flight width-follow animation (no window-level listeners). */
     destroy() {
       cancelAnimationFrame(scaleRaf);
     },

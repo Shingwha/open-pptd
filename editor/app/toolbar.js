@@ -1,8 +1,8 @@
 // ============================================================================
-// app/toolbar.js — 顶栏 / 添加菜单（＋）/ 缩略条按钮的绑定
+// app/toolbar.js — binding for the topbar / add menu (+) / thumbnail-bar buttons
 // ----------------------------------------------------------------------------
-// 添加菜单完全由类型注册表驱动（types/menu.js 聚合），新增元素类型后
-// 菜单自动出现，无需在此改任何代码。
+// The add menu is fully driven by the type registry (aggregated in types/menu.js):
+// a new element type shows up in the menu automatically, no code change here.
 // ============================================================================
 
 import { bindAddMenu } from "../interaction/add-menu.js";
@@ -16,9 +16,9 @@ import { dom } from "../dom.js";
 import { dialogs } from "../dialogs.js";
 
 export function bindToolbar({ state, page, api, view, io, present, themeMode = null }) {
-  const disposers = []; // 子绑定（菜单/浮层）的 destroy 集合
+  const disposers = []; // destroy set for child bindings (menus/popovers)
   let mainMenu = null;
-  /** 添加元素到当前页并选中；图表/表格直接进数据编辑（图标刚选完，不再弹选择器）。 */
+  /** Add an element to the current page and select it; charts/tables go straight into the data editor (a just-picked icon does not reopen the picker). */
   function addElement(element) {
     api.beginChange();
     page().elements.push(element);
@@ -28,7 +28,7 @@ export function bindToolbar({ state, page, api, view, io, present, themeMode = n
   }
 
   // --------------------------------------------------------------------------
-  // 添加面板（interaction/add-menu.js：Tab + 分类 + 搜索 + 最近使用）
+  // Add panel (interaction/add-menu.js: tabs + categories + search + recent)
   // --------------------------------------------------------------------------
   function bindAddMenuUI() {
     const h = bindAddMenu({
@@ -40,10 +40,10 @@ export function bindToolbar({ state, page, api, view, io, present, themeMode = n
   }
 
   // --------------------------------------------------------------------------
-  // 文件菜单（共用外壳 app/file-menu.js；编辑器内容：新建/打开/最近/保存/导出）
+  // File menu (shared shell app/file-menu.js; editor content: new/open/recent/save/export)
   // --------------------------------------------------------------------------
   function bindFileMenu() {
-    /** 切换/打开项目前的未保存确认（宿主可覆盖 dialogs）。 */
+    /** Unsaved-changes confirmation before switching/opening a project (hosts can override dialogs). */
     const confirmDiscard = async () =>
       !state.dirty || (await dialogs.confirm("编辑器有未保存的修改，切换项目将放弃这些修改。确定继续？"));
 
@@ -56,7 +56,7 @@ export function bindToolbar({ state, page, api, view, io, present, themeMode = n
       }
     }
 
-    /** 打开最近项目；句柄失效时移出最近列表。 */
+    /** Open a recent project; on a stale handle, drop it from the recent list. */
     async function openRecent(entry) {
       if (!(await confirmDiscard())) return;
       try {
@@ -68,10 +68,10 @@ export function bindToolbar({ state, page, api, view, io, present, themeMode = n
     }
 
     mainMenu = createFileMenu(dom.btnFile, async ({ menu, item, sep, appendRecents }) => {
-      // 新建空白演示自带 dirty 确认，不走 confirmDiscard
+      // "New blank deck" carries its own dirty confirmation, so it skips confirmDiscard
       menu.appendChild(item("新建空白演示", { onClick: () => io.newProject() }));
       const openItem = item("打开本地项目", { onClick: openLocal });
-      if (!window.showDirectoryPicker) openItem.hidden = true; // 不支持的浏览器不显示
+      if (!window.showDirectoryPicker) openItem.hidden = true; // not shown in unsupported browsers
       menu.appendChild(openItem);
       await appendRecents(menu, openRecent);
       menu.append(
@@ -85,10 +85,10 @@ export function bindToolbar({ state, page, api, view, io, present, themeMode = n
     });
   }
   // --------------------------------------------------------------------------
-  // 顶栏按钮
+  // Topbar buttons
   // --------------------------------------------------------------------------
   function bindTopbar() {
-    const clickEls = []; // 记录挂过 onclick 的元素，destroy 时统一置空
+    const clickEls = []; // elements given an onclick, cleared together on destroy
     const on = (el, fn) => {
       el.onclick = fn;
       clickEls.push(el);
@@ -104,30 +104,30 @@ export function bindToolbar({ state, page, api, view, io, present, themeMode = n
     if (fp?.destroy) disposers.push(fp.destroy);
     on(dom.btnPresent, () => present.start());
 
-    // 配色浮层（预设色卡 + 语义色编辑 + 外观三态；B3 三态入口置于此面板内）
+    // Theme popover (preset swatches + semantic-color editing + appearance tri-state; the B3 mode entry lives in this panel)
     const tp = bindThemePanel({ state, api, io, anchor: dom.btnTheme, themeMode });
     if (tp?.destroy) disposers.push(tp.destroy);
 
-    // 属性抽屉收起 / 展开（双端统一逻辑，行为随断点不同）：
-    //   桌面（>900px）：右侧常驻面板，收起 = body.inspector-collapsed
-    //   窄屏（≤900px）：底部弹起 sheet，展开 = body.inspector-open
-    //   画布右上角入口按钮 + 面板头按钮 + 桌面悬浮把手共用同一 toggle
+    // Property drawer collapse / expand (one logic for desktop and narrow, behavior differs by breakpoint):
+    //   desktop (>900px): persistent right panel, collapsed = body.inspector-collapsed
+    //   narrow (≤900px): bottom sheet, open = body.inspector-open
+    //   canvas top-right entry button + panel-head button + desktop floating handle share this toggle
     const toggleInspector = () => {
       if (isNarrow()) {
         document.body.classList.toggle("inspector-open");
       } else {
         document.body.classList.toggle("inspector-collapsed");
-        // 桌面：宽度动画期间逐帧同步画布缩放，避免画布尺寸与舞台脱节（突变）
+        // Desktop: sync canvas zoom every frame during the width animation so the canvas doesn't detach from the stage
         view.followStageWidth();
       }
       view.renderCanvas();
     };
     on(dom.btnInspectorToggle, toggleInspector);
     on(dom.btnInspectorOpen, toggleInspector);
-    // 窄屏：遮罩点击关闭底部 sheet
+    // Narrow: tapping the mask closes the bottom sheet
     on(dom.inspectorMask, () => document.body.classList.remove("inspector-open"));
 
-    // 画布缩放控件（双端统一：按钮 + 百分比显示）
+    // Canvas zoom control (same on both ends: buttons + percentage display)
     on(dom.btnZoomOut, () => view.zoomOut());
     on(dom.btnZoomIn, () => view.zoomIn());
     on(dom.btnZoomReset, () => view.zoomReset());
@@ -141,13 +141,13 @@ export function bindToolbar({ state, page, api, view, io, present, themeMode = n
   bindAddMenuUI();
 
   return {
-    /** 释放：解绑全部子绑定（菜单/浮层/顶栏按钮）。 */
+    /** Release: unbind every child binding (menus/popovers/topbar buttons). */
     destroy() {
       for (const d of disposers.splice(0)) {
         try {
           d();
         } catch {
-          /* 单个子绑定释放失败不阻断其余 */
+          /* a failed child teardown must not block the rest */
         }
       }
       mainMenu?.destroy?.();

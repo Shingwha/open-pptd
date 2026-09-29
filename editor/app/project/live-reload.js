@@ -1,15 +1,18 @@
 // ============================================================================
-// app/project/live-reload.js — 实时刷新（推送 / 指纹轮询）+ 顶栏状态指示
+// app/project/live-reload.js — live reload (push / fingerprint polling) + topbar status indicator
 // ----------------------------------------------------------------------------
-// 两种项目来源，同一条承诺——外部改文件后编辑器自动重载（保留当前页），
-// 有未保存修改时跳过并提示，保存方经 suppressRefreshes 抑制刷新回环：
-//   - source.capabilities.liveWatch 为真：订阅 source.watch()（HTTP 模式 = SSE
-//     推送；部署模式（无 /events）由 httpSource 内部放弃，行为与既有「网页模式」一致）
-//   - 否则（本地句柄项目）：轮询 manifest+pages 指纹（source.fingerprint，
-//     语义同 handle-io.fingerprint / 服务端 dirFingerprint）
-// 本模块不再出现 new EventSource("/events") 字面量：推送通道由 source 提供。
-// 依赖注入：source（运输）、reload（URL 模式刷新）、reloadHandle（句柄模式刷新）、
-// manualReload（顶栏「实时」标记点击 = 手动从磁盘重新加载，dirty 时确认）。
+// Two project sources, one promise — the editor auto-reloads after external file
+// changes (keeping the current page), skips and warns when there are unsaved
+// changes, and the saving side suppresses the refresh loop via suppressRefreshes:
+//   - source.capabilities.liveWatch is true: subscribe to source.watch() (SSE push
+//     in HTTP mode; in deploy mode (no /events) httpSource gives up internally,
+//     matching the existing "web mode" behavior)
+//   - otherwise (local handle project): poll the manifest+pages fingerprint
+//     (source.fingerprint, same semantics as handle-io.fingerprint / server dirFingerprint)
+// This module no longer contains a new EventSource("/events") literal: the push
+// channel is provided by the source. Dependency injection: source (transport),
+// reload (URL-mode refresh), reloadHandle (handle-mode refresh), manualReload
+// (topbar "live" marker click = manual reload from disk, confirmed when dirty).
 // ============================================================================
 
 import { showToast } from "../toast.js";
@@ -19,13 +22,13 @@ import { dom } from "../../dom.js";
 const POLL_MS = 900;
 
 export function createLiveReload({ state, source, reload, reloadHandle, manualReload }) {
-  let unwatch = null; // 推送通道退订函数（非空 = 已订阅）
+  let unwatch = null; // push-channel unsubscribe (non-null = subscribed)
   let pollTimer = null;
   let polledHandle = null;
-  let liveMode = false; // 已确认可用的实时通道（推送 onopen / 首轮指纹成功）
-  let suppressUntil = 0; // 保存后短暂抑制（避免自己保存触发的刷新）
+  let liveMode = false; // live channel confirmed usable (push onopen / first successful fingerprint)
+  let suppressUntil = 0; // brief suppression after saving (avoids a refresh triggered by our own save)
 
-  /** 项目就绪后订阅（幂等；随当前项目来源自动选轮询或推送；空白项目断开旧通道）。 */
+  /** Subscribe once the project is ready (idempotent; picks polling or push by the current source; a blank project disconnects the old channel). */
   function connectLiveReload() {
     if (!state.projectHandle && !state.manifestPath) {
       stopPolling();
@@ -41,10 +44,10 @@ export function createLiveReload({ state, source, reload, reloadHandle, manualRe
     connectWatch();
   }
 
-  // ---------------------------------------------------------------- 句柄轮询
+  // ---------------------------------------------------------------- handle polling
   function startPolling() {
     const handle = state.projectHandle;
-    if (pollTimer && polledHandle === handle) return; // 同一项目：幂等
+    if (pollTimer && polledHandle === handle) return; // same project: idempotent
     stopPolling();
     polledHandle = handle;
     let last = null;
@@ -59,11 +62,11 @@ export function createLiveReload({ state, source, reload, reloadHandle, manualRe
       try {
         const now = source.fingerprint ? await source.fingerprint() : await fingerprint(handle);
         if (!liveMode) {
-          liveMode = true; // 首轮指纹成功 = 通道确认可用，顶栏「实时」标记随之亮起
+          liveMode = true; // first successful fingerprint = channel confirmed, topbar "live" marker lights up
           renderStatusBar();
         }
         if (last == null) {
-          last = now; // 首轮只建基线
+          last = now; // first round just establishes the baseline
           return;
         }
         if (now === last) return;
@@ -72,7 +75,7 @@ export function createLiveReload({ state, source, reload, reloadHandle, manualRe
           await reloadHandle();
         }
       } catch (err) {
-        last = null; // 读取失败（半成品/瞬断）：下轮重建基线，不打扰用户
+        last = null; // read failure (half-written/transient): rebuild the baseline next round, don't bother the user
         console.warn("[live-reload] 指纹读取失败:", err?.message);
       } finally {
         busy = false;
@@ -88,10 +91,10 @@ export function createLiveReload({ state, source, reload, reloadHandle, manualRe
     polledHandle = null;
   }
 
-  // ---------------------------------------------------------------- 推送（URL 模式）
+  // ---------------------------------------------------------------- push (URL mode)
   function connectWatch() {
     if (!state.manifestPath || unwatch) return;
-    if (!source?.watch || source.capabilities?.liveWatch === false) return; // 无推送通道：不启用
+    if (!source?.watch || source.capabilities?.liveWatch === false) return; // no push channel: disabled
     unwatch =
       source.watch(() => onWatchMessage(), {
         onOpen: () => {
@@ -99,7 +102,7 @@ export function createLiveReload({ state, source, reload, reloadHandle, manualRe
           renderStatusBar();
         },
         onError: () => {
-          // 部署模式：推送端点不存在 → 放弃（本地 serve 断线由实现自动重连）
+          // Deploy mode: the push endpoint does not exist → give up (a local serve drop reconnects inside the impl)
           stopWatch();
           renderStatusBar();
         },
@@ -108,9 +111,9 @@ export function createLiveReload({ state, source, reload, reloadHandle, manualRe
 
   function onWatchMessage() {
     if (!state.manifestPath || Date.now() < suppressUntil) return;
-    if (state.dirty) return; // 有未保存修改：跳过重载（不打断用户编辑）
+    if (state.dirty) return; // unsaved changes: skip the reload (don't interrupt editing)
     reload().catch((err) => {
-      // 加载失败（文件半成品）：保留当前视图，修复后下轮推送会再次触发
+      // Load failure (half-written file): keep the current view; the next push retries after the fix
       showToast(`文件变更后加载失败（已保留当前视图）: ${err.message}`, "danger");
     });
   }
@@ -120,26 +123,26 @@ export function createLiveReload({ state, source, reload, reloadHandle, manualRe
     unwatch = null;
   }
 
-  /** 保存后短暂抑制自动刷新（避免自己保存触发的回环）。 */
+  /** Briefly suppress auto-refresh after saving (avoids a refresh loop triggered by our own save). */
   function suppressRefreshes() {
     suppressUntil = Date.now() + 1500;
   }
 
   /**
-   * 顶栏状态簇：●未保存 + 【刷新】按钮；另有部署模式提示
-   * （URL 项目且无实时通道 = GitHub Pages：「网页模式 · 保存将下载项目包」）。
-   * 本地项目实时刷新恒定生效，不再重复提示。
+   * Topbar status cluster: ●unsaved + the Refresh button, plus a deploy-mode hint
+   * (a URL project with no live channel = GitHub Pages: "web mode · save downloads
+   * a project zip"). Local projects always have live reload, so no repeated hint.
    */
   function renderStatusBar() {
     const hint = dom.statusHint;
     if (hint) {
-      // 无实时通道的 URL 项目 = 部署模式（本地 serve/句柄项目都有实时刷新）
+      // A URL project with no live channel = deploy mode (local serve / handle projects both have live reload)
       const deploy = state.manifestPath && !state.projectHandle && !liveMode && !unwatch && !pollTimer;
       hint.hidden = !deploy;
-      if (deploy) hint.textContent = "网页模式"; // 完整说明在 title（hover）
+      if (deploy) hint.textContent = "网页模式"; // full explanation in title (hover)
     }
     dom.statusDirty?.toggleAttribute("hidden", !state.dirty);
-    // 【刷新】按钮：行为与底部时期完全一致（dirty 时确认后从磁盘重载），只绑一次
+    // Refresh button: behavior identical to the bottom-bar era (confirm when dirty, then reload from disk), bound once
     const cluster = dom.tbStatus;
     if (cluster && !cluster.dataset.bound) {
       cluster.dataset.bound = "1";
@@ -147,7 +150,7 @@ export function createLiveReload({ state, source, reload, reloadHandle, manualRe
     }
   }
 
-  /** 释放实时通道（destroy 用）：停轮询、退订推送、摘掉「刷新」按钮监听。 */
+  /** Release the live channel (destroy): stop polling, unsubscribe push, drop the Refresh button listener. */
   function destroy() {
     stopPolling();
     stopWatch();

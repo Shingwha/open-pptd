@@ -1,12 +1,14 @@
 // ============================================================================
-// app/project/loader.js — 加载与状态应用（传输接缝的薄适配）
+// app/project/loader.js — loading and state application (thin adapter over the transport seam)
 // ----------------------------------------------------------------------------
-// 不再自行 fetch：一律经注入的 ProjectSource（app/project/source.js）读取——
-//   loadDeck(url)        经 source.read(url)（HTTP / 自定义宿主实现）
-//   loadDeckFromHandle(h) 经 source.readFromHandle(h)（File System Access 句柄）
-// 状态应用逻辑集中在 source.js 的 applyDeck（导出，供 createEditor 复用）。
-// 依赖注入：images（图片映射重建）、fontManager（资源表字体恢复）、
-// source（运输）、connect（项目就绪后订阅实时刷新）、renderStatusBar（加载后刷新状态栏）。
+// No longer fetches on its own: everything is read through the injected
+// ProjectSource (app/project/source.js) —
+//   loadDeck(url)          via source.read(url) (HTTP / a custom host impl)
+//   loadDeckFromHandle(h)  via source.readFromHandle(h) (File System Access handle)
+// State application is centralized in source.js applyDeck (exported, reused by createEditor).
+// Dependency injection: images (image map rebuild), fontManager (resource-table
+// font restore), source (transport), connect (subscribe live reload once ready),
+// renderStatusBar (refresh the statusbar after load).
 // ============================================================================
 
 import { applyDeck as applyDeckToState } from "./source.js";
@@ -18,26 +20,26 @@ import { DEFAULT_THEME, resolveTheme, syncElementId } from "../../../packages/mo
 
 export function createLoader({ state, view, images, fontManager, source, connect, renderStatusBar, onDeckChange, onError }) {
   // --------------------------------------------------------------------------
-  // 主题与状态应用
+  // Theme and state application
   // --------------------------------------------------------------------------
   function applyTheme(themeInput) {
-    // 官方 theme 永远是对象（v1 字符串 key 兼容已删）；深拷贝隔离默认主题引用
+    // The official theme is always an object (v1 string-key compatibility is gone); deep-copy isolates the default theme reference
     state.deck.theme = themeInput && typeof themeInput === "object"
       ? JSON.parse(JSON.stringify(themeInput))
       : JSON.parse(JSON.stringify(DEFAULT_THEME));
-    // deck 级字体声明覆盖主题字体（无声明则用主题默认，如微软雅黑）
+    // A deck-level font declaration overrides the theme font (otherwise the theme default, e.g. Microsoft YaHei)
     state.theme = resolveTheme(state.deck);
   }
 
-  /** 把撤销/重做快照应用到当前状态。 */
+  /** Apply an undo/redo snapshot to the current state. */
   function applyHistory(deckSnapshot) {
     if (!deckSnapshot) return;
     state.deck = deckSnapshot;
     state.theme = resolveTheme(state.deck);
     if (state.currentPage >= state.deck.pages.length) state.currentPage = state.deck.pages.length - 1;
     state.selectedId = null;
-    // 撤销/重做落地：先视为修改，渲染钩子再按保存基线等值比较精确化
-    // （撤销回保存点恢复干净，重做越过重新标脏）
+    // Undo/redo lands: mark dirty first, then the render hook equality-compares against the saved baseline
+    // (undoing back to the save point marks it clean; redoing past it marks it dirty again)
     state.dirty = true;
     syncElementId(state.deck);
     images.rebuildImageMap();
@@ -45,9 +47,9 @@ export function createLoader({ state, view, images, fontManager, source, connect
   }
 
   // --------------------------------------------------------------------------
-  // 加载
+  // Loading
   // --------------------------------------------------------------------------
-  /** 顶栏项目名：有项目显示名字；空项目显示「未命名」淡显（hover 说明）。 */
+  /** Topbar project name: shows the name for a project; a blank project shows a dim "unnamed" (hover explains). */
   function setBrandFile(text) {
     const el = dom.brandFile;
     if (text) {
@@ -62,9 +64,10 @@ export function createLoader({ state, view, images, fontManager, source, connect
   }
 
   /**
-   * 应用一份已解析的 PPTD 项目到编辑器状态（loadDeck 与手动刷新共用）。
-   * 实现已抽到 app/project/source.js 的 applyDeck（createEditor 复用同一份）。
-   * handle：本地项目句柄模式（官方文件夹选择器打开），null = URL 模式。
+   * Apply an already-parsed PPTD project to editor state (shared by loadDeck and
+   * manual reload). The implementation lives in app/project/source.js applyDeck
+   * (createEditor reuses the same). handle: local project handle mode (opened via
+   * the OS folder picker), null = URL mode.
    */
   function applyDeck(manifestText, pageFiles, { manifestPath = "", handle = null, projectName = "" } = {}) {
     applyDeckToState(
@@ -79,18 +82,18 @@ export function createLoader({ state, view, images, fontManager, source, connect
   }
 
   /**
-   * 加载项目（URL 或挂载路径）。keepPage：保留当前页（自动刷新/手动刷新）；
-   * silent：不弹加载 toast（自动刷新场景）。
+   * Load a project (URL or mounted path). keepPage: keep the current page
+   * (auto/manual refresh); silent: no load toast (auto-refresh case).
    */
   async function loadDeck(manifestUrl, { keepPage = false, silent = false } = {}) {
     const prevPage = state.currentPage;
-    // 跨会话缓存（project-cache.js）由 httpSource.read 内部沿用，行为不变
+    // Cross-session caching (project-cache.js) is reused inside httpSource.read, behavior unchanged
     const data = await source.read(manifestUrl);
     applyDeck(data.manifestText, data.pageFiles, { manifestPath: data.manifestPath || manifestUrl });
     await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0, viaHandle: false });
   }
 
-  /** 本地项目句柄加载（官方文件夹选择器打开的项目，读文件不经 HTTP）。 */
+  /** Load a local project handle (opened via the OS folder picker; file reads bypass HTTP). */
   async function loadDeckFromHandle(handle, { keepPage = false, silent = false } = {}) {
     const prevPage = state.currentPage;
     const data = source.readFromHandle
@@ -100,7 +103,7 @@ export function createLoader({ state, view, images, fontManager, source, connect
     await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0, viaHandle: true });
   }
 
-  /** 直接应用一份已读取/给定的项目数据（createEditor 的 options.deck 与 source.read 路径）。 */
+  /** Apply an already-read/given project directly (createEditor options.deck and the source.read path). */
   async function loadDeckData(data, { keepPage = false, silent = false } = {}) {
     const prevPage = state.currentPage;
     applyDeck(data.manifestText, data.pageFiles, {
@@ -111,15 +114,18 @@ export function createLoader({ state, view, images, fontManager, source, connect
     await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0, viaHandle: false });
   }
 
-  /** 加载收尾（两种来源共用）：渐进加载——当前页资产先行首渲染，其余页后台
-   *  逐页转正（缩略图骨架→实渲染），字体并行恢复（期间回退字体）后整体重渲染。
-   *  渲染层对未就绪图片显示「加载失败」占位，故首渲染前只等当前页资产。 */
+  /** Load finishing (shared by both sources): progressive loading — the current
+   *  page's assets render first, the rest are promoted page by page in the
+   *  background (thumbnail skeleton → real render), fonts restore in parallel
+   *  (fallback fonts meanwhile) then everything re-renders. The render layer shows
+   *  a "load failed" placeholder for not-yet-ready images, so only the current
+   *  page's assets are awaited before the first render. */
   async function finishLoad(prevPage, { keepPage, silent, missing, viaHandle }) {
     if (keepPage) state.currentPage = Math.min(prevPage, Math.max(0, state.deck.pages.length - 1));
     const preloadPage = (pg) =>
       viaHandle ? images.preloadHandleImages(state.projectHandle, [pg]) : images.preloadRemoteImages([pg]);
 
-    // 字体先行启动（不阻塞渲染；期间文本以回退字体显示，全部到位后统一重渲染）
+    // Start fonts first (do not block rendering; text uses fallback fonts meanwhile and re-renders once all are in)
     const fontsDone = fontManager.restoreFromDeck().catch((err) => {
       console.warn("[io] 字体恢复失败:", err?.message || err);
     });
@@ -131,10 +137,11 @@ export function createLoader({ state, view, images, fontManager, source, connect
       await preloadPage(cur);
       await preloadIcons([cur]);
     }
-    view.render(); // 首屏：当前页完整 + 其余页缩略骨架
+    view.render(); // first paint: the current page complete + the other pages as thumbnail skeletons
 
-    // 其余页资产网络层全部并行启动；UI 按页序逐页转正（保留「一张张出现」节奏，
-    // 当前页优先——加载中切到未就绪页时下一轮先补它）
+    // Kick off all remaining page assets at the network layer in parallel; the UI
+    // promotes them page by page (keeping the "appearing one by one" cadence, the
+    // current page first — switching to a not-yet-ready page preloads it first next round)
     const rest = [...pending];
     const jobs = new Map(
       rest.map((pg) => [
@@ -152,23 +159,23 @@ export function createLoader({ state, view, images, fontManager, source, connect
     while (pending.size) {
       const curPg = state.deck.pages[state.currentPage];
       const pg = curPg && pending.has(curPg) ? curPg : rest.find((p) => pending.has(p));
-      if (!pg) break; // 并发换 deck 后残留引用：本轮无对应页，收尾退出
+      if (!pg) break; // leftover refs after a concurrent deck switch: no matching page this round, finish and exit
       await jobs.get(pg);
       pending.delete(pg);
-      view.refreshPage?.(pg); // 渐进定点刷新（空桩 view 如 shot 模式自动跳过）
+      view.refreshPage?.(pg); // progressive targeted refresh (a stub view such as shot mode skips it)
     }
 
     await fontsDone;
-    view.render(); // 字体注册完毕：回退字形换真字体，整体重渲染
-    connect(); // 项目就绪后订阅实时刷新（幂等；部署模式自动不启用）
+    view.render(); // fonts registered: fallback glyphs swap to the real font, full re-render
+    connect(); // subscribe to live reload once the project is ready (idempotent; deploy mode auto-disabled)
     if (!silent) {
-      // 缺失页面提示：Agent 写入中的项目「有一页显示一页」，不阻断预览
+      // Missing-page hint: an Agent-mid-write project shows one page as it lands, without blocking the preview
       const suffix = missing > 0 ? ` · ${missing} 页缺失（写入中？）` : "";
       showToast(`已加载 · ${state.deck.pages.length} 页 · 主题已应用${suffix}`, "info");
     }
   }
 
-  /** 手动从磁盘重新加载当前项目（文件菜单）：dirty 时需确认放弃未保存修改。 */
+  /** Manually reload the current project from disk (file menu): confirm when dirty. */
   async function manualReload() {
     if (state.dirty && !(await dialogs.confirm("编辑器有未保存的修改，重新加载将放弃这些修改。确定继续？"))) return;
     const done = () => showToast("已从磁盘重新加载", "success");

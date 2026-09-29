@@ -1,36 +1,36 @@
 // ============================================================================
-// app/project/handle-io.js — 本地项目句柄读写（File System Access API）
+// app/project/handle-io.js — local project handle IO (File System Access API)
 // ----------------------------------------------------------------------------
-// 「打开本地项目」用官方 showDirectoryPicker() 调起系统文件夹选择框，
-// 拿到 DirectoryHandle 后浏览器直接读写项目文件，全程不需要磁盘路径
-// （网页拿不到绝对路径是浏览器安全模型，句柄即授权）。
-// 最近项目句柄的持久化见 handle-store.js（IndexedDB）。
-// 所有函数只依赖句柄接口（getFileHandle/getDirectoryHandle/getFile/
-// createWritable/queryPermission），Node 测试用 mock 句柄即可覆盖。
+// "Open local project" brings up the OS folder picker via showDirectoryPicker();
+// once a DirectoryHandle is in hand the browser reads/writes the project files
+// directly, with no disk path involved (web pages cannot obtain absolute paths —
+// that is the browser security model; the handle is the grant). Recent-project
+// handle persistence lives in handle-store.js (IndexedDB). Every function only
+// depends on the handle interface (getFileHandle/getDirectoryHandle/getFile/
+// createWritable/queryPermission), so Node tests can cover it with a mock handle.
 // ============================================================================
 
 import { base64ToBytes, yaml } from "../../../packages/model/index.js";
 import { dataUrlOf } from "../../../packages/writer/index.js";
 
-
-/** 调起系统文件夹选择框（需用户手势）。取消返回 null。 */
+/** Bring up the OS folder picker (needs a user gesture). Returns null on cancel. */
 export async function pickProjectFolder() {
   if (!window.showDirectoryPicker) throw new Error("当前浏览器不支持文件夹选择（需 Chrome/Edge）");
   try {
     return await window.showDirectoryPicker({ id: "open-pptd-project", mode: "readwrite", startIn: "documents" });
   } catch (err) {
-    if (err?.name === "AbortError") return null; // 用户取消
+    if (err?.name === "AbortError") return null; // user cancelled
     throw err;
   }
 }
 
-/** 确保句柄有读写权限（requestPermission 需用户手势）。 */
+/** Ensure the handle has read/write permission (requestPermission needs a user gesture). */
 export async function ensurePermission(handle) {
   if ((await handle.queryPermission({ mode: "readwrite" })) === "granted") return true;
   return (await handle.requestPermission({ mode: "readwrite" })) === "granted";
 }
 
-/** 相对路径 → 文件句柄（逐级进入子目录，目录不存在时可选创建）。 */
+/** Relative path → file handle (descends segment by segment, optionally creating directories). */
 async function fileHandleAt(dirHandle, relPath, { create = false } = {}) {
   const parts = relPath.split("/").filter(Boolean);
   let dir = dirHandle;
@@ -40,7 +40,7 @@ async function fileHandleAt(dirHandle, relPath, { create = false } = {}) {
   return dir.getFileHandle(parts[parts.length - 1], { create });
 }
 
-/** 读单个文件文本；不存在返回 null。 */
+/** Read a single text file; returns null when it does not exist. */
 async function readText(dirHandle, relPath) {
   try {
     const fh = await fileHandleAt(dirHandle, relPath);
@@ -51,14 +51,15 @@ async function readText(dirHandle, relPath) {
   }
 }
 
-/** 句柄下是否有 deck.pptd（画廊侧轻校验，选错文件夹就地提示，不跳编辑器）。 */
+/** Whether the handle has deck.pptd (gallery-side light check: wrong folder is flagged in place, no editor redirect). */
 export async function hasDeck(dirHandle) {
   return (await readText(dirHandle, "deck.pptd")) != null;
 }
 
 /**
- * 经句柄读整个项目（manifest + pages/*.page），契约同 project-cache 的
- * fetchProjectTexts：页面缺失计入 missing（Agent 写入中「有一页显示一页」）。
+ * Read a whole project through the handle (manifest + pages/*.page), same contract
+ * as project-cache's fetchProjectTexts: a missing page counts into `missing`
+ * (Agent-mid-write "show each page as it lands").
  */
 export async function readProject(dirHandle) {
   const manifestText = await readText(dirHandle, "deck.pptd");
@@ -74,18 +75,18 @@ export async function readProject(dirHandle) {
   return { manifestText, pageTexts, missing };
 }
 
-/** 项目内相对路径图片 → dataURL（图片预读走句柄，不经 HTTP）。 */
+/** Project-relative image path → dataURL (image preload goes through the handle, not HTTP). */
 export async function readImageAsDataUrl(dirHandle, src, mime) {
   try {
     const fh = await fileHandleAt(dirHandle, src);
     const buf = await (await fh.getFile()).arrayBuffer();
     return dataUrlOf(buf, mime);
   } catch {
-    return null; // 渲染层有占位提示
+    return null; // the render layer has a placeholder
   }
 }
 
-/** 批量写文件（{path, content|b64}，自动建子目录）→ 写入数。 */
+/** Batch-write files ({path, content|b64}, subdirectories auto-created) → write count. */
 export async function writeFiles(dirHandle, files) {
   let count = 0;
   for (const f of files) {
@@ -99,8 +100,9 @@ export async function writeFiles(dirHandle, files) {
 }
 
 /**
- * 指纹：manifest + manifest 列出的全部页面文件的 lastModified/size
- * （实时刷新轮询用，语义同服务端 dirFingerprint——文本文件是外部写入主体）。
+ * Fingerprint: lastModified/size of the manifest plus every page file it lists
+ * (used by live-reload polling, same semantics as the server-side dirFingerprint —
+ * text files are the main target of external writes).
  */
 export async function fingerprint(dirHandle) {
   const manifestText = await readText(dirHandle, "deck.pptd");

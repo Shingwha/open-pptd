@@ -1,9 +1,11 @@
 // ============================================================================
-// app/project/handle-store.js — 最近项目（IndexedDB 持久化句柄）
+// app/project/handle-store.js — recent projects (IndexedDB-persisted handles)
 // ----------------------------------------------------------------------------
-// FileSystemHandle 可结构化克隆，存进 IndexedDB 即「最近项目」（vscode.dev
-// 等的标准做法）。句柄授权会话级失效：恢复时由调用方在用户手势里
-// ensurePermission（见 handle-io.js）。上限 8 条，同句柄去重并置顶。
+// FileSystemHandle is structured-cloneable, so storing it in IndexedDB gives
+// "recent projects" (the standard approach, as in vscode.dev). Handle grants
+// expire per session: on restore the caller runs ensurePermission inside a user
+// gesture (see handle-io.js). Cap is 8 entries, deduplicated by handle and moved
+// to the top.
 // ============================================================================
 
 const DB_NAME = "open-pptd-projects";
@@ -43,13 +45,13 @@ const sameEntry = async (a, b) => {
   }
 };
 
-/** 全部最近项目（ts 降序）。 */
+/** All recent projects (ts descending). */
 export async function listRecent() {
   try {
     const all = (await tx("readonly", (s) => s.getAll())) || [];
     return all.sort((x, y) => y.ts - x.ts).slice(0, MAX);
   } catch {
-    return []; // 隐私模式等 IDB 不可用：最近列表降级为空
+    return []; // IDB unavailable (private mode etc.): recent list degrades to empty
   }
 }
 
@@ -61,7 +63,7 @@ export async function getRecent(id) {
   }
 }
 
-/** 记录/置顶一个项目句柄。 */
+/** Record/promote a project handle. */
 export async function addRecent(handle) {
   try {
     const all = (await tx("readonly", (s) => s.getAll())) || [];
@@ -74,7 +76,7 @@ export async function addRecent(handle) {
     for (const e of rest.slice(MAX)) await tx("readwrite", (s) => s.delete(e.id));
     return entry;
   } catch {
-    return null; // 存储失败不影响打开，只是不进最近列表
+    return null; // a storage failure does not block opening, it just skips the recent list
   }
 }
 
@@ -82,13 +84,15 @@ export async function removeRecent(id) {
   try {
     await tx("readwrite", (s) => s.delete(id));
   } catch {
-    /* 忽略 */
+    /* ignore */
   }
 }
 
 // ----------------------------------------------------------------------------
-// 会话恢复标记：sessionStorage 存最近条目 id（句柄本身不可字符串化，进 IDB）。
-// 编辑器刷新/从画廊跳转时据此续开上次项目（授权仍在则免确认，否则弹恢复卡片）。
+// Session-restore marker: sessionStorage holds the recent entry id (the handle
+// itself is not stringifiable; it lives in IDB). The editor uses it on refresh /
+// gallery jump to reopen the last project (no prompt while the grant holds,
+// otherwise the restore card appears).
 // ----------------------------------------------------------------------------
 const PENDING_KEY = "pptd-pending-project";
 
@@ -96,7 +100,7 @@ export function setPendingProject(id) {
   try {
     sessionStorage.setItem(PENDING_KEY, id);
   } catch {
-    /* 忽略 */
+    /* ignore */
   }
 }
 
@@ -112,6 +116,6 @@ export function clearPendingProject() {
   try {
     sessionStorage.removeItem(PENDING_KEY);
   } catch {
-    /* 忽略 */
+    /* ignore */
   }
 }
