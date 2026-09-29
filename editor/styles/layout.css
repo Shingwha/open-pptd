@@ -135,7 +135,7 @@
   overflow: hidden;
   border: 2px solid var(--line-strong);
   cursor: pointer;
-  background: var(--panel);
+  background: var(--paper);
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .thumb:hover { box-shadow: var(--shadow-sm); }

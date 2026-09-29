@@ -29,7 +29,7 @@ import { makeZoomCtlDraggable } from "./app/view/zoom-ctl.js";
 import { bindProperties } from "./interaction/properties.js";
 import { injectIcons } from "./icons.js";
 import { dom } from "./dom.js";
-import { applyThemeTokens } from "./theme.js";
+import { applyThemeTokens, bindThemeMode } from "./theme.js";
 import { configureDialogs, resetDialogs } from "./dialogs.js";
 import { closeAllDialogs } from "./interaction/dialogs/base.js";
 import { disposeChartInstances } from "../packages/renderer/index.js";
@@ -86,6 +86,11 @@ export function createEditor(rootEl, options = {}) {
       ? mount
       : document.documentElement;
   const restoreTheme = theme ? applyThemeTokens(themeHost, theme) : null;
+
+  // 三态主题（B3：浅 / 深 / 跟随系统）：宿主注入 mode 时交给宿主（注入优先于内置板），
+  // 否则编辑器自管（localStorage 持久化 + prefers-color-scheme 跟随，落在 data-pptd-theme）
+  const themeMode = theme?.mode ? null : bindThemeMode();
+  disposers.push(() => themeMode?.destroy());
 
   // --------------------------------------------------------------------------
   // 装配（原 main.js initEditor 的闭包化）
@@ -191,7 +196,7 @@ export function createEditor(rootEl, options = {}) {
     emitEvents();
   };
 
-  const toolbar = bindToolbar({ state, page, api, view, io, present });
+  const toolbar = bindToolbar({ state, page, api, view, io, present, themeMode });
   disposers.push(() => toolbar.destroy?.());
   const keyboard = bindKeyboard({ state, api, io, present });
   disposers.push(() => keyboard.destroy?.());

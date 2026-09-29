@@ -16,7 +16,7 @@ import { dom } from "../dom.js";
 import { dialogs } from "../dialogs.js";
 import { createPage } from "../../packages/model/index.js";
 
-export function bindToolbar({ state, page, api, view, io, present }) {
+export function bindToolbar({ state, page, api, view, io, present, themeMode = null }) {
   const disposers = []; // 子绑定（菜单/浮层）的 destroy 集合
   let mainMenu = null;
   /** 添加元素到当前页并选中；图表/表格直接进数据编辑（图标刚选完，不再弹选择器）。 */
@@ -111,8 +111,8 @@ export function bindToolbar({ state, page, api, view, io, present }) {
     if (fp?.destroy) disposers.push(fp.destroy);
     on(dom.btnPresent, () => present.start());
 
-    // 配色浮层（预设色卡 + 语义色编辑）
-    const tp = bindThemePanel({ state, api, io, anchor: dom.btnTheme });
+    // 配色浮层（预设色卡 + 语义色编辑 + 外观三态；B3 三态入口置于此面板内）
+    const tp = bindThemePanel({ state, api, io, anchor: dom.btnTheme, themeMode });
     if (tp?.destroy) disposers.push(tp.destroy);
 
     // 属性抽屉收起 / 展开（双端统一逻辑，行为随断点不同）：
