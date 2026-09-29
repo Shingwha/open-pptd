@@ -18,6 +18,9 @@ export { exportDeck, exportProject } from "./export.js";
 export { runRender } from "./render.js";
 export { runFonts } from "./fonts.js";
 export { runIcons } from "./icons.js";
+export { runDoctor, runPaths, collectDoctorFacts } from "./doctor.js";
+export { runAssets, extractZipTo, readZipEntries } from "./assets.js";
+export { runEnsure, collectRequirements, checkResources, ensureResources } from "./ensure.js";
 
 const EXAMPLES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "examples");
 

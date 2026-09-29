@@ -25,15 +25,18 @@ let cached = null;
  * 加载注册表（双端）。
  * @param {object} [options]
  * @param {string} [options.registryUrl] 浏览器端：注册表 URL（默认仓库根相对 assets/fonts/registry.json）
- * @param {string} [options.fontDir]     Node 端：assets/fonts 绝对路径（含 registry.json）
+ * @param {string} [options.fontDir]     Node 端：字体目录绝对路径
+ * @param {string} [options.registryDir] Node 端：注册表目录覆盖（资源外置后注册表恒在包内，
+ *                                       与字节目录可能分离；缺省回退 fontDir）
  * @returns {Promise<{version:number, fonts:object[]}>}
  */
 export async function loadFontRegistry(options = {}) {
   if (cached) return cached;
-  // Node 端：fontDir（assets/fonts 绝对路径）+ fs 注入 → 直接读文件
+  // Node 端：fontDir（字体目录绝对路径）+ fs 注入 → 直接读文件
   if (options.fontDir && options.fs?.readFileSync) {
     const { join } = await import("path");
-    cached = JSON.parse(options.fs.readFileSync(join(options.fontDir, "registry.json"), "utf8"));
+    const dir = options.registryDir || options.fontDir;
+    cached = JSON.parse(options.fs.readFileSync(join(dir, "registry.json"), "utf8"));
     return cached;
   }
   if (options.registryUrl || typeof fetch === "function") {

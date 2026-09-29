@@ -14,7 +14,8 @@ import http from "node:http";
 import { existsSync } from "node:fs";
 import { join, normalize, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolveFile, sendFile } from "./static.js";
+import { resolveFile, resolveResourceFile, sendFile } from "./static.js";
+import { resourceRoots as DEFAULT_RESOURCE_ROOTS } from "../paths.js";
 import { handleSave, handlePing } from "./api.js";
 import { createSseHub } from "./events.js";
 import { buildManifest } from "./gallery.js";
@@ -24,6 +25,9 @@ export const PROJECT_ROOT = join(__dirname, "..", "..");
 
 export function createServer(options = {}) {
   const root = normalize(options.root || PROJECT_ROOT);
+  // 资源外置：/assets/** 走多根解析（home 优先 → 包内回退；registry 只查包内）。
+  // 缺省取 packages/paths.js 的 resourceRoots；下游可显式注入自己的根。
+  const resourceRoots = options.resourceRoots || DEFAULT_RESOURCE_ROOTS;
   // 可选虚拟挂载：/project/<path> → projectRoot 下的真实文件（--project <dir>）
   const projectRoot = options.projectRoot ? normalize(resolve(options.projectRoot)) : null;
   const sse = projectRoot ? createSseHub(projectRoot) : null;
@@ -64,10 +68,16 @@ export function createServer(options = {}) {
         }
         return;
       }
-      // 目录路径 → 目录内 index.html（GitHub Pages 同行为：<root>/index.html 即画廊）
-      let filePath = resolveFile(base, pathname);
-      if (!filePath && pathname.endsWith("/")) {
-        filePath = resolveFile(base, pathname + "index.html");
+      // 资源请求（/assets/**）→ 多根解析（home 优先 → 包内回退；registry 只查包内）
+      let filePath = null;
+      if (pathname.startsWith("/assets/")) {
+        filePath = resolveResourceFile(pathname, resourceRoots) || resolveFile(base, pathname);
+      } else {
+        // 目录路径 → 目录内 index.html（GitHub Pages 同行为：<root>/index.html 即画廊）
+        filePath = resolveFile(base, pathname);
+        if (!filePath && pathname.endsWith("/")) {
+          filePath = resolveFile(base, pathname + "index.html");
+        }
       }
       if (!filePath) {
         res.writeHead(404).end("not found: " + pathname);
@@ -98,7 +108,14 @@ export function startServer(options = {}) {
         const actualPort = server.address().port;
         const base = `http://127.0.0.1:${actualPort}/`;
         // 编辑器入口在 /editor/（根路径是画廊，不处理 ?deck=）
-        console.log(`open-pptd 已启动: ${options.deckUrl ? base + "editor/?deck=" + options.deckUrl : base + "editor/"}`);
+        const info = {
+          server,
+          port: actualPort,
+          url: options.deckUrl ? base + "editor/?deck=" + options.deckUrl : base + "editor/",
+        };
+        // onListen 注入时由调用方决定输出渠道（serve --json 要求人类文案走 stderr）
+        if (typeof options.onListen === "function") options.onListen(info);
+        else console.log(`open-pptd 已启动: ${info.url}`);
         resolve(server);
       });
     };

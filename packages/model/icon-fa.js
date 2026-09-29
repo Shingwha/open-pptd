@@ -34,13 +34,14 @@ let cachedRegistry = null;
 
 /**
  * @param {object} [options] Node 端传 { iconDir, fs:{readFileSync} }；
+ *   registryDir 可覆盖注册表目录（资源外置后注册表恒在包内，与字节目录可能分离）；
  *   浏览器无参（fetch ROOT 相对 registry.json）。
  */
 export async function loadIconRegistry(options = {}) {
   if (cachedRegistry) return cachedRegistry;
   if (options.iconDir && options.fs?.readFileSync) {
     // 路径拼接用字符串（零依赖：model 层禁 node: 来源，见 dep-graph 规则）
-    const base = String(options.iconDir).replace(/\\/g, "/").replace(/\/+$/, "");
+    const base = String(options.registryDir || options.iconDir).replace(/\\/g, "/").replace(/\/+$/, "");
     cachedRegistry = JSON.parse(options.fs.readFileSync(`${base}/registry.json`, "utf8"));
   } else {
     const res = await fetch(new URL(REGISTRY_REL, ROOT).href);

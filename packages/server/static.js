@@ -32,14 +32,50 @@ export const MIME = {
 
 /**
  * 把 URL 路径解析为 base 下的真实文件路径（防路径穿越）。
+ * base 可为单根字符串，或**多根数组**（按序尝试，首个命中即用）——资源外置后
+ * home 优先、包内回退即由此实现，浏览器端零改动。
+ * @param {string|string[]} base 根目录（或按优先级排列的根数组）
+ * @param {string} pathname
  * @returns {string|null} 文件存在且为普通文件时返回绝对路径，否则 null
  */
 export function resolveFile(base, pathname) {
+  const roots = Array.isArray(base) ? base : [base];
+  for (const root of roots) {
+    const hit = resolveUnder(root, pathname);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+/** 单根下的安全解析（防穿越；目录/不存在返回 null）。 */
+function resolveUnder(base, pathname) {
+  if (!base) return null;
   const filePath = normalize(join(base, pathname));
   if (filePath !== base && !filePath.startsWith(base + sep)) return null; // 防路径穿越
   if (!existsSync(filePath) || statSync(filePath).isDirectory()) return null;
   return filePath;
 }
+
+/**
+ * 资源请求（/assets/**）的多根解析：
+ *   · `registry.json` → **永远只查包内根**（与代码版本耦合，home 永不遮蔽）
+ *   · `fonts/**`      → resourceRoots.fonts（home 优先 → 包内回退）
+ *   · `icons/**`      → resourceRoots.icons
+ * @param {string} pathname URL 路径（含 /assets/ 前缀）
+ * @param {{fonts:string[],icons:string[],registry:string[]}} resourceRoots
+ * @returns {string|null}
+ */
+export function resolveResourceFile(pathname, resourceRoots) {
+  if (!resourceRoots || !pathname.startsWith("/assets/")) return null;
+  const rel = pathname.slice("/assets/".length);
+  if (!rel || rel.includes("\0")) return null;
+  // 注册表：只查包根（pathname 相对包根，故直接用完整 /assets/... 路径）
+  if (/(^|\/)registry\.json$/i.test(rel)) return resolveFile(resourceRoots.registry || [], pathname);
+  if (rel.startsWith("fonts/")) return resolveFile(resourceRoots.fonts || [], rel.slice("fonts/".length));
+  if (rel.startsWith("icons/")) return resolveFile(resourceRoots.icons || [], rel.slice("icons/".length));
+  return null;
+}
+
 
 /** 以静态文件响应一个已解析的文件路径（no-store，本地服务永远取最新）。 */
 export function sendFile(res, filePath) {
