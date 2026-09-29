@@ -1,10 +1,11 @@
 // ============================================================================
-// tests/tools/isolate.mjs — 逐组件/逐页隔离导出（定位 PowerPoint 弹「修复」的来源）
+// tests/tools/isolate.mjs — per-component / per-page isolated export (locate the source of PowerPoint's "repair" prompt)
 // ----------------------------------------------------------------------------
-// 原理：把 tests/projects/ 下每个组件项目（text/shape/line/image/icon/table/
-// chart…）的每一页单独导出为一个独立 PPTX（iso-<项目>-NN.pptx），
-// 用户逐个用 PowerPoint 打开：哪个文件弹修复 → 对应项目页面的组件就是问题源。
-// 用法：node tests/tools/isolate.mjs [输出目录]
+// Idea: export each page of every component project under tests/projects/
+// (text/shape/line/image/icon/table/chart...) as its own standalone PPTX
+// (iso-<project>-NN.pptx). Opening them one by one in PowerPoint: whichever file
+// triggers "repair" points at the component on that project page.
+// Usage: node tests/tools/isolate.mjs [output dir]
 // ============================================================================
 
 import { readFileSync, readdirSync, mkdirSync, writeFileSync, existsSync, statSync } from "node:fs";
@@ -15,12 +16,12 @@ import { buildPptx, magicMatches } from "../../packages/writer/pptx.js";
 import { createDeck } from "../../packages/model/model.js";
 
 const projectsDir = resolve("tests/projects");
-// 输出到每个项目自己的 out/ 目录（tests/projects/<项目>/out/iso-<项目>-NN.pptx）
+// Output goes to each project's own out/ directory (tests/projects/<project>/out/iso-<project>-NN.pptx)
 const argOut = process.argv[2] ? resolve(process.argv[2]) : null;
 
 const EXT_BY_EXTNAME = { ".png": "png", ".jpg": "jpg", ".jpeg": "jpg", ".gif": "gif" };
 
-/** 命令行加载图片：相对项目目录读文件（与 packages/cli/export.js createLoadImage 一致）。 */
+/** CLI image loader: reads files relative to the project directory (same as packages/cli/export.js createLoadImage). */
 function loadImageFor(projectDir) {
   return (src) => {
     if (typeof src !== "string" || !src) return null;
@@ -29,7 +30,7 @@ function loadImageFor(projectDir) {
     try {
       const bytes = readFileSync(join(projectDir, src));
       if (!magicMatches(bytes, ext)) return null;
-      // 真实尺寸（PNG/JPEG/GIF 头部解析，供 contain/cover 计算）
+      // Real dimensions (parsed from the PNG/JPEG/GIF header, for contain/cover)
       return { bytes, ext, size: imageSize(bytes, ext) };
     } catch {
       return null;
@@ -37,7 +38,7 @@ function loadImageFor(projectDir) {
   };
 }
 
-/** 解析图片原始尺寸（PNG IHDR / JPEG SOF / GIF 逻辑屏幕）。 */
+/** Parse the source image dimensions (PNG IHDR / JPEG SOF / GIF logical screen). */
 function imageSize(bytes, ext) {
   try {
     if (ext === "png" && bytes.length > 24) {
@@ -59,7 +60,7 @@ function imageSize(bytes, ext) {
         i += 2 + len;
       }
     }
-  } catch { /* 尺寸未知时降级 null */ }
+  } catch { /* fall back to null when the size is unknown */ }
   return null;
 }
 
@@ -72,7 +73,7 @@ for (const name of projects) {
   const projectDir = join(projectsDir, name);
   const deckPath = join(projectDir, "deck.pptd");
   if (!existsSync(deckPath)) continue;
-  // 每个项目的产物输出到它自己的 out/ 目录
+  // Each project's artifacts go to its own out/ directory
   const outDir = argOut || join(projectDir, "out");
   mkdirSync(outDir, { recursive: true });
   const deck = yaml.load(readFileSync(deckPath, "utf8"));

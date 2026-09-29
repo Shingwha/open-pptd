@@ -1,11 +1,11 @@
 // ============================================================================
-// tests/regression/layout.mjs — layout 包回归（spec 09 T4 / M2 验收）
+// tests/regression/layout.mjs — layout package regression (spec 09 T4 / M2 acceptance)
 // ----------------------------------------------------------------------------
-// 1. LayoutTree 形状：pageSize/pages/elements/frame/text/table/overflow
-// 2. 文本撑高、表格撑高、图表尺寸透传、group 组壳跳过
-// 3. overflow 事实：越界 + 内容撑高压下方元素（重叠）
-// 4. 确定性：同一 deck 两次 layout 结果一致（可快照）
-// 5. examples 全量：每页元素数与「非组壳元素」一致
+// 1. LayoutTree shape: pageSize/pages/elements/frame/text/table/overflow
+// 2. Text growth, table growth, chart size passthrough, group shell skipped
+// 3. overflow facts: out of canvas + grown content pushing elements below (overlap)
+// 4. Determinism: two layout calls on the same deck agree (snapshot-safe)
+// 5. Full examples sweep: per-page element count matches the "non-group-shell" count
 // ============================================================================
 
 import { readdirSync, existsSync } from "node:fs";
@@ -22,7 +22,7 @@ const check = (name, cond, detail = "") => {
 
 const deckWith = (elements) => ({ version: "v2", title: "t", size: [960, 540], pages: [{ elements }] });
 
-// ---- 1. 形状 + 文本撑高 ----
+// ---- 1. shape + text growth ----
 const textDeck = deckWith([
   { elementId: "t1", elementType: "text", bounds: [40, 40, 200, 30], content: { text: "很长的中文内容用于验证文本撑高事实。".repeat(5), fontSize: 18 } },
   { elementId: "s1", elementType: "shape", shapeName: "rect", bounds: [10, 10, 50, 50] },
@@ -38,11 +38,11 @@ check("overflow 字段齐全", ["x", "y", "page"].every((k) => typeof t1.overflo
 const s1 = lt.pages[0].elements.find((e) => e.elementId === "s1");
 check("shape frame == declared（尺寸透传）", s1.frame.x === 10 && s1.frame.h === 50 && s1.grown === false);
 
-// 声明高 > 内容高时不变（只增不减）
+// Declared height above content height stays unchanged (grows only, never shrinks)
 const bigBox = layout(deckWith([{ elementId: "t", elementType: "text", bounds: [0, 0, 400, 300], content: { text: "短", fontSize: 18 } }]));
 check("内容小于声明高时 frame.h 取声明值", bigBox.pages[0].elements[0].frame.h === 300 && bigBox.pages[0].elements[0].grown === false);
 
-// ---- 2. 表格撑高 ----
+// ---- 2. table growth ----
 const tableDeck = deckWith([
   {
     elementId: "tb",
@@ -59,14 +59,14 @@ check("表格 table 结构（列宽/行高/总高）", tb.table && tb.table.rowH
 check("表格 frame.h 被内容撑高", tb.frame.h === Math.max(40, tb.table.totalHeight) && tb.grown === true, `h=${tb.frame.h}`);
 check("表格撑高压下方元素 → overlaps 命中", tb.overflow.overlaps.some((o) => o.elementId === "under"));
 
-// ---- 3. 越界 ----
+// ---- 3. out of canvas ----
 const offDeck = deckWith([{ elementId: "x", elementType: "shape", shapeName: "rect", bounds: [900, 500, 200, 100] }]);
 const xt = layout(offDeck).pages[0].elements[0];
 check("超出画布 → overflow.x/y", xt.overflow.x && xt.overflow.y && !xt.overflow.page);
 const outDeck = deckWith([{ elementId: "y", elementType: "shape", shapeName: "rect", bounds: [1200, 700, 100, 100] }]);
 check("完全在画布外 → overflow.page", layout(outDeck).pages[0].elements[0].overflow.page);
 
-// ---- 4. group 组壳跳过 ----
+// ---- 4. group shell skipped ----
 const groupDeck = deckWith([
   { elementId: "g1", elementType: "group", children: ["a", "b"], bounds: [0, 0, 100, 100] },
   { elementId: "a", elementType: "shape", shapeName: "rect", bounds: [10, 10, 50, 50] },
@@ -75,12 +75,12 @@ const groupDeck = deckWith([
 const ltG = layout(groupDeck);
 check("group 组壳不进 LayoutTree", !ltG.pages[0].elements.some((e) => e.elementType === "group") && ltG.pages[0].elements.length === 2);
 
-// ---- 5. 图表尺寸透传 ----
+// ---- 5. chart size passthrough ----
 const chartDeck = deckWith([{ elementId: "c", elementType: "chart", bounds: [20, 20, 400, 300], series: [{ type: "bar" }], data: { cols: ["a"], rows: [1] } }]);
 const cc = layout(chartDeck).pages[0].elements[0];
 check("图表尺寸透传（frame == declared）", cc.frame.w === 400 && cc.frame.h === 300 && !cc.table && !cc.text);
 
-// ---- 6. 确定性 + MeasurePort 注入 ----
+// ---- 6. determinism + MeasurePort injection ----
 const a = JSON.stringify(layout(textDeck));
 const b = JSON.stringify(layout(textDeck));
 check("两次 layout 结果一致（确定性）", a === b);
@@ -91,7 +91,7 @@ const stub = {
 const ltStub = layout(textDeck, stub);
 check("可注入 MeasurePort（帧高来自注入实现）", ltStub.pages[0].elements.find((e) => e.elementId === "t1").text.contentHeight === 7);
 
-// ---- 7. examples 全量 ----
+// ---- 7. full examples sweep ----
 const examplesDir = resolve("examples");
 const decks = readdirSync(examplesDir, { withFileTypes: true })
   .filter((d) => d.isDirectory() && existsSync(join(examplesDir, d.name, "deck.pptd")))

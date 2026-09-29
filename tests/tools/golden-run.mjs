@@ -1,12 +1,13 @@
 // ============================================================================
-// tests/tools/golden-run.mjs — 黄金基线共享运行器（项目发现 / 渲染 / 指纹）
+// tests/tools/golden-run.mjs — golden baseline shared runner (discovery / render / fingerprint)
 // ----------------------------------------------------------------------------
-// 被 golden-render.mjs（写基线）与 golden-diff.mjs（比对）共用，避免两套实现漂移。
-//   discoverProjects()            发现 examples/* 与 tests/projects/*（含 deck.pptd）
-//   renderProject(entry, pngDir)  用现役旧管线（renderDeck + headless CDP）逐页出 PNG
-//   deckSourceHash(entry)         项目源文件（deck + pages，排除 out/）整体 sha256
+// Shared by golden-render.mjs (writes the baseline) and golden-diff.mjs (compares) so the two
+// cannot drift apart.
+//   discoverProjects()            discover examples/* and tests/projects/* (with deck.pptd)
+//   renderProject(entry, pngDir)  render every page to PNG via the live pipeline (renderDeck + headless CDP)
+//   deckSourceHash(entry)         whole-project source hash (deck + pages, excluding out/)
 //   pageFingerprint(pngPath)      → { dHash, aHash, w, h, bytes, sha256 }
-// 只 import 不修改 renderer/headless（禁触边界：允许调用，禁止改其文件）。
+// Only imports renderer/headless, never modifies it (boundary: calling is allowed, editing its files is not).
 // ============================================================================
 
 import { existsSync, readdirSync, statSync, readFileSync } from "node:fs";
@@ -22,10 +23,10 @@ export { ROOT };
 
 const SOURCES = ["examples", "tests/projects"];
 
-/** 项目目录名 → PNG 输出目录名（/ 换 __，保证文件系统安全）。 */
+/** Project key → PNG output dir name (/ replaced with __, filesystem-safe). */
 export const pngDirName = (key) => key.replace(/[\\/]+/g, "__");
 
-/** 发现全部含 deck.pptd 的基线项目（examples 15 + tests/projects 9 = 24）。 */
+/** Discover every baseline project containing a deck.pptd (examples 15 + tests/projects 9 = 24). */
 export function discoverProjects() {
   const out = [];
   for (const src of SOURCES) {
@@ -49,7 +50,7 @@ export function discoverProjects() {
   return out;
 }
 
-/** 项目源文件整体哈希（deck + pages + 媒体，排除 out/ 与导出产物）。 */
+/** Whole-project source hash (deck + pages + media, excluding out/ and export artifacts). */
 export function deckSourceHash(entry) {
   const files = [];
   const walk = (d) => {
@@ -69,7 +70,7 @@ export function deckSourceHash(entry) {
 }
 
 /**
- * 渲染单个项目全部页面到 pngDir（现役旧管线：renderDeck + headless CDP）。
+ * Render every page of one project into pngDir (live pipeline: renderDeck + headless CDP).
  * @returns {Promise<{files: string[], count: number}>}
  */
 export async function renderProject(entry, pngDir) {
@@ -77,18 +78,18 @@ export async function renderProject(entry, pngDir) {
     manifest: entry.deck,
     outPath: pngDir,
     scale: 1,
-    timeoutMs: 180000, // font-embed（27 字体，含 CDN 回退）等重项目需要更长就绪等待
+    timeoutMs: 180000, // heavy projects such as font-embed (27 fonts, CDN fallback) need a longer readiness wait
     quiet: true,
     startServer,
   });
 }
 
-/** 页面 PNG → 指纹。 */
+/** Page PNG → fingerprint. */
 export function pageFingerprint(pngPath) {
   return imageFingerprint(readFileSync(pngPath));
 }
 
-/** 浏览器探测（基线必需）；不可用返回 null 并打印原因。 */
+/** Browser probe (required for the baseline); returns null and prints the reason when unavailable. */
 export function probeBrowser() {
   try {
     return findBrowser();

@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 // ============================================================================
-// export-media.mjs — 项目包图片完整性回归
+// export-media.mjs — project package image integrity regression
 // ----------------------------------------------------------------------------
-// 修复回归：保存过一次后图片元素引用 media/ 相对路径（非 data:），导出 zip /
-// 部署模式 zip 保存必须按 imageMap 里的 dataURL 补齐字节，否则包里缺 media/。
-// 覆盖：
-//   1. mediaFilesOfDeck（导出 zip 用）：内嵌 dataURL + 已落盘化相对路径 两类都出文件
-//   2. persistDataUrlImages（保存/zip 保存用）：同上，且重写内嵌 src / 更新映射
+// After a project has been saved once, image elements reference media/ relative
+// paths (not data:). Export zip / deploy zip must therefore complete the bytes from
+// the imageMap's dataURL, otherwise media/ is missing from the package.
+// Covers:
+//   1. mediaFilesOfDeck (export / zip): both embedded dataURL and persisted relative paths emit a file
+//   2. persistDataUrlImages (save / zip save): same, plus rewriting embedded src and updating the map
 // ============================================================================
 
 import { mediaFilesOfDeck, createImageStore } from "../../editor/app/project/images.js";
@@ -25,16 +26,16 @@ function sampleDeck() {
     pages: [
       {
         elements: [
-          { elementId: "img-new", elementType: "image", src: PNG_A }, // 刚上传（内嵌）
-          { elementId: "img-old", elementType: "image", src: "media/img-old.png" }, // 保存过（相对路径）
-          { elementId: "txt", elementType: "text", src: "media/nope.png" }, // 非图片元素不受影响
+          { elementId: "img-new", elementType: "image", src: PNG_A }, // freshly uploaded (embedded)
+          { elementId: "img-old", elementType: "image", src: "media/img-old.png" }, // already saved (relative path)
+          { elementId: "txt", elementType: "text", src: "media/nope.png" }, // non-image element is unaffected
         ],
       },
     ],
   };
 }
 
-// 1) 导出 zip 路径（快照 + imageMap）
+// 1) Export / zip path (snapshot + imageMap)
 {
   const snapshot = sampleDeck();
   const files = mediaFilesOfDeck(snapshot, { "media/img-old.png": PNG_B });
@@ -45,11 +46,11 @@ function sampleDeck() {
   log("导出：字节正确", atob(files.find((f) => f.path === "media/img-old.png").b64) === "picture-b");
 }
 {
-  const files = mediaFilesOfDeck(sampleDeck(), {}); // imageMap 缺失：只出内嵌那张
+  const files = mediaFilesOfDeck(sampleDeck(), {}); // imageMap missing: only the embedded one is emitted
   log("导出：imageMap 缺失时仅内嵌图", files.length === 1 && files[0].path === "media/img-new.png");
 }
 
-// 2) 保存路径（createImageStore 真实实现）
+// 2) Save path (real createImageStore implementation)
 {
   const state = { deck: sampleDeck(), imageMap: { "media/img-old.png": PNG_B } };
   const images = createImageStore(state);

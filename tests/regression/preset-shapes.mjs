@@ -1,10 +1,10 @@
 // ============================================================================
-// tests/regression/preset-shapes.mjs — 预置形状导出回归（187 种 + 自定义路径）
+// tests/regression/preset-shapes.mjs — preset shape export regression (187 presets + custom paths)
 // ----------------------------------------------------------------------------
-// 1. 全部 187 种 PRST 形状逐一导出 → prstGeom 名必须落在官方 ST_ShapeType 枚举内
-// 2. 自定义路径（含官方镂空圆环示例）→ a:custGeom 结构（arcTo 整圆拆分 / 方向）
-// 3. 全部 XML 部件良构 + 包内引用一致性
-// 用法：node tests/regression/preset-shapes.mjs
+// 1. Export all 187 PRST shapes one by one → the prstGeom name must be in the official ST_ShapeType enum
+// 2. Custom paths (including the official donut example) → a:custGeom structure (full-circle arc split / direction)
+// 3. All XML parts well-formed + in-package reference integrity
+// Usage: node tests/regression/preset-shapes.mjs
 // ============================================================================
 
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
@@ -22,7 +22,7 @@ const outDir = join(ROOT, "tests", "projects", "shape", "out");
 mkdirSync(outDir, { recursive: true });
 
 // ---------------------------------------------------------------------------
-// 官方 ST_ShapeType 枚举（ECMA-376 Part 1 §20.1.10.54）——prst 合法值白名单
+// Official ST_ShapeType enum (ECMA-376 Part 1 §20.1.10.54) — the prst whitelist
 // ---------------------------------------------------------------------------
 const ST_SHAPE_TYPE = `
 accentBorderCallout1 accentBorderCallout2 accentBorderCallout3 accentCallout1 accentCallout2
@@ -55,7 +55,7 @@ curvedConnector5
 const VALID = new Set(ST_SHAPE_TYPE);
 
 // ---------------------------------------------------------------------------
-// 1) 全量导出：187 预置 + 自定义路径（含官方镂空示例）
+// 1) Full export: 187 presets + custom paths (including the official donut example)
 // ---------------------------------------------------------------------------
 const SHAPES = Object.entries(PRESET_SHAPES);
 const PAGE_CAP = 30;
@@ -75,7 +75,7 @@ for (let i = 0; i < SHAPES.length; i += PAGE_CAP) {
     })),
   });
 }
-// 自定义路径：官方镂空圆环示例 + 带旋转弧的路径 + 二次/三次贝塞尔 + 相对命令
+// Custom paths: official donut example + rotated-arc path + quadratic/cubic bézier + relative commands
 pages.push({
   pageType: "content",
   background: { type: "solid", color: "#FFFFFF" },
@@ -130,7 +130,7 @@ const bytes = await buildPptx(deck, { theme });
 const pptxPath = join(outDir, `preset-shapes-${Date.now()}.pptx`);
 writeFileSync(pptxPath, bytes);
 
-// 解包检查
+// Unpack for inspection
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join as joinPath } from "node:path";
@@ -144,13 +144,13 @@ const check = (ok, msg) => {
   }
 };
 
-// 解包到临时目录读取 XML
+// Unpack into a temp directory to read the XML
 const tmpDir = mkdtempSync(joinPath(tmpdir(), "preset-shapes-"));
 const files = unzip(bytes, tmpDir);
 const readPart = (p) => readFileSync(joinPath(tmpDir, p), "utf8");
 const listXml = files.filter((k) => k.endsWith(".xml") || k.endsWith(".rels"));
 
-// ---- 断言 1：所有 prstGeom 名合法 ----
+// ---- Assertion 1: every prstGeom name is valid ----
 let slideXml = "";
 for (const f of files) {
   if (/^ppt\/slides\/slide\d+\.xml$/.test(f)) slideXml += readPart(f);
@@ -159,11 +159,11 @@ const prstNames = [...new Set((slideXml.match(/<a:prstGeom prst="([^"]+)"/g) || 
 const invalidPrst = prstNames.filter((n) => !VALID.has(n));
 check(invalidPrst.length === 0, `非法 prstGeom 名: ${invalidPrst.join(", ")}`);
 
-// ---- 断言 2：187 种预置全部出现 ----
+// ---- Assertion 2: all 187 presets appear ----
 const missing = SHAPES.filter(([name]) => !slideXml.includes(`prst="${name}"`)).map(([n]) => n);
 check(missing.length === 0, `导出缺失预置形状: ${missing.join(", ")}`);
 
-// ---- 断言 3：custGeom 结构（镂空圆环：外环顺 + 内环逆 + 整圆拆两段）----
+// ---- Assertion 3: custGeom structure (donut: outer CW + inner CCW + full circle split in two) ----
 const custCount = (slideXml.match(/<a:custGeom>/g) || []).length;
 check(custCount >= 4, `a:custGeom 数量不足: ${custCount}`);
 const ringArc = (slideXml.match(/<a:arcTo wR="500" hR="500" stAng="0" swAng="10800000"\/><a:arcTo wR="500" hR="500" stAng="10800000" swAng="10800000"\/>/g) || []).length;
@@ -171,7 +171,7 @@ check(ringArc === 1, `外环整圆拆分结构不符（应为 0→180→360 两�
 const innerArc = (slideXml.match(/<a:arcTo wR="300" hR="300" stAng="0" swAng="-10800000"\/><a:arcTo wR="300" hR="300" stAng="10800000" swAng="-10800000"\/>/g) || []).length;
 check(innerArc === 1, `内环逆时针结构不符（应为负扫过角两段）`);
 
-// ---- 断言 4：相对命令/二次贝塞尔/旋转弧转换 ----
+// ---- Assertion 4: relative commands / quadratic bézier / rotated arc conversion ----
 const cmds = parseSvgPath("m10,50 q40,-40 80,0 t80,0 h40 v10 h-40 t-80,0 q-40,-40 -80,0 z");
 check(JSON.stringify(cmds[0]) === JSON.stringify(["M", [10, 50]]), `相对 m 解析: ${JSON.stringify(cmds[0])}`);
 check(cmds.some((c) => c[0] === "Q"), "q/t 相对命令未展开为 Q");
@@ -184,7 +184,7 @@ const fullCircle = splitArc(500, 0, 500, 500, 0, 1, 1, 499, 0);
 check(fullCircle.length === 2, "近重合端点整圆应拆两段");
 check(fullCircle[0].sweep === 1 && fullCircle[1].sweep === 1, "整圆两段方向应保持 sweep");
 
-// ---- 断言 5：全部 XML 良构 ----
+// ---- Assertion 5: all XML well-formed ----
 for (const f of listXml) {
   const text = readPart(f).replace(/^\uFEFF/, "");
   if (xmlDepth(text) < 0) {
@@ -196,14 +196,14 @@ console.log(`✓ XML 部件良构（${listXml.length} 个）`);
 rmSync(tmpDir, { recursive: true, force: true });
 
 // ---------------------------------------------------------------------------
-// 结果
+// Result
 // ---------------------------------------------------------------------------
 console.log(`\n结果: ${failures === 0 ? "全部通过" : failures + " 项失败"}`);
 console.log(`预置形状: ${SHAPES.length} 种全部导出；prstGeom 名全部合法`);
 if (failures === 0) console.log(`产物: ${pptxPath}`);
 process.exit(failures === 0 ? 0 : 1);
 
-/** 简易 XML 良构深度检查（栈计数，返回 -1 表示不平衡）。 */
+/** Simple XML well-formedness depth check (stack counter, -1 = unbalanced). */
 function xmlDepth(text) {
   let depth = 0;
   const re = /<(\/?)([A-Za-z][\w:.-]*)((?:"[^"]*"|'[^']*'|[^>"'])*?)(\/?)>/g;

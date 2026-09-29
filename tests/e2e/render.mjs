@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // ============================================================================
-// tests/e2e/render.mjs — render 冒烟测试（无头渲染逐页 PNG）
+// tests/e2e/render.mjs — render smoke test (headless per-page PNG)
 // ----------------------------------------------------------------------------
-// 用法: node tests/e2e/render.mjs   （需要本机 Chrome/Edge；SMOKE_CHROME 可指定路径）
-// 覆盖:
-//   1. 全页渲染 tests/projects/chart（21 页，覆盖全部图表类型）→ PNG 数量、尺寸、非空
-//   2. 单页渲染（--page 语义）→ 只出 1 张且命名正确
-//   3. 进程可自然退出（renderDeck 返回后事件循环清空，不残留句柄/定时器）
+// Usage: node tests/e2e/render.mjs   (needs a local Chrome/Edge; SMOKE_CHROME can point at its path)
+// Covers:
+//   1. Full-page render of tests/projects/chart (all chart types) → PNG count, size, non-empty
+//   2. Single-page render (--page semantics) → exactly 1 file, correctly named
+//   3. The process can exit naturally (event loop drains after renderDeck returns, no leaked handles/timers)
 // ============================================================================
 
 import { readFileSync, existsSync, readdirSync, rmSync, statSync } from "node:fs";
@@ -28,7 +28,7 @@ function record(name, ok, detail = "") {
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  " + detail : ""}`);
 }
 
-// 浏览器不存在 → 明确提示后退出（与 tests/e2e 一致）
+// No browser → clear message and exit (matches the other tests/e2e)
 try {
   findBrowser();
 } catch (e) {
@@ -38,7 +38,7 @@ try {
 
 rmSync(OUT, { recursive: true, force: true });
 
-// ---- 1. 全页渲染 ----
+// ---- 1. Full-page render ----
 const pageCount = readdirSync(join(CHART_PROJECT, "pages")).filter((f) => f.endsWith(".page")).length;
 const t0 = Date.now();
 const { files, count } = await renderDeck({
@@ -64,13 +64,13 @@ for (const f of files) {
   if (w !== 960 || h !== 540) dimsOk = false;
   if (b.length < 5000) {
     nonEmptyOk = false;
-    console.log(`      ${f} 仅 ${b.length} 字节，疑似空白页`);
+      console.log(`      ${f} only ${b.length} bytes, looks blank`);
   }
 }
 record("全部 PNG 尺寸 960×540", dimsOk);
 record("全部 PNG 非空（>5KB）", nonEmptyOk);
 
-// ---- 2. 单页渲染（--page 语义）----
+// ---- 2. Single-page render (--page semantics) ----
 rmSync(OUT, { recursive: true, force: true });
 const single = await renderDeck({
   manifest: MANIFEST,
@@ -88,7 +88,8 @@ record(
   singleFiles.join(",")
 );
 
-// ---- 2.5 scale>1：视口恒为画布尺寸，仅放大输出分辨率（防内容缩左上角+白边回归）----
+// ---- 2.5 scale>1: the viewport stays canvas-sized, only the output resolution scales
+//      (guards against content shrinking into the top-left with a white margin) ----
 rmSync(OUT, { recursive: true, force: true });
 const scaled = await renderDeck({
   manifest: MANIFEST,
@@ -104,7 +105,7 @@ const sb = readFileSync(scaledFile);
 const sw = sb.readUInt32BE(16);
 const sh = sb.readUInt32BE(20);
 record("scale=2 输出 1920×1080", sw === 1920 && sh === 1080, `${sw}x${sh}`);
-// 右下 1/4 区域不应全白（内容铺满，非左上角缩图）
+// the bottom-right quarter must not be all white (content fills the canvas, not a top-left thumbnail)
 const rightBottom = await import("node:zlib").then(async ({ inflateSync }) => {
   let pos = 8;
   const idat = [];
@@ -128,9 +129,9 @@ const rightBottom = await import("node:zlib").then(async ({ inflateSync }) => {
 record("scale=2 右下角区域有内容（无白边）", rightBottom > 5, `colors=${rightBottom}`);
 rmSync(OUT, { recursive: true, force: true });
 
-// ---- 3. 进程可自然退出：检查残留定时器（renderDeck 返回 500ms 后）----
+// ---- 3. The process can exit naturally: check for leaked timers (500ms after renderDeck returns) ----
 await new Promise((r) => setTimeout(r, 500));
-// Node 内部 API：统计活跃定时器数量（0 = 无泄漏）
+// Node internal API: count active timers (0 = no leak)
 const timers = process._getActiveHandles().filter((h) => h.constructor.name === "Timeout").length;
 record("无残留定时器（进程可退出）", timers === 0, `timeouts=${timers}`);
 

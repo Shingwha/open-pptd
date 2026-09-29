@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 // ============================================================================
-// tests/tools/ui-shots.mjs — 编辑器 / 画廊界面截图走查工具（非测试，不出 PASS/FAIL）
+// tests/tools/ui-shots.mjs — editor / gallery UI screenshot walkthrough (not a test, no PASS/FAIL)
 // ----------------------------------------------------------------------------
-// 用法: node tests/tools/ui-shots.mjs [--out <目录>]
-// 用 CDP 驱动本机 Chrome/Edge，对关键界面状态截图，供视觉走查：
-//   editor         编辑器主界面（选中一个元素，带出快速条 + 属性面板）
-//   editor-addmenu 添加元素浮层展开
-//   editor-narrow  窄屏 480px（响应式变形：顶栏图标化 / 缩略条迷你化）
-//   gallery        画廊首页
-//   gallery-narrow 画廊窄屏
-// 依赖: 本机 Chrome/Edge（SMOKE_CHROME 可指定路径）。
+// Usage: node tests/tools/ui-shots.mjs [--out <dir>]
+// Drives a local Chrome/Edge over CDP to capture key UI states for visual review:
+//   editor          editor main view (one element selected: quick bar + property panel)
+//   editor-addmenu  add-element popover expanded
+//   editor-narrow   narrow 480px (responsive: top bar iconified / thumbnail strip miniaturized)
+//   gallery         gallery home
+//   gallery-narrow  gallery narrow
+// Depends on a local Chrome/Edge (SMOKE_CHROME can point at its path).
 // ============================================================================
 
 import { spawn } from "node:child_process";
@@ -36,7 +36,7 @@ try {
 
 const PORT = 56199;
 const CDP_PORT = 9247;
-const DECK = "tests/projects/chart/deck.pptd"; // 21 页全图表类型，元素丰富
+const DECK = "tests/projects/chart/deck.pptd"; // all chart types, element-rich
 
 const server = await startServer({ port: PORT, projectRoot: SKILL });
 const chrome = spawn(CHROME, [
@@ -65,7 +65,7 @@ const viewport = (w, h) =>
   send("Emulation.setDeviceMetricsOverride", { width: w, height: h, deviceScaleFactor: 1, mobile: w < 900 });
 
 try {
-  // —— 编辑器主界面：选中首个元素，带出快速条 + 属性面板 ——
+  // —— editor main view: select the first element to bring up the quick bar + property panel ——
   await viewport(1440, 900);
   await go(`http://127.0.0.1:${PORT}/editor/?deck=${DECK}`);
   await evalJs(`(() => {
@@ -77,18 +77,18 @@ try {
   await new Promise((r) => setTimeout(r, 600));
   await shot("editor");
 
-  // —— 添加元素浮层 ——
+  // —— add-element popover ——
   await evalJs(`(() => { document.querySelector("#btn-add")?.click(); return true; })()`);
   await new Promise((r) => setTimeout(r, 400));
   await shot("editor-addmenu");
   await evalJs(`(() => { document.body.click(); return true; })()`);
 
-  // —— 窄屏响应式 ——
+  // —— narrow responsive ——
   await viewport(480, 840);
   await new Promise((r) => setTimeout(r, 600));
   await shot("editor-narrow");
 
-  // —— 画廊 ——
+  // —— gallery ——
   await viewport(1440, 900);
   await go(`http://127.0.0.1:${PORT}/`);
   await shot("gallery");

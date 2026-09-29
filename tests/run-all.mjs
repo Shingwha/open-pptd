@@ -1,20 +1,20 @@
 // ============================================================================
-// tests/run-all.mjs — 一键回归（导出全部组件项目 + 全部自动回归）
+// tests/run-all.mjs — one-shot regression (export every component project + all suites)
 // ----------------------------------------------------------------------------
-// 用法：node tests/run-all.mjs（npm test）
-// 覆盖：
-//   1. 导出 tests/projects/ 下全部组件项目 → tests/projects/<项目>/out/check-<项目>.pptx
-//      （projects/ 自动发现：新增项目只需放 deck.pptd + pages/，无需改本文件）
-//   2. 每个产物过包内引用一致性（tests/regression/package-integrity.mjs）
-//   3. tests/regression/ 下全部自动回归套件（见下方 suites 清单）
-// 新增回归：把 <名字>.mjs 放进 tests/regression/ 并在 suites 加一行。
+// Usage: node tests/run-all.mjs (npm test)
+// Covers:
+//   1. Export every component project under tests/projects/ → tests/projects/<name>/out/check-<name>.pptx
+//      (projects are auto-discovered: adding one only needs deck.pptd + pages/, no edit here)
+//   2. Run in-package reference integrity on each artifact (tests/regression/package-integrity.mjs)
+//   3. Every automated suite under tests/regression/ (see the suites list below)
+// Adding a regression: drop <name>.mjs into tests/regression/ and add one line to suites.
 // ============================================================================
 
 import { readFileSync, mkdirSync, existsSync, statSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { run } from "./lib/run.js";
 
-// 产物输出到每个项目自己的 out/ 目录（tests/projects/<项目>/out/check-<项目>.pptx）
+// Artifacts go to each project's own out/ directory (tests/projects/<name>/out/check-<name>.pptx)
 mkdirSync(resolve("tests"), { recursive: true });
 
 const results = [];
@@ -23,7 +23,7 @@ function record(name, ok, detail = "") {
   console.log(`${ok ? "✓" : "✗"} ${name}${detail ? " — " + detail : ""}`);
 }
 
-// 1. 导出全部组件项目
+// 1. Export every component project
 const projectsDir = resolve("tests/projects");
 const projects = readdirSync(projectsDir)
   .filter((name) => statSync(join(projectsDir, name)).isDirectory() && existsSync(join(projectsDir, name, "deck.pptd")))
@@ -48,7 +48,7 @@ for (const name of projects) {
   if (code2 !== 0) allOk = false;
 }
 
-// 2. 自动回归套件（tests/regression/）
+// 2. Automated suites (tests/regression/)
 const suites = [
   ["依赖方向与环境全局", "node tests/regression/dep-graph.mjs"],
   ["背景尺寸随 deck.size", "node tests/regression/background-size.mjs"],

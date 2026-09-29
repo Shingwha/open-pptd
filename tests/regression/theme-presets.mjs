@@ -1,10 +1,10 @@
 // ============================================================================
-// tests/regression/theme-presets.mjs — 主题预设一致性回归
+// tests/regression/theme-presets.mjs — theme preset consistency regression
 // ----------------------------------------------------------------------------
-// 守护两处色值同步：packages/model/theme-presets.js（权威源）↔ design.md 色值表
-// （design.md 已随内容面迁至 open-pptd-skill 仓；该比对迁入技能仓 drift-guard，
-//  本仓无文档时 §2 优雅跳过）。同时回归 normalizeTheme 字符串预设解析行为。
-// 运行：node tests/regression/theme-presets.mjs
+// Guards the authoritative preset data in packages/model/theme-presets.js
+// (17 keys per preset, valid hex, default == first preset) plus normalizeTheme
+// string-preset resolution and the chart series-color cycle.
+// Usage: node tests/regression/theme-presets.mjs
 // ============================================================================
 
 import { DEFAULT_THEME, THEME_PALETTES } from "../../packages/model/theme-presets.js";

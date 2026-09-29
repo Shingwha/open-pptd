@@ -1,9 +1,10 @@
 // ============================================================================
-// tests/tools/golden-lib.mjs — 黄金基线共享库（PNG 解码 + 感知哈希）
+// tests/tools/golden-lib.mjs — golden baseline shared lib (PNG decode + perceptual hash)
 // ----------------------------------------------------------------------------
-// 零依赖：PNG 解码用 node:zlib inflate + 逐行反滤波（IHDR/IDAT/IEND，8-bit
-// colorType 2/6，非隔行）。dHash（9×8 相邻差分）+ aHash（8×8 均值）各 64 位。
-// 供 golden-render.mjs（写基线）与 golden-diff.mjs（比对）共用。
+// Zero dependencies: PNG decoding uses node:zlib inflate + per-row unfiltering
+// (IHDR/IDAT/IEND, 8-bit colorType 2/6, non-interlaced). dHash (9×8 adjacent
+// difference) + aHash (8×8 mean) are 64 bits each. Shared by golden-render.mjs
+// (writes the baseline) and golden-diff.mjs (compares).
 // ============================================================================
 
 import { inflateSync, deflateSync } from "node:zlib";
@@ -12,7 +13,7 @@ import { createHash } from "node:crypto";
 const PNG_SIG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 
 /**
- * 解码 PNG（8-bit RGB/RGBA，非隔行）→ { width, height, channels, data }。
+ * Decode a PNG (8-bit RGB/RGBA, non-interlaced) → { width, height, channels, data }.
  * @param {Buffer|Uint8Array} buf
  */
 export function decodePng(buf) {
@@ -93,7 +94,7 @@ function concat(arrs) {
   return out;
 }
 
-/** 灰度 + 方框缩放：img → tw×th 灰度矩阵（0..255）。 */
+/** Grayscale + box downscale: img → a tw×th grayscale matrix (0..255). */
 export function grayResize(img, tw, th) {
   const { width: W, height: H, channels: C, data } = img;
   const out = new Float64Array(tw * th);
@@ -127,7 +128,7 @@ const hex64 = (bits) => {
   return h;
 };
 
-/** dHash：缩放 9×8，逐行相邻比较（左>右 = 1）→ 64 位 hex。 */
+/** dHash: scale to 9×8, compare adjacent pixels per row (left>right = 1) → 64-bit hex. */
 export function dHash(img) {
   const g = grayResize(img, 9, 8);
   const bits = new Array(64).fill(0);
@@ -139,7 +140,7 @@ export function dHash(img) {
   return hex64(bits);
 }
 
-/** aHash：缩放 8×8，与均值比较（> 均值 = 1）→ 64 位 hex。 */
+/** aHash: scale to 8×8, compare against the mean (> mean = 1) → 64-bit hex. */
 export function aHash(img) {
   const g = grayResize(img, 8, 8);
   let mean = 0;
@@ -150,7 +151,7 @@ export function aHash(img) {
   return hex64(bits);
 }
 
-/** 两个 64 位 hex 的汉明距离。 */
+/** Hamming distance between two 64-bit hex strings. */
 export function hamming(a, b) {
   if (!a || !b || a.length !== b.length) return 64;
   let d = 0;
@@ -161,12 +162,12 @@ export function hamming(a, b) {
   return d;
 }
 
-/** 文件 sha256（小写 hex）。 */
+/** File sha256 (lowercase hex). */
 export function sha256(buf) {
   return createHash("sha256").update(buf).digest("hex");
 }
 
-/** 一页 PNG 的完整指纹：{ w, h, bytes, sha256, dHash, aHash }。 */
+/** Full fingerprint of one page PNG: { w, h, bytes, sha256, dHash, aHash }. */
 export function imageFingerprint(buf) {
   const img = decodePng(buf);
   return {
@@ -180,7 +181,7 @@ export function imageFingerprint(buf) {
 }
 
 // ---------------------------------------------------------------------------
-// 最小 PNG 编码（仅用于把漂移可视化落 tests/golden/out/，filter 0 + deflate）
+// Minimal PNG encoder (only to persist drift visualizations to tests/golden/out/, filter 0 + deflate)
 // ---------------------------------------------------------------------------
 const CRC_TABLE = (() => {
   const t = new Uint32Array(256);
@@ -204,7 +205,7 @@ function chunk(tag, data) {
   crc.writeUInt32BE(crc32(body), 0);
   return Buffer.concat([len, body, crc]);
 }
-/** RGB 字节（w*h*3）→ PNG Buffer。 */
+/** RGB bytes (w*h*3) → PNG Buffer. */
 export function encodePng(width, height, rgb) {
   const raw = Buffer.alloc(height * (width * 3 + 1));
   for (let y = 0; y < height; y++) {
@@ -224,8 +225,8 @@ export function encodePng(width, height, rgb) {
 }
 
 /**
- * 像素差可视化：|a-b| * amp，返回 { width, height, rgb, changed }。
- * 尺寸不一致时以较小画布为准并标 changed=-1（结构变化）。
+ * Pixel-diff visualization: |a-b| * amp, returns { width, height, rgb, changed }.
+ * On a size mismatch it uses the smaller canvas and marks changed=-1 (structural change).
  */
 export function pixelDiff(imgA, imgB, amp = 3) {
   if (imgA.width !== imgB.width || imgA.height !== imgB.height) {
@@ -246,7 +247,7 @@ export function pixelDiff(imgA, imgB, amp = 3) {
   return { width: w, height: h, rgb, changed };
 }
 
-/** 图像 → RGB 字节（去 alpha）。 */
+/** Image → RGB bytes (alpha dropped). */
 export function toRgb(img) {
   const { width: w, height: h, channels: c, data } = img;
   const rgb = new Uint8Array(w * h * 3);

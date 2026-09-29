@@ -1,11 +1,12 @@
 // ============================================================================
-// tests/regression/color-consistency.mjs — 预览端 vs 导出端颜色一致性回归
+// tests/regression/color-consistency.mjs — preview vs export color consistency
 // ----------------------------------------------------------------------------
-// 背景：编辑器预览用 resolveColor（hex），导出用 colorElement（schemeClr /
-// srgbClr）。两者语义必须一致，否则出现「网页颜色 ≠ PowerPoint 颜色」。
-// 本测试遍历测试项目的全部颜色字段（元素/背景/textStyles 内 $ 令牌与 hex），
-// 分别按预览链路与导出链路解析，比对最终色值（含 alpha）。
-// 运行：node tests/regression/color-consistency.mjs [项目目录，默认 tests/projects/text]
+// The editor preview resolves colors to hex (resolveColor); the export emits
+// schemeClr / srgbClr (colorElement). The two must agree, otherwise "web color ≠
+// PowerPoint color". This suite walks every color field of a test project
+// (element/background/textStyles "$" tokens and raw hex), resolves each through the
+// preview and the export pipelines, and compares the final value (alpha included).
+// Usage: node tests/regression/color-consistency.mjs [project dir, default tests/projects/text]
 // ============================================================================
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
@@ -26,7 +27,7 @@ const deck = yaml.load(readFileSync(manifestPath, "utf8"));
 const theme = normalizeTheme(deck.theme);
 const slots = themeColorSlots(theme);
 
-/** 导出端颜色 → 可比较字符串（hex + alpha）。 */
+/** Export-side color → comparable string (hex + alpha). */
 function exportedColor(theme, val) {
   const el = colorElement(theme, val);
   if (el.includes("schemeClr")) {
@@ -50,11 +51,11 @@ function checkColor(path, val) {
   const preview = resolveColor(theme, val);
   const exported = exportedColor(theme, val);
   if (!exported) { fail++; console.log(`✗ ${path} 值=${val} 导出端无法解析`); return; }
-  // 预览 #RRGGBBAA → hex+alpha；导出 srgbClr val + a:alpha
+  // preview #RRGGBBAA → hex+alpha; export srgbClr val + a:alpha
   const pHex = preview ? preview.replace("#", "").slice(0, 6).toUpperCase() : null;
   const pAlpha = preview && preview.length === 9 ? parseInt(preview.slice(7, 9), 16) / 255 : null;
   const hexOk = pHex != null && pHex === exported.hex;
-  // alpha：预览 0.5 ≈ 导出 50000/100000；未显式比较时（null）视为一致
+  // alpha: preview 0.5 ≈ export 50000/100000; a missing explicit value (null) counts as equal
   const alphaOk = exported.alpha == null || pAlpha == null || Math.abs(exported.alpha - pAlpha) < 0.01;
   if (hexOk && alphaOk) {
     pass++;
@@ -64,7 +65,7 @@ function checkColor(path, val) {
   }
 }
 
-/** 颜色字段键（其余键即使字符串也不检查，避免把文本内容误判为颜色）。 */
+/** Color field keys (other string fields may hold text, not colors). */
 const COLOR_KEYS = new Set(["color", "backgroundColor", "fill", "lineColor", "areaColor", "headerColor"]);
 
 function walkColor(v, path) {
@@ -88,8 +89,8 @@ for (const rel of deck.pages || []) {
 for (const [k, v] of Object.entries(deck.theme?.textStyles || {})) walkColor(v, `theme.textStyles.${k}`);
 for (const [k, v] of Object.entries(deck.theme?.colors || {})) walkColor(v, `theme.colors.${k}`);
 
-// —— buildFill 官方 SolidFill 回归（2026-08-10：清理时删 fill.color 兜底分支后，
-//    所有 {type:"solid", color} 填充返回空 → 表格填充/页面背景全丢）——
+// —— buildFill official SolidFill regression: every {type:"solid", color} fill must
+//    return a solidFill (table fills / page backgrounds depend on it) ——
 {
   const { buildFill } = await import("../../packages/writer/drawing.js");
   const cases = [
@@ -106,7 +107,7 @@ for (const [k, v] of Object.entries(deck.theme?.colors || {})) walkColor(v, `the
       console.log(`✗ buildFill ${JSON.stringify(fill)} → ${JSON.stringify(out)}（官方 SolidFill 应输出 solidFill）`);
     }
   }
-  // 渐变/字符串色不受影响
+  // gradient / raw string colors stay unaffected
   const grad = buildFill(theme, { type: "gradient", gradientType: "linear", stops: [{ position: 0, color: "#000000" }, { position: 1, color: "#FFFFFF" }] });
   if (typeof grad === "string" && grad.includes("gradFill")) pass++;
   else { fail++; console.log(`✗ buildFill 渐变 → ${JSON.stringify(grad)}`); }

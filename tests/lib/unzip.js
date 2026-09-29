@@ -1,16 +1,17 @@
 // ============================================================================
-// tests/lib/unzip.js — 极简 ZIP 读取器（仅测试用，零依赖）
+// tests/lib/unzip.js — minimal ZIP reader (test-only, zero dependencies)
 // ----------------------------------------------------------------------------
-// 配合 ZipWriter（store 无压缩）使用：解析 EOCD + Central Directory，
-// 按文件名读取条目数据。用途：tests/ 校验 buildPptx 输出的包结构。
+// Pairs with the writer's ZipWriter (store, no compression): parses EOCD +
+// Central Directory and reads entries by name. Used by tests/ to inspect the
+// package structure emitted by buildPptx.
 // ============================================================================
 
 import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-/** 读取 ZIP 全部条目 → [{ name, data }]（二进制安全）。 */
+/** Read all ZIP entries → [{ name, data }] (binary-safe). */
 export function readZip(bytes) {
-  // EOCD：末尾 22 字节 + 注释（倒找签名 PK\x05\x06）
+  // EOCD: last 22 bytes + comment (scan backwards for the PK\x05\x06 signature)
   let eocd = -1;
   for (let i = bytes.length - 22; i >= 0 && eocd < 0; i--) {
     if (bytes[i] === 0x50 && bytes[i + 1] === 0x4b && bytes[i + 2] === 0x05 && bytes[i + 3] === 0x06) {
@@ -47,13 +48,13 @@ export function readZip(bytes) {
   return entries;
 }
 
-/** 按名取条目文本（UTF-8）。 */
+/** Get an entry's text by name (UTF-8). */
 export function readText(bytes, name) {
   const e = readZip(bytes).find((x) => x.name === name);
   return e ? Buffer.from(e.data).toString("utf8") : null;
 }
 
-/** 解压全部条目到目录，返回文件相对路径列表。 */
+/** Extract every entry into a directory, returning the list of relative paths. */
 export function unzip(bytes, dir) {
   const files = [];
   for (const e of readZip(bytes)) {

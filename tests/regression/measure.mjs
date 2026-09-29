@@ -1,11 +1,12 @@
 // ============================================================================
-// tests/regression/measure.mjs — measure 包回归（spec 09 T3 / M1 验收）
+// tests/regression/measure.mjs — measure package regression (spec 09 T3 / M1 acceptance)
 // ----------------------------------------------------------------------------
-// 1. 纯函数确定性/单调性/度量表阶梯/公式简化式/行距系数 API（永远运行）
-// 2. 与 DOM 实测对拍：headless 起一次浏览器，20 组代表性文本的纯函数估算 vs
-//    scrollHeight，打印误差分布，断言 P95（|相对误差|）≤ 8%；
-//    表格单元格行高误差 ≤ 4px。
-// 无浏览器 → DOM 对拍打印 SKIP（纯函数部分仍强制）。
+// 1. Pure-function determinism / monotonicity / metrics-table ladder / formula
+//    closed form / line-height factor API (always runs)
+// 2. Cross-check against real DOM: start a headless browser once, compare the pure
+//    estimate for 20 representative texts against scrollHeight, print the error
+//    distribution, and assert P95(|relative error|) ≤ 8%; table cell height error ≤ 4px.
+// No browser → the DOM cross-check prints SKIP (the pure-function part still runs).
 // ============================================================================
 
 import { spawn } from "node:child_process";
@@ -20,7 +21,7 @@ const check = (name, cond, detail = "") => {
 };
 
 // ---------------------------------------------------------------------------
-// 1. 纯函数
+// 1. Pure functions
 // ---------------------------------------------------------------------------
 console.log("=== 1. 纯函数确定性 ===");
 const tr = () => measureTextRuns([{ text: "这是一段用于测量换行高度的中文文本，需要足够长以触发多行显示。" }], { fontSize: 18, lineHeight: 1, fontFamily: "Microsoft YaHei" }, 300);
@@ -50,7 +51,7 @@ const tall = measureTable({ rows: [[{ text: "非常长的中文内容需要换�
 check("长内容撑开行高（> 最小 30）", tall.rowHeights[0] > 30, `${tall.rowHeights[0]}`);
 
 // ---------------------------------------------------------------------------
-// 2. DOM 对拍
+// 2. DOM cross-check
 // ---------------------------------------------------------------------------
 console.log("\n=== 4. 与 DOM 实测对拍 ===");
 let browser;
@@ -72,8 +73,8 @@ for (const fs of [14, 18, 24, 32]) {
     cases.push({ text: mix, fs, w, lh: 1.5 });
   }
 }
-cases.push({ text: `${cjkA}\n${cjkB}`, fs: 18, w: 300, lh: 1 }); // 硬断行
-cases.push({ text: cjkA, fs: 18, w: 300, lh: 1, lineHeightPx: 30 }); // 固定行高
+cases.push({ text: `${cjkA}\n${cjkB}`, fs: 18, w: 300, lh: 1 }); // hard line break
+cases.push({ text: cjkA, fs: 18, w: 300, lh: 1, lineHeightPx: 30 }); // fixed line height
 while (cases.length > 20) cases.pop();
 
 const dbgPort = await freePort();
@@ -107,7 +108,7 @@ try {
       out.push({ offset: root.offsetHeight, scroll: root.scrollHeight });
       root.remove();
     }
-    // 表格单元格：td 内 div（与 renderer/table.js 同 CSS）
+    // Table cell: a div inside a td (same CSS as renderer/table.js)
     const tbl = document.createElement("table");
     tbl.style.cssText = "border-collapse:collapse;table-layout:fixed;font-size:13px;width:200px;";
     const tr = document.createElement("tr");
@@ -127,8 +128,8 @@ try {
   if (!domResults || !Array.isArray(domResults.text)) {
     check("DOM 对拍执行", false, "无返回");
   } else {
-    // 以 offsetHeight（元素布局高度 = 行数 × 行高）为对拍基准：scrollHeight 额外
-    // 计入被 overflow:hidden 裁剪的字形墨水溢出（约 +2~3px），非布局事实。
+    // Baseline is offsetHeight (element layout height = lines × line height): scrollHeight
+    // additionally counts glyph ink clipped by overflow:hidden (~+2..3px), not a layout fact.
     const errs = [];
     cases.forEach((c, i) => {
       const est = measureTextRuns([{ text: c.text }], { fontSize: c.fs, lineHeight: c.lh, lineHeightPx: c.lineHeightPx, fontFamily: "Microsoft YaHei" }, c.w).height;
@@ -155,7 +156,7 @@ try {
     check("宁高勿低：≥95% 组估算不小于布局高度", under.length / errs.length <= 0.05, `欠估 ${under.length}/${errs.length}`);
 
     const cellEst = measureCell({ text: "表格内的中文内容测试，应该换行并撑高单元格。", fontSize: 13, fontFamily: "Microsoft YaHei" }, 200);
-    const cellActual = domResults.tdInner + 10; // + 上下 padding（5+5）
+    const cellActual = domResults.tdInner + 10; // + top/bottom padding (5+5)
     check("表格行高误差 ≤ 4px", Math.abs(cellEst - cellActual) <= 4, `est=${cellEst} actual=${cellActual} Δ=${(cellEst - cellActual).toFixed(1)}`);
   }
 } finally {
