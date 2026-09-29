@@ -1,3 +1,9 @@
+/* ============================================================================
+   present.css — 放映与截图模式（present + shot）
+   （U1/T5 由原 present + shot.css 合并；8 文件收敛，无加载顺序依赖）
+   ============================================================================ */
+
+/* ==== [present] ==== */
 /* ==== present — 放映模式 ==== */
 
 /* ============================================================================
@@ -146,4 +152,22 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
   padding: 6px var(--space-4);
   backdrop-filter: blur(6px);
   transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+}
+
+/* ==== [shot] ==== */
+/* ==== shot — 无头截图模式（?shot=1） ==== */
+
+/* ---------- 无头截图模式（?shot=1，open-pptd render 使用） ---------- */
+.shot-mode,
+.shot-mode body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--panel);
+}
+.shot-mode #editor-app {
+  display: none;
+}
+.shot-mode #shot-root {
+  z-index: var(--z-modal);
 }

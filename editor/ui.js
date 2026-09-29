@@ -9,6 +9,7 @@
 // svgIcon 已迁至 icons.js（内联图标单一来源）；此处再导出，既有 import 路径不变
 export { svgIcon } from "./icons.js";
 import { attachPopover } from "./popover.js";
+import { button as coreButton } from "./components/button.js";
 
 /** 属性行：label + 控件。 */
 export function field(label, control) {
@@ -233,16 +234,16 @@ export function checkbox(label, checked, onCommit, { onFocus, onBlur } = {}) {
   return wrap;
 }
 
-/** 按钮。active 追加 .on（快速条开关态）；preventDefault 默认防 textarea 失焦。 */
+/** 按钮。active 追加 .on（快速条开关态）；preventDefault 默认防 textarea 失焦。
+ * 实现委托 components/button.js（Button 原语，全站按钮的唯一构造点）。 */
 export function button(label, onClick, { title = "", className = "btn btn-sm", active = false, preventDefault = true } = {}) {
-  const b = document.createElement("button");
-  b.type = "button";
-  b.className = className + (active ? " on" : "");
-  b.title = title || label;
-  b.textContent = label;
-  if (preventDefault) b.addEventListener("mousedown", (e) => e.preventDefault());
-  b.addEventListener("click", onClick);
-  return b;
+  return coreButton(label, {
+    className,
+    title,
+    active,
+    preventDefault,
+    onClick,
+  });
 }
 
 // ----------------------------------------------------------------------------
