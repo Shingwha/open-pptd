@@ -30,6 +30,7 @@ export function openFontPanel() {
 
 export function bindFontPanel({ state, io, anchor }) {
   const fm = io.fontManager;
+  const ac = new AbortController();
   let panel = null;
   let bodyEl = null; // 滚动列表区（重建内容时保留节点，滚动位置不丢）
   let searchEl = null;
@@ -520,7 +521,19 @@ export function bindFontPanel({ state, io, anchor }) {
   anchor.addEventListener("click", (e) => {
     e.stopPropagation();
     toggle();
-  });
+  }, { signal: ac.signal });
 
   openPanel = open;
+
+  return {
+    /** 释放：解绑锚点监听、摘掉浮层与全局关闭监听、注销外部入口。 */
+    destroy() {
+      ac.abort();
+      popover?.destroy();
+      popover = null;
+      panel?.remove();
+      panel = null;
+      if (openPanel === open) openPanel = null;
+    },
+  };
 }

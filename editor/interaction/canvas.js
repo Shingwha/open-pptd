@@ -40,6 +40,7 @@ export function createCanvasController(canvas, opts) {
   let box = null;     // .sel-box（边框矩形，手柄都挂在它上面随元素旋转）
   let sizeBadge = null;
   let drag = null;
+  const ac = new AbortController(); // 生命周期：document 键盘监听经此一次解绑
 
   const scale = () => canvas._scale || 1;
   const findElement = (id) => (getPage().elements || []).find((el) => el.elementId === id);
@@ -300,7 +301,21 @@ export function createCanvasController(canvas, opts) {
       updateSelectionBox();
       endChange();
     }
-  });
+  }, { signal: ac.signal });
+
+  /** 释放（幂等）：解绑 document 键盘、结束进行中的手势、摘掉选中框。 */
+  function destroy() {
+    ac.abort();
+    window.removeEventListener("pointermove", onDragMove);
+    window.removeEventListener("pointerup", onDragEnd);
+    window.removeEventListener("pointercancel", onDragEnd);
+    window.removeEventListener("blur", onDragEnd);
+    drag = null;
+    overlay?.remove();
+    overlay = null;
+    box = null;
+    sizeBadge = null;
+  }
 
   return {
     refreshSelection,
@@ -311,5 +326,6 @@ export function createCanvasController(canvas, opts) {
     // 捏合接管时由路由器调用：与正常松手等价（提交已发生的位移并重渲染）
     cancelGesture: onDragEnd,
     isGestureActive: () => !!drag,
+    destroy,
   };
 }

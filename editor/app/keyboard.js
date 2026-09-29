@@ -5,6 +5,7 @@
 // ============================================================================
 
 export function bindKeyboard({ state, api, io, present }) {
+  const ac = new AbortController();
   document.addEventListener("keydown", (e) => {
     // 放映中：按键全部由放映层接管（翻页/黑屏/退出），编辑器快捷键不响应
     if (present?.isActive()) return;
@@ -29,5 +30,6 @@ export function bindKeyboard({ state, api, io, present }) {
       e.preventDefault();
       present?.start();
     }
-  });
+  }, { signal: ac.signal });
+  return { destroy: () => ac.abort() };
 }

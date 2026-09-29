@@ -105,5 +105,9 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
     zoomIn: () => setZoom(zoom * 1.25),
     zoomOut: () => setZoom(zoom / 1.25),
     getZoom: () => zoom,
+    /** 释放：取消进行中的宽度跟随动画（无窗口级监听）。 */
+    destroy() {
+      cancelAnimationFrame(scaleRaf);
+    },
   };
 }

@@ -19,6 +19,7 @@ import { attachPopover } from "../popover.js";
 export function createFileMenu(anchor, renderBody) {
   let menu = null;
   let popover = null;
+  const ac = new AbortController();
   const isOpen = () => menu?.classList.contains("open");
 
   function item(text, { hint = "", onClick }) {
@@ -95,5 +96,16 @@ export function createFileMenu(anchor, renderBody) {
   anchor.addEventListener("click", (e) => {
     e.stopPropagation();
     isOpen() ? close() : open();
-  });
+  }, { signal: ac.signal });
+
+  return {
+    /** 释放：解绑锚点监听、摘掉浮层与全局关闭监听。 */
+    destroy() {
+      ac.abort();
+      popover?.destroy();
+      popover = null;
+      menu?.remove();
+      menu = null;
+    },
+  };
 }

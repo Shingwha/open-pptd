@@ -26,7 +26,7 @@ import { mediaFilesOfDeck } from "./images.js";
 /** 字节数 → 人类可读（MB 一位小数 / KB 取整）。 */
 const fmtSize = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`);
 
-export function createProjectSaver({ state, images, fontManager, renderStatusBar, onSaved, source }) {
+export function createProjectSaver({ state, images, fontManager, renderStatusBar, onSaved, onError, source }) {
   /** 保存成功：当前 deck 记为已落盘基线（撤销回它即恢复干净，不再一律标脏）。 */
   const markSaved = () => {
     state.savedDeck = structuredClone(state.deck);
@@ -200,6 +200,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
           // 句柄写回失败：明确报错（不降级下载，行为保留）
           showToast(`保存失败: ${err.message}`, "danger");
           console.error(err);
+          onError?.(err);
           return;
         }
         // URL 模式写回失败（部署模式无 /api/save）：降级为下载项目 zip

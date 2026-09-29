@@ -11,10 +11,11 @@
 
 import { resolveTheme, DEFAULT_THEME } from "../../../packages/model/theme.js";
 import { applyDeck as applyDeckToState } from "./source.js";
+import { dialogs } from "../../dialogs.js";
 import { showToast } from "../toast.js";
 import { preloadIcons } from "./icons.js";
 
-export function createLoader({ state, view, images, fontManager, source, connect, renderStatusBar }) {
+export function createLoader({ state, view, images, fontManager, source, connect, renderStatusBar, onDeckChange, onError }) {
   const $ = (id) => document.getElementById(id);
 
   // --------------------------------------------------------------------------
@@ -71,6 +72,11 @@ export function createLoader({ state, view, images, fontManager, source, connect
       { manifestText, pageFiles, manifestPath, handle, projectName },
       { state, images, renderStatusBar, setBrandFile, applyTheme }
     );
+    try {
+      onDeckChange?.(state.deck);
+    } catch (err) {
+      console.warn("[io] deckChange 回调异常:", err?.message || err);
+    }
   }
 
   /**
@@ -93,6 +99,17 @@ export function createLoader({ state, view, images, fontManager, source, connect
       : await source.read();
     applyDeck(data.manifestText, data.pageFiles, { handle, projectName: handle.name || "本地项目" });
     await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0, viaHandle: true });
+  }
+
+  /** 直接应用一份已读取/给定的项目数据（createEditor 的 options.deck 与 source.read 路径）。 */
+  async function loadDeckData(data, { keepPage = false, silent = false } = {}) {
+    const prevPage = state.currentPage;
+    applyDeck(data.manifestText, data.pageFiles, {
+      manifestPath: data.manifestPath || "",
+      handle: null,
+      projectName: "",
+    });
+    await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0, viaHandle: false });
   }
 
   /** 加载收尾（两种来源共用）：渐进加载——当前页资产先行首渲染，其余页后台
@@ -153,10 +170,13 @@ export function createLoader({ state, view, images, fontManager, source, connect
   }
 
   /** 手动从磁盘重新加载当前项目（文件菜单）：dirty 时需确认放弃未保存修改。 */
-  function manualReload() {
-    if (state.dirty && !window.confirm("编辑器有未保存的修改，重新加载将放弃这些修改。确定继续？")) return;
+  async function manualReload() {
+    if (state.dirty && !(await dialogs.confirm("编辑器有未保存的修改，重新加载将放弃这些修改。确定继续？"))) return;
     const done = () => showToast("已从磁盘重新加载", "success");
-    const fail = (err) => showToast(`重新加载失败: ${err.message}`, "danger");
+    const fail = (err) => {
+      showToast(`重新加载失败: ${err.message}`, "danger");
+      onError?.(err);
+    };
     if (state.projectHandle) {
       loadDeckFromHandle(state.projectHandle, { keepPage: true, silent: true }).then(done).catch(fail);
       return;
@@ -165,5 +185,5 @@ export function createLoader({ state, view, images, fontManager, source, connect
     loadDeck(state.manifestPath, { keepPage: true, silent: true }).then(done).catch(fail);
   }
 
-  return { applyTheme, applyHistory, loadDeck, loadDeckFromHandle, manualReload, setBrandFile };
+  return { applyTheme, applyHistory, loadDeck, loadDeckFromHandle, loadDeckData, manualReload, setBrandFile };
 }

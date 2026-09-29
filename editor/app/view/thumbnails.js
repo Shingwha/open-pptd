@@ -15,6 +15,7 @@ const THUMB_H = 79;
 
 export function createThumbnails({ state, api, reload }) {
   const bar = dom.pageThumbs;
+  const ac = new AbortController(); // 生命周期：拖拽/滚轮监听经此一次解绑
 
   // --------------------------------------------------------------------------
   // 拖拽滚动（页面多时横向拖动查看；自动跟随当前页）
@@ -29,19 +30,19 @@ export function createThumbnails({ state, api, reload }) {
         e.preventDefault();
         bar.scrollLeft += e.deltaY || e.deltaX;
       },
-      { passive: false }
+      { passive: false, signal: ac.signal }
     );
     bar.addEventListener("pointerdown", (e) => {
       // 不拦截缩略图上的删除按钮（button 自带 mousedown 行为）
       if (e.target.closest("button")) return;
       thumbDrag = { x: e.clientX, startScroll: bar.scrollLeft, moved: false };
-    });
+    }, { signal: ac.signal });
     window.addEventListener("pointermove", (e) => {
       if (!thumbDrag) return;
       const dx = e.clientX - thumbDrag.x;
       if (Math.abs(dx) > 4) thumbDrag.moved = true;
       if (thumbDrag.moved) bar.scrollLeft = thumbDrag.startScroll - dx;
-    });
+    }, { signal: ac.signal });
     window.addEventListener("pointerup", () => {
       if (thumbDrag?.moved) {
         // 拖拽结束：吞掉紧随的一次 click（避免误切换页面）；
@@ -54,7 +55,7 @@ export function createThumbnails({ state, api, reload }) {
         setTimeout(() => document.removeEventListener("click", suppress, true), 150);
       }
       thumbDrag = null;
-    });
+    }, { signal: ac.signal });
   }
 
   function renderThumbnails() {
@@ -125,5 +126,18 @@ export function createThumbnails({ state, api, reload }) {
     if (mini) renderPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
   }
 
-  return { renderThumbnails, refreshThumb };
+  return {
+    renderThumbnails,
+    refreshThumb,
+    /** 释放：解绑拖拽/滚轮监听、销毁缩略图图表实例并清空缩略条 DOM。 */
+    destroy() {
+      ac.abort();
+      thumbDrag = null;
+      if (bar) {
+        disposeChartInstances(bar);
+        bar.innerHTML = "";
+      }
+      if (dom.pageCount) dom.pageCount.textContent = "";
+    },
+  };
 }

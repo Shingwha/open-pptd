@@ -48,6 +48,7 @@ function pushRecent(id) {
 export function bindAddMenu({ fab, menu, addApi }) {
   const addItems = buildAddItems();
   const { addElement, rebuildImageMap } = addApi;
+  const ac = new AbortController(); // 生命周期：fab/document 监听经此一次解绑
 
   // 最近使用项（addItems 里能找到的才显示）
   const recentItems = () =>
@@ -375,10 +376,20 @@ export function bindAddMenu({ fab, menu, addApi }) {
       build();
       menu.dataset.built = "1";
     }
-  });
+  }, { signal: ac.signal });
   document.addEventListener("click", (e) => {
     if (!menu.classList.contains("open")) return;
     if (menu.contains(e.target) || e.target === fab) return;
     close();
-  });
+  }, { signal: ac.signal });
+
+  return {
+    /** 释放：解绑监听、收起并清空菜单（dataset.built 一并复位）。 */
+    destroy() {
+      ac.abort();
+      close();
+      menu.innerHTML = "";
+      delete menu.dataset.built;
+    },
+  };
 }

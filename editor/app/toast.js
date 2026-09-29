@@ -8,6 +8,12 @@
 
 let container = null;
 
+/** 清空提示层（createEditor destroy 用：移除容器，杜绝 DOM 残留）。 */
+export function clearToasts() {
+  container?.remove();
+  container = null;
+}
+
 export function showToast(text, type = "info", duration = 3000) {
   if (typeof document === "undefined") return; // Node（测试/CLI）安全
   if (!container) {

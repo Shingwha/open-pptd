@@ -329,5 +329,22 @@ export function createPresent({ state, view }) {
     }
   }
 
-  return { start, stop, isActive, next, prev, goTo, getIndex, toggleBlackout, sync };
+  return {
+    start,
+    stop,
+    isActive,
+    next,
+    prev,
+    goTo,
+    getIndex,
+    toggleBlackout,
+    sync,
+    /** 释放（destroy 用）：退出放映、解绑窗口/文档监听、清计时器与图层 DOM。 */
+    destroy() {
+      stop();
+      clearTimeout(cleanTimer);
+      clearTimeout(hideTimer);
+      cancelAnimationFrame(resizeRaf);
+    },
+  };
 }

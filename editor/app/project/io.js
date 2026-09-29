@@ -21,9 +21,10 @@ import { addRecent, setPendingProject, clearPendingProject } from "./handle-stor
 import { createDeck, createPage, syncElementId } from "../../../packages/model/model.js";
 import { normalizeTheme } from "../../../packages/model/theme.js";
 import { createHistory } from "../../interaction/history.js";
+import { dialogs } from "../../dialogs.js";
 import { showToast } from "../toast.js";
 
-export function createIo({ state, view, source }) {
+export function createIo({ state, view, source, onSaved, onDeckChange, onError }) {
   const fontManager = createFontManager(state);
   const images = createImageStore(state);
   bindIconMap(state.iconMap); // 图标预读缓存绑定（icons.js 模块单例，渲染/导出共用）
@@ -47,6 +48,8 @@ export function createIo({ state, view, source }) {
     source: projectSource,
     connect: () => live.connectLiveReload(), // 项目就绪后订阅实时刷新（幂等）
     renderStatusBar: () => live.renderStatusBar(), // 加载后刷新状态栏
+    onDeckChange,
+    onError,
   });
   const saver = createProjectSaver({
     state,
@@ -54,7 +57,11 @@ export function createIo({ state, view, source }) {
     fontManager,
     source: projectSource,
     renderStatusBar: () => live.renderStatusBar(),
-    onSaved: () => live.suppressRefreshes(), // 保存后抑制刷新回环
+    onSaved: () => {
+      live.suppressRefreshes(); // 保存后抑制刷新回环
+      onSaved?.(); // 对外事件（createEditor options.on.saved）
+    },
+    onError,
   });
   live = createLiveReload({
     state,
@@ -92,8 +99,8 @@ export function createIo({ state, view, source }) {
    * dirty 确认后重置为空白项目，断开实时通道、清会话恢复标记（刷新页面回到
    * 空白而不是旧项目）。toast:false 供编辑器首次空白启动复用（不弹提示）。
    */
-  function newProject({ toast = true } = {}) {
-    if (state.dirty && !window.confirm("编辑器有未保存的修改，新建将放弃这些修改。确定继续？")) return false;
+  async function newProject({ toast = true } = {}) {
+    if (state.dirty && !(await dialogs.confirm("编辑器有未保存的修改，新建将放弃这些修改。确定继续？"))) return false;
     state.deck = createDeck({ title: "未命名演示文稿" });
     state.deck.pages.push(createPage({ pageType: "content" }));
     state.theme = normalizeTheme(null);
@@ -112,6 +119,11 @@ export function createIo({ state, view, source }) {
     history.replaceState(null, "", location.pathname);
     view.render();
     live.connectLiveReload(); // 空白项目：断开旧实时通道（内部按无项目处理）
+    try {
+      onDeckChange?.(state.deck);
+    } catch (err) {
+      console.warn("[io] deckChange 回调异常:", err?.message || err);
+    }
     if (toast) showToast("已新建空白演示", "info");
     return true;
   }
@@ -121,6 +133,7 @@ export function createIo({ state, view, source }) {
     applyHistory: loader.applyHistory,
     loadDeck: loader.loadDeck,
     loadDeckFromHandle: loader.loadDeckFromHandle,
+    loadDeckData: loader.loadDeckData,
     newProject,
     setBrandFile: loader.setBrandFile,
     openLocalProject,
