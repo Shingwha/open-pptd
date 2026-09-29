@@ -14,6 +14,7 @@
 
 import { showToast } from "../toast.js";
 import { fingerprint } from "./handle-io.js";
+import { dom } from "../../dom.js";
 
 const POLL_MS = 900;
 
@@ -130,19 +131,19 @@ export function createLiveReload({ state, source, reload, reloadHandle, manualRe
    * 本地项目实时刷新恒定生效，不再重复提示。
    */
   function renderStatusBar() {
-    const hint = document.getElementById("status-hint");
+    const hint = dom.statusHint;
     if (hint) {
       // 无实时通道的 URL 项目 = 部署模式（本地 serve/句柄项目都有实时刷新）
       const deploy = state.manifestPath && !state.projectHandle && !liveMode && !unwatch && !pollTimer;
       hint.hidden = !deploy;
       if (deploy) hint.textContent = "网页模式"; // 完整说明在 title（hover）
     }
-    document.getElementById("status-dirty")?.toggleAttribute("hidden", !state.dirty);
+    dom.statusDirty?.toggleAttribute("hidden", !state.dirty);
     // 【刷新】按钮：行为与底部时期完全一致（dirty 时确认后从磁盘重载），只绑一次
-    const cluster = document.getElementById("tb-status");
+    const cluster = dom.tbStatus;
     if (cluster && !cluster.dataset.bound) {
       cluster.dataset.bound = "1";
-      document.getElementById("btn-reload")?.addEventListener("click", manualReload);
+      dom.btnReload?.addEventListener("click", manualReload);
     }
   }
 
@@ -150,8 +151,8 @@ export function createLiveReload({ state, source, reload, reloadHandle, manualRe
   function destroy() {
     stopPolling();
     stopWatch();
-    document.getElementById("btn-reload")?.removeEventListener("click", manualReload);
-    const cluster = document.getElementById("tb-status");
+    dom.btnReload?.removeEventListener("click", manualReload);
+    const cluster = dom.tbStatus;
     if (cluster?.dataset.bound) delete cluster.dataset.bound;
   }
 

@@ -1,4 +1,3 @@
-import { deckSize as deckSizeOf } from "../../../packages/model/index.js";
 // ============================================================================
 // app/view/viewport.js — 画布视口：缩放/平移状态 + transform 应用
 // ----------------------------------------------------------------------------
@@ -6,6 +5,8 @@ import { deckSize as deckSizeOf } from "../../../packages/model/index.js";
 // 均经 setZoom / panBy 进入这里；平移量作用在 canvas-wrap 上（屏幕像素），
 // 不影响元素命中与导出。1 = 适配视口。
 // ============================================================================
+
+import { deckSize as deckSizeOf } from "../../../packages/model/index.js";
 
 
 /** deck 画布尺寸（size 缺省回退 960×540）；适配缩放/平移限位均按实际比例计算。 */

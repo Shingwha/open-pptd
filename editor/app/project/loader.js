@@ -13,11 +13,10 @@ import { applyDeck as applyDeckToState } from "./source.js";
 import { dialogs } from "../../dialogs.js";
 import { showToast } from "../toast.js";
 import { preloadIcons } from "./icons.js";
+import { dom } from "../../dom.js";
 import { DEFAULT_THEME, resolveTheme, syncElementId } from "../../../packages/model/index.js";
 
 export function createLoader({ state, view, images, fontManager, source, connect, renderStatusBar, onDeckChange, onError }) {
-  const $ = (id) => document.getElementById(id);
-
   // --------------------------------------------------------------------------
   // 主题与状态应用
   // --------------------------------------------------------------------------
@@ -50,7 +49,7 @@ export function createLoader({ state, view, images, fontManager, source, connect
   // --------------------------------------------------------------------------
   /** 顶栏项目名：有项目显示名字；空项目显示「未命名」淡显（hover 说明）。 */
   function setBrandFile(text) {
-    const el = $("brand-file");
+    const el = dom.brandFile;
     if (text) {
       el.textContent = text;
       el.classList.remove("unnamed");
