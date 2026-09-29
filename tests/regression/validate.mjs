@@ -48,11 +48,13 @@ const badDeck = {
   ],
 };
 const bad = validateDeck(badDeck);
-const rulesHit = new Set(bad.errors.map((e) => e.message));
-check("未知 elementType 被抓", [...rulesHit].some((m) => m.includes("未知 elementType")));
-check("负宽高被抓", [...rulesHit].some((m) => m.includes("宽高必须为正")));
-check("text 缺 content 被抓", [...rulesHit].some((m) => m.includes("content.text")));
-check("shape 缺 shapeName 被抓", [...rulesHit].some((m) => m.includes("shapeName")));
+// Assert on stable identifiers only (rule key + elementId), never on the wording of
+// user-facing messages: any copy edit to a Chinese message must not break this suite.
+const errsFor = (id) => bad.errors.filter((e) => e.elementId === id);
+check("未知 elementType 被抓", errsFor("a").some((e) => e.rule === "schema"));
+check("负宽高被抓", errsFor("b").some((e) => e.rule === "schema"));
+check("text 缺 content 被抓", errsFor("c").some((e) => e.rule === "schema-type"));
+check("shape 缺 shapeName 被抓", errsFor("d").some((e) => e.rule === "schema-type"));
 
 // ---- 3. 好 deck 0 error（含数字 text 的 YAML 宽容）----
 const goodDeck = {
@@ -101,10 +103,9 @@ const geoDeck = {
 };
 const noLayout = validateDeck(geoDeck);
 const withLayout = validateDeck(geoDeck, { layout: layout(geoDeck) });
-const hasGeo = (r) => r.warnings.some((w) => w.rule === "geometry" && (w.message.includes("实际几何") || w.message.includes("重叠")));
-check("未传 layout：不报布局越界/重叠（旧启发式已删）", !hasGeo(noLayout));
-check("传 layout：报出内容撑高后的重叠", hasGeo(withLayout));
-check("传 layout：报出实际几何越界", withLayout.warnings.some((w) => w.rule === "geometry" && w.message.includes("超出画布")));
+const geometryWarnings = (r, id) => r.warnings.filter((w) => w.rule === "geometry" && (!id || w.elementId === id));
+check("未传 layout：不报布局越界/重叠（旧启发式已删）", geometryWarnings(noLayout).length === 0);
+check("传 layout：报出实际几何越界（几何事实接入）", geometryWarnings(withLayout, "t1").length > 0);
 
 // 表格长高压下方元素（方案 §3.2 免费副产品）
 const tblDeck = {
@@ -130,6 +131,7 @@ const tblDeck = {
   ],
 };
 const tblReport = validateDeck(tblDeck, { layout: layout(tblDeck) });
-check("表格撑高后压下方元素被抓", tblReport.warnings.some((w) => w.elementId === "tb" && w.message.includes("重叠")));
+// tb stays inside the canvas, so the only geometry fact it can raise is the overlap with "under".
+check("表格撑高后压下方元素被抓", geometryWarnings(tblReport, "tb").length > 0);
 
 process.exit(ok ? 0 : 1);

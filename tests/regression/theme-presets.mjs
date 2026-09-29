@@ -7,9 +7,8 @@
 // 运行：node tests/regression/theme-presets.mjs
 // ============================================================================
 
-import { readFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
-import { DEFAULT_THEME, THEME_PALETTES, normalizeTheme, themeChartPalette } from "../../packages/model/theme.js";
+import { DEFAULT_THEME, THEME_PALETTES } from "../../packages/model/theme-presets.js";
+import { normalizeTheme, themeChartPalette } from "../../packages/model/theme.js";
 
 let pass = 0, fail = 0;
 const ok = (cond, msg) => {
@@ -33,34 +32,7 @@ for (const [k, p] of Object.entries(THEME_PALETTES)) {
 const consult = THEME_PALETTES.consult.colors;
 ok(KEYS.every((k) => DEFAULT_THEME.colors[k] === consult[k]), "DEFAULT_THEME.colors == consult（默认主题 = 第 1 套）");
 
-console.log("== 2. references/design.md 色值表与代码一致 ==");
-const designMd = resolve("references/design.md");
-if (!existsSync(designMd)) {
-  // 内容面（SKILL.md + references/）已迁至独立技能仓 open-pptd-skill：本仓不再持有
-  // design.md，该文档与引擎的色值同步改由技能仓的 drift-guard 守护（§2 的等价比对已
-  // 移入 drift-guard.yml 第 ⑤ 项）。此处优雅跳过而非误报 ENOENT。
-  console.log("  – 跳过：references/design.md 不在本仓（内容面已迁 open-pptd-skill）");
-} else {
-  const md = readFileSync(designMd, "utf8");
-  const mainTbl = md.split("Primary and chart series colors")[1].split("The remaining 11 keys")[0];
-  for (const row of mainTbl.split("\n").filter((l) => /^\| (consult|tech|orange|green|red|purple|mono|brown|morandi|sakura) \|/.test(l))) {
-    const c = row.split("|").map((s) => s.trim());
-    const code = ["primary", "accent", "accent3", "accent4", "accent5", "accent6"].map((k) => THEME_PALETTES[c[1]].colors[k].toUpperCase());
-    ok(JSON.stringify(c.slice(2, 8)) === JSON.stringify(code), `design.md 主色表 ${c[1]}`);
-  }
-  const restTbl = md.split("The remaining 11 keys")[1].split("> Usage:")[0];
-  for (const row of restTbl.split("\n").filter((l) => /^\| (text|muted|line|success|warning|danger|primarySoft|primaryTint|primaryDeep) \|/.test(l))) {
-    const c = row.split("|").map((s) => s.trim());
-    for (let i = 0; i < 10; i++) {
-      const doc = c[i + 2].toUpperCase();
-      const code = THEME_PALETTES[ORDER[i]].colors[c[1]].toUpperCase();
-      if (doc !== code) ok(false, `design.md ${c[1]} ${ORDER[i]}: ${doc} vs ${code}`);
-    }
-    ok(true, `design.md 扩展键表 ${c[1]} × 10 套`);
-  }
-}
-
-console.log("== 3. normalizeTheme 字符串预设解析（不再静默回退）==");
+console.log("== 2. normalizeTheme 字符串预设解析（不再静默回退）==");
 {
   const t = normalizeTheme("tech");
   ok(t.colors.primary === THEME_PALETTES.tech.colors.primary, `"tech" → primary=${THEME_PALETTES.tech.colors.primary}`);
@@ -75,7 +47,8 @@ console.log("== 3. normalizeTheme 字符串预设解析（不再静默回退）=
   const t = normalizeTheme("no-such-key");
   console.warn = orig;
   ok(JSON.stringify(t.colors) === JSON.stringify(DEFAULT_THEME.colors), `未知键 → 回退默认主题`);
-  ok(warns.some((w) => w.includes("未知配色预设")), `未知键 → 输出告警（不再静默）`);
+  // Assert the warning fires and names the offending key (stable input), not its wording.
+  ok(warns.length > 0 && warns.some((w) => w.includes("no-such-key")), `未知键 → 输出告警（不再静默）`);
 }
 {
   const t = normalizeTheme(null);
@@ -84,7 +57,7 @@ console.log("== 3. normalizeTheme 字符串预设解析（不再静默回退）=
   ok(t2.colors.primary === "#123456" && t2.colors.accent === DEFAULT_THEME.colors.accent, "对象 → 深合并覆盖单键");
 }
 
-console.log("== 4. 图表系列色循环（accent1-6 = primary/accent/accent3-6）==");
+console.log("== 3. 图表系列色循环（accent1-6 = primary/accent/accent3-6）==");
 for (const k of ORDER) {
   const pal = themeChartPalette(normalizeTheme(k));
   const expect = ["primary", "accent", "accent3", "accent4", "accent5", "accent6"].map((x) => THEME_PALETTES[k].colors[x]);
