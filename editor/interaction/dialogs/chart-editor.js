@@ -9,7 +9,7 @@
 //   - type switch: semantic key remap (remapEncode) + coexistence-constraint warnings (validateChartSeries)
 // ============================================================================
 
-import { showDialog, button } from "./base.js";
+import { button, resolveEditorTheme, showDialog } from "./base.js";
 import { renderGroup, themeSwatches, fieldHandlers } from "../fields.js";
 import { createExcelGrid } from "../excel-grid.js";
 import * as ui from "../../ui.js";
@@ -53,7 +53,8 @@ export function openChartEditor(el, { theme, onChange }) {
   const container = document.createElement("div");
   container.className = "chart-editor";
 
-  const editorTheme = () => window.__pptdEditor?.state?.theme || theme;
+  // Live editor theme, falling back to the theme captured when the dialog opened
+  const editorTheme = () => resolveEditorTheme(theme);
   const palette = () => themeChartPalette(editorTheme());
   const commit = () => onChange?.();
   const curType = () => el.series?.[0]?.type || "bar";
