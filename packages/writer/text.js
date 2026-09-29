@@ -151,7 +151,7 @@ export function buildParagraph(theme, para, base, registerLink, options = {}) {
   // 段落样式并入 run 基线（mergeRunStyle 单源，渲染端 runSpan 同链）
   const style = mergeRunStyle(base, para.style);
   if (para.listType) style.listType = para.listType; // 列表信息传给段落属性（buChar/缩进）
-  const factor = lineFactorOf(theme, style.fontFamily, options.fontMetrics);
+  const factor = lineFactorOf(theme, style.fontFamily);
   const onlyFormulas = para.runs.length > 0 && para.runs.every((r) => r.formula);
   const runs = para.runs
     .map((run) =>
@@ -297,9 +297,9 @@ export function textXml(theme, element, ctx) {
       el("p:txBody", {}, inner),
     ].join(""));
   // 元素级透明度（官方 Text.opacity）→ run 级填充 a:alpha（PowerPoint 存储结构）
-  const body = buildTextBody(theme, element.content, ctx.registerLink, { opacity: element.opacity, fontMetrics: ctx.fontMetrics });
+  const body = buildTextBody(theme, element.content, ctx.registerLink, { opacity: element.opacity });
   if (body.includes("<a14:m")) {
-    const fallbackBody = buildTextBody(theme, element.content, ctx.registerLink, { formulaFallback: true, opacity: element.opacity, fontMetrics: ctx.fontMetrics });
+    const fallbackBody = buildTextBody(theme, element.content, ctx.registerLink, { formulaFallback: true, opacity: element.opacity });
     const choice = el("mc:Choice", { "xmlns:a14": A14_NS, Requires: "a14" }, buildSp(body));
     const fallback = el("mc:Fallback", {}, buildSp(fallbackBody));
     return el("mc:AlternateContent", { "xmlns:mc": MC_NS }, choice + fallback);

@@ -8,7 +8,7 @@
 // 参考文件（仅补 XML 声明，部分解析器需要）。
 // ============================================================================
 
-import { xmlHeader, hexToRgbVal } from "./xml.js";
+import { xmlHeader } from "./xml.js";
 import { CHART_DEFAULTS } from "../model/chart.js";
 
 const CHART_STYLE_XML =

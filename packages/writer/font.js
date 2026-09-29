@@ -11,7 +11,7 @@
 //   - spec.file：仅 Node 端由调用方预读为 fontFiles（cli/export.js）
 // ============================================================================
 
-import { parseFontInfo, checkEmbeddable, buildEot, subsetTtf, fontLineFactor, fontKey } from "../model/font.js";
+import { parseFontInfo, checkEmbeddable, buildEot, subsetTtf } from "../model/font.js";
 import { parseFontResources } from "../model/font.js";
 import { loadFontRegistry, findFont, fontFileUrl } from "../model/font-registry.js";
 import { escAttr } from "./xml.js";
@@ -120,21 +120,19 @@ function joinPath(dir, file) {
 
 /**
  * 单个字体 → fntdata EOT 字节：子集化（TrueType）或全量（CFF 回退）。
- * @returns {{ bytes: Uint8Array, subset: boolean, info: object, lineFactor: number|null }}
+ * @returns {{ bytes: Uint8Array, subset: boolean, info: object }}
  */
 export function fontToFntdata(bytes, chars, wantSubset) {
   const info = parseFontInfo(bytes);
-  // 单倍行距系数取原始全量字节实测（行距导出补偿，见 buildEmbeddedFonts.lineMetrics）
-  const lineFactor = fontLineFactor(bytes);
   if (wantSubset) {
     try {
       const subset = subsetTtf(bytes, chars);
-      return { bytes: buildEot(subset, parseFontInfo(subset), 0x1), subset: true, info, lineFactor };
+      return { bytes: buildEot(subset, parseFontInfo(subset), 0x1), subset: true, info };
     } catch (e) {
       console.warn(`[font] ${info.family} 子集化不可用（${e.message}），回退全量嵌入`);
     }
   }
-  return { bytes: buildEot(bytes, info, 0), subset: false, info, lineFactor };
+  return { bytes: buildEot(bytes, info, 0), subset: false, info };
 }
 
 /** skipped 原因 → 用户提示文案。 */
@@ -161,11 +159,10 @@ export function skipReasonText(r) {
  *   fullFonts=true 时所有嵌入字体全量嵌入（覆盖 deck.fonts / 注册表的 subset 建议，
  *   仅本次导出生效，不回写声明——对应 PowerPoint「嵌入所有字符（便于编辑）」）
  * @returns {Promise<{ parts: {path,bytes}[], lstXml: string, rels: {id,target}[],
- *                     subsetMode: boolean, skipped: {family,reason,detail?}[],
- *                     lineMetrics: Record<string, number> }>}}
+ *                     subsetMode: boolean, skipped: {family,reason,detail?}[] }>}}
  */
 export async function buildEmbeddedFonts(deck, options = {}) {
-  const empty = { parts: [], lstXml: "", rels: [], subsetMode: false, skipped: [], lineMetrics: {} };
+  const empty = { parts: [], lstXml: "", rels: [], subsetMode: false, skipped: [] };
   if (options.embedFonts === false) return empty;
   const specs = collectFontSpecs(deck);
   if (!specs.length) return empty;
@@ -190,8 +187,6 @@ export async function buildEmbeddedFonts(deck, options = {}) {
       }
       spec.file = hit.file;
       if (spec.subset == null) spec.subset = hit.subset !== false;
-      // 注册表条目的全部可引用名（family/key/aliases），行距系数按这些名字注册
-      spec.names = [hit.family, hit.key, ...(hit.aliases || [])];
     }
   }
 
@@ -199,7 +194,6 @@ export async function buildEmbeddedFonts(deck, options = {}) {
   const parts = [];
   const rels = [];
   const lstItems = [];
-  const lineMetrics = {}; // fontKey(字体名) → 单倍行距系数（嵌入字体实测）
   let subsetMode = false;
 
   for (const spec of specs) {
@@ -219,14 +213,6 @@ export async function buildEmbeddedFonts(deck, options = {}) {
       console.warn(`[font] 字体「${spec.family}」嵌入失败: ${e.message}`);
       skipped.push({ family: spec.family, reason: "embed-failed", detail: e.message });
       continue;
-    }
-    // 单倍行距系数（实测自原始字节）：按声明名/注册表名/字体内部名全部注册，
-    // 供段落行距导出补偿（writer/text.js）。嵌入受限（restricted）时同样注册——
-    // 查看端会回退本机同名字体，度量一致。新字体进库即自适应，零维护。
-    if (result.lineFactor) {
-      for (const name of new Set([spec.family, result.info.family, ...(spec.names || [])])) {
-        lineMetrics[fontKey(name)] = result.lineFactor;
-      }
     }
     const check = checkEmbeddable(result.info.fsType);
     if (!check.ok) {
@@ -264,6 +250,5 @@ export async function buildEmbeddedFonts(deck, options = {}) {
     rels,
     subsetMode,
     skipped,
-    lineMetrics,
   };
 }

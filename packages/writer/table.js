@@ -64,7 +64,7 @@ export function tableXml(theme, tableEl, ctx) {
       const rh = rowHeights[r] != null ? rowHeights[r] : 26;
       const trAttrs = { h: Math.round(Math.max(0.01, rh) * 12700) };
       const tcs = gRow
-        .map((g, c) => (g.covered ? mergePlaceholderTc(theme, g, r, c, ts, rowCount, colCount) : tcXml(theme, g.cell, r, c, ts, rowCount, colCount, tableEl.fill, ctx.fontMetrics)))
+        .map((g, c) => (g.covered ? mergePlaceholderTc(theme, g, r, c, ts, rowCount, colCount) : tcXml(theme, g.cell, r, c, ts, rowCount, colCount, tableEl.fill)))
         .join("");
       return el("a:tr", trAttrs, tcs);
     })
@@ -126,7 +126,7 @@ function tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, cell, cellAlign
   return { xml: el("a:tcPr", attrs, kids.join("")), align, s };
 }
 
-function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill, fontMetrics) {
+function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill) {
   // 单元格文字样式合并 → model 单源 cellTextStyle（与预览 cellFinal 同一实现）
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
   const text = cell?.text ?? "";
@@ -137,7 +137,7 @@ function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill, fontMetrics
   const align = cell?.align ?? s.align ?? ["center", "middle"];
   base.textAlign = align[0];
   const paras = tree.paragraphs
-    .map((p) => buildParagraph(theme, p, base, () => null, { fontMetrics }))
+    .map((p) => buildParagraph(theme, p, base, () => null))
     .join("");
   const body =
     `<a:txBody><a:bodyPr anchor="${ooxmlAnchor(align[1]) || "ctr"}"><a:noAutofit/></a:bodyPr>` +

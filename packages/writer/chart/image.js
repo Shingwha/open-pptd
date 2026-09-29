@@ -14,9 +14,6 @@ import { buildChartOption } from "../../model/chart/option/index.js";
 import { resolveColor } from "../../model/theme.js";
 import { encodeUtf8 } from "../../model/bytes.js";
 
-/** 需要图片化导出的类型（PowerPoint 无对应原生类型）。 */
-export const IMAGE_CHART_TYPES = ["heatmap", "sankey"];
-
 /** 图表元素 → SVG 字符串（与预览同一份 option 单源；尺寸 = bounds pt→px 1:1）。 */
 export function buildChartImageSvg(theme, el) {
   const [, , w, h] = el.bounds;

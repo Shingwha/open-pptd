@@ -13,7 +13,7 @@ import { el, esc, xmlHeader } from "../xml.js";
 import { resolveChartSpec, CHART_META, resolveChartDirection, seriesAxisIndex, seriesChannels, chartDataTable, resolveDataLabels, colLetter } from "../../model/chart.js";
 import { resolveFont, themeChartPalette } from "../../model/theme.js";
 import { buildChartXlsx, buildSheetOrder } from "./xlsx.js";
-import { fillXml, lnXml, txPrXml, chartSpaceSpPrXml, richCharStyleXml } from "./style.js";
+import { lnXml, txPrXml, chartSpaceSpPrXml, richCharStyleXml } from "./style.js";
 import {
   barSerXml, lineSerXml, areaSerXml, scatterSerXml, bubbleSerXml,
   candlestickSerXml, upDownBarsXml, pieSerXml, radarSerXml,
