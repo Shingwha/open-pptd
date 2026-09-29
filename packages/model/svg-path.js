@@ -9,15 +9,11 @@
 //   - parseSvgPath: absolute command stream consumed by writer/custgeom.js
 //   - scaleSvgPath: coordinate scaling for a CSS clip-path (custom cropShape viewBox)
 //
-// Deliberately NOT unified (kept as two branches): the Z handling differs.
-// parseSvgPath resets the current point to the subpath start and consumes no extra
-// token. scaleSvgPath (legacy, renderer-only) falls into its arity-0 branch and
-// appends the token at the post-letter index, then advances past it: with commands
-// after Z it swallows the next command letter and leaves the following coordinates
-// unscaled, and a trailing Z appends the literal "undefined". The image project's
-// ring cropShape path exercises exactly that case and the golden render baseline pins
-// its output, so the quirk is preserved on purpose (a fix would be a visual behavior
-// change requiring an intentional baseline regeneration).
+// The segment loops stay separate for the same reason. Historical note: scaleSvgPath's
+// arity-0 (Z) branch used to re-emit the token after Z, swallowing the next command
+// letter (leaving the following subpath unscaled) and appending the literal "undefined"
+// for a trailing Z. Fixed to scale every subpath; at scale 1 the output is unchanged,
+// which the golden render baseline pins.
 // ============================================================================
 
 /** SVG command arity: argument count per command letter (Z takes none). */
@@ -157,8 +153,10 @@ export function scaleSvgPath(d, sx, sy) {
     }
     const arity = SVG_CMD_ARITY[op.toUpperCase()] || 0;
     if (!arity) {
-      out += tokens[i];
-      i++;
+      // Z: the letter itself was already emitted by the string branch. A following
+      // command letter is handled by the string branch on the next pass; a trailing
+      // Z (i out of range) or stray numbers directly after Z end the path.
+      if (typeof tokens[i] !== "string") break;
       continue;
     }
     const seg = tokens.slice(i, i + arity).map(Number);
