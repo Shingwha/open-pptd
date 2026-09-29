@@ -17,6 +17,7 @@
 // ============================================================================
 
 import { createEditor } from "./editor.js";
+import { dom } from "./dom.js";
 import { httpSource } from "./app/project/source.js";
 import { showToast } from "./app/toast.js";
 import { ensurePermission } from "./app/project/handle-io.js";
@@ -134,7 +135,7 @@ async function boot() {
 
   // Blank init clears the session marker, so capture the pending id first
   const pendingId = deckUrl ? null : getPendingProjectId();
-  const root = document.getElementById("pptd-root") || document.body;
+  const root = dom.pptdRoot || document.body;
   const ed = createEditor(root, {
     source: httpSource({ deckUrl }),
     deckUrl: deckUrl || null, // load it when ?deck= is present; otherwise createEditor starts blank silently

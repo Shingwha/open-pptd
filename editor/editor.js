@@ -85,10 +85,7 @@ export function createEditor(rootEl, options = {}) {
   // Theme injection (contract 3): mode/tokens land on the common ancestor (the
   // skeleton is in body, the mount point may be an empty container)
   // --------------------------------------------------------------------------
-  const themeHost =
-    mount.contains && mount.contains(document.getElementById("editor-app"))
-      ? mount
-      : document.documentElement;
+  const themeHost = mount.contains && mount.contains(dom.editorApp) ? mount : document.documentElement;
   const restoreTheme = theme ? applyThemeTokens(themeHost, theme) : null;
 
   // Tri-state theme (B3: light / dark / follow system): when the host injects a
@@ -341,7 +338,7 @@ export function createEditor(rootEl, options = {}) {
     // 7) When the mount point is a standalone container (not body/html), clear its content
     if (mount && mount !== document.body && mount !== document.documentElement) {
       try {
-        if (mount.contains(document.getElementById("editor-app"))) mount.innerHTML = "";
+        if (mount.contains(dom.editorApp)) mount.innerHTML = "";
       } catch {
         /* ignore */
       }
