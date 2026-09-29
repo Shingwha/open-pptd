@@ -126,11 +126,6 @@ export function createEditorState() {
       state.history.snapshot(state.deck);
       state.dirty = true;
     },
-    /** 标记当前 deck 为已落盘基线（加载/保存成功后调用；撤销回它即恢复干净）。 */
-    markSaved() {
-      state.savedDeck = structuredClone(state.deck);
-      state.dirty = false;
-    },
     /** 重算 dirty：当前 deck 与保存基线等值比较（渲染钩子里调用）。
      * RP-C / M6：删除「无用户编辑时被动同化进基线」的特例赦免——渲染已不再写回模型
      * （测量只进 layout，见 app/view/view.js + dom-measure.js），渲染触发的被动归一化
