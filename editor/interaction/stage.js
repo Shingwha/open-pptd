@@ -19,9 +19,10 @@
 
 export function createStageController(stage, opts) {
   const {
-    element,      // interaction/canvas.js：{ startGesture, cancelGesture, isGestureActive }
-    select,       // (id) => void  轻量选中
+    element,      // interaction/canvas.js：{ startGesture, startMarquee, cancelGesture, cancelMarquee, isGestureActive }
+    select,       // (id, mode) => void  选中（mode: replace/add/toggle）
     getSelected,  // () => id | null
+    isSelected,   // (id) => boolean
     deselect,     // () => void  点击空白取消选中
     onActivate,   // (id) => void  双击元素进编辑器
     panBy, setZoom, getZoom, zoomReset,
@@ -95,6 +96,7 @@ export function createStageController(stage, opts) {
   function beginPinch() {
     const wasDragging = element.isGestureActive?.();
     if (wasDragging) element.cancelGesture(); // 提交已发生的位移（同正常松手）
+    element.cancelMarquee?.(); // 终止框选（双指手势优先）
     tapPan = null;
     stage.classList.remove("panning");
     const [a, b] = [...pointers.values()];
@@ -144,17 +146,30 @@ export function createStageController(stage, opts) {
         }
         return;
       }
-      // 3) 元素本体 → 选中 + 移动手势（preventDefault 阻止拖动时选中内部文本）
+      // 3) 元素本体 → 选中（Shift 加选 / Ctrl 切换）+ 移动手势
+      //    Ctrl/Alt + 拖动 = 复制拖动（阈值在 canvas.js：未拖动则 Ctrl 点击 = 切换选中）
       const node = e.target.closest("[data-element-id]");
       if (node) {
         const id = node.dataset.elementId;
-        if (getSelected() !== id) select(id);
+        const additive = e.shiftKey;
+        const toggle = e.ctrlKey || e.metaKey;
+        const copyMod = e.altKey || e.ctrlKey || e.metaKey;
+        let toggleOnTap = false;
+        if (additive) {
+          if (!isSelected?.(id)) select(id, "add");
+        } else if (toggle) {
+          if (isSelected?.(id)) toggleOnTap = true; // 已选中：拖动复制 / 未拖动则切换为取消
+          else select(id, "add");
+        } else if (!isSelected?.(id)) {
+          select(id, "replace");
+        }
         e.preventDefault();
-        element.startGesture(e, "move", id);
+        element.startGesture(e, "move", id, { copyOnMove: copyMod, toggleOnTap });
         return;
       }
-      // 4) 空白（画布内 or 画布外）→ 点击取消选中 / 拖动平移
-      startPan(e, true);
+      // 4) 空白（画布内 or 画布外）→ 框选 marquee（空格 / 中键为平移，见上）
+      e.preventDefault();
+      element.startMarquee?.(e);
     },
     true // capture：先于 ECharts/zrender 等元素内部事件
   );

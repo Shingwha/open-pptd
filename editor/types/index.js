@@ -17,6 +17,7 @@ import "./line.js";
 import "./image.js";
 import "./table.js";
 import "./chart.js";
+import "./group.js";
 
 export { registerType, getType, allTypes } from "../../packages/model/index.js";
 export { buildAddItems } from "./menu.js";

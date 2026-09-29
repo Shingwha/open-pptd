@@ -12,7 +12,7 @@
   overflow-x: hidden;
   /* 左右分栏：宽度动画（300↔0）+ 画布逐帧跟随（view.followStageWidth），
      收起/展开全程平滑，画布同步放大缩小，无突变、无遮挡 */
-  transition: width 0.22s ease, opacity 0.22s ease, border-left-color 0.22s ease;
+  transition: width var(--t-med) var(--ease), opacity var(--t-med) var(--ease), border-left-color var(--t-med) var(--ease);
 }
 /* 内容固定宽：宽度动画期间内部不换行闪烁，仅被容器裁剪 */
 .inspector > * { min-width: 300px; }
@@ -23,7 +23,7 @@ body.inspector-collapsed .inspector {
   border-left-color: transparent;
 }
 body.inspector-collapsed #btn-inspector-toggle svg { transform: rotate(180deg); }
-#btn-inspector-toggle svg { transition: transform var(--dur-fast); }
+#btn-inspector-toggle svg { transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease); }
 
 
 /* 窄屏属性面板遮罩（仅 ≤900px 出现 inspector-open 类，桌面端无影响） */
@@ -34,7 +34,7 @@ body.inspector-collapsed #btn-inspector-toggle svg { transform: rotate(180deg); 
   background: var(--mask);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s;
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
 }
 body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 
@@ -63,7 +63,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   font-weight: 700;
   color: var(--primary);
   background: var(--primary-soft);
-  border-radius: 999px;
+  border-radius: var(--r-3);
   padding: 1px 9px;
 }
 
@@ -104,7 +104,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  transition: color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .prop-group-title:hover { color: var(--primary); }
 /* 折叠指示：纯 CSS 人字形（朝下=展开），无需改 markup */
@@ -116,7 +116,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   border-right: 1.5px solid var(--faint);
   border-bottom: 1.5px solid var(--faint);
   transform: rotate(45deg);
-  transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .prop-group-title:hover::after { border-color: var(--primary); }
 .prop-group.collapsed > :not(.prop-group-title) { display: none; }
@@ -125,25 +125,25 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 /* —— 三合一颜色控件（colorField）：色块按钮 + 取色器 + hex + 主题色弹层 —— */
 .color-field { display: flex; align-items: center; gap: 6px; min-width: 0; position: relative; }
 .color-swatch-btn {
-  width: 26px; height: 26px; border-radius: var(--radius-sm); padding: 0; cursor: pointer; flex: none;
+  width: 26px; height: 26px; border-radius: var(--r-2); padding: 0; cursor: pointer; flex: none;
   border: 1px solid var(--line-strong);
-  transition: border-color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .color-swatch-btn:hover { border-color: var(--primary); }
-.color-swatch-btn:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.color-swatch-btn:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .color-field input[type="color"] {
   width: 30px; height: 26px; padding: 0; border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm); background: none; cursor: pointer; flex: none;
-  transition: border-color var(--dur-fast) var(--ease);
+  border-radius: var(--r-2); background: none; cursor: pointer; flex: none;
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
-.color-field input[type="color"]:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.color-field input[type="color"]:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .color-hex {
   flex: 1; min-width: 0; font-size: var(--text-xs); padding: 3px 7px;
-  border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong); border-radius: var(--r-2);
   background: var(--bg); color: var(--ink); outline: none; font-family: ui-monospace, monospace;
-  transition: border-color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
-.color-hex:focus-visible { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.color-hex:focus-visible { border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 /* 主题色弹层：点击色块按钮展开（fixed 定位由 JS 按按钮位置计算，不受父容器裁剪） */
 .color-pop {
   position: fixed;
@@ -152,7 +152,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   padding: var(--space-2);
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-3);
   box-shadow: var(--shadow-lg);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -166,17 +166,16 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   gap: 7px;
   padding: 5px 7px;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   background: none;
   cursor: pointer;
   text-align: left;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .color-pop-item:hover { background: var(--primary-soft); border-color: var(--primary-tint); }
 .color-pop-item:active { background: var(--primary-tint); }
-.color-pop-item:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
-.color-pop-chip { width: 18px; height: 18px; border-radius: var(--radius-sm); border: 1px solid var(--chip-border); flex: none; }
+.color-pop-item:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
+.color-pop-chip { width: 18px; height: 18px; border-radius: var(--r-2); border: 1px solid var(--chip-border); flex: none; }
 .color-pop-name { font-size: var(--text-xs); color: var(--ink); }
 
 /* —— 字段行 —— */
@@ -197,15 +196,13 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   flex: 1;
   min-width: 0;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   padding: 0 var(--space-2);
   font-size: var(--text-md);
   color: var(--ink);
   background: var(--panel);
   outline: none;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .prop-field input[type="number"],
 .prop-field input[type="text"],
@@ -215,7 +212,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .prop-field select:focus-visible,
 .prop-field textarea:focus-visible {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  outline: 1px solid var(--sel-ring); outline-offset: 0;
 }
 .prop-field input[type="color"] {
   flex: 0 0 auto;
@@ -223,7 +220,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   height: var(--control-h);
   padding: 2px;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   background: var(--panel);
   cursor: pointer;
 }
@@ -247,21 +244,19 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .prop-cell select {
   width: 100%;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   padding: 0 var(--space-2);
   font-size: var(--text-md);
   color: var(--ink);
   background: var(--panel);
   outline: none;
   height: var(--control-h);
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .prop-cell input:focus-visible,
 .prop-cell select:focus-visible {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  outline: 1px solid var(--sel-ring); outline-offset: 0;
 }
 
 /* —— 图标工具行（对齐等） —— */
@@ -275,19 +270,17 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   height: var(--control-h);
   padding: 0;
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   background: var(--panel);
   color: var(--sub);
   font-size: var(--text-md);
   cursor: pointer;
   line-height: 1;
-  transition: background var(--dur-fast) var(--ease),
-              border-color var(--dur-fast) var(--ease),
-              color var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .prop-icon-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
 .prop-icon-btn:active { background: var(--primary-tint); }
-.prop-icon-btn:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.prop-icon-btn:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
 .prop-checks {
   display: flex;
@@ -308,12 +301,12 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   appearance: none;
   width: 30px;
   height: 18px;
-  border-radius: 999px;
+  border-radius: var(--r-3);
   background: var(--line-strong);
   position: relative;
   cursor: pointer;
   flex: none;
-  transition: background var(--dur-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .prop-check input[type="checkbox"]::before {
   content: "";
@@ -324,11 +317,11 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   height: 14px;
   border-radius: 50%;
   background: var(--panel);
-  transition: transform var(--dur-fast) var(--ease);
+  transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
 }
 .prop-check input[type="checkbox"]:checked { background: var(--primary); }
 .prop-check input[type="checkbox"]:checked::before { transform: translateX(12px); }
-.prop-check input[type="checkbox"]:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.prop-check input[type="checkbox"]:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
 .prop-actions {
   display: flex;
@@ -343,7 +336,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   line-height: 1.6;
   background: var(--bg);
   border: 1px dashed var(--line-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-2);
   padding: var(--space-2) 10px;
 }
 /* 面板级提示（页面设置模式，未选中元素时） */

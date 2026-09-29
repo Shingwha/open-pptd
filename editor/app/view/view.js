@@ -105,15 +105,19 @@ export function createView({ state, page, selected, api, controller, props }) {
   // --------------------------------------------------------------------------
   function renderProps() {
     const el = selected();
+    const count = state.selection?.size || 0;
     const badge = dom.inspectorBadge;
     const def = el ? getType(el.elementType) : null;
-    if (el && def) {
+    if (count > 1) {
+      badge.hidden = false;
+      badge.textContent = `多选 ×${count}`;
+    } else if (el && def) {
       badge.hidden = false;
       badge.textContent = def.label;
     } else {
       badge.hidden = true;
     }
-    dom.inspectorTitle.textContent = state.selectedId ? "元素属性" : "页面设置";
+    dom.inspectorTitle.textContent = count > 1 ? "多个元素" : count === 1 ? "元素属性" : "页面设置";
     props.refresh();
   }
 
@@ -125,7 +129,8 @@ export function createView({ state, page, selected, api, controller, props }) {
     const el = selected();
     const canvas = dom.canvas;
     const stage = dom.stage;
-    const node = el ? canvas.querySelector(`[data-element-id="${CSS.escape(el.elementId)}"]`) : null;
+    // 快调条只在单选时出现（多选的批量操作在属性面板 / 右键菜单，U2 收口）
+    const node = el && state.selection?.size === 1 ? canvas.querySelector(`[data-element-id="${CSS.escape(el.elementId)}"]`) : null;
     if (!el || !node) {
       qb.classList.remove("show");
       qb.innerHTML = "";
