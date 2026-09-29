@@ -7,6 +7,7 @@
 
 import { readFileSync, statSync, existsSync } from "node:fs";
 import { join, normalize, sep, extname } from "node:path";
+import { isRegistryPath } from "../paths.js";
 
 export const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -71,7 +72,7 @@ export function resolveResourceFile(pathname, resourceRoots) {
   const rel = pathname.slice("/assets/".length);
   if (!rel || rel.includes("\0")) return null;
   // registry: package root only (pathname is relative to the package root, so use the full /assets/... path)
-  if (/(^|\/)registry\.json$/i.test(rel)) return resolveFile(resourceRoots.registry || [], pathname);
+  if (isRegistryPath(rel)) return resolveFile(resourceRoots.registry || [], pathname);
   if (rel.startsWith("fonts/")) return resolveFile(resourceRoots.fonts || [], rel.slice("fonts/".length));
   if (rel.startsWith("icons/")) return resolveFile(resourceRoots.icons || [], rel.slice("icons/".length));
   return null;

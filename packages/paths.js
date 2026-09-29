@@ -103,6 +103,18 @@ export function resolveResourceFile(kind, rel = "") {
 }
 
 /**
+ * Is a resource-relative path the version-coupled registry manifest (`registry.json`)?
+ * The registry always resolves from the package root only (home never shadows it); this is the
+ * single-source predicate shared by server/static.js (URL resolution) and cli/assets.js (zip
+ * extraction must drop any registry.json entry).
+ * @param {string} rel path relative to a resource root (e.g. "fonts/registry.json")
+ * @returns {boolean}
+ */
+export function isRegistryPath(rel) {
+  return /(^|\/)registry\.json$/i.test(String(rel || ""));
+}
+
+/**
  * Atomic write: write `tmp/<random>.part` first, then same-volume `rename()` to the target.
  * Concurrent downloads of the same file never leave a half-written target (the reader
  * always sees complete or old bytes).
