@@ -89,8 +89,8 @@ export function createEditor(rootEl, options = {}) {
   // --------------------------------------------------------------------------
   // 装配（原 main.js initEditor 的闭包化）
   // --------------------------------------------------------------------------
-  const { state, page, selected, ops } = createEditorState();
-  const api = createEditorApi({ state, page, selected, ops });
+  const { state, page, selected, selectedElements, ops } = createEditorState();
+  const api = createEditorApi({ state, page, selected, selectedElements, ops });
 
   // 对外事件：dirty/selectionChange 在每次渲染后按状态变化派发
   let lastDirty = null;
@@ -127,6 +127,7 @@ export function createEditor(rootEl, options = {}) {
     element: controller,
     select: api.select,
     getSelected: api.getSelected,
+    isSelected: api.isSelected,
     deselect: () => api.select(null),
     onActivate: (id) => {
       const el = page().elements.find((e) => e.elementId === id);

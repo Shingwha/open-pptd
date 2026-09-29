@@ -38,8 +38,10 @@
 /* ----------------------------------------------------------------------------
    选中框（interaction/canvas.js）：canvas-wrap 内的不缩放图层。
    几何由 JS 按 canvas._scale 换算，边框 / 手柄恒定屏幕尺寸（任何缩放下
-   视觉一致、命中目标稳定）。四角 = 白底圆点，四边中点 = 胶囊条，
-   旋转手柄 = 连接杆 + 圆形箭头芯片。
+   视觉一致、命中目标稳定）。对齐设计稿 editor-design-reference.html §02：
+     单选 .el-single（1px 实线环）+ 四角 .h 方形控制点 + .rot 旋转柄
+     多选/组 .member（成员细边框）+ .mbounds（虚线包围盒）+ 四角手柄
+     框选 .marquee（虚线框）
    ---------------------------------------------------------------------------- */
 .sel-overlay {
   position: absolute;
@@ -51,62 +53,63 @@
 .sel-box {
   position: absolute;
   box-sizing: border-box;
-  border: 1.5px solid var(--primary);
-  border-radius: 2px;
   pointer-events: none;
 }
 
-/* 手柄：22px 命中区（触屏可点），视觉圆点由 ::before 绘制（10px） */
-.sel-handle {
+/* 单选：1px 实线环 + 淡主色底 */
+.el-single {
+  border: 1px solid var(--primary);
+  background: var(--primary-soft);
+}
+
+/* 多选/组：虚线包围盒（区分「包围盒」与「成员」） */
+.mbounds {
+  border: 1px dashed var(--primary);
+}
+
+/* 多选成员：1px 细边框（不铺底，避免遮挡内容） */
+.member {
   position: absolute;
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-sizing: border-box;
+  border: 1px solid var(--primary);
+  pointer-events: none;
+}
+
+/* 框选 marquee：虚线框 + 极淡底 */
+.marquee {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px dashed var(--primary);
+  background: var(--primary-tint);
+  pointer-events: none;
+}
+
+/* 四角控制点：方形（视觉 7px，命中区 20px 保证可点） */
+.h {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
   pointer-events: auto;
   touch-action: none;
 }
-.sel-handle::before {
+.h::before {
   content: "";
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--panel);
-  border: 1.5px solid var(--primary);
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.08s ease;
-  box-sizing: border-box;
-}
-.sel-handle:hover::before,
-.sel-handle:active::before {
-  transform: scale(1.25);
-}
-
-/* 四边中点手柄：胶囊条（形状暗示可拉伸方向） */
-.sel-handle--h::before {
-  width: 17px;
-  height: 7px;
-  border-radius: 99px;
-}
-.sel-handle--v::before {
   width: 7px;
-  height: 17px;
-  border-radius: 99px;
+  height: 7px;
+  box-sizing: border-box;
+  background: var(--panel);
+  border: 1px solid var(--primary);
 }
+.h.tl { left: -10px; top: -10px; }
+.h.tr { right: -10px; top: -10px; }
+.h.bl { left: -10px; bottom: -10px; }
+.h.br { right: -10px; bottom: -10px; }
+.h:hover::before { background: var(--primary); }
 
-/* 八个锚点位置（都居中于框的角 / 边中点） */
-.sel-handle[data-handle="nw"] { left: 0; top: 0; transform: translate(-50%, -50%); }
-.sel-handle[data-handle="n"]  { left: 50%; top: 0; transform: translate(-50%, -50%); }
-.sel-handle[data-handle="ne"] { left: 100%; top: 0; transform: translate(-50%, -50%); }
-.sel-handle[data-handle="e"]  { left: 100%; top: 50%; transform: translate(-50%, -50%); }
-.sel-handle[data-handle="se"] { left: 100%; top: 100%; transform: translate(-50%, -50%); }
-.sel-handle[data-handle="s"]  { left: 50%; top: 100%; transform: translate(-50%, -50%); }
-.sel-handle[data-handle="sw"] { left: 0; top: 100%; transform: translate(-50%, -50%); }
-.sel-handle[data-handle="w"]  { left: 0; top: 50%; transform: translate(-50%, -50%); }
-
-/* 旋转手柄：连接杆 + 圆形箭头芯片（悬于框底中点下方，随元素旋转；
-   顶部空间整个让给快速条 —— Canva 式布局） */
+/* 旋转柄：连接杆 + 圆形箭头芯片（悬于框底中点下方，随元素旋转；
+   顶部空间整个让给快速条） */
 .sel-rotate-stem {
   position: absolute;
   left: 50%;
@@ -116,7 +119,7 @@
   background: var(--primary);
   transform: translateX(-50%);
 }
-.sel-rotate {
+.rot {
   position: absolute;
   left: 50%;
   bottom: -16px;
@@ -130,23 +133,22 @@
   cursor: grab;
   touch-action: none;
 }
-.sel-rotate:active { cursor: grabbing; }
+.rot:active { cursor: grabbing; }
 .sel-rotate-ic {
   width: 17px;
   height: 17px;
   border-radius: 50%;
   background: var(--panel);
   border: 1.5px solid var(--primary);
-  box-shadow: var(--shadow-sm);
   color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  transition: transform 0.08s ease;
+  transition: transform var(--dur-fast) var(--ease);
 }
-.sel-rotate:hover .sel-rotate-ic,
-.sel-rotate:active .sel-rotate-ic {
+.rot:hover .sel-rotate-ic,
+.rot:active .sel-rotate-ic {
   transform: scale(1.15);
 }
 .sel-rotate-ic svg { width: 10px; height: 10px; }
@@ -166,7 +168,6 @@
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
   white-space: nowrap;
 }
 .sel-overlay.resizing .sel-size { display: block; }

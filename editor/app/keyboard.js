@@ -1,7 +1,12 @@
 // ============================================================================
-// app/keyboard.js — 全局快捷键（Ctrl+Z / Ctrl+Y / Ctrl+S）
+// app/keyboard.js — 全局快捷键（Ctrl+Z/Y/S/D/A/G）
 // ----------------------------------------------------------------------------
-// 元素级按键（Delete/方向键）在 interaction/canvas.js 内处理，两者互补。
+// 元素级按键（Delete/方向键/Esc 分层）在 interaction/canvas.js 内处理，两者互补。
+//   Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y  撤销 / 重做
+//   Ctrl+S                          保存
+//   Ctrl+D                          复制选中
+//   Ctrl+A                          全选当前页（U1）
+//   Ctrl+G / Ctrl+Shift+G           组合 / 取消组合（U1）
 // ============================================================================
 
 export function bindKeyboard({ state, api, io, present }) {
@@ -12,19 +17,29 @@ export function bindKeyboard({ state, api, io, present }) {
     const tag = (e.target.tagName || "").toLowerCase();
     if (tag === "input" || tag === "textarea" || tag === "select") return;
     const key = e.key.toLowerCase();
-    if ((e.ctrlKey || e.metaKey) && key === "z" && !e.shiftKey) {
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && key === "z" && !e.shiftKey) {
       e.preventDefault();
       io.applyHistory(state.history.undo(state.deck));
-    } else if ((e.ctrlKey || e.metaKey) && (key === "y" || (key === "z" && e.shiftKey))) {
+    } else if (mod && (key === "y" || (key === "z" && e.shiftKey))) {
       e.preventDefault();
       io.applyHistory(state.history.redo());
-    } else if ((e.ctrlKey || e.metaKey) && key === "s") {
+    } else if (mod && key === "s") {
       e.preventDefault();
       io.saveProject();
-    } else if ((e.ctrlKey || e.metaKey) && key === "d") {
+    } else if (mod && key === "d") {
       // 复制选中元素（需有选中元素；api 内部处理）
       e.preventDefault();
-      if (state.selectedId) api.duplicateSelected();
+      if (state.selection.size) api.duplicateSelected();
+    } else if (mod && key === "a") {
+      // 全选当前页（U1）
+      e.preventDefault();
+      api.selectAll();
+    } else if (mod && key === "g") {
+      // 组合 / 取消组合（U1）
+      e.preventDefault();
+      if (e.shiftKey) api.ungroup();
+      else api.group();
     } else if (e.key === "F5") {
       // 放映：从当前页开始全屏演示（PowerPoint 习惯键）
       e.preventDefault();
