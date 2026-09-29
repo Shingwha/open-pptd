@@ -151,6 +151,14 @@ for (const abs of files) {
       } else if (!pkg && r.startsWith("editor/") && (targetRel.startsWith("packages/server/") || targetRel.startsWith("packages/cli/") || targetRel === "packages/server" || targetRel === "packages/cli")) {
         violations.push(`${r}:${line}  editor 不得 import packages/server、packages/cli（${source}）`);
       }
+      // 规则 6（spec W1.5）：editor 只准经包级入口（packages/<pkg>/index.js）消费引擎，
+      // 深路径自契约 4 起不保证稳定（3.0 移除）
+      if (!pkg && r.startsWith("editor/") && targetRel.startsWith("packages/")) {
+        const m = targetRel.match(/^packages\/([^/]+)\/(.+)$/);
+        if (m && m[2] !== "index.js") {
+          violations.push(`${r}:${line}  editor 不得深路径 import packages/${m[1]}/${m[2]}，请走包级入口 packages/${m[1]}/index.js（契约 4）`);
+        }
+      }
       // packages 内文件不得反向 import editor/（依赖方向只允许 editor → packages）
       if (pkg && targetRel.startsWith("editor/")) {
         violations.push(`${r}:${line}  packages/${pkg} 不得 import editor/（${source}）`);

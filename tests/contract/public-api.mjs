@@ -5,10 +5,13 @@
 //   1. 五个已存在 barrel 的导出名齐全（与 spec 01 T1 清单逐一比对）；
 //   2. CONTRACT_VERSION === 2，且与 contract.json 的 contractVersion 一致；
 //   3. contract.json 可解析；entries 与 package.json exports 的对应条目一一对应
-//      （双向，防口径漂移）；entries 指向的已存在文件存在（editor/paths/config
-//      落地前打印 SKIP —— lead 在 W1.5/W2 后收紧为 FAIL）；
+//      （双向，防口径漂移）；entries 指向的已存在文件存在（paths/config 落地前
+//      打印 SKIP —— W2/A3 后收紧为 FAIL）；
 //   4. model/renderer/writer 三个双端 barrel 可静态导入，且源文件不含 Node/DOM
-//      全局（浏览器安全约束，与 dep-graph 既有四条互补）。
+//      全局（浏览器安全约束，与 dep-graph 既有四条互补）；
+//   5. W1.5 扁平再导出清单（editor 消费面）与 editor 入口（open-pptd/editor）：
+//      editor barrel 依赖 DOM、无法在 Node 静态导入，改用文本断言（剥离注释后
+//      必须出现再导出语句）+ 被引源文件与其导出名存在。
 // 用法：node tests/contract/public-api.mjs（非零码退出 = 契约破坏）
 // ============================================================================
 
@@ -94,6 +97,37 @@ const PURITY_PATTERNS = [
   [/\bdocument\./, "document."],
   [/\bheadless\//, "headless/ 引用"],
 ];
+
+// W1.5 扁平再导出清单（editor 消费面；只断言存在，类型随源文件）
+const FLAT = {
+  "packages/model/index.js": [
+    "syncElementId", "normalizeTheme", "resolveTableStyle", "themeChartPalette",
+    "tableGrid", "tryMerge", "trySplit", "normalizeCells", "estimateTableLayout", "validateDims",
+    "parseFontInfo", "parseFontResources",
+    "CHART_META", "remapEncode", "CHART_TYPE_ORDER", "DATA_LABEL_CONTENTS", "NUMBER_FORMAT_CODES",
+    "colLetter", "validateChartSeries",
+    "loadIconRegistry", "resolveIconName", "fetchIconSvg", "normalizeIconSvg",
+    "loadFontRegistry", "findFont", "fontFileUrl", "fetchFontBytes",
+    "bytesToBase64", "base64ToBytes",
+    "SHOT_READY_TITLE", "SHOT_ERROR_TITLE", "yaml",
+  ],
+  "packages/renderer/index.js": ["cellFinal", "tdCss"],
+  "packages/writer/index.js": ["imageSize", "decodeDataUrl", "extToMime", "dataUrlOf", "safeFileName"],
+};
+
+// editor 入口（契约 1/2/3 的对外面；DOM 依赖，文本断言）
+const EDITOR_ENTRY = {
+  barrel: "editor/index.js",
+  exports: [
+    "createEditor", "TOKENS", "defaultTokens", "applyThemeTokens",
+    "httpSource", "directoryHandleSource", "memorySource", "delegatingSource",
+  ],
+  sources: {
+    "editor/editor.js": ["createEditor"],
+    "editor/theme.js": ["TOKENS", "defaultTokens", "applyThemeTokens"],
+    "editor/app/project/source.js": ["httpSource", "directoryHandleSource", "memorySource", "delegatingSource"],
+  },
+};
 
 // ---------------------------------------------------------------------------
 async function checkBarrel(rel, spec) {
@@ -182,7 +216,29 @@ async function main() {
     else ok(`${rel} 无 Node/DOM 全局`);
   }
 
-  console.log(`\n结果: ${fail === 0 ? "契约通过 ✅" : `契约破坏 ❌（${fail} 处）`}${skip ? `；待落地跳过 ${skip} 项（editor/paths/config，W1.5/W2 后收紧）` : ""}`);
+  console.log("\n=== 5. W1.5 扁平面与 editor 入口 ===");
+  for (const [rel, names] of Object.entries(FLAT)) {
+    const mod = await import(pathToFileURL(join(ROOT, rel)).href);
+    const missing = names.filter((n) => !(n in mod));
+    if (missing.length) bad(`${rel} 扁平面齐全`, `缺 ${missing.length} 个: ${missing.join(", ")}`);
+    else ok(`${rel} 扁平面齐全（${names.length} 个）`);
+  }
+  {
+    const barrelSrc = stripComments(readFileSync(join(ROOT, EDITOR_ENTRY.barrel), "utf8"));
+    const missing = EDITOR_ENTRY.exports.filter((n) => !new RegExp(`\\b${n}\\b`).test(barrelSrc));
+    if (missing.length) bad(`${EDITOR_ENTRY.barrel} 再导出面`, `缺 ${missing.join(", ")}`);
+    else ok(`${EDITOR_ENTRY.barrel} 再导出面齐全（${EDITOR_ENTRY.exports.length} 个）`);
+    for (const [src, names] of Object.entries(EDITOR_ENTRY.sources)) {
+      const p = join(ROOT, src);
+      if (!existsSync(p)) { bad(`${src} 存在`, "文件缺失"); continue; }
+      const text = stripComments(readFileSync(p, "utf8"));
+      const lack = names.filter((n) => !new RegExp(`export\\s+(?:const|function|class)\\s+${n}\\b`).test(text));
+      if (lack.length) bad(`${src} 导出名`, `缺 ${lack.join(", ")}`);
+      else ok(`${src} 导出名齐全`);
+    }
+  }
+
+  console.log(`\n结果: ${fail === 0 ? "契约通过 ✅" : `契约破坏 ❌（${fail} 处）`}${skip ? `；待落地跳过 ${skip} 项（paths/config，W2/A3 后收紧）` : ""}`);
   if (pending.length) console.log(`待落地: ${pending.join("、")}`);
   process.exit(fail ? 1 : 0);
 }
