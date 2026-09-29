@@ -263,12 +263,17 @@ export function createImageExporter({ state }) {
     }
   }
 
-  /** 回退路径整体：逐页 pageToPng。 */
+  /** 回退路径整体：逐页 pageToPng → 统一为字节（与 capture 路径同形，便于打包/断言）。 */
   async function foreignObjectPages(indices, scale) {
     const results = [];
     for (const i of indices) {
       const { png, droppedElements } = await pageToPng(state.deck.pages[i], scale);
-      results.push({ index: i, png, droppedElements, source: "foreignObject" });
+      results.push({
+        index: i,
+        png: new Uint8Array(await png.arrayBuffer()),
+        droppedElements,
+        source: "foreignObject",
+      });
     }
     return results;
   }
@@ -299,7 +304,7 @@ export function createImageExporter({ state }) {
       for (const r of results) for (const d of r.droppedElements || []) dropped.push({ page: r.index + 1, ...d });
       const pngs = results.map((r) => ({
         name: `${base}-${String(r.index + 1).padStart(2, "0")}.png`,
-        bytes: r.png instanceof Uint8Array ? r.png : new Uint8Array(r.png.buffer ?? r.png),
+        bytes: r.png,
       }));
 
       if (pngs.length === 1 || opts.mode === "files") {
