@@ -1,14 +1,14 @@
 // ============================================================================
-// gen-icon-registry.mjs — 从 Font Awesome Free 元数据生成 assets/icons/registry.json
+// gen-icon-registry.mjs — generate assets/icons/registry.json from Font Awesome Free metadata
 // ----------------------------------------------------------------------------
-// 数据源（CDN 一次性拉取，jsDelivr 主源 + unpkg 镜像）：
-//   metadata/icon-families.json — 每图标 label / aliases.names / search.terms /
-//     svgs.classic.<style>.{viewBox,width,height} / familyStylesByLicense（free 过滤）
-//   metadata/categories.yml     — 官方分类（id → {label, icons[]}）
-// 产物 registry.json：{ version, faVersion, license, prefixes, cats, icons:[…] }
-//   icons 条目 {name, w, h, styles(前缀数组), aliases?, terms?, label?, cat?}
-// SVG 本体不入库（.gitignore 同字体策略），CLI `open-pptd icons download` 拉取。
-// 重新生成：node scripts/gen-icon-registry.mjs [--fa 7.3.1]
+// Data sources (fetched once from CDN; jsDelivr primary + unpkg mirror):
+//   metadata/icon-families.json — per icon: label / aliases.names / search.terms /
+//     svgs.classic.<style>.{viewBox,width,height} / familyStylesByLicense (free filter)
+//   metadata/categories.yml     — official categories (id → {label, icons[]})
+// Output registry.json: { version, faVersion, license, prefixes, cats, icons:[…] }
+//   icons entries {name, w, h, styles(prefix array), aliases?, terms?, label?, cat?}
+// SVGs are not committed (.gitignore policy as for fonts); CLI `open-pptd icons download` fetches them.
+// Regenerate: node scripts/gen-icon-registry.mjs [--fa 7.3.1]
 // ============================================================================
 
 import { writeFileSync, mkdirSync } from "node:fs";
@@ -29,7 +29,7 @@ const SOURCES = (file) => [
   `https://unpkg.com/@fortawesome/fontawesome-free@${FA_VERSION}/${file}`,
 ];
 
-/** style 目录名 → 前缀（官方 iconName 前缀 ↔ FA classic 家族目录）。 */
+/** style dir name → prefix (official iconName prefix ↔ FA classic family dir). */
 const STYLE_TO_PREFIX = { solid: "fas", regular: "far", brands: "fab" };
 
 async function fetchText(url) {
@@ -65,7 +65,7 @@ async function main() {
   const fam = JSON.parse(famText);
   const cats = yaml.load(catText);
 
-  // 分类：name → 第一个所属分类 id（官方分类无重复归属的用首个）
+  // categories: name → first category id it belongs to (official categories have no duplicate membership, so the first wins)
   const catOf = new Map();
   for (const [id, def] of Object.entries(cats)) {
     for (const name of def.icons || []) {
@@ -78,14 +78,14 @@ async function main() {
   const icons = [];
   let skippedProOnly = 0;
   for (const [name, entry] of Object.entries(fam)) {
-    // free 许可且 classic 家族的样式才是可用样式
+    // only free-licensed classic-family styles are usable
     const freeStyles = (entry.familyStylesByLicense?.free || [])
       .filter((s) => s.family === "classic")
       .map((s) => s.style);
     const styles = [];
     for (const style of freeStyles) {
       const svg = entry.svgs?.classic?.[style];
-      if (!svg || typeof svg.width !== "number") continue; // 元数据残缺防御
+      if (!svg || typeof svg.width !== "number") continue; // guard against incomplete metadata
       styles.push(STYLE_TO_PREFIX[style]);
     }
     if (!styles.length) {
@@ -124,7 +124,7 @@ async function main() {
   };
 
   mkdirSync(dirname(OUT), { recursive: true });
-  // 每图标一行，便于 git diff 与 grep
+  // one icon per line, easier for git diff and grep
   const head = JSON.stringify({ ...registry, icons: undefined }).slice(0, -1).slice(1);
   const body = icons.map((i) => `  ${JSON.stringify(i)}`).join(",\n");
   writeFileSync(OUT, `{\n  ${head},\n  "icons": [\n${body}\n  ]\n}\n`);

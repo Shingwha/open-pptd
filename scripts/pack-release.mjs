@@ -1,29 +1,32 @@
 #!/usr/bin/env node
 // ============================================================================
-// pack-release.mjs — 按「运行时白名单」把 skill 打包为发布 zip
+// pack-release.mjs — package the skill as release zips according to the runtime whitelist
 // ----------------------------------------------------------------------------
-// 产物（dist/）：
-//   open-pptd-v<version>.zip         运行时（顶层目录 open-pptd/，解压到 skills 即用）
-//   open-pptd-icons-v<version>.zip   图标全量（solid/regular/brands/*.svg，不含 registry.json）
-//   open-pptd-fonts-v<version>.zip   字体全量（*.ttf，不含 registry.json）
-//   install.ps1 / install.sh         安装脚本副本（release 页可直接下载）
-//   SHA256SUMS                       覆盖以上全部 zip
+// Artifacts (dist/):
+//   open-pptd-v<version>.zip         runtime (top-level dir open-pptd/; unzip into skills and it works)
+//   open-pptd-icons-v<version>.zip   full icons (solid/regular/brands/*.svg, no registry.json)
+//   open-pptd-fonts-v<version>.zip   full fonts (*.ttf, no registry.json)
+//   install.ps1 / install.sh         copies of the install scripts (directly downloadable from the release page)
+//   SHA256SUMS                       covers all of the above zips
 //
-// 白名单是运行时发布内容的单一事实来源：tests/、docs/、examples/、.github/、
-// scripts/、图标源文件与 .gitignore 一律不进包；字体文件本体不入包
-// （约 155MB，装好后经 CLI 按需下载）。
-// 内容面（技能文档与知识库）已迁至独立技能仓 open-pptd-skill，本包只发运行时；
-// contract.json 入包（契约清单，供仓 3 与契约测试读取）。
+// The whitelist is the single source of truth for runtime release contents: tests/, docs/,
+// examples/, .github/, scripts/, icon source files and .gitignore never enter the package;
+// font files themselves do not enter the package (about 155MB; fetched on demand via CLI after
+// install). Content surfaces (skill docs and knowledge base) have moved to the separate skill
+// repo open-pptd-skill; this package ships runtime only. contract.json is included (contract
+// manifest, read by repo 3 and the contract tests).
 //
-// 资源本体（assets/fonts/*.ttf、assets/icons/{solid,regular,brands}/*.svg）不入 git，
-// 故资产 zip 以**本地工作树实际存在的文件**为准：本体缺失（如 CI）时跳过对应 zip
-// 并打印明确警告，绝不因此失败（CI 上产 runtime zip + SHA256SUMS 即为合法产物）。
+// Resource bodies (assets/fonts/*.ttf, assets/icons/{solid,regular,brands}/*.svg) are not
+// committed to git, so asset zips are based on **files actually present in the local working
+// tree**: when a body is missing (e.g. CI) the corresponding zip is skipped with a clear
+// warning, never failing (on CI, producing the runtime zip + SHA256SUMS is a valid artifact).
 //
-// 文件清单取自 git ls-files（仅 git 跟踪文件，本地未跟踪杂物不会混入）。
-// zip 容器自建：结构同 packages/writer/zip.js（复用其 crc32），压缩方法用
-// deflate；已压缩内容（如 minified js）自动退回 store，避免负收益。
+// The file list comes from git ls-files (git-tracked files only; untracked local junk won't leak in).
+// The zip container is built in-house: same layout as packages/writer/zip.js (reusing its crc32),
+// with deflate compression; already-compressed content (e.g. minified js) falls back to store to
+// avoid negative gains.
 //
-// 用法: npm run pack
+// Usage: npm run pack
 // ============================================================================
 
 import { execSync } from "node:child_process";
@@ -37,7 +40,7 @@ import { encodeUtf8 } from "../packages/model/bytes.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-// ---- 白名单：发布 zip 包含的文件/目录 ----
+// ---- Whitelist: files/dirs included in the release zip ----
 const WHITELIST = [
   "README.md",
   "README.en.md",
@@ -51,26 +54,27 @@ const WHITELIST = [
   "assets/icons/registry.json",
 ];
 
-// 前置检查：白名单条目必须存在
+// Preflight: every whitelist entry must exist
 const missing = WHITELIST.filter((p) => !existsSync(path.join(ROOT, p)));
 if (missing.length) {
   console.error(`✗ 白名单条目缺失: ${missing.join(", ")}`);
   process.exit(1);
 }
 
-// 工作树不干净时提醒（zip 内容取自当前工作树状态）
+// Warn when the working tree is dirty (zip contents come from the current working tree)
 try {
   const dirty = execSync("git status --porcelain", { cwd: ROOT, encoding: "utf8" }).trim();
   if (dirty) {
     console.log("! 工作树有未提交改动，zip 打包的是当前工作树状态而非最近提交");
   }
 } catch {
-  /* 无 git 环境时跳过 */
+  /* skip when git is unavailable */
 }
 
-// ---- 收集文件（限白名单路径）----
-// git ls-files --cached --others：已跟踪 + 未跟踪但未被 ignore 的工作树文件
-// （重构搬移后新目录尚未 git add 也要入包；工作树已删除的文件按 existsSync 剔除）
+// ---- Collect files (restricted to whitelist paths) ----
+// git ls-files --cached --others: tracked + untracked-but-not-ignored working-tree files (new
+// dirs from a refactor not yet git-added still enter the package; files deleted from the working
+// tree are dropped by existsSync)
 const tracked = execSync(`git ls-files --cached --others --exclude-standard -- ${WHITELIST.join(" ")}`, { cwd: ROOT, encoding: "utf8" })
   .split("\n")
   .map((s) => s.trim())
@@ -88,9 +92,9 @@ const files = tracked.map((rel) => {
   return { name: `open-pptd/${rel}`, data: readFileSync(abs), mtime: statSync(abs).mtime };
 });
 
-// ---- deflate 版最小 zip 写入器（布局与 packages/writer/zip.js 完全一致）----
+// ---- Minimal deflate zip writer (layout identical to packages/writer/zip.js) ----
 function dosDateTime(date) {
-  const year = Math.max(date.getFullYear(), 1980); // DOS 时间从 1980 起
+  const year = Math.max(date.getFullYear(), 1980); // DOS time starts at 1980
   return {
     time: (date.getHours() << 11) | (date.getMinutes() << 5) | (date.getSeconds() >> 1),
     date: ((year - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(),
@@ -113,9 +117,9 @@ function buildZip(entries) {
     const mtime = dosDateTime(e.mtime);
 
     const local = Buffer.alloc(30 + nameBytes.length);
-    local.writeUInt32LE(0x04034b50, 0); // 本地文件头签名
-    local.writeUInt16LE(20, 4); // 所需版本
-    local.writeUInt16LE(0x0800, 6); // 标志: 文件名 UTF-8
+    local.writeUInt32LE(0x04034b50, 0); // local file header signature
+    local.writeUInt16LE(20, 4); // version needed
+    local.writeUInt16LE(0x0800, 6); // flags: filename UTF-8
     local.writeUInt16LE(method, 8);
     local.writeUInt16LE(mtime.time, 10);
     local.writeUInt16LE(mtime.date, 12);
@@ -123,7 +127,7 @@ function buildZip(entries) {
     local.writeUInt32LE(payload.length, 18);
     local.writeUInt32LE(raw, 22);
     local.writeUInt16LE(nameBytes.length, 26);
-    local.writeUInt16LE(0, 28); // extra 长度
+    local.writeUInt16LE(0, 28); // extra length
     nameBytes.copy(local, 30);
     chunks.push(local, payload);
 
@@ -144,9 +148,9 @@ function buildZip(entries) {
   let cdSize = 0;
   for (const c of central) {
     const rec = Buffer.alloc(46 + c.nameBytes.length);
-    rec.writeUInt32LE(0x02014b50, 0); // 中央目录签名
-    rec.writeUInt16LE(20, 4); // 制作版本
-    rec.writeUInt16LE(20, 6); // 所需版本
+    rec.writeUInt32LE(0x02014b50, 0); // central directory signature
+    rec.writeUInt16LE(20, 4); // version made by
+    rec.writeUInt16LE(20, 6); // version needed
     rec.writeUInt16LE(0x0800, 8);
     rec.writeUInt16LE(c.method, 10);
     rec.writeUInt16LE(c.time, 12);
@@ -157,9 +161,9 @@ function buildZip(entries) {
     rec.writeUInt16LE(c.nameBytes.length, 28);
     rec.writeUInt16LE(0, 30); // extra
     rec.writeUInt16LE(0, 32); // comment
-    rec.writeUInt16LE(0, 34); // 起始盘号
-    rec.writeUInt16LE(0, 36); // 内部属性
-    rec.writeUInt32LE(0, 38); // 外部属性
+    rec.writeUInt16LE(0, 34); // disk number start
+    rec.writeUInt16LE(0, 36); // internal attributes
+    rec.writeUInt32LE(0, 38); // external attributes
     rec.writeUInt32LE(c.localOffset, 42);
     c.nameBytes.copy(rec, 46);
     chunks.push(rec);
@@ -167,12 +171,12 @@ function buildZip(entries) {
   }
 
   const eocd = Buffer.alloc(22);
-  eocd.writeUInt32LE(0x06054b50, 0); // EOCD 签名
-  eocd.writeUInt16LE(entries.length, 8); // 本盘条目数
-  eocd.writeUInt16LE(entries.length, 10); // 总条目数
+  eocd.writeUInt32LE(0x06054b50, 0); // EOCD signature
+  eocd.writeUInt16LE(entries.length, 8); // entries on this disk
+  eocd.writeUInt16LE(entries.length, 10); // total entries
   eocd.writeUInt32LE(cdSize, 12);
   eocd.writeUInt32LE(cdStart, 16);
-  eocd.writeUInt16LE(0, 20); // comment 长度
+  eocd.writeUInt16LE(0, 20); // comment length
   chunks.push(eocd);
 
   return Buffer.concat(chunks);
@@ -183,7 +187,7 @@ mkdirSync(outDir, { recursive: true });
 const mb = (n) => (n / 1024 / 1024).toFixed(2);
 const produced = []; // { file, entries }
 
-// ---- 1) 运行时 zip（白名单 ∪ contract.json）----
+// ---- 1) Runtime zip (whitelist ∪ contract.json) ----
 const runtimePath = path.join(outDir, `open-pptd-v${version}.zip`);
 writeFileSync(runtimePath, buildZip(files));
 produced.push(runtimePath);
@@ -191,7 +195,7 @@ const rawTotal = files.reduce((s, f) => s + f.data.length, 0);
 console.log(`✓ ${runtimePath}`);
 console.log(`  ${files.length} 个文件，${mb(rawTotal)}MB → 压缩后 ${mb(statSync(runtimePath).size)}MB`);
 
-// ---- 2) 资产 zip：以本地工作树实际存在的本体为准，缺失则跳过（不失败）----
+// ---- 2) Asset zips: based on bodies actually present in the local working tree; skip when missing (no failure) ----
 function walkFiles(dir) {
   const out = [];
   if (!existsSync(dir)) return out;
@@ -216,8 +220,9 @@ function packAssets(label, zipName, entries) {
   console.log(`  ${entries.length} 个文件，${mb(raw)}MB → 压缩后 ${mb(statSync(outPath).size)}MB`);
 }
 
-// 图标：assets/icons/{solid,regular,brands}/**/*.svg（不含 registry.json；保持目录结构，
-// 条目名相对 assets/icons → solid/…、regular/…、brands/…，install 脚本解到 assets/icons）
+// icons: assets/icons/{solid,regular,brands}/**/*.svg (no registry.json; directory structure
+// preserved, entry names relative to assets/icons → solid/…, regular/…, brands/…; the install
+// script extracts to assets/icons)
 const iconsRoot = path.join(ROOT, "assets", "icons");
 const iconEntries = walkFiles(iconsRoot)
   .filter((p) => p.endsWith(".svg"))
@@ -226,7 +231,8 @@ const iconEntries = walkFiles(iconsRoot)
   .map(({ rel, abs }) => ({ name: rel, data: readFileSync(abs), mtime: statSync(abs).mtime }));
 packAssets("图标资产包", `open-pptd-icons-v${version}.zip`, iconEntries);
 
-// 字体：assets/fonts/*.ttf（不含 registry.json；条目名 = 文件名，install 脚本解到 assets/fonts）
+// fonts: assets/fonts/*.ttf (no registry.json; entry name = file name; the install script
+// extracts to assets/fonts)
 const fontsRoot = path.join(ROOT, "assets", "fonts");
 const fontEntries = (existsSync(fontsRoot) ? readdirSync(fontsRoot, { withFileTypes: true }) : [])
   .filter((e) => e.isFile() && e.name.toLowerCase().endsWith(".ttf"))
@@ -238,7 +244,7 @@ const fontEntries = (existsSync(fontsRoot) ? readdirSync(fontsRoot, { withFileTy
   });
 packAssets("字体资产包", `open-pptd-fonts-v${version}.zip`, fontEntries);
 
-// ---- 3) 安装脚本副本（release 页可直接下载）----
+// ---- 3) Install-script copies (directly downloadable from the release page) ----
 for (const s of ["install.ps1", "install.sh"]) {
   const src = path.join(ROOT, s);
   if (!existsSync(src)) {
@@ -249,7 +255,7 @@ for (const s of ["install.ps1", "install.sh"]) {
   console.log(`✓ ${path.join(outDir, s)}`);
 }
 
-// ---- 4) SHA256SUMS（覆盖全部产出 zip）----
+// ---- 4) SHA256SUMS (covering all produced zips) ----
 const sumsLines = produced
   .map((p) => path.basename(p))
   .sort()
