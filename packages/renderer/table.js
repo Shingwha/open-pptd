@@ -44,9 +44,14 @@ export function renderTable(theme, el) {
   const { rowHeights, columnWidths } = lt
     ? { rowHeights: lt.rowHeights, columnWidths: lt.columnWidths }
     : estimateTableLayout(el);
-  // 总高已知 → 外层容器高度预设（精确值），底部边框不再被 overflow:hidden 裁掉
+  // 总高已知（layout 精确值）→ 外层容器高度预设，并把溢出放开：
+  // border-collapse 的外边框骑在表格边界上（约 1px 落在盒外），只设高度 + 默认
+  // overflow:hidden 会裁掉末行底边框（实测 tests/projects/table#9 第二张表）。
   const box = createElementShell(el, { height: false });
-  if (lt) box.style.height = `${lt.totalHeight}px`;
+  if (lt) {
+    box.style.height = `${lt.totalHeight}px`;
+    box.style.overflow = "visible";
+  }
   // 官方 Table.shadow → 导出 a:tblPr > a:effectLst，预览 box-shadow 同源投影
   const shadow = boxShadowCss(theme, el.shadow);
   if (shadow) box.style.boxShadow = shadow;
