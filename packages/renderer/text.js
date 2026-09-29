@@ -132,7 +132,8 @@ function renderTextContent(theme, content) {
   const base = computeBaseStyle(theme, content);
 
   const root = document.createElement("div");
-  const css = ["width:100%;height:100%;box-sizing:border-box;overflow:hidden;white-space:pre-line"];
+  // overflow:visible——文本永不裁剪（PowerPoint 不自动调整语义，见 renderText 注释）
+  const css = ["width:100%;height:100%;box-sizing:border-box;overflow:visible;white-space:pre-line"];
   // —— content 基础样式 → 容器层（一次，继承）；未设置时补齐官方默认值 ——
   css.push(`font-size:${base.fontSize || DEFAULT_FONT_SIZE}px`);
   const color = resolveColor(theme, base.color);
@@ -192,9 +193,12 @@ function renderTextContent(theme, content) {
   return root;
 }
 
-/** 文本元素 → 定位 DOM（定位 / 变换 / 标记统一走 renderer/shell.js）。 */
+/** 文本元素 → 定位 DOM（定位 / 变换 / 标记统一走 renderer/shell.js）。
+ * PowerPoint「不自动调整」语义（spec 10：文本永不因框小而消失）：盒高是作者声明，
+ * 内容溢出**可见**（shell + 内容根均 overflow:visible），不裁剪、不重定位。 */
 export function renderText(theme, el) {
   const box = createElementShell(el);
+  box.style.overflow = "visible"; // 覆盖 shell 默认 overflow:hidden：溢出文字可见
   box.appendChild(renderTextContent(theme, el.content));
   return box;
 }

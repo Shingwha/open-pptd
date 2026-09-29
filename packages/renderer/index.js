@@ -8,8 +8,10 @@
 // Node 专用，浏览器端 import 本入口会把 Node 代码拉进页面）。
 // ============================================================================
 
-// ---- 页面渲染（page.js，disposeChartInstances 由 page.js 再导出）----
-export { renderPage, autoGrowTexts, disposeChartInstances } from "./page.js";
+// ---- 页面绘制（page.js，disposeChartInstances 由 page.js 再导出）----
+// paintPage = 三段式管线的绘制入口（消费 LayoutTree）；renderPage/autoGrowTexts 为
+// 2.x 契约兼容面（renderPage 内部 layout → paintPage；autoGrowTexts 已废弃为空实现）。
+export { paintPage, renderPage, autoGrowTexts, disposeChartInstances } from "./page.js";
 
 // ---- 图标缩略图（icon.js）----
 export { iconThumb } from "./icon.js";
