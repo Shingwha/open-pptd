@@ -1,23 +1,20 @@
 // ============================================================================
-// app/project/loader.js — 加载与状态应用
+// app/project/loader.js — 加载与状态应用（传输接缝的薄适配）
 // ----------------------------------------------------------------------------
-// 单一模型：项目文件在磁盘（serve --project 挂载目录），浏览器经 HTTP 读取
-// （fetch /project/deck.pptd + pages/*.page，跨会话缓存见 project-cache.js）。
+// 不再自行 fetch：一律经注入的 ProjectSource（app/project/source.js）读取——
+//   loadDeck(url)        经 source.read(url)（HTTP / 自定义宿主实现）
+//   loadDeckFromHandle(h) 经 source.readFromHandle(h)（File System Access 句柄）
+// 状态应用逻辑集中在 source.js 的 applyDeck（导出，供 createEditor 复用）。
 // 依赖注入：images（图片映射重建）、fontManager（资源表字体恢复）、
-// connect（项目就绪后订阅实时刷新）、renderStatusBar（加载后刷新状态栏）。
+// source（运输）、connect（项目就绪后订阅实时刷新）、renderStatusBar（加载后刷新状态栏）。
 // ============================================================================
 
-import * as yaml from "../../../packages/model/vendor/js-yaml.mjs";
-import { parseDeck } from "../../../packages/model/pptd-io.js";
 import { resolveTheme, DEFAULT_THEME } from "../../../packages/model/theme.js";
-import { syncElementId } from "../../../packages/model/model.js";
-import { createHistory } from "../../interaction/history.js";
+import { applyDeck as applyDeckToState } from "./source.js";
 import { showToast } from "../toast.js";
-import { fetchProjectTexts } from "./project-cache.js";
-import { readProject } from "./handle-io.js";
 import { preloadIcons } from "./icons.js";
 
-export function createLoader({ state, view, images, fontManager, connect, renderStatusBar }) {
+export function createLoader({ state, view, images, fontManager, source, connect, renderStatusBar }) {
   const $ = (id) => document.getElementById(id);
 
   // --------------------------------------------------------------------------
@@ -65,25 +62,15 @@ export function createLoader({ state, view, images, fontManager, connect, render
   }
 
   /**
-   * 应用一份已解析的 PPTD 项目到编辑器状态：重置历史/选中/页面/图片映射/
-   * id 计数器并渲染（loadDeck 与手动刷新共用）。handle：本地项目句柄模式
-   * （官方文件夹选择器打开），None = URL 模式。
+   * 应用一份已解析的 PPTD 项目到编辑器状态（loadDeck 与手动刷新共用）。
+   * 实现已抽到 app/project/source.js 的 applyDeck（createEditor 复用同一份）。
+   * handle：本地项目句柄模式（官方文件夹选择器打开），null = URL 模式。
    */
   function applyDeck(manifestText, pageFiles, { manifestPath = "", handle = null, projectName = "" } = {}) {
-    state.deck = parseDeck(manifestText, pageFiles);
-    state.manifestPath = manifestPath;
-    state.projectHandle = handle;
-    state.projectName = projectName;
-    setBrandFile(handle ? projectName : manifestPath);
-    applyTheme(state.deck.theme || DEFAULT_THEME);
-    state.currentPage = 0;
-    state.selectedId = null;
-    state.history = createHistory();
-    state.savedDeck = structuredClone(state.deck); // 保存基线：撤销/重做回它即视为无未保存修改
-    state.dirty = false; // 刚从磁盘/服务器加载，无未保存修改
-    syncElementId(state.deck);
-    images.rebuildImageMap();
-    renderStatusBar();
+    applyDeckToState(
+      { manifestText, pageFiles, manifestPath, handle, projectName },
+      { state, images, renderStatusBar, setBrandFile, applyTheme }
+    );
   }
 
   /**
@@ -92,18 +79,20 @@ export function createLoader({ state, view, images, fontManager, connect, render
    */
   async function loadDeck(manifestUrl, { keepPage = false, silent = false } = {}) {
     const prevPage = state.currentPage;
-    // 跨会话缓存：二次打开同一项目直接命中（画廊与编辑器共用，见 project-cache.js）
-    const { manifestText, pageTexts, missing = 0 } = await fetchProjectTexts(manifestUrl, yaml.load);
-    applyDeck(manifestText, pageTexts, { manifestPath: manifestUrl });
-    await finishLoad(prevPage, { keepPage, silent, missing, viaHandle: false });
+    // 跨会话缓存（project-cache.js）由 httpSource.read 内部沿用，行为不变
+    const data = await source.read(manifestUrl);
+    applyDeck(data.manifestText, data.pageFiles, { manifestPath: data.manifestPath || manifestUrl });
+    await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0, viaHandle: false });
   }
 
   /** 本地项目句柄加载（官方文件夹选择器打开的项目，读文件不经 HTTP）。 */
   async function loadDeckFromHandle(handle, { keepPage = false, silent = false } = {}) {
     const prevPage = state.currentPage;
-    const { manifestText, pageTexts, missing = 0 } = await readProject(handle);
-    applyDeck(manifestText, pageTexts, { handle, projectName: handle.name || "本地项目" });
-    await finishLoad(prevPage, { keepPage, silent, missing, viaHandle: true });
+    const data = source.readFromHandle
+      ? await source.readFromHandle(handle)
+      : await source.read();
+    applyDeck(data.manifestText, data.pageFiles, { handle, projectName: handle.name || "本地项目" });
+    await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0, viaHandle: true });
   }
 
   /** 加载收尾（两种来源共用）：渐进加载——当前页资产先行首渲染，其余页后台

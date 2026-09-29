@@ -25,6 +25,7 @@ import { SHOT_ERROR_TITLE } from "../packages/model/model.js";
 import { makeZoomCtlDraggable } from "./app/view/zoom-ctl.js";
 import { bindProperties } from "./interaction/properties.js";
 import { ensurePermission } from "./app/project/handle-io.js";
+import { httpSource } from "./app/project/source.js";
 import { getRecent, getPendingProjectId, clearPendingProject, addRecent, setPendingProject } from "./app/project/handle-store.js";
 import { injectIcons } from "./icons.js";
 import { dom } from "./dom.js";
@@ -86,7 +87,7 @@ function initEditor(deckUrl, { blankToast = true } = {}) {
   // 缩放控件：拖拽换位（位置持久化，双击百分比归位）
   makeZoomCtlDraggable(dom.stage, dom.zoomCtl);
 
-  io = createIo({ state, view }); // 模块级 io：二次进入时复用（loadDeck）
+  io = createIo({ state, view, source: httpSource({ deckUrl }) }); // 模块级 io：二次进入时复用（loadDeck）
   api.fontOptions = () => io.fontManager.fontOptions(); // 元素字体下拉选项（延迟绑定，运行时取）
 
   // 放映模式（顶栏「放映」按钮 + F5 进入；present 暴露在 api 上供测试）
