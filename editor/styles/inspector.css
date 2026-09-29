@@ -189,6 +189,18 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .prop-field:last-child { margin-bottom: 0; }
 .prop-label { flex: 0 0 56px; color: var(--sub); }
 
+/* 多选「混合」占位（各元素取值不同）：斜体、只读、禁用 */
+.mix,
+input.mix {
+  color: var(--faint);
+  font-style: italic;
+}
+input.mix:disabled {
+  background: var(--bg);
+  opacity: 1;
+  cursor: default;
+}
+
 .prop-field input[type="number"],
 .prop-field input[type="text"],
 .prop-field select,
