@@ -90,7 +90,7 @@ export function createLoader({ state, view, ops, images, fontManager, source, co
     // Cross-session caching (project-cache.js) is reused inside httpSource.read, behavior unchanged
     const data = await source.read(manifestUrl);
     applyDeck(data.manifestText, data.pageFiles, { manifestPath: data.manifestPath || manifestUrl });
-    await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0, viaHandle: false });
+    await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0 });
   }
 
   /** Load a local project handle (opened via the OS folder picker; file reads bypass HTTP). */
@@ -100,7 +100,7 @@ export function createLoader({ state, view, ops, images, fontManager, source, co
       ? await source.readFromHandle(handle)
       : await source.read();
     applyDeck(data.manifestText, data.pageFiles, { handle, projectName: handle.name || "本地项目" });
-    await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0, viaHandle: true });
+    await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0 });
   }
 
   /** Apply an already-read/given project directly (createEditor options.deck and the source.read path). */
@@ -111,7 +111,7 @@ export function createLoader({ state, view, ops, images, fontManager, source, co
       handle: null,
       projectName: "",
     });
-    await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0, viaHandle: false });
+    await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0 });
   }
 
   /** Load finishing (shared by both sources): progressive loading — the current
@@ -119,11 +119,12 @@ export function createLoader({ state, view, ops, images, fontManager, source, co
    *  background (thumbnail skeleton → real render), fonts restore in parallel
    *  (fallback fonts meanwhile) then everything re-renders. The render layer shows
    *  a "load failed" placeholder for not-yet-ready images, so only the current
-   *  page's assets are awaited before the first render. */
-  async function finishLoad(prevPage, { keepPage, silent, missing, viaHandle }) {
+   *  page's assets are awaited before the first render.
+   *  Media always goes through the one images gate (images.preloadImages): the
+   *  injected source decides handle vs URL, so the loader keeps no mode branch. */
+  async function finishLoad(prevPage, { keepPage, silent, missing }) {
     if (keepPage) state.currentPage = Math.min(prevPage, Math.max(0, state.deck.pages.length - 1));
-    const preloadPage = (pg) =>
-      viaHandle ? images.preloadHandleImages(state.projectHandle, [pg]) : images.preloadRemoteImages([pg]);
+    const preloadPage = (pg) => images.preloadImages(source, [pg]);
 
     // Start fonts first (do not block rendering; text uses fallback fonts meanwhile and re-renders once all are in)
     const fontsDone = fontManager.restoreFromDeck().catch((err) => {
