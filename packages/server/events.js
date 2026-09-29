@@ -1,9 +1,10 @@
 // ============================================================================
-// server/events.js — SSE 变更推送（/events）
+// server/events.js — SSE change push (/events)
 // ----------------------------------------------------------------------------
-// 项目文件变更 → 广播给所有订阅的编辑器（EventSource）。
-// 实现：服务端轮询目录指纹（fs.watch 在容器/网络盘等挂载场景不可靠），
-// 指纹变化时向所有已连接客户端发送 message。零依赖（Node 原生）。
+// Project file change → broadcast to every subscribed editor (EventSource).
+// Implementation: the server polls a directory fingerprint (fs.watch is
+// unreliable on container/network mounts) and sends message to all connected
+// clients when the fingerprint changes. Zero dependencies (Node built-ins).
 // ============================================================================
 
 import { readdirSync, statSync } from "node:fs";
@@ -12,8 +13,9 @@ import { join } from "node:path";
 const POLL_INTERVAL_MS = 800;
 
 /**
- * 递归扫描目录，返回文件指纹（相对路径 + mtimeMs + size，排序后拼接）。
- * 排除隐藏目录（.git 等）与 node_modules，避免无关写入误触发刷新。
+ * Recursively scan a directory and return a fingerprint (relative path + mtimeMs
+ * + size, sorted and joined). Hidden dirs (.git etc.) and node_modules are
+ * excluded so unrelated writes do not trigger a refresh.
  */
 export function dirFingerprint(root) {
   const parts = [];
@@ -34,7 +36,8 @@ export function dirFingerprint(root) {
 }
 
 /**
- * 创建 SSE 推送中心。仅 --project 挂载时有意义（调用方保证 projectRoot 非空）。
+ * Create the SSE push hub. Only meaningful with --project mount (the caller
+ * guarantees a non-empty projectRoot).
  * @returns {{ handle(req, res): void }}
  */
 export function createSseHub(projectRoot) {
@@ -58,7 +61,7 @@ export function createSseHub(projectRoot) {
         }
       }
     }, POLL_INTERVAL_MS);
-    timer.unref?.(); // 不阻止进程退出
+    timer.unref?.(); // do not keep the process alive
   }
 
   function handle(req, res) {
