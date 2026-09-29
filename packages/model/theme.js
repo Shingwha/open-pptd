@@ -1,15 +1,16 @@
 // ============================================================================
-// theme.js — 主题令牌系统（严格对齐官方 PPTD Theme）
+// theme.js — theme token system (strictly aligned with official PPTD Theme)
 // ----------------------------------------------------------------------------
-// 官方结构（references/pptd.md §3 Theme）：
+// Official structure (references/pptd.md §3 Theme):
 //   Theme = { colors: Record<string, Color>, textStyles: Record<string, TextStyleConfig>,
 //             tableStyles: Record<string, TableStyleConfig> }
-// 原则：任何元素未显式设置的样式，一律从主题取；局部只存"覆盖"。
-// 渲染器（DOM）与 writer（OOXML）共享本模块：渲染取 hex，导出映射 schemeClr。
+// Principle: any style an element does not set explicitly is taken from the theme;
+// locals only store overrides. The renderer (DOM) and the writer (OOXML) share this
+// module: the renderer takes hex, the export maps to schemeClr.
 //
-// 非官方扩展（保留，官方编辑器宽容忽略）：
-//   - deck.fonts 字体资源表（{key: {family, url/file, subset}}）→ 本编辑器字体嵌入
-//   - TextContent.style / Cell.textStyle / Table.style 均按官方字符串 "$key" 引用
+// Non-official extensions (kept; official editors ignore them leniently):
+//   - deck.fonts font resource table ({key: {family, url/file, subset}}) -> this editor's font embedding
+//   - TextContent.style / Cell.textStyle / Table.style all reference by official "$key" string
 // ============================================================================
 
 import { DEFAULT_THEME, THEME_PALETTES } from "./theme-presets.js";
@@ -20,10 +21,12 @@ export { DEFAULT_THEME, THEME_PALETTES } from "./theme-presets.js";
 const HEX_RE = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
 /**
- * 归一化主题：深合并默认主题（官方结构）。
- * 官方 theme 永远是对象（references/pptd.md §Theme）。兼容 v1 遗留字符串键：
- * 命中内置预设（THEME_PALETTES，如 "tech"）→ 取其 colors + 默认 textStyles/tableStyles；
- * 未知键 → 告警并回退默认主题（不再静默，避免 "theme: blue" 悄悄变成默认色）。
+ * Normalize a theme: deep-merge over the default theme (official structure).
+ * An official theme is always an object (references/pptd.md §Theme). Compatible with
+ * legacy v1 string keys: a hit among the built-in presets (THEME_PALETTES, e.g. "tech")
+ * takes its colors plus the default textStyles/tableStyles; an unknown key warns and
+ * falls back to the default theme (no longer silent, so "theme: blue" cannot quietly
+ * become the default palette).
  */
 export function normalizeTheme(input) {
   const base = JSON.parse(JSON.stringify(DEFAULT_THEME));
@@ -53,8 +56,8 @@ function deepMerge(target, source) {
 }
 
 /**
- * 解析颜色：支持 "$key" 主题 colors 引用、#RRGGBB、#RRGGBBAA。
- * 未知主题键 → 黑色并告警（宽容，不崩溃）。
+ * Resolve a color: supports "$key" theme colors references, #RRGGBB and #RRGGBBAA.
+ * Unknown theme key -> black plus a warning (lenient, never throws).
  */
 export function resolveColor(theme, color) {
   if (color == null) return null;
@@ -70,12 +73,13 @@ export function resolveColor(theme, color) {
 }
 
 /**
- * 应用配色预设：预设键覆盖，deck 已有的其余自定义色键保留。
- * AI 生成 deck 常在 theme.colors 里自定义 $gold/$paper 等键且被页面引用，
- * 整套替换会令这些引用全部变 unknown color token 回退黑色。
- * @param {object} currentColors 现有 colors（预设键以外的键保留）
- * @param {object} presetColors  预设 colors（其键优先）
- * @returns {object} 合成后的新 colors
+ * Apply a color preset: preset keys win, other custom color keys already on the deck
+ * are kept. AI-generated decks often define $gold/$paper etc. in theme.colors and
+ * pages reference them; replacing the whole set would turn every such reference into
+ * an unknown color token falling back to black.
+ * @param {object} currentColors existing colors (keys outside the preset are kept)
+ * @param {object} presetColors  preset colors (its keys take precedence)
+ * @returns {object} the composed new colors
  */
 export function mergePaletteColors(currentColors, presetColors) {
   const out = { ...(presetColors || {}) };
@@ -86,11 +90,13 @@ export function mergePaletteColors(currentColors, presetColors) {
 }
 
 /**
- * 解析字体：字符串或 {latin, ea} → {latin, ea}（未指定侧回退默认 "Microsoft YaHei"）。
- * 字符串形式（如 "KaiTi"）= 中西文统一用该字体：latin+ea 双槽同写——
- * OOXML 中文字符走 ea 槽，只写 latin 会导致中文回退默认字体。
- * 字符串先查主题字体资源表（资源 key → family）。
- * 对象形式 {latin, ea} 为显式分工（官方 FontFamily），原样保留。
+ * Resolve a font: string or {latin, ea} -> {latin, ea} (an unspecified side falls
+ * back to the default "Microsoft YaHei").
+ * The string form (e.g. "KaiTi") means one font for both Latin and CJK: latin+ea are
+ * written to both slots — CJK characters go through the ea slot in OOXML, so writing
+ * only latin makes CJK fall back to the default font.
+ * A string first looks up the theme font resource table (resource key -> family).
+ * The object form {latin, ea} is an explicit split (official FontFamily) and is kept as is.
  */
 export function resolveFont(theme, font) {
   if (font && typeof font === "object") {
@@ -107,14 +113,14 @@ export function resolveFont(theme, font) {
   return { latin: DEFAULT_FONT, ea: DEFAULT_FONT };
 }
 
-/** 官方默认字体（Style Priority 默认值：fontFamily = "Microsoft YaHei"，系统自带、仅声明不嵌入）。 */
+/** Official default font (Style Priority default: fontFamily = "Microsoft YaHei", system-provided, declared but never embedded). */
 export const DEFAULT_FONT = "Microsoft YaHei";
 
 /**
- * 图表系列色循环（官方 §3.1 "Theme.colors theme color cycle"）：
- * 与 PPTX 主题槽位（writer/parts.js themeColorSlots）同一语义——
- * accent1/2 固定 = primary/accent，accent3-6 走相同回退链。
- * 返回 6 色 hex 数组，按系列出现顺序循环取用。
+ * Chart series color cycle (official §3.1 "Theme.colors theme color cycle"):
+ * same semantics as the PPTX theme slots (writer/parts.js themeColorSlots) —
+ * accent1/2 are fixed to primary/accent, accent3-6 use the same fallback chain.
+ * Returns a 6-color hex array, consumed cyclically in series order.
  */
 export function themeChartPalette(theme) {
   const c = theme?.colors || {};
@@ -127,20 +133,23 @@ export function themeChartPalette(theme) {
     get("accent5", c.danger || DEFAULT_THEME.colors.primary),
     get("accent6", c.primaryDeep || DEFAULT_THEME.colors.accent),
   ];
-  return vals.map((v) => resolveColor(theme, v) || v); // 解析失败保留原值（消费端宽容）
+  return vals.map((v) => resolveColor(theme, v) || v); // keep the raw value when resolution fails (lenient consumers)
 }
 
 /**
- * deck 级字体声明（扩展字段）挂到主题：只解析字体资源表（fontResources）。
- * v1 组件槽（fonts.title/body/… 字符串）已废弃（官方等价能力 = theme.textStyles
- * .<key>.fontFamily），遇旧项目警告并忽略。
+ * Attach the deck-level font declarations (extension field) to the theme: only the
+ * font resource table (fontResources) is parsed. The v1 component slots
+ * (fonts.title/body/… strings) are deprecated (the official equivalent is
+ * theme.textStyles.<key>.fontFamily); legacy projects get a warning and the entries
+ * are ignored.
  */
 export function mergeFonts(theme, fonts) {
   theme.fontResources = parseFontResources(fonts);
   if (!fonts || typeof fonts !== "object") return theme;
   const v1Slots = ["latin", "ea", "title", "subtitle", "body", "caption", "quote", "table", "chart"];
   for (const key of v1Slots) {
-    // 仅字符串值才是 v1 遗留（v1 槽 = 字体名字符串）；v2 资源声明是对象，不警告
+    // Only a string value is a v1 leftover (a v1 slot holds a font-name string);
+    // v2 resource declarations are objects and do not warn
     if (typeof fonts[key] === "string") {
       console.warn(`[theme] deck.fonts.${key} 组件槽已废弃（官方用 theme.textStyles.<key>.fontFamily），已忽略`);
     }
@@ -149,16 +158,17 @@ export function mergeFonts(theme, fonts) {
 }
 
 /**
- * deck → 渲染用主题（normalizeTheme + deck.fonts 合成的组合入口）：
- * 编辑器加载/撤销快照、画廊加载共用的唯一表达式。
+ * deck -> render theme (the combined entry of normalizeTheme + deck.fonts):
+ * the single expression shared by editor load/undo snapshots and gallery loading.
  */
 export function resolveTheme(deck) {
   return mergeFonts(normalizeTheme(deck?.theme), deck?.fonts);
 }
 
 /**
- * 解析文字样式：接受 "$key" 引用、TextStyleConfig 对象或 null。
- * 返回"已解析为具体值"的样式对象（color 保留主题引用，渲染器/writer 各自解析）。
+ * Resolve a text style: accepts a "$key" reference, a TextStyleConfig object or null.
+ * Returns a style object "resolved to concrete values" (color keeps the theme
+ * reference; the renderer and the writer each resolve it themselves).
  */
 export function resolveTextStyle(theme, styleRef) {
   if (typeof styleRef === "string" && styleRef.startsWith("$")) {
@@ -173,12 +183,13 @@ export function resolveTextStyle(theme, styleRef) {
 }
 
 // ----------------------------------------------------------------------------
-// 表格样式（官方 TableStyleConfig 解析与继承链）
+// Table styles (official TableStyleConfig resolution and inheritance chain)
 // ----------------------------------------------------------------------------
 
 /**
- * 解析表格样式引用：接受 "$key"（theme.tableStyles）、内联 TableStyleConfig 或 null。
- * 返回原始 TableStyleConfig（颜色保留 $ 引用）；null/未知 key → {}（消费端走官方默认值）。
+ * Resolve a table style reference: accepts "$key" (theme.tableStyles), an inline
+ * TableStyleConfig or null. Returns the raw TableStyleConfig (colors keep the $
+ * reference); null/unknown key -> {} (consumers then use the official defaults).
  */
 export function resolveTableStyle(theme, styleRef) {
   if (typeof styleRef === "string" && styleRef.startsWith("$")) {
@@ -191,17 +202,14 @@ export function resolveTableStyle(theme, styleRef) {
 }
 
 /**
- * 计算单元格最终样式（官方继承链，优先级低 → 高）：
- *   cellStyle 基底 → bodyStyles 循环（数据行，按数据行索引）→ 位置分类
- *   （firstRow/lastRow/firstColumn/lastColumn，rowOverColumn 仲裁，默认 true = 行优先）
- * 返回合并后的 CellStyle 具体字段（颜色保留 $ 引用，消费端 resolveColor）。
- * 单元格内联字段（C2 Cell 对象）优先级最高，本函数不涉及。
- */
-/**
- * 单元格文字样式合并（官方继承链单源，预览 cellFinal 与导出 tcXml 共用同一实现）：
- * Cell 内联字段 > Cell.textStyle 引用 > 位置分类（resolveTableCellStyle）> 默认。
- * lineHeightPx（固定 px）与 lineHeight（倍数）分字段返回，lineHeightPx 优先，
- * 两端各自投影（CSS line-height / a:lnSpc）。合并逻辑此前两端各写一份易漂移。
+ * Merge cell text styles (single source for the official inheritance chain; preview
+ * cellFinal and export tcXml share this implementation):
+ * Cell inline fields > Cell.textStyle reference > position class
+ * (resolveTableCellStyle) > default.
+ * lineHeightPx (fixed px) and lineHeight (multiplier) are returned as separate
+ * fields with lineHeightPx taking precedence, and each side projects them itself
+ * (CSS line-height / a:lnSpc). The merge logic used to be written twice, which
+ * drifted easily.
  */
 export function cellTextStyle(theme, ts, r, c, rowCount, colCount, cell) {
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
@@ -220,19 +228,29 @@ export function cellTextStyle(theme, ts, r, c, rowCount, colCount, cell) {
   };
 }
 
+/**
+ * Compute the final cell style (official inheritance chain, low -> high priority):
+ *   cellStyle base -> bodyStyles cycle (data rows, by data-row index) -> position
+ *   class (firstRow/lastRow/firstColumn/lastColumn, arbitrated by rowOverColumn,
+ *   default true = rows win)
+ * Returns the merged concrete CellStyle fields (colors keep the $ reference, the
+ * consumer applies resolveColor). Cell inline fields (the C2 Cell object) have the
+ * highest priority and are not part of this function.
+ */
 export function resolveTableCellStyle(ts, r, c, rowCount, colCount) {
   const merged = {};
   const apply = (style) => {
     if (!style || typeof style !== "object") return;
     for (const [k, v] of Object.entries(style)) {
-      // 只跳过 undefined，保留显式 null（BorderSpec 顶层 null = 四边清除语义，
-      // 合并时若丢弃 null，border 会回落到默认 1px 黑边框）
+      // Skip only undefined, keep explicit null (a top-level null BorderSpec means
+      // "clear all four sides"; dropping null during the merge would make border fall
+      // back to the default 1px black frame)
       if (v !== undefined) merged[k] = v;
     }
   };
-  // 1. 基底（最低优先级，先应用）
+  // 1. base (lowest priority, applied first)
   apply(ts.cellStyle);
-  // 2. 数据行斑马纹（排除首/末行，按数据行索引 r-1 循环）
+  // 2. data-row zebra striping (excluding first/last row, cycling by data-row index r-1)
   const isFirstRow = r === 0;
   const isLastRow = r === rowCount - 1;
   if (!isFirstRow && !isLastRow) {
@@ -240,13 +258,13 @@ export function resolveTableCellStyle(ts, r, c, rowCount, colCount) {
     const body = (ts.bodyStyles || [])[dataIdx % Math.max(1, (ts.bodyStyles || []).length)];
     apply(body);
   }
-  // 3. 位置分类样式（行 vs 列冲突时 rowOverColumn 仲裁，默认 true = 行优先）
+  // 3. position-class styles (row vs column conflict arbitrated by rowOverColumn, default true = rows win)
   const isFirstCol = c === 0;
   const isLastCol = c === colCount - 1;
   const rowStyle = isFirstRow ? ts.firstRowStyle : isLastRow ? ts.lastRowStyle : null;
   const colStyle = isFirstCol ? ts.firstColumnStyle : isLastCol ? ts.lastColumnStyle : null;
   if (rowStyle && colStyle) {
-    const rowWins = ts.rowOverColumn !== false; // 默认 true
+    const rowWins = ts.rowOverColumn !== false; // default true
     apply(rowWins ? rowStyle : colStyle);
   } else {
     apply(rowStyle);

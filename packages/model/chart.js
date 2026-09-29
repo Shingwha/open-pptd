@@ -1,19 +1,21 @@
 // ============================================================================
-// model/chart.js — 图表模型公共出口（barrel；渲染器与 writer 共享，唯一实现）
+// model/chart.js — chart model public entry (barrel; shared by renderer and writer, single implementation)
 // ----------------------------------------------------------------------------
-// 按域拆分（chart/ 目录，本文件只做 re-export，公共导出面与拆分前一致）：
-//   chart/meta.js    13 类型注册表、官方默认值、encode 重映射
-//   chart/resolve.js 归一化（seriesDefaults 合并 / encode 取数 / 默认取色 / 共存校验）
-//   chart/layout.js  布局语义单源（柱状 barWidth/barGap + 绘图区 resolvePlotLayout → OOXML + ECharts 投影）
-//   chart/axes.js    轴配置归一化、方向判定、系列轴索引与数据通道
-//   chart/colors.js  取色与派生（主题色循环 / HEX8 / HSL.L 层级派生 / HEX 解析）
-//   chart/labels.js  数据标签解析（§3.3 链）
-//   chart/data.js    ChartData 表格工具（xlsx 嵌入、数值列判定、列字母）
-//   chart/tree.js    treemap/sunburst 父子表 → 树解析（预览嵌套与导出叶子路径共用）
-//   chart/format.js  numberFormat 唯一解释器（预览/SSR；词表锚点）
-//   chart/title-legend.js 标题/图例有效配置（string|Config → 单一形态）
-//   chart/spec.js    图表有效语义单源 resolveChartSpec（预览/导出共同投影）
-// 新增导出时在对应域模块实现并在此登记；消费方一律 import 本文件，不深引 chart/ 内部。
+// Split by domain (chart/ directory; this file only re-exports, the public export
+// surface is unchanged from before the split):
+//   chart/meta.js    13-type registry, official defaults, encode remapping
+//   chart/resolve.js normalization (seriesDefaults merge / encode lookup / default color / coexistence validation)
+//   chart/layout.js  layout-semantics single source (bar barWidth/barGap + plot resolvePlotLayout -> OOXML + ECharts projection)
+//   chart/axes.js    axis config normalization, direction detection, series axis index and data channels
+//   chart/colors.js  color lookup and derivation (theme color cycle / HEX8 / HSL.L hierarchy derivation / HEX parsing)
+//   chart/labels.js  data label resolution (§3.3 chain)
+//   chart/data.js    ChartData table utilities (xlsx embed, numeric column detection, column letters)
+//   chart/tree.js    treemap/sunburst parent-child table -> tree parsing (preview nesting and export leaf path share it)
+//   chart/format.js  sole numberFormat interpreter (preview/SSR; vocabulary anchor)
+//   chart/title-legend.js effective title/legend config (string|Config -> single form)
+//   chart/spec.js    chart effective-semantics single source resolveChartSpec (preview/export common projection)
+// Register new exports in the matching domain module and list them here; consumers
+// always import this file, never a chart/ internals path.
 // ============================================================================
 
 export { CHART_META, CHART_TYPE_ORDER, CHART_DEFAULTS, remapEncode, chartRouteOf } from "./chart/meta.js";

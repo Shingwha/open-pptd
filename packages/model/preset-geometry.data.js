@@ -1,17 +1,18 @@
 // ============================================================================
-// preset-geometry.data.js — 预置形状几何（AUTO-GENERATED，勿手改）
+// preset-geometry.data.js — preset shape geometry (AUTO-GENERATED, do not edit by hand)
 // ----------------------------------------------------------------------------
-// 来源：ECMA-376 Part 1 5th ed. 附录 presetShapeDefinitions.xml（187 种全部收录）
-// 重新生成：node scripts/gen-preset-geometry.mjs <presetShapeDefinitions.xml>
-// 求值器见 preset-geometry.js；path 命令：M/L/C/Q/A(arcTo)/Z，支持多路径（fill 明暗面/描边细节）。
+// Source: ECMA-376 Part 1 5th ed. appendix presetShapeDefinitions.xml (all 187 shapes)
+// Regenerate: node scripts/gen-preset-geometry.mjs <presetShapeDefinitions.xml>
+// Evaluator in preset-geometry.js; path commands: M/L/C/Q/A(arcTo)/Z, multiple paths
+// supported (fill shading faces / stroke detail).
 // ============================================================================
 
 /**
- * 形状定义：
- *   label 中文标签 / category 菜单分类
- *   adjNames/adjDefault（avLst 调整值默认）、guides（gdLst 公式，按序求值）
- *   paths: [fill, stroke, viewBox, cmds]——fill: null=实心主轮廓, 'none'=仅描边,
- *     'lighten'/'darken'/'lightenLess'/'darkenLess'=明暗面; cmds: M/L/C/Q/A/Z
+ * Shape definition:
+ *   label display label / category menu category
+ *   adjNames/adjDefault (avLst adjustment defaults), guides (gdLst formulas, evaluated in order)
+ *   paths: [fill, stroke, viewBox, cmds] — fill: null = solid main outline, 'none' = stroke only,
+ *     'lighten'/'darken'/'lightenLess'/'darkenLess' = shading faces; cmds: M/L/C/Q/A/Z
  */
 export const PRESET_SHAPES = {
   accentBorderCallout1: {

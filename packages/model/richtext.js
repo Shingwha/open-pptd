@@ -1,10 +1,11 @@
 // ============================================================================
-// richtext.js — 统一富文本 DSL 解析（渲染器与 writer 共享）
+// richtext.js — unified rich-text DSL parsing (shared by renderer and writer)
 // ----------------------------------------------------------------------------
-// 输入：PPTD 富文本 DSL（<p>/<span style>/<strong>/<em>/<u>/<s>/<sup>/<sub>/
-//       <a href>/<ul>/<ol>/<li>/<br>，style 属性支持常用子集）
-// 输出：{ paragraphs: [ { style, listType, runs: [ { text, style, href } ] } ] }
-// 样式字段"未设置即省略"，继承链在消费端（渲染/导出）统一处理。
+// Input: PPTD rich-text DSL (<p>/<span style>/<strong>/<em>/<u>/<s>/<sup>/<sub>/
+//        <a href>/<ul>/<ol>/<li>/<br>, with a common subset supported in the style attribute)
+// Output: { paragraphs: [ { style, listType, runs: [ { text, style, href } ] } ] }
+// Style fields are "omitted when unset"; the inheritance chain is handled uniformly on
+// the consumer side (render/export).
 // ============================================================================
 
 import { decodeEntities } from "./escape.js";
@@ -13,13 +14,14 @@ const BLOCK_TAGS = new Set(["p", "li"]);
 const LIST_TAGS = new Set(["ul", "ol"]);
 const INLINE_TAGS = new Set(["span", "strong", "em", "u", "s", "sup", "sub", "a", "br"]);
 
-// LaTeX 公式分隔符：\(...\)（官方 PPTD 富文本规范）。公式内不允许富文本标签，
-// 且只继承 color / font-size 两种样式（官方规定）。
+// LaTeX formula delimiters: \(...\) (official PPTD rich-text spec). Rich-text tags are not
+// allowed inside a formula, and only color / font-size styles are inherited (official rule).
 const FORMULA_RE = /\\\(([\s\S]*?)\\\)/g;
 
-// 标签分支：<tag ...> / </tag> / <tag .../>；文本分支：(?:[^<]|<(?![a-zA-Z/]))+
-// 允许孤立 < 作为文本（后跟空格/\数字等非标签起始字符时，如公式里的比较符
-// "<"、普通文本 "a < b"）——否则 < 会被两个分支同时漏掉而静默丢失。
+// Tag branch: <tag ...> / </tag> / <tag .../>; text branch: (?:[^<]|<(?![a-zA-Z/]))+
+// A lone < is allowed as text (when followed by a space/digit or another non-tag-start
+// character, e.g. the comparison operator "<" in a formula or plain prose "a < b") —
+// otherwise < would fall through both branches and be lost silently.
 const TOKEN_RE = /<\/?([a-zA-Z][\w-]*)((?:\s+[^<>]*?)?)\/?>|((?:[^<]|<(?![a-zA-Z\/]))+)/g;
 
 function extractAttr(attrStr, name) {
@@ -27,7 +29,7 @@ function extractAttr(attrStr, name) {
   return m ? m[1] : null;
 }
 
-/** 解析内联 style="..." 为样式对象（单位统一为 px/pt 数值，主题引用保留 $xxx）。 */
+/** Parse an inline style="..." into a style object (units normalized to px/pt numbers, theme references kept as $xxx). */
 function parseCss(styleStr) {
   const out = {};
   if (!styleStr) return out;
@@ -103,7 +105,7 @@ function parseCss(styleStr) {
 }
 
 // ----------------------------------------------------------------------------
-// Tokenize + 递归解析为节点树
+// Tokenize + recursively parse into a node tree
 // ----------------------------------------------------------------------------
 function tokenize(input) {
   const tokens = [];
@@ -132,7 +134,7 @@ function parseNodes(tokens, i, stack) {
       continue;
     }
     if (tok.isClose) {
-      return { nodes, i: i + 1 }; // 消费闭合标签，避免重复返回
+      return { nodes, i: i + 1 }; // consume the closing tag so it is not returned twice
     }
     // open tag
     const tagStyle = parseCss(extractAttr(tok.attrs, "style") || "");
@@ -145,7 +147,7 @@ function parseNodes(tokens, i, stack) {
       selfClose: tok.selfClose,
     };
     if (!INLINE_TAGS.has(tok.name) && !BLOCK_TAGS.has(tok.name) && !LIST_TAGS.has(tok.name)) {
-      // 未知标签：视为纯文本，不吞内容
+      // unknown tag: treated as plain text, does not swallow the content
       i += 1;
       continue;
     }
@@ -163,7 +165,7 @@ function parseNodes(tokens, i, stack) {
 }
 
 // ----------------------------------------------------------------------------
-// 节点树 → 段落/run 树
+// Node tree -> paragraph/run tree
 // ----------------------------------------------------------------------------
 function mergeStyle(base, extra) {
   if (!extra) return base;
@@ -173,7 +175,7 @@ function mergeStyle(base, extra) {
 function nodesToParagraphs(nodes) {
   const paragraphs = [];
   let para = null; // { style, listType, runs }
-  const styleStack = [{}]; // 内联样式栈（合并链）
+  const styleStack = [{}]; // inline style stack (merge chain)
   let listType = null; // ul | ol | null
 
   const flushPara = () => {
@@ -198,7 +200,7 @@ function nodesToParagraphs(nodes) {
       para.runs.push({ text, style, href: h });
     }
   };
-  /** 公式 run：只继承当前上下文的 color / font-size（官方规范），不参与 run 合并。 */
+  /** Formula run: inherits only color / font-size from the current context (official spec), takes no part in run merging. */
   const pushFormula = (latex, extraStyle) => {
     ensurePara();
     const merged = mergeStyle(styleStack[styleStack.length - 1], extraStyle);
@@ -212,9 +214,9 @@ function nodesToParagraphs(nodes) {
   const walk = (nodeList) => {
     for (const node of nodeList) {
       if (node.type === "text") {
-        // 跳过全空白文本节点（标签间换行/缩进），避免产生空段落
+        // skip all-whitespace text nodes (newlines/indentation between tags) to avoid empty paragraphs
         if (!node.text.trim()) continue;
-        // 文本中混排公式：\(...\) 拆分为 formula run（官方 PPTD 富文本规范）
+        // Formulas mixed into text: split \(...\) into formula runs (official PPTD rich-text spec)
         let last = 0;
         let m;
         FORMULA_RE.lastIndex = 0;
@@ -259,7 +261,7 @@ function nodesToParagraphs(nodes) {
         listType = prev;
         continue;
       }
-      // 内联标签
+      // inline tag
       if (name === "strong") styleStack.push({ bold: true });
       else if (name === "em") styleStack.push({ italic: true });
       else if (name === "u") styleStack.push({ underline: true });
@@ -276,32 +278,34 @@ function nodesToParagraphs(nodes) {
   walk(nodes);
   flushPara();
 
-  // 归一化段落末尾换行（保持预览与导出一致，修复导出文本框末尾多出空行）：
-  // contenteditable/textarea 编辑结束时常在末尾遗留 <br/>、空 <p> 或以 \n 收尾；
-  // 预览的 white-space:pre-line 会折叠段落末尾的换行，但导出时尾部 \n 会序列化为
-  // <a:br/> + 空 run，PowerPoint 会渲染成多余空行。
-  // 规则：每段去掉最后一个 run 尾部的 \n；末尾的空段（仅换行/空白）整段丢弃；
-  // 文本中间独立的 <br/> 空行段原样保留（预览可见，导出一致）。
+  // Normalize trailing newlines in paragraphs (keeps preview and export aligned; fixes an
+  // extra empty line at the end of an exported text box):
+  // a contenteditable/textarea edit often leaves a trailing <br/>, empty <p> or a trailing \n.
+  // The preview's white-space:pre-line collapses a trailing newline, but on export a trailing \n
+  // serializes to <a:br/> plus an empty run, which PowerPoint renders as a redundant blank line.
+  // Rule: strip trailing \n from each paragraph's last run; drop an entirely empty trailing
+  // paragraph (newline/whitespace only); keep a standalone <br/> blank-line paragraph in the
+  // middle of the text as is (visible in the preview, identical in the export).
   for (const para of paragraphs) {
     const lastRun = para.runs[para.runs.length - 1];
-    if (!lastRun || lastRun.formula) continue; // 公式 run 无 text，无尾部换行问题
+    if (!lastRun || lastRun.formula) continue; // a formula run has no text, so no trailing-newline issue
     const stripped = lastRun.text.replace(/\n+$/, "");
-    if (stripped === lastRun.text) continue; // 无尾部换行
-    if (stripped === "" && para.runs.length === 1) continue; // 段内仅 <br/>（空行段）→ 保留原样
+    if (stripped === lastRun.text) continue; // no trailing newline
+    if (stripped === "" && para.runs.length === 1) continue; // a paragraph holding only <br/> (blank line) -> keep as is
     lastRun.text = stripped;
-    if (!lastRun.text) para.runs.pop(); // 末 run 去尾后变空 → 移除
+    if (!lastRun.text) para.runs.pop(); // the last run became empty after stripping -> remove it
   }
   while (paragraphs.length > 0) {
     const last = paragraphs[paragraphs.length - 1];
-    if (last.runs.some((r) => (r.formula ? true : r.text.trim() !== ""))) break; // 有实际内容 → 停
-    paragraphs.pop(); // 末尾空段 → 丢弃
+    if (last.runs.some((r) => (r.formula ? true : r.text.trim() !== ""))) break; // has real content -> stop
+    paragraphs.pop(); // trailing empty paragraph -> drop
   }
   return paragraphs;
 }
 
 /**
- * 解析富文本 DSL。
- * @param {string} input 富文本 DSL（纯文本也可）
+ * Parse the rich-text DSL.
+ * @param {string} input rich-text DSL (plain text also works)
  * @returns {{paragraphs: Array}}
  */
 export function parseRichText(input) {

@@ -1,16 +1,17 @@
 // ============================================================================
-// model/escape.js — XML 转义 / 实体解码唯一实现（双端纯净，无任何环境依赖）
+// model/escape.js — sole XML escaping / entity decoding (environment-free, browser + Node)
 // ----------------------------------------------------------------------------
-// 全仓 XML 字符串处理统一收口于此（v3 #1：禁止第三份转义实现）：
-//   - model 内：icon-svg.js / xml-parser.js / mathml2omml.js / richtext.js
-//   - writer/xml.js 的 esc/escAttr 从这里 re-export（writer → model 方向合规）
-// 三个转义变体的差异是有意的，合并前先看调用点：
-//   escText  文本节点用：& < >
-//   esc      文本节点用（含引号）：& < > "
-//   escAttr  属性值用：& < "（不转 >，与 PowerPoint 输出习惯一致）
+// All XML string handling in the repo funnels through here (v3 #1: no third
+// escaping implementation):
+//   - inside model: icon-svg.js / xml-parser.js / mathml2omml.js / richtext.js
+//   - writer/xml.js re-exports esc/escAttr from here (writer -> model direction)
+// The three escape variants differ on purpose; check the call sites before merging:
+//   escText  for text nodes: & < >
+//   esc      for text nodes (with quotes): & < > "
+//   escAttr  for attribute values: & < " (> left alone, matching PowerPoint output)
 // ============================================================================
 
-/** XML 文本转义（& < >）。 */
+/** XML text escape (& < >). */
 export function escText(value) {
   if (value == null) return "";
   return String(value)
@@ -19,7 +20,7 @@ export function escText(value) {
     .replace(/>/g, "&gt;");
 }
 
-/** XML 文本转义（& < >，含双引号）。 */
+/** XML text escape (& < >, plus double quote). */
 export function esc(value) {
   if (value == null) return "";
   return String(value)
@@ -29,7 +30,7 @@ export function esc(value) {
     .replace(/"/g, "&quot;");
 }
 
-/** 属性值转义（只转义 & < "）。 */
+/** Attribute value escape (only & < "). */
 export function escAttr(value) {
   if (value == null) return "";
   return String(value)
@@ -39,9 +40,10 @@ export function escAttr(value) {
 }
 
 /**
- * HTML/XML 实体解码（已知实体白名单 + 数字实体；未知名义实体原样保留，
- * 公式里 cases 的 & 列分隔符等非实体形式不受影响）。
- * &amp; 最后解码，避免双重解码（&amp;lt; → &lt; 而不是 <）。
+ * HTML/XML entity decoding (whitelist of known entities + numeric entities;
+ * unknown named entities are kept verbatim, so non-entity forms such as the "&"
+ * column separator in formula cases are unaffected). &amp; is decoded last to
+ * avoid double decoding (&amp;lt; -> &lt; rather than <).
  */
 export function decodeEntities(s) {
   return s

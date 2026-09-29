@@ -1,17 +1,18 @@
 // ============================================================================
-// preset-geometry.js — ECMA-376 预置形状几何求值器（渲染侧：SVG path）
+// preset-geometry.js — ECMA-376 preset shape geometry evaluator (render side: SVG path)
 // ----------------------------------------------------------------------------
-// 数据（preset-geometry.data.js）与 PowerPoint 的 prstGeom 同源（ECMA-376 附录），
-// 预览 = 按规范公式求值出的路径；导出 = prstGeom 同名预设。二者几何一致。
+// The data (preset-geometry.data.js) shares its origin with PowerPoint prstGeom (ECMA-376
+// appendix): the preview is the path evaluated by the spec formulas, the export is the
+// same-named prstGeom preset. Both geometries agree.
 //
-// 支持公式 op：val */ +- +/ ?: abs at2 cat2 cos max min mod pin sat2 sin sqrt tan
-// 支持路径命令：moveTo(M) / lnTo(L) / cubicBezTo(C) / quadBezTo(Q) / arcTo(A) / close(Z)
-// 支持多路径：主填充轮廓 + lighten/darken 明暗面 + fill="none" 描边细节。
+// Supported formula ops: val */ +- +/ ?: abs at2 cat2 cos max min mod pin sat2 sin sqrt tan
+// Supported path commands: moveTo(M) / lnTo(L) / cubicBezTo(C) / quadBezTo(Q) / arcTo(A) / close(Z)
+// Supports multiple paths: main fill outline + lighten/darken shading faces + fill="none" stroke detail.
 // ============================================================================
 
 import { PRESET_SHAPES } from "./preset-geometry.data.js";
 
-/** 角度单位：60000 = 1°。 */
+/** Angle unit: 60000 = 1°. */
 const DEG = 60000;
 
 function baseGuides(w, h) {
@@ -25,7 +26,7 @@ function baseGuides(w, h) {
   g.ls = Math.max(w, h);
   g.ss = Math.min(w, h);
   for (const n of [2, 4, 6, 8, 16, 32]) g[`ssd${n}`] = g.ss / n;
-  // 角度常量（arcTo 等使用）
+  // Angle constants (used by arcTo etc.)
   g.cd2 = 10800000; // 180°
   g.cd4 = 5400000; // 90°
   g.cd8 = 2700000; // 45°
@@ -39,19 +40,19 @@ function baseGuides(w, h) {
 function ref(g, name) {
   const v = g[name];
   if (typeof v === "number") return v;
-  // 内置角度常量：cd4=90°，3cd4=270°（数字前缀，parseFloat 会解析错）
+  // Built-in angle constants: cd4=90°, 3cd4=270° (parseFloat would mis-parse the numeric prefix)
   const m = /^(\d+)cd(\d+)$/.exec(name);
   if (m) return (Number(m[1]) * 21600000) / Number(m[2]);
   const n = parseFloat(name);
   return Number.isFinite(n) ? n : 0;
 }
 
-/** 角度（60000 分/度）→ 弧度。 */
+/** Angle (60000ths of a degree) -> radians. */
 function rad(angle60000) {
   return (angle60000 / DEG) * (Math.PI / 180);
 }
 
-/** 按 ECMA-376 语义求单个公式。op 见文件头注释；角度一律 60000 分/度。 */
+/** Evaluate a single formula per ECMA-376 semantics. Ops are listed in the file header; angles are always 60000ths of a degree. */
 function evalFormula(op, args, g) {
   const x = ref(g, args[0]);
   const y = args[1] != null ? ref(g, args[1]) : 0;
@@ -63,14 +64,14 @@ function evalFormula(op, args, g) {
     case "+/": return (x + y) / z;
     case "?:": return x > 0 ? y : z;
     case "abs": return Math.abs(x);
-    case "at2": return Math.atan2(y, x) * (180 / Math.PI) * DEG; // at2 a b = 角度 atan2(b, a)（OOXML 参数序 x,y；ECMA-376 定义 at2(x,y)=atan2(y,x)）
-    case "atan2": return Math.atan2(y, x) * (180 / Math.PI) * DEG; // 别名
+    case "at2": return Math.atan2(y, x) * (180 / Math.PI) * DEG; // at2 a b = angle atan2(b, a) (OOXML argument order x,y; ECMA-376 defines at2(x,y)=atan2(y,x))
+    case "atan2": return Math.atan2(y, x) * (180 / Math.PI) * DEG; // alias
     case "cat2": return x * Math.cos(Math.atan2(z, y)); // cat2 x y z = x·cos(atan2(z,y))
     case "cos": return x * Math.cos(rad(y));
     case "max": return Math.max(x, y);
     case "min": return Math.min(x, y);
     case "mod": return Math.sqrt(x * x + y * y + z * z);
-    case "pin": return y < x ? x : y > z ? z : y; // pin x y z = y 夹在 [x, z]
+    case "pin": return y < x ? x : y > z ? z : y; // pin x y z = clamp y into [x, z]
     case "sat2": return x * Math.sin(Math.atan2(z, y)); // sat2 x y z = x·sin(atan2(z,y))
     case "sin": return x * Math.sin(rad(y));
     case "sqrt": return Math.sqrt(x);
@@ -82,13 +83,14 @@ function evalFormula(op, args, g) {
 }
 
 /**
- * 形状 → 全部路径的 SVG d 字符串列表（坐标基于 0,0 - w,h）。
- * 返回 [{ d, fill, stroke }]：fill 取形状填充色，'none' 不填充，
- * lighten/darken 明暗面由调用方调色；stroke 表示该路径是否参与描边。
- * @param {string} shapeName prstGeom 名（须在 PRESET_SHAPES 中）
- * @param {number} w 形状宽（px）
- * @param {number} h 形状高（px）
- * @param {Array<number>} [adjustments] 调整值（按 adjNames 顺序；缺省用规范默认）
+ * Shape -> list of SVG d strings for all its paths (coordinates relative to 0,0 - w,h).
+ * Returns [{ d, fill, stroke }]: fill is the shape fill color ('none' means no fill);
+ * lighten/darken shading faces are colored by the caller; stroke says whether the path
+ * takes part in the stroke.
+ * @param {string} shapeName prstGeom name (must exist in PRESET_SHAPES)
+ * @param {number} w shape width (px)
+ * @param {number} h shape height (px)
+ * @param {Array<number>} [adjustments] adjustment values (in adjNames order; defaults to the spec default)
  * @returns {Array<{d: string, fill: string|null, stroke: boolean}>|null}
  */
 export function shapePaths(shapeName, w, h, adjustments) {
@@ -149,7 +151,7 @@ function buildPathD(cmds, g, viewBox, w, h) {
         break;
       }
       case "A": {
-        // arcTo wR hR stAng swAng：当前点 = 弧起点；圆心 = 起点 - (wR·cos(st), hR·sin(st))
+        // arcTo wR hR stAng swAng: the current point is the arc start; the center is start - (wR·cos(st), hR·sin(st))
         const wR = Math.abs(px(cmd[1]));
         const hR = Math.abs(py(cmd[2]));
         const st = ref(g, cmd[3]);
@@ -176,7 +178,7 @@ function buildPathD(cmds, g, viewBox, w, h) {
   return d;
 }
 
-/** 菜单/面板缩略图标：按 24×24 + 默认调整值求值（描边风）。 */
+/** Menu/panel thumbnail icon: evaluated at 24×24 with default adjustments (stroke style). */
 export function shapeMenuIcon(shapeName, { size = 24, pad = 2 } = {}) {
   const paths = shapePaths(shapeName, size, size);
   if (!paths) return "";

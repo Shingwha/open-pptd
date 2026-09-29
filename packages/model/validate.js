@@ -1,16 +1,18 @@
 // ============================================================================
-// model/validate.js — PPTD 校验器（v3 §4.4，把人工审查经验固化为代码）
+// model/validate.js — PPTD validator (v3 §4.4, manual review experience cast into code)
 // ----------------------------------------------------------------------------
-// validateDeck(deck, opts) → { errors, warnings, perPage }
-// 每条 issue：{ level: "error"|"warning", rule, page?, elementId?, message }
-// 规则注册表模式：新规则 = registerRule(fn) 注册一个纯函数（deck, ctx, report）。
+// validateDeck(deck, opts) -> { errors, warnings, perPage }
+// Every issue: { level: "error"|"warning", rule, page?, elementId?, message }
+// Rule-registry pattern: a new rule = registerRule(fn) with a pure function (deck, ctx, report).
 //
-// 双端纯净（无 fs/fetch）：需要环境能力的检查走 opts 注入，缺省自动跳过：
-//   - opts.fileExists(rel)  相对路径资源存在性（CLI 传 fs 实现）
-//   - opts.fontRegistry     字体注册表对象（cli/fonts.js loadRegistry 的产物）
-//   - opts.iconRegistry     FA 图标注册表对象（assets/icons/registry.json）
-//   - opts.layout           LayoutTree（packages/layout）：传入时消费 overflow 事实
-//                           输出越界/重叠问题；未传时跳过该类检查（spec 09 T4）
+// Environment-free (no fs/fetch): checks needing environment capabilities are injected
+// through opts and skipped automatically when absent:
+//   - opts.fileExists(rel)  relative-path resource existence (the CLI passes an fs implementation)
+//   - opts.fontRegistry     font registry object (the product of cli/fonts.js loadRegistry)
+//   - opts.iconRegistry     FA icon registry object (assets/icons/registry.json)
+//   - opts.layout           LayoutTree (packages/layout): when passed, consumes overflow facts
+//                           to report out-of-bounds/overlap issues; when absent that class of
+//                           check is skipped (spec 09 T4)
 // ============================================================================
 
 import { normalizeTheme, resolveColor, resolveTextStyle } from "./theme.js";
@@ -23,15 +25,15 @@ import { ELEMENT_TYPES } from "./style-spec.js";
 
 const KNOWN_TYPES = new Set(ELEMENT_TYPES);
 
-// ---- 规则注册表（扩展点：新规则 registerRule 即接入 check 命令与导出闸门）----
+// ---- Rule registry (extension point: a new registerRule immediately joins the check command and the export gate) ----
 const RULES = [];
 export function registerRule(fn) {
   RULES.push(fn);
 }
 
 /**
- * 校验 deck 模型。
- * @param {object} deck parseDeck 产物（{version,title,size,theme,fonts,pages}）
+ * Validate the deck model.
+ * @param {object} deck parseDeck product ({version,title,size,theme,fonts,pages})
  * @param {object} [opts] { fileExists?, fontRegistry?, iconRegistry?, layout? }
  * @returns {{ errors: object[], warnings: object[], perPage: Map<number, object[]> }}
  */
@@ -58,10 +60,10 @@ export function validateDeck(deck, opts = {}) {
 }
 
 // ============================================================================
-// 内置规则
+// Built-in rules
 // ============================================================================
 
-// ---- schema：deck 结构与元素通用字段 ----
+// ---- schema: deck structure and common element fields ----
 registerRule((deck, ctx, report) => {
   if (!deck || typeof deck !== "object") {
     report({ level: "error", rule: "schema", message: "deck 不是对象（manifest 解析失败？）" });
@@ -106,13 +108,13 @@ registerRule((deck, ctx, report) => {
   });
 });
 
-// ---- schema：类型专属必填字段（对齐 references/pptd.md §5）----
+// ---- schema: type-specific required fields (aligned with references/pptd.md §5) ----
 registerRule((deck, ctx, report) => {
   walkElements(deck?.pages, (el, page, pageIdx) => {
     const at = { level: "error", rule: "schema-type", page: pageIdx + 1, elementId: el.elementId };
     switch (el.elementType) {
       case "text":
-        // content = TextContent 对象（.text 为富文本；YAML 会把 01/2024 解析为数字，允许）
+        // content = TextContent object (.text is rich text; YAML parses 01/2024 into a number, which is allowed)
         if (!el.content || typeof el.content !== "object" || el.content.text == null || String(el.content.text).trim() === "") {
           report({ ...at, message: "text 元素缺 content.text（或为空）" });
         }
@@ -155,7 +157,7 @@ registerRule((deck, ctx, report) => {
   });
 });
 
-// ---- token 引用：$ 颜色令牌与样式引用必须命中主题 ----
+// ---- token references: $ color tokens and style references must hit the theme ----
 registerRule((deck, ctx, report) => {
   const { theme } = ctx;
   const checkValue = (path, key, value, at) => {
@@ -174,7 +176,7 @@ registerRule((deck, ctx, report) => {
   const walkObj = (obj, at) => {
     if (!obj || typeof obj !== "object") return;
     for (const [k, v] of Object.entries(obj)) {
-      if (k === "extra") continue; // 宽容解析保留的未知字段不校验
+      if (k === "extra") continue; // unknown fields kept by lenient parsing are not validated
       if (typeof v === "string") checkValue(null, k, v, at);
       else if (v && typeof v === "object" && !Array.isArray(v)) walkObj(v, at);
       else if (Array.isArray(v)) for (const item of v) if (item && typeof item === "object") walkObj(item, at);
@@ -188,7 +190,7 @@ registerRule((deck, ctx, report) => {
   });
 });
 
-// ---- 资源引用：图片存在性（注入 fileExists 时）+ 图标名命中图标库 ----
+// ---- resource references: image existence (when fileExists is injected) + icon name hit in the icon library ----
 registerRule((deck, ctx, report) => {
   walkElements(deck?.pages, (el, page, pageIdx) => {
     const pageNo = pageIdx + 1;
@@ -213,15 +215,15 @@ registerRule((deck, ctx, report) => {
   });
 });
 
-// ---- 字体引用：文本 content.fontFamily 命中资源表 / 注册表 / 系统字体（注入 fontRegistry 时）----
+// ---- font references: text content.fontFamily hits the resource table / registry / system fonts (when fontRegistry is injected) ----
 registerRule((deck, ctx, report) => {
   const reg = ctx.opts.fontRegistry;
-  if (!reg) return; // 无注册表注入则跳过（浏览器端暂不启用）
+  if (!reg) return; // skipped when no registry is injected (not enabled in the browser yet)
   const checked = new Set();
   const checkFamily = (family, pageNo, elementId) => {
     if (typeof family !== "string" || !family || checked.has(family)) return;
     checked.add(family);
-    if (ctx.fontResources[family]) return; // 命中 deck.fonts 资源表
+    if (ctx.fontResources[family]) return; // hits the deck.fonts resource table
     if (findFont(reg, family) || findSystemFont(reg, family)) return;
     report({ level: "warning", rule: "font", page: pageNo, elementId, message: `字体 "${family}" 未命中资源表/注册表/系统字体（依赖打开方系统已装）` });
   };
@@ -236,14 +238,14 @@ registerRule((deck, ctx, report) => {
   });
 });
 
-// ---- 几何启发式：元素越界 ----
+// ---- geometric heuristic: element out of bounds ----
 registerRule((deck, ctx, report) => {
   const [W, H] = ctx.size;
   walkElements(deck?.pages, (el, page, pageIdx) => {
     const b = el.bounds;
     if (!Array.isArray(b) || b.length !== 4 || b.some((v) => typeof v !== "number")) return;
     const [x, y, w, h] = b;
-    if (w <= 0 || h <= 0) return; // schema 规则已报
+    if (w <= 0 || h <= 0) return; // already reported by the schema rule
     if (x + w < 0 || y + h < 0 || x > W || y > H) {
       report({ level: "warning", rule: "geometry", page: pageIdx + 1, elementId: el.elementId, message: `元素完全在画布外（bounds [${b.join(", ")}]，画布 ${W}×${H}）` });
     } else if (x < 0 || y < 0 || x + w > W || y + h > H) {
@@ -252,10 +254,11 @@ registerRule((deck, ctx, report) => {
   });
 });
 
-// ---- 几何事实：LayoutTree 溢出/重叠消费（spec 09 T4 / 方案 §4 场景 D）----
-// 旧「文本溢出保守估算」启发式（按 ∑ 估宽、超框高 2 倍才报）已删除：估算粗且
-// 忽略 lineHeightPx。改为消费 layout 阶段的 overflow 事实（确定性高度），未传
-// opts.layout 时跳过本类检查（其余检查不变）。
+// ---- geometric facts: LayoutTree overflow/overlap consumption (spec 09 T4 / plan §4 scenario D) ----
+// The old "conservative text overflow estimate" heuristic (estimating width by Σ, reporting
+// only past 2× the box height) was deleted: too crude and it ignored lineHeightPx. It now
+// consumes the overflow fact from the layout stage (deterministic height); when opts.layout is
+// not passed this class of check is skipped (the other checks are unchanged).
 registerRule((deck, ctx, report) => {
   const lt = ctx.opts.layout;
   if (!lt) return;
@@ -279,8 +282,9 @@ registerRule((deck, ctx, report) => {
   }
 });
 
-// ---- 对比度：文本 vs 背景的 WCAG 相对亮度比（gradient/image 背景跳过）----
-// 有效背景 = 文本正下方（z 序更低）完整包住文本的最近纯色 shape，否则页面纯色背景。
+// ---- contrast: WCAG relative luminance ratio of text vs background (gradient/image backgrounds skipped) ----
+// Effective background = the nearest solid-color shape directly below the text (lower in z
+// order) that fully contains it, otherwise the page solid background.
 registerRule((deck, ctx, report) => {
   const lum = (hex) => {
     const m = /^#([0-9a-fA-F]{6})/.exec(hex || "");
@@ -298,12 +302,12 @@ registerRule((deck, ctx, report) => {
     outer[0] + outer[2] >= inner[0] + inner[2] && outer[1] + outer[3] >= inner[1] + inner[3];
   (deck?.pages || []).forEach((page, i) => {
     const elements = page?.elements || [];
-    // 页面纯色背景作为兜底背景
+    // The page solid background as the fallback background
     const pageBg = page?.background;
     const fallbackBgLum = pageBg?.type === "solid" ? lum(resolveColor(ctx.theme, pageBg.color)) : null;
     elements.forEach((el, idx) => {
       if (el.elementType !== "text" || !el.content) return;
-      // 找文本正下方最近（z 序最高）的纯色容器 shape
+      // Find the nearest (highest z-order) solid container shape directly below the text
       let bgLum = fallbackBgLum;
       for (let j = idx - 1; j >= 0; j--) {
         const under = elements[j];
@@ -311,10 +315,10 @@ registerRule((deck, ctx, report) => {
         if (!contains(under.bounds, el.bounds)) continue;
         const shapeLum = lum(resolveColor(ctx.theme, under.fill.color));
         if (shapeLum != null) bgLum = shapeLum;
-        break; // 取最近一层，无论能否解析颜色
+        break; // take the nearest layer, whether or not its color resolves
       }
       if (bgLum == null) return;
-      // 文本颜色：content 显式 color → 样式引用 → 主题 body → 默认黑
+      // Text color: content explicit color -> style reference -> theme body -> default black
       const styleRef = typeof el.content.style === "string" ? el.content.style : null;
       const ts = styleRef ? resolveTextStyle(ctx.theme, styleRef) : null;
       const colorHex = resolveColor(ctx.theme, el.content.color || ts?.color || ctx.theme.textStyles?.body?.color || "#000000");

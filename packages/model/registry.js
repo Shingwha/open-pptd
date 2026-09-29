@@ -1,20 +1,23 @@
 // ============================================================================
-// model/registry.js — 元素类型注册表契约（扩展性核心，支持分片注册）
+// model/registry.js — element type registry contract (extensibility core, sharded registration)
 // ----------------------------------------------------------------------------
-// 每种元素类型 = 一个逻辑条目，字段由三个层分别注册（同一 type 多次注册时
-// 合并字段，Object.assign 语义；仅当同一字段被不同值覆盖时 console.warn）：
+// Each element type = one logical entry whose fields are registered by three
+// layers separately (registering the same type again merges fields,
+// Object.assign semantics; console.warn only when the same field is overwritten
+// with a different value):
 //   {
-//     type: "text",                // 元素类型标识（elementType）
-//     render: (theme, el) => DOM,  // 预览渲染分片（packages/renderer/types/）
-//     toXml: (theme, el, ctx) => string, // OOXML 导出分片（packages/writer/types/）
-//     label: "文字",                // 中文名（属性面板徽标等，editor UI 分片）
-//     menu: { group, items },      // 添加菜单（＋面板，editor UI 分片）
-//     create: () => element,       // 新建默认元素（editor UI 分片）
-//     props: (el, h) => [node],    // 属性面板专属分组（editor UI 分片）
-//     quickbar: (el, h) => void,   // 浮动快调条（editor UI 分片）
+//     type: "text",                // element type id (elementType)
+//     render: (theme, el) => DOM,  // preview render shard (packages/renderer/types/)
+//     toXml: (theme, el, ctx) => string, // OOXML export shard (packages/writer/types/)
+//     label: displayName,          // human-readable label (property-panel badge etc., editor UI shard)
+//     menu: { group, items },      // add menu (+ panel, editor UI shard)
+//     create: () => element,       // default element for creation (editor UI shard)
+//     props: (el, h) => [node],    // property-panel group (editor UI shard)
+//     quickbar: (el, h) => void,   // floating quick bar (editor UI shard)
 //   }
-// 装配方按需引入分片：编辑器 editor/types/index.js 聚合全部；CLI 导出只引
-// writer 分片；渲染截图只引 renderer 分片。
+// Assemblers pull in the shards they need: the editor (editor/types/index.js)
+// pulls all of them; CLI export pulls only the writer shard; render screenshots
+// pull only the renderer shard.
 // ============================================================================
 
 import { ELEMENT_TYPES } from "./style-spec.js";
@@ -29,7 +32,7 @@ export function registerType(def) {
     TYPES.set(def.type, def);
     return;
   }
-  // 分片注册：合并字段而非整体覆盖；同一字段被不同值覆盖时警告
+  // Sharded registration: merge fields instead of replacing wholesale; warn on conflicting overwrite
   for (const key of Object.keys(def)) {
     if (key === "type") continue;
     if (key in prev && prev[key] !== def[key]) {
@@ -39,12 +42,12 @@ export function registerType(def) {
   }
 }
 
-/** 取类型定义；未注册返回 undefined（消费端回退占位/警告）。 */
+/** Look up a type definition; returns undefined when unregistered (consumer falls back to placeholder/warning). */
 export function getType(type) {
   return TYPES.get(type);
 }
 
-/** 全部已注册类型（按注册顺序）。 */
+/** All registered types (in registration order). */
 export function allTypes() {
   return [...TYPES.values()];
 }

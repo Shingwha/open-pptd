@@ -1,36 +1,40 @@
 // ============================================================================
-// model/font-registry.js — 内置字体库注册表（浏览器 + Node 双端）
+// model/font-registry.js — built-in font library registry (browser + Node)
 // ----------------------------------------------------------------------------
-// 数据源：assets/fonts/registry.json（技能资源文件夹，不上传 GitHub）。
-// 每个字体：key（展示名）/ family（嵌入注册名，ID16 优先）/ file（库内文件名）/
-//           url（回源下载）/ 许可 / 子集化建议。
-// registry.systemFonts：系统字体参考清单（无 file/url，仅声明不嵌入，
-//           依赖打开方系统已装；仅供查表对齐注册名 + CLI check 识别）。
+// Data source: assets/fonts/registry.json (the skill resource folder, not uploaded to GitHub).
+// Per font: key (display name) / family (embed registration name, ID16 preferred) /
+//           file (in-library file name) / url (origin download) / license / subset advice.
+// registry.systemFonts: system font reference list (no file/url, declared but not embedded;
+//           relies on the opening side having it installed; used to align registration names
+//           and for CLI check recognition).
 //
-// 用途：
-//   - writer/font.js：deck.fonts 资源项写 {family: X}（无 file/url）时，按
-//     family 或 key 命中注册表 → 自动补库内文件并嵌入（默认子集化）
-//   - 编辑器字体面板：展示内置字体库（✓ 已加载 / ✗ 未加载），一键使用
-//   - CLI fonts list/download：注册表全览 + 补下载
+// Uses:
+//   - writer/font.js: when a deck.fonts resource entry is written as {family: X} (no
+//     file/url), a family or key hit in the registry auto-fills the library file and embeds
+//     it (subset by default)
+//   - editor font panel: lists the built-in library (✓ loaded / ✗ not loaded) for one-click use
+//   - CLI fonts list/download: registry overview + supplementary download
 // ============================================================================
 
-// 仓库根 URL（本文件位于 <root>/packages/model/，../../ 即站点根——兼容本地与 GitHub Pages 子路径）
+// Repo root URL (this file lives at <root>/packages/model/, so ../../ is the site root — works
+// both locally and under a GitHub Pages subpath)
 const ROOT = new URL("../../", import.meta.url).href;
 
 let cached = null;
 
 /**
- * 加载注册表（双端）。
+ * Load the registry (browser + Node).
  * @param {object} [options]
- * @param {string} [options.registryUrl] 浏览器端：注册表 URL（默认仓库根相对 assets/fonts/registry.json）
- * @param {string} [options.fontDir]     Node 端：字体目录绝对路径
- * @param {string} [options.registryDir] Node 端：注册表目录覆盖（资源外置后注册表恒在包内，
- *                                       与字节目录可能分离；缺省回退 fontDir）
+ * @param {string} [options.registryUrl] browser: registry URL (defaults to assets/fonts/registry.json relative to the repo root)
+ * @param {string} [options.fontDir]     Node: absolute font directory path
+ * @param {string} [options.registryDir] Node: registry directory override (once resources are
+ *                                       externalized the registry stays in the package and may
+ *                                       be separate from the font directory; falls back to fontDir)
  * @returns {Promise<{version:number, fonts:object[]}>}
  */
 export async function loadFontRegistry(options = {}) {
   if (cached) return cached;
-  // Node 端：fontDir（字体目录绝对路径）+ fs 注入 → 直接读文件
+  // Node: fontDir (absolute font directory path) + injected fs -> read the file directly
   if (options.fontDir && options.fs?.readFileSync) {
     const { join } = await import("path");
     const dir = options.registryDir || options.fontDir;
@@ -48,10 +52,11 @@ export async function loadFontRegistry(options = {}) {
 }
 
 /**
- * 按 family（注册名，精确匹配）、key（展示名）或 aliases（字体内部本名，
- * 用于字体内部名与注册名不一致的条目，如 zcoolqingkehuangyouti 的字节
- * 来自 Google Fonts、内部名为 "ZCOOL QingKe HuangYou"）查注册表。
- * @param {object} registry loadFontRegistry 的返回值
+ * Look up the registry by family (registration name, exact match), key (display name) or
+ * aliases (the font's internal name, for entries whose internal name differs from the
+ * registration name, e.g. zcoolqingkehuangyouti whose bytes come from Google Fonts and
+ * whose internal name is "ZCOOL QingKe HuangYou").
+ * @param {object} registry loadFontRegistry return value
  * @param {string} ref
  * @returns {object|undefined}
  */
@@ -62,19 +67,23 @@ export function findFont(registry, ref) {
   );
 }
 
-/** 库内文件 URL（浏览器端，仓库根相对——本地 serve 与 GitHub Pages 子路径均正确）。 */
+/** In-library file URL (browser side, relative to the repo root — correct for both local serve and a GitHub Pages subpath). */
 export function fontFileUrl(file) {
   return new URL(`assets/fonts/${encodeURIComponent(file)}`, ROOT).href;
 }
 
 // ----------------------------------------------------------------------------
-// 字体字节拉取：本地库文件优先 → 线上源回退（registry 的 url 主源 + mirrors 镜像）
-//   - 本地 serve：assets/fonts/ 有文件 → 本地读（快、离线可用）
-//   - 线上 Pages：仓库未上传字体文件 → raw.githubusercontent / jsDelivr 拉取
-//     （两者均允许 CORS；FontFace 用字节注册，不受跨域限制）
-//   - 拉到的字节进 Cache API 跨会话缓存，重复访问不再网络请求
-//   - 缓存键带注册表 size 作指纹：上游字节更换（如 v1.3.3 黄油体换源）
-//     后旧缓存自动失效，避免坏字节被永久缓存（v1 缓存即因此废弃）
+// Font byte fetching: local library file first -> online sources as fallback (the registry's
+// url primary source + mirrors)
+//   - local serve: a file exists in assets/fonts/ -> read locally (fast, works offline)
+//   - online Pages: the repo has no font files uploaded -> fetch from raw.githubusercontent /
+//     jsDelivr (both allow CORS; FontFace registers from bytes and is not subject to the
+//     cross-origin restriction)
+//   - fetched bytes go into the Cache API for cross-session caching, so repeat visits make no
+//     network request
+//   - the cache key carries the registry size as a fingerprint: when upstream bytes change
+//     (e.g. the v1.3.3 butter font source swap) the old cache is invalidated automatically,
+//     preventing bad bytes from being cached forever (the v1 cache was abandoned for this reason)
 // ----------------------------------------------------------------------------
 const FONT_CACHE_NAME = "open-pptd-fonts-v2";
 
@@ -93,19 +102,20 @@ async function writeFontCache(key, bytes) {
     const cache = await caches.open(FONT_CACHE_NAME);
     await cache.put(key, new Response(bytes));
   } catch {
-    /* 缓存不可用（隐私模式等）则忽略 */
+    /* cache unavailable (private mode etc.) -> ignore */
   }
 }
 
 /**
- * 拉取字体字节（浏览器端）：Cache API → 本地库文件 → 线上主源 → 镜像。
- * @param {object} hit registry 字体条目（含 file/url/mirrors）
- * @returns {Promise<Uint8Array|null>} 全部失败返回 null（调用方回退系统字体）
+ * Fetch font bytes (browser side): Cache API -> local library file -> online primary source -> mirrors.
+ * @param {object} hit registry font entry (with file/url/mirrors)
+ * @returns {Promise<Uint8Array|null>} null when everything fails (the caller falls back to a system font)
  */
 export async function fetchFontBytes(hit) {
   if (!hit?.file) return null;
-  // 缓存键 = 仓库根绝对 URL + size 指纹：画廊（/）与编辑器（/editor/）共享同一份缓存；
-  // 本地拉取仍用纯文件 URL（?v= 只作缓存键，不进请求）
+  // Cache key = absolute repo-root URL + size fingerprint: the gallery (/) and the editor
+  // (/editor/) share one cache; the local fetch still uses the plain file URL (?v= is only a
+  // cache key and is not part of the request)
   const fileUrl = fontFileUrl(hit.file);
   const cacheKey = `${fileUrl}?v=${typeof hit.size === "number" ? hit.size : hit.file}`;
   const cached = await readCachedFont(cacheKey);
@@ -118,7 +128,7 @@ export async function fetchFontBytes(hit) {
       return bytes;
     }
   } catch {
-    /* 网络错误 → 线上源 */
+    /* network error -> online sources */
   }
   const sources = [hit.url, ...(hit.mirrors || [])].filter(Boolean);
   for (const src of sources) {
@@ -129,16 +139,17 @@ export async function fetchFontBytes(hit) {
       writeFontCache(cacheKey, bytes);
       return bytes;
     } catch {
-      /* 尝试下一个源 */
+      /* try the next source */
     }
   }
   return null;
 }
 
 /**
- * 按 family（注册名，精确匹配）或 key（展示名，精确匹配）查系统字体清单。
- * 系统字体无字节：命中仅表示“注册名正确、仅声明不嵌入”，不产生嵌入。
- * @param {object} registry loadFontRegistry 的返回值
+ * Look up the system font list by family (registration name, exact match) or key (display name, exact match).
+ * A system font has no bytes: a hit only means "the registration name is correct, it is
+ * declared but not embedded" and produces no embedding.
+ * @param {object} registry loadFontRegistry return value
  * @param {string} ref
  * @returns {object|undefined}
  */

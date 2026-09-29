@@ -1,11 +1,14 @@
 // ============================================================================
-// svg-gradient.js — GradientFill → SVG <defs> 渐变定义（预览与导出媒体同源）
+// svg-gradient.js — GradientFill -> SVG <defs> gradient definition (same source for preview and export media)
 // ----------------------------------------------------------------------------
-// 角度规格（references/pptd.md）：angle 0 = 左→右、顺时针增大（90 = 上→下）。
-// linear 用 userSpaceOnUse、按矩形全长投影取渐变向量（与 CSS 渐变线公式一致，
-// 非正方形上角度不畸变）；radial 为 objectBoundingBox 圆（cx/cy 50%、r 50%）。
-// 形状（renderer/svgGradient）与图标（model/iconSvgBody）共用本生成器——
-// 此前 icon 自带一份 objectBoundingBox 半向量实现，非正方形上渐变方向与形状不一致。
+// Angle spec (references/pptd.md): angle 0 = left->right, increasing clockwise
+// (90 = top->bottom). linear uses userSpaceOnUse and projects the gradient vector
+// over the full rectangle length (matching the CSS gradient-line formula, so angles
+// do not distort on non-square boxes); radial is an objectBoundingBox circle
+// (cx/cy 50%, r 50%). Shapes (renderer/svgGradient) and icons (model/iconSvgBody)
+// share this generator — icon previously carried its own objectBoundingBox
+// half-vector implementation, so gradients pointed differently from shapes on
+// non-square boxes.
 // ============================================================================
 
 import { resolveColor } from "./theme.js";
@@ -14,7 +17,7 @@ function valid(fill) {
   return fill?.type === "gradient" && Array.isArray(fill.stops) && fill.stops.length >= 2;
 }
 
-/** 色标 → <stop>（#RRGGBBAA 拆 stop-color + stop-opacity；theme 传入时先解析 $token）。 */
+/** Color stop -> <stop> (splits #RRGGBBAA into stop-color + stop-opacity; resolves $token first when theme is given). */
 function stopXml(theme, s) {
   let color = theme ? resolveColor(theme, s.color) || s.color : s.color;
   let opacity = "";
@@ -27,13 +30,13 @@ function stopXml(theme, s) {
 }
 
 /**
- * GradientFill → SVG 渐变定义。返回 { id, def }；无效渐变返回 null。
+ * GradientFill -> SVG gradient definition. Returns { id, def }; null for an invalid gradient.
  * @param {object} opts
- *   - theme: 主题（解析 $token 色标；icon 场景色已解析可不传）
+ *   - theme: theme (resolves $token color stops; may be omitted when icon colors are already resolved)
  *   - fill:  GradientFill
- *   - id:    渐变 id（调用方保证唯一，引用 fill="url(#id)"）
- *   - w, h:  用户坐标系矩形尺寸（linear 渐变向量投影用）
- *   - x, y:  用户坐标系矩形原点（默认 0,0；icon viewBox 原点可能非零）
+ *   - id:    gradient id (caller guarantees uniqueness; referenced as fill="url(#id)")
+ *   - w, h:  rectangle size in user coordinates (used to project the linear gradient vector)
+ *   - x, y:  rectangle origin in user coordinates (default 0,0; an icon viewBox origin may be non-zero)
  */
 export function svgGradientDef({ theme = null, fill, id, w, h, x = 0, y = 0 }) {
   if (!valid(fill)) return null;
