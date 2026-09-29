@@ -11,7 +11,7 @@
 
 const POS_KEY = "pptd.zoomCtlPos";
 
-export function makeZoomCtlDraggable(stage, ctl) {
+export function makeZoomCtlDraggable(stage, ctl, label) {
   if (!stage || !ctl) return { destroy() {} };
   const ac = new AbortController();
 
@@ -84,7 +84,7 @@ export function makeZoomCtlDraggable(stage, ctl) {
   }, { signal: ac.signal });
 
   // Double-click the percentage label: restore the default dock (bottom center of the canvas)
-  ctl.querySelector(".zoom-label")?.addEventListener("dblclick", () => {
+  label?.addEventListener("dblclick", () => {
     ctl.style.left = "";
     ctl.style.top = "";
     ctl.style.right = "";

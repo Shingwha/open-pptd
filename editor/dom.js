@@ -1,21 +1,34 @@
 // ============================================================================
-// dom.js — editor skeleton element refs (the single entry for editor/index.html static ids)
+// dom.js — static skeleton element registry (the single entry for editor/index.html)
 // ----------------------------------------------------------------------------
-// Modules no longer each call document.getElementById("..."); they go through
-// dom.xxx (lazy lookup + cache: skeleton elements are never replaced after
-// creation, so caching is safe). The id contract is in editor/index.html; register
-// new static skeleton elements here.
+// Editor modules never call document.getElementById/querySelector for
+// editor/index.html skeleton elements; they read dom.<name> (or, for regions that
+// carry no id of their own, dom.query(selector)).
+// Lookups are lazy (first access) and cached: the skeleton is authored once by
+// editor/index.html and never replaced, so caching is safe. The authoritative id
+// contract is editor/index.html; register new skeleton elements here.
 //
-// createDom(rootEl) factory: lookups prefer the rootEl subtree and fall back to
-// document (a transition design — the static skeleton is still in the document,
-// while an embedded mount point may be an empty container). The default instance
-// `dom` is still a module-level singleton (same named export), so unmigrated call
-// sites keep working; createEditor binds the default instance to its own mount
-// point via dom.rebind(rootEl), and restores it with dom.rebind(document) on destroy.
+// Scope and the one fallback: createEditor mounts on #pptd-root, which in
+// editor/index.html is an empty container while the skeleton is a sibling in
+// <body>. Every lookup therefore resolves "mount subtree first, document
+// fallback", and that fallback policy lives ONLY here (byId / query) — no module
+// carries its own equivalent.
+//
+// The skeleton deliberately stays a <body>-level sibling of #pptd-root: nesting
+// it inside the mount point would change three observable things at once — the
+// .icon-slot[data-icon] set that injectIcons() replaces within createEditor's
+// scope, the contract-3 theme injection host chosen by createEditor, and the
+// element destroy() clears.
+//
+// createDom(rootEl) factory: an embedded host that owns its skeleton inside its
+// container gets its own instance; the default `dom` singleton is rebound by
+// createEditor to its mount point and restored to document on destroy.
 // ============================================================================
 
-/** Property name → index.html element id. */
+/** Property name → editor/index.html element id (the id contract). */
 const IDS = {
+  pptdRoot: "pptd-root",
+  editorApp: "editor-app",
   stage: "stage",
   canvas: "canvas",
   canvasWrap: "canvas-wrap",
@@ -50,6 +63,11 @@ const IDS = {
   btnZoomReset: "btn-zoom-reset",
 };
 
+/** document.getElementById when available (document), a scoped query otherwise (element). */
+function findById(scope, id) {
+  return typeof scope.getElementById === "function" ? scope.getElementById(id) : scope.querySelector(`#${CSS.escape(id)}`);
+}
+
 /**
  * Build a dom ref factory scoped to rootEl.
  * @param {HTMLElement|Document} [rootEl] scope (document by default)
@@ -58,26 +76,32 @@ export function createDom(rootEl) {
   const cache = new Map();
   let scope = rootEl || document;
 
-  /** Look up an element by id (rootEl subtree first, then document; cached after the first lookup). */
-  function byId(id) {
-    if (cache.has(id)) return cache.get(id);
+  /** Cached scope-first lookup with the document fallback (the single copy of that policy). */
+  function resolve(key, find) {
+    if (cache.has(key)) return cache.get(key);
     let el = null;
     if (scope && typeof scope.querySelector === "function") {
       try {
-        el = scope.querySelector(`#${CSS.escape(id)}`);
+        el = find(scope);
       } catch {
         el = null;
       }
     }
-    if (!el && typeof document !== "undefined") el = document.getElementById(id);
-    cache.set(id, el);
+    if (!el && typeof document !== "undefined") el = find(document);
+    cache.set(key, el);
     return el;
   }
+
+  /** Resolve a skeleton element by id (mount subtree first, then document). */
+  const byId = (id) => resolve(`id:${id}`, (r) => findById(r, id));
+  /** Resolve a skeleton region by CSS selector (mount subtree first, then document). */
+  const query = (selector) => resolve(`sel:${selector}`, (r) => r.querySelector(selector));
 
   const dom = Object.defineProperties(
     {},
     Object.fromEntries(Object.entries(IDS).map(([name, id]) => [name, { get: () => byId(id), enumerable: true }]))
   );
+  dom.query = query;
   /** Switch scope and clear the cache (createEditor mount / destroy restore). */
   dom.rebind = (next) => {
     cache.clear();
