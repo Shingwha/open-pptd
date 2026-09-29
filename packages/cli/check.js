@@ -1,7 +1,9 @@
 // ============================================================================
 // cli/check.js — check 命令：PPTD 结构自查（model/validate.js 的 CLI 门面）
 // ----------------------------------------------------------------------------
-// 校验维度见 model/validate.js（schema / token / 资源 / 字体 / 几何 / 对比度）。
+// 校验维度见 model/validate.js（schema / token / 资源 / 字体 / 几何事实 / 对比度）。
+// 调用链（spec 09 T4）：parse → resolve（normalizeTheme 在 layout 内）→ layout →
+// validateDeck(opts.layout)，越界/重叠读 LayoutTree 的 overflow 事实（替代旧启发式）。
 // 退出码：有 error 为 1（导出闸门同标准）；仅 warning 为 0。
 // ============================================================================
 
@@ -9,6 +11,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseDeck } from "../model/pptd-io.js";
 import { validateDeck } from "../model/validate.js";
+import { layout } from "../layout/index.js";
+import { fontMetricsMeasure } from "../measure/index.js";
 import { loadProjectFiles, FONT_REGISTRY_DIR, ICON_REGISTRY_DIR } from "./export.js";
 
 /** 加载 deck 并执行校验（export 闸门复用本函数）。 */
@@ -17,10 +21,13 @@ export function checkDeck(manifest) {
   const deck = parseDeck(manifestText, pageFiles);
   const fontRegistry = JSON.parse(readFileSync(join(FONT_REGISTRY_DIR, "registry.json"), "utf8"));
   const iconRegistry = JSON.parse(readFileSync(join(ICON_REGISTRY_DIR, "registry.json"), "utf8"));
+  // 布局阶段：确定性纯函数度量（Node 端无 DOM），产出 overflow 事实供校验消费
+  const layoutTree = layout(deck, fontMetricsMeasure);
   const report = validateDeck(deck, {
     fileExists: (rel) => existsSync(join(deckDir, rel)),
     fontRegistry,
     iconRegistry,
+    layout: layoutTree,
   });
   return { deck, report };
 }
