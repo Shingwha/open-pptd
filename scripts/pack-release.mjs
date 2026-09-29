@@ -8,6 +8,8 @@
 // 白名单是发布内容的单一事实来源：tests/、docs/、examples/、.github/、
 // scripts/、图标源文件与 .gitignore 一律不进包；字体文件本体不入包
 // （约 155MB，装好后经 CLI 按需下载）。
+// 内容面（技能文档与知识库）已迁至独立技能仓 open-pptd-skill，本包只发运行时；
+// contract.json 入包（契约清单，供仓 3 与契约测试读取）。
 //
 // 文件清单取自 git ls-files（仅 git 跟踪文件，本地未跟踪杂物不会混入）。
 // zip 容器自建：结构同 packages/writer/zip.js（复用其 crc32），压缩方法用
@@ -30,13 +32,12 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const WHITELIST = [
   "README.md",
   "README.en.md",
-  "SKILL.md",
   "index.html",
   "package.json",
+  "contract.json",
   "bin",
   "editor",
   "packages",
-  "references",
   "assets/fonts/registry.json",
   "assets/icons/registry.json",
 ];
