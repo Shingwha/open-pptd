@@ -17,7 +17,7 @@ import { createThumbnails } from "./thumbnails.js";
 import { dom } from "../../dom.js";
 import { resolveColor } from "../../../packages/model/index.js";
 import { layout } from "../../../packages/layout/index.js";
-import { paintPage } from "../../../packages/renderer/index.js";
+import { paintPage, renderPage } from "../../../packages/renderer/index.js";
 import { showToast } from "../toast.js";
 import { createDomMeasure, isDomMeasureAvailable } from "./dom-measure.js";
 
@@ -258,4 +258,51 @@ export function createView({ state, page, selected, api, controller, props, ops 
   }
 
   return viewObj;
+}
+
+// ============================================================================
+// Non-interactive paint view
+// ============================================================================
+/**
+ * Headless view for the non-interactive assembly (createEditor with
+ * `chrome:"shot"` / `interactive:false`, i.e. the ?shot=1 screenshot path).
+ *
+ * It runs the SAME paint channel as the editor preview — renderPage
+ * (layout → paintPage) with the same imageMap / iconMap / theme / fonts — and
+ * nothing else. Everything the interactive view adds is deliberately absent:
+ *   · no viewport fit/zoom/pan transform: the container is the deck-sized
+ *     screenshot surface, so the scale must stay 1 (the editor's fit scale
+ *     depends on the stage box and would shrink the capture);
+ *   · no thumbnails / property panel / quickbar / button state / selection box;
+ *   · no DOM-measure refinement. The editor geometry is max(pure, DOM); the
+ *     golden baseline was produced from the pure-function geometry, so the
+ *     headless assembly must stay on it (pixel stability is the gate here).
+ *
+ * render(index) paints one page of the loaded deck into the container and sizes
+ * it to the deck (any canvas ratio); index defaults to state.currentPage so the
+ * loader's progressive render calls work unchanged.
+ *
+ * @param {object} deps { state, container } container = the paint surface (the
+ *   shot assembly uses createEditor's mount point, #shot-root).
+ */
+export function createHeadlessView({ state, container }) {
+  function render(index = state.currentPage) {
+    if (!state.deck || !container) return;
+    const pg = state.deck.pages[index];
+    if (!pg) return;
+    const [w, h] = deckSize(state);
+    container.style.width = `${w}px`;
+    container.style.height = `${h}px`;
+    renderPage(container, pg, state.deck, state.theme, {
+      imageMap: state.imageMap,
+      iconMap: state.iconMap,
+    });
+  }
+
+  return {
+    render,
+    /** Progressive load has no incremental target here: pages are painted on demand by the shot driver's goto(). */
+    refreshPage() {},
+    destroy() {},
+  };
 }
