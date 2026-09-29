@@ -21,7 +21,8 @@ import { el, escAttr } from "./xml.js";
 import { buildParagraph } from "./text.js";
 import { parseRichText } from "../model/richtext.js";
 import { resolveTableStyle, resolveTableCellStyle, cellTextStyle } from "../model/theme.js";
-import { estimateTableLayout, tableGrid, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../model/table.js";
+import { tableGrid, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../model/table.js";
+import { measureTable } from "../measure/index.js";
 import { borderSides, dashSpec, normalizeFill, ooxmlAnchor } from "../model/style-spec.js";
 import { colorElement, buildFill, buildShadow } from "./drawing.js";
 
@@ -43,7 +44,10 @@ export function tableXml(theme, tableEl, ctx) {
   const [x, y, w] = tableEl.bounds;
   const ts = resolveTableStyle(theme, tableEl.style);
   const rows = Array.isArray(tableEl.rows) ? tableEl.rows : [];
-  const { rowHeights, columnWidths } = estimateTableLayout(tableEl);
+  // 行高单源（spec 10 T3 / 方案 §3.1）：消费 measure 的精确 rowHeights——与 preview
+  // （layout→paint）同一张度量表推导；不再用 model 的 min 语义（旧行为：PowerPoint
+  // 按内容自动增高，与预览像素漂移）。列宽比例两处同值（measure 内部即 estimateTableLayout）。
+  const { rowHeights, columnWidths } = measureTable(tableEl);
   const colWs = columnWidths;
   const rowCount = rows.length;
   const colCount = colWs.length;
