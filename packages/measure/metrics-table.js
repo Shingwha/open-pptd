@@ -1,14 +1,14 @@
 // ============================================================================
-// measure/metrics-table.js — 字体度量表读取（T1 产物 metrics-data.json）
+// measure/metrics-table.js — font metrics table reader (backed by metrics-data.json)
 // ----------------------------------------------------------------------------
-// 纯函数、双端（无 fs/window/document）。查表链（方案 §3.1 fallback 阶梯）：
-//   内置度量表（family/key/alias 归一）→ 系统字体常量 → 1.2 兜底（并记 diagnostics）
-// 提供 createMetricsTable(data?) 与默认单例（读入包的 metrics-data.json）。
+// Pure functions, dual-end (no fs/window/document). Lookup chain (fallback ladder):
+//   built-in table (family/key/alias normalized) → system font constants → 1.2 final fallback (records diagnostics)
+// Exposes createMetricsTable(data?) plus the default singleton (loaded from the package's metrics-data.json).
 // ============================================================================
 
 import data from "./metrics-data.json" with { type: "json" };
 
-/** 度量名归一（与 model/font.js#fontKey 同规则：小写 + 去空白）。 */
+/** Normalize a metrics name (lowercase + strip whitespace). */
 export const metricKey = (name) => String(name).toLowerCase().replace(/\s+/g, "");
 
 const FINAL_FALLBACK = Object.freeze({
@@ -24,7 +24,7 @@ const FINAL_FALLBACK = Object.freeze({
 });
 
 /**
- * 创建度量表实例（可注入自定义 data，缺省用包内 metrics-data.json）。
+ * Create a metrics table instance (custom data can be injected; defaults to the package metrics-data.json).
  * @returns {{
  *   safetyFactor: number,
  *   has(name): boolean,
@@ -57,8 +57,8 @@ export function createMetricsTable(raw = data) {
       return !!pick(name);
     },
     /**
-     * 查字体度量。接受单个名字或 [latin, ea] 数组（逐个尝试，首个命中胜出）。
-     * 全未命中 → 默认字体常量 → 最终 1.2 兜底（记一条 diagnostics，不静默）。
+     * Look up font metrics. Accepts a single name or a [latin, ea] array (tried in order, first hit wins).
+     * All miss → default font constants → final 1.2 fallback (records one diagnostic, never silent).
      */
     metricsFor(nameOrNames) {
       const list = (Array.isArray(nameOrNames) ? nameOrNames : [nameOrNames]).filter(
@@ -68,7 +68,7 @@ export function createMetricsTable(raw = data) {
         const hit = pick(n);
         if (hit) return hit;
       }
-      // 阶梯 2：系统字体常量 / 默认字体常量
+      // Tier 2: system font constants / default font constants
       const fallback = defaultFamily ? entryOf(defaultFamily) : null;
       const missName = list[0] || "(unknown)";
       if (!seenMissing.has(missName)) {
@@ -80,7 +80,7 @@ export function createMetricsTable(raw = data) {
         });
       }
       if (fallback) return { ...fallback, resolvedFrom: missName, fallback: true };
-      // 阶梯 3：最终 1.2
+      // Tier 3: final 1.2 fallback
       return { ...FINAL_FALLBACK, resolvedFrom: missName, fallback: true };
     },
     takeDiagnostics() {
@@ -94,8 +94,8 @@ export function createMetricsTable(raw = data) {
   };
 }
 
-/** 默认单例（包内度量表）。 */
+/** Default singleton (the in-package metrics table). */
 export const defaultMetricsTable = createMetricsTable();
 
-/** 度量数据版本（便于快照/诊断）。 */
+/** Metrics data version (for snapshots/diagnostics). */
 export const METRICS_VERSION = data.version;
