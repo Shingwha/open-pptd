@@ -1,5 +1,5 @@
 // ============================================================================
-// types/image.js — 图片元素类型注册（含本地文件选择）
+// types/image.js — image element type registration (with local file picking)
 // ============================================================================
 
 import { svgIcon } from "../ui.js";
@@ -9,7 +9,7 @@ import { PRESET_SHAPES, SUPPORTED_SHAPES, nextElementId, registerType } from "..
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif"];
 
 /**
- * 本地图片选择（仅浏览器；Node 下不会被调用）。
+ * Local image picking (browser only; never called under Node).
  * @param {{addElement: Function, rebuildImageMap: Function}} api
  */
 function pickLocalImage(api) {
@@ -19,7 +19,7 @@ function pickLocalImage(api) {
   input.onchange = () => {
     const file = input.files?.[0];
     if (!file) return;
-    // PPT 导出只支持 PNG/JPEG/GIF（SVG/WebP 会损坏文件）
+    // PPT export supports PNG/JPEG/GIF only (SVG/WebP corrupt the file)
     if (!IMAGE_TYPES.includes(file.type)) {
       dialogs.alert("仅支持 PNG / JPG / GIF 图片（PPT 兼容格式）");
       return;
@@ -67,7 +67,7 @@ registerType({
       { kind: "select", label: "适配", options: [["cover", "裁剪填充"], ["contain", "完整显示"], ["fill", "拉伸"]],
         get: () => el.fit?.mode || "cover",
         set: (v) => ((el.fit ||= {}).mode = v) },
-      // 裁剪（四边比例，0~1；正 = 向内裁，负 = 向外扩）
+      // Crop (ratio per side, 0~1; positive = crop inward, negative = expand outward)
       { kind: "num", label: "左裁", min: -0.9, max: 0.9, step: 0.05,
         get: () => el.crop?.left ?? 0,
         set: (v) => { el.crop = { ...(el.crop || {}), left: Number(v) }; } },
@@ -81,7 +81,7 @@ registerType({
         get: () => el.crop?.bottom ?? 0,
         set: (v) => { el.crop = { ...(el.crop || {}), bottom: Number(v) }; } },
     ];
-    // 形状裁剪（cropShape：ShapeDef，与形状组件字段一一对应）
+    // Shape crop (cropShape: ShapeDef, mirroring the shape component's fields)
     const cs = el.cropShape || {};
     fields.push({
       kind: "select", label: "裁剪形状",

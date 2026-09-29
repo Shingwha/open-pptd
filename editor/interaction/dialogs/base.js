@@ -1,24 +1,24 @@
 // ============================================================================
-// interaction/dialogs/base.js — 对话框基础设施（showDialog + 单元格/表单工具）
+// interaction/dialogs/base.js — dialog infrastructure (showDialog + cell/form helpers)
 // ----------------------------------------------------------------------------
-// 图表编辑器与表格编辑器共用；showDialog 是唯一弹窗入口。
+// Shared by the chart and table editors; showDialog is the single modal entry point.
 // ============================================================================
 
-// 打开的模态框登记（destroy 时统一关闭，避免 DOM 残留）
+// Registry of open modals (closed together on destroy, avoiding leftover DOM)
 const openOverlays = new Set();
 
-/** 关闭并移除当前全部模态框（createEditor destroy 用）。 */
+/** Close and remove every open modal (used by createEditor's destroy). */
 export function closeAllDialogs() {
   for (const overlay of [...openOverlays]) overlay.remove();
   openOverlays.clear();
 }
 
-/** 通用模态框：标题 + body + 底部按钮（默认单「完成」；点遮罩/✕ 关闭）。
+/** Generic modal: title + body + footer buttons (a single done button by default; overlay/✕ close).
  * actions: { doneText, onDone, buttons, panelClass, closeBtn, overlayClose }
- *   buttons      自定义底部按钮组（替代默认完成按钮，关闭走返回的 close()）
- *   panelClass   面板附加 class（如 restore-card 定宽）
- *   closeBtn     false = 不显示头部 ✕（默认显示）
- *   overlayClose false = 点遮罩不关闭（默认关闭） */
+ *   buttons      custom footer button group (replacing the default done button; close via the returned close())
+ *   panelClass   extra panel class (e.g. restore-card fixed width)
+ *   closeBtn     false = hide the header ✕ (shown by default)
+ *   overlayClose false = clicking the overlay does not close (closes by default) */
 export function showDialog(title, buildBody, actions) {
   const overlay = document.createElement("div");
   overlay.className = "dialog-overlay";
@@ -69,7 +69,7 @@ export function showDialog(title, buildBody, actions) {
 }
 
 // ----------------------------------------------------------------------------
-// 单元格交互（Enter 向下跳格 + 聚焦全选）
+// Cell interaction (focus-select + Enter moves down one row)
 // ----------------------------------------------------------------------------
 function wireCellNav(input) {
   input.addEventListener("focus", () => input.select());
@@ -79,21 +79,21 @@ function wireCellNav(input) {
     const td = input.closest("td");
     const tr = td?.closest("tr");
     if (!tr) return;
+    // Same column in the next row (the row header occupies column 0, so use the
+    // td's position within the row); blur when there is no next row or the next
+    // cell has no input (e.g. covered by a merge)
     const idx = Array.from(tr.children).indexOf(td);
-    const nextTr = tr.nextElementSibling;
-    if (nextTr) {
-      const nextInput = nextTr.children[idx]?.querySelector("input");
-      if (nextInput) {
-        nextInput.focus();
-        nextInput.select();
-      }
+    const nextInput = tr.nextElementSibling?.children?.[idx]?.querySelector("input");
+    if (nextInput) {
+      nextInput.focus();
+      nextInput.select();
     } else {
       input.blur();
     }
   });
 }
 
-/** 单元格输入（Enter 跳格 + change 提交）。 */
+/** Cell input (Enter moves down + change commits). */
 export function buildCellInput(value, placeholder, onCommit) {
   const input = document.createElement("input");
   input.value = value ?? "";
@@ -103,7 +103,7 @@ export function buildCellInput(value, placeholder, onCommit) {
   return input;
 }
 
-/** 小按钮。 */
+/** Small button. */
 export function button(text, onClick) {
   const b = document.createElement("button");
   b.type = "button";

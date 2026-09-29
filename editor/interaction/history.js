@@ -1,35 +1,38 @@
 // ============================================================================
-// interaction/history.js — 撤销/重做（undo 链 + redo 链）
+// interaction/history.js — undo/redo (undo chain + redo chain)
 // ----------------------------------------------------------------------------
-// 语义：
-//   - snapshot 在「变更前」调用，变更前状态压入 undo 链（可撤销点）；
-//   - undo(current) 把当前态压入 redo 链，再回到最近的可撤销点；
-//   - redo() 从 redo 链弹出恢复；新操作（snapshot）清空 redo 链。
-// 这样首次变更即可撤销，undo/redo 严格成对往返，无跳步。
+// Semantics:
+//   - snapshot is called *before* a change; the pre-change state is pushed onto
+//     the undo chain (a restorable point);
+//   - undo(current) pushes the current state onto the redo chain and returns to
+//     the most recent restorable point;
+//   - redo() pops the redo chain and restores it; a new operation (snapshot)
+//     clears the redo chain.
+// This makes the first change undoable and keeps undo/redo strictly paired.
 // ============================================================================
 
 export function createHistory(cap = 60) {
   let undoStack = [];
   let redoStack = [];
-  let index = -1; // 指向 undo 链中当前基线位置
+  let index = -1; // current baseline position within the undo chain
 
   return {
-    /** 变更前调用：保存当前 deck 快照（并清空 redo 链）。 */
+    /** Call before a change: store the current deck snapshot (and clear the redo chain). */
     snapshot(deck) {
-      undoStack = undoStack.slice(0, index + 1); // 截断失效分支
+      undoStack = undoStack.slice(0, index + 1); // drop the invalidated branch
       undoStack.push(structuredClone(deck));
       if (undoStack.length > cap) undoStack.shift();
       index = undoStack.length - 1;
       redoStack = [];
     },
-    /** 撤销：返回上一个可撤销点；当前态进入 redo 链。 */
+    /** Undo: return the previous restorable point; the current state enters the redo chain. */
     undo(current) {
       if (index < 0) return null;
       if (current != null) redoStack.push(structuredClone(current));
       index -= 1;
       return structuredClone(undoStack[index + 1]);
     },
-    /** 重做：恢复最近一次撤销的当前态。 */
+    /** Redo: restore the most recently undone state. */
     redo() {
       if (redoStack.length === 0) return null;
       const s = redoStack.pop();

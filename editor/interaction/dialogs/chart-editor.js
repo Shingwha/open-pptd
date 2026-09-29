@@ -1,15 +1,15 @@
 // ============================================================================
-// editor/interaction/dialogs/chart-editor.js — 图表编辑器
+// editor/interaction/dialogs/chart-editor.js — chart editor
 // ----------------------------------------------------------------------------
-// 与表格编辑器同构（Excel 式 + 声明式样式面板）：
-//   - 布局：顶部类型行 / 主区（数据工具条 + 数据表 + 系列列表）/ 右侧样式面板
-//   - 数据表：Excel 式行列头（数字/字母）、点击选行/列、拖拽选区、方向插入行列
-//   - 系列列表：点击选中 → 右侧"系列"组联动
-//   - 样式面板：fields.js 声明式分组——图表 / 数据标签 / 坐标轴 / 系列（随类型）
-//   - 类型切换：语义键重映射（remapEncode）+ 共存约束警告（validateChartSeries）
+// Same shape as the table editor (Excel-style grid + declarative style panel):
+//   - layout: type row on top / main area (data toolbar + data table + series list) / style panel on the right
+//   - data table: Excel-style row/column headers (numbers/letters), click to select a row/column, drag-select, directional insert
+//   - series list: click to select → the series group on the right follows
+//   - style panel: fields.js declarative groups — chart / data labels / axes / series (by type)
+//   - type switch: semantic key remap (remapEncode) + coexistence-constraint warnings (validateChartSeries)
 // ============================================================================
 
-import { showDialog, buildCellInput, button } from "./base.js";
+import { showDialog, button } from "./base.js";
 import { renderGroup, themeSwatches, fieldHandlers } from "../fields.js";
 import { createExcelGrid } from "../excel-grid.js";
 import * as ui from "../../ui.js";
@@ -27,7 +27,8 @@ import {
 
 const LEGEND_POS = [["bottom", "底部"], ["top", "顶部"], ["right", "右侧"], ["left", "左侧"]];
 const LABEL_CONTENT = [["value", "数值"], ["percentage", "百分比"], ["category", "分类名"]];
-// 格式码全集 = model NUMBER_FORMAT_CODES（与 formatChartValue 解释器同源），文案在本层
+// Format-code set = model NUMBER_FORMAT_CODES (same source as the formatChartValue
+// interpreter); the labels live in this layer
 const NUMBER_FMT_LABELS = { "": "无", "0": "整数", "0.0": "一位小数", "0%": "百分比", "0.0%": "一位百分比", "#,##0": "千分位", "0.0E+00": "科学计数" };
 const NUMBER_FMTS = NUMBER_FORMAT_CODES.map((code) => [code, NUMBER_FMT_LABELS[code]]);
 const LINE_STYLES = [["solid", "实线"], ["dash", "虚线"], ["dot", "点线"]];
@@ -36,7 +37,7 @@ const MARKER_SHAPES = [["circle", "圆点"], ["rect", "方块"], ["diamond", "�
 const SIZE_SCALES = [["sqrt", "平方根"], ["linear", "线性"], ["log", "对数"]];
 const NODE_ALIGNS = [["justify", "两端对齐"], ["left", "左对齐"], ["right", "右对齐"]];
 
-/** 找未占用的数值列名（y2/y3…）。 */
+/** Find an unused value-column name (y2/y3…). */
 function findUnusedValCol(el) {
   const data = el.data || { cols: [] };
   const used = new Set((el.series || []).map((s) => s.encode?.y || s.encode?.value));
@@ -46,7 +47,7 @@ function findUnusedValCol(el) {
 }
 
 // ----------------------------------------------------------------------------
-// 图表编辑器
+// Chart editor
 // ----------------------------------------------------------------------------
 export function openChartEditor(el, { theme, onChange }) {
   const container = document.createElement("div");
@@ -57,11 +58,11 @@ export function openChartEditor(el, { theme, onChange }) {
   const commit = () => onChange?.();
   const curType = () => el.series?.[0]?.type || "bar";
   const metaOf = (t) => CHART_META[t] || CHART_META.bar;
-  /** 值通道键（系列列表的"值列"下拉与添加系列的默认列）。 */
+  /** Value channel key (for the series list's "value column" dropdown and new series). */
   const valKeyOf = (t) =>
     Object.keys(metaOf(t).encode).find((k) => !["x", "category", "date", "source", "target"].includes(k)) || "y";
 
-  // 数据（宽容空表）
+  // Data (tolerant of an empty table)
   const data = (el.data ||= { cols: [], rows: [] });
   if (!data.cols.length) data.cols = ["x", "y"];
   if (!data.rows.length) data.rows = [["", ""]];
@@ -70,7 +71,7 @@ export function openChartEditor(el, { theme, onChange }) {
 
   let curSeries = 0;
 
-  // —— Excel 式数据网格（共用 interaction/excel-grid.js，与表格编辑器同一实现）——
+  // -- Excel-style data grid (shared interaction/excel-grid.js, same impl as the table editor) --
   const grid = createExcelGrid({
     getRows: rowCount,
     getCols: colCount,
@@ -112,7 +113,7 @@ export function openChartEditor(el, { theme, onChange }) {
       const removed = data.cols.slice(c1, c2 + 1);
       for (const r of data.rows) r.splice(c1, c2 - c1 + 1);
       data.cols.splice(c1, c2 - c1 + 1);
-      // 系列 encode 引用被删列 → 重置到首列（不悬空）
+      // Series encode referencing a deleted column → reset to the first column (no dangling refs)
       for (const s of el.series || []) {
         for (const k of Object.keys(s.encode || {})) {
           if (removed.includes(s.encode[k])) s.encode[k] = data.cols[0];
@@ -122,7 +123,7 @@ export function openChartEditor(el, { theme, onChange }) {
     },
   });
 
-  // —— 布局骨架 ——
+  // -- Layout skeleton --
   const topRow = document.createElement("div");
   topRow.className = "chart-top";
   const warnBox = document.createElement("div");
@@ -138,11 +139,11 @@ export function openChartEditor(el, { theme, onChange }) {
   bodyRow.append(main, panel);
   container.append(topRow, bodyRow);
 
-  // 每次变更：提交 + 全量重渲（数据格 input 的 change 只提交，避免丢焦点）
+  // On every change: commit + full re-render (a data-cell input change only commits, so focus is not lost)
   const setAndRefresh = () => { commit(); renderAll(); };
 
   // --------------------------------------------------------------------------
-  // 顶部：类型切换 + 添加系列 + 共存警告
+  // Top: type switch + add series + coexistence warnings
   // --------------------------------------------------------------------------
   function renderTop() {
     topRow.innerHTML = "";
@@ -180,7 +181,7 @@ export function openChartEditor(el, { theme, onChange }) {
     addBtn.title = "添加一个系列（自动新增数据列）";
     topRow.append(typeLabel, typeSel, addBtn);
 
-    // 类型共存/结构警告（官方 §5.4）
+    // Type coexistence/structure warnings
     const warns = validateChartSeries(el);
     warnBox.hidden = warns.length === 0;
     warnBox.innerHTML = "";
@@ -192,11 +193,12 @@ export function openChartEditor(el, { theme, onChange }) {
   }
 
   // --------------------------------------------------------------------------
-  // 数据表（Excel 式：数字行头 / 字母列头 / 拖拽选区 / 方向插入）——组件实现
+  // Data table (Excel style: numeric row headers / letter column headers / drag
+  // select / directional insert) — implemented by the component
   // --------------------------------------------------------------------------
   const gridBox = grid.root;
   main.appendChild(gridBox);
-  /** 列重命名：同步更新各系列 encode 引用。 */
+  /** Column rename: also updates every series encode reference. */
   function renameColumn(c, newName) {
     const old = data.cols[c];
     if (!old || old === newName || !newName) return;
@@ -209,7 +211,7 @@ export function openChartEditor(el, { theme, onChange }) {
   }
 
   // --------------------------------------------------------------------------
-  // 系列列表（点击选中 → 右侧样式面板联动）
+  // Series list (click selects → the style panel on the right follows)
   // --------------------------------------------------------------------------
   const seriesBox = document.createElement("div");
   seriesBox.className = "series-box";
@@ -229,7 +231,7 @@ export function openChartEditor(el, { theme, onChange }) {
       wrap.className = "series-item" + (i === curSeries ? " series-active" : "");
       wrap.title = "点击选中此系列，右侧面板编辑其样式";
       const t = s.type || curType();
-      // 主色字段：bar/scatter/bubble/pie → color；line/area/radar → lineColor
+      // Main color field: bar/scatter/bubble/pie → color; line/area/radar → lineColor
       const hasMainColor = ["bar", "scatter", "bubble", "pie", "line", "area", "radar"].includes(t);
       if (hasMainColor) {
         const colorKey = ["line", "area", "radar"].includes(t) ? "lineColor" : "color";
@@ -285,7 +287,7 @@ export function openChartEditor(el, { theme, onChange }) {
       wrap.appendChild(del);
 
       wrap.addEventListener("click", (e) => {
-        // 控件（色块/输入/下拉/删除）内的点击不触发选中重建
+        // Clicks inside controls (swatch/input/select/delete) do not trigger a selection rebuild
         if (e.target.closest("input,select,button,.color-pop")) return;
         if (curSeries !== i) {
           curSeries = i;
@@ -305,11 +307,12 @@ export function openChartEditor(el, { theme, onChange }) {
   }
 
   // --------------------------------------------------------------------------
-  // 样式面板（声明式分组，fields.js 渲染器；随类型与选中系列联动）
+  // Style panel (declarative groups rendered by fields.js; follows the type and
+  // the selected series)
   // --------------------------------------------------------------------------
   const h = fieldHandlers({ theme: () => editorTheme() });
 
-  /** 数值轴对象安全获取（xAxis/yAxis/spokeAxis 共享）。 */
+  /** Safe access to a numeric-axis object (shared by xAxis/yAxis/spokeAxis). */
   const axisObj = (el, key) => {
     if (el[key] === false || el[key] == null || typeof el[key] !== "object") el[key] = {};
     return el[key];
@@ -591,7 +594,7 @@ export function openChartEditor(el, { theme, onChange }) {
   renderAll();
 
   showDialog("图表编辑", container);
-  // 加宽对话框（数据表 + 系列 + 右侧样式面板）
+  // Widen the dialog (data table + series + right style panel)
   const dlg = container.closest(".dialog");
   if (dlg) dlg.style.width = "min(960px, 96vw)";
 }

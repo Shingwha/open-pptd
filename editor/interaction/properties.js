@@ -1,46 +1,42 @@
 // ============================================================================
-// interaction/properties.js — 属性面板（声明式字段渲染器）
+// interaction/properties.js — property panel (declarative field renderer)
 // ----------------------------------------------------------------------------
-// 布局模板（统一规则，根治各类型各自为政的杂乱）：
-//   [单选]   元素头（徽标 + id + 复制 + 删除）
-//            → 位置与尺寸（X/Y/宽/高 + 对齐（页面））
-//            → 变换（旋转/透明度 + 翻转）
-//            → 类型分组（types/*.js 的 props 返回 groups 声明）
-//   [多选]   多选头（数量 + 复制 + 删除）
-//            → 位置与尺寸（可批量：值一致可编辑；不一致「混合」斜体只读）
-//            → 对齐（选区）+ 分布（≥3 可用）
-//            → 层级 + 变换（可批量 / 混合）
-//            → 组合 / 取消组合 + 类型专属（同类型列「混合」占位）
-//   [未选中] 演示文稿 → 页面设置 → 提示
+// Layout template (one rule for every type):
+//   [single] element head (badge + id + duplicate + delete)
+//            → position & size (X/Y/W/H + align (page))
+//            → transform (rotation/opacity + flip)
+//            → type groups (declared by types/*.js props → groups)
+//   [multi]  multi head (count + duplicate + delete)
+//            → position & size (batch: editable when equal; a mixed placeholder, italic and read-only, when not)
+//            → align (selection) + distribute (enabled at ≥3)
+//            → layer + transform (batch / mixed)
+//            → group / ungroup + type-specific (same type shows mixed placeholders)
+//   [none]   presentation → page setup → hint
 //
-// 对齐语义二义化（U1/PowerPoint）：单选 → 对齐页面；多选 → 对齐选区包围盒。
-// 排列算法唯一实现于 interaction/arrange.js（与右键菜单共用，避免两处漂移）。
-// 组合元素（elementType:"group"）随 children 一起变换。
+// Ambiguous align semantics: single → align to page; multi → align to the
+// selection bounding box. The one and only arrangement implementation lives in
+// interaction/arrange.js (shared with the context menu so they never drift).
+// Group elements (elementType:"group") transform with their children.
 //
-// 字段声明（types 只描述，布局由本渲染器统一决定）：
-//   num      双列紧凑格（label 上置），两两成行     {kind:"num", label, get, set, min?, max?, step?}
-//   text     整行文本框                            {kind:"text", label, get, set, placeholder?}
-//   textarea 整行多行文本                          {kind:"textarea", label, get, set, placeholder?}
-//   select   整行下拉                              {kind:"select", label, options, get, set}
-//   color    整行颜色（色块弹层 + 取色器 + hex）    {kind:"color", label, get, set}
-//   checks   整行复选框组                          {kind:"checks", items:[{label, get, set}]}
-//   button   整行按钮                              {kind:"button", label, onClick, className?}
-//   hint     整行提示                              {kind:"hint", text}
+// Field declarations: see interaction/fields.js — types only describe fields, the
+// layout is decided uniformly by that renderer.
 //
-// 事务模式：首次实际提交 → beginChange（快照）；input → update；blur → endChange。
-// 颜色控件：令牌（$primary 等）经 resolveColor 解析回填，展示当前真实颜色。
+// Transaction model: first real commit → beginChange (snapshot); input → update;
+// blur → endChange. Color controls resolve tokens ($primary etc.) via resolveColor
+// so the current real color is shown.
 // ============================================================================
 
 import { getType } from "../types/index.js";
 import * as ui from "../ui.js";
-import { renderGroup, fieldHandlers, themeSwatches } from "./fields.js";
+import { renderGroup, fieldHandlers } from "./fields.js";
 import { ALIGN_MODES, alignSelection, distribute, translate } from "./arrange.js";
-import { PAGE_TYPES, resolveColor } from "../../packages/model/index.js";
+import { BACKGROUND_TYPES, backgroundColorFields, setBackgroundType } from "./dialogs/page-background.js";
+import { PAGE_TYPES } from "../../packages/model/index.js";
 
-/** 无「变换」分区的类型（官方限制：不支持整体旋转/翻转/透明度）。 */
+/** Types without a transform section (no whole-element rotate/flip/opacity). */
 const NO_TRANSFORM = new Set(["table", "chart", "group"]);
 
-/** 一组元素的取值是否一致：一致返回该值，不一致返回 undefined（→「混合」）。 */
+/** Whether a set of elements shares one value: returns it when equal, undefined when mixed (→ the mixed placeholder). */
 const sameValueOf = (els, get) => {
   const vs = els.map(get);
   const first = JSON.stringify(vs[0]);
@@ -51,17 +47,20 @@ export function bindProperties(panel, api) {
   const { state, page, beginChange, endChange, deleteSelected, duplicateSelected, moveLayer } = api;
   const getSelectedElements = api.getSelectedElements || (() => (api.getSelectedElement() ? [api.getSelectedElement()] : []));
 
-  // 输入事务：首次实际提交才快照（点进输入框不输入不再误标脏），blur 结束事务
+  // Input transaction: snapshot only on the first real commit (clicking into an
+  // input without typing no longer marks dirty); blur ends the transaction
   let txActive = false;
-  // 多选批量事务（同一策略，独立标志避免与单选项互相干扰）
+  // Multi-selection batch transaction (same policy, separate flag so it cannot
+  // interfere with the single-selection one)
   let multiTx = false;
 
   const list = () => page().elements || [];
   const translateEl = (el, dx, dy) => translate(el, dx, dy, list());
 
-  /** 注册表 props 用控件（提交事务 + 提交后即时刷新画布，面板不重建保焦点）。 */
+  /** Registry props controls (commit transaction + immediate canvas refresh; the panel is not rebuilt so focus is kept). */
   function helpers() {
-    // 提交包装：首次提交前快照 → 改模型 → 立即只刷新画布（blur 时 endChange 再全量对齐面板）
+    // Commit wrapper: snapshot before the first commit → change the model → refresh
+    // just the canvas immediately (blur's endChange then re-aligns the whole panel)
     const commit = (fn) => (v) => {
       if (!txActive) {
         txActive = true;
@@ -71,7 +70,7 @@ export function bindProperties(panel, api) {
       api.refreshPreview();
     };
     const endTx = () => {
-      if (!txActive) return; // 无实际提交：不标脏、不入历史
+      if (!txActive) return; // no real commit: not dirty, not in history
       txActive = false;
       endChange();
     };
@@ -88,7 +87,7 @@ export function bindProperties(panel, api) {
     });
   }
 
-  /** 多选批量提交包装（首提交快照；提交只刷画布，blur 再全量对齐面板）。 */
+  /** Multi-selection batch commit wrapper (snapshot on first commit; commit only refreshes the canvas, blur re-aligns the panel). */
   const multiCommit = (apply) => {
     if (!multiTx) {
       multiTx = true;
@@ -124,7 +123,7 @@ export function bindProperties(panel, api) {
     }
   }
 
-  /** 元素头：类型徽标 + elementId + 复制 + 删除。 */
+  /** Element head: type badge + elementId + duplicate + delete. */
   function itemHead(el) {
     const head = document.createElement("div");
     head.className = "inspector-item";
@@ -142,9 +141,10 @@ export function bindProperties(panel, api) {
   }
 
   // --------------------------------------------------------------------------
-  // 对齐行 / 分布行（单选 = 页面；多选 = 选区包围盒；算法见 arrange.js）
+  // Align / distribute rows (single = page; multi = selection bounding box;
+  // algorithm in arrange.js)
   // --------------------------------------------------------------------------
-  /** 单选/多选统一入口：单选对页面，多选对选区包围盒。 */
+  /** Shared entry for single/multi: single aligns to the page, multi to the selection bounding box. */
   const alignSel = (els, mode) => alignSelection(els, mode, list());
 
   function alignRow(els, label) {
@@ -176,7 +176,7 @@ export function bindProperties(panel, api) {
     const g = ui.group("层级");
     const row = document.createElement("div");
     row.className = "prop-actions";
-    // 数组顺序 = 绘制顺序（越靠后越在上层）：上移 = 索引 +1（B5 修正，此前与 z 序相反）
+    // Array order = paint order (later = on top): forward = index +1
     row.append(
       ui.button("上移一层", () => { beginChange(); moveLayer(1); endChange(); }),
       ui.button("下移一层", () => { beginChange(); moveLayer(-1); endChange(); })
@@ -200,7 +200,7 @@ export function bindProperties(panel, api) {
   }
 
   // --------------------------------------------------------------------------
-  // 混合占位（「混合」= 各元素取值不同；斜体、只读、禁用）
+  // Mixed placeholder (values differ; italic, read-only, disabled)
   // --------------------------------------------------------------------------
   function mixNode() {
     const input = document.createElement("input");
@@ -213,19 +213,20 @@ export function bindProperties(panel, api) {
     return input;
   }
 
-  /** 双列格里的混合占位（label 上置）。 */
+  /** Mixed placeholder inside a two-column cell (label on top). */
   function mixCellPlaceholder(label) {
     return ui.cell(label, mixNode());
   }
 
-  /** 整行混合占位（label 左置）。 */
+  /** Full-width mixed placeholder (label on the left). */
   function mixRow(label) {
     return ui.field(label, mixNode());
   }
 
   /**
-   * 双列格：值一致 → 可编辑数字输入（写回全部选中）；不一致 → 「混合」占位。
-   * @param get (el) => value；set (el, value) => void（内部已带事务与刷新）
+   * Two-column cell: equal → editable number input (writes back to all selected);
+   * not equal → the mixed placeholder.
+   * @param get (el) => value; set (el, value) => void (already carries the transaction and refresh)
    */
   function mixCell(label, els, get, set, opts = {}) {
     const v = sameValueOf(els, get);
@@ -243,7 +244,7 @@ export function bindProperties(panel, api) {
     return d;
   }
 
-  /** 字段声明 → 展示标签列表（混合占位用；button/hint 类不占位）。 */
+  /** Field declaration → displayed labels (for mixed placeholders; button/hint take no placeholder). */
   function fieldLabels(f) {
     switch (f?.kind) {
       case "checks":
@@ -257,7 +258,8 @@ export function bindProperties(panel, api) {
   }
 
   // --------------------------------------------------------------------------
-  // 多选面板：可批量设置的属性可编辑，其余「混合」占位
+  // Multi-selection panel: batch-settable properties are editable, the rest show
+  // Mixed placeholders
   // --------------------------------------------------------------------------
   function renderMulti(els) {
     const head = document.createElement("div");
@@ -273,7 +275,7 @@ export function bindProperties(panel, api) {
     head.append(badge, id, dup, del);
     panel.appendChild(head);
 
-    // 位置与尺寸（值一致可批量编辑，不一致「混合」）
+    // Position & size (editable when equal, mixed otherwise)
     const g = ui.group("位置与尺寸");
     const grid = document.createElement("div");
     grid.className = "prop-grid";
@@ -287,7 +289,8 @@ export function bindProperties(panel, api) {
     panel.appendChild(alignRow(els, "对齐（选区）"));
     panel.appendChild(layerRow());
 
-    // 变换：全部支持则批量（一致可编辑/混合）；含不支持类型则保留分区 + 混合占位 + 说明
+    // Transform: batch when all support it (editable when equal / mixed); otherwise
+    // keep the section with mixed placeholders and an explanation
     if (els.every((e) => !NO_TRANSFORM.has(e.elementType))) panel.appendChild(multiTransformSection(els));
     else panel.appendChild(mixedTransformSection(els));
 
@@ -301,7 +304,7 @@ export function bindProperties(panel, api) {
     panel.appendChild(hint);
   }
 
-  /** 多选变换分区：旋转 / 透明度可批量（一致可编辑 / 不一致混合）+ 翻转（批量）。 */
+  /** Multi transform section: rotation / opacity batchable (editable when equal / mixed) + flip (batch). */
   function multiTransformSection(els) {
     const g = ui.group("变换");
     const grid = document.createElement("div");
@@ -315,7 +318,7 @@ export function bindProperties(panel, api) {
     return g;
   }
 
-  /** 多选但含不支持变换的类型：分区保留 + 混合占位 + 说明。 */
+  /** Multi selection including types without transform: keep the section + mixed placeholders + note. */
   function mixedTransformSection(els) {
     const g = ui.group("变换");
     const n = els.filter((e) => NO_TRANSFORM.has(e.elementType)).length;
@@ -325,7 +328,7 @@ export function bindProperties(panel, api) {
     return g;
   }
 
-  /** 翻转开关行（批量：各元素各自置为目标态）。 */
+  /** Flip toggle row (batch: each element is set to the target state). */
   function flipRow(els) {
     const row = document.createElement("div");
     row.className = "prop-checks";
@@ -344,7 +347,7 @@ export function bindProperties(panel, api) {
     return row;
   }
 
-  /** 同类型多选：按类型声明列出「混合」占位（对齐设计稿 mix 态）；多种类型给出说明。 */
+  /** Same-type multi selection: list mixed placeholders per the type declaration; multiple types get an explanation. */
   function mixedTypeSection(els) {
     const types = [...new Set(els.map((e) => e.elementType))];
     if (types.length > 1) {
@@ -375,13 +378,13 @@ export function bindProperties(panel, api) {
   }
 
   // --------------------------------------------------------------------------
-  // 通用组：位置与尺寸 + 变换（单选）
+  // Common groups: position & size + transform (single selection)
   // --------------------------------------------------------------------------
   function renderCommon(el) {
     const h = helpers();
     const isGroup = el.elementType === "group";
 
-    // —— 位置与尺寸 ——
+    // -- Position & size --
     const g = ui.group("位置与尺寸");
     const grid = document.createElement("div");
     grid.className = "prop-grid";
@@ -398,8 +401,8 @@ export function bindProperties(panel, api) {
     panel.appendChild(layerRow());
     if (isGroup) panel.appendChild(groupRow([el]));
 
-    // —— 变换 ——
-    // 官方限制：table/chart 不支持整体旋转/翻转/透明度（pptd.md §Table/§Chart limitation）；组不整体旋转
+    // -- Transform --
+    // Table/chart do not support whole-element rotation/flip/opacity; groups do not rotate as a whole
     if (NO_TRANSFORM.has(el.elementType)) return;
     const g2 = ui.group("变换");
     const grid2 = document.createElement("div");
@@ -418,12 +421,13 @@ export function bindProperties(panel, api) {
   }
 
   // --------------------------------------------------------------------------
-  // 页面设置（未选中元素时）
+  // Page setup (when no element is selected)
   // --------------------------------------------------------------------------
   function renderPageProps() {
     const deck = state.deck;
     const pg = page();
-    // 提交即只刷新画布（面板不重建，输入焦点保持）；标题等文本框 blur 再全量对齐
+    // Commit refreshes only the canvas (the panel is not rebuilt so input focus is
+    // kept); text inputs such as the title re-align on blur
     const commit = (fn) => { beginChange(); fn(); api.refreshPreview(); };
 
     const g1 = ui.group("演示文稿");
@@ -436,41 +440,11 @@ export function bindProperties(panel, api) {
     g2.appendChild(
       ui.field("类型", ui.selectInput(PAGE_TYPES.map((t) => [t, t]), pg.pageType || "content", (v) => commit(() => { pg.pageType = v; })))
     );
-    const bgType = pg.background?.type || "none";
     g2.appendChild(
-      ui.field("背景", ui.selectInput([["none", "无"], ["solid", "纯色"], ["gradient", "渐变"]], bgType, (v) =>
-        commit(() => {
-          if (v === "none") delete pg.background;
-          else if (v === "solid") pg.background = { type: "solid", color: pg.background?.color || "$bg" };
-          else if (v === "gradient") {
-            pg.background = {
-              type: "gradient",
-              gradientType: "linear",
-              angle: 90,
-              stops: [
-                { position: 0, color: pg.background?.color || "$primary" },
-                { position: 1, color: "#ffffff" },
-              ],
-            };
-          }
-        })
-      ))
+      ui.field("背景", ui.selectInput(BACKGROUND_TYPES, pg.background?.type || "none", (v) => commit(() => setBackgroundType(pg, v))))
     );
-    if (pg.background?.type === "solid") {
-      g2.appendChild(
-        ui.field("颜色", ui.colorField(pg.background.color, (v) => commit(() => { pg.background.color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches(state.theme) }))
-      );
-    } else if (pg.background?.type === "gradient") {
-      g2.appendChild(
-        ui.field("起始色", ui.colorField(pg.background.stops?.[0]?.color, (v) => commit(() => { pg.background.stops[0].color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches(state.theme) }))
-      );
-      g2.appendChild(
-        ui.field("结束色", ui.colorField(pg.background.stops?.[1]?.color, (v) => commit(() => { pg.background.stops[1].color = v; }), { resolve: (val) => resolveColor(state.theme, val), swatches: themeSwatches(state.theme) }))
-      );
-      g2.appendChild(
-        ui.field("角度", ui.numInput(pg.background.angle ?? 0, (v) => commit(() => { pg.background.angle = v; }), { min: 0, max: 360, step: 15 }))
-      );
-    }
+    // Color/angle fields share their source with the page-background dialog (dialogs/page-background.js)
+    for (const node of backgroundColorFields(pg, { commit, theme: state.theme })) g2.appendChild(node);
     panel.appendChild(g2);
 
     const hint = document.createElement("div");
@@ -481,7 +455,7 @@ export function bindProperties(panel, api) {
 
   return {
     refresh,
-    /** 释放：清空面板 DOM（绑定的监听都挂在面板子节点上，随之回收）。 */
+    /** Release: clear the panel DOM (listeners hang off its children, so they are collected with it). */
     destroy() {
       panel.innerHTML = "";
       txActive = false;

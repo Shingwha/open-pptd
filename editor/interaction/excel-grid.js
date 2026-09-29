@@ -1,62 +1,56 @@
 // ============================================================================
-// interaction/excel-grid.js — Excel 式数据网格组件（表格编辑器/图表编辑器共用）
+// interaction/excel-grid.js — Excel-style data grid component (table/chart editors)
 // ----------------------------------------------------------------------------
-// 以表格编辑器网格为基准实现，参数化差异点（合并格/列宽/列头内容/额外工具条
-// 按钮/单元格样式），表格与图表共用同一套 DOM 结构、选区模型与交互：
-//   - 工具条：↑插行 ↓插行 ←插列 →插列 | 删除行 删除列 [+ 消费方额外按钮]
-//   - 网格：colgroup（18px 行头列固定 + 数据列宽）+ 字母列头 + 数字行头 + input 单元格
-//   - 选区：单格 {r,c} / 区域 {r1,c1,r2,c2}（与表格编辑器语义一致），
-//     拖拽选整行/列/区域（共用 interaction/drag-select.js，含边缘自动滚动）
-// 插入/删除通过回调让消费方改模型（可返回错误串拒绝，如表格的合并保护），
-// 组件负责新选区与重建；样式面板等外部联动走 afterRender / onSelect。
+// Modelled on the table editor's grid, parameterizing the differences (merged
+// cells / column widths / column-header content / extra toolbar buttons / cell
+// styles). Table and chart share one DOM structure, selection model and interaction:
+//   - toolbar: ↑insert row ↓insert row ←insert col →insert col | delete row delete col [+ consumer extras]
+//   - grid: colgroup (fixed 18px row-header column + data column widths) + letter
+//     column headers + numeric row headers + input cells
+//   - selection: single cell {r,c} / region {r1,c1,r2,c2} (same semantics as the
+//     table editor); dragging selects whole rows/columns/regions (shared
+//     interaction/drag-select.js, including edge auto-scroll)
+// Insert/delete go through callbacks so the consumer mutates the model (it may
+// return an error string to reject, e.g. the table's merge protection); the
+// component owns the new selection and rebuild. External hooks such as style
+// panels run through afterRender / onSelect.
 // ============================================================================
 
-import { button } from "./dialogs/base.js";
+import { button, buildCellInput } from "./dialogs/base.js";
 import { dialogs } from "../dialogs.js";
 import { bindExcelDragSelect } from "./drag-select.js";
+import { colLetter } from "../../packages/model/index.js";
 
-/** 列字母（Excel 式：A B … Z AA AB）。 */
-function colLetter(i) {
-  let s = "";
-  i += 1;
-  while (i > 0) {
-    const m = (i - 1) % 26;
-    s = String.fromCharCode(65 + m) + s;
-    i = Math.floor((i - 1) / 26);
-  }
-  return s;
-}
-
-/** 数据列最小宽度（px）：Excel 式固定列宽——列多时表格超宽出现横向滚动，不挤压。 */
+/** Minimum data-column width (px): Excel-style fixed column widths — many columns overflow and scroll horizontally, never squeeze. */
 const MIN_COL_W = 96;
-/** 列宽逻辑基准（px）：columnWidths 比例 × 基准 = 实际列宽（预览导出同比例）。 */
+/** Logical column-width base (px): columnWidths ratio × base = actual width (same ratio for preview and export). */
 const COL_BASE_W = 560;
 
 /**
  * @param {object} opts
- *  数据访问：
- *   - getRows(): 行数
- *   - getCols(): 列数
- *   - cellValue(r, c): 单元格显示文本（string）
- *   - onCellChange(r, c, v): 输入提交（消费方改模型）
- *   - covered(r, c): 是否合并占位格（默认 false）
- *   - rowSpan(r, c) / colSpan(r, c): 合并主格跨度（默认 1）
- *   - cellCss(r, c): td 样式 cssText（表格 = tdCss；图表空）
- *   - inputCss(r, c): input 样式 cssText（表格 = 高亮背景；图表空）
- *   - rowHeight(r): 行高 px（默认空）
- *   - colWidths(): 数据列宽比例数组 0-1（默认均分）
- *   - colHeadContent(c): 列头内容（Node|string；默认字母）
- *   - cellTitle(r, c): 单元格 title（默认空）
- *   - cellPlaceholder(r, c): 输入占位提示（默认空；表格 = "双击编辑"）
- *  操作（消费方改模型并 commit；返回错误串可拒绝）：
+ *  Data access:
+ *   - getRows(): row count
+ *   - getCols(): column count
+ *   - cellValue(r, c): cell display text (string)
+ *   - onCellChange(r, c, v): input commit (consumer mutates the model)
+ *   - covered(r, c): whether the cell is a merge placeholder (default false)
+ *   - rowSpan(r, c) / colSpan(r, c): merge master span (default 1)
+ *   - cellCss(r, c): td style cssText (table = tdCss; chart empty)
+ *   - inputCss(r, c): input style cssText (table = highlight background; chart empty)
+ *   - rowHeight(r): row height px (default empty)
+ *   - colWidths(): data-column width ratio array 0-1 (default even)
+ *   - colHeadContent(c): column-header content (Node|string; default letters)
+ *   - cellTitle(r, c): cell title (default empty)
+ *   - cellPlaceholder(r, c): input placeholder (default empty; the table editor supplies its own)
+ *  Operations (the consumer mutates the model and commits; an error string rejects):
  *   - canInsertRows(at, n) / canInsertCols(at, n)
  *   - canDeleteRows(r1, r2) / canDeleteCols(c1, c2)
  *   - onInsertRows(at, n) / onInsertCols(at, n)
  *   - onDeleteRows(r1, r2) / onDeleteCols(c1, c2)
- *  联动：
- *   - extraToolbar(mkBtn, sep): 额外工具条按钮（表格：合并/拆分/行高列宽）
- *   - onSelect(sel, kind): 选区变化回调（kind = cell|row|col|end；end 时 sel 为 null）
- *   - afterRender(): 每次重建后回调（表格：刷新样式面板）
+ *  Hooks:
+ *   - extraToolbar(mkBtn, sep): extra toolbar buttons (table: merge/split/row-col size)
+ *   - onSelect(sel, kind): selection-change callback (kind = cell|row|col|end; sel is null at end)
+ *   - afterRender(): called after every rebuild (table: refresh the style panel)
  */
 export function createExcelGrid(opts) {
   const {
@@ -76,7 +70,7 @@ export function createExcelGrid(opts) {
   const root = document.createElement("div");
   root.className = "excel-grid";
 
-  // 选区（单格 {r,c} / 区域 {r1,c1,r2,c2}，Excel 式活动单元格 A1）
+  // Selection (single cell {r,c} / region {r1,c1,r2,c2}; Excel-style active cell A1)
   let sel = { r: 0, c: 0 };
 
   const isRegion = () => sel && sel.r1 != null;
@@ -85,19 +79,19 @@ export function createExcelGrid(opts) {
   const selRows = () => (isRegion() ? [sel.r1, sel.r2] : [sel.r, sel.r]);
   const selCols = () => (isRegion() ? [sel.c1, sel.c2] : [sel.c, sel.c]);
 
-  /** 方向插入（Excel 式）：at = 插入位置，n = 插入数量（= 选区跨度）。 */
+  /** Directional insert (Excel style): at = insert position, n = count (= selection span). */
   const insertRows = (at, n) => {
     const err = canInsertRows ? canInsertRows(at, n) : null;
     if (err) { dialogs.alert(err); return; }
     onInsertRows(at, n);
-    sel = { r1: at, c1: 0, r2: at + n - 1, c2: getCols() - 1 }; // 选中新插入的行
+    sel = { r1: at, c1: 0, r2: at + n - 1, c2: getCols() - 1 }; // select the inserted rows
     render();
   };
   const insertCols = (at, n) => {
     const err = canInsertCols ? canInsertCols(at, n) : null;
     if (err) { dialogs.alert(err); return; }
     onInsertCols(at, n);
-    sel = { r1: 0, c1: at, r2: getRows() - 1, c2: at + n - 1 }; // 选中新插入的列
+    sel = { r1: 0, c1: at, r2: getRows() - 1, c2: at + n - 1 }; // select the inserted columns
     render();
   };
   const deleteRows = (r1, r2) => {
@@ -105,7 +99,7 @@ export function createExcelGrid(opts) {
     const err = canDeleteRows ? canDeleteRows(r1, r2) : null;
     if (err) { dialogs.alert(err); return; }
     onDeleteRows(r1, r2);
-    sel = { r: Math.min(r1, getRows() - 1), c: 0 }; // 删除后落回相邻行首列（与表格基准一致）
+    sel = { r: Math.min(r1, getRows() - 1), c: 0 }; // fall back to the adjacent row's first column (matches the table baseline)
     render();
   };
   const deleteCols = (c1, c2) => {
@@ -113,17 +107,17 @@ export function createExcelGrid(opts) {
     const err = canDeleteCols ? canDeleteCols(c1, c2) : null;
     if (err) { dialogs.alert(err); return; }
     onDeleteCols(c1, c2);
-    sel = { r: 0, c: Math.min(c1, getCols() - 1) }; // 删除后落回首行相邻列（与表格基准一致）
+    sel = { r: 0, c: Math.min(c1, getCols() - 1) }; // fall back to the first row's adjacent column
     render();
   };
 
-  /** 全量重建（工具条 + 网格）。消费方模型变更后调用。 */
+  /** Full rebuild (toolbar + grid). Call after the consumer changes the model. */
   function render() {
     root.innerHTML = "";
     const cols = getCols();
     const rows = getRows();
 
-    // ---- 工具条（常驻） ----
+    // ---- Toolbar (always visible) ----
     const toolbar = document.createElement("div");
     toolbar.className = "table-toolbar";
     const sep = () => {
@@ -149,24 +143,25 @@ export function createExcelGrid(opts) {
     if (extraToolbar) toolbar.append(sep(), ...extraToolbar(mkBtn, sep));
     root.appendChild(toolbar);
 
-    // ---- 网格区（可滚动） ----
+    // ---- Grid area (scrollable) ----
     const gridWrap = document.createElement("div");
     gridWrap.className = "excel-grid-scroll";
     const table = document.createElement("table");
     table.className = "data-table";
-    // fixed 布局：列宽完全由 colgroup 决定（行头恒 18px，列头 input 等内容不撑宽）
+    // fixed layout: widths come entirely from colgroup (the row header stays 18px; header input content cannot widen a column)
     table.style.tableLayout = "fixed";
-    // 表格宽度 = 内容宽（不拉伸容器）：列少时右侧留白，列多时超宽 → 横向滚动（Excel 式）
+    // Table width = content width (never stretched to the container): spare space when
+    // few columns, horizontal scroll when many (Excel style)
     table.style.width = "max-content";
     const colgroup = document.createElement("colgroup");
-    // 行头列（固定窄列，必须占 colgroup 首位，否则数据列百分比错位挤爆行头）
+    // Row-header column (fixed narrow; must be first in colgroup or data-column percentages misalign and crush it)
     const headCol = document.createElement("col");
     headCol.style.width = "18px";
     colgroup.appendChild(headCol);
     const widths = colWidths ? colWidths() : null;
     for (let c = 0; c < cols; c++) {
       const col = document.createElement("col");
-      // Excel 式固定列宽（px）：比例 × 逻辑基准，最小 96px——列多时超宽滚动而不是均分挤压
+      // Excel-style fixed width (px): ratio × logical base, minimum 96px — many columns scroll instead of squeezing
       const w = widths ? Math.max(MIN_COL_W, widths[c] * COL_BASE_W) : MIN_COL_W;
       col.style.width = `${w.toFixed(0)}px`;
       col.style.minWidth = `${MIN_COL_W}px`;
@@ -174,7 +169,7 @@ export function createExcelGrid(opts) {
     }
     table.appendChild(colgroup);
 
-    // 列头（Excel 式：字母，点击/拖拽选列）
+    // Column headers (Excel style: letters; click/drag to select columns)
     const thead = document.createElement("thead");
     const headTr = document.createElement("tr");
     const corner = document.createElement("th");
@@ -191,7 +186,7 @@ export function createExcelGrid(opts) {
     thead.appendChild(headTr);
     table.appendChild(thead);
 
-    // 行体（行头 + 单元格）
+    // Body (row headers + cells)
     const tbody = document.createElement("tbody");
     for (let r = 0; r < rows; r++) {
       const tr = document.createElement("tr");
@@ -220,24 +215,10 @@ export function createExcelGrid(opts) {
         }
         if (rs > 1) td.rowSpan = rs;
         if (cs > 1) td.colSpan = cs;
-        const input = document.createElement("input");
-        input.type = "text";
-        input.value = cellValue(r, c) ?? "";
-        const ph = cellPlaceholder(r, c);
-        if (ph) input.placeholder = ph;
+        // Shared cell input: focus-select + Enter moves to the cell below
+        const input = buildCellInput(cellValue(r, c), cellPlaceholder(r, c), () => onCellChange(r, c, input.value));
         const icss = inputCss(r, c);
         if (icss) input.style.cssText = icss;
-        // Enter 向下跳格 + 聚焦全选
-        input.addEventListener("focus", () => input.select());
-        input.addEventListener("keydown", (e) => {
-          if (e.key !== "Enter") return;
-          e.preventDefault();
-          const nextTr = tr.nextElementSibling;
-          const nextInput = nextTr?.children?.[c + 1]?.querySelector("input");
-          if (nextInput) { nextInput.focus(); nextInput.select(); }
-          else input.blur();
-        });
-        input.addEventListener("change", () => onCellChange(r, c, input.value));
         td.appendChild(input);
         tr.appendChild(td);
       }
@@ -247,7 +228,7 @@ export function createExcelGrid(opts) {
     gridWrap.appendChild(table);
     root.appendChild(gridWrap);
 
-    // ---- 选区高亮 + 拖拽（与表格编辑器同语义：单格 outline / 区域阴影，行列头仅区域亮） ----
+    // ---- Selection highlight + dragging (same semantics as the table editor: single-cell outline / region shading; headers light up only for regions) ----
     const selRange = () => (isRegion() ? sel : { r1: sel.r, c1: sel.c, r2: sel.r, c2: sel.c });
     const paint = () => {
       const single = !isRegion();
@@ -285,7 +266,7 @@ export function createExcelGrid(opts) {
       onSelect: (next, kind) => {
         if (kind === "end") {
           if (onSelect) onSelect(null, "end");
-          if (isRegion()) render(); // 区域完成：重建（按钮态「合并 N×M」/删除行列启用）
+          if (isRegion()) render(); // region complete: rebuild (button state "merge N×M" / delete row-col enabled)
           return;
         }
         sel = next;

@@ -1,38 +1,40 @@
 /* ============================================================================
-   tokens.css — 设计令牌（单一来源）
+   tokens.css — design tokens (single source)
    ----------------------------------------------------------------------------
-   取值基座 = 原版（9cd4906）的令牌板：圆角 6/8/12px、4 档轻投影、中性灰阶
-   #f5f6f8/#ffffff/#1c2532/#5b6572/#98a2af/#e7eaef/#d3d8e0、动效 120/180ms。
+   Value base = the original (9cd4906) token sheet: radii 6/8/12px, four light
+   shadow steps, neutral grays
+   #f5f6f8/#ffffff/#1c2532/#5b6572/#98a2af/#e7eaef/#d3d8e0, motion 120/180ms.
 
-   结构（反向别名：旧令牌名持原值，U1 新令牌名指向旧令牌）：
-     1. 中性 11 阶 --n-0…--n-900（值 = 原版语义灰阶，唯一起点）
-     2. 强调 / 语义色（--accent 系、--danger/--success/--warning 及 -soft）
-     3. 语义别名（组件只认这些）
-     4. 尺寸基座（原版令牌名：--radius* / --shadow* / --text-* / --control-h* / --dur-*）
-     5. 复合过渡（transition 形态说明）
-     6. 兼容别名（U1 新名 → 旧名；旧名持原值）
-     7. 遮罩 / 描边 / 缩略条悬浮标签
-     8. 深色板（[data-pptd-theme="dark"]，A2 落地的属性选择器）
+   Structure (reverse aliases: the old token name keeps its value, the new token
+   name points at the old one):
+     1. 11 neutral steps --n-0…--n-900 (values = the original semantic grays, the only origin)
+     2. accent / semantic colors (--accent family, --danger/--success/--warning and -soft)
+     3. semantic aliases (components only know these)
+     4. size base (original token names: --radius* / --shadow* / --text-* / --control-h* / --dur-*)
+     5. composite transitions (transition-form notes)
+     6. compat aliases (new name → old name; the old name keeps the value)
+     7. mask / outline / thumbnail hover labels
+     8. dark sheet ([data-pptd-theme="dark"], attribute selector)
 
-   注：选中态令牌（--sel-bg / --sel-ring）由用户拍板保持现状，不回退。
-   断点约定：窄屏 = 900px（与 ui.js 的 BP_NARROW 常量一一对应，见 responsive.css）
+   Note: the selection tokens (--sel-bg / --sel-ring) stay as-is by user decision.
+   Breakpoint convention: narrow = 900px (mirrors the BP_NARROW constant in ui.js, see responsive.css)
    ============================================================================ */
 
 :root {
-  /* ---- 1. 中性 11 阶（值对齐原版语义灰阶，唯一起点） ---- */
-  --n-0: #ffffff;   /* = 原 --panel */
-  --n-50: #f5f6f8;  /* = 原 --bg */
-  --n-100: #eef1f5; /* 协调值：原版无对应阶，取 bg 与 line 之间 */
-  --n-200: #ebedf0; /* 协调值：hover 底（原版 hover 用 --bg，此处略深一档） */
-  --n-300: #e7eaef; /* = 原 --line */
-  --n-400: #d3d8e0; /* = 原 --line-strong */
-  --n-500: #98a2af; /* = 原 --faint */
-  --n-600: #7c8595; /* 协调值：原版无对应阶，取 faint 与 sub 之间 */
-  --n-700: #5b6572; /* = 原 --sub */
-  --n-800: #333d4b; /* 协调值：原版无对应阶，取 sub 与 ink 之间 */
-  --n-900: #1c2532; /* = 原 --ink */
+  /* ---- 1. 11 neutral steps (values = the original semantic grays, the only origin) ---- */
+  --n-0: #ffffff;   /* = original --panel */
+  --n-50: #f5f6f8;  /* = original --bg */
+  --n-100: #eef1f5; /* harmonized: no counterpart in the original, between bg and line */
+  --n-200: #ebedf0; /* harmonized: hover background (the original hover used --bg, one step shallower) */
+  --n-300: #e7eaef; /* = original --line */
+  --n-400: #d3d8e0; /* = original --line-strong */
+  --n-500: #98a2af; /* = original --faint */
+  --n-600: #7c8595; /* harmonized: no counterpart in the original, between faint and sub */
+  --n-700: #5b6572; /* = original --sub */
+  --n-800: #333d4b; /* harmonized: no counterpart in the original, between sub and ink */
+  --n-900: #1c2532; /* = original --ink */
 
-  /* ---- 2. 强调 + 语义色（原版值） ---- */
+  /* ---- 2. accent + semantic colors (original values) ---- */
   --accent: #2563eb;
   --accent-hover: #1d4ed8;
   --accent-soft: #eef4fd;
@@ -42,12 +44,12 @@
   --success-soft: #ecf7f0;
   --warning: #9a6700;
   --warning-soft: #fdf6e3;
-  /* 主色底上的前景（按钮/徽标文字） */
+  /* Foreground on an accent fill (button/badge text) */
   --on-accent: #ffffff;
-  /* 纸张：画布/缩略图底色（深色下也保持浅色纸面，保证版面可读） */
+  /* Paper: canvas/thumbnail backdrop (kept light in dark mode so the layout stays readable) */
   --paper: #ffffff;
 
-  /* ---- 3. 语义别名（组件只认这些） ---- */
+  /* ---- 3. semantic aliases (components only know these) ---- */
   --bg: var(--n-50);
   --panel: var(--n-0);
   --line: var(--n-300);
@@ -61,25 +63,25 @@
   --sel-bg: var(--accent-soft);
   --sel-ring: var(--accent);
 
-  /* ---- 4. 尺寸基座（原版令牌名 + 原值） ---- */
-  /* 圆角：6 / 8 / 12px */
-  --radius-sm: 6px;    /* 控件/小芯片 */
-  --radius: 8px;       /* 面板/卡片 */
-  --radius-lg: 12px;   /* 对话框/大浮层 */
-  /* 阴影：4 档轻投影 */
+  /* ---- 4. size base (original token names + values) ---- */
+  /* Radii: 6 / 8 / 12px */
+  --radius-sm: 6px;    /* controls/small chips */
+  --radius: 8px;       /* panels/cards */
+  --radius-lg: 12px;   /* dialogs/large overlays */
+  /* Shadows: four light steps */
   --shadow-sm: 0 1px 2px rgba(28, 37, 50, 0.06);
   --shadow-md: 0 4px 16px rgba(28, 37, 50, 0.1);
   --shadow-lg: 0 12px 32px rgba(28, 37, 50, 0.14);
   --shadow-sheet: 0 -8px 32px rgba(28, 37, 50, 0.16);
-  /* 动效 */
+  /* Motion */
   --dur-fast: 120ms;
   --dur-med: 180ms;
   --ease: cubic-bezier(0.2, 0, 0, 1);
-  /* 控件高 */
+  /* Control heights */
   --control-h: 28px;
   --control-h-lg: 32px;
   --topbar-h: 48px;
-  /* 字号 */
+  /* Font sizes */
   --text-xs: 11px;
   --text-sm: 12px;
   --text-md: 13px;
@@ -89,15 +91,16 @@
   --font: "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
 
-  /* ---- 5. 过渡形态：全站 transition 只允许 4 种形态 ----
-     A 控件态：background/border-color/color/box-shadow/transform @ --t-fast
-     B 动效：opacity/transform @ --t-med
-     C 尺寸：width/opacity/border-left-color @ --t-med
-     D none（无过渡，如 prefers-reduced-motion）
-     具体声明在各组件文件内以这几条形态的字面值书写（不用复合令牌，
-     以保住「全仓 var(-- 用量只增不减」的可审计性）。 */
+  /* ---- 5. transition forms: only 4 are allowed site-wide ----
+     A control state: background/border-color/color/box-shadow/transform @ --t-fast
+     B motion: opacity/transform @ --t-med
+     C size: width/opacity/border-left-color @ --t-med
+     D none (no transition, e.g. prefers-reduced-motion)
+     The concrete declarations are written with these literal forms inside each
+     component file (no composite token, to preserve the auditable property that
+     "site-wide var(-- usage only grows"). */
 
-  /* ---- 6. 兼容别名（U1 新令牌名 → 回填后的旧令牌；旧名持原值） ---- */
+  /* ---- 6. compat aliases (new token name → the original name; the old name keeps the value) ---- */
   --primary: var(--accent);
   --primary-strong: var(--accent-hover);
   --primary-soft: var(--accent-soft);
@@ -116,29 +119,29 @@
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 24px;
-  /* 圆角别名：新名 → 旧名（6/8/12px） */
+  /* Radius aliases: new name → old name (6/8/12px) */
   --r-1: var(--radius-sm);
   --r-2: var(--radius);
   --r-3: var(--radius-lg);
-  /* 控件高别名 */
-  --h-sm: 24px; /* 协调值：原版无对应档，保留 U1 紧凑档 */
+  /* Control-height aliases */
+  --h-sm: 24px; /* harmonized: no counterpart in the original, keeps the compact step */
   --h: var(--control-h);
   --h-lg: var(--control-h-lg);
-  /* 阴影别名：新名 → 旧名 */
+  /* Shadow aliases: new name → old name */
   --sh-pop: var(--shadow-md);
   --sh-modal: var(--shadow-lg);
-  /* 动效别名 */
+  /* Motion aliases */
   --t-fast: var(--dur-fast);
   --t-med: var(--dur-med);
   --t-slow: 200ms;
-  /* 层级 */
-  --z-sticky: 20;   /* 顶栏/缩略条等常驻层 */
-  --z-dropdown: 85; /* 下拉菜单/浮层 */
-  --z-overlay: 100; /* 遮罩/画布覆盖层 */
-  --z-modal: 1000;  /* 对话框/放映 */
-  --z-toast: 1100;  /* 提示，永远最上 */
+  /* Layers */
+  --z-sticky: 20;   /* persistent bars such as topbar/thumbbar */
+  --z-dropdown: 85; /* dropdown menus/overlays */
+  --z-overlay: 100; /* mask/canvas overlays */
+  --z-modal: 1000;  /* dialogs/presentation */
+  --z-toast: 1100;  /* toasts, always on top */
 
-  /* ---- 7. 遮罩 / 描边 / 缩略条悬浮标签（值对齐原版） ---- */
+  /* ---- 7. mask / outline / thumbnail hover labels (values match the original) ---- */
   --mask: color-mix(in srgb, var(--n-900) 45%, transparent);
   --chip-border: color-mix(in srgb, var(--n-900) 12%, transparent);
   --thumb-chip-bg: color-mix(in srgb, var(--n-900) 65%, transparent);
@@ -148,12 +151,13 @@
 }
 
 /* ============================================================================
-   [data-pptd-theme="dark"] — 深色令牌（契约 3）
+   [data-pptd-theme="dark"] — dark tokens
    ----------------------------------------------------------------------------
-   取值照抄原版（9cd4906）的 [data-theme="dark"] 板：面板比底暗一档、文字反转、
-   强调色提亮、语义色降饱和、阴影 4 档加深。由 editor/theme.js 的
-   applyThemeTokens(rootEl, { mode: "dark" }) 注入属性；宿主也可自行加该属性。
-   组件永远不知道 light/dark —— 只有这里知道。
+   Values copied from the original (9cd4906) [data-theme="dark"] sheet: panels one
+   step darker than the background, text inverted, accent brightened, semantic
+   colors desaturated, the four shadow steps deepened. Injected by
+   editor/theme.js applyThemeTokens(rootEl, { mode: "dark" }); the host may also
+   set the attribute itself. Components never know light/dark — only this block does.
    ============================================================================ */
 [data-pptd-theme="dark"] {
   --n-0: #16191f;
@@ -178,16 +182,16 @@
   --warning: #e0a83a;
   --warning-soft: #382c12;
 
-  /* 纸张：深色下仍是浅色纸面 */
+  /* Paper: still a light sheet in dark mode */
   --paper: #f7f8fa;
 
-  /* 阴影 4 档（暗底用纯黑，方向不变） */
+  /* Four shadow steps (pure black on a dark ground, same directions) */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
   --shadow-sheet: 0 -8px 32px rgba(0, 0, 0, 0.55);
 
-  /* 遮罩 / 描边 / 缩略条标签：暗底整体反转 */
+  /* Mask / outline / thumbnail labels: inverted overall on a dark ground */
   --mask: rgba(0, 0, 0, 0.6);
   --chip-border: rgba(255, 255, 255, 0.14);
   --thumb-chip-bg: rgba(0, 0, 0, 0.7);

@@ -1,14 +1,15 @@
 // ============================================================================
-// types/shape.js — 形状元素类型注册（187 种 ECMA-376 预置 + 自定义路径）
+// types/shape.js — shape element type registration (187 ECMA-376 presets + custom path)
 // ----------------------------------------------------------------------------
-// 菜单完全由 preset-geometry.data.js 驱动：按 category 分组，缩略图由
-// 求值器按 24×24 实时生成，与画布/导出几何同源。
+// The menu is driven entirely by preset-geometry.data.js: grouped by category,
+// with thumbnails generated on the fly at 24×24 by the evaluator (same geometry
+// as canvas and export).
 // ============================================================================
 
 import { svgIcon } from "../ui.js";
 import { PRESET_SHAPES, SUPPORTED_SHAPES, nextElementId, registerType, shapeMenuIcon } from "../../packages/model/index.js";
 
-/** 形状默认模型（调整值不预设——与 PowerPoint 一致：未设置 = 预设内置默认）。 */
+/** Default shape model (no adjustments preset — like PowerPoint: unset = preset default). */
 function shapeItem(name) {
   const def = PRESET_SHAPES[name];
   return {
@@ -27,7 +28,7 @@ function shapeItem(name) {
   };
 }
 
-// 调整值中文名（属性面板用；未列出的回退原名）
+// Adjustment-value labels for the property panel (unlisted names fall back to the raw name)
 const ADJ_LABELS = {
   adj: "调整",
   adj1: "调整 1",
@@ -42,13 +43,13 @@ const ADJ_LABELS = {
   vf: "垂直比例",
 };
 
-/** 形状的调整名（预置几何按规范 adjNames，基础形状按索引）。 */
+/** Adjustment names for a shape (presets use the spec adjNames, basic shapes use indices). */
 function adjNamesFor(shapeName, adjustments) {
   if (PRESET_SHAPES[shapeName]?.adjNames?.length) return PRESET_SHAPES[shapeName].adjNames;
   return (adjustments || []).map((_, i) => (i === 0 ? "adj" : `adj${i}`));
 }
 
-/** 自定义路径默认模型：甜甜圈圆环（外环顺时针 + 内环逆时针镂空，官方示例语义）。 */
+/** Default custom-path model: a donut ring (outer ring clockwise + inner ring counter-clockwise). */
 function createCustomShape() {
   return {
     elementId: nextElementId("shape"),
@@ -76,7 +77,7 @@ registerType({
         icon: svgIcon('<path d="M4 6a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M9 4.5l4.5 6-3 4.5L6 9z" fill="currentColor" opacity=".35"/>'),
         create: createCustomShape,
       },
-      // 187 种预置几何：按 category 分组（求值器实时生成缩略图）
+      // 187 preset shapes, grouped by category (thumbnails generated live by the evaluator)
       ...Object.entries(SUPPORTED_SHAPES).map(([name]) => shapeItem(name)),
     ],
   },
@@ -137,7 +138,7 @@ registerType({
         get: () => el.border?.style || "solid",
         set: (v) => ((el.border ||= {}).style = v) }
     );
-    // 自定义路径：viewBox + path；预置形状：调整值（圆角/缺口/星形比例等）
+    // Custom path: viewBox + path; preset shape: adjustment values (corner radius, notch, star ratios …)
     if (el.shapeName === "custom") {
       fields.push(
         { kind: "text", label: "viewBox",

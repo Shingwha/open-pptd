@@ -1,14 +1,15 @@
 // ============================================================================
-// interaction/add-menu.js — 添加元素面板（仿 PPT 素材库）
+// interaction/add-menu.js — add-element panel (PowerPoint-style media library)
 // ----------------------------------------------------------------------------
-// 结构：
-//   Tab 栏：基础 | 形状 | 图标 | 图表
-//   基础：文字/线条/图片/表格大卡片 + 最近使用（localStorage，上限 8）
-//   形状：左分类侧栏（全部 + 20 分类）+ 右紧凑网格（187 种小图标）+ 搜索
-//   图标：FA 图标浏览器（搜索 + 官方分类，约 2000 个，与选择器同构动态加载）
-//   图表：13 种网格（图标 + 名称）
-// 数据源全部来自类型注册表 / 内置库（SUPPORTED_SHAPES / FA registry / CHART_META），
-// 不重复声明；点击条目统一走 addElement（新增后选中，非 icon 自动进数据编辑）。
+// Structure:
+//   Tab bar: basic | shape | icon | chart
+//   basic: large cards for text/line/image/table + recent items (localStorage, cap 8)
+//   shape: left category sidebar (all + 20 categories) + right compact grid (187 icons) + search
+//   icon: FA icon browser (search + official categories, ~2000, lazily loaded like the picker)
+//   chart: 13-type grid (icon + name)
+// All data comes from the type registry / built-in libraries (SUPPORTED_SHAPES /
+// FA registry / CHART_META) without re-declaring it; clicking an entry always
+// goes through addElement (selects the new element; non-icons open data editing).
 // ============================================================================
 
 import { buildAddItems } from "../types/index.js";
@@ -20,13 +21,13 @@ import { iconThumb } from "../../packages/renderer/index.js";
 const RECENT_KEY = "pptd-add-recent";
 const RECENT_MAX = 8;
 
-/** 图表菜单条目 id 集合（注册表声明，id = 类型名）。 */
+/** Chart entry ids (declared by the registry; id = type name). */
 const CHART_IDS = new Set([
   "bar", "line", "area", "pie", "scatter", "bubble", "candlestick",
   "radar", "waterfall", "heatmap", "treemap", "sunburst", "sankey",
 ]);
 
-/** 最近使用（localStorage，最新在前，去重）。 */
+/** Recent items (localStorage, newest first, deduplicated). */
 function readRecent() {
   try {
     const raw = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
@@ -40,23 +41,23 @@ function pushRecent(id) {
   try {
     localStorage.setItem(RECENT_KEY, JSON.stringify(list));
   } catch {
-    /* 隐私模式等场景静默失败 */
+    /* silently ignore (private mode etc.) */
   }
 }
 
 export function bindAddMenu({ fab, menu, addApi }) {
   const addItems = buildAddItems();
   const { addElement, rebuildImageMap } = addApi;
-  const ac = new AbortController(); // 生命周期：fab/document 监听经此一次解绑
+  const ac = new AbortController(); // lifecycle: fab/document listeners detached via this
 
-  // 最近使用项（addItems 里能找到的才显示）
+  // Recent items (shown only when present in addItems)
   const recentItems = () =>
     readRecent()
       .map((id) => addItems[id])
       .filter(Boolean)
       .slice(0, 8);
 
-  /** 点击条目：记录最近使用 + 添加。 */
+  /** Click an entry: record it as recent + add it. */
   function pick(item) {
     close();
     if (item.id) pushRecent(item.id);
@@ -70,7 +71,8 @@ export function bindAddMenu({ fab, menu, addApi }) {
   }
 
   // --------------------------------------------------------------------------
-  // 目录数据（形状分类 + 条目；图标目录见 renderIconCatalog——registry 派生、懒加载）
+  // Catalog data (shape categories + entries; the icon catalog is in
+  // renderIconCatalog — registry-derived and lazily loaded)
   // --------------------------------------------------------------------------
   const shapeCats = [...new Set(Object.values(SUPPORTED_SHAPES).map((s) => s.category))];
   const shapeEntries = Object.entries(SUPPORTED_SHAPES).map(([key, def]) => ({
@@ -81,13 +83,13 @@ export function bindAddMenu({ fab, menu, addApi }) {
   }));
   shapeEntries.push({ key: "custom", label: "自定义路径", cat: "基本", svg: shapeMenuIcon("rect", { size: 20 }) });
 
-  // 图表项（复用注册表菜单声明）
+  // Chart entries (reuse the registry menu declarations)
   const chartEntries = Object.entries(addItems)
     .filter(([id]) => CHART_IDS.has(id))
     .map(([id, item]) => ({ id, label: item.label, svg: item.icon }));
 
   // --------------------------------------------------------------------------
-  // Tab 容器构建
+  // Tab container construction
   // --------------------------------------------------------------------------
   let currentTab = "basic";
 
@@ -95,7 +97,7 @@ export function bindAddMenu({ fab, menu, addApi }) {
     menu.innerHTML = "";
     menu.classList.add("new");
 
-    // Tab 栏
+    // Tab bar
     const tabs = document.createElement("div");
     tabs.className = "add-tabs";
     const TAB_LIST = [
@@ -114,7 +116,7 @@ export function bindAddMenu({ fab, menu, addApi }) {
     }
     menu.appendChild(tabs);
 
-    // 内容区
+    // Content area
     const body = document.createElement("div");
     body.className = "add-body";
     menu.appendChild(body);
@@ -141,10 +143,11 @@ export function bindAddMenu({ fab, menu, addApi }) {
   }
 
   // --------------------------------------------------------------------------
-  // 图标目录：Font Awesome registry（条目轻量、缩略图懒加载、搜索含别名/关键词）
+  // Icon catalog: Font Awesome registry (lightweight entries, lazy thumbnails,
+  // search across aliases/keywords)
   // --------------------------------------------------------------------------
-  let iconCatalogReady = null; // { cats, entries } 单例
-  let iconCatalogSeq = 0; // 防竞态：加载期间切 Tab 则丢弃过期渲染
+  let iconCatalogReady = null; // { cats, entries } singleton
+  let iconCatalogSeq = 0; // race guard: switching tab while loading discards the stale render
   function iconCatalog() {
     if (!iconCatalogReady) {
       iconCatalogReady = getIconRegistry().then((registry) => {
@@ -159,7 +162,7 @@ export function bindAddMenu({ fab, menu, addApi }) {
             raw: e.raw,
             cat,
             label: e.label,
-            // 搜索域：官方名 + 展示名 + 别名 + 官方搜索词（如 home → house）
+            // Search domain: official name + display name + aliases + official search terms (e.g. home → house)
             haystack: [e.name, e.label, (meta?.aliases || []).join(" "), (meta?.terms || []).join(" ")].join(" ").toLowerCase(),
           };
         });
@@ -177,7 +180,7 @@ export function bindAddMenu({ fab, menu, addApi }) {
     loading.textContent = "正在加载图标目录…";
     body.appendChild(loading);
     iconCatalog().then(({ cats, entries }) => {
-      if (seq !== iconCatalogSeq) return; // 期间切走了 Tab
+      if (seq !== iconCatalogSeq) return; // tab switched meanwhile
       body.innerHTML = "";
       renderCatalog(
         body,
@@ -200,7 +203,7 @@ export function bindAddMenu({ fab, menu, addApi }) {
   }
 
   // --------------------------------------------------------------------------
-  // 基础 Tab：大卡片 + 最近使用
+  // Basic tab: large cards + recent items
   // --------------------------------------------------------------------------
   function renderBasic(body) {
     body.classList.remove("catalog");
@@ -236,7 +239,8 @@ export function bindAddMenu({ fab, menu, addApi }) {
   }
 
   // --------------------------------------------------------------------------
-  // 形状/图标 Tab：搜索 + 分类侧栏 + 紧凑网格（同一组件；图标走懒加载缩略图）
+  // Shape/icon tabs: search + category sidebar + compact grid (one component;
+  // icons use lazy thumbnails)
   // --------------------------------------------------------------------------
   function renderCatalog(body, cats, entries, nodeFn, opts = {}) {
     const limit = opts.limit || Infinity;
@@ -302,7 +306,7 @@ export function bindAddMenu({ fab, menu, addApi }) {
         return;
       }
       if (activeCat === "全部" && !q.trim()) {
-        // 全部模式：按分类分组展示（每组一个矩阵网格 + 小标题）
+        // All mode: group by category (one matrix grid + small title per group)
         let lastCat = null;
         let grid = null;
         for (const e of list) {
@@ -335,7 +339,7 @@ export function bindAddMenu({ fab, menu, addApi }) {
     renderGrid();
   }
 
-  /** 紧凑缩略格（小图标 + 悬停名称）。 */
+  /** Compact thumbnail cell (small icon + hover name). */
   function makeThumb(svg, label, onClick) {
     const b = document.createElement("button");
     b.type = "button";
@@ -347,7 +351,7 @@ export function bindAddMenu({ fab, menu, addApi }) {
   }
 
   // --------------------------------------------------------------------------
-  // 图表 Tab
+  // Chart tab
   // --------------------------------------------------------------------------
   function renderChart(body) {
     body.classList.remove("catalog");
@@ -365,7 +369,7 @@ export function bindAddMenu({ fab, menu, addApi }) {
   }
 
   // --------------------------------------------------------------------------
-  // 开关
+  // Toggle
   // --------------------------------------------------------------------------
   fab.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -383,7 +387,7 @@ export function bindAddMenu({ fab, menu, addApi }) {
   }, { signal: ac.signal });
 
   return {
-    /** 释放：解绑监听、收起并清空菜单（dataset.built 一并复位）。 */
+    /** Release: detach listeners, collapse and clear the menu (reset dataset.built too). */
     destroy() {
       ac.abort();
       close();

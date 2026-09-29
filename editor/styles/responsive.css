@@ -1,19 +1,21 @@
 /* ============================================================================
-   responsive.css — 响应式断点（窄屏 900px = ui.js 的 BP_NARROW 常量）
+   responsive.css — responsive breakpoints (narrow 900px = ui.js's BP_NARROW)
    ----------------------------------------------------------------------------
-   U1/T5：只保留断点覆盖；为**去掉加载顺序依赖**，所有覆盖选择器都加 `body`
-   前缀，比基类高一级特异性（`body .btn` 胜过 `.btn`），因此本文件无论排在
-   link 列表何处都能生效（打乱顺序结果一致）。
+   Only breakpoint overrides live here. To remove load-order dependence, every
+   override selector is prefixed with `body`, one specificity step above the base
+   rule (`body .btn` beats `.btn`), so this file works wherever it sits in the
+   link list (a shuffled order gives the same result).
 
-   布局骨架两端一致：顶栏 / 画布 / 右侧属性抽屉 / 底部缩略条 / 右下角按钮组。
-   窄屏只做“变形”不换结构：
-     - 顶栏：按钮图标化（文字隐藏）、品牌名省略只留 logo、横向滚动
-     - 属性抽屉：底部弹起 sheet（55vh）；入口为右下角「属性」圆形按钮
-     - 缩略条：96px → 64px，缩略图 140×79 → 88×50
-     - 快速条：吸底横滑；添加菜单 / 对话框：底部 sheet 化
-   ========================================================================== */
+   Both ends share the same skeleton: topbar / canvas / right inspector drawer /
+   bottom thumbbar / bottom-right button stack. Narrow screens only deform, never
+   restructure:
+     - topbar: buttons become icon-only (labels hidden), brand name ellipsized to the logo only, horizontal scroll
+     - inspector: a bottom sheet (55vh); the entry is a round inspector button bottom-right
+     - thumbbar: 96px → 64px, thumbnails 140×79 → 88×50
+     - quickbar: docked to the bottom and horizontally scrollable; add-menu / dialogs: bottom-sheet style
+   ============================================================================ */
 @media (max-width: 900px) {
-  /* —— 顶栏：图标化 + 压缩 —— */
+  /* -- Topbar: iconify + compress -- */
   body .topbar { padding: 0 8px; gap: 5px; overflow-x: auto; scrollbar-width: none; }
   body .topbar::-webkit-scrollbar { display: none; }
   body .topbar > *, body .topbar-actions > * { flex-shrink: 0; }
@@ -25,7 +27,7 @@
   body .topbar-divider { margin: 0 1px; }
   body .icon-btn { width: 32px; height: 32px; }
 
-  /* —— 属性抽屉：底部弹起 sheet（55vh，半屏） —— */
+  /* -- Inspector: bottom sheet (55vh, half screen) -- */
   body .inspector {
     position: fixed;
     left: 0;
@@ -44,13 +46,14 @@
     transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
   }
   body.inspector-open .inspector { transform: none; }
-  /* 兼容桌面收起态 class 残留（跨断点拖动窗口时）：统一为底部滑出方向 */
+  /* Handle a leftover desktop collapsed class (window resized across breakpoints):
+     unify to the bottom slide-out direction */
   body.inspector-collapsed .inspector {
     transform: translateY(102%);
     width: auto;
     opacity: 1;
   }
-  /* 顶部 grabber：提示底部 sheet 可下滑关闭（纯装饰） */
+  /* Top grabber: hints that the bottom sheet can be swiped down (purely decorative) */
   body .inspector::before {
     content: "";
     position: absolute;
@@ -64,10 +67,10 @@
     z-index: var(--z-sticky);
     pointer-events: none;
   }
-  /* 关闭按钮图标：右侧抽屉的右箭头 → 底部 sheet 的下箭头 */
+  /* Close-button icon: the right drawer's right arrow → the bottom sheet's down arrow */
   #btn-inspector-toggle svg { transform: rotate(90deg); }
 
-  /* —— 画布控件：操作组整体贴边 —— */
+  /* -- Canvas controls: pin the action stack to the edge -- */
   body .fab-stack { right: 14px; bottom: 16px; }
   body .add-menu {
     left: 10px;
@@ -78,7 +81,7 @@
     border-radius: var(--r-3);
   }
 
-  /* —— 快速条：吸底横滑（JS 跳过 left/top 定位，见 view.js） —— */
+  /* -- Quickbar: docked to the bottom, horizontally scrollable (JS skips left/top positioning, see view.js) -- */
   body .quickbar {
     position: fixed;
     left: 50%;
@@ -91,7 +94,7 @@
   }
   body .quickbar::-webkit-scrollbar { display: none; }
 
-  /* —— 缩略条：迷你化 —— */
+  /* -- Thumbbar: miniaturized -- */
   body .thumbbar { height: 64px; padding: 0 var(--space-2); gap: 6px; }
   body .thumb { width: 88px; height: 50px; }
   body .thumb .thumb-num { font-size: var(--f-xs); padding: 0 5px; left: 2px; bottom: 2px; }
@@ -99,7 +102,7 @@
   body .thumb-add { width: 34px; height: 34px; font-size: var(--f-lg); }
   body .thumbbar-meta { font-size: var(--f-xs); padding-right: 2px; }
 
-  /* —— 对话框：底部 sheet —— */
+  /* -- Dialogs: bottom sheet -- */
   body .dialog-overlay { align-items: flex-end; }
   body .dialog {
     width: 100vw;
@@ -111,12 +114,12 @@
   body .icon-browser .icon-grid { min-height: 40vh; }
   body .data-table input { font-size: var(--f-md); }
 
-  /* —— 放映 UI 压缩 —— */
+  /* -- Presentation UI: compressed -- */
   body .present-hint { display: none; }
   body .present-ui { padding: 20px 12px 10px; }
 }
 
-/* 小屏微调（≤480px）：进一步压缩顶栏，让 320px 宽度也放得下全部按钮 */
+/* Small-screen tweaks (≤480px): compress the topbar further so all buttons fit at 320px width */
 @media (max-width: 480px) {
   body .topbar { gap: 4px; padding: 0 6px; }
   body .topbar-actions { gap: 4px; }

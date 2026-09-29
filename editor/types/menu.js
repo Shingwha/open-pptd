@@ -1,15 +1,16 @@
-import { allTypes } from "../../packages/model/index.js";
 // ============================================================================
-// types/menu.js — 添加菜单数据源（从注册表派生）
+// types/menu.js — add-menu data source (derived from the registry)
 // ----------------------------------------------------------------------------
-// 所有类型的 menu 声明汇集成 ADD_ITEMS（id → item）：
-//   - interaction/add-menu.js 的面板按 id 查条目（基础卡片 / 图表网格 / 最近使用）
-//   - 形状目录由 add-menu.js 直接从 SUPPORTED_SHAPES 派生（图标走 FA 浏览器）
-//     （不再经过注册表 menu 声明——187 种形状不逐条声明）
+// Every type's `menu` declaration is collected into ADD_ITEMS (id → item):
+//   - interaction/add-menu.js resolves items by id (basic cards / chart grid /
+//     recent items)
+//   - the shape catalog is derived directly from SUPPORTED_SHAPES by add-menu.js
+//     (icons via the FA browser) — the 187 shapes are not declared one by one
 // ============================================================================
 
+import { allTypes } from "../../packages/model/index.js";
 
-/** 全部菜单项（id → item；item 可为 { create } 或自带 onClick）。 */
+/** All menu items (id → item; item is either { create } or carries its own onClick). */
 export function buildAddItems() {
   const items = {};
   for (const t of allTypes()) {

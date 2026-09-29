@@ -1,52 +1,57 @@
 // ============================================================================
-// interaction/stage.js — 舞台手势路由器（统一入口 / 状态仲裁）
+// interaction/stage.js — stage gesture router (single entry / state arbitration)
 // ----------------------------------------------------------------------------
-// 所有指针 / 滚轮手势在此分类与仲裁，元素手势的执行委托给
-// interaction/canvas.js（选中框 / 拖动 / 缩放 / 旋转），视口状态（zoom/pan）
-// 的唯一持有者是 app/view/viewport.js，本模块只调用 panBy / setZoom / zoomReset。
+// All pointer / wheel gestures are classified and arbitrated here; execution of
+// element gestures is delegated to interaction/canvas.js (selection box / drag /
+// resize / rotate). The sole owner of viewport state (zoom/pan) is
+// app/view/viewport.js — this module only calls panBy / setZoom / zoomReset.
 //
-// 路由规则（pointerdown 于 #stage，捕获阶段先于元素内部控件）：
-//   1. 悬浮控件（缩放条 / 按钮组 / 添加菜单 / 快速条…）→ 放行，不接管
-//   2. 空格按住 / 鼠标中键          → 平移（任意位置，包括元素上）
-//   3. 选中框手柄（缩放/旋转/移动）  → 元素手势
-//   4. 元素本体                      → 选中 + 移动手势
-//   5. 空白（画布内 or 画布外）      → 位移≤4px=点击取消选中，>4px=平移
-//   6. 任意时刻第二根手指落下        → 捏合缩放（终止一切进行中的手势，
-//                                     锚点=两指中点）
-// 滚轮：Ctrl/⌘=锚点缩放，否则=平移（浮层上放行，保持原生滚动）。
-// 双击：元素 → 进编辑器；空白 → 还原适配视图。
+// Routing rules (pointerdown on #stage, capture phase, before inner controls):
+//   1. floating controls (zoom bar / button rows / add menu / quickbar …) → pass through
+//   2. space held / middle mouse button  → pan (anywhere, including over elements)
+//   3. selection-box handle (resize/rotate/move) → element gesture
+//   4. element body                      → select + move gesture
+//   5. blank area (inside or outside canvas) → travel ≤4px = click to deselect,
+//                                              >4px = pan
+//   6. a second pointer lands            → pinch zoom (terminates any in-flight
+//                                          gesture; anchor = midpoint of the two)
+// Wheel: Ctrl/⌘ = anchored zoom, otherwise pan (passes through on overlays so
+// native scrolling keeps working).
+// Double-click: element → open its editor; blank → reset the fitted view.
 // ============================================================================
 
 export function createStageController(stage, opts) {
   const {
-    element,      // interaction/canvas.js：{ startGesture, startMarquee, cancelGesture, cancelMarquee, isGestureActive }
-    select,       // (id, mode) => void  选中（mode: replace/add/toggle）
+    element,      // interaction/canvas.js: { startGesture, startMarquee, cancelGesture, cancelMarquee, isGestureActive }
+    select,       // (id, mode) => void  select (mode: replace/add/toggle)
     getSelected,  // () => id | null
     isSelected,   // (id) => boolean
-    deselect,     // () => void  点击空白取消选中
-    onActivate,   // (id) => void  双击元素进编辑器
+    deselect,     // () => void  click blank to deselect
+    onActivate,   // (id) => void  double-click an element to open its editor
     panBy, setZoom, getZoom, zoomReset,
   } = opts;
   if (!stage) return { destroy() {} };
 
-  // 生命周期：全部监听经 signal 注册，destroy() 一次解绑（可重复挂载/销毁）
+  // Lifecycle: every listener is registered through a signal; destroy() detaches
+  // them all at once (supports repeated mount/destroy).
   const ac = new AbortController();
   const on = (target, type, handler, o) =>
     target.addEventListener(type, handler, { ...(typeof o === "boolean" ? { capture: o } : o || {}), signal: ac.signal });
 
-  // 悬浮控件自带点击 / 滚动行为，不参与舞台手势
+  // Floating controls carry their own click/scroll behaviour and are not stage gestures
   const FLOATING =
     ".zoom-ctl, .fab-stack, .add-menu, .quickbar, " +
     "button, input, textarea, select, [contenteditable]";
   const isFloating = (t) => !!t.closest(FLOATING);
 
-  // 选中框手柄 → 手势类型：缩放手柄的 data-handle 值本身就是方向
-  // （n/s/e/w/nw/ne/sw/se，见 canvas.js），旋转手柄为 "rotate"
+  // Selection-box handle → gesture type: a resize handle's data-handle value is
+  // itself the direction (n/s/e/w/nw/ne/sw/se, see canvas.js); the rotate handle is "rotate"
   const handleMode = (t) =>
     t.closest("[data-handle]")?.dataset.handle || (t.closest("[data-rotate-handle]") ? "rotate" : null);
 
-  // 触屏：空白面阻止浏览器手势（页面回弹 / 双击缩放），指针事件才能完整送达。
-  // 元素与手柄由 .canvas 的 touch-action:none 覆盖。
+  // Touch: block browser gestures on the blank surface (page bounce / double-tap
+  // zoom) so pointer events arrive intact. Elements and handles are covered by
+  // .canvas's touch-action:none.
   on(
     stage,
     "touchstart",
@@ -59,7 +64,7 @@ export function createStageController(stage, opts) {
   );
 
   // --------------------------------------------------------------------------
-  // 空格抓手（桌面）：按住空格后任意位置拖动均为平移
+  // Space hand tool (desktop): while space is held, dragging anywhere pans
   // --------------------------------------------------------------------------
   let spacePan = false;
   const isTyping = (e) => {
@@ -67,11 +72,11 @@ export function createStageController(stage, opts) {
     return tag === "input" || tag === "textarea" || tag === "select" || e.target.isContentEditable;
   };
   on(document, "keydown", (e) => {
-    // 输入控件与按钮上的空格保留原生行为（无障碍）
+    // Keep native space behaviour on inputs and buttons (accessibility)
     if (e.code !== "Space" || e.repeat || isTyping(e) || e.target.closest?.("button")) return;
     spacePan = true;
     stage.classList.add("space-pan");
-    e.preventDefault(); // 阻止页面滚动
+    e.preventDefault(); // prevent page scroll
   });
   on(document, "keyup", (e) => {
     if (e.code !== "Space") return;
@@ -80,7 +85,7 @@ export function createStageController(stage, opts) {
   });
 
   // --------------------------------------------------------------------------
-  // 手势状态机：pointers（活跃指针表）/ tapPan（空白按下）/ pinch（捏合）
+  // Gesture state machine: pointers (active pointers) / tapPan (blank press) / pinch
   // --------------------------------------------------------------------------
   const pointers = new Map();
   let tapPan = null;
@@ -89,21 +94,22 @@ export function createStageController(stage, opts) {
   function startPan(e, tapDeselect = false) {
     tapPan = { x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, moved: false, tapDeselect };
     stage.classList.add("panning");
-    e.preventDefault(); // 阻止文本选择 / 聚焦 / 中键自动滚动
+    e.preventDefault(); // block text selection / focus / middle-click autoscroll
   }
 
-  /** 第二指落下：终止一切进行中的手势（含元素拖动），切入捏合缩放。 */
+  /** Second pointer lands: terminate any in-flight gesture (including element drag) and start pinch. */
   function beginPinch() {
     const wasDragging = element.isGestureActive?.();
-    if (wasDragging) element.cancelGesture(); // 提交已发生的位移（同正常松手）
-    element.cancelMarquee?.(); // 终止框选（双指手势优先）
+    if (wasDragging) element.cancelGesture(); // commit the movement so far (same as a normal release)
+    element.cancelMarquee?.(); // terminate marquee selection (two-finger gestures win)
     tapPan = null;
     stage.classList.remove("panning");
     const [a, b] = [...pointers.values()];
     pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, zoom: getZoom?.() ?? 1 };
   }
 
-  // 双击检测：第二击不再起新手势（避免多余历史快照），交由 dblclick 处理
+  // Double-click detection: the second press does not start a new gesture
+  // (avoids a spurious history snapshot); dblclick handles it instead.
   let lastTap = null;
   function isRepeatTap(e) {
     const now = performance.now();
@@ -131,12 +137,12 @@ export function createStageController(stage, opts) {
       }
       if (pointers.size > 2) return;
 
-      // 1) 空格 / 中键 → 抓手平移（任意位置，包括元素上）
+      // 1) space / middle button → hand pan (anywhere, including over elements)
       if (spacePan || e.button === 1) {
         startPan(e);
         return;
       }
-      // 2) 选中框手柄 → 元素缩放 / 旋转（canvas.js 执行）
+      // 2) selection-box handle → element resize / rotate (executed by canvas.js)
       const mode = handleMode(e.target);
       if (mode) {
         const id = getSelected();
@@ -146,8 +152,9 @@ export function createStageController(stage, opts) {
         }
         return;
       }
-      // 3) 元素本体 → 选中（Shift 加选 / Ctrl 切换）+ 移动手势
-      //    Ctrl/Alt + 拖动 = 复制拖动（阈值在 canvas.js：未拖动则 Ctrl 点击 = 切换选中）
+      // 3) element body → select (Shift adds / Ctrl toggles) + move gesture
+      //    Ctrl/Alt + drag = duplicate drag (threshold in canvas.js: without a drag,
+      //    Ctrl-click toggles selection)
       const node = e.target.closest("[data-element-id]");
       if (node) {
         const id = node.dataset.elementId;
@@ -158,7 +165,7 @@ export function createStageController(stage, opts) {
         if (additive) {
           if (!isSelected?.(id)) select(id, "add");
         } else if (toggle) {
-          if (isSelected?.(id)) toggleOnTap = true; // 已选中：拖动复制 / 未拖动则切换为取消
+          if (isSelected?.(id)) toggleOnTap = true; // already selected: drag-copy / toggle-off without a drag
           else select(id, "add");
         } else if (!isSelected?.(id)) {
           select(id, "replace");
@@ -167,18 +174,19 @@ export function createStageController(stage, opts) {
         element.startGesture(e, "move", id, { copyOnMove: copyMod, toggleOnTap });
         return;
       }
-      // 4) 空白（画布内 or 画布外）→ 框选 marquee（空格 / 中键为平移，见上）
+      // 4) blank area (inside or outside canvas) → marquee selection (space/middle pan, see above)
       e.preventDefault();
       element.startMarquee?.(e);
     },
-    true // capture：先于 ECharts/zrender 等元素内部事件
+    true // capture: before inner element events such as ECharts/zrender
   );
 
   on(window, "pointermove", (e) => {
     if (!pointers.has(e.pointerId)) return;
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pinch && pointers.size >= 2) {
-      // 捏合：锚点 = 两指中点（中点下的内容在缩放前后保持不动）
+      // Pinch: anchor = midpoint of the two pointers (content under the midpoint
+      // stays put across the zoom)
       const [a, b] = [...pointers.values()];
       const dist = Math.hypot(a.x - b.x, a.y - b.y);
       if (dist > 0) {
@@ -187,7 +195,8 @@ export function createStageController(stage, opts) {
       return;
     }
     if (!tapPan) return;
-    // 位移超过阈值才算拖动平移；否则保持「点击」语义（松手取消选中）
+    // Only count as a pan past the movement threshold; otherwise keep "click"
+    // semantics (release deselects)
     if (!tapPan.moved && Math.hypot(e.clientX - tapPan.sx, e.clientY - tapPan.sy) > 4) tapPan.moved = true;
     if (!tapPan.moved) return;
     panBy?.(e.clientX - tapPan.x, e.clientY - tapPan.y);
@@ -199,7 +208,7 @@ export function createStageController(stage, opts) {
     pointers.delete(e.pointerId);
     if (pointers.size < 2) pinch = null;
     if (pointers.size > 0) return;
-    // 点击（未拖动）空白 → 取消选中；pointercancel/系统打断不算点击
+    // Click (no drag) on blank → deselect; pointercancel/system interruption is not a click
     if (tapPan && !tapPan.moved && e.type === "pointerup" && tapPan.tapDeselect) deselect?.();
     tapPan = null;
     stage.classList.remove("panning");
@@ -215,13 +224,13 @@ export function createStageController(stage, opts) {
   });
 
   // --------------------------------------------------------------------------
-  // 滚轮：Ctrl/⌘ = 锚点缩放（防浏览器页面缩放），否则 = 平移
+  // Wheel: Ctrl/⌘ = anchored zoom (blocking browser page zoom), otherwise pan
   // --------------------------------------------------------------------------
   on(
     stage,
     "wheel",
     (e) => {
-      if (isFloating(e.target)) return; // 浮层（添加菜单列表等）保持原生滚动
+      if (isFloating(e.target)) return; // overlays (add-menu list etc.) keep native scrolling
       e.preventDefault();
       if (e.ctrlKey || e.metaKey) {
         const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
@@ -234,7 +243,7 @@ export function createStageController(stage, opts) {
   );
 
   // --------------------------------------------------------------------------
-  // 双击：元素 → 进编辑器；空白 → 还原适配视图（缩放 + 平移一起归零）
+  // Double-click: element → open its editor; blank → reset the fitted view (zoom and pan)
   // --------------------------------------------------------------------------
   on(
     stage,
@@ -249,7 +258,7 @@ export function createStageController(stage, opts) {
   );
 
   return {
-    /** 释放全部监听与手势状态（幂等）。 */
+    /** Release all listeners and gesture state (idempotent). */
     destroy() {
       ac.abort();
       pointers.clear();

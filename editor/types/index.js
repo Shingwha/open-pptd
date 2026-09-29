@@ -1,10 +1,11 @@
 // ============================================================================
-// types/index.js — 编辑器类型注册表装配入口（引入即注册全部分片）
+// types/index.js — editor type-registry assembly entry (imports register shards)
 // ----------------------------------------------------------------------------
-// 聚合三层分片：renderer 的 render、writer 的 toXml、本地 UI（label/menu/
-// create/props/quickbar），合并进 packages/model/registry.js 的同一注册表。
-// 新增元素类型：在三层各建分片模块（registerType 注册），并在对应 index.js
-// 引入一行。渲染器 / writer / 属性面板 / 快速条 / 添加菜单全部自动接入。
+// Combines three shard layers: renderer `render`, writer `toXml`, and local UI
+// (label/menu/create/props/quickbar), merged into the single registry in
+// packages/model/registry.js. To add an element type, create a shard module in
+// each layer (registerType) and import it from the matching index.js — the
+// renderer / writer / property panel / quickbar / add-menu then pick it up.
 // ============================================================================
 
 import "../../packages/renderer/index.js";

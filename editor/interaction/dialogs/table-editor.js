@@ -1,25 +1,24 @@
 // ============================================================================
-// interaction/dialogs/table-editor.js — 表格网格编辑器（Excel 式整体设计）
+// interaction/dialogs/table-editor.js — table grid editor (Excel-style design)
 // ----------------------------------------------------------------------------
-// 布局：
-//   ┌ 工具条（常驻）：[＋行][＋列][删除行][删除列] | [合并][拆分] | [行高列宽…] ┐
-//   ├ 表格区（可滚动占满）───────────────┬ 样式面板（右侧固定，选中单格显示）┤
-//   │ 列头 A B C D（点击选整列/拖拽多列） │   B/I · 字号 · 字色 · 填充        │
-//   │ 行头 1 2 3（点击选整行/拖拽多行）   │   水平/垂直对齐 · textStyle       │
-//   │ 单元格网格（单击/拖拽选区域）       │                                   │
-//   └────────────────────────────────────┴───────────────────────────────────┘
-// 交互模型（统一选区 → 工具条操作）：
-//   - 单元格：单击选中 / 拖拽区域（pointerdown 阻止文本选择，双击进入编辑）
-//   - 行头/列头：点击选中整行/整列，拖拽扩展多行/多列
-//   - 删除行/列：按当前选区覆盖区间删除（含合并保护，需先拆分）
-//   - 合并：区域 >1×1 时启用（按钮显示「合并 N×M」）；拆分：选中合并格时启用
-// 样式 = 右侧固定面板（不浮动不换行）；网格复用 renderer/table.js 完整样式链
-// （cellFinal/tdCss/estimateTableLayout）——所见即所得。
+// Layout:
+//   ┌ toolbar (always visible): [＋row][＋col][delete row][delete col] | [merge][split] | [row/col size…] ┐
+//   ├ table area (scrollable, fills) ────────────┬ style panel (fixed right, shown for a single selected cell) ┤
+//   │ column headers A B C D (click selects a column / drag selects several) │  B/I · size · color · fill        │
+//   │ row headers 1 2 3 (click selects a row / drag selects several)         │  h/v align · textStyle            │
+//   │ cell grid (click/drag selects a region)                                │                                   │
+//   └──────────────────────────────────────────┴─────────────────────────────────┘
+// Interaction model (one selection → toolbar actions):
+//   - cell: click selects / drag selects a region (pointerdown blocks text selection; double-click edits)
+//   - row/column header: click selects the whole row/column, drag extends to several
+//   - delete row/col: deletes the selection's covered span (with merge protection; split first)
+//   - merge: enabled for a region >1×1 (the button shows the merge span); split: enabled on a merged cell
+// Style = the fixed right panel (no floating/wrapping); the grid reuses renderer/table.js's
+// full style chain (cellFinal/tdCss/estimateTableLayout) — WYSIWYG.
 // ============================================================================
 
-import { showDialog, buildCellInput, button } from "./base.js";
+import { showDialog } from "./base.js";
 import { dialogs } from "../../dialogs.js";
-import * as ui from "../../ui.js";
 import { renderGroup, fieldHandlers } from "../fields.js";
 import { createExcelGrid } from "../excel-grid.js";
 import {
@@ -37,7 +36,7 @@ import { cellFinal, tdCss } from "../../../packages/renderer/index.js";
 const H_ALIGNS = [["left", "左"], ["center", "居中"], ["right", "右"], ["justify", "两端"]];
 const V_ALIGNS = [["top", "上"], ["middle", "中"], ["bottom", "下"]];
 
-/** 当前编辑器主题（对话框内预览与画布同源）。 */
+/** Current editor theme (in-dialog preview shares the canvas source). */
 function editorTheme() {
   return window.__pptdEditor?.state?.theme || null;
 }
@@ -55,7 +54,8 @@ export function openTableEditor(el, { onChange }) {
     onChange();
   }
 
-  // 模型快照（render 时更新；网格组件回调引用——与模型对象同引用，输入提交直接生效）
+  // Model snapshot (updated on render; grid callbacks reference it — same object
+  // as the model, so input commits take effect directly)
   let rows = [];
   let cols = 1;
   let theme = null;
@@ -64,7 +64,7 @@ export function openTableEditor(el, { onChange }) {
   let rowHeights = [];
   let columnWidths = [];
 
-  // —— Excel 式数据网格（共用 interaction/excel-grid.js，本编辑器为其基准）——
+  // -- Excel-style data grid (shared interaction/excel-grid.js; this editor is its baseline) --
   const grid = createExcelGrid({
     getRows: () => rows.length,
     getCols: () => cols,
@@ -114,13 +114,14 @@ export function openTableEditor(el, { onChange }) {
     },
     onInsertCols: (at, n) => {
       for (const row of rows) row.splice(at, 0, ...Array.from({ length: n }, () => ({ text: "" })));
-      // 列数变更：columnWidths 同步插入（取相邻列宽），否则 colCount 被旧长度卡死、新列被顶替
+      // Column count changed: insert into columnWidths too (neighbouring width), otherwise
+      // colCount is pinned to the old length and the new column is displaced
       const cw = Array.isArray(el.columnWidths) ? [...el.columnWidths] : Array.from({ length: cols }, () => 1 / cols);
       const w = cw[Math.min(at, cw.length - 1)] ?? 1 / (cw.length + n);
       el.columnWidths = [...cw.slice(0, at), ...Array.from({ length: n }, () => w), ...cw.slice(at)];
       const total = el.columnWidths.reduce((a, b) => a + b, 0) || 1;
-      el.columnWidths = el.columnWidths.map((x) => x / total); // 归一保持和 = 1（官方约束）
-      cols = colCount(); // 更新闭包列数快照（组件 getCols 读取），否则重建仍用旧列数
+      el.columnWidths = el.columnWidths.map((x) => x / total); // renormalize so the sum = 1 (official constraint)
+      cols = colCount(); // update the closure column count (read by the component's getCols), else rebuilds use the old count
       ({ grid: gd } = tableGrid(rows, cols));
       syncDims(el);
       commit();
@@ -138,7 +139,7 @@ export function openTableEditor(el, { onChange }) {
         const total = el.columnWidths.reduce((a, b) => a + b, 0) || 1;
         el.columnWidths = el.columnWidths.map((x) => x / total);
       }
-      cols = colCount(); // 更新闭包列数快照（组件 getCols 读取）
+      cols = colCount(); // update the closure column count (read by the component's getCols)
       ({ grid: gd } = tableGrid(rows, cols));
       syncDims(el);
       commit();
@@ -171,13 +172,13 @@ export function openTableEditor(el, { onChange }) {
       return [mergeBtn, splitBtn, sep(), dimBtn];
     },
     onSelect: (next, kind) => {
-      if (kind !== "end") refreshStylePanel(); // 样式面板随选区实时刷新
+      if (kind !== "end") refreshStylePanel(); // refresh the style panel live with the selection
     },
     afterRender: () => refreshStylePanel(),
   });
 
   // --------------------------------------------------------------------------
-  // 主渲染：工具条 + 网格 + 样式面板
+  // Main render: toolbar + grid + style panel
   // --------------------------------------------------------------------------
   function render() {
     rows = (el.rows = normalizeCells(el.rows));
@@ -191,13 +192,13 @@ export function openTableEditor(el, { onChange }) {
     container.innerHTML = "";
     const body = document.createElement("div");
     body.className = "table-body";
-    body.appendChild(grid.root); // 工具条 + 网格（组件内部重建）
+    body.appendChild(grid.root); // toolbar + grid (the component rebuilds internally)
     container.appendChild(body);
     grid.render();
-    refreshStylePanel(); // 初始面板（afterRender 已触发，此处保险——选中态初值）
+    refreshStylePanel(); // initial panel (afterRender already fired; this guards the initial selection state)
   }
 
-  /** 合并保护：删除区间 [a1,a2] 与合并格冲突检查（axis: row 查 rowSpan / col 查 colSpan）。 */
+  /** Merge protection: check deletion span [a1,a2] against merged cells (axis: row reads rowSpan / col reads colSpan). */
   function mergeGuard(rows, cols, a1, a2, axis) {
     const { grid: gd } = tableGrid(rows, cols);
     for (let r = 0; r < gd.length; r++) {
@@ -208,7 +209,7 @@ export function openTableEditor(el, { onChange }) {
         if (span <= 1) continue;
         const s = axis === "row" ? r : c;
         const e = s + span - 1;
-        // 主格在区间内但覆盖出区间，或主格在区间外但覆盖进区间 → 禁止
+        // Master inside the span but covering beyond it, or master outside covering into it → reject
         if ((s >= a1 && s <= a2 && e > a2) || (s < a1 && e >= a1)) {
           dialogs.alert(axis === "row" ? "选区涉及跨行合并单元格，请先拆分再删除行" : "选区涉及跨列合并单元格，请先拆分再删除列");
           return true;
@@ -218,8 +219,8 @@ export function openTableEditor(el, { onChange }) {
     return false;
   }
 
-  /** 插入保护：插入位置 at 与合并格冲突检查（axis: row 查 rowSpan / col 查 colSpan）。
-   * 主格覆盖区间跨过插入位置 → 插入后覆盖错位，禁止。 */
+  /** Insert protection: check insert position `at` against merged cells (axis: row reads rowSpan / col reads colSpan).
+   * A master whose span crosses the insert position would misalign after insertion → reject. */
   function insertGuard(rows, cols, at, axis) {
     const { grid: gd } = tableGrid(rows, cols);
     for (let r = 0; r < gd.length; r++) {
@@ -239,8 +240,8 @@ export function openTableEditor(el, { onChange }) {
   }
 
   // --------------------------------------------------------------------------
-  // --------------------------------------------------------------------------
-  // 样式面板（右侧固定；选中单格时显示样式控件，其余显示提示）
+  // Style panel (fixed right; shows style controls for a single selected cell,
+  // otherwise a hint)
   // --------------------------------------------------------------------------
   let stylePanel = null;
   function refreshStylePanel() {
@@ -265,7 +266,8 @@ export function openTableEditor(el, { onChange }) {
     if (!cell) return panel;
 
     const set = (fn) => { fn(cell); commit(); render(); };
-    // 控件工厂：直接提交（表格面板无需 focus/blur 事务），共用 fields.js 实现
+    // Control factory: commits directly (the table panel needs no focus/blur
+    // transaction), reusing the fields.js implementation
     const h = fieldHandlers({ theme: () => editorTheme() });
     const tsKeys = Object.keys(editorTheme()?.textStyles || {});
     const groups = [
@@ -325,20 +327,21 @@ export function openTableEditor(el, { onChange }) {
     if (!Array.isArray(el.columnWidths) || el.columnWidths.length !== cols) {
       el.columnWidths = Array.from({ length: cols }, () => 1 / cols);
     }
-    // rowHeights 不自动补全：缺省 = 行高 auto（由排版引擎按内容计算）；
-    // 仅在用户通过「行高比例」对话框显式设置时写入
+    // rowHeights is not auto-filled: absent = auto row height (computed from content
+    // by the layout engine); written only when the user sets it via the row-height dialog
   }
 
   render();
   showDialog("表格编辑", container);
-  // 加宽对话框（表格 + 右侧样式面板）
+  // Widen the dialog (table + right style panel)
   const dlg = container.closest(".dialog");
   if (dlg) dlg.style.width = "min(880px, 96vw)";
 }
 
-/** 行高/列宽比例编辑对话框（滑块 + 数字；拖动一项按比例缩放其余项，保持和 = 1）。 */
+/** Row-height/column-width ratio dialog (sliders + numbers; dragging one scales the rest to keep the sum = 1). */
 function editDims(el, commit, rerender) {
-  // 用户显式设置行高：缺省时初始化为均分（写入 el.rowHeights，转为受控最小行高）
+  // User explicitly sets row heights: initialize to even when absent (writes
+  // el.rowHeights, converting to a controlled minimum row height)
   if (!Array.isArray(el.rowHeights)) {
     const n = Math.max(1, Array.isArray(el.rows) ? el.rows.length : 1);
     el.rowHeights = Array.from({ length: n }, () => 1 / n);
@@ -375,7 +378,7 @@ function editDims(el, commit, rerender) {
         const next = Math.min(99, Math.max(1, Number(pct) || 1)) / 100;
         const old = dims[i];
         if (Math.abs(old - next) < 0.001) return;
-        // 保持和 = 1：其余项等比缩放
+        // Keep the sum = 1: scale the other entries proportionally
         const others = dims.reduce((a, x, j) => a + (j === i ? 0 : x), 0);
         if (others > 0) {
           const scale = (1 - next) / others;

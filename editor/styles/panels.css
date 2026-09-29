@@ -1,12 +1,11 @@
 /* ============================================================================
-   panels.css — panels — 数据面板（画廊 gallery + Excel 式数据网格 excel-grid）
-   （U1/T5 由原 gallery + excel-grid.css 合并；8 文件收敛，无加载顺序依赖）
+   panels.css — data panels (gallery + Excel-style data grid)
    ============================================================================ */
 
-/* ==== [gallery] ==== */
-/* ==== gallery — 画廊（站点根 index.html）：文档流滚动页，与编辑器共用品牌/按钮样式 ==== */
-/* 常驻滚动条槽位：切 tab 时竖版海报页出现/消失滚动条不再挤宽带抖动
-   （仅画廊文档流页；编辑器页 html 不滚动，不受影响） */
+/* ==== gallery — gallery (site root index.html): a document-flow scrolling page sharing brand/button styles with the editor ==== */
+/* Persistent scrollbar gutter: switching tabs no longer reflows page width when a
+   vertical poster page appears/disappears a scrollbar (gallery only; the editor
+   page's html does not scroll and is unaffected) */
 html:has(.gallery-view) {
   scrollbar-gutter: stable;
 }
@@ -45,7 +44,7 @@ html:has(.gallery-view) {
   padding: 18px var(--space-5) 40px;
 }
 
-/* 工具栏单行：左 tab 分类、右运行模式徽标（窄屏折行） */
+/* Single-row toolbar: tabs on the left, run-mode badge on the right (wraps on narrow screens) */
 .gallery-toolbar {
   display: flex;
   align-items: center;
@@ -75,7 +74,7 @@ html:has(.gallery-view) {
   color: var(--warning);
 }
 
-/* 分类 tab（PPT / 海报）：分段式胶囊，滑块指示器滑到激活项底下 */
+/* Category tabs (PPT / poster): a segmented pill with a slider indicator under the active item */
 .gallery-tabs {
   display: inline-flex;
   gap: 4px;
@@ -93,20 +92,21 @@ html:has(.gallery-view) {
   color: var(--sub);
   padding: 5px 18px;
   border-radius: var(--r-3);
-  position: relative; /* 令按钮绘制在指示器之上（指示器为其前面的定位元素） */
+  position: relative; /* paints the button above the indicator (which precedes it) */
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .gallery-tab:hover { color: var(--ink); }
 .gallery-tab.active {
-  color: var(--on-accent); /* 背景由 .gallery-tab-indicator 滑块提供 */
+  color: var(--on-accent); /* background supplied by the .gallery-tab-indicator slider */
 }
 .gallery-tab .cnt {
   margin-left: 5px;
   font-size: var(--text-xs);
   opacity: 0.75;
 }
-/* 滑块指示器：left/width 由 JS 瞬时设置（不参与过渡），
-   位移通过 transform: translateX 补偿滑动（合成器动画，主线程忙也不掉帧） */
+/* Slider indicator: left/width set instantly by JS (not transitioned); the slide
+   is animated via transform: translateX (compositor animation, no dropped frames
+   when the main thread is busy) */
 .gallery-tab-indicator {
   position: absolute;
   top: 4px;
@@ -125,7 +125,7 @@ html:has(.gallery-view) {
   gap: 18px;
   margin-top: 14px;
 }
-/* 海报 tab：竖版封面更窄的列宽，网格更密 */
+/* Poster tab: narrower columns for portrait covers, denser grid */
 .gallery-grid.poster-grid {
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 }
@@ -139,8 +139,9 @@ html:has(.gallery-view) {
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
-/* 【试验项】切 tab 卡片错落浮入：删掉本块 + gallery.js 里的 --card-i 一行即可移除。
-   fill-mode 用 backwards（结束即释放样式），不干扰上方 hover 的 transform 过渡 */
+/* [experimental] Staggered card fade-in on tab switch: remove this block plus the
+   --card-i line in gallery.js to drop it. fill-mode backwards releases the style at
+   the end, so it does not disturb the hover transform transition above. */
 @keyframes gallery-card-in {
   from { opacity: 0; transform: translateY(8px); }
 }
@@ -168,19 +169,19 @@ html:has(.gallery-view) {
 
 .gallery-card-cover {
   position: relative;
-  aspect-ratio: 16 / 9; /* PPT 固定框；海报 tab 固定 3:4（下方规则），作品 contain 居中 */
+  aspect-ratio: 16 / 9; /* PPT fixed frame; poster tab uses 3:4 (rule below), artwork contained and centered */
   overflow: hidden;
   background: var(--bg);
 }
 .poster-grid .gallery-card-cover {
   aspect-ratio: 3 / 4;
 }
-/* 渲染目标：与页数角标平级，重渲染清空时不带走角标 */
+/* Render target: sibling of the page badge so a re-render does not clear the badge */
 .gallery-card-canvas {
   position: absolute;
   inset: 0;
 }
-/* 加载占位 shimmer：功能性扫光动画，颜色取自令牌灰阶（keyframes 在 base.css 公共定义） */
+/* Loading shimmer: functional sweep, colors from grayscale tokens (keyframes in base.css) */
 .gallery-card-cover.loading {
   background:
     linear-gradient(100deg, var(--bg) 40%, var(--panel) 50%, var(--bg) 60%) 0 0 / 200% 100%;
@@ -212,13 +213,13 @@ html:has(.gallery-view) {
   font-size: var(--text-lg);
   font-weight: 600;
   line-height: 1.4;
-  /* 单行省略：标题长短不一，固定一行高度保证卡片齐整 */
+  /* Single-line ellipsis: titles vary in length; a fixed one-line height keeps cards aligned */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* 页数角标：覆盖在封面右下角（视频时长式），任意封面底色均可读 */
+/* Page-count badge: overlays the cover's bottom-right (like a video duration), readable on any cover color */
 .gallery-page-badge {
   position: absolute;
   right: 8px;
@@ -236,7 +237,7 @@ html:has(.gallery-view) {
   font-size: var(--text-sm);
   color: var(--sub);
   line-height: 1.5;
-  min-height: 1.5em; /* 无描述时也撑出一行，信息区高度一致 */
+  min-height: 1.5em; /* holds one line even without a description, keeping info areas equal */
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
@@ -248,7 +249,7 @@ html:has(.gallery-view) {
   flex-wrap: nowrap;
   gap: 6px;
   margin-top: 7px;
-  height: 20px; /* 固定单行：标签超出一行隐藏，不撑高卡片 */
+  height: 20px; /* fixed single row: extra tags are hidden, never grow the card */
   overflow: hidden;
 }
 
@@ -271,18 +272,18 @@ html:has(.gallery-view) {
   line-height: 1.8;
 }
 
-/* ==== [excel-grid] ==== */
-/* ==== excel-grid — Excel 式数据网格组件（表格/图表编辑器共用） ==== */
+/* ==== excel-grid — Excel-style data grid component (shared by the table/chart editors) ==== */
 
 /* ============================================================================
- * 表格编辑器（table-editor.js）：选中态 / 覆盖位 / 样式面板
+ * Table editor (table-editor.js): selection state / covered cells / style panel
  * ========================================================================== */
 .data-table td.grid-cell { position: relative; }
 .data-table td.grid-cell input { width: 100%; box-sizing: border-box; border: none; outline: none; background: transparent; font: inherit; }
 .data-table td.grid-cell.cell-selected {
   outline: 2px solid var(--primary);
   outline-offset: -2px;
-  /* 内阴影叠加在 td 内联背景之上（内联样式优先级高于类，不能用 background） */
+  /* The inset shadow layers over the td's inline background (an inline style beats a
+     class, so background cannot be used here) */
   box-shadow: inset 0 0 0 999px var(--primary-soft);
 }
 .data-table td.grid-cell.cell-region {
@@ -290,7 +291,7 @@ html:has(.gallery-view) {
 }
 .data-table td.grid-cell.cell-covered { background: repeating-linear-gradient(45deg, var(--bg), var(--bg) 6px, var(--line) 6px, var(--line) 12px); cursor: not-allowed; }
 
-/* —— 图表编辑器（chart-editor.js）：Excel 式数据表 + 声明式样式面板 —— */
+/* -- Chart editor (chart-editor.js): Excel-style data table + declarative style panel -- */
 .chart-editor { display: flex; flex-direction: column; gap: 10px; min-width: 640px; }
 .chart-top { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 .chart-top .prop-label { font-size: var(--text-sm); color: var(--ink); font-weight: 600; }
@@ -307,7 +308,8 @@ html:has(.gallery-view) {
 }
 .chart-body { display: flex; gap: 10px; align-items: stretch; }
 .chart-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
-/* 列头（图表：字母小标 + 列名输入两行；padding 限定在内容 wrap 内，不影响表格列头） */
+/* Column header (chart: two rows, letter label + column-name input; padding is
+   confined to the content wrap so table headers are unaffected) */
 .excel-grid .chart-col-head {
   padding: 3px var(--space-1);
   display: flex;
@@ -330,8 +332,9 @@ html:has(.gallery-view) {
   border-radius: var(--r-2);
 }
 .excel-grid .chart-col-head input:focus { background: var(--primary-soft); }
-/* 表格宽度 = 内容宽（max-content 由组件设置）：列少不满宽、列多横向滚动 */
-/* 系列列表 */
+/* Table width = content width (max-content set by the component): spare space when
+   few columns, horizontal scroll when many */
+/* Series list */
 .series-box {
   border: 1px solid var(--line);
   border-radius: var(--r-3);
@@ -339,7 +342,7 @@ html:has(.gallery-view) {
   background: var(--bg);
 }
 .series-title { font-size: var(--text-sm); font-weight: 700; color: var(--ink); margin-bottom: var(--space-2); }
-.series-list { display: flex; flex-direction: column; gap: var(--space-1); max-height: 148px; overflow-y: auto; }
+.series-list { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: 10px; max-height: 148px; overflow-y: auto; }
 .series-item {
   display: flex;
   align-items: center;
@@ -355,11 +358,12 @@ html:has(.gallery-view) {
 .series-item .color-swatch-btn { width: 20px; height: 20px; border-radius: var(--r-2); }
 .series-item .color-field input[type="color"] { width: 24px; height: 20px; border-radius: var(--r-2); }
 .series-item .color-hex { width: 52px; flex: none; padding: 2px var(--space-1); font-size: var(--text-xs); }
+.series-item input { padding: var(--space-1) 6px; font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--r-2); }
 .series-item input[type="text"] { flex: 1; min-width: 60px; }
-.series-item select { max-width: 120px; }
+.series-item select { padding: var(--space-1); font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--r-2); max-width: 120px; }
 .series-item .btn-ghost { flex: none; }
 
-/* —— Excel 式数据网格组件（excel-grid.js，表格/图表共用） —— */
+/* -- Excel-style data grid component (excel-grid.js, shared by table/chart) -- */
 .excel-grid {
   flex: 1;
   min-width: 0;
@@ -371,8 +375,8 @@ html:has(.gallery-view) {
 }
 .excel-grid .table-toolbar { border: none; border-bottom: 1px solid var(--line); border-radius: 0; }
 .excel-grid-scroll {
-  flex: 1 1 auto; /* flex-basis auto：高度取 height，不被 flex-basis:0 塌缩 */
+  flex: 1 1 auto; /* flex-basis auto: height comes from `height`, not collapsed by flex-basis:0 */
   min-width: 0;
-  height: min(52vh, 480px); /* 固定高度：内容滚动，面板不随选中状态跳动 */
+  height: min(52vh, 480px); /* fixed height: content scrolls, the panel does not jump on selection changes */
   overflow: auto;
 }

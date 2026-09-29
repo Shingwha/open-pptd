@@ -1,15 +1,17 @@
 // ============================================================================
-// interaction/contextmenu.js — 右键上下文菜单（三态，对齐设计稿 §03）
+// interaction/contextmenu.js — stage context menu (three states)
 // ----------------------------------------------------------------------------
-// 简化的最大杠杆：对齐 / 层级 / 组合 / 翻转 / 复制 / 删除从常驻 UI 移到右键，
-// 画布因此零常驻浮层（U2/T1）。三态：
-//   单选  复制/删除 · 置于顶层/上移一层/下移一层/置于底层 · 水平翻转/垂直翻转 ·
-//         对齐到选区(多选解锁) / 组合(多选解锁)
-//   多选  对齐到选区 ▸（六向）/ 水平分布 / 垂直分布 · 组合 / 取消组合 ·
-//         复制（N 个）/ 删除（N 个）
-//   空白  全选 / 粘贴 / 新建页面 / 页面背景… / 适配画布
-// 菜单本体复用 components/menu.js（.menu/.mi/.msep/.submenu）与 interaction/arrange.js
-// 的排列算法（与属性面板同一份）。
+// Highest-leverage simplification: align / layer / group / flip / duplicate /
+// delete move out of persistent UI and into the context menu, so the canvas has
+// no permanent overlay. Three states:
+//   single  duplicate/delete · bring to front / forward / backward / send to back ·
+//           flip H/V · "align to selection" (locked) / "group" (locked)
+//   multi   align to selection ▸ (six-way) / distribute H / distribute V ·
+//           group / ungroup · duplicate (N) / delete (N)
+//   blank   select all / paste / new page / page background… / fit to canvas
+// The menu itself reuses components/menu.js (.menu/.mi/.msep/.submenu) and the
+// arrangement algorithms in interaction/arrange.js (the same copy the property
+// panel uses).
 // ============================================================================
 
 import { menuItem, menuSeparator, openMenuAt, closePopupMenu } from "../components/menu.js";
@@ -17,12 +19,12 @@ import { ALIGN_MODES, alignSelection, distribute } from "./arrange.js";
 import { openPageBackgroundDialog } from "./dialogs/page-background.js";
 
 /**
- * 绑定舞台右键菜单。
+ * Bind the stage context menu.
  * @param {object} opts
- *  - stage: 舞台元素（事件源）
- *  - api: 编辑器操作 API
- *  - state / page / groupOf: 状态与命中归一（点组成员 = 选组）
- *  - view: 视图（zoomReset 等）
+ *  - stage: stage element (event source)
+ *  - api: editor operations API
+ *  - state / page / groupOf: state and hit normalization (clicking a group member selects the group)
+ *  - view: view (zoomReset etc.)
  */
 export function bindContextMenu({ stage, api, state, page, groupOf, view }) {
   const ac = new AbortController();
@@ -30,7 +32,7 @@ export function bindContextMenu({ stage, api, state, page, groupOf, view }) {
 
   const close = () => closePopupMenu();
 
-  /** 条目：先关菜单再执行（点击即收）。 */
+  /** Menu entry: close the menu first, then run the action (a click dismisses). */
   const item = (label, opts = {}) =>
     menuItem(label, {
       ...opts,
@@ -40,14 +42,14 @@ export function bindContextMenu({ stage, api, state, page, groupOf, view }) {
 
   const list = () => page().elements || [];
 
-  /** 在指针处打开菜单（统一外壳：components/menu.js openMenuAt）。 */
+  /** Open the menu at the pointer (shared shell: components/menu.js openMenuAt). */
   function openAt(x, y, nodes) {
     close();
     openMenuAt(x, y, nodes, { className: "ctx-menu" });
   }
 
   // --------------------------------------------------------------------------
-  // 动作（与属性面板同源：group/ungroup/delete/duplicate 的 api 自带快照）
+  // Actions (same source as the property panel: the api carries its own snapshots)
   // --------------------------------------------------------------------------
   const act = {
     deleteSel: () => api.deleteSelected(),
@@ -92,10 +94,10 @@ export function bindContextMenu({ stage, api, state, page, groupOf, view }) {
       }),
   };
 
-  const FLIP_OFF = new Set(["table", "chart", "group"]); // 与属性面板一致：不支持整体翻转
+  const FLIP_OFF = new Set(["table", "chart", "group"]); // same as the property panel: no whole-element flip
 
   // --------------------------------------------------------------------------
-  // 三态菜单构建
+  // Three-state menu construction
   // --------------------------------------------------------------------------
   function singleMenu(els) {
     const el = els[0];
@@ -114,7 +116,7 @@ export function bindContextMenu({ stage, api, state, page, groupOf, view }) {
       item("垂直翻转", { disabled: noFlip, onClick: () => act.flip(els, "v") }),
       sep(),
       item("对齐到选区", { disabled: true, hint: "多选" }),
-      // 单选组时给「取消组合」（与属性面板同能力；设计稿单选态只画了禁用「组合」）
+      // For a single group, offer "ungroup" (same capability as the property panel)
       isGroup
         ? item("取消组合", { hint: "Ctrl+⇧+G", onClick: act.ungroup })
         : item("组合", { disabled: true, hint: "Ctrl+G" }),
@@ -154,12 +156,13 @@ export function bindContextMenu({ stage, api, state, page, groupOf, view }) {
   }
 
   // --------------------------------------------------------------------------
-  // 事件
+  // Events
   // --------------------------------------------------------------------------
   stage.addEventListener(
     "contextmenu",
     (e) => {
-      // 快调条内的取色/下拉保留原生菜单（含右键粘贴等浏览器能力）
+      // Keep the native menu inside the quickbar (color pickers/dropdowns keep
+      // browser abilities such as right-click paste)
       if (e.target.closest?.(".quickbar")) return;
       e.preventDefault();
       const node = e.target.closest?.("[data-element-id]");
@@ -174,7 +177,7 @@ export function bindContextMenu({ stage, api, state, page, groupOf, view }) {
       if (!inSelection) api.select(groupId, "replace");
       const els = api.getSelectedElements();
       if (els.length === 0) {
-        openAt(e.clientX, e.clientY, pageMenu()); // 极端情况：元素已被移除
+        openAt(e.clientX, e.clientY, pageMenu()); // edge case: the element was removed
         return;
       }
       openAt(e.clientX, e.clientY, els.length > 1 ? multiMenu(els) : singleMenu(els));
