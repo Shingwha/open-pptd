@@ -1,18 +1,20 @@
 // ============================================================================
-// icon-svg.js — 图标 → SVG 字符串（预览渲染与 PPTX 导出同源）
+// icon-svg.js — icon -> SVG string (same source for preview rendering and PPTX export)
 // ----------------------------------------------------------------------------
-// 图标数据 def = normalizeIconSvg() 的产物 {inner, w, h}（Font Awesome 路径，
-// 已剥根 svg/注释/currentColor）。本模块是唯一生成图标 SVG 的地方：
-// 预览端 innerHTML 渲染，导出端写入 media/*.svg —— 预览 = 导出。
+// Icon data def = the product of normalizeIconSvg(): {inner, w, h} (Font Awesome
+// paths with root svg/comments/currentColor already stripped). This module is the
+// only place that generates icon SVG: the preview injects it via innerHTML, the
+// export writes it to media/*.svg — preview == export.
 //
-// fill 注入：逐形状注入（FA inner 经 normalize 后无 fill 属性），比根 svg
-// 继承更确定——PowerPoint 的 SVG 引擎对 paint server 继承无规范保证。
+// fill injection: injected per shape (FA inner has no fill attribute after
+// normalize), which is more deterministic than inheriting from the root svg —
+// PowerPoint's SVG engine gives no spec guarantee for paint-server inheritance.
 // ============================================================================
 
 import { resolveColor } from "./theme.js";
 import { svgGradientDef } from "./svg-gradient.js";
 
-/** 图标填充解析 → {type:'solid', color:hex} 或 {type:'gradient', gradientType, stops:[{color,position}], angle}。 */
+/** Resolve icon fill -> {type:'solid', color:hex} or {type:'gradient', gradientType, stops:[{color,position}], angle}. */
 export function normalizeIconFill(theme, fill) {
   if (typeof fill === "string") return { type: "solid", color: resolveColor(theme, fill) || "#333333" };
   if (!fill) return { type: "solid", color: resolveColor(theme, "$text") || "#333333" };
@@ -31,19 +33,21 @@ export function normalizeIconFill(theme, fill) {
   return { type: "solid", color: resolveColor(theme, color) || "#333333" };
 }
 
-/** FA inner 里的形状开标签（normalize 后无任何 fill 属性，可安全注入）。 */
+/** Shape opening tags inside FA inner (no fill attribute after normalize, so injection is safe). */
 const SHAPE_OPEN = /<(path|circle|ellipse|rect|polygon|polyline)(?=[\s/>])/g;
 
 /**
- * 图标 SVG 内部内容（<defs> + 带注入 fill 的 FA inner）。预览端与导出端共用。
- * @param {object} def normalizeIconSvg 产物（{inner, w, h}）
- * @param {object} fill normalizeIconFill 的输出
- * @param {string} [gid] 渐变 id（多图标同页时需唯一；导出单文件可省略）
+ * Icon SVG inner content (<defs> + FA inner with injected fill). Shared by preview and export.
+ * @param {object} def normalizeIconSvg product ({inner, w, h})
+ * @param {object} fill output of normalizeIconFill
+ * @param {string} [gid] gradient id (must be unique when several icons share a page; may be omitted for a single exported file)
  */
 export function iconSvgBody(def, fill, gid = "ig") {
   if (fill?.type === "gradient") {
-    // 与形状同一渐变生成器（model/svg-gradient.js）：矩形全长投影，非正方形上
-    // 角度不畸变——此前 icon 自带半向量实现，与形状渐变方向不一致
+    // Same gradient generator as shapes (model/svg-gradient.js): full-length
+    // rectangle projection, so the angle does not distort on non-square boxes —
+    // previously icon carried its own half-vector implementation that disagreed
+    // with shape gradient direction
     const g = svgGradientDef({ fill, id: gid, w: def.w, h: def.h, x: def.vx || 0, y: def.vy || 0 });
     const paint = `url(#${gid})`;
     return `<defs>${g.def}</defs>${def.inner.replace(SHAPE_OPEN, `<$1 fill="${paint}"`)}`;
@@ -52,8 +56,10 @@ export function iconSvgBody(def, fill, gid = "ig") {
   return def.inner.replace(SHAPE_OPEN, `<$1 fill="${color}"`);
 }
 
-/** 完整 SVG 文件字符串（写入 PPTX media/*.svg）。viewBox 含原点（FA 部分图标内容越出声明框，已扩展）；
- *  显式 width/height 让 PowerPoint 正确计算固有尺寸（缺失时 PPT 会非等比拉伸铺满图片框）。 */
+/** Full SVG file string (written to PPTX media/*.svg). viewBox includes the origin (some FA
+ *  icons extend beyond the declared box; it has been expanded); explicit width/height let
+ *  PowerPoint compute the intrinsic size correctly (when missing, PPT stretches the image
+ *  non-proportionally to fill the picture frame). */
 export function iconToSvg(def, fill, gid = "ig") {
   return `<svg viewBox="${def.vx || 0} ${def.vy || 0} ${def.w} ${def.h}" width="${def.w}" height="${def.h}" xmlns="http://www.w3.org/2000/svg">${iconSvgBody(def, fill, gid)}</svg>\n`;
 }

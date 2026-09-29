@@ -1,15 +1,15 @@
 // ============================================================================
-// font.js — 字体字节工具：元信息解析 / EOT 封装 / TTF 子集化（双端零依赖）
+// font.js — font byte utilities: metadata parsing / EOT wrapping / TTF subsetting (zero deps, browser + Node)
 // ----------------------------------------------------------------------------
-// PPTX 嵌入字体全链路的核心（规格见 docs/pptx-font-embedding.md）：
-//   1. parseFontInfo  读 OS/2/head/name 表 → 嵌入权限 / 字体名 / EOT 头字段
-//   2. checkEmbeddable fsType 嵌入权限校验（0x0002 Restricted 禁止嵌入）
-//   3. buildEot       TTF/OTF → EOT v2.2（明文 FontData，PowerPoint/LibreOffice 同款）
-//   4. subsetTtf      TTF → 子集（仅保留指定字符，与 fontTools 金标准逐字节一致）
-// 纯字节操作，浏览器（Uint8Array）与 Node 共用。
+// Core of the whole PPTX embedded-font pipeline (spec in docs/pptx-font-embedding.md):
+//   1. parseFontInfo  reads the OS/2/head/name tables -> embedding permission / font names / EOT header fields
+//   2. checkEmbeddable fsType embedding permission check (0x0002 Restricted forbids embedding)
+//   3. buildEot       TTF/OTF -> EOT v2.2 (plain FontData, same as PowerPoint/LibreOffice)
+//   4. subsetTtf      TTF -> subset (keeps only the requested characters, byte-identical to the fontTools gold standard)
+// Pure byte operations, shared by the browser (Uint8Array) and Node.
 // ============================================================================
 
-/** DataView 视图（带字节偏移/长度，免去每次 new）。 */
+/** DataView view (with byte offset/length, avoiding a new allocation each time). */
 const dv = (bytes, off = 0, len = bytes.length - off) =>
   new DataView(bytes.buffer, bytes.byteOffset + off, len);
 const u16 = (b, o) => dv(b, o).getUint16(0, false);
@@ -25,7 +25,7 @@ const concat = (chunks) => {
   return out;
 };
 
-/** sfnt 表目录 → { tag: {offset, length} }。 */
+/** sfnt table directory -> { tag: {offset, length} }. */
 function parseTables(buf) {
   const num = u16(buf, 4);
   const tables = {};
@@ -38,12 +38,12 @@ function parseTables(buf) {
 const table = (buf, t) => buf.subarray(t.offset, t.offset + t.length);
 
 // ────────────────────────────────────────────────────────────────────────────
-// 1. 元信息解析（OS/2 + head + name）
+// 1. Metadata parsing (OS/2 + head + name)
 // ────────────────────────────────────────────────────────────────────────────
 
 /**
- * 解析字体元信息：嵌入权限 + EOT 头字段 + 字体名。
- * @param {Uint8Array} buf 字体字节（TTF/OTF）
+ * Parse font metadata: embedding permission + EOT header fields + font names.
+ * @param {Uint8Array} buf font bytes (TTF/OTF)
  * @returns {{ fsType, weight, italic, panose, unicodeRanges, codePageRanges,
  *             checkSumAdjustment, family, subfamily }}
  */
@@ -61,19 +61,21 @@ export function parseFontInfo(buf) {
     unicodeRanges: [0, 1, 2, 3].map((k) => u32(os2, 42 + k * 4)),
     codePageRanges: [u32(os2, 78), u32(os2, 82)],
     checkSumAdjustment: u32(table(buf, tables.head), 8),
-    // 可变字体（Google Fonts 思源系等）name ID 1 是实例名（如 "Noto Sans SC Thin"），
-    // 优先取 ID 16 typographic family（"Noto Sans SC"），否则回退 ID 1
+    // Variable fonts (Google Fonts Source family etc.) have an instance name in name ID 1
+    // (e.g. "Noto Sans SC Thin"); prefer ID 16 typographic family ("Noto Sans SC"), else fall back to ID 1
     family: nameString(buf, tables.name, 16) || nameString(buf, tables.name, 1) || "Unknown",
     subfamily: nameString(buf, tables.name, 2) || "Regular",
   };
 }
 
 /**
- * 字体单倍行距系数 = (OS/2 usWinAscent + usWinDescent) / head.unitsPerEm。
- * PowerPoint/WPS 的「单倍行距」按此字体度量渲染（微软雅黑 ≈1.32、宋体 1.00、
- * Calibri ≈1.22 倍字号），并非字号 1 倍——导出百分比行距（a:spcPct）时用它
- * 补偿基数差（writer/text.js 行距导出）。新字体进库即自适应（字节在手）。
- * 解析失败返回 null（调用方回退静态表/默认值）。
+ * Font single-line-height factor = (OS/2 usWinAscent + usWinDescent) / head.unitsPerEm.
+ * The "single line spacing" of PowerPoint/WPS renders by this font metric (Microsoft YaHei
+ * ≈1.32, SimSun 1.00, Calibri ≈1.22 times the font size) — not a plain 1× the font size — so
+ * it is used to compensate the base difference when exporting percentage line spacing
+ * (a:spcPct) (line spacing export in writer/text.js). A new font added to the library adapts
+ * automatically (the bytes are at hand). Returns null when parsing fails (the caller falls
+ * back to a static table/default).
  */
 export function fontLineFactor(buf) {
   try {
@@ -88,10 +90,10 @@ export function fontLineFactor(buf) {
   }
 }
 
-/** 字体名归一化（行距系数查表键）：小写 + 去空白。 */
+/** Font name normalization (key for the line-factor lookup): lowercase + whitespace removed. */
 export const fontKey = (name) => String(name).toLowerCase().replace(/\s+/g, "");
 
-/** name 表取 Windows/UCS-2/en-US 记录（ID = nameID）。 */
+/** Read a Windows/UCS-2/en-US record from the name table (ID = nameID). */
 function nameString(buf, nameT, nameID) {
   const name = table(buf, nameT);
   const count = u16(name, 2);
@@ -108,7 +110,7 @@ function nameString(buf, nameT, nameID) {
   return null;
 }
 
-/** 重写 name 表 ID 1/2（Windows/en-US）：实例名 → 族名 + Regular；返回新表或 null。 */
+/** Rewrite name table IDs 1/2 (Windows/en-US): instance name -> family name + Regular; returns the new table or null. */
 function normalizeNameFamily(buf, nameT) {
   const fam16 = nameString(buf, nameT, 16);
   const fam1 = nameString(buf, nameT, 1);
@@ -116,9 +118,10 @@ function normalizeNameFamily(buf, nameT) {
   const name = table(buf, nameT);
   const count = u16(name, 2);
   const strOff = u16(name, 4);
-  // 预统计需要复制的字符串总字节：源 name 表的字符串可能重叠存储（如 Smiley Sans 的
-  // 多条记录共享/交叉引用同一数据区），记录长度之和可能超过表内字符串区大小，
-  // 不能按 name.length 估算缓冲区，否则重排时会 Uint8Array.set 越界。
+  // Pre-count the total string bytes that need copying: strings in the source name table may
+  // be stored overlapping (e.g. several Smiley Sans records share/cross-reference one data
+  // region), so the sum of record lengths can exceed the string area size; estimating the
+  // buffer from name.length would make Uint8Array.set go out of range during the rewrite.
   let copyBytes = 0;
   for (let i = 0; i < count; i++) {
     const rec = 6 + i * 12;
@@ -128,7 +131,7 @@ function normalizeNameFamily(buf, nameT) {
   }
   const out = new Uint8Array(6 + count * 12 + copyBytes + (fam16.length + 8) * 2 + 32);
   const ov = dv(out);
-  ov.setUint16(0, 0, false); // version 0（不做重复记录检测）
+  ov.setUint16(0, 0, false); // version 0 (no duplicate-record detection)
   ov.setUint16(2, count, false);
   const storage = [];
   let storageLen = 0;
@@ -172,7 +175,7 @@ function normalizeNameFamily(buf, nameT) {
   return out.subarray(0, off);
 }
 
-/** 可变字体归一：实例名 name ID1/2 → 族名；默认字重 <400 → 400（OS/2）。无变化返回 null。 */
+/** Variable font normalization: instance name in name ID1/2 -> family name; default weight <400 -> 400 (OS/2). Returns null when nothing changes. */
 function normalizeVariableFont(buf) {
   const tables = parseTables(buf);
   const nameT = tables.name, os2T = tables["OS/2"];
@@ -191,7 +194,7 @@ function normalizeVariableFont(buf) {
   return assemble(patched);
 }
 
-/** fsType 嵌入权限：0x0002 Restricted 禁止嵌入；0x0000/0x0004/0x0008 允许。 */
+/** fsType embedding permission: 0x0002 Restricted forbids embedding; 0x0000/0x0004/0x0008 allow it. */
 export function checkEmbeddable(fsType) {
   if ((fsType & 0x0002) !== 0) {
     return { ok: false, reason: `字体禁止嵌入（fsType=0x${fsType.toString(16)} Restricted）` };
@@ -200,7 +203,7 @@ export function checkEmbeddable(fsType) {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// 2. EOT v2.2 封装（fntdata 部件格式）
+// 2. EOT v2.2 wrapping (the fntdata part format)
 // ────────────────────────────────────────────────────────────────────────────
 
 const u16le = (v) => {
@@ -215,31 +218,32 @@ const u32le = (v) => {
 };
 
 /**
- * TTF/OTF → EOT v2.2 字节（Flags=0 明文 FontData；子集化时传 0x1 SUBSET）。
- * @param {Uint8Array} ttf 字体字节
- * @param {object} [info] parseFontInfo 结果（避免重复解析）
+ * TTF/OTF -> EOT v2.2 bytes (Flags=0 means plain FontData; pass 0x1 SUBSET when subsetted).
+ * @param {Uint8Array} ttf font bytes
+ * @param {object} [info] parseFontInfo result (avoids re-parsing)
  * @param {number} [flags=0] EOT Flags
  */
 export function buildEot(ttf, info = null, flags = 0) {
   let buf = ttf instanceof Uint8Array ? ttf : new Uint8Array(ttf);
-  // FontData 归一：可变字体实例名 → 族名（PowerPoint 按 FontData name 表匹配引用名）
+  // FontData normalization: variable-font instance name -> family name (PowerPoint matches the
+  // reference name against the FontData name table)
   const norm = normalizeVariableFont(buf);
   if (norm) {
     buf = norm;
-    info = null; // 归一后 family/weight 变化，重新解析
+    info = null; // family/weight changed after normalization, so re-parse
   }
   const fi = info || parseFontInfo(buf);
   const nstr = (s) => {
-    // UTF-16LE + 结尾 \0（PowerPoint 同款：size 含 \0）
+    // UTF-16LE + trailing \0 (same as PowerPoint: the recorded size includes the \0)
     const b = new Uint8Array((s.length + 1) * 2);
     for (let i = 0; i < s.length; i++) dv(b).setUint16(i * 2, s.charCodeAt(i), true);
     return b;
   };
 
   const chunks = [
-    u32le(0), u32le(0), u32le(0x00020002), u32le(flags), // EOTSize/FontDataSize 占位, Version, Flags
+    u32le(0), u32le(0), u32le(0x00020002), u32le(flags), // EOTSize/FontDataSize placeholders, Version, Flags
     fi.panose,                                           // 10B PANOSE
-    new Uint8Array([0x86, fi.italic ? 1 : 0]),           // charset=134(中文), italic
+    new Uint8Array([0x86, fi.italic ? 1 : 0]),           // charset=134 (CJK), italic
     u32le(fi.weight),
     u16le(fi.fsType),
     u16le(0x504c),                                       // MagicNumber "LP"
@@ -273,10 +277,10 @@ export function buildEot(ttf, info = null, flags = 0) {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// 3. TTF 子集化（仅 TrueType 轮廓；CFF/OTTO 抛错由调用方回退全量）
+// 3. TTF subsetting (TrueType outlines only; CFF/OTTO throws so the caller can fall back to full embedding)
 // ────────────────────────────────────────────────────────────────────────────
 
-/** cmap 读取（format 4 + 12）→ Map<charCode, glyphId>。 */
+/** cmap read (format 4 + 12) -> Map<charCode, glyphId>. */
 function readCmap(buf, cmapT) {
   const cmap = table(buf, cmapT);
   const n = u16(cmap, 2);
@@ -320,7 +324,7 @@ function readCmap(buf, cmapT) {
   return map;
 }
 
-/** glyf 复合字形组件收集（递归）。 */
+/** Collect glyf composite-glyph components (recursively). */
 function collectComponents(buf, glyfT, locaT, locFormat, glyphId) {
   const loca = table(buf, locaT);
   const glyf = table(buf, glyfT);
@@ -331,7 +335,7 @@ function collectComponents(buf, glyfT, locaT, locFormat, glyphId) {
   while (stack.length) {
     const g = stack.pop();
     const s = off(g), e = off(g + 1);
-    if (s === e || i16(glyf, s) >= 0) continue; // 空 / simple
+    if (s === e || i16(glyf, s) >= 0) continue; // empty / simple
     let p = s + 10;
     for (;;) {
       const flags = u16(glyf, p);
@@ -349,7 +353,7 @@ function collectComponents(buf, glyfT, locaT, locFormat, glyphId) {
   return comps;
 }
 
-/** cmap format 4 重建（段式：连续 glyph 用 delta，否则 rangeOffset）。 */
+/** Rebuild cmap format 4 (segmented: consecutive glyphs use delta, otherwise rangeOffset). */
 function buildCmapFormat4(pairs) {
   const segs = [];
   for (const [c, g] of pairs) {
@@ -357,7 +361,7 @@ function buildCmapFormat4(pairs) {
     if (last && c === last.end + 1) { last.end = c; last.glyphs.push(g); }
     else segs.push({ start: c, end: c, glyphs: [g] });
   }
-  const segCount = segs.length + 1; // + 0xFFFF 终结段
+  const segCount = segs.length + 1; // + the 0xFFFF terminating segment
   const pow = Math.floor(Math.log2(segCount));
   const searchRange = 2 * 2 ** pow;
   const entrySelector = pow;
@@ -373,7 +377,7 @@ function buildCmapFormat4(pairs) {
       rangeOffsets.push(0);
     } else {
       deltas.push(0);
-      // idRangeOffset[i] = segCount*2 + 本段前 glyphIdArray 字节数 - i*2
+      // idRangeOffset[i] = segCount*2 + bytes of glyphIdArray before this segment - i*2
       rangeOffsets.push(segCount * 2 + glyphIdArray.length * 2 - k * 2);
       glyphIdArray.push(...s.glyphs);
     }
@@ -399,7 +403,7 @@ function buildCmapFormat4(pairs) {
   return concat([head, body]);
 }
 
-/** 表校验和（head 的 checkSumAdjustment 字段按 0 计）。 */
+/** Table checksum (the head checkSumAdjustment field counts as 0). */
 function tableChecksum(data) {
   let cs = 0;
   for (let i = 0; i < data.length; i += 4) {
@@ -409,7 +413,7 @@ function tableChecksum(data) {
   return cs;
 }
 
-/** 子集字体组装：表排序 / 4 字节对齐 / 校验和 / checkSumAdjustment。 */
+/** Subset font assembly: table sorting / 4-byte alignment / checksums / checkSumAdjustment. */
 function assemble(tables) {
   const tags = Object.keys(tables).sort();
   const dirLen = 12 + tags.length * 16;
@@ -452,11 +456,11 @@ function assemble(tables) {
 }
 
 /**
- * TTF 子集化：保留指定字符 + .notdef + 复合字形组件。
- * 保留表：OS/2 cmap glyf head hhea hmtx loca maxp name post（丢弃布局表与 DSIG）。
- * @param {Uint8Array} buf 原字体字节
- * @param {string} text 需要保留的字符（按码点去重）
- * @throws {Error} 非 TrueType 轮廓（CFF/OTTO）→ 调用方应回退全量嵌入
+ * TTF subsetting: keeps the requested characters + .notdef + composite-glyph components.
+ * Kept tables: OS/2 cmap glyf head hhea hmtx loca maxp name post (layout tables and DSIG are dropped).
+ * @param {Uint8Array} buf original font bytes
+ * @param {string} text characters to keep (deduped by code point)
+ * @throws {Error} non-TrueType outlines (CFF/OTTO) -> the caller should fall back to full embedding
  */
 export function subsetTtf(buf, text) {
   if (tagOf(buf, 0) !== "\x00\x01\x00\x00") {
@@ -466,17 +470,17 @@ export function subsetTtf(buf, text) {
   const tables = parseTables(buf);
   const locFormat = i16(table(buf, tables.head), 50);
 
-  // 收集保留字符 → 原 glyph
+  // Collect the kept characters -> original glyphs
   const chars = new Set();
   for (const ch of String(text)) chars.add(ch.codePointAt(0));
-  const keep = new Set([0]);          // 原 glyphId 集合（.notdef 必留）
-  const keepChars = new Map();        // char → 原 glyphId
+  const keep = new Set([0]);          // original glyphId set (.notdef must stay)
+  const keepChars = new Map();        // char -> original glyphId
   const cmap = readCmap(buf, tables.cmap);
   for (const c of chars) {
     const g = cmap.get(c);
     if (g != null && g !== 0) { keep.add(g); keepChars.set(c, g); }
   }
-  // composite 组件递归收集
+  // Recursively collect composite components
   let grew = true;
   while (grew) {
     grew = false;
@@ -490,7 +494,7 @@ export function subsetTtf(buf, text) {
   const remap = new Map(sortedGlyphs.map((g, i) => [g, i]));
   const numGlyphs = sortedGlyphs.length;
 
-  // glyf / loca 重建（composite 组件 ID 重写；short loca 需 2 字节对齐）
+  // Rebuild glyf / loca (rewrite composite-glyph component IDs; short loca needs 2-byte alignment)
   const glyfData = table(buf, tables.glyf);
   const locaData = table(buf, tables.loca);
   const off = (g) => (locFormat === 0 ? u16(locaData, g * 2) * 2 : u32(locaData, g * 4));
@@ -514,7 +518,7 @@ export function subsetTtf(buf, text) {
         if (!(flags & 0x0020)) break;
       }
     }
-    if (data.length % 2 === 1) { // short loca 偶数对齐（fontTools 同款）
+    if (data.length % 2 === 1) { // short loca even alignment (same as fontTools)
       const padded = new Uint8Array(data.length + 1);
       padded.set(data);
       data = padded;
@@ -531,7 +535,7 @@ export function subsetTtf(buf, text) {
     else lv.setUint32(i * 4, v, false);
   });
 
-  // cmap 重建：BMP → format 4；非 BMP → format 12（platform 0/3 双子表）
+  // Rebuild cmap: BMP -> format 4; non-BMP -> format 12 (platform 0/3 subtables)
   const bmp = [...keepChars.entries()].filter(([c]) => c < 0xffff).sort((a, b) => a[0] - b[0])
     .map(([c, g]) => [c, remap.get(g)]);
   const nonBmp = [...keepChars.entries()].filter(([c]) => c >= 0x10000).sort((a, b) => a[0] - b[0]);
@@ -570,7 +574,7 @@ export function subsetTtf(buf, text) {
   });
   const cmapOut = concat([cmapHead, ...subs.map((s) => s[2])]);
 
-  // hmtx / hhea / maxp / head / OS/2 / post / name（拷贝 + 更新字段）
+  // hmtx / hhea / maxp / head / OS/2 / post / name (copy + update fields)
   const hmtxSrc = table(buf, tables.hmtx);
   const numHMetricsSrc = u16(table(buf, tables.hhea), 34);
   const hmtxOut = new Uint8Array(numGlyphs * 4);
@@ -578,7 +582,7 @@ export function subsetTtf(buf, text) {
     if (g < numHMetricsSrc) {
       hmtxOut.set(hmtxSrc.subarray(g * 4, g * 4 + 4), i * 4);
     } else {
-      hmtxOut.set(hmtxSrc.subarray(0, 2), i * 4); // advance 取第一条
+      hmtxOut.set(hmtxSrc.subarray(0, 2), i * 4); // advance taken from the first entry
       dv(hmtxOut).setInt16(i * 4 + 2, i16(hmtxSrc, numHMetricsSrc * 2 + (g - numHMetricsSrc) * 2), false);
     }
   });
@@ -596,7 +600,7 @@ export function subsetTtf(buf, text) {
   return assemble({
     "OS/2": (() => {
       const out = new Uint8Array(table(buf, tables["OS/2"]));
-      // 可变字体默认字重 <400 归一到 400（PowerPoint 按 usWeightClass 判定 regular）
+      // Variable font default weight <400 normalized to 400 (PowerPoint judges regular by usWeightClass)
       if (tables.fvar && u16(out, 4) < 400) dv(out).setUint16(4, 400, false);
       return out;
     })(),
@@ -613,9 +617,9 @@ export function subsetTtf(buf, text) {
 }
 
 /**
- * 字体资源表：deck.fonts 的任意键 = 字体资源声明（{family, url/file, subset}）。
- * fontFamily 字符串先查资源表（key → family），命中取 family。
- * 带 file/url 的资源在导出时嵌入（writer/font.js collectFontSpecs）。
+ * Font resource table: any key of deck.fonts = a font resource declaration ({family, url/file, subset}).
+ * A fontFamily string first looks up the resource table (key -> family) and takes the family on a hit.
+ * A resource with file/url is embedded on export (writer/font.js collectFontSpecs).
  */
 export function parseFontResources(fonts) {
   const out = {};
@@ -628,7 +632,7 @@ export function parseFontResources(fonts) {
       family,
       file: typeof v.file === "string" ? v.file : null,
       url: typeof v.url === "string" ? v.url : null,
-      subset: v.subset == null ? null : !!v.subset, // null = 未显式指定（导出时取注册表建议）
+      subset: v.subset == null ? null : !!v.subset, // null = not explicitly set (the registry suggestion is used on export)
     };
   }
   return out;

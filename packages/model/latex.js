@@ -1,21 +1,23 @@
 // ============================================================================
-// latex.js — LaTeX → MathML 封装（vendored KaTeX，仅 MathML 输出模式）
+// latex.js — LaTeX -> MathML wrapper (vendored KaTeX, MathML output mode only)
 // ----------------------------------------------------------------------------
-// 公式组件的单一事实来源：PPTD 里写 latex，运行时刻转换：
-//   - 预览（浏览器）：MathML 塞 DOM，浏览器原生渲染（Edge/Chrome 109+）
-//   - 导出（Node）：MathML → mathml2omml → OMML 注入 PPTX
-// KaTeX 的 MathML 输出模式不需要 css/字体文件（270KB 单文件，无 npm 依赖）。
+// Single source of truth for the formula component: PPTD stores latex and it is
+// converted at runtime:
+//   - preview (browser): MathML is put into the DOM and rendered natively
+//     (Edge / Chrome 109+)
+//   - export (Node): MathML -> mathml2omml -> OMML injected into the PPTX
+// KaTeX's MathML output mode needs no css/font files (270KB single file, no npm deps).
 // ============================================================================
 
 import katex from "./vendor/katex.mjs";
 
 const KATEX_OPTIONS = {
   output: "mathml",
-  throwOnError: false, // 公式写错不抛异常：预览回退显示源码，导出回退纯文本
+  throwOnError: false, // bad formula does not throw: preview falls back to source, export to plain text
   strict: false,
 };
 
-/** LaTeX → MathML 字符串（含 <span class="katex"> 包装）。失败返回 null。 */
+/** LaTeX -> MathML string (wrapped in <span class="katex">). Returns null on failure. */
 export function latexToMathml(latex) {
   if (typeof latex !== "string" || !latex.trim()) return null;
   try {

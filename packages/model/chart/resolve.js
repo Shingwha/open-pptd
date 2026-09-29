@@ -1,27 +1,30 @@
 // ============================================================================
-// model/chart/resolve.js — 图表归一化（合并 defaults、encode 取数、默认取色、共存校验）
+// model/chart/resolve.js — chart normalization (defaults merge, encode lookup, default color, coexistence validation)
 // ----------------------------------------------------------------------------
-// C3 对齐官方：
-//   - seriesDefaults 合并（§3.4）：标量覆盖/对象浅合并/数组整替；type/encode 不在内
-//   - 数值通道字符串解析为数字（ChartData 约束）；缺格用 null 填充
-//   - 取色（§5.2）：默认 themeChartPalette（主题 accent1-6 色循环）按系列出现顺序循环；
-//     waterfall 三分类不参与色循环
+// C3 aligned with the official spec:
+//   - seriesDefaults merge (§3.4): scalars override / objects shallow-merge / arrays
+//     replace wholesale; type/encode are not included
+//   - numeric channels parse strings into numbers (ChartData constraint); missing cells
+//     fill with null
+//   - color lookup (§5.2): defaults to themeChartPalette (theme accent1-6 color cycle)
+//     cycling in series order; the three waterfall categories do not take part in the cycle
 // ============================================================================
 
-import { resolveColor, themeChartPalette } from "../theme.js";
+import { themeChartPalette } from "../theme.js";
 import { CHART_META, SOLO_TYPES } from "./meta.js";
 import { hexA } from "./colors.js";
-import { toAxisArray, inferAxisType, isHorizontalChart } from "./axes.js";
+import { isHorizontalChart } from "./axes.js";
 
-// encode 读回退别名（resolveChartSeries 用）：SEMANTIC_KEYS 的严格子集——
-// 刻意不含 date（避免把名为 date 的列误判为 x 通道回退），两者语义不同勿合并。
+// encode lookup fallback aliases (used by resolveChartSeries): a strict subset of
+// SEMANTIC_KEYS — deliberately without date (so a column named date is not mistaken for
+// an x channel fallback); the two have different semantics and must not be merged.
 const ENCODE_ALIAS = { x: ["category"], category: ["x"], y: ["value"], value: ["y"] };
 
 function colIndex(data, name) {
   return (data.cols || []).indexOf(name);
 }
 
-/** 数值通道解析：字符串 → 数字；失败 → null（官方 NonNumericValueError 宽容处理）。 */
+/** Numeric channel parse: string -> number; on failure -> null (lenient handling of the official NonNumericValueError). */
 function toNum(v) {
   if (v == null || v === "") return null;
   if (typeof v === "number") return v;
@@ -30,7 +33,8 @@ function toNum(v) {
 }
 
 /**
- * 校验系列数组的类型共存约束（§5.4）。返回警告字符串数组（不抛错，宽容消费）。
+ * Validate the type coexistence constraints of a series array (§5.4). Returns an array
+ * of warning strings (never throws; lenient consumption).
  */
 export function validateChartSeries(el) {
   const warns = [];
@@ -56,7 +60,7 @@ export function validateChartSeries(el) {
   if (series.length > 1 && [...types].some((t) => SOLO_TYPES.has(t))) {
     warns.push(`[chart] ${[...types].filter((t) => SOLO_TYPES.has(t)).join("/")} 系列只能有 1 个元素`);
   }
-  // 雷达共享分类列约束（官方 §radar：同图所有雷达系列必须引用同一 category 列）
+  // Radar shared-category constraint (official §radar: all radar series in one chart must reference the same category column)
   if (types.size === 1 && types.has("radar") && series.length > 1) {
     const catCol = series.map((s) => s.encode?.category).find((v) => v != null);
     if (catCol != null && series.some((s) => s.encode?.category !== catCol)) {
@@ -66,7 +70,7 @@ export function validateChartSeries(el) {
   return warns;
 }
 
-/** seriesDefaults + series[i] 合并（§3.4）：标量覆盖；对象浅合并；数组整替。type/encode 不来自 defaults。 */
+/** Merge seriesDefaults + series[i] (§3.4): scalars override; objects shallow-merge; arrays replace. type/encode never come from defaults. */
 export function mergeSeriesDefault(defaults, series) {
   if (!defaults) return { ...series };
   const out = { ...defaults, ...series };
@@ -77,21 +81,21 @@ export function mergeSeriesDefault(defaults, series) {
       out[key] = { ...dv, ...sv };
     }
   }
-  delete out.type; // §3.4: type/encode 不允许出现在 seriesDefaults
+  delete out.type; // §3.4: type/encode are not allowed in seriesDefaults
   return out;
 }
 
 /**
- * 归一化图表：合并 seriesDefaults、按官方 encode 通道取数、默认取色。
+ * Normalize a chart: merge seriesDefaults, pull data by official encode channels, apply default colors.
  * @returns {{series: Array, cats: Array, warn: Array}}
- *  series[i] = { ...官方字段(含 merged defaults), type, name, encode,
- *    color(主色), areaColor, _cols: {通道:列号}, _values: {通道:数组} }
- *  cats = 分类通道值（取第一个有 category/x 通道的系列）
+ *  series[i] = { ...official fields (including merged defaults), type, name, encode,
+ *    color (main color), areaColor, _cols: {channel: colIndex}, _values: {channel: array} }
+ *  cats = category channel values (taken from the first series having a category/x channel)
  */
 export function resolveChartSeries(theme, el) {
   const data = el.data || { cols: [], rows: [] };
   const seriesDefaults = el.seriesDefaults || {};
-  const palette = themeChartPalette(theme); // 官方 §3.1：主题色循环（accent1-6 槽位）
+  const palette = themeChartPalette(theme); // official §3.1: theme color cycle (accent1-6 slots)
   const warn = validateChartSeries(el);
   const series = [];
 
@@ -103,7 +107,7 @@ export function resolveChartSeries(theme, el) {
     const encode = merged.encode || {};
     const name = merged.name || "";
 
-    // 官方 encode 通道 → 列号 + 每行取值（读宽容：x↔category、y↔value 别名回退，见 ENCODE_ALIAS）
+    // Official encode channel -> column index + per-row values (lenient read: x<->category, y<->value alias fallback, see ENCODE_ALIAS)
     const _cols = {};
     const _values = {};
     for (const ch of Object.keys(meta.encode)) {
@@ -113,11 +117,12 @@ export function resolveChartSeries(theme, el) {
       _cols[ch] = ci;
       _values[ch] = (data.rows || []).map((row) => row[ci] ?? null);
     }
-    // 数值通道（y/value/high/low/close/open/size/flow/x?）字符串 → 数字。
-    // 方向规则（官方）：bar/waterfall 水平时 y 是分类通道（保留字符串），x 是数值通道
+    // Numeric channels (y/value/high/low/close/open/size/flow/x?) string -> number.
+    // Direction rule (official): for horizontal bar/waterfall, y is the category channel
+    // (strings preserved) and x is the numeric channel
     const horizontal =
       (type === "bar" || type === "waterfall") && isHorizontalChart(el, data, encode);
-    // dataFilter（scatter/bubble 长表分组，官方 §scatter/bubble）：保留 col===value 的行
+    // dataFilter (scatter/bubble long-table grouping, official §scatter/bubble): keep rows where col === value
     const df = merged.dataFilter;
     if (df && (type === "scatter" || type === "bubble") && df.col != null && df.value !== undefined) {
       const dci = colIndex(data, df.col);
@@ -130,26 +135,26 @@ export function resolveChartSeries(theme, el) {
     const NUM_CHANNELS = new Set(["y", "value", "high", "low", "close", "open", "size", "flow"]);
     for (const ch of Object.keys(_values)) {
       if (!NUM_CHANNELS.has(ch)) continue;
-      if (horizontal && ch === "y") continue; // 水平柱的分类通道（字符串）
-      if (type === "heatmap" && (ch === "x" || ch === "y")) continue; // heatmap 的 x/y 是分类通道（官方约束）
+      if (horizontal && ch === "y") continue; // category channel of a horizontal bar (strings)
+      if (type === "heatmap" && (ch === "x" || ch === "y")) continue; // heatmap x/y are category channels (official constraint)
       _values[ch] = _values[ch].map(toNum);
     }
 
-    // 默认取色（§5.2）：每类型的色字段。编辑器 UI 写 s.color（通用字段），
-    // 官方 fill/lineColor 优先（含 seriesDefaults 合并值），color 兜底。
+    // Default color (§5.2): the color field per type. The editor UI writes s.color (generic
+    // field); the official fill/lineColor win (including merged seriesDefaults), color is the fallback.
     let color = null;
     if (type === "line" || type === "area" || type === "radar") {
       color = merged.lineColor || merged.color || palette[i % palette.length];
     } else if (type === "bar" || type === "scatter" || type === "bubble") {
       color = merged.fill || merged.color || palette[i % palette.length];
     } else if (type === "pie") {
-      color = merged.fill || merged.color || palette[0]; // 数组由渲染/导出按点循环
+      color = merged.fill || merged.color || palette[0]; // the array is cycled per point by render/export
     } else {
-      color = merged.fill || merged.color || null; // candlestick/waterfall/heatmap/treemap/sunburst/sankey 不适用
+      color = merged.fill || merged.color || null; // not applicable to candlestick/waterfall/heatmap/treemap/sunburst/sankey
     }
     let areaColor = merged.areaColor || null;
     if ((type === "area" || type === "radar") && !areaColor && color) {
-      areaColor = hexA(color, 0.22); // 官方：areaColor 缺省 = lineColor 半透明
+      areaColor = hexA(color, 0.22); // official: areaColor defaults to a translucent lineColor
     }
 
     const cats = _values.category != null ? _values.category.map((v) => String(v ?? ""))
@@ -170,7 +175,7 @@ export function resolveChartSeries(theme, el) {
     });
   });
 
-  // 分类（第一个带 category/x 的系列）
+  // Categories (first series with a category/x channel)
   let cats = [];
   for (const s of series) {
     if (s._cats.length) { cats = s._cats; break; }

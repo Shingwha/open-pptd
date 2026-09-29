@@ -1,8 +1,9 @@
 // ============================================================================
-// model/chart/option/shared.js — ECharts option 组装的公共样式片段（纯函数，无 DOM）
+// model/chart/option/shared.js — common ECharts option assembly fragments (pure functions, no DOM)
 // ----------------------------------------------------------------------------
-// 本目录（model/chart/option/）是预览渲染与导出图片化（SSR）共享的 option 单源。
-// 纯数据组装：禁止 import echarts / 触碰 window/document（dep-graph 强制）。
+// This directory (model/chart/option/) is the shared option single source for preview
+// rendering and export rasterization (SSR). Pure data assembly: importing echarts or
+// touching window/document is forbidden (enforced by dep-graph).
 // ============================================================================
 
 import { resolveColor, resolveFont } from "../../theme.js";
@@ -11,14 +12,14 @@ import { CHART_DEFAULTS } from "../meta.js";
 import { resolveDataLabels } from "../labels.js";
 import { formatChartValue } from "../format.js";
 
-/** 主题轴/文字缺省样式（字号来自官方 CHART_DEFAULTS 单源）。 */
+/** Theme axis/text default styles (font size from the official CHART_DEFAULTS single source). */
 export const AXIS_TEXT = { color: "#6b7280", fontSize: CHART_DEFAULTS.axisSize };
 
-/** 笛卡尔图 grid 边距（px；ECharts 布局与类目标签拥挤估算共用一份）。
- * 唯一定义在 model/chart/layout.js（与导出 manualLayout 同一基底），此处转 re-export。 */
+/** Cartesian grid margins (px; shared by the ECharts layout and the category-label crowding estimate).
+ * Defined only in model/chart/layout.js (same basis as the export manualLayout); re-exported here. */
 export { CHART_GRID } from "../layout.js";
 
-/** 主题图表样式（网格/轴/文字色跟随主题 colors 键，缺省用内置默认）。 */
+/** Theme chart styles (grid/axis/text colors follow the theme colors keys, falling back to built-in defaults). */
 export function chartStyleColors(theme) {
   return {
     labelColor: resolveColor(theme, theme.colors?.text) || "#1f2937",
@@ -28,8 +29,9 @@ export function chartStyleColors(theme) {
   };
 }
 
-/** 官方 dataLabels → ECharts label 配置（含样式 color/fontSize）。
- * 散点/气泡的 p.value 是 [x,y(,size)] 数组，显示值取 y 通道（与导出端 showVal 一致）。 */
+/** Official dataLabels -> ECharts label config (including style color/fontSize).
+ * For scatter/bubble p.value is an [x,y(,size)] array, so the display value is taken from
+ * the y channel (matching showVal on the export side). */
 export function echartsLabel(theme, el, s, { position = "top", pie = false } = {}) {
   const cfg = resolveDataLabels(el, s, s.type);
   if (!cfg) return undefined;
@@ -48,13 +50,13 @@ export function echartsLabel(theme, el, s, { position = "top", pie = false } = {
   };
 }
 
-/** 系列主体色（与 writer 同源；$key 主题引用 → 解析为具体色）。 */
+/** Series main color (same source as writer; $key theme reference -> resolved to a concrete color). */
 export function seriesColor(theme, s) {
   if (s.type === "line" || s.type === "area" || s.type === "radar") return resolveColor(theme, s.lineColor) || resolveColor(theme, s.color);
   return resolveColor(theme, s.color);
 }
 
-/** 官方 marker → ECharts symbol（fill/border 主题引用解析）。 */
+/** Official marker -> ECharts symbol (fill/border theme references resolved). */
 export function markerSymbol(theme, marker, color) {
   if (!marker || marker === false) return { show: false };
   const cfg = typeof marker === "object" ? marker : {};
@@ -67,10 +69,11 @@ export function markerSymbol(theme, marker, color) {
   };
 }
 
-/** 图表顶层公共 option（字体/tooltip 触发/无动画）。
- * 字体族名不加内层引号：SSR 序列化（writer/chart/image.js）会把该串原样插进
- * style="..." 属性，内层双引号无法转义会产出非法 XML（PowerPoint 拒渲染）；
- * CSS 未引号族名（含空格）同样合法，canvas/svg 两端解析一致。 */
+/** Chart top-level common option (font / tooltip trigger / no animation).
+ * The font family name carries no inner quotes: SSR serialization (writer/chart/image.js)
+ * inserts this string verbatim into a style="..." attribute, and inner double quotes cannot
+ * be escaped there, producing invalid XML (which PowerPoint refuses to render); an unquoted
+ * CSS family name (even with spaces) is equally valid, so canvas and svg parse it the same. */
 export function baseOption(theme, el) {
   const fonts = resolveFont(theme, el.fontFamily || null);
   return {
@@ -80,9 +83,10 @@ export function baseOption(theme, el) {
   };
 }
 
-/** 图例 ECharts 投影（语义在 spec.legend：on/pos/size/color 单源）。
- * 四方位完整映射（top/bottom 水平居中，left/right 垂直居中竖排）——此前只写
- * 单边 {pos:0}，right 会落到顶部横排，与导出端 legendPos 背离。 */
+/** Legend ECharts projection (semantics in spec.legend: on/pos/size/color single source).
+ * Full four-position mapping (top/bottom centered horizontally, left/right centered
+ * vertically and stacked) — previously only a one-sided {pos:0} was written, so right
+ * collapsed to a horizontal bar at the top, diverging from the export legendPos. */
 export function legendState(theme, legend) {
   const { legendColor } = chartStyleColors(theme);
   const cfg = legend.cfg || {};
@@ -94,7 +98,7 @@ export function legendState(theme, legend) {
     show: legend.on,
     ...posOpt,
     textStyle: { color: cfg.color ? resolveColor(theme, cfg.color) || legendColor : legendColor, fontSize: cfg.fontSize || CHART_DEFAULTS.legendSize },
-    // 图例 marker 收敛 PowerPoint 小方块观感（此前 roundRect 14×8 大圆角色块，I25）
+    // Legend marker converges on the PowerPoint small-square look (previously a roundRect 14×8 rounded block, I25)
     icon: "rect", itemWidth: 10, itemHeight: 8,
   };
   return { legendOn: legend.on, legendOpt };

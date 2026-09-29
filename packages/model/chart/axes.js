@@ -1,18 +1,19 @@
 // ============================================================================
-// model/chart/axes.js — 轴配置归一化与方向/通道解析（writer/renderer 共享）
+// model/chart/axes.js — axis config normalization and direction/channel resolution (shared by writer/renderer)
 // ----------------------------------------------------------------------------
-// 对齐官方 §Chart 方向规则 + §5.3 轴数组规则：次轴永远放在数值轴一侧——
-// 垂直图用 series.yAxisIndex，水平图用 series.xAxisIndex。
+// Aligned with official §Chart direction rules + §5.3 axis-array rules: a secondary
+// axis always sits on the value-axis side — vertical charts use series.yAxisIndex,
+// horizontal charts use series.xAxisIndex.
 // ============================================================================
 
-/** 轴配置归一化：AxisConfig | AxisConfig[] → AxisConfig[]（省略 = [{}]，官方 §通用规则 5）。 */
+/** Axis config normalization: AxisConfig | AxisConfig[] -> AxisConfig[] (omitted = [{}], official §general rules 5). */
 export function toAxisArray(cfg) {
   if (cfg == null) return [{}];
   const arr = Array.isArray(cfg) ? cfg : [cfg];
   return arr.map((c) => (c && typeof c === "object" ? c : {}));
 }
 
-/** 列类型推断（官方：字符串列 → category，全数值列 → value）。 */
+/** Column type inference (official: string column -> category, all-numeric column -> value). */
 export function inferAxisType(data, colName) {
   const ci = (data?.cols || []).indexOf(colName);
   if (ci < 0) return "category";
@@ -24,7 +25,7 @@ export function inferAxisType(data, colName) {
   return "value";
 }
 
-/** bar/waterfall 方向判定：y 轴为分类轴且 x 轴非分类轴 → 水平（resolveChartSeries 与 resolveChartDirection 共用）。 */
+/** bar/waterfall direction test: y axis is a category axis and x axis is not -> horizontal (shared by resolveChartSeries and resolveChartDirection). */
 function isHorizontalChart(el, data, encode) {
   const xs = toAxisArray(el.xAxis);
   const ys = toAxisArray(el.yAxis);
@@ -34,10 +35,11 @@ function isHorizontalChart(el, data, encode) {
 }
 
 /**
- * 图表方向（官方 §Chart 方向规则）：bar/waterfall 由轴类型决定——
- * xAxis.type==="category"（显式或按数据推断）→ 垂直；yAxis.type==="category" → 水平。
- * 其余类型（line/area/scatter/bubble/candlestick/heatmap/radar…）恒垂直。
- * @returns {boolean} true = 水平（barDir=bar）
+ * Chart direction (official §Chart direction rules): bar/waterfall is decided by axis
+ * types — xAxis.type==="category" (explicit or inferred from data) -> vertical;
+ * yAxis.type==="category" -> horizontal. All other types
+ * (line/area/scatter/bubble/candlestick/heatmap/radar…) are always vertical.
+ * @returns {boolean} true = horizontal (barDir=bar)
  */
 export function resolveChartDirection(el, series) {
   const s = series.find((x) => x && (x.type === "bar" || x.type === "waterfall"));
@@ -45,13 +47,14 @@ export function resolveChartDirection(el, series) {
   return isHorizontalChart(el, el.data, s.encode);
 }
 
-/** 供 resolve.js（resolveChartSeries 的水平柱分类通道判定）复用。 */
+/** Reused by resolve.js (the horizontal-bar category-channel test in resolveChartSeries). */
 export { isHorizontalChart };
 
 /**
- * 系列轴索引（官方 §5.3）：次轴永远放在数值轴一侧——
- * 垂直图用 series.yAxisIndex，水平图用 series.xAxisIndex。
- * 返回轴索引（0 = 主轴；≥1 = 第 N 个次轴，需 xAxis/yAxis 数组长度 ≥ index+1）。
+ * Series axis index (official §5.3): a secondary axis always sits on the value-axis
+ * side — vertical charts use series.yAxisIndex, horizontal charts use series.xAxisIndex.
+ * Returns the axis index (0 = primary axis; ≥1 = the Nth secondary axis, which requires
+ * the xAxis/yAxis array length to be ≥ index+1).
  */
 export function seriesAxisIndex(s, horizontal) {
   const idx = horizontal ? s.xAxisIndex : s.yAxisIndex;
@@ -59,8 +62,9 @@ export function seriesAxisIndex(s, horizontal) {
 }
 
 /**
- * 系列数据通道按方向重映射（barDir=bar 时分类通道在 y、数值通道在 x）：
- * @returns {{cat: {col, vals}, val: {col, vals}}} 或 null（无分类通道）
+ * Remap series data channels by direction (with barDir=bar the category channel is on y
+ * and the value channel on x):
+ * @returns {{cat: {col, vals}, val: {col, vals}}} or null (no category channel)
  */
 export function seriesChannels(s, horizontal) {
   if (horizontal) {

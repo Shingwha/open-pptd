@@ -1,19 +1,22 @@
 // ============================================================================
-// model/index.js — packages/model 包级 barrel（契约 4 入口 open-pptd/model）
+// model/index.js — packages/model package barrel (contract entry 4, open-pptd/model)
 // ----------------------------------------------------------------------------
-// 纯再导出，零逻辑：把 300+ 深路径收敛为稳定入口（见 docs/embedding.md）。
-// 导出面以 docs/specs/ref/integration-plan.md 附录 D.1 为准，逐一核对源文件真实
-// 导出名后写下（PRESET_SHAPES 来自 preset-geometry.data.js，ELEMENT_TYPES 来自
-// style-spec.js —— 二者均不在 model.js，D.1 只列名字未列文件）。
+// Pure re-export, zero logic: collapses 300+ deep paths into a stable entry point
+// (see docs/embedding.md). The export surface follows
+// docs/specs/ref/integration-plan.md appendix D.1, verified one by one against the
+// real export names of each source file before being written down (PRESET_SHAPES
+// comes from preset-geometry.data.js, ELEMENT_TYPES from style-spec.js — neither
+// lives in model.js, D.1 lists names only, not files).
 //
-// 浏览器 + Node 双端：本文件与传递闭包内不得出现 node:* / fs / window. / document.
-// （字体、图标注册表的 Node 分支走 options.fs 依赖注入，见 dep-graph 既有四条）。
+// Browser + Node: neither this file nor its transitive closure may contain node:* /
+// fs / window. / document. (the Node branches of the font and icon registries use
+// options.fs dependency injection, see the four existing dep-graph rules).
 // ============================================================================
 
-// ---- 解析与序列化（pptd-io.js）----
+// ---- Parse and serialize (pptd-io.js) ----
 export { parseDeck, serializeDeck } from "./pptd-io.js";
 
-// ---- 数据模型（model.js）----
+// ---- Data model (model.js) ----
 export {
   createDeck,
   createPage,
@@ -28,11 +31,11 @@ export {
   SHOT_ERROR_TITLE,
 } from "./model.js";
 
-// ---- 元素类型注册表（registry.js / style-spec.js）----
+// ---- Element type registry (registry.js / style-spec.js) ----
 export { registerType, getType, allTypes } from "./registry.js";
 export { ELEMENT_TYPES } from "./style-spec.js";
 
-// ---- 主题与配色（theme.js，DEFAULT_THEME/THEME_PALETTES 由 theme.js 再导出）----
+// ---- Theme and colors (theme.js; DEFAULT_THEME/THEME_PALETTES are re-exported by theme.js) ----
 export {
   resolveTheme,
   resolveColor,
@@ -46,17 +49,17 @@ export {
   mergePaletteColors,
 } from "./theme.js";
 
-// ---- 校验（validate.js）----
+// ---- Validation (validate.js) ----
 export { validateDeck, registerRule } from "./validate.js";
 
-// ---- 遍历（walk.js）----
+// ---- Traversal (walk.js) ----
 export { walkElements, collectImageSrcs } from "./walk.js";
 
-// ---- 预置形状（preset-geometry.js / preset-geometry.data.js）----
+// ---- Preset shapes (preset-geometry.js / preset-geometry.data.js) ----
 export { shapePaths, shapeMenuIcon } from "./preset-geometry.js";
 export { PRESET_SHAPES } from "./preset-geometry.data.js";
 
-// ---- 表格模型（table.js：网格/合并拆分/布局估算/校验）----
+// ---- Table model (table.js: grid / merge & split / layout estimate / validation) ----
 export {
   tableGrid,
   tryMerge,
@@ -66,29 +69,30 @@ export {
   validateDims,
 } from "./table.js";
 
-// ---- 字体解析（font.js：CSS font 简写与字体资源清单）----
+// ---- Font parsing (font.js: CSS font shorthand and font resource manifest) ----
 export { parseFontInfo, parseFontResources } from "./font.js";
 
-// ---- vendored 第三方（与代码版本同仓管理，浏览器 Node 双端可用）----
+// ---- Vendored third party (versioned with the code, usable in browser and Node) ----
 export * as yaml from "./vendor/js-yaml.mjs";
 
-// ---- 图表命名空间（chart.js 全部导出 + chart/option 构建器）----
-// chart.js 只再导出元数据/解析/布局工具；buildChartOption 在 chart/option/index.js，
-// 二者合并为单一 chart 命名空间（D.1 要求 chart 内含 buildChartOption）。
+// ---- Chart namespace (all chart.js exports + chart/option builders) ----
+// chart.js only re-exports metadata/resolve/layout helpers; buildChartOption lives in
+// chart/option/index.js. The two are merged into a single chart namespace (D.1 requires
+// chart to contain buildChartOption).
 import * as chartCore from "./chart.js";
 import * as chartOption from "./chart/option/index.js";
 export const chart = { ...chartCore, ...chartOption };
 
-// ---- 图标命名空间（icon-fa.js 全部公开导出）----
+// ---- Icon namespace (all public exports of icon-fa.js) ----
 export * as icons from "./icon-fa.js";
 
-// ---- 字体注册表命名空间（font-registry.js 全部公开导出）----
+// ---- Font registry namespace (all public exports of font-registry.js) ----
 export * as fonts from "./font-registry.js";
 
-// ---- 字节工具命名空间（bytes.js 全部公开导出）----
+// ---- Byte utility namespace (all public exports of bytes.js) ----
 export * as bytes from "./bytes.js";
 
-// ---- 高频名字的扁平再导出（与上方命名空间并存；editor 消费面，免写 ns. 前缀）----
+// ---- Flat re-exports of high-frequency names (coexist with the namespaces above; editor consumption side, avoids the ns. prefix) ----
 export {
   CHART_META,
   CHART_TYPE_ORDER,

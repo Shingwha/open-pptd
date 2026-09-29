@@ -1,14 +1,15 @@
 // ============================================================================
-// model/chart/format.js — 图表数值格式化（官方 numberFormat 词表的唯一解释器）
+// model/chart/format.js — chart number formatting (the sole interpreter of the official numberFormat vocabulary)
 // ----------------------------------------------------------------------------
-// 预览标签/轴 formatter 与 SSR 图片化共用；writer 原生导出不经过本模块
-// （formatCode 透传给 PowerPoint 原生解析）。
+// Shared by preview label/axis formatters and SSR rasterization; native writer export
+// does not go through this module (the formatCode is passed through for PowerPoint's
+// native parser).
 // ============================================================================
 
-/** numberFormat 格式码全集（编辑器下拉的词表锚点，展示文案在 editor 侧）。 */
+/** Full numberFormat code set (vocabulary anchor for the editor dropdown; display text lives on the editor side). */
 export const NUMBER_FORMAT_CODES = ["", "0", "0.0", "0%", "0.0%", "#,##0", "0.0E+00"];
 
-/** formatCode → 显示串（官方词表缺省 = 四舍五入整数）。 */
+/** formatCode -> display string (official vocabulary default = rounded integer). */
 export function formatChartValue(v, format) {
   const n = Number(v);
   if (Number.isNaN(n)) return String(v ?? "");

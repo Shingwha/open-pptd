@@ -1,10 +1,11 @@
 // ============================================================================
-// model.js — 统一数据模型（渲染器与 writer 共享的唯一事实来源）
+// model.js — unified data model (single source of truth shared by renderer and writer)
 // ----------------------------------------------------------------------------
-// 支持组件（对齐官方 PPTD v2）：
-//   text / shape(187 预置几何 + 自定义路径) / line / image / icon /
-//   table / chart(13 种系列类型)
-// 页面背景、页面类型、fade 过渡、演讲者备注由 writer 直接写。
+// Supported components (aligned with official PPTD v2):
+//   text / shape (187 preset geometries + custom path) / line / image / icon /
+//   table / chart (13 series types)
+// Page background, page type, fade transition and speaker notes are written
+// directly by the writer.
 // ============================================================================
 
 import { PRESET_SHAPES } from "./preset-geometry.data.js";
@@ -12,12 +13,12 @@ import { PRESET_SHAPES } from "./preset-geometry.data.js";
 export const PAGE_WIDTH = 960;
 export const PAGE_HEIGHT = 540;
 
-/** deck 画布尺寸（size 缺省/非法回退 960×540）；渲染/导出/缩略图/画廊统一走这里。 */
+/** Deck canvas size (falls back to 960×540 when size is missing/invalid); used by render/export/thumbnails/gallery. */
 export function deckSize(deck) {
   return Array.isArray(deck?.size) && deck.size.length === 2 ? deck.size : [PAGE_WIDTH, PAGE_HEIGHT];
 }
 
-/** 支持形状清单（key=shapeName）：全部来自 ECMA-376 预置几何数据（187 种，含基础 5 种）。 */
+/** Supported shape list (key = shapeName): all come from the ECMA-376 preset geometry data (187 shapes, including the 5 basic ones). */
 export const SUPPORTED_SHAPES = Object.fromEntries(
   Object.entries(PRESET_SHAPES).map(([name, def]) => [
     name,
@@ -27,13 +28,13 @@ export const SUPPORTED_SHAPES = Object.fromEntries(
 
 export const PAGE_TYPES = ["cover", "table_of_contents", "chapter", "content", "final"];
 
-// ---- shot 无头渲染契约（editor/app/shot.js ↔ renderer/headless/cdp.js 共享）----
-// document.title 信号：就绪可截图 / 初始化失败。
+// ---- shot headless-render contract (shared by editor/app/shot.js <-> renderer/headless/cdp.js) ----
+// document.title signal: ready to screenshot / initialization failed.
 export const SHOT_READY_TITLE = "PPTD_READY";
 export const SHOT_ERROR_TITLE = "PPTD_ERROR";
 
 // ----------------------------------------------------------------------------
-// 创建与校验
+// Creation and validation
 // ----------------------------------------------------------------------------
 export function createDeck({ title = "未命名演示文稿", size = [PAGE_WIDTH, PAGE_HEIGHT], theme = null, fonts = null, pages = [] } = {}) {
   return { version: "v2", title, size, theme, fonts, pages };
@@ -44,15 +45,16 @@ export function createPage({ pageType = "content", background = null, notes = ""
 }
 
 let _idSeq = 0;
-/** 生成唯一 elementId。 */
+/** Generate a unique elementId. */
 export function nextElementId(prefix = "el") {
   _idSeq += 1;
   return `${prefix}${_idSeq}`;
 }
 
 /**
- * 扫描 deck 现有 elementId 的最大编号并重置计数器，
- * 保证加载新项目后新建元素的 id 连续可读（el4、el5…）。
+ * Scan the largest elementId number currently in the deck and reset the counter,
+ * so that ids of newly created elements stay contiguous and readable after
+ * loading a project (el4, el5…).
  */
 export function syncElementId(deck) {
   let max = 0;

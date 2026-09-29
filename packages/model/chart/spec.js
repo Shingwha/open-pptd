@@ -1,19 +1,21 @@
 // ============================================================================
-// model/chart/spec.js — 图表有效语义单源（resolveChartSpec）
+// model/chart/spec.js — chart effective semantics single source (resolveChartSpec)
 // ----------------------------------------------------------------------------
-// 图表元素 → 完全解析的「有效配置」：归一化系列、标题、图例、布局、气泡尺寸
-// 等全部默认值在此落定。预览（option/ 投影 ECharts）与导出（writer/ 投影
-// OOXML）只做方言转换、不再自持语义——此前标题抽取 7 处、图例开关 3+1 处、
-// 方位映射 3 处（chartex 缺省 t vs classic b 真实分叉）、气泡归一化两份且
-// writer 直接变异 model 归一化结果（s._values.size）。
-// 纯函数；消费方一律经 model/chart.js barrel。
+// Chart element -> fully resolved "effective config": normalized series, title, legend,
+// layout, bubble sizes and every other default are settled here. The preview (option/,
+// projecting ECharts) and the export (writer/, projecting OOXML) only do dialect
+// conversion and no longer hold semantics of their own — previously title extraction
+// existed in 7 places, the legend toggle in 3+1, position mapping in 3 (a real fork
+// where chartex defaulted to t while classic used b), bubble normalization in two
+// copies, and the writer even mutated the model normalization result (s._values.size).
+// Pure functions; consumers always go through the model/chart.js barrel.
 // ============================================================================
 
 import { resolveChartSeries } from "./resolve.js";
 import { resolvePlotLayout, resolveBarLayout } from "./layout.js";
 import { resolveTitleLike, resolveLegend } from "./title-legend.js";
 
-/** 图表元素 → 有效配置 spec。 */
+/** Chart element -> effective config spec. */
 export function resolveChartSpec(theme, el) {
   const { series, cats, warn } = resolveChartSeries(theme, el);
   const types = [...new Set(series.map((s) => s.type))];
@@ -37,14 +39,18 @@ export function resolveChartSpec(theme, el) {
 }
 
 /**
- * 气泡尺寸有效语义（I22 单源）：
- *   - glo/ghi：全 chart 气泡系列全局极值（系列各自归一会破坏跨系列大小可比性）
- *   - diameterFn(s)：原始值 → 目标直径 px（预览 symbolSize 直接消费）
- *   - writes：导出写值 100×(d/dmax)²，按 bubble 系列序对齐（PowerPoint 直径 ∝
- *     √size、sizeRepresents=area；原始值直进数据坐标气泡会巨大互相覆盖）
- *   - bubbleScale：由目标最大泡占绘图区短边比反解（标定：scale=100 → 最大泡
- *     直径 ≈ 0.51×短边，>150 触发平台截断 0.83）
- * 纯函数：不改写系列归一化结果（此前 writer 直接改 s._values.size）。
+ * Bubble size effective semantics (I22 single source):
+ *   - glo/ghi: global extremes across all bubble series in the chart (normalizing each
+ *     series separately would break cross-series size comparability)
+ *   - diameterFn(s): raw value -> target diameter px (consumed directly as the preview symbolSize)
+ *   - writes: the value written on export, 100×(d/dmax)², aligned to bubble series order
+ *     (PowerPoint diameter ∝ √size, sizeRepresents=area; putting raw values straight into
+ *     data coordinates makes bubbles huge and overlapping)
+ *   - bubbleScale: solved back from the ratio of the largest target bubble to the plot-area
+ *     short side (calibration: scale=100 -> largest bubble diameter ≈ 0.51×short side; >150
+ *     triggers the platform clamp at 0.83)
+ * Pure function: it does not rewrite the series normalization result (the writer used to
+ * mutate s._values.size directly).
  */
 function resolveBubbleLayout(chartEl, series, layout) {
   const bubbleSeries = series.filter((s) => s.type === "bubble");

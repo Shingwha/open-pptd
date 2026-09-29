@@ -1,28 +1,34 @@
 // ============================================================================
+// mathml2omml.js — MathML -> OMML (PowerPoint native formulas); pure JS, zero dependencies
+// ----------------------------------------------------------------------------
+// Input: Presentation MathML produced by KaTeX (a <math>...</math> string)
+// Output: an <m:oMath>...</m:oMath> string (without a namespace declaration, added on injection)
+//
+// v2 rewrite: reproduces the behavior of Microsoft's official MML2OMML.XSL item by item
+// (byte-level comparison against the official XSLT output; regression: npm test, 204 cases
+// against the fixed official references):
+//   1. run merging: adjacent same-font mi/mn/mo/ms/mtext merge into one m:r (mtext merges only
+//      with mtext; tokens inside a fence are forced to a single run and never merge — the
+//      official fFenceOperator behavior)
+//   2. nary scope: the m:e of ∑/∫/∏ absorbs only [the immediately following first sibling]
+//      (mrow/mstyle are unwrapped and their children taken); the remaining siblings stay
+//      outside the nary (the official NaryHandleMrowMstyle behavior)
+//   3. fence: \left( \right) and (x)^2 (FFencedWithScript) -> m:d; begChr/endChr are omitted
+//      when they are the defaults "("/")"; sepChr is omitted when it is "|", otherwise written
+//      explicitly (including the empty string)
+//   4. accents: the chr of m:acc goes through the ToUpperCombining mapping (^ -> U+0302 etc.)
+//   5. a single-child mstyle wrapper produces no extra output; mspace is dropped outright;
+//      a whitespace-only mtext gets no m:nor
+// ============================================================================
 
 import { parseXml } from "./xml-parser.js";
 import { escText } from "./escape.js";
-// mathml2omml.js v2.2 — 纯 JS、零依赖：MathML → OMML（PowerPoint 原生公式）
-// ----------------------------------------------------------------------------
-// 输入：KaTeX 输出的 Presentation MathML（<math>...</math> 字符串）
-// 输出：<m:oMath>...</m:oMath> 字符串（不带命名空间声明，注入时补充）
-//
-// v2 重写：逐条复刻微软官方 MML2OMML.XSL 的行为（用官方 XSLT 输出做字节级对照，
-// 回归：npm test，204 用例 vs 官方固化参考）：
-//   1. run 合并：相邻同字体的 mi/mn/mo/ms/mtext 合并进同一个 m:r（mtext 只与 mtext 合并；
-//      fence 内部的 token 强制单 run，不合并——官方 fFenceOperator 行为）
-//   2. nary 作用域：∑/∫/∏ 的 m:e 只吸收【紧随其后的第一个兄弟】（mrow/mstyle 则拆开取其子），
-//      其余兄弟留在 nary 之外（官方 NaryHandleMrowMstyle 行为）
-//   3. fence：\left( \right) 与 (x)^2（FFencedWithScript）→ m:d；begChr/endChr 为默认值
-//      "("/")" 时省略；sepChr 为 "|" 时省略，否则显式写出（含空字符串）
-//   4. 重音：m:acc 的 chr 经过 ToUpperCombining 映射（^ → U+0302 等）
-//   5. mstyle 的单子包装不产生额外输出；mspace 直接丢弃；mtext 空白-only 不加 m:nor
-// ============================================================================
 
-// ── 2. 工具 ─────────────────────────────────────────────────────────────────
-const esc = escText; // OMML 文本节点转义（& < >；引号无需转义），统一实现见 escape.js
+// -- 2. Helpers --------------------------------------------------------------
+const esc = escText; // OMML text-node escaping (& < >; quotes need no escaping), single implementation in escape.js
 
-// XSLT 的字符串值：全部后代文本按文档序拼接（token 带子元素时官方直接压平成文本）
+// XSLT string value: all descendant text concatenated in document order (a token with child
+// elements is flattened straight to text in the official output)
 function stringValue(node) {
   if (!node.children.length) return node.text;
   let s = node.text;
@@ -30,7 +36,7 @@ function stringValue(node) {
   return s;
 }
 
-// CreateArgProp：最近的 ancestor-or-self mstyle 的 scriptlevel ∈ {0,1,2} → m:argPr
+// CreateArgProp: scriptlevel ∈ {0,1,2} of the nearest ancestor-or-self mstyle -> m:argPr
 function argProp(node) {
   for (let n = node; n; n = n.parent) {
     if (n.name === "mstyle" && ["0", "1", "2"].includes(n.attrs.scriptlevel)) {
@@ -40,7 +46,7 @@ function argProp(node) {
   return "";
 }
 
-// XSLT normalize-space：仅 ASCII 空白（#x20 #x9 #xD #xA）折叠，NBSP 保留
+// XSLT normalize-space: only ASCII whitespace (#x20 #x9 #xD #xA) is collapsed, NBSP is preserved
 const normalizeSpace = (s) => (s || "").replace(/[\t\r\n ]+/g, " ").replace(/^ | $/g, "");
 
 const isToken = (n) =>
@@ -48,7 +54,7 @@ const isToken = (n) =>
 
 const isNumeric = (t) => t !== "" && !isNaN(Number(t));
 
-// 数学默认字体（GetFontCur 的默认分支，KaTeX 不输出 fontstyle/fontweight）
+// Math default font (the default branch of GetFontCur; KaTeX emits no fontstyle/fontweight)
 function getFontCur(node) {
   const mv = node.attrs.mathvariant;
   if (mv) return mv;
@@ -60,16 +66,16 @@ function getFontCur(node) {
   ) {
     return "italic";
   }
-  return "normal"; // 多字符 mi、非数字 mn、ms、mtext
+  return "normal"; // multi-char mi, non-numeric mn, ms, mtext
 }
 
-// FNor：mtext → m:nor（内容仅空白（含 NBSP）时除外）
+// FNor: mtext -> m:nor (except when the content is whitespace only, NBSP included)
 function fNor(node) {
   if (node.name !== "mtext") return 0;
   return normalizeSpace(stringValue(node).replace(/\u00a0/g, " ")) === "" ? 0 : 1;
 }
 
-// CreateMathScrStyProp：字体 → m:scr / m:sty 映射
+// CreateMathScrStyProp: font -> m:scr / m:sty mapping
 function mathScrSty(font, nor) {
   switch (font) {
     case "normal": return nor ? "" : '<m:sty m:val="p"/>';
@@ -91,21 +97,21 @@ function mathScrSty(font, nor) {
   }
 }
 
-// lxml 序列化规则：空元素一律自闭合（官方产物行为，见 KNOWN-DIFFS 坑 6）
+// lxml serialization rule: empty elements are always self-closed (official output behavior, see KNOWN-DIFFS pitfall 6)
 const wrapEl = (name, inner) => (inner ? `<${name}>${inner}</${name}>` : `<${name}/>`);
 
-// CreateRunProp：fNor=1 或字体非 italic/空 时输出 m:rPr
+// CreateRunProp: emit m:rPr when fNor=1 or the font is not italic/empty
 function runProps(font, nor) {
   if (!(nor === 1 || (font !== "italic" && font !== ""))) return "";
   return `<m:rPr>${nor === 1 ? "<m:nor/>" : ""}${mathScrSty(font, nor)}</m:rPr>`;
 }
 
-/** 单 token → 独立 m:r（fShouldCollect=0 的路径：fence 内、函数名、线性分数内） */
+/** Single token -> an independent m:r (the fShouldCollect=0 path: inside a fence, a function name, inside a linear fraction) */
 function singleRun(node) {
   return `<m:r>${runProps(getFontCur(node), fNor(node))}<m:t>${esc(normalizeSpace(stringValue(node)))}</m:t></m:r>`;
 }
 
-// CreateRunWithSameProp 的合并判定：token t 是否能并入字体为 font 的当前 run
+// CreateRunWithSameProp merge test: can token t join the current run of font `font`
 function canJoinRun(t, font, isMText) {
   if (!isToken(t)) return false;
   if ((t.name === "mtext") !== isMText) return false;
@@ -126,12 +132,12 @@ function canJoinRun(t, font, isMText) {
         t.name === "mtext"
       );
     default:
-      // bold / bi / script / double-struck … 仅显式 mathvariant 相同才合并（KaTeX 均显式给出）
+      // bold / bi / script / double-struck … merge only when the explicit mathvariant matches (KaTeX always gives it explicitly)
       return false;
   }
 }
 
-/** 从 siblings[start] 开始收集同字体连续 token，返回 {run, next} */
+/** Collect consecutive same-font tokens starting at siblings[start]; returns {run, next} */
 function collectRun(siblings, start) {
   const first = siblings[start];
   const font = getFontCur(first);
@@ -143,19 +149,19 @@ function collectRun(siblings, start) {
   return { run: `<m:r>${runProps(font, fNor(first))}<m:t>${esc(text)}</m:t></m:r>`, next: end };
 }
 
-// ── 3. 常量表（全部直接抄录自官方 XSLT，勿改；改动需重跑 npm test） ─────────
-// 本区块集中 6 张表：NARY_OPS / NARY_GROW / OPEN_CHARS / CLOSE_CHARS /
-// FENCE_MATCH / TO_UPPER_COMBINING。对应 XSLT 变量：IsNaryOper、
-// NaryGrowDefault、OpenChars、CloseChars、FENCE_MATCH、ToUpperCombining。
-// isNaryOper：n-ary 运算符字符集合
+// -- 3. Constant tables (all copied straight from the official XSLT; do not change — any change requires re-running npm test) --
+// This block holds 6 tables: NARY_OPS / NARY_GROW / OPEN_CHARS / CLOSE_CHARS /
+// FENCE_MATCH / TO_UPPER_COMBINING. Matching XSLT variables: IsNaryOper,
+// NaryGrowDefault, OpenChars, CloseChars, FENCE_MATCH, ToUpperCombining.
+// isNaryOper: the n-ary operator character set
 const NARY_OPS = new Set(
   "∫∬∭∮∯∰∲∳∱∩∪∏∐∑⋀⋁⋂⋃℀⅋⨀⨂⨉⋏⋎⨓⨔⨄⨅⨌⨍⨎⨏⨐⨑⨒⨓⨔⨕⨖⨗⨘⨙⨚⨛⨜".split("")
 );
 
-// CreateNaryProp 的 grow 默认表
+// The grow default table of CreateNaryProp
 const NARY_GROW = new Set("∫∮∯∲∳∩∪∏∑⋀⋁⋂⋃".split(""));
 
-// OpenChars / CloseChars（fence 检测字符表）
+// OpenChars / CloseChars (fence detection character tables)
 const OPEN_CHARS = "([{<\u230a\u2308\u27e6]|\u2016";
 const CLOSE_CHARS = ")]}>\u230b\u2309\u27e7[|\u2016";
 const FENCE_MATCH = {
@@ -166,7 +172,7 @@ const FENCE_MATCH = {
   "|": "|", "\u2016": "\u2016",
 };
 
-// ToUpperCombining：非组合重音 → 组合重音
+// ToUpperCombining: spacing accent -> combining accent
 const TO_UPPER_COMBINING = {
   "\u02d8": "\u0306", "\u00b8": "\u0312", "\u0060": "\u0300",
   "\u002d": "\u0305", "\u2212": "\u0305", "\u002e": "\u0307",
@@ -176,7 +182,7 @@ const TO_UPPER_COMBINING = {
   "\u2192": "\u20d7", "\u27f6": "\u20d7", "\u2190": "\u20d6",
 };
 
-// ── 4. fence 检测与 m:d ─────────────────────────────────────────────────────
+// -- 4. Fence detection and m:d ----------------------------------------------------
 function fenceOpenChar(children) {
   if (children.length <= 1) return "";
   const first = children[0];
@@ -218,7 +224,7 @@ function isFenced(children) {
   return false;
 }
 
-// CreateDelimProp：begChr 为 "("、endChr 为 ")"、sepChr 为 "|" 时省略（其余值——含空串——都显式写出）
+// CreateDelimProp: omitted when begChr is "(", endChr is ")" or sepChr is "|" (every other value — including the empty string — is written explicitly)
 function delimProps(chOpen, chClose, sep, openValid = true, closeValid = true, sepValid = true) {
   const chSep = sep ? sep[0] : "";
   const need =
@@ -243,7 +249,7 @@ function isFenceNode(c, ch) {
   return c.name === "mrow" && c.children.length === 1 && c.children[0].name === "mo" && normalizeSpace(c.children[0].text) === ch;
 }
 
-// WriteFenced：mrow 首尾为配对 fence → m:d（按分隔符切分多个 m:e）
+// WriteFenced: mrow whose first and last children are a matching fence pair -> m:d (split into several m:e by the separator)
 function writeFenced(children) {
   const chOpen = fenceOpenChar(children);
   const chClose = fenceCloseChar(children);
@@ -269,7 +275,7 @@ function writeFenced(children) {
   return `<m:d>${dPr}${groups.map((g) => wrapEl("m:e", ap + processChildren(g, { fenced: true }))).join("")}</m:d>`;
 }
 
-// FFencedWithScript：(x)^2 模式 —— 闭合 fence 是最后一个脚本元素的基础
+// FFencedWithScript: the (x)^2 pattern — the closing fence is the base of the last script element
 function isFencedWithScript(children) {
   const chOpen = fenceOpenChar(children);
   if (chOpen === "") return false;
@@ -285,7 +291,7 @@ function writeFencedWithScript(children) {
   const chOpen = fenceOpenChar(children);
   const script = children[children.length - 1];
   const chClose = normalizeSpace(script.children[0].text);
-  // WriteFencedContent：m:d（begChr/endChr 走 CreateDelimProp，sepChr 显式空串）
+  // WriteFencedContent: m:d (begChr/endChr go through CreateDelimProp, sepChr explicitly empty)
   const ap = argProp(children[0] && children[0].parent ? children[0].parent : null);
   const content = `<m:d>${delimProps(chOpen, chClose, "")}<m:e>${ap}${processChildren(
     children.slice(1, -1), { fenced: true })}</m:e></m:d>`;
@@ -302,17 +308,17 @@ function writeFencedWithScript(children) {
   }
 }
 
-// ── 5. n-ary ────────────────────────────────────────────────────────────────
-// isNary：base（可能是 mrow/mstyle 链）的最后一个后代是 n-ary 运算符 mo
+// -- 5. n-ary ------------------------------------------------------------------
+// isNary: the last descendant of base (possibly an mrow/mstyle chain) is an n-ary operator mo
 function isNary(base) {
   if (!base) return false;
-  // 链上只允许 mo/mstyle/mrow
+  // only mo/mstyle/mrow are allowed along the chain
   for (let n = base; n; n = n.children[0]) {
     if (n.name !== "mo" && n.name !== "mstyle" && n.name !== "mrow") return false;
     if (n.children.length === 0) {
-      // 最后一个节点必须是 mo 且为 n-ary 运算符
+      // the last node must be an mo and an n-ary operator
       if (n.name === "mo" && NARY_OPS.has(normalizeSpace(n.text))) {
-        // 不能被标记为重音
+        // must not be marked as an accent
         const p = base.parent;
         if (p && (String(p.attrs.accent || "").toLowerCase() === "true" ||
                   String(p.attrs.accentunder || "").toLowerCase() === "true")) return false;
@@ -325,14 +331,14 @@ function isNary(base) {
   return false;
 }
 
-// isNary 的 mo 文本（沿 mrow/mstyle 链取最后一个 mo）
+// The mo text of isNary (take the last mo along the mrow/mstyle chain)
 function naryChr(base) {
   let n = base;
   while (n && n.children.length === 1 && n.children[0].name !== "mo") n = n.children[0];
   return normalizeSpace(n.text);
 }
 
-// FIsNaryArgument：某节点是否紧跟 nary 结构（其前一个兄弟是 nary 脚本）
+// FIsNaryArgument: whether a node immediately follows an n-ary structure (its preceding sibling is an n-ary script)
 function isNaryArgPreceding(prev) {
   if (!prev) return false;
   if (["munder", "mover", "munderover", "msub", "msup", "msubsup"].includes(prev.name)) {
@@ -345,7 +351,7 @@ function isNaryArgPreceding(prev) {
   return false;
 }
 
-// 结构与 XSLT 相同：nary 节点本身（或其单子 mstyle 父）的紧随兄弟
+// Same structure as the XSLT: the sibling immediately following the nary node itself (or its single-child mstyle parent)
 function firstFollowingSibling(node) {
   const parent = node.parent;
   if (!parent) return null;
@@ -375,7 +381,7 @@ function writeNary(node) {
   else if (name === "msup" || name === "mover") sup = toOmml(kids[1]);
   else { sub = toOmml(kids[1]); sup = toOmml(kids[2]); }
   const e = naryHandle(firstFollowingSibling(node));
-  // 空元素自闭合（与 lxml 序列化一致）
+  // empty elements self-close (consistent with lxml serialization)
   const ap = argProp(node);
   const subXml = sub ? `<m:sub>${ap}${sub}</m:sub>` : "<m:sub/>";
   const supXml = sup ? `<m:sup>${ap}${sup}</m:sup>` : "<m:sup/>";
@@ -383,7 +389,7 @@ function writeNary(node) {
   return `<m:nary>${pr}${subXml}${supXml}${eXml}</m:nary>`;
 }
 
-// NaryHandleMrowMstyle：nary 的 m:e 内容（只处理紧随的第一个兄弟）
+// NaryHandleMrowMstyle: the m:e content of a nary (handles only the immediately following first sibling)
 function naryHandle(node) {
   if (!node) return "";
   switch (node.name) {
@@ -412,7 +418,7 @@ function naryHandle(node) {
     case "mtable": return mTable(node);
     default:
       if (isToken(node)) {
-        // MNonGlyphToken 直接调用：只输出从参数开始的 token 块（不含后续兄弟）
+        // MNonGlyphToken called directly: it emits only the token block starting at the argument (excluding later siblings)
         const parent = node.parent;
         if (parent && ["mrow", "mstyle", "msqrt", "menclose", "math", "mphantom", "mtd", "maction"].includes(parent.name)) {
           const idx = parent.children.indexOf(node);
@@ -424,8 +430,8 @@ function naryHandle(node) {
   }
 }
 
-// ── 6. 结构映射 ─────────────────────────────────────────────────────────────
-// FLinearFrac：mrow[a, /, b] → m:f lin
+// -- 6. Structure mapping -------------------------------------------------------
+// FLinearFrac: mrow[a, /, b] -> m:f lin
 function isLinearFrac(node) {
   return (
     node.children.length === 3 &&
@@ -438,7 +444,7 @@ function makeLinearFrac(node) {
   return `<m:f><m:fPr><m:type m:val="lin"/></m:fPr><m:num>${ap}${toOmml(node.children[0])}</m:num><m:den>${ap}${toOmml(node.children[2])}</m:den></m:f>`;
 }
 
-// FIsFunc：mrow[name, U+2061, arg] → m:func
+// FIsFunc: mrow[name, U+2061, arg] -> m:func
 function isFunc(node) {
   return (
     node.children.length === 3 &&
@@ -489,7 +495,7 @@ function mRoot(node) {
 function mEncloseMSqrt(node) {
   const ap = argProp(node);
   const inner = `<m:e>${ap}${node.children.map(toOmml).join("")}</m:e>`;
-  // 官方 msqrt/menclose(radical)：m:deg 内总调用 CreateArgProp（内容为空时 deg 自闭合）
+  // Official msqrt/menclose(radical): CreateArgProp is always called inside m:deg (deg self-closes when the content is empty)
   const radXml = (degHideVal) => `<m:rad><m:radPr><m:degHide m:val="${degHideVal}"/></m:radPr>${wrapEl("m:deg", ap)}${inner}</m:rad>`;
   if (node.name === "msqrt") {
     return radXml("on");
@@ -549,7 +555,7 @@ function mUnderOver(node) {
       return `<m:bar><m:barPr><m:pos m:val="top"/></m:barPr><m:e>${ap}${toOmml(node.children[0])}</m:e></m:bar>`;
     }
   }
-  // FIsAcc（仅 mover）
+  // FIsAcc (mover only)
   if (!under) {
     const moAccent = String((op2 && op2.attrs.accent) || "").toLowerCase();
     const fAccent = moAccent === "true" || (moAccent === "" && accent === "true");
@@ -592,8 +598,8 @@ function mPadded(node) {
   const width = node.attrs.width;
   const height = node.attrs.height;
   const depth = node.attrs.depth;
-  // 官方 FFull：含非零数字 → full；数字全零 → zero（输出 zeroWid/zeroAsc/zeroDesc）；无数字 → full
-  // （Word 只有 zero/full 两态：0em → zero，0.6em/+0.6em → full，"height" 等引用 → full）
+  // Official FFull: contains a non-zero digit -> full; all digits zero -> zero (emits zeroWid/zeroAsc/zeroDesc); no digit -> full
+  // (Word has only zero/full: 0em -> zero, 0.6em/+0.6em -> full, references like "height" -> full)
   const fFull = (s) => {
     const str = String(s || "").toLowerCase();
     return /[1-9]/.test(str) || !/\d/.test(str);
@@ -606,7 +612,7 @@ function mPadded(node) {
     if (!fFull(depth)) pr += '<m:zeroDesc m:val="on"/>';
     pr += "</m:phantPr>";
   }
-  // 官方 MPadded：m:e 内不调 CreateArgProp（与 mroot/msqrt 不同），空内容自闭合
+  // Official MPadded: CreateArgProp is not called inside m:e (unlike mroot/msqrt); empty content self-closes
   return `<m:phant>${pr}${wrapEl("m:e", node.children.map(toOmml).join(""))}</m:phant>`;
 }
 
@@ -614,7 +620,7 @@ function mPhantom(node) {
   return `<m:phant><m:phantPr><m:show m:val="off"/></m:phantPr><m:e>${argProp(node)}${node.children.map(toOmml).join("")}</m:e></m:phant>`;
 }
 
-// MMultiscripts（{}_a^b 等）
+// MMultiscripts ({}_a^b etc.)
 function mMultiscripts(node) {
   const kids = node.children;
   const mpIdx = kids.findIndex((c) => c.name === "mprescripts");
@@ -656,7 +662,7 @@ function mMultiscripts(node) {
   return `<m:sPre><m:e>${inner}</m:e>${splitScripts(after)}</m:sPre>`;
 }
 
-// mtable：单列无框线 → m:eqArr；否则 m:m + m:mPr
+// mtable: a single borderless column -> m:eqArr; otherwise m:m + m:mPr
 function mTable(node) {
   const isEqArray =
     !node.attrs.frame || node.attrs.frame === "none"
@@ -687,7 +693,7 @@ function mTable(node) {
   const rows = node.children
     .map((tr) => {
       if (tr.name !== "mtr" && tr.name !== "mlabeledtr") {
-        // 非 mtr 子元素（KaTeX 不产生）：单独一行一个格子
+        // non-mtr child element (KaTeX never produces one): a row with a single cell
         return `<m:mr><m:e>${toOmml(tr)}</m:e>${"<m:e/>".repeat(Math.max(0, maxCells - 1))}</m:mr>`;
       }
       const cells = (tr.name === "mlabeledtr" ? tr.children.slice(1) : tr.children).filter((c) => c.name === "mtd");
@@ -702,7 +708,7 @@ function mTable(node) {
   );
 }
 
-// ── 7. 主流程 ───────────────────────────────────────────────────────────────
+// -- 7. Main flow ---------------------------------------------------------------
 function isNaryStructure(node) {
   return (
     node &&
@@ -712,12 +718,15 @@ function isNaryStructure(node) {
 }
 
 /**
- * token 块：从 i 开始的全部连续 token 一次处理（CreateRunWithSameProp 的递归收集）。
- * 按字体/mtext-ness 切成多个 m:r；fShouldCollect=0 的场景（fence 内、函数名、线性分数内）每个 token 独立 run。
+ * Token block: all consecutive tokens starting at i are processed at once (the recursive
+ * collection of CreateRunWithSameProp).
+ * Split into several m:r by font/mtext-ness; in fShouldCollect=0 scenarios (inside a fence, a
+ * function name, inside a linear fraction) each token becomes its own run.
  */
 /**
- * XSLT match 模板的公共前置：当前节点是 nary 参数（前兄弟是 nary 结构）
- * → 已被 writeNary 消费，返回空（FIsNaryArgument=1 时模板直接不输出）。
+ * Common prefix of the XSLT match templates: the current node is an nary argument (its
+ * preceding sibling is an nary structure)
+ * -> already consumed by writeNary, so return empty (with FIsNaryArgument=1 the template emits nothing).
  */
 function isNaryArg(node) {
   const siblings = node.parent && node.parent.children;
@@ -748,9 +757,9 @@ function tokenBlock(children, i, first) {
 }
 
 /**
- * 处理一组兄弟节点（mrow/mstyle/mtd 的内容）。
- * opts.fenced：父 mrow 是 fence → 所有 token 独立 run（官方 FFenceOperator）
- * opts.start：从指定下标开始（nary 参数 token 的 run 收集）
+ * Process a group of sibling nodes (the content of mrow/mstyle/mtd).
+ * opts.fenced: the parent mrow is a fence -> every token becomes its own run (official FFenceOperator)
+ * opts.start: start at the given index (run collection for nary-argument tokens)
  */
 function processChildren(children, opts = {}) {
   const start = opts.start || 0;
@@ -760,12 +769,13 @@ function processChildren(children, opts = {}) {
   while (i < children.length) {
     const c = children[i];
     const prev = i > 0 ? children[i - 1] : null;
-    // nary 参数（或嵌套 nary 的参数）：已被 writeNary 消费，跳过（起点除外——起点本身就是参数）
+    // nary argument (or an argument of a nested nary): already consumed by writeNary, skip it
+    // (except the start index — the start itself is the argument)
     if (i > start && isNaryArgPreceding(prev)) {
       i++;
       continue;
     }
-    // nary 结构：输出 m:nary 并跳过其参数（紧随的第一个兄弟）
+    // nary structure: emit m:nary and skip its argument (the immediately following first sibling)
     if (isNaryStructure(c)) {
       out += writeNary(c);
       i += 2;
@@ -777,7 +787,7 @@ function processChildren(children, opts = {}) {
         i++;
         continue;
       }
-      // 前一个兄弟是 token → 已被前一个 token 块消费（含 nary 参数块）
+      // the preceding sibling is a token -> already consumed by the previous token block (including an nary argument block)
       if (i > start && prev && isToken(prev)) {
         i++;
         continue;
@@ -797,7 +807,7 @@ function toOmml(node) {
   switch (node.name) {
     case "mrow":
     case "mstyle": {
-      // mrow 模板：nary 参数 → 跳过；线性分数 → 函数 → fenced 检查
+      // mrow template: nary argument -> skip; linear fraction -> function -> fence checks
       if (isNaryArg(node)) return "";
       if (node.name === "mrow") {
         if (isLinearFrac(node)) return makeLinearFrac(node);
@@ -812,7 +822,7 @@ function toOmml(node) {
     case "mo":
     case "ms":
     case "mtext":
-      // match 模板：nary 参数 → 跳过
+      // match template: nary argument -> skip
       if (isNaryArg(node)) return "";
       {
         const parent = node.parent;
@@ -823,7 +833,7 @@ function toOmml(node) {
         const siblings = parent.children;
         const idx = siblings.indexOf(node);
         const prev = idx > 0 ? siblings[idx - 1] : null;
-        if (prev && isToken(prev)) return ""; // 已并入前一个 run
+        if (prev && isToken(prev)) return ""; // already merged into the previous run
         const r = collectRun(siblings, idx);
         return r.run;
       }
@@ -863,12 +873,12 @@ function toOmml(node) {
       if (isNaryArg(node)) return "";
       return mPhantom(node);
     case "mspace":
-      return ""; // 官方直接丢弃
+      return ""; // dropped outright by the official spec
     case "mtd":
       return node.children.map(toOmml).join("");
     case "semantics":
     case "annotation-xml":
-      return processChildren(node.children, {}); // XSLT 默认模板：透传子元素
+      return processChildren(node.children, {}); // XSLT default template: pass child elements through
     case "annotation":
     case "mprescripts":
     case "none":
@@ -878,12 +888,12 @@ function toOmml(node) {
     case "math":
       return `<m:oMath>${processChildren(node.children, {})}</m:oMath>`;
     default:
-      // 未知元素：透传子元素（XSLT 默认模板）
+      // unknown element: pass child elements through (XSLT default template)
       return processChildren(node.children, {});
   }
 }
 
-// FFenceOperator：token 是否位于 fenced mrow 内部（→ 独立 run）
+// FFenceOperator: whether a token sits inside a fenced mrow (-> its own run)
 function isFenceOperatorToken(node) {
   const parent = node.parent;
   if (!parent || parent.name !== "mrow") return false;
@@ -894,10 +904,10 @@ function isFenceOperatorToken(node) {
     (chOpen !== "" || chClose !== "" || sep !== "");
 }
 
-/** 入口：MathML 字符串 → <m:oMath>...</m:oMath> */
+/** Entry: MathML string -> <m:oMath>...</m:oMath> */
 function mathmlToOmml(mathmlStr) {
   const tree = parseXml(mathmlStr);
-  // 深度优先找 <math>（KaTeX 输出最外层包 <span class="katex">）
+  // Depth-first search for <math> (KaTeX wraps its output in an outer <span class="katex">)
   function findMath(node) {
     if (node.name === "math") return node;
     for (const c of node.children) {

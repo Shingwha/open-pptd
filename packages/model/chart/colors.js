@@ -1,16 +1,17 @@
 // ============================================================================
-// model/chart/colors.js — 图表取色与色派生（官方 §5.2，writer/renderer 共享）
+// model/chart/colors.js — chart color lookup and derivation (official §5.2, shared by writer/renderer)
 // ----------------------------------------------------------------------------
 
 import { resolveColor, themeChartPalette } from "../theme.js";
 
 /**
- * 层级图节点色（官方 treemap/sunburst 颜色派生规则，writer/renderer 共享）：
- *   fill 单值 → 所有根同色；1D 数组按根循环；2D 数组外层按根、内层按级直接取色；
- *   子节点沿 HSL.L 每级 -10（L_new = max(0, L_old - 10)）。
- * @param {object} s 归一化后的系列（含 fill）
- * @param {number} rootIdx 根节点出现顺序索引
- * @param {number} levelFromRoot 距根的层级（0 = 根）
+ * Hierarchy node color (official treemap/sunburst color derivation, shared by writer/renderer):
+ *   single fill -> all roots share one color; a 1D array cycles per root; a 2D array
+ *   takes the outer index by root and the inner index by level directly;
+ *   child nodes step down HSL.L by 10 per level (L_new = max(0, L_old - 10)).
+ * @param {object} s normalized series (with fill)
+ * @param {number} rootIdx root appearance-order index
+ * @param {number} levelFromRoot distance from the root (0 = root)
  */
 export function hierarchyColor(theme, s, rootIdx, levelFromRoot) {
   const fill = s?.fill;
@@ -29,7 +30,7 @@ export function hierarchyColor(theme, s, rootIdx, levelFromRoot) {
   return base ? darkenByLightness(base, 10 * levelFromRoot) : null;
 }
 
-/** hex → HEX8（#RRGGBBAA，官方 Color 透明形式；ECharts 与 OOXML 都接受）。 */
+/** hex -> HEX8 (#RRGGBBAA, the official translucent Color form; both ECharts and OOXML accept it). */
 export function hexA(hex, alpha) {
   const h = String(hex || "#888888").replace("#", "");
   const r = parseInt(h.slice(0, 2), 16);
@@ -41,9 +42,10 @@ export function hexA(hex, alpha) {
   return `#${h.slice(0, 6)}${a}`;
 }
 
-/** HEX6/HEX8 → { rgb: "RRGGBB"（大小写保持原样）, alpha: 0..1 | null }；
- * 其余输入返回 null。OOXML 投影端 alpha ×100000 写 a:alpha，rgb 大写化与
- * 否由各投影端自定（经典 srgbClr 走 hexToRgbVal 大写、cx:dataPt 保持原样）。 */
+/** HEX6/HEX8 -> { rgb: "RRGGBB" (case preserved), alpha: 0..1 | null };
+ * any other input returns null. An OOXML projection writes alpha ×100000 as a:alpha;
+ * whether rgb is uppercased is up to each projection (classic srgbClr goes through
+ * hexToRgbVal and uppercases, cx:dataPt stays as is). */
 export function parseHexColor(hex) {
   const c = String(hex || "");
   if (/^#[0-9a-fA-F]{8}$/.test(c)) return { rgb: c.slice(1, 7), alpha: parseInt(c.slice(7), 16) / 255 };
@@ -51,7 +53,7 @@ export function parseHexColor(hex) {
   return null;
 }
 
-/** 相对亮度（Rec.709 加权，0..1；hex6/hex8，非法输入返回 null）。 */
+/** Relative luminance (Rec.709 weighted, 0..1; hex6/hex8, invalid input returns null). */
 export function luminanceOf(hex) {
   const parsed = parseHexColor(hex);
   if (!parsed) return null;
@@ -59,8 +61,8 @@ export function luminanceOf(hex) {
   return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
 }
 
-/** 底色 → 标签字色（瓦片/段可读性：深底白字、浅底主题深字；阈值 0.5）。
- * 底色非法返回 null（调用方保持平台默认）。 */
+/** Background color -> label text color (tile/segment readability: white on dark, theme dark on light; threshold 0.5).
+ * An invalid background returns null (the caller keeps the platform default). */
 export function labelColorOn(bgHex, darkHex = "#1f2937") {
   const l = luminanceOf(bgHex);
   if (l == null) return null;
@@ -68,9 +70,10 @@ export function labelColorOn(bgHex, darkHex = "#1f2937") {
 }
 
 /**
- * 瀑布三分类色（官方 totalBars/increaseBars/decreaseBars → 缺省主题色循环
- * palette[0/1/2]；预览与 chartEx 导出同一分类语义——此前 chartEx 未配置时
- * 落 PowerPoint 平台缺省色板，两端不一致）。
+ * Waterfall three-category color (official totalBars/increaseBars/decreaseBars -> default
+ * theme color cycle palette[0/1/2]; preview and chartEx export share the same category
+ * semantics — previously an unconfigured chartEx fell back to the PowerPoint platform
+ * palette, disagreeing with the preview).
  */
 export function waterfallColorOf(theme, s, isTotal, y) {
   const cfg = isTotal ? s.totalBars : y >= 0 ? s.increaseBars : s.decreaseBars;
@@ -82,7 +85,7 @@ export function waterfallColorOf(theme, s, isTotal, y) {
   return isTotal ? palette[0] : y >= 0 ? palette[1] : palette[2];
 }
 
-/** HSL 亮度减少 n%（官方 treemap 派生：L_new = max(0, L_old - 10)）。 */
+/** Reduce HSL lightness by n% (official treemap derivation: L_new = max(0, L_old - 10)). */
 export function darkenByLightness(hex, step = 10) {
   const h = String(hex || "#888888").replace("#", "");
   if (h.length < 6) return hex;
@@ -92,7 +95,7 @@ export function darkenByLightness(hex, step = 10) {
   const max = Math.max(r, g, b), min = Math.min(r, g, b);
   const l = (max + min) / 2;
   const nl = Math.max(0, l - step / 100);
-  // 保持色相饱和度不变，只改亮度（HSL → RGB）
+  // Keep hue and saturation, change lightness only (HSL -> RGB)
   const d = max - min;
   const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
   const ns = s;
