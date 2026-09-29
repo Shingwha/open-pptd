@@ -8,10 +8,10 @@
 //     waterfall 三分类不参与色循环
 // ============================================================================
 
-import { resolveColor, themeChartPalette } from "../theme.js";
+import { themeChartPalette } from "../theme.js";
 import { CHART_META, SOLO_TYPES } from "./meta.js";
 import { hexA } from "./colors.js";
-import { toAxisArray, inferAxisType, isHorizontalChart } from "./axes.js";
+import { isHorizontalChart } from "./axes.js";
 
 // encode 读回退别名（resolveChartSeries 用）：SEMANTIC_KEYS 的严格子集——
 // 刻意不含 date（避免把名为 date 的列误判为 x 通道回退），两者语义不同勿合并。

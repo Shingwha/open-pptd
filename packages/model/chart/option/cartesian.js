@@ -11,7 +11,7 @@ import { hexA, waterfallColorOf } from "../colors.js";
 import { formatChartValue } from "../format.js";
 import { resolveDataLabels } from "../labels.js";
 import { cartesianAxes } from "./axes.js";
-import { AXIS_TEXT, chartStyleColors, echartsLabel, markerSymbol, seriesColor } from "./shared.js";
+import { echartsLabel, markerSymbol, seriesColor } from "./shared.js";
 
 /** waterfall：双 bar stack 模拟（透明基座 + 彩色段）。轴走共用 cartesianAxes
  * （此前自拼硬编码轴、忽略 xAxis/yAxis 配置——I28）。 */

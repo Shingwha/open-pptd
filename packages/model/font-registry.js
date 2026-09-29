@@ -14,8 +14,6 @@
 //   - CLI fonts list/download：注册表全览 + 补下载
 // ============================================================================
 
-const REGISTRY_PATH = "assets/fonts/registry.json";
-
 // 仓库根 URL（本文件位于 <root>/packages/model/，../../ 即站点根——兼容本地与 GitHub Pages 子路径）
 const ROOT = new URL("../../", import.meta.url).href;
 
