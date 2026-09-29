@@ -5,6 +5,7 @@
 import { registerType } from "../../packages/model/registry.js";
 import { nextElementId } from "../../packages/model/model.js";
 import { svgIcon } from "../ui.js";
+import { dialogs } from "../dialogs.js";
 import { PRESET_SHAPES } from "../../packages/model/preset-geometry.data.js";
 import { SUPPORTED_SHAPES } from "../../packages/model/model.js";
 
@@ -23,7 +24,7 @@ function pickLocalImage(api) {
     if (!file) return;
     // PPT 导出只支持 PNG/JPEG/GIF（SVG/WebP 会损坏文件）
     if (!IMAGE_TYPES.includes(file.type)) {
-      alert("仅支持 PNG / JPG / GIF 图片（PPT 兼容格式）");
+      dialogs.alert("仅支持 PNG / JPG / GIF 图片（PPT 兼容格式）");
       return;
     }
     const reader = new FileReader();

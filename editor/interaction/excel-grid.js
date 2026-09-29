@@ -12,6 +12,7 @@
 // ============================================================================
 
 import { button } from "./dialogs/base.js";
+import { dialogs } from "../dialogs.js";
 import { bindExcelDragSelect } from "./drag-select.js";
 
 /** 列字母（Excel 式：A B … Z AA AB）。 */
@@ -87,14 +88,14 @@ export function createExcelGrid(opts) {
   /** 方向插入（Excel 式）：at = 插入位置，n = 插入数量（= 选区跨度）。 */
   const insertRows = (at, n) => {
     const err = canInsertRows ? canInsertRows(at, n) : null;
-    if (err) { alert(err); return; }
+    if (err) { dialogs.alert(err); return; }
     onInsertRows(at, n);
     sel = { r1: at, c1: 0, r2: at + n - 1, c2: getCols() - 1 }; // 选中新插入的行
     render();
   };
   const insertCols = (at, n) => {
     const err = canInsertCols ? canInsertCols(at, n) : null;
-    if (err) { alert(err); return; }
+    if (err) { dialogs.alert(err); return; }
     onInsertCols(at, n);
     sel = { r1: 0, c1: at, r2: getRows() - 1, c2: at + n - 1 }; // 选中新插入的列
     render();
@@ -102,7 +103,7 @@ export function createExcelGrid(opts) {
   const deleteRows = (r1, r2) => {
     if (getRows() <= 1) return;
     const err = canDeleteRows ? canDeleteRows(r1, r2) : null;
-    if (err) { alert(err); return; }
+    if (err) { dialogs.alert(err); return; }
     onDeleteRows(r1, r2);
     sel = { r: Math.min(r1, getRows() - 1), c: 0 }; // 删除后落回相邻行首列（与表格基准一致）
     render();
@@ -110,7 +111,7 @@ export function createExcelGrid(opts) {
   const deleteCols = (c1, c2) => {
     if (getCols() <= 1) return;
     const err = canDeleteCols ? canDeleteCols(c1, c2) : null;
-    if (err) { alert(err); return; }
+    if (err) { dialogs.alert(err); return; }
     onDeleteCols(c1, c2);
     sel = { r: 0, c: Math.min(c1, getCols() - 1) }; // 删除后落回首行相邻列（与表格基准一致）
     render();
