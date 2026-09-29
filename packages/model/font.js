@@ -68,31 +68,6 @@ export function parseFontInfo(buf) {
   };
 }
 
-/**
- * Font single-line-height factor = (OS/2 usWinAscent + usWinDescent) / head.unitsPerEm.
- * The "single line spacing" of PowerPoint/WPS renders by this font metric (Microsoft YaHei
- * ≈1.32, SimSun 1.00, Calibri ≈1.22 times the font size) — not a plain 1× the font size — so
- * it is used to compensate the base difference when exporting percentage line spacing
- * (a:spcPct) (line spacing export in writer/text.js). A new font added to the library adapts
- * automatically (the bytes are at hand). Returns null when parsing fails (the caller falls
- * back to a static table/default).
- */
-export function fontLineFactor(buf) {
-  try {
-    const tables = parseTables(buf);
-    if (!tables["OS/2"] || !tables.head) return null;
-    const upem = u16(table(buf, tables.head), 18);
-    if (!upem) return null;
-    const os2 = table(buf, tables["OS/2"]);
-    return (u16(os2, 74) + u16(os2, 76)) / upem;
-  } catch {
-    return null;
-  }
-}
-
-/** Font name normalization (key for the line-factor lookup): lowercase + whitespace removed. */
-export const fontKey = (name) => String(name).toLowerCase().replace(/\s+/g, "");
-
 /** Read a Windows/UCS-2/en-US record from the name table (ID = nameID). */
 function nameString(buf, nameT, nameID) {
   const name = table(buf, nameT);

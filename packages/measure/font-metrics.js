@@ -206,8 +206,9 @@ export function measureTable(table, fonts = defaultMetricsTable) {
 }
 
 /**
- * 字体单倍行距系数（writer spcPct 补偿用：spcPct = lineHeight / factor）。
- * 与 buildEmbeddedFonts.lineMetrics 同表推导——本波次只提供 API，writer 切换归 RP-B。
+ * Single-line-height multiplier for a font (writer consumes it for the
+ * spcPct compensation: spcPct = lineHeight / multiplier). Derived from the
+ * same metrics table as the rest of this package.
  * @param {string|{latin,ea}|string[]} font
  * @param {object} [fonts]
  */
