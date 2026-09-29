@@ -17,11 +17,12 @@
 // full style chain (cellFinal/tdCss/estimateTableLayout) — WYSIWYG.
 // ============================================================================
 
-import { showDialog } from "./base.js";
+import { resolveEditorTheme, showDialog } from "./base.js";
 import { dialogs } from "../../dialogs.js";
 import { renderGroup, fieldHandlers } from "../fields.js";
 import { createExcelGrid } from "../excel-grid.js";
 import {
+  colLetter,
   estimateTableLayout,
   normalizeCells,
   resolveColor,
@@ -35,11 +36,6 @@ import { cellFinal, tdCss } from "../../../packages/renderer/index.js";
 
 const H_ALIGNS = [["left", "左"], ["center", "居中"], ["right", "右"], ["justify", "两端"]];
 const V_ALIGNS = [["top", "上"], ["middle", "中"], ["bottom", "下"]];
-
-/** Current editor theme (in-dialog preview shares the canvas source). */
-function editorTheme() {
-  return window.__pptdEditor?.state?.theme || null;
-}
 
 export function openTableEditor(el, { onChange }) {
   const container = document.createElement("div");
@@ -93,7 +89,7 @@ export function openTableEditor(el, { onChange }) {
     },
     rowHeight: (r) => rowHeights?.[r] ?? null,
     colWidths: () => columnWidths,
-    colHeadContent: (c) => String.fromCharCode(65 + c),
+    colHeadContent: (c) => colLetter(c),
     cellTitle: (r, c) => {
       const g = gd[r]?.[c];
       if (!g) return "";
@@ -186,7 +182,7 @@ export function openTableEditor(el, { onChange }) {
     syncDims(el);
     cols = colCount();
     ({ grid: gd } = tableGrid(rows, cols));
-    theme = editorTheme();
+    theme = resolveEditorTheme();
     ts = resolveTableStyle(theme, el.style);
     ({ rowHeights, columnWidths } = estimateTableLayout(el));
     container.innerHTML = "";
@@ -268,8 +264,8 @@ export function openTableEditor(el, { onChange }) {
     const set = (fn) => { fn(cell); commit(); render(); };
     // Control factory: commits directly (the table panel needs no focus/blur
     // transaction), reusing the fields.js implementation
-    const h = fieldHandlers({ theme: () => editorTheme() });
-    const tsKeys = Object.keys(editorTheme()?.textStyles || {});
+    const h = fieldHandlers({ theme: () => resolveEditorTheme() });
+    const tsKeys = Object.keys(resolveEditorTheme()?.textStyles || {});
     const groups = [
       {
         title: "文字",

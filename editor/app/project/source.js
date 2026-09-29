@@ -22,6 +22,7 @@
 // ============================================================================
 
 import { createHistory } from "../../interaction/history.js";
+import { commitBaseline } from "../state.js";
 import { fetchProjectTexts } from "./project-cache.js";
 import { readProject, writeFiles, fingerprint, readImageAsDataUrl } from "./handle-io.js";
 import {
@@ -264,8 +265,7 @@ export function applyDeck(deckData, ctx) {
   state.currentPage = 0;
   state.selectedId = null;
   state.history = createHistory();
-  state.savedDeck = structuredClone(state.deck); // save baseline: undo/redo back to it means no unsaved changes
-  state.dirty = false; // just loaded from disk/server, no unsaved changes
+  commitBaseline(state); // load baseline: undo/redo back to it means no unsaved changes
   syncElementId(state.deck);
   images.rebuildImageMap();
   renderStatusBar();

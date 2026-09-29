@@ -4,6 +4,19 @@
 // Shared by the chart and table editors; showDialog is the single modal entry point.
 // ============================================================================
 
+/**
+ * Current editor theme, single implementation for both dialogs: the live editor
+ * state's theme when the editor facade is present, otherwise the caller's fallback.
+ * The fallback is parameterized because the two callers differ: the chart editor
+ * is opened with a theme captured at assembly time (a useful fallback when the
+ * dialog is driven by external assembly / tests without window.__pptdEditor),
+ * while the table editor has no such captured theme (null = no theme, the
+ * renderer then applies its own defaults).
+ */
+export function resolveEditorTheme(fallback = null) {
+  return window.__pptdEditor?.state?.theme || fallback;
+}
+
 // Registry of open modals (closed together on destroy, avoiding leftover DOM)
 const openOverlays = new Set();
 

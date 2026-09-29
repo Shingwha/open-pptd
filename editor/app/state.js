@@ -42,6 +42,18 @@ function clonePage(pg) {
   return copy;
 }
 
+/**
+ * Record the current deck as the saved baseline (a deep copy) and mark the editor
+ * clean. Single implementation of the `savedDeck = structuredClone(deck) +
+ * dirty = false` idiom: called after a load, a save and "new blank deck" alike
+ * (syncDirty equality-compares against this baseline, so undoing back to it
+ * counts as no unsaved changes).
+ */
+export function commitBaseline(state) {
+  state.savedDeck = structuredClone(state.deck);
+  state.dirty = false;
+}
+
 export function createEditorState() {
   const state = {
     deck: null,
