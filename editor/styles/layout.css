@@ -140,6 +140,24 @@
 }
 .thumb:hover { box-shadow: var(--shadow-sm); }
 .thumb.active { border-color: var(--primary); background: var(--primary-soft); }
+/* 页面多选（B2）：被选中的页给浅底，当前页仍由 .active 的描边区分 */
+.thumb.multi { background: var(--sel-bg); }
+/* 拖排序：落点竖线指示（松手才写入模型，可撤销） */
+.page-thumbs.reordering { cursor: grabbing; }
+.thumb.drop-before::before,
+.thumb.drop-after::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--sel-ring);
+  z-index: 2;
+  pointer-events: none;
+}
+.thumb.drop-before::before { left: -7px; }
+.thumb.drop-after::after { right: -7px; }
 .thumb .thumb-canvas {
   /* 兜底尺寸：缩略图按 deck.size 内联覆盖并绝对定位居中 */
   width: 960px;

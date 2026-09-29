@@ -13,12 +13,27 @@
 // ============================================================================
 
 import { createHistory } from "../interaction/history.js";
-import { nextElementId } from "../../packages/model/index.js";
+import { createPage, nextElementId } from "../../packages/model/index.js";
 
 /** 深拷贝元素并重映射 elementId / group.children（克隆用）。 */
 function cloneElement(el) {
   const copy = JSON.parse(JSON.stringify(el));
   copy.elementId = nextElementId(el.elementType);
+  return copy;
+}
+
+/** 深拷贝整页并重映射全部 elementId（含 group.children 引用）。 */
+function clonePage(pg) {
+  const copy = JSON.parse(JSON.stringify(pg));
+  const map = new Map();
+  for (const el of copy.elements || []) {
+    const nid = nextElementId(el.elementType);
+    map.set(el.elementId, nid);
+    el.elementId = nid;
+  }
+  for (const el of copy.elements || []) {
+    if (Array.isArray(el.children)) el.children = el.children.map((cid) => map.get(cid)).filter(Boolean);
+  }
   return copy;
 }
 
@@ -310,6 +325,49 @@ export function createEditorState() {
       const topIds = copies.filter(({ src }) => !memberIds.has(src.elementId)).map(({ copy }) => copy.elementId);
       ops.selectMany(topIds);
       return topIds;
+    },
+
+    // ---- 页面 ----
+    /** 新建一页并切过去（状态条 ＋ / 页面级右键菜单共用）。 */
+    addPage() {
+      state.deck.pages.push(createPage({}));
+      state.currentPage = state.deck.pages.length - 1;
+      ops.clearSelection();
+      return state.currentPage;
+    },
+    /** 复制若干页（深拷贝 + 元素 id 重映射），插在原页之后；返回新页索引（升序）。 */
+    duplicatePages(indexes) {
+      const list = state.deck.pages;
+      const idxs = [...new Set((indexes || []).filter((i) => Number.isInteger(i) && i >= 0 && i < list.length))].sort((a, b) => a - b);
+      if (!idxs.length) return [];
+      for (const i of idxs.slice().reverse()) list.splice(i + 1, 0, clonePage(list[i])); // 从后往前插入不动前面索引
+      // 复本最终位置 = 原索引 + 1 + 它前面已插入的复本数（= 在 idxs 中的序号）
+      return idxs.map((i, k) => i + 1 + k);
+    },
+    /** 删除若干页（至少保留 1 页）；返回是否删除成功。 */
+    deletePages(indexes) {
+      const list = state.deck.pages;
+      const doomed = new Set((indexes || []).filter((i) => Number.isInteger(i) && i >= 0 && i < list.length));
+      if (!doomed.size || list.length - doomed.size < 1) return false;
+      const before = state.currentPage;
+      const removedBefore = [...doomed].filter((i) => i < before).length;
+      for (const [i, pg] of list.entries()) if (doomed.has(i)) state.pagesPending?.delete(pg);
+      const kept = list.filter((_, i) => !doomed.has(i));
+      state.deck.pages = kept;
+      state.currentPage = Math.max(0, Math.min(kept.length - 1, before - removedBefore));
+      ops.clearSelection();
+      return true;
+    },
+    /** 页面重排（拖排序）：把 from 位置的页移到 to 位置；to 越界自动 clamp。 */
+    movePage(from, to) {
+      const list = state.deck.pages;
+      if (!Number.isInteger(from) || from < 0 || from >= list.length) return false;
+      const target = Math.max(0, Math.min(list.length - 1, to));
+      if (target === from) return false;
+      const [pg] = list.splice(from, 1);
+      list.splice(target, 0, pg);
+      state.currentPage = target;
+      return true;
     },
 
     // ---- 组合 ----
