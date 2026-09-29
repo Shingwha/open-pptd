@@ -62,6 +62,7 @@ const suites = [
   ["本地项目句柄读写", "node tests/regression/handle-io.mjs"],
   ["项目包图片完整性", "node tests/regression/export-media.mjs"],
   ["资源路径解析（契约 5）", "node tests/regression/resource-paths.mjs"],
+  ["排版度量（measure）", "node tests/regression/measure.mjs"],
 ];
 for (const [name, cmd] of suites) {
   const { code, stdout } = await run(cmd);
