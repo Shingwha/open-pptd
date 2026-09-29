@@ -301,12 +301,12 @@ export function createCanvasController(canvas, opts) {
   function onMarqueeEnd(e) {
     if (!marquee) return;
     const m = marquee;
+    const rect = m.moved ? marqueeModelRect(e) : null;
     marquee = null;
     window.removeEventListener("pointermove", onMarqueeMove);
     window.removeEventListener("pointerup", onMarqueeEnd);
     window.removeEventListener("pointercancel", onMarqueeEnd);
-    let ids = [];
-    if (m.moved) ids = hitTest(marqueeModelRect(e));
+    const ids = rect ? hitTest(rect) : [];
     clearMarqueeVisual();
     if (m.moved) {
       if (m.ctrl) selectMany(ids, "toggle");
