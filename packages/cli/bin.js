@@ -309,6 +309,7 @@ async function runExportLike(args, { projectMode }) {
   let summary = null;
   let fetched = [];
   try {
+    if (!existsSync(manifest)) throw Object.assign(new Error(`文件不存在: ${manifest}`), { skipPreflight: true });
     reqs = collectRequirements({ manifest });
     summary = checkResources(reqs);
     warn(`▸ 资源体检：字体 ${summary.fonts.ready}/${summary.checked.fonts} 就绪 · 图标 ${summary.icons.known}/${summary.checked.icons} · 媒体 ${summary.media.ready}/${summary.checked.media}`);
@@ -325,7 +326,7 @@ async function runExportLike(args, { projectMode }) {
       summary = r.summary;
     }
   } catch (err) {
-    warn(`⚠ 资源体检失败（忽略，不影响导出）: ${err.message}`);
+    if (!err?.skipPreflight) warn(`⚠ 资源体检失败（忽略，不影响导出）: ${err.message}`);
   }
 
   let res;
