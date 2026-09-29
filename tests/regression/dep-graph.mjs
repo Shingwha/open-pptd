@@ -14,6 +14,8 @@
 //        渗入浏览器预览链路。
 //      - packages/renderer/headless/：Node 专用子目录（无头截图链路），豁免环境全局
 //        与 node: import 检查，但仍受 import 图规则约束（不得反向 import editor/）。
+//   5. 包级 barrel（packages/index.js 与 packages/*/index.js）不得 import editor/
+//      （spec 01 T5：包级入口是「契约 4」的对外面，依赖方向只允许 editor → packages）。
 // 用法：node tests/regression/dep-graph.mjs（失败打印违规文件与行号，非零码退出）
 // ============================================================================
 
@@ -182,8 +184,24 @@ for (const abs of files) {
   }
 }
 
+// ---- 追加规则 5：包级 barrel 不得 import editor/（纯增量，spec 01 T5）----
+// 既存分支（packages 内文件不得反向 import editor/）会覆盖同一违规，这里对包级入口
+// 再显式断言一次（入口是对外契约面，值得单独可见）：命中时两条规则各报一行。
+const BARREL_RE = /^packages\/(?:index\.js|[^/]+\/index\.js)$/;
+const barrels = files.filter((abs) => BARREL_RE.test(rel(abs)));
+for (const abs of barrels) {
+  const r = rel(abs);
+  for (const { source, line } of importsOf(readFileSync(abs, "utf8"))) {
+    if (!source.startsWith(".")) continue;
+    const targetRel = rel(resolve(dirname(abs), source));
+    if (targetRel === "editor" || targetRel.startsWith("editor/")) {
+      violations.push(`${r}:${line}  packages/ 包级 barrel 不得 import editor/（${source}）`);
+    }
+  }
+}
+
 // ---- 汇总 ----
-console.log(`dep-graph: 扫描 ${files.length} 个文件，${importCount} 处 import`);
+console.log(`dep-graph: 扫描 ${files.length} 个文件，${importCount} 处 import（含包级 barrel ${barrels.length} 个）`);
 if (exemptions.length) {
   console.log(`  登记豁免 ${exemptions.length} 处：`);
   for (const e of exemptions) console.log(`    - ${e}`);

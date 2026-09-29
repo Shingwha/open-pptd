@@ -4,6 +4,30 @@
   "type": "module",
   "description": "PPTD 网页编辑器 + 自研零依赖 PPTX writer（skill 运行时不需 npm install）",
   "bin": { "open-pptd": "bin/open-pptd.js" },
+  "exports": {
+    ".": "./packages/index.js",
+    "./model": "./packages/model/index.js",
+    "./renderer": "./packages/renderer/index.js",
+    "./writer": "./packages/writer/index.js",
+    "./server": "./packages/server/index.js",
+    "./cli": "./packages/cli/index.js",
+    "./editor": "./editor/index.js",
+    "./paths": "./packages/paths.js",
+    "./config": "./packages/config.js",
+    "./editor/index.html": "./editor/index.html",
+    "./package.json": "./package.json",
+    "./internal/*": "./*"
+  },
+  "files": [
+    "bin",
+    "packages",
+    "editor",
+    "contract.json",
+    "index.html",
+    "README.md",
+    "assets/icons/registry.json",
+    "assets/fonts/registry.json"
+  ],
   "scripts": {
     "test": "node tests/run-all.mjs",
     "test:deps": "node tests/regression/dep-graph.mjs",

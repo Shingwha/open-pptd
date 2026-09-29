@@ -1,0 +1,15 @@
+{
+  "name": "open-pptd",
+  "contractVersion": 2,
+  "entries": {
+    "model": "packages/model/index.js",
+    "renderer": "packages/renderer/index.js",
+    "writer": "packages/writer/index.js",
+    "server": "packages/server/index.js",
+    "cli": "packages/cli/index.js",
+    "editor": "editor/index.js",
+    "paths": "packages/paths.js",
+    "config": "packages/config.js"
+  },
+  "bin": "./bin/open-pptd.js"
+}
