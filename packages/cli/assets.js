@@ -104,6 +104,10 @@ export function extractZipTo(bytes, destDir, { verifyExt = null } = {}) {
 // ---------------------------------------------------------------------------
 // Download + SHA256 verification
 // ---------------------------------------------------------------------------
+// Timeout note: this is a single-request budget for one release zip (connect + body together).
+// It is intentionally not merged with cli/download.js's two-stage per-file timeouts (connect
+// 10s, then a separate body budget with mirror-health tracking): unifying would change the
+// granularity and the failure-classification behavior of the per-file downloader.
 async function fetchBytes(url, timeoutMs = 60000) {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), timeoutMs);
