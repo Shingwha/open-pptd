@@ -5,7 +5,7 @@
 //   cell inline fields > Cell.textStyle ref > position class > bodyStyles > cellStyle > default
 // ============================================================================
 
-import { resolveColor, resolveFont, resolveTableStyle, resolveTableCellStyle, resolveTextStyle, cellTextStyle } from "../model/theme.js";
+import { resolveColor, colorOr, resolveFont, resolveTableStyle, resolveTableCellStyle, resolveTextStyle, cellTextStyle } from "../model/theme.js";
 import { estimateTableLayout, tableGrid, TABLE_FONT_SIZE, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../model/table.js";
 import { parseRichText } from "../model/richtext.js";
 import { normalizeFill, dashSpec, borderSides, cssTextAlign, cssTextAlignLast } from "../model/style-spec.js";
@@ -16,7 +16,7 @@ import { createElementShell, boxShadowCss } from "./shell.js";
 /** Single-side CSS (null = no border; $ color refs are resolved by resolveColor at the consumer). */
 function sideCss(theme, v) {
   if (!v) return "none";
-  const color = resolveColor(theme, v.color ?? "#000000") || "#000000";
+  const color = colorOr(theme, v.color ?? "#000000", "#000000");
   const style = dashSpec(v.style)?.cssBorder || "solid";
   return `${v.width ?? 1}px ${style} ${color}`;
 }
@@ -142,7 +142,7 @@ export function tdCss(theme, f, covered) {
       // Bold matches the exported b="1" (700) value (600 was used before, one step lighter than export)
       `font-weight:${f.bold ? "bold" : "400"}`,
       f.italic ? "font-style:italic" : "",
-      `color:${resolveColor(theme, f.color) || "#000000"}`,
+      `color:${colorOr(theme, f.color, "#000000")}`,
       `font-size:${f.fontSize}px`,
       f.fontFamily ? `font-family:"${f.fontFamily}",sans-serif` : "",
       `line-height:${f.lineHeightPx ? `${f.lineHeightPx}px` : f.lineHeight}`,

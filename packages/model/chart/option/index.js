@@ -10,7 +10,7 @@
 // ============================================================================
 
 import { resolveChartSpec } from "../spec.js";
-import { resolveColor, resolveFont } from "../../theme.js";
+import { colorOr, resolveFont } from "../../theme.js";
 import { baseOption, legendState } from "./shared.js";
 import { buildPolar } from "./polar.js";
 import { buildCartesian } from "./cartesian.js";
@@ -30,8 +30,7 @@ export function buildOptionFromSpec(spec) {
   // Title projection (style semantics in spec.title; top-centered, color defaults to the theme text color)
   if (title.text) {
     const fonts = resolveFont(theme, title.fontFamily);
-    const titleColor = (title.color ? resolveColor(theme, title.color) : null)
-      || resolveColor(theme, theme.colors?.text) || "#1f2937";
+    const titleColor = colorOr(theme, title.color, colorOr(theme, theme.colors?.text, "#1f2937"));
     base.title = {
       text: title.text,
       left: "center", top: 0,

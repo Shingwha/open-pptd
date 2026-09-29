@@ -11,7 +11,7 @@
 // non-square boxes.
 // ============================================================================
 
-import { resolveColor } from "./theme.js";
+import { colorOr } from "./theme.js";
 
 function valid(fill) {
   return fill?.type === "gradient" && Array.isArray(fill.stops) && fill.stops.length >= 2;
@@ -19,7 +19,7 @@ function valid(fill) {
 
 /** Color stop -> <stop> (splits #RRGGBBAA into stop-color + stop-opacity; resolves $token first when theme is given). */
 function stopXml(theme, s) {
-  let color = theme ? resolveColor(theme, s.color) || s.color : s.color;
+  let color = theme ? colorOr(theme, s.color, s.color) : s.color;
   let opacity = "";
   const m = /^#([0-9a-fA-F]{6})([0-9a-fA-F]{2})$/.exec(color || "");
   if (m) {

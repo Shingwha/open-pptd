@@ -11,7 +11,7 @@
 //     list applies right-to-left, so scale is written after rotate) and opacity
 // ============================================================================
 
-import { resolveColor } from "../model/theme.js";
+import { colorOr } from "../model/theme.js";
 import { effectiveShadow } from "../model/style-spec.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -22,7 +22,7 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 export function boxShadowCss(theme, shadow) {
   const eff = effectiveShadow(shadow);
   if (!eff) return null;
-  const color = resolveColor(theme, eff.color) || eff.color;
+  const color = colorOr(theme, eff.color, eff.color);
   return `${eff.dx}px ${eff.dy}px ${eff.blur}px ${color}`;
 }
 

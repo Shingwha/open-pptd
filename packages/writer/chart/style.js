@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { el, escAttr, hexToRgbVal } from "../xml.js";
-import { resolveColor, resolveFont } from "../../model/theme.js";
+import { resolveColor, colorOr, resolveFont } from "../../model/theme.js";
 import { dashSpec } from "../../model/style-spec.js";
 import { parseHexColor, CHART_DEFAULTS } from "../../model/chart.js";
 import { buildFill, buildLn, buildShadow, solidFillResolved } from "../drawing.js";
@@ -26,7 +26,7 @@ export function srgbClrXml(color) {
 export function fillXml(theme, color, alpha) {
   // A gradient object (official series fill supports GradientFill) → buildFill; a string color → solidFill
   if (color && typeof color === "object") return buildFill(theme, color);
-  return solidFillResolved(resolveColor(theme, color) || "#000000", alpha);
+  return solidFillResolved(colorOr(theme, color, "#000000"), alpha);
 }
 
 /** Series line (a:ln: theme color resolution + HEX8 + lineStyle → prstDash). */
@@ -39,7 +39,7 @@ export function lnXml(theme, color, widthPt = 2, style = "solid") {
     if (dash) kids.push(el("a:prstDash", { val: dash }));
     return el("a:ln", lnAttrs, kids.join(""));
   }
-  const kids = [el("a:solidFill", {}, srgbClrXml(resolveColor(theme, color) || "#000000"))];
+  const kids = [el("a:solidFill", {}, srgbClrXml(colorOr(theme, color, "#000000")))];
   if (dash) kids.push(el("a:prstDash", { val: dash }));
   return el("a:ln", lnAttrs, kids.join(""));
 }

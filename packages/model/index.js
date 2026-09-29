@@ -39,6 +39,7 @@ export { ELEMENT_TYPES } from "./style-spec.js";
 export {
   resolveTheme,
   resolveColor,
+  colorOr,
   resolveFont,
   normalizeTheme,
   resolveTableStyle,
@@ -58,6 +59,9 @@ export { walkElements, collectImageSrcs } from "./walk.js";
 // ---- Preset shapes (preset-geometry.js / preset-geometry.data.js) ----
 export { shapePaths, shapeMenuIcon } from "./preset-geometry.js";
 export { PRESET_SHAPES } from "./preset-geometry.data.js";
+
+// ---- SVG paths (svg-path.js: shared lexer + arity table for the renderer scaler and writer custGeom) ----
+export { parseSvgPath, scaleSvgPath } from "./svg-path.js";
 
 // ---- Table model (table.js: grid / merge & split / layout estimate / validation) ----
 export {

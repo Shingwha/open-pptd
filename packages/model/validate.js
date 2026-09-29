@@ -287,6 +287,10 @@ registerRule((deck, ctx, report) => {
 // order) that fully contains it, otherwise the page solid background.
 registerRule((deck, ctx, report) => {
   const lum = (hex) => {
+    // WCAG relative luminance: each channel is sRGB gamma-linearized before the Rec.709
+    // weighting. Deliberately different from model/chart/colors.js#luminanceOf, which uses a
+    // plain weighted sum to choose a readable label color; this rule needs the exact WCAG
+    // formula for its 3:1 contrast ratio to be meaningful. Keep the two apart; do not merge.
     const m = /^#([0-9a-fA-F]{6})/.exec(hex || "");
     if (!m) return null;
     const n = parseInt(m[1], 16);

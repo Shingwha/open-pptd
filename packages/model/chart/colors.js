@@ -2,7 +2,7 @@
 // model/chart/colors.js — chart color lookup and derivation (official §5.2, shared by writer/renderer)
 // ----------------------------------------------------------------------------
 
-import { resolveColor, themeChartPalette } from "../theme.js";
+import { resolveColor, colorOr, themeChartPalette } from "../theme.js";
 
 /**
  * Hierarchy node color (official treemap/sunburst color derivation, shared by writer/renderer):
@@ -19,14 +19,14 @@ export function hierarchyColor(theme, s, rootIdx, levelFromRoot) {
   if (Array.isArray(fill)) {
     const f = fill[rootIdx % fill.length];
     if (Array.isArray(f)) {
-      if (levelFromRoot < f.length) return resolveColor(theme, f[levelFromRoot]) || null;
-      const base = resolveColor(theme, f[f.length - 1]) || null;
+      if (levelFromRoot < f.length) return colorOr(theme, f[levelFromRoot]);
+      const base = colorOr(theme, f[f.length - 1]);
       return base ? darkenByLightness(base, 10 * (levelFromRoot - f.length + 1)) : null;
     }
-    const base = resolveColor(theme, f) || null;
+    const base = colorOr(theme, f);
     return base ? darkenByLightness(base, 10 * levelFromRoot) : null;
   }
-  const base = resolveColor(theme, fill) || null;
+  const base = colorOr(theme, fill);
   return base ? darkenByLightness(base, 10 * levelFromRoot) : null;
 }
 
@@ -53,7 +53,13 @@ export function parseHexColor(hex) {
   return null;
 }
 
-/** Relative luminance (Rec.709 weighted, 0..1; hex6/hex8, invalid input returns null). */
+/** Relative luminance (Rec.709 weighted, 0..1; hex6/hex8, invalid input returns null).
+ * Deliberately different from the WCAG luminance inlined in validate.js's contrast rule:
+ * that one gamma-linearizes each channel (v <= 0.03928 ? v/12.92 : ((v+0.055)/1.055)^2.4)
+ * as the WCAG formula requires, while this one is a plain weighted sum. They answer
+ * different questions — this picks a readable label color on a tile (threshold 0.5),
+ * validate.js computes a text/background contrast ratio against a 3:1 threshold — so
+ * keep the two implementations apart; do not "unify" them. */
 export function luminanceOf(hex) {
   const parsed = parseHexColor(hex);
   if (!parsed) return null;

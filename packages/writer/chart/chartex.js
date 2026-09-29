@@ -12,7 +12,7 @@
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "../xml.js";
 import { resolveDataLabels, hierarchyColor, parseHexColor, parseHierarchy, resolveTreeLevels, resolveTitleLike, labelColorOn, waterfallColorOf, colLetter, CHART_DEFAULTS } from "../../model/chart.js";
-import { resolveColor, resolveFont, DEFAULT_FONT } from "../../model/theme.js";
+import { colorOr, resolveFont, DEFAULT_FONT } from "../../model/theme.js";
 import { buildChartXlsx } from "./xlsx.js";
 import { chartSpaceSpPrXml, richCharStyleXml } from "./style.js";
 import { buildChartStyleXml, buildChartColorStyleXml } from "../chartex-style.js";
@@ -33,7 +33,7 @@ function dataLabelsTxPrXml(theme, labels) {
   const fonts = resolveFont(theme, labels.fontFamily || null);
   const sz = Math.round((labels.fontSize ?? CHART_DEFAULTS.labelSize) * 100);
   const fill = labels.color
-    ? `<a:solidFill><a:srgbClr val="${hexToRgbVal(resolveColor(theme, labels.color) || labels.color)}"/></a:solidFill>`
+    ? `<a:solidFill><a:srgbClr val="${hexToRgbVal(colorOr(theme, labels.color, labels.color))}"/></a:solidFill>`
     : "";
   return `<cx:txPr><a:bodyPr/><a:lstStyle/><a:p><a:pPr><a:defRPr sz="${sz}">${fill}<a:latin typeface="${escAttr(fonts.latin)}"/><a:ea typeface="${escAttr(fonts.ea)}"/></a:defRPr></a:pPr><a:endParaRPr lang="zh-CN"/></a:p></cx:txPr>`;
 }
@@ -430,7 +430,7 @@ function labelSlotFor(theme, s, type, labels) {
   const rootColor = hierarchyColor(theme, s, 0, 0);
   const autoColor = rootColor && labelColorOn(rootColor) === "#FFFFFF" ? "FFFFFF" : null;
   if (labels.color) {
-    return { colorHex: hexToRgbVal(resolveColor(theme, labels.color) || labels.color), fontSize: labels.fontSize };
+    return { colorHex: hexToRgbVal(colorOr(theme, labels.color, labels.color)), fontSize: labels.fontSize };
   }
   if (labels.fontSize != null || autoColor) {
     return { colorHex: autoColor, fontSize: labels.fontSize };

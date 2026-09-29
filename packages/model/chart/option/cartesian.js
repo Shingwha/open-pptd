@@ -3,7 +3,7 @@
 // candlestick + waterfall simulated with two bars; pure functions)
 // ----------------------------------------------------------------------------
 
-import { resolveColor } from "../../theme.js";
+import { resolveColor, colorOr } from "../../theme.js";
 import { dashSpec } from "../../style-spec.js";
 import { CHART_DEFAULTS } from "../meta.js";
 import { resolveChartDirection, seriesAxisIndex, seriesChannels } from "../axes.js";
@@ -177,10 +177,10 @@ export function buildCartesian(ctx) {
         barWidth: `${barLayout.echarts.barWidthPct}%`,
         // Up/down default colors come from the same source as the export (CHART_DEFAULTS.candlestick, calibrated on chart46)
         itemStyle: {
-          color: resolveColor(theme, up.fill) || cs.upFill,
-          color0: resolveColor(theme, down.fill) || cs.downFill,
-          borderColor: resolveColor(theme, up.border?.color) || cs.upBorder,
-          borderColor0: resolveColor(theme, down.border?.color) || cs.downBorder,
+          color: colorOr(theme, up.fill, cs.upFill),
+          color0: colorOr(theme, down.fill, cs.downFill),
+          borderColor: colorOr(theme, up.border?.color, cs.upBorder),
+          borderColor0: colorOr(theme, down.border?.color, cs.downBorder),
         },
         data: high.map((hv, j) => {
           const o = open ? Number(open[j] ?? 0) : Number(close[j] ?? 0);
@@ -201,8 +201,8 @@ export function buildCartesian(ctx) {
   if (csSeries) {
     const cols = el.data?.cols || [];
     const channels = csSeries._cols.open != null ? ["open", "high", "low", "close"] : ["high", "low", "close"];
-    const csUp = resolveColor(theme, (csSeries.upBars || {}).fill) || CHART_DEFAULTS.candlestick.upFill;
-    const csDown = resolveColor(theme, (csSeries.downBars || {}).fill) || CHART_DEFAULTS.candlestick.downFill;
+    const csUp = colorOr(theme, (csSeries.upBars || {}).fill, CHART_DEFAULTS.candlestick.upFill);
+    const csDown = colorOr(theme, (csSeries.downBars || {}).fill, CHART_DEFAULTS.candlestick.downFill);
     const hiName = String(cols[csSeries._cols.high] ?? "最高");
     const loName = String(cols[csSeries._cols.low] ?? "最低");
     const helperNames = channels.map((ch) => String(cols[csSeries._cols[ch]] ?? ch));

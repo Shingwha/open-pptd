@@ -2,7 +2,7 @@
 // model/chart/option/axes.js — cartesian axes -> ECharts axis array (pure functions)
 // ----------------------------------------------------------------------------
 
-import { resolveColor } from "../../theme.js";
+import { colorOr } from "../../theme.js";
 import { dashSpec } from "../../style-spec.js";
 import { toAxisArray, seriesAxisIndex } from "../axes.js";
 import { formatChartValue } from "../format.js";
@@ -22,7 +22,7 @@ export function cartesianAxes(theme, el, cats, series, { horizontal = false, per
   const yAxes = toAxisArray(el.yAxis);
   /** Single source for axis title text style (shared by mkAxis and catAxis: color defaults to the theme text color, size to AXIS_TEXT). */
   const titleNameStyle = (titleCfg) => ({
-    color: titleCfg.color ? resolveColor(theme, titleCfg.color) || labelColor : labelColor,
+    color: titleCfg.color ? colorOr(theme, titleCfg.color, labelColor) : labelColor,
     fontSize: titleCfg.fontSize || AXIS_TEXT.fontSize,
   });
   const mkAxis = (cfg, def, { hideGridDefault = false, vertical = false } = {}) => {
@@ -48,9 +48,9 @@ export function cartesianAxes(theme, el, cats, series, { horizontal = false, per
         nameRotate: vertical ? 90 : 0,
         nameTextStyle: titleNameStyle(titleCfg),
       } : {}),
-      axisLine: { show: o.axisLine !== false, ...(arrowSym ? { symbol: arrowSym } : {}), lineStyle: { color: o.axisLine && typeof o.axisLine === "object" && o.axisLine.color ? resolveColor(theme, o.axisLine.color) || axisColor : axisColor } },
-      axisLabel: o.label === false ? { show: false } : { ...AXIS_TEXT, ...(typeof o.label === "object" ? { color: o.label.color ? resolveColor(theme, o.label.color) || AXIS_TEXT.color : AXIS_TEXT.color, fontSize: o.label.fontSize || AXIS_TEXT.fontSize, formatter: o.label.numberFormat ? (v) => formatChartValue(v, o.label.numberFormat) : (v) => `${v}` } : { formatter: (v) => `${v}` }) },
-      splitLine: o.gridLine === false || hideGridDefault ? { show: false } : { lineStyle: { color: typeof o.gridLine === "object" && o.gridLine.color ? resolveColor(theme, o.gridLine.color) || gridColor : gridColor, type: typeof o.gridLine === "object" ? dashSpec(o.gridLine.style)?.cssBorder || "solid" : "solid" } },
+      axisLine: { show: o.axisLine !== false, ...(arrowSym ? { symbol: arrowSym } : {}), lineStyle: { color: o.axisLine && typeof o.axisLine === "object" && o.axisLine.color ? colorOr(theme, o.axisLine.color, axisColor) : axisColor } },
+      axisLabel: o.label === false ? { show: false } : { ...AXIS_TEXT, ...(typeof o.label === "object" ? { color: o.label.color ? colorOr(theme, o.label.color, AXIS_TEXT.color) : AXIS_TEXT.color, fontSize: o.label.fontSize || AXIS_TEXT.fontSize, formatter: o.label.numberFormat ? (v) => formatChartValue(v, o.label.numberFormat) : (v) => `${v}` } : { formatter: (v) => `${v}` }) },
+      splitLine: o.gridLine === false || hideGridDefault ? { show: false } : { lineStyle: { color: typeof o.gridLine === "object" && o.gridLine.color ? colorOr(theme, o.gridLine.color, gridColor) : gridColor, type: typeof o.gridLine === "object" ? dashSpec(o.gridLine.style)?.cssBorder || "solid" : "solid" } },
     };
   };
   // Category label strategy matches the export: show all (the export writes no
@@ -79,7 +79,7 @@ export function cartesianAxes(theme, el, cats, series, { horizontal = false, per
       } : {}),
       axisLabel: cfg.label === false ? { show: false } : {
         ...AXIS_TEXT,
-        color: lc.color ? resolveColor(theme, lc.color) || AXIS_TEXT.color : AXIS_TEXT.color,
+        color: lc.color ? colorOr(theme, lc.color, AXIS_TEXT.color) : AXIS_TEXT.color,
         fontSize: fs,
         interval: 0,
         ...(crowded ? { rotate: 90 } : {}),

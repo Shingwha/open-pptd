@@ -3,7 +3,7 @@
 // treemap / sunburst / sankey; pure functions)
 // ----------------------------------------------------------------------------
 
-import { resolveColor } from "../../theme.js";
+import { resolveColor, colorOr } from "../../theme.js";
 import { hierarchyColor, hexA, labelColorOn } from "../colors.js";
 import { parseHierarchy, resolveTreeLevels } from "../tree.js";
 import { formatChartValue } from "../format.js";
@@ -17,7 +17,7 @@ function buildEchartsTree(theme, el, s, labelCfg) {
   const { childrenOf, roots, subtreeSum } = parseHierarchy(el, s);
   const maxLevels = resolveTreeLevels(s);
   const { labelColor } = chartStyleColors(theme);
-  const cfgColor = labelCfg?.color ? resolveColor(theme, labelCfg.color) || labelColor : null;
+  const cfgColor = labelCfg?.color ? colorOr(theme, labelCfg.color, labelColor) : null;
   const tree = [];
   const walk = (node, level, rootIdx) => {
     const kids = childrenOf.get(node.name) || [];
@@ -77,7 +77,7 @@ export function buildMatrix(ctx) {
     const xi = new Map(xCats.map((c, i) => [c, i]));
     const yi = new Map(yCats.map((c, i) => [c, i]));
     const data = (s._values.x || []).map((xv, i) => [xi.get(String(xv ?? "")), yi.get(String(s._values.y?.[i] ?? "")), Number(s._values.value?.[i] ?? 0)]);
-    const scheme = (Array.isArray(s.colorScheme) && s.colorScheme.length ? s.colorScheme : [hexA("#2563EB", 0.12), "#2563EB"]).map((c) => resolveColor(theme, c) || c);
+    const scheme = (Array.isArray(s.colorScheme) && s.colorScheme.length ? s.colorScheme : [hexA("#2563EB", 0.12), "#2563EB"]).map((c) => colorOr(theme, c, c));
     const scaleCfg = s.colorScale || {};
     const vals = data.map((d) => d[2]).filter((v) => Number.isFinite(v));
     const diverging = scaleCfg.type === "diverging";
@@ -116,7 +116,7 @@ export function buildMatrix(ctx) {
                 show: true,
                 position: "inside",
                 fontSize: labelCfg.fontSize || 9,
-                color: labelCfg.color ? resolveColor(theme, labelCfg.color) || labelColor : labelColor,
+                color: labelCfg.color ? colorOr(theme, labelCfg.color, labelColor) : labelColor,
                 formatter: (p) => (labelCfg.numberFormat ? formatChartValue(p.value[2], labelCfg.numberFormat) : String(p.value[2])),
               },
             }

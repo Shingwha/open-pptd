@@ -6,7 +6,7 @@
 // polyline, smooth = bezier curve. With exactly 2 points all three are equivalent (a line).
 // ============================================================================
 
-import { resolveColor } from "../model/theme.js";
+import { colorOr } from "../model/theme.js";
 import { dashSpec, ooxmlArrow } from "../model/style-spec.js";
 import { parsePoints, smoothSegments } from "../model/geometry.js";
 import { createElementShell } from "./shell.js";
@@ -24,7 +24,7 @@ export function renderLine(theme, el) {
   const [x1, y1] = rel[0];
   const [x2, y2] = rel[rel.length - 1];
 
-  const color = resolveColor(theme, el.border?.color) || "#000000";
+  const color = colorOr(theme, el.border?.color, "#000000");
   const width = el.border?.width || 1;
   const dash = dashSpec(el.border?.style)?.css || null;
   const curve = el.curve || "round";

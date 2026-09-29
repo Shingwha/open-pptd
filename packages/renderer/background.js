@@ -2,7 +2,7 @@
 // renderer/background.js — page background → DOM (solid / gradient / image)
 // ============================================================================
 
-import { resolveColor } from "../model/theme.js";
+import { colorOr } from "../model/theme.js";
 import { normalizeFill } from "../model/style-spec.js";
 import { gradientCss } from "./gradient.js";
 
@@ -17,7 +17,7 @@ export function pageBackground(theme, background) {
   // FillSpec normalization (normalizeFill tolerates strings / legacy {color}, consistent with writer buildFill)
   const fill = normalizeFill(background);
   if (fill?.type === "solid") {
-    node.style.background = resolveColor(theme, fill.color) || "#ffffff";
+    node.style.background = colorOr(theme, fill.color, "#ffffff");
   } else if (fill?.type === "gradient") {
     // linear / radial (gradient.js handles the angle conversion); an invalid gradient falls back to white
     node.style.background = gradientCss(theme, fill) || "#ffffff";
