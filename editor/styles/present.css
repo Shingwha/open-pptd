@@ -118,7 +118,7 @@ body.presenting .app { visibility: hidden; } /* 编辑器整体隐藏，避免�
 .present-btn:focus-visible {
   outline: none;
   border-color: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  outline: 1px solid var(--sel-ring); outline-offset: 0;
 }
 .present-btn-icon {
   width: var(--control-h);

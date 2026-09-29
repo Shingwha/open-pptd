@@ -41,7 +41,7 @@
     border-radius: var(--r-3) var(--r-3) 0 0;
     box-shadow: var(--shadow-sheet);
     transform: translateY(102%);
-    transition: transform var(--t-med) var(--ease);
+    transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
   }
   body.inspector-open .inspector { transform: none; }
   /* 兼容桌面收起态 class 残留（跨断点拖动窗口时）：统一为底部滑出方向 */

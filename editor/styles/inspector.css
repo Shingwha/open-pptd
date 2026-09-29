@@ -130,20 +130,20 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .color-swatch-btn:hover { border-color: var(--primary); }
-.color-swatch-btn:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.color-swatch-btn:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .color-field input[type="color"] {
   width: 30px; height: 26px; padding: 0; border: 1px solid var(--line-strong);
   border-radius: var(--r-2); background: none; cursor: pointer; flex: none;
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
-.color-field input[type="color"]:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.color-field input[type="color"]:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .color-hex {
   flex: 1; min-width: 0; font-size: var(--text-xs); padding: 3px 7px;
   border: 1px solid var(--line-strong); border-radius: var(--r-2);
   background: var(--bg); color: var(--ink); outline: none; font-family: ui-monospace, monospace;
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
-.color-hex:focus-visible { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.color-hex:focus-visible { border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 /* 主题色弹层：点击色块按钮展开（fixed 定位由 JS 按按钮位置计算，不受父容器裁剪） */
 .color-pop {
   position: fixed;
@@ -174,7 +174,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 }
 .color-pop-item:hover { background: var(--primary-soft); border-color: var(--primary-tint); }
 .color-pop-item:active { background: var(--primary-tint); }
-.color-pop-item:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.color-pop-item:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .color-pop-chip { width: 18px; height: 18px; border-radius: var(--r-2); border: 1px solid var(--chip-border); flex: none; }
 .color-pop-name { font-size: var(--text-xs); color: var(--ink); }
 
@@ -212,7 +212,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .prop-field select:focus-visible,
 .prop-field textarea:focus-visible {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  outline: 1px solid var(--sel-ring); outline-offset: 0;
 }
 .prop-field input[type="color"] {
   flex: 0 0 auto;
@@ -256,7 +256,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .prop-cell input:focus-visible,
 .prop-cell select:focus-visible {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  outline: 1px solid var(--sel-ring); outline-offset: 0;
 }
 
 /* —— 图标工具行（对齐等） —— */
@@ -280,7 +280,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 }
 .prop-icon-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
 .prop-icon-btn:active { background: var(--primary-tint); }
-.prop-icon-btn:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.prop-icon-btn:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
 .prop-checks {
   display: flex;
@@ -321,7 +321,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 }
 .prop-check input[type="checkbox"]:checked { background: var(--primary); }
 .prop-check input[type="checkbox"]:checked::before { transform: translateX(12px); }
-.prop-check input[type="checkbox"]:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.prop-check input[type="checkbox"]:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
 .prop-actions {
   display: flex;

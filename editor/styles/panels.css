@@ -163,7 +163,7 @@ html:has(.gallery-view) {
 .gallery-card:focus-visible {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  outline: 1px solid var(--sel-ring); outline-offset: 0;
 }
 
 .gallery-card-cover {

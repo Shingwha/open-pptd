@@ -59,7 +59,7 @@
   transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease);
 }
 .brand-home:hover { opacity: 0.8; }
-.brand-home:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.brand-home:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
 .brand-file {
   font-size: var(--text-sm);
@@ -198,7 +198,7 @@
 }
 .thumb-add:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
 .thumb-add:active { background: var(--primary-tint); }
-.thumb-add:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.thumb-add:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
 .thumbbar-meta {
   flex: 0 0 auto;

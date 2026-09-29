@@ -62,22 +62,23 @@
   pointer-events: none;
 }
 
-/* 单选：1px 实线环 + 淡主色底 */
+/* 单选：1px 实线环（用环不用辉光）+ 淡主色底 */
 .el-single {
-  border: 1px solid var(--primary);
-  background: var(--primary-soft);
+  outline: 1px solid var(--sel-ring);
+  outline-offset: 0;
+  background: var(--sel-bg);
 }
 
 /* 多选/组：虚线包围盒（区分「包围盒」与「成员」） */
 .mbounds {
-  border: 1px dashed var(--primary);
+  border: 1px dashed var(--sel-ring);
 }
 
 /* 多选成员：1px 细边框（不铺底，避免遮挡内容） */
 .member {
   position: absolute;
   box-sizing: border-box;
-  border: 1px solid var(--primary);
+  border: 1px solid var(--sel-ring);
   pointer-events: none;
 }
 
@@ -85,8 +86,8 @@
 .marquee {
   position: absolute;
   box-sizing: border-box;
-  border: 1px dashed var(--primary);
-  background: var(--primary-tint);
+  border: 1px dashed var(--sel-ring);
+  background: color-mix(in srgb, var(--sel-ring) 7%, transparent);
   pointer-events: none;
 }
 
@@ -106,13 +107,13 @@
   height: 7px;
   box-sizing: border-box;
   background: var(--panel);
-  border: 1px solid var(--primary);
+  border: 1px solid var(--sel-ring);
 }
 .h.tl { left: -10px; top: -10px; }
 .h.tr { right: -10px; top: -10px; }
 .h.bl { left: -10px; bottom: -10px; }
 .h.br { right: -10px; bottom: -10px; }
-.h:hover::before { background: var(--primary); }
+.h:hover::before { background: var(--sel-ring); }
 
 /* 旋转柄：连接杆 + 圆形箭头芯片（悬于框底中点下方，随元素旋转；
    顶部空间整个让给快速条） */
@@ -122,7 +123,7 @@
   bottom: -16px;
   width: 1.5px;
   height: 16px;
-  background: var(--primary);
+  background: var(--sel-ring);
   transform: translateX(-50%);
 }
 .rot {
@@ -145,8 +146,8 @@
   height: 17px;
   border-radius: 50%;
   background: var(--panel);
-  border: 1.5px solid var(--primary);
-  color: var(--primary);
+  border: 1.5px solid var(--sel-ring);
+  color: var(--sel-ring);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -222,7 +223,7 @@
 .status-btn:focus-visible {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  outline: 1px solid var(--sel-ring); outline-offset: 0;
 }
 
 /* 页面解析失败红框（renderer/page.js） */
@@ -307,7 +308,7 @@
 .qb-select:focus-visible {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  outline: 1px solid var(--sel-ring); outline-offset: 0;
 }
 
 .qb-color {
@@ -324,7 +325,7 @@
 .qb-color:focus-visible {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  outline: 1px solid var(--sel-ring); outline-offset: 0;
 }
 
 .qb-btn {
@@ -342,7 +343,7 @@
 }
 .qb-btn:hover { background: var(--bg); color: var(--primary); }
 .qb-btn:active { background: var(--line); }
-.qb-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); color: var(--primary); }
+.qb-btn:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; color: var(--primary); }
 .qb-btn.on { background: var(--primary-soft); color: var(--primary); }
 
 .qb-text-btn {
@@ -361,5 +362,5 @@
 .qb-text-btn:focus-visible {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  outline: 1px solid var(--sel-ring); outline-offset: 0;
 }

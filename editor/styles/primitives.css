@@ -79,7 +79,7 @@ button, select, a.btn, .thumb, .add-thumb, .icon-cell, .theme-card {
 .btn:focus-visible {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-tint);
+  outline: 1px solid var(--sel-ring); outline-offset: 0;
 }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
@@ -128,7 +128,7 @@ button, select, a.btn, .thumb, .add-thumb, .icon-cell, .theme-card {
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .icon-btn:hover:not(:disabled) { background: var(--bg); color: var(--ink); }
-.icon-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); color: var(--primary); }
+.icon-btn:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; color: var(--primary); }
 .icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 /* 链接按钮（画廊/编辑器顶栏的 GitHub 仓库跳转） */
 a.icon-btn { text-decoration: none; color: var(--sub); }
@@ -185,7 +185,7 @@ a.icon-btn { text-decoration: none; color: var(--sub); }
 .fab:hover { background: var(--primary-soft); border-color: var(--primary); }
 /* 按下时阴影收浅，模拟压下反馈（不动底色，避免与 .active 持久态混淆） */
 .fab:active { box-shadow: var(--shadow-sm); }
-.fab:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.fab:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 /* 激活态（高亮 = 状态打开）：实心深蓝 + 白图标，与浅蓝闲置态对比鲜明 */
 .fab.active,
 body.inspector-open #btn-inspector-open,
@@ -276,7 +276,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .add-tab:hover { color: var(--ink); background: var(--primary-soft); }
-.add-tab:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.add-tab:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .add-tab.active { color: var(--primary); font-weight: 700; }
 .add-tab.active::after {
   content: "";
@@ -313,7 +313,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   color: var(--ink);
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
-.add-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.add-search:focus { border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
 /* —— 分类侧栏 + 网格区 —— */
 .add-catalog { display: flex; flex: 1; min-height: 0; }
@@ -343,7 +343,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .add-cat:hover { background: var(--primary-soft); color: var(--ink); }
-.add-cat:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.add-cat:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .add-cat.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
 .add-grid-wrap { flex: 1; overflow-y: auto; padding: 10px var(--space-3) 14px; min-width: 0; }
 
@@ -375,7 +375,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .add-thumb:hover { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
-.add-thumb:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.add-thumb:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .add-thumb svg { width: 20px; height: 20px; }
 
 .add-empty { padding: 36px 0; text-align: center; color: var(--faint); font-size: var(--text-sm); }
@@ -400,7 +400,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .add-card:hover { border-color: var(--primary); background: var(--primary-soft); }
-.add-card:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.add-card:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .add-card svg { width: 28px; height: 28px; color: var(--sub); }
 .add-card:hover svg { color: var(--primary); }
 .add-card-name { font-size: var(--text-md); font-weight: 600; color: var(--ink); }
@@ -437,7 +437,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .add-chart-item:hover { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
-.add-chart-item:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.add-chart-item:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .add-chart-item svg { width: 26px; height: 26px; color: var(--sub); }
 .add-chart-item:hover svg { color: var(--primary); }
 
@@ -513,7 +513,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .file-menu-item:hover { background: var(--bg); }
-.file-menu-item:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.file-menu-item:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .file-menu-hint { font-size: var(--text-xs); color: var(--sub); flex: none; }
 .file-menu-label { font-size: var(--text-xs); color: var(--sub); padding: var(--space-1) var(--space-3); }
 .file-menu-sep { height: 1px; background: var(--line); margin: var(--space-1) var(--space-2); }
@@ -549,7 +549,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .theme-card:hover { border-color: var(--primary); }
-.theme-card:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.theme-card:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .theme-card.active { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
 .theme-card-swatches { display: flex; gap: 3px; margin-bottom: 5px; }
 .theme-card-swatch { flex: 1; height: 14px; border-radius: var(--r-2); }
@@ -569,7 +569,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   background: var(--bg); color: var(--ink); outline: none;
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
-.theme-row input[type="text"]:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.theme-row input[type="text"]:focus { border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .theme-panel-foot { margin-top: var(--space-3); display: flex; justify-content: flex-end; }
 
 /* ----------------------------------------------------------------------------
@@ -606,7 +606,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   outline: none;
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
-.font-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.font-search:focus { border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
 /* 滚动列表区（外壳重建内容时保留本节点，滚动位置不丢） */
 .font-body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 14px var(--space-2); }
@@ -650,7 +650,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .font-chip:hover { border-color: var(--line-strong); color: var(--ink); }
-.font-chip:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.font-chip:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .font-chip.active { background: var(--primary-soft); border-color: transparent; color: var(--primary-strong); }
 
 .font-del {
@@ -666,7 +666,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .font-del:hover { background: var(--danger-soft); color: var(--danger); }
-.font-del:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.font-del:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
 /* 底部添加条：本地文件 + 网络 URL（固定不随列表滚动） */
 .font-add { display: flex; flex-direction: column; gap: var(--space-2); padding: 10px 14px; border-top: 1px solid var(--line); background: var(--bg); }
@@ -683,7 +683,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   outline: none;
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
-.font-add-url input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+.font-add-url input:focus { border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .font-add-file { display: none; }
 
 /* ==== [dialogs] ==== */
@@ -776,7 +776,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
 }
 .export-chip:hover { border-color: var(--primary); color: var(--primary); }
 .export-chip.on { background: var(--primary); border-color: var(--primary); color: var(--on-accent); }
-.export-chip:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.export-chip:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
 .editor-section { margin-bottom: 14px; }
 .editor-section-title {
@@ -820,7 +820,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .icon-search:focus { border-color: var(--primary); }
-.icon-search:focus-visible { box-shadow: 0 0 0 3px var(--primary-tint); }
+.icon-search:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .icon-grid { flex: 1; overflow-y: auto; min-height: 260px; }
 .icon-grid-cat {
   font-size: var(--text-xs);
@@ -847,7 +847,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 .icon-cell:hover { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
-.icon-cell:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--primary-tint); }
+.icon-cell:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .icon-cell.active { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
 .icon-cell svg { width: 20px; height: 20px; }
 .icon-empty { padding: 30px 0; text-align: center; color: var(--faint); font-size: var(--text-md); }
