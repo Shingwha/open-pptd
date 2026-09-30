@@ -1,7 +1,12 @@
 /* ==== inspector — right property panel (with narrow-screen mask) ==== */
 
 /* ----------------------------------------------------------------------------
-   Right property panel (flat white sections)
+   Right property panel (Line pass): white ground, hairline separators between
+   sections, no filled blocks. Controls follow the site control language
+   (primitives.css): a 1px --line-strong frame on a white ground, hover brings
+   the border to --sub, focus is exactly one 1px accent ring; no colored hover
+   fills — a tint only ever marks a persistent state.
+   One field rhythm everywhere: 11px --faint label above a 28px control.
    ---------------------------------------------------------------------------- */
 .inspector {
   width: 300px;
@@ -39,6 +44,7 @@ body.inspector-collapsed #btn-inspector-toggle svg { transform: rotate(180deg); 
 }
 body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 
+/* Panel head: sticky, the same 44px rhythm as the topbar (D6), closed by a hairline */
 .inspector-head {
   position: sticky;
   top: 0;
@@ -58,6 +64,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   min-width: 0;
 }
 #inspector-title { font-size: var(--text-md); font-weight: 700; color: var(--ink); }
+/* Type chip (kept from D3/T1; same shape as the quickbar's .qb-type) */
 .inspector-badge {
   flex: 0 0 auto;
   font-size: var(--text-xs);
@@ -68,19 +75,21 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   padding: 1px 9px;
 }
 
-/* -- Selected element head (badge + id + delete) -- */
+/* -- Selected element head (badge + duplicate + delete; no fill, closed by a hairline) -- */
 .inspector-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-2);
   padding: var(--space-3) 14px;
   border-bottom: 1px solid var(--line);
-  background: var(--bg);
+  background: var(--panel);
 }
+/* Multi-selection head keeps the status text (single selection shows no elementId) */
 .inspector-elid {
   font-size: var(--text-xs);
   color: var(--faint);
-  font-family: Consolas, "Courier New", monospace;
+  font-family: var(--mono);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -89,17 +98,19 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 }
 .inspector-item .btn-danger { flex: 0 0 auto; }
 
-/* -- Flat groups -- */
+/* -- Sections: hairline separators, no filled blocks, 12px medium title -- */
 .prop-group {
-  padding: 13px 14px;
-  border-bottom: 1px solid var(--line);
+  padding: var(--space-3) 14px;
+  border-top: 1px solid var(--line);
 }
-.prop-group:last-child { border-bottom: 0; }
+/* The head above and the panel edge already carry the hairline */
+.prop-group:first-child { border-top: 0; }
+.inspector-item + .prop-group { border-top: 0; }
 .prop-group-title {
-  font-size: var(--text-lg);
+  font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--ink);
-  margin-bottom: 10px;
+  color: var(--sub);
+  margin-bottom: var(--space-2);
   cursor: pointer;
   user-select: none;
   display: flex;
@@ -107,46 +118,53 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   gap: var(--space-1);
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.prop-group-title:hover { color: var(--primary); }
-/* Collapse chevron: pure CSS (pointing down = expanded), no markup change */
+.prop-group-title:hover { color: var(--ink); }
+/* Collapse chevron: pure CSS (pointing down = expanded), no markup change;
+   a 1px hairline in currentColor so it follows the title's hover */
 .prop-group-title::after {
   content: "";
   width: 6px;
   height: 6px;
   margin-left: auto;
-  border-right: 1.5px solid var(--faint);
-  border-bottom: 1.5px solid var(--faint);
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
   transform: rotate(45deg);
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.prop-group-title:hover::after { border-color: var(--primary); }
 .prop-group.collapsed > :not(.prop-group-title) { display: none; }
 .prop-group.collapsed .prop-group-title::after { transform: rotate(-45deg); }
+/* A block sitting right under the title keeps the same 8px gap as a plain grid */
+.prop-group-title + .prop-icon-row,
+.prop-group-title + .prop-actions,
+.prop-group-title + .prop-checks { margin-top: 0; }
 
 /* -- Three-in-one color control (colorField): swatch button + picker + hex + theme-swatch popover -- */
 .color-field { display: flex; align-items: center; gap: 6px; min-width: 0; position: relative; }
+/* The 20px color chips carry the chip outline (--chip-border), not the input frame */
 .color-swatch-btn {
-  width: 26px; height: 26px; border-radius: var(--radius); padding: 0; cursor: pointer; flex: none;
-  border: 1px solid var(--line-strong);
+  width: 20px; height: 20px; border-radius: var(--radius-sm); padding: 0; cursor: pointer; flex: none;
+  border: 1px solid var(--chip-border);
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.color-swatch-btn:hover { border-color: var(--primary); }
-.color-swatch-btn:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
+.color-swatch-btn:hover { border-color: var(--sub); }
+.color-swatch-btn:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
 .color-field input[type="color"] {
-  width: 30px; height: 26px; padding: 0; border: 1px solid var(--line-strong);
-  border-radius: var(--radius); background: none; cursor: pointer; flex: none;
+  width: 20px; height: 20px; padding: 0; border: 1px solid var(--chip-border);
+  border-radius: var(--radius-sm); background: none; cursor: pointer; flex: none;
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.color-field input[type="color"]:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
+.color-field input[type="color"]:hover { border-color: var(--sub); }
+.color-field input[type="color"]:focus { border-color: var(--sel-ring); }
 .color-hex {
-  flex: 1; min-width: 0; font-size: var(--text-xs); padding: 3px 7px;
+  flex: 1; min-width: 0; height: var(--control-h); font-size: var(--text-xs); padding: 0 var(--space-2);
   border: 1px solid var(--line-strong); border-radius: var(--radius);
-  background: var(--bg); color: var(--ink); outline: none; font-family: ui-monospace, monospace;
+  background: var(--panel); color: var(--ink); outline: none; font-family: var(--mono);
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.color-hex:focus-visible { border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
-/* Theme-swatch popover: opens from the swatch button (fixed positioning computed by
-   JS from the button position, so parent clipping does not apply) */
+.color-hex:hover { border-color: var(--sub); }
+.color-hex:focus { border-color: var(--sel-ring); }
+/* Theme-swatch popover: an overlay, so it keeps its light shadow; items use the
+   neutral hover (a color tint would read as a persistent state) */
 .color-pop {
   position: fixed;
   z-index: var(--z-toast); /* above the dialog mask (--z-modal) so it can sit over any container */
@@ -174,40 +192,34 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
   text-align: left;
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.color-pop-item:hover { background: var(--primary-soft); border-color: var(--primary-tint); }
-.color-pop-item:active { background: var(--primary-tint); }
-.color-pop-item:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
-.color-pop-chip { width: 18px; height: 18px; border-radius: var(--radius); border: 1px solid var(--chip-border); flex: none; }
+.color-pop-item:hover { background: var(--hover); }
+.color-pop-item:active { background: var(--active); }
+.color-pop-item:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
+.color-pop-chip { width: 18px; height: 18px; border-radius: var(--radius-sm); border: 1px solid var(--chip-border); flex: none; }
 .color-pop-name { font-size: var(--text-xs); color: var(--ink); }
 
-/* -- Field rows -- */
+/* -- Fields: 11px --faint label above a 28px control (one rhythm site-wide) -- */
 .prop-field {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-1);
   font-size: var(--text-sm);
   margin-bottom: var(--space-2);
 }
 .prop-field:last-child { margin-bottom: 0; }
-.prop-label { flex: 0 0 56px; color: var(--sub); }
+.prop-label { color: var(--faint); font-size: var(--text-xs); }
 
-/* Multi-selection mixed placeholder (values differ): italic, read-only, disabled */
-.mix,
-input.mix {
-  color: var(--faint);
-  font-style: italic;
-}
-input.mix:disabled {
-  background: var(--bg);
-  opacity: 1;
-  cursor: default;
-}
-
+/* Text-entry controls (number/text/select/textarea) share one frame in both
+   the full-width field row (.prop-field) and the two-column cell (.prop-cell) */
 .prop-field input[type="number"],
 .prop-field input[type="text"],
 .prop-field select,
-.prop-field textarea {
-  flex: 1;
+.prop-field textarea,
+.prop-cell input[type="number"],
+.prop-cell input[type="text"],
+.prop-cell select {
+  width: 100%;
   min-width: 0;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
@@ -220,22 +232,35 @@ input.mix:disabled {
 }
 .prop-field input[type="number"],
 .prop-field input[type="text"],
-.prop-field select { height: var(--control-h); }
-.prop-field select { cursor: pointer; }
-.prop-field input:focus-visible,
-.prop-field select:focus-visible,
-.prop-field textarea:focus-visible {
-  border-color: var(--primary);
-  outline: 1px solid var(--sel-ring); outline-offset: 0;
-}
+.prop-field select,
+.prop-cell input[type="number"],
+.prop-cell input[type="text"],
+.prop-cell select { height: var(--control-h); }
+.prop-field select,
+.prop-cell select { cursor: pointer; }
+.prop-field input[type="number"]:hover,
+.prop-field input[type="text"]:hover,
+.prop-field select:hover,
+.prop-field textarea:hover,
+.prop-cell input[type="number"]:hover,
+.prop-cell input[type="text"]:hover,
+.prop-cell select:hover { border-color: var(--sub); }
+.prop-field input[type="number"]:focus,
+.prop-field input[type="text"]:focus,
+.prop-field select:focus,
+.prop-field textarea:focus,
+.prop-cell input[type="number"]:focus,
+.prop-cell input[type="text"]:focus,
+.prop-cell select:focus { border-color: var(--sel-ring); }
+/* Bare color input (no .color-field wrapper): same 20px chip */
 .prop-field input[type="color"] {
   flex: 0 0 auto;
-  width: 44px;
-  height: var(--control-h);
-  padding: 2px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
-  background: var(--panel);
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--chip-border);
+  border-radius: var(--radius-sm);
+  background: none;
   cursor: pointer;
 }
 .prop-field textarea {
@@ -245,39 +270,36 @@ input.mix:disabled {
   line-height: 1.6;
 }
 
-/* -- Two-column compact cell (numeric): label on top -- */
+/* Multi-selection mixed placeholder ("混合", values differ): italic --faint on a
+   dashed hairline, so it reads as "not one value" and never as an editable field.
+   Declared after the frame/hover rules so the state wins the cascade (the control
+   is disabled, so no hover/focus feedback applies). */
+.mix { font-style: italic; }
+.prop-field input.mix:disabled,
+.prop-cell input.mix:disabled {
+  color: var(--faint);
+  font-style: italic;
+  background: var(--panel);
+  border-color: var(--line-strong);
+  border-style: dashed;
+  opacity: 1;
+  cursor: default;
+}
+
+/* -- Two-column compact cell (numeric): label on top, aligned column lines -- */
 .prop-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-2) 10px;
+  gap: var(--space-2) var(--space-3);
 }
-.prop-cell { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.prop-cell { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 .prop-cell-label { font-size: var(--text-xs); color: var(--faint); }
-.prop-cell input[type="number"],
-.prop-cell input[type="text"],
-.prop-cell select {
-  width: 100%;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
-  padding: 0 var(--space-2);
-  font-size: var(--text-md);
-  color: var(--ink);
-  background: var(--panel);
-  outline: none;
-  height: var(--control-h);
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-}
-.prop-cell input:focus-visible,
-.prop-cell select:focus-visible {
-  border-color: var(--primary);
-  outline: 1px solid var(--sel-ring); outline-offset: 0;
-}
 
-/* -- Icon tool row (align etc.) -- */
+/* -- Align tool row: transparent ground, 1px frame, 28px tall -- */
 .prop-icon-row {
   display: flex;
   gap: var(--space-1);
-  margin-top: 10px;
+  margin-top: var(--space-2);
 }
 .prop-icon-btn {
   flex: 1;
@@ -285,21 +307,24 @@ input.mix:disabled {
   padding: 0;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
-  background: var(--panel);
+  background: transparent;
   color: var(--sub);
   font-size: var(--text-md);
   cursor: pointer;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.prop-icon-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
-.prop-icon-btn:active { background: var(--primary-tint); }
-.prop-icon-btn:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
+.prop-icon-btn:hover { border-color: var(--sub); color: var(--ink); background: var(--hover); }
+.prop-icon-btn:active { border-color: var(--sel-ring); color: var(--accent); background: var(--active); }
+.prop-icon-btn:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
 .prop-checks {
   display: flex;
-  gap: 14px;
-  padding-top: 2px;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
 }
 .prop-check {
   display: inline-flex;
@@ -310,13 +335,15 @@ input.mix:disabled {
   cursor: pointer;
   user-select: none;
 }
-/* Native checkbox restyled as a CSS switch (no markup change): track + knob */
+/* Native checkbox restyled as a hairline switch (no markup change): a white
+   1px-frame track, the state read from the accent border + knob (no heavy fill) */
 .prop-check input[type="checkbox"] {
   appearance: none;
   width: 30px;
   height: 18px;
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-lg);
-  background: var(--line-strong);
+  background: var(--panel);
   position: relative;
   cursor: pointer;
   flex: none;
@@ -327,29 +354,30 @@ input.mix:disabled {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: var(--panel);
-  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
+  background: var(--faint);
+  transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.prop-check input[type="checkbox"]:checked { background: var(--primary); }
-.prop-check input[type="checkbox"]:checked::before { transform: translateX(12px); }
-.prop-check input[type="checkbox"]:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
+.prop-check input[type="checkbox"]:hover { border-color: var(--sub); }
+.prop-check input[type="checkbox"]:checked { border-color: var(--accent); }
+.prop-check input[type="checkbox"]:checked::before { background: var(--accent); transform: translateX(12px); }
+.prop-check input[type="checkbox"]:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
 .prop-actions {
   display: flex;
-  gap: 6px;
-  margin-top: 11px;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
 }
 .prop-actions .btn { flex: 1; }
 
+/* Hint text: flat hairline box, no fill (11px --faint) */
 .prop-hint {
-  font-size: var(--text-sm);
-  color: var(--sub);
-  line-height: 1.6;
-  background: var(--bg);
-  border: 1px dashed var(--line-strong);
+  font-size: var(--text-xs);
+  color: var(--faint);
+  line-height: 1.5;
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: var(--space-2) 10px;
 }
