@@ -66,7 +66,7 @@ Once installed, no extra configuration is needed — just describe the task to y
 - "Turn this outline into a presentation" + paste the outline
 - "Design a Bailu solar-term poster"
 
-Following the `SKILL.md` workflow, the AI delivers **two things**: an editable PPTD project directory (manifest + pages + media), and a ready-to-send `.pptx` (fonts embedded, transitions applied).
+Following the open-pptd skill workflow (the separate `open-pptd-skill` repo, with SKILL.md and references/ methodology), the AI delivers **two things**: an editable PPTD project directory (manifest + pages + media), and a ready-to-send `.pptx` (fonts embedded, transitions applied).
 
 To watch the deck being built live, have the AI start a local preview server (or run it yourself):
 
