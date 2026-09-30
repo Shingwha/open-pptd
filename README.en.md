@@ -6,7 +6,7 @@
 
 `v2.0.0` · `MIT` · `Node ≥ 18` · `zero dependencies · zero build`
 
-🌐 [Online gallery](https://shingwha.github.io/open-pptd/) (no install, click & edit) · ⬇ [30-second setup](#30-second-setup) · 🤖 [Use it with AI](#use-it-with-ai)
+[Online gallery](https://shingwha.github.io/open-pptd/) (no install, click & edit) · [30-second setup](#30-second-setup) · [Use it with AI](#use-it-with-ai)
 
 <img src="docs/images/editor.png" width="880" alt="open-pptd editor: Qingshan Coffee business review — canvas on the left, property panel on the right, 12-page thumbnail strip at the bottom"/>
 
@@ -14,7 +14,7 @@
 
 ---
 
-🇨🇳 中文版: [README.md](README.md)
+中文版: [README.md](README.md)
 
 ## 30-second setup
 
@@ -112,5 +112,3 @@ More examples (data annuals, pitch decks, architecture reviews, festival posters
 ## License
 
 MIT · icons by [Font Awesome Free](https://fontawesome.com/license/free) (CC BY 4.0)
-
-🇨🇳 中文版: [README.md](README.md)

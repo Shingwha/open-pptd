@@ -6,7 +6,9 @@
 
 `v2.0.0` · `MIT` · `Node ≥ 18` · `零依赖 · 零构建`
 
-🌐 [线上画廊](https://shingwha.github.io/open-pptd/)（免安装，点开即改）· ⬇ [30 秒安装](#30-秒上手) · 🤖 [和 AI 一起用](#和-ai-一起用)
+English: [README.en.md](README.en.md)
+
+[线上画廊](https://shingwha.github.io/open-pptd/)（免安装，点开即改）· [30 秒安装](#30-秒上手) · [和 AI 一起用](#和-ai-一起用)
 
 <img src="docs/images/editor.png" width="880" alt="open-pptd 编辑器：青山咖啡经营复盘，左侧画布 + 右侧属性面板 + 底部 12 页缩略条"/>
 
@@ -110,5 +112,3 @@ AI 会交付**两样东西**：可编辑的 PPTD 项目目录（manifest + pages
 ## License
 
 MIT · 图标基于 [Font Awesome Free](https://fontawesome.com/license/free)（CC BY 4.0）
-
-🌏 English: [README.en.md](README.en.md)
