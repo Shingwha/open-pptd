@@ -12,8 +12,9 @@
      - topbar: buttons become icon-only (labels hidden), brand name ellipsized to the logo only, horizontal scroll
      - inspector: a bottom sheet (55vh); the entry is a round inspector button bottom-right
      - thumbbar: 96px → 64px, thumbnails 140×79 → 88×50, zoom group at the 24px step
-     - quickbar: docked above the bottom-right action stack, horizontally scrollable
-       (its controls keep their size and the row scrolls); add-menu / dialogs: bottom-sheet style
+     - quickbar: docked to the bottom (clear of the bottom-right action stack) and
+       horizontally scrollable — its controls keep their size and the row scrolls;
+       add-menu / dialogs: bottom-sheet style
    ============================================================================ */
 @media (max-width: 900px) {
   /* -- Topbar: iconify + compress -- */
@@ -93,17 +94,19 @@
     border-radius: var(--radius-lg);
   }
 
-  /* -- Quickbar: docked above the bottom-right action stack, horizontally scrollable (JS skips left/top positioning, see view.js) -- */
-  /* Docked clearance = thumb bar 64 + stage inset 16 + FAB 46 + stack gap 10 + FAB 46
-     + 8px of air. The old 64+12+46 put the bar inside the top FAB (measured 41.6×28px
-     overlap at 480×840); ≤480 only shrinks the inset (12), so the air grows. */
+  /* -- Quickbar: docked to the bottom, horizontally scrollable (JS skips left/top positioning, see view.js) -- */
+  /* The FAB stack shares this bottom band (stage inset 14 + 46 + gap 10 + 46, right-aligned).
+     The bar stays centered at its dock position and gives each side 68px (inset 14 + FAB 46
+     + 8px of air), so the two never collide: measured at 480×840 the old 94vw reached into
+     the top FAB (41.6×28px overlap). Keeping the bar low also keeps the add-menu's band
+     (bottom 130 above the thumb bar) clear of it, as before. */
   body .quickbar {
     position: fixed;
     left: 50%;
     right: auto;
     top: auto;
-    bottom: calc(64px + 118px + 8px);
-    max-width: 94vw;
+    bottom: calc(64px + 12px + 46px);
+    max-width: calc(100vw - 136px);
     overflow-x: auto;
     z-index: var(--z-dropdown);
   }
@@ -157,6 +160,8 @@
   body .topbar-divider { margin: 0; }
   body .add-menu { max-height: 66vh; }
   body .fab-stack { right: 10px; bottom: 12px; }
+  /* ≤480 the FAB inset tightens to 10 → 64px per side keeps the bar clear of the stack */
+  body .quickbar { max-width: calc(100vw - 128px); }
   body .theme-panel { width: min(320px, calc(100vw - 16px)); }
   body .font-panel { width: min(400px, calc(100vw - 16px)); }
   /* Zoom group: drop the fit-to-view button (⛶) and its separator so the page count
