@@ -24,8 +24,8 @@ push tag 后 CI 自动执行：
 |---|---|
 | 校验版本 | tag 与 package.json 的 version 必须一致 |
 | 回归测试 | `npm run test:fixtures` + `npm test`（与 Deploy Pages 同款守门，任何一步失败都不会发布） |
-| 打包 | `npm run pack` → `dist/open-pptd-v<版本>.zip` |
-| 发布 | 创建 GitHub Release 并附上 zip；notes 优先取 tag 注释，未写则 commit 列表自动生成 |
+| 打包 | `npm run pack` → `dist/` 五类资产：`open-pptd-v<版本>.zip`（运行时白名单包）+ `open-pptd-icons-v<版本>.zip` + `open-pptd-fonts-v<版本>.zip`（图标/字体本体仅取本地工作树实际存在的，CI 无本体时自动跳过）+ `install.ps1`/`install.sh`（同步自仓库根）+ `SHA256SUMS`（覆盖全部 zip） |
+| 发布 | 创建 GitHub Release 并上传 `dist/*` 全部资产；notes 优先取 tag 注释，未写则 commit 列表自动生成。用户侧安装走仓库根 install 脚本（raw URL 一键安装），Release zip 是离线/手动安装渠道 |
 
 ## 更新说明（Release Notes）
 
