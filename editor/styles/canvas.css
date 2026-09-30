@@ -180,9 +180,12 @@
   /* Fallback size: renderCanvas overrides it inline from deck.size (posters etc.) */
   width: 960px;
   height: 540px;
-  /* Paper backdrop: a light sheet even in dark mode (layout readability), see tokens.css --paper */
+  /* Paper backdrop: a light sheet even in dark mode (layout readability), see tokens.css --paper.
+     D1: no projection on the paper — the 1px hairline carries the edge. Drawn as an outline,
+     not a border: a border would eat 1px of the deck-sized paint under border-box and shift
+     the selection overlay, while an outline never touches layout. */
   background: var(--paper);
-  box-shadow: var(--shadow-sm), var(--shadow-lg);
+  outline: 1px solid var(--line);
   /* Zoom about the center: the flex-centered layout box center = the visual center, perfectly symmetric */
   transform-origin: center;
   overflow: hidden;
@@ -215,13 +218,11 @@
   cursor: pointer;
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.status-btn:hover { border-color: var(--primary); color: var(--primary); }
-.status-btn:active { background: var(--bg); }
-.status-btn:focus-visible {
-  outline: none;
-  border-color: var(--primary);
-  outline: 1px solid var(--sel-ring); outline-offset: 0;
-}
+/* Line language (W1 primitives): hover is a neutral wash, never an accent frame; focus is
+   exactly one 1px accent ring (the old accent border + accent outline pair is gone) */
+.status-btn:hover { background: var(--hover); color: var(--ink); }
+.status-btn:active { background: var(--active); }
+.status-btn:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
 /* Page parse-failure red box (renderer/page.js) */
 .page-error {
