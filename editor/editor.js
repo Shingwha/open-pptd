@@ -177,8 +177,9 @@ export function createEditor(rootEl, options = {}) {
     });
     disposers.push(() => stage.destroy?.());
 
-    // Canvas right-click context menu (three states: single-select / multi-select / empty page-level)
-    const contextMenu = bindContextMenu({ stage: dom.stage, api, state, page, groupOf, view });
+    // Canvas right-click context menu (three states: single-select / multi-select / empty page-level).
+    // Bound to the canvas element itself: everywhere outside keeps the browser's native menu.
+    const contextMenu = bindContextMenu({ canvas: dom.canvas, api, state, page, groupOf, view });
     disposers.push(() => contextMenu.destroy?.());
   }
 

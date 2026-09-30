@@ -18,8 +18,6 @@
 import { dom } from "../../dom.js";
 import { deckSize } from "../../../packages/model/index.js";
 import { disposeChartInstances, renderPage } from "../../../packages/renderer/index.js";
-import { menuItem, menuSeparator, openMenuAt } from "../../components/menu.js";
-import { openPageBackgroundDialog } from "../../interaction/dialogs/page-background.js";
 
 // Fallback card box: used only when an element cannot be measured (e.g. rendered
 // hidden); the real size is decided by the CSS breakpoint and measured at render.
@@ -36,11 +34,6 @@ export function createThumbnails({ state, api, ops, reload }) {
 
   /** Page index (-1 = not in the current deck) */
   const indexOfPage = (pg) => (state.deck?.pages || []).indexOf(pg);
-
-  /** Selected page indexes (ascending) */
-  function selectedIndexes() {
-    return [...pageSel].map(indexOfPage).filter((i) => i >= 0).sort((a, b) => a - b);
-  }
 
   function pruneSelection() {
     for (const pg of [...pageSel]) if (indexOfPage(pg) < 0) pageSel.delete(pg);
@@ -134,54 +127,8 @@ export function createThumbnails({ state, api, ops, reload }) {
       if (to > d.index) to -= 1;
       api.movePage(d.index, to);
     }, { signal: ac.signal });
-
-    // Context menu (page level)
-    bar.addEventListener("contextmenu", (e) => {
-      const card = e.target.closest(".thumb");
-      e.preventDefault();
-      const idx = card ? [...bar.children].indexOf(card) : -1;
-      if (idx < 0) {
-        openPageMenu(e.clientX, e.clientY, [], state.currentPage);
-        return;
-      }
-      const pg = state.deck.pages[idx];
-      if (!pageSel.has(pg)) {
-        pageSel.clear();
-        pageSel.add(pg);
-        anchorPage = pg;
-      }
-      renderThumbnails();
-      openPageMenu(e.clientX, e.clientY, selectedIndexes(), idx);
-    }, { signal: ac.signal });
-  }
-
-  /** Page-level menu: duplicate / delete / new / page background… (batch items labeled "N pages" when multi-selected). */
-  function openPageMenu(x, y, indexes, targetIndex) {
-    const map = targetIndex >= 0 ? indexes : [];
-    const n = map.length;
-    const batch = n > 1;
-    const run = (fn) => () => fn();
-    const nodes = [
-      menuItem(`复制页${batch ? `（${n} 页）` : ""}`, { disabled: n === 0, onClick: run(() => api.duplicatePages(map)) }),
-      menuItem(`删除页${batch ? `（${n} 页）` : ""}`, { danger: true, disabled: n === 0, onClick: run(() => api.deletePages(map)) }),
-      menuSeparator(),
-      menuItem("新建页面", { onClick: run(() => api.addPage()) }),
-      menuItem("页面背景…", {
-        onClick: run(() => {
-          const pg = state.deck.pages[targetIndex >= 0 ? targetIndex : state.currentPage];
-          openPageBackgroundDialog({
-            pg,
-            theme: state.theme,
-            beginChange: api.beginChange,
-            endChange: api.endChange,
-            refreshPreview: api.refreshPreview,
-          });
-        }),
-      }),
-      menuSeparator(),
-      menuItem(`第 ${state.currentPage + 1} 页`, { disabled: true }),
-    ];
-    openMenuAt(x, y, nodes, { className: "thumb-menu" });
+    // No context menu on the thumbnail bar: outside the canvas the browser's native
+    // menu stays (page ops live in the canvas blank menu / the ＋ button / the × chip)
   }
 
   // --------------------------------------------------------------------------

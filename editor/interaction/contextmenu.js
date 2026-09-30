@@ -19,16 +19,20 @@ import { ALIGN_MODES, alignSelection, distribute } from "./arrange.js";
 import { openPageBackgroundDialog } from "./dialogs/page-background.js";
 
 /**
- * Bind the stage context menu.
+ * Bind the canvas context menu.
+ *
+ * The listener lives on the canvas element itself, not the stage: anything outside
+ * the canvas (stage padding, quickbar, FABs, thumbnail bar, topbar…) keeps the
+ * browser's native context menu by construction — no per-element exceptions.
  * @param {object} opts
- *  - stage: stage element (event source)
+ *  - canvas: canvas element (event source)
  *  - api: editor operations API
  *  - state / page / groupOf: state and hit normalization (clicking a group member selects the group)
  *  - view: view (zoomReset etc.)
  */
-export function bindContextMenu({ stage, api, state, page, groupOf, view }) {
+export function bindContextMenu({ canvas, api, state, page, groupOf, view }) {
   const ac = new AbortController();
-  if (!stage) return { destroy() {} };
+  if (!canvas) return { destroy() {} };
 
   const close = () => closePopupMenu();
 
@@ -158,12 +162,9 @@ export function bindContextMenu({ stage, api, state, page, groupOf, view }) {
   // --------------------------------------------------------------------------
   // Events
   // --------------------------------------------------------------------------
-  stage.addEventListener(
+  canvas.addEventListener(
     "contextmenu",
     (e) => {
-      // Keep the native menu inside the quickbar (color pickers/dropdowns keep
-      // browser abilities such as right-click paste)
-      if (e.target.closest?.(".quickbar")) return;
       e.preventDefault();
       const node = e.target.closest?.("[data-element-id]");
       const selected = api.getSelectedElements();
