@@ -9,10 +9,10 @@
 | # | 契约 | 入口 | 状态 |
 |---|---|---|---|
 | 4 | 包级入口 `exports` map + `contract.json` | `open-pptd`、`open-pptd/{model,renderer,writer,server,cli}` | **已冻结（本文详解）** |
-| 1 | 可挂载编辑器 `createEditor` | `open-pptd/editor` | 规划中（W1–W2 落地） |
-| 2 | 传输接缝 `ProjectSource` | `open-pptd/editor` 的 `options.source` | 规划中（W1–W2 落地） |
-| 3 | 主题注入（含 dark） | `open-pptd/editor` | 规划中（W1–W2 落地） |
-| 5 | 资源与配置解析 `paths` / `config` | `open-pptd/paths`、`open-pptd/config` | 规划中（W2 落地） |
+| 1 | 可挂载编辑器 `createEditor` | `open-pptd/editor` | **已实现（v2.0.0）** |
+| 2 | 传输接缝 `ProjectSource` | `open-pptd/editor` 的 `options.source` | **已实现（v2.0.0）** |
+| 3 | 主题注入（含 dark） | `open-pptd/editor` | **已实现（v2.0.0）** |
+| 5 | 资源与配置解析 `paths` / `config` | `open-pptd/paths`、`open-pptd/config` | **已实现（v2.0.0）** |
 
 包级契约版本 `CONTRACT_VERSION = 2`（`packages/index.js`），与 `contract.json` 的
 `contractVersion` 必须一致。
@@ -283,3 +283,45 @@ export function writeConfig(patch: object): void; // 浅合并写回，保留未
 ```
 
 下游**只消费 `paths`，不自己拼目录名字符串**（目录名归属由引擎独占）。
+
+---
+
+## 6. Host boot parameters (standalone entry `editor/main.js`)
+
+The standalone page is also the **embedding boot path**: a same-origin host may inject the
+boot parameters instead of forking the entry (added in v2.0.0, purely additive). Sources are
+read in priority order — query string first, then `window.__PPTD_BOOT__` (set by an inline
+script before `editor/main.js` executes). Every parameter is optional: with none of them
+set, the boot path is byte-for-byte the standalone behavior (same requests, same DOM, same
+`createEditor` arguments).
+
+| Parameter | Query string | `window.__PPTD_BOOT__` | Semantics |
+|---|---|---|---|
+| base | `?base=%2Fpptd` | `base: "/pptd"` | Site prefix handed to `httpSource({ base })` (contract 2): save → `POST <base>/api/save`, live reload → `EventSource(<base>/events)`. Default `""` (root-absolute, the plain `open-pptd serve` behavior). |
+| chrome | `?chrome=embedded` | `chrome: "embedded"` | Editor chrome preset forwarded to `createEditor` (contract 1). Only `"full"` / `"embedded"` are accepted; any other value is ignored with a `console.warn`. Default `"full"`. |
+| theme | — | `theme: { tokens?, mode? }` | Host theme override (contract 3) forwarded as `createEditor`'s `options.theme`; a `mode` also switches off the built-in tri-state palette. |
+
+Recommended embedding URL (document-relative, never root-absolute — the host document may
+live on a custom scheme such as `dsh-app://app`):
+
+```
+pptd/editor/index.html?deck=<encodeURIComponent("project/" + relDeck)>&base=%2Fpptd&chrome=embedded
+```
+
+`deck` is resolved against the editor's own site root, so a host serving the engine under
+the `/pptd/` prefix lands the project at `/pptd/project/...`, while `base=/pptd` routes the
+write/watch channels to `/pptd/api/save` and `/pptd/events`.
+
+### 6.1 postMessage protocol (same-origin embedding)
+
+| Direction | Message | Semantics |
+|---|---|---|
+| iframe → host | `{ type: "pptd:ready" }` | Posted once to `window.parent` right after the editor is mounted, and only when actually embedded (`window.parent !== window`); the host answers with the theme payload. |
+| host → iframe | `{ type: "pptd:theme", tokens: {...}, mode: "light" \| "dark" }` | Accepted only when `e.source === window.parent` and `e.origin === location.origin`; the hook restores the previous injection first, then applies `applyThemeTokens(document.documentElement, { tokens, mode })` (contract 3). |
+
+`window.__pptdTheme = { apply(opts) → restore, reset() }` exposes the same implementation
+for direct same-origin calls and tests.
+
+A host maps its own design tokens to the engine `TOKENS` names (`editor/theme.js`), reads
+them on `pptd:ready`, and re-sends on every light/dark switch; the injected theme wins over
+the built-in palette until `reset()` (or a later injection) is called.

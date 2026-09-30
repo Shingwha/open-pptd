@@ -9,15 +9,25 @@
 //     while the grant holds, otherwise show the restore card)
 //   - otherwise      → blank editor
 //
+// Host boot seam (contract 1 embedding): a same-origin host may inject the boot
+// parameters through the query string (highest priority) or window.__PPTD_BOOT__
+// (an inline script before this module runs); with none of them set, the boot path
+// is byte-for-byte the standalone behavior:
+//   ?base=   / __PPTD_BOOT__.base     site prefix for httpSource (default "")
+//   ?chrome= / __PPTD_BOOT__.chrome   "full" | "embedded" (other values ignored + warning)
+//   __PPTD_BOOT__.theme               { tokens?, mode? } → createEditor options.theme
+//
 // Public contract (zero behavior change; consumers: tests/e2e/incremental-load.mjs,
 // packages/renderer/headless/shoot.js):
 //   window.__pptdEditor = ed.api   editor operation facade
 //   window.__pptdIo     = ed.io    project IO (e2e calls saveProject() to verify write-back)
 //   window.__pptdShot              shot-mode only (set by app/shot.js)
+//   window.__pptdTheme  = { apply(opts), reset() }   host theme injection (contract 3)
 // ============================================================================
 
 import { createEditor } from "./editor.js";
 import { dom } from "./dom.js";
+import { applyThemeTokens } from "./theme.js";
 import { httpSource } from "./app/project/source.js";
 import { showToast } from "./app/toast.js";
 import { ensurePermission } from "./app/project/handle-io.js";
@@ -33,6 +43,40 @@ import { SHOT_ERROR_TITLE } from "../packages/model/index.js";
 
 // Repo root URL (this file lives in <root>/editor/, so ../ is the site root)
 const ROOT = new URL("../", import.meta.url).href;
+
+// ----------------------------------------------------------------------------
+// Host boot seam: query string > window.__PPTD_BOOT__ (both optional; see the
+// file header for the parameter table)
+// ----------------------------------------------------------------------------
+/** chrome presets a host may select through the boot seam (?shot=1 keeps its own path). */
+const BOOT_CHROME_VALUES = ["full", "embedded"];
+
+/**
+ * Resolve the boot parameters a host may inject.
+ * @param {URLSearchParams} params current location.search
+ * @returns {{ base: string|null, chrome: string|null, theme: object|null }}
+ */
+function readBootParams(params) {
+  const boot = window.__PPTD_BOOT__ && typeof window.__PPTD_BOOT__ === "object" ? window.__PPTD_BOOT__ : {};
+
+  // base: any string ("" = explicitly the root prefix, same as the default). The
+  // query string wins; an empty base stays falsy so the call shape below is the
+  // standalone one.
+  const baseRaw = params.get("base") ?? boot.base;
+  const base = typeof baseRaw === "string" ? baseRaw : null;
+
+  // chrome: only the two interactive presets are accepted; anything else is ignored
+  // instead of being forwarded to createEditor (which would treat it as an object spec).
+  const chromeRaw = params.get("chrome") ?? boot.chrome;
+  let chrome = null;
+  if (BOOT_CHROME_VALUES.includes(chromeRaw)) chrome = chromeRaw;
+  else if (chromeRaw) console.warn(`[main] 忽略无效的 chrome 启动参数: ${chromeRaw}`);
+
+  // theme: host token/mode override (contract 3); there is no query-string form.
+  const theme = boot.theme && typeof boot.theme === "object" ? boot.theme : null;
+
+  return { base, chrome, theme };
+}
 
 /**
  * Local project session restore: the last opened local project (gallery jump /
@@ -115,6 +159,41 @@ function showRestoreCard(io, entry) {
 }
 
 // ----------------------------------------------------------------------------
+// Host theme hook (contract 3, postMessage protocol): the embedding host sends
+// { type: "pptd:theme", tokens, mode } from window.parent at the same origin.
+// window.__pptdTheme exposes the same implementation for direct same-origin calls
+// and tests. Every application undoes the previous one first (last host wins);
+// boot-injected theme stays owned by createEditor and is untouched by reset().
+// ----------------------------------------------------------------------------
+let restoreHostTheme = null;
+
+/**
+ * Apply a host theme payload on the document root.
+ * @param {{ tokens?: Record<string,string>, mode?: "light"|"dark" }} [opts]
+ * @returns {() => void} restore function of this application (idempotent)
+ */
+function applyHostTheme(opts) {
+  restoreHostTheme?.();
+  restoreHostTheme = applyThemeTokens(document.documentElement, opts || {});
+  return restoreHostTheme;
+}
+
+/** Drop the current host theme injection (idempotent; no-op when none was applied). */
+function resetHostTheme() {
+  restoreHostTheme?.();
+  restoreHostTheme = null;
+}
+
+window.__pptdTheme = { apply: applyHostTheme, reset: resetHostTheme };
+window.addEventListener("message", (e) => {
+  if (e.source !== window.parent) return; // only the embedding parent may theme us
+  if (e.origin !== location.origin) return; // same-origin embedding only
+  const data = e.data;
+  if (!data || data.type !== "pptd:theme") return;
+  applyHostTheme({ tokens: data.tokens, mode: data.mode });
+});
+
+// ----------------------------------------------------------------------------
 // Boot: ?shot=1 screenshot; ?deck= loads the given project; with a session-restore
 // marker reopen it; otherwise blank
 // ----------------------------------------------------------------------------
@@ -135,16 +214,24 @@ async function boot() {
 
   // Blank init clears the session marker, so capture the pending id first
   const pendingId = deckUrl ? null : getPendingProjectId();
+  const bootParams = readBootParams(params);
   const root = dom.pptdRoot || document.body;
-  const ed = createEditor(root, {
-    source: httpSource({ deckUrl }),
+  const options = {
+    // no injected base → the standalone httpSource({ deckUrl }) call shape (base defaults to "")
+    source: httpSource(bootParams.base ? { base: bootParams.base, deckUrl } : { deckUrl }),
     deckUrl: deckUrl || null, // load it when ?deck= is present; otherwise createEditor starts blank silently
-    chrome: "full",
-  });
+    chrome: bootParams.chrome || "full",
+  };
+  if (bootParams.theme) options.theme = bootParams.theme;
+  const ed = createEditor(root, options);
 
   // Public test hooks (depended on by ui-shots.mjs / incremental-load.mjs / shoot.js)
   window.__pptdEditor = ed.api;
   window.__pptdIo = ed.io;
+
+  // Embedded host ping: one ready message once the editor is mounted (before the
+  // async initial load, so the host can inject the theme without a palette flash).
+  if (window.parent !== window) window.parent.postMessage({ type: "pptd:ready" }, location.origin);
 
   if (deckUrl) {
     clearPendingProject(); // URL project wins; clear the local-project session marker

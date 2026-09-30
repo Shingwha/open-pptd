@@ -6,7 +6,7 @@
 //   1. Export every component project under tests/projects/ → tests/projects/<name>/out/check-<name>.pptx
 //      (projects are auto-discovered: adding one only needs deck.pptd + pages/, no edit here)
 //   2. Run in-package reference integrity on each artifact (tests/regression/package-integrity.mjs)
-//   3. Every automated suite under tests/regression/ (see the suites list below)
+//   3. Every automated suite under tests/contract/ and tests/regression/ (see the suites list below)
 // Adding a regression: drop <name>.mjs into tests/regression/ and add one line to suites.
 // ============================================================================
 
@@ -48,8 +48,12 @@ for (const name of projects) {
   if (code2 !== 0) allOk = false;
 }
 
-// 2. Automated suites (tests/regression/)
+// 2. Automated suites (tests/contract/ + tests/regression/)
 const suites = [
+  // Package-level public contract (tests/contract/, contract 4): barrel export surface,
+  // CONTRACT_VERSION, contract.json ↔ package.json exports drift, editor/main.js boot seam.
+  // Fast and artifact-free — run before the regression suites so interface breakage is visible first.
+  ["包级公开契约（contract 4）", "node tests/contract/public-api.mjs"],
   ["依赖方向与环境全局", "node tests/regression/dep-graph.mjs"],
   ["背景尺寸随 deck.size", "node tests/regression/background-size.mjs"],
   ["校验器与导出闸门", "node tests/regression/validate.mjs"],
