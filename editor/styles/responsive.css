@@ -11,8 +11,9 @@
    restructure:
      - topbar: buttons become icon-only (labels hidden), brand name ellipsized to the logo only, horizontal scroll
      - inspector: a bottom sheet (55vh); the entry is a round inspector button bottom-right
-     - thumbbar: 96px → 64px, thumbnails 140×79 → 88×50
-     - quickbar: docked to the bottom and horizontally scrollable; add-menu / dialogs: bottom-sheet style
+     - thumbbar: 96px → 64px, thumbnails 140×79 → 88×50, zoom group at the 24px step
+     - quickbar: docked above the bottom-right action stack, horizontally scrollable
+       (its controls keep their size and the row scrolls); add-menu / dialogs: bottom-sheet style
    ============================================================================ */
 @media (max-width: 900px) {
   /* -- Topbar: iconify + compress -- */
@@ -72,6 +73,17 @@
 
   /* -- Canvas controls: pin the action stack to the edge -- */
   body .fab-stack { right: 14px; bottom: 16px; }
+  /* D5 at narrow: the sheet only exists while body.inspector-open, so the desktop rule
+     "panel is visible ⇒ the entry reads active" (primitives.css) must not paint the
+     resting FAB accent — white ground + ink icon until the sheet is open. The id
+     selector outranks the primitive's .fab:hover/:active washes, so both are restated. */
+  body:not(.inspector-open) #btn-inspector-open {
+    background: var(--panel);
+    border-color: var(--line-strong);
+    color: var(--ink);
+  }
+  body:not(.inspector-open) #btn-inspector-open:hover { background: var(--hover); border-color: var(--sub); }
+  body:not(.inspector-open) #btn-inspector-open:active { background: var(--active); }
   body .add-menu {
     left: 10px;
     right: 10px;
@@ -81,17 +93,23 @@
     border-radius: var(--radius-lg);
   }
 
-  /* -- Quickbar: docked to the bottom, horizontally scrollable (JS skips left/top positioning, see view.js) -- */
+  /* -- Quickbar: docked above the bottom-right action stack, horizontally scrollable (JS skips left/top positioning, see view.js) -- */
+  /* Docked clearance = thumb bar 64 + stage inset 16 + FAB 46 + stack gap 10 + FAB 46
+     + 8px of air. The old 64+12+46 put the bar inside the top FAB (measured 41.6×28px
+     overlap at 480×840); ≤480 only shrinks the inset (12), so the air grows. */
   body .quickbar {
     position: fixed;
     left: 50%;
     right: auto;
     top: auto;
-    bottom: calc(64px + 12px + 46px);
+    bottom: calc(64px + 118px + 8px);
     max-width: 94vw;
     overflow-x: auto;
     z-index: var(--z-dropdown);
   }
+  /* Controls keep their box and the row scrolls: as plain flex children they shrink
+     below their own min (measured 28px .qb-color → 12px, .qb-icon-btn → 16px) */
+  body .quickbar > * { flex: 0 0 auto; }
   body .quickbar::-webkit-scrollbar { display: none; }
 
   /* -- Thumbbar: miniaturized -- */
@@ -100,7 +118,19 @@
   body .thumb .thumb-num { font-size: var(--text-xs); padding: 0 5px; left: 2px; bottom: 2px; }
   body .thumb .thumb-del { top: 2px; right: 2px; width: 16px; height: 16px; }
   body .thumb-add { width: 34px; height: 34px; font-size: var(--text-lg); }
-  body .thumbbar-meta { font-size: var(--text-xs); padding-right: 2px; }
+  /* Page strip: 50px thumb + thin rail + 2px paddings fit the 64px bar (the desktop
+     8+50+10 padding already overflowed it, and layout.css's scrollbar-color puts this
+     strip on the standard scrollbar path, so scrollbar-width applies) */
+  body .page-thumbs { padding: 2px; scrollbar-width: thin; }
+  /* Right end: zoom group at the 24px step (--h-sm) + page count, tightened to one 8px gap */
+  body .thumbbar-meta {
+    font-size: var(--text-xs);
+    gap: var(--space-2);
+    padding-left: var(--space-2);
+    padding-right: 2px;
+  }
+  body .zoom-ctl .icon-btn { width: var(--h-sm); height: var(--h-sm); }
+  body .zoom-label { min-width: 38px; }
 
   /* -- Dialogs: bottom sheet -- */
   body .dialog-overlay { align-items: flex-end; }
@@ -129,4 +159,11 @@
   body .fab-stack { right: 10px; bottom: 12px; }
   body .theme-panel { width: min(320px, calc(100vw - 16px)); }
   body .font-panel { width: min(400px, calc(100vw - 16px)); }
+  /* Zoom group: drop the fit-to-view button (⛶) and its separator so the page count
+     and the thumbnail strip keep their room; double-click on the label still resets */
+  body #btn-zoom-reset, body .zoom-sep { display: none; }
+  /* Gallery card grid: a 320px track overflows the padded container below ~360px
+     (measured at 320: 320px track in a 280px box); min() clamps it to the row */
+  body .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); }
+  body .gallery-grid.poster-grid { grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); }
 }
