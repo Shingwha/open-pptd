@@ -64,6 +64,9 @@ const suites = [
   ["资源路径解析（契约 5）", "node tests/regression/resource-paths.mjs"],
   ["排版度量（measure）", "node tests/regression/measure.mjs"],
   ["布局与越界事实（layout）", "node tests/regression/layout.mjs"],
+  // UI literal gate (spec 2026-09-30-ui-redesign-line T2): color literals only in tokens.css,
+  // box-shadow only through var(--shadow-*); frozen whitelist for the data-grid inset fills
+  ["UI 令牌字面量门禁", "node tests/regression/ui-token-literals.mjs"],
 ];
 for (const [name, cmd] of suites) {
   const { code, stdout } = await run(cmd);
