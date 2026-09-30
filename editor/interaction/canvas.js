@@ -19,6 +19,7 @@
 
 import { overlayGeom, layoutElementOf } from "../coords.js";
 import { ICON_ROTATE } from "../icons.js";
+import { snapMove, snapResize, SNAP_SCREEN_PX } from "./align-guides.js";
 
 const CORNERS = ["nw", "ne", "sw", "se"];
 const CORNER_CURSOR = { nw: "nwse-resize", se: "nwse-resize", ne: "nesw-resize", sw: "nesw-resize" };
@@ -49,6 +50,7 @@ export function createCanvasController(canvas, opts) {
   let marqueeEl = null; // .marquee dashed box
   let marquee = null;   // marquee state
   let drag = null;
+  let guidesEl = null;  // .align-guides smart-guide layer (lazy; lives in wrapLayer, spans the canvas)
   const ac = new AbortController(); // lifecycle: document keyboard listener detached via this
 
   const scale = () => canvas._scale || 1;
@@ -383,6 +385,9 @@ export function createCanvasController(canvas, opts) {
       start.startAngle = Math.atan2(e.clientY - rect.top - cy * s, e.clientX - rect.left - cx * s);
     }
     drag = start;
+    // Smart guides need alignment targets for position gestures (rotate snaps by angle, not position);
+    // start.affected is the mapped [{el, x, y, w, h}] list
+    if (mode !== "rotate") start.snapCtx = snapContext(start.affected);
     try {
       e.target.setPointerCapture?.(e.pointerId);
     } catch {
@@ -425,6 +430,60 @@ export function createCanvasController(canvas, opts) {
     syncSvgSize(node, el.bounds);
   }
 
+  // --------------------------------------------------------------------------
+  // Smart alignment guides (PowerPoint-style red lines): a layer over the canvas
+  // in the un-scaled wrap, so a guide is always 1 screen px at any zoom
+  // --------------------------------------------------------------------------
+  function guidesLayer() {
+    if (!guidesEl) {
+      guidesEl = document.createElement("div");
+      guidesEl.className = "align-guides";
+      wrapLayer.appendChild(guidesEl);
+    }
+    return guidesEl;
+  }
+
+  function renderGuides(guides) {
+    const layer = guidesLayer();
+    layer.textContent = "";
+    if (!guides.length) {
+      layer.classList.remove("show");
+      return;
+    }
+    const s = scale();
+    const cr = canvas.getBoundingClientRect();
+    const wr = wrapLayer.getBoundingClientRect();
+    layer.style.left = `${cr.left - wr.left}px`;
+    layer.style.top = `${cr.top - wr.top}px`;
+    layer.style.width = `${cr.width}px`;
+    layer.style.height = `${cr.height}px`;
+    for (const g of guides) {
+      const line = document.createElement("div");
+      line.className = `align-guide ${g.axis === "x" ? "ag-v" : "ag-h"}`;
+      if (g.axis === "x") line.style.left = `${g.pos * s - 0.5}px`;
+      else line.style.top = `${g.pos * s - 0.5}px`;
+      layer.appendChild(line);
+    }
+    layer.classList.add("show");
+  }
+
+  function clearGuides() {
+    if (!guidesEl) return;
+    guidesEl.textContent = "";
+    guidesEl.classList.remove("show");
+  }
+
+  /** Alignment context for a drag: every non-affected element's box + the page size (deck px). */
+  function snapContext(affected) {
+    const skip = new Set(affected.map((a) => a.el.elementId));
+    return {
+      others: elements()
+        .filter((el) => !skip.has(el.elementId) && Array.isArray(el.bounds))
+        .map((el) => ({ x: el.bounds[0], y: el.bounds[1], w: el.bounds[2], h: el.bounds[3] })),
+      page: { w: canvas.offsetWidth, h: canvas.offsetHeight },
+    };
+  }
+
   function onDragMove(e) {
     if (!drag) return;
     const s = scale();
@@ -438,8 +497,8 @@ export function createCanvasController(canvas, opts) {
         drag.clientY = e.clientY;
       }
     }
-    const dx = (e.clientX - drag.clientX) / s;
-    const dy = (e.clientY - drag.clientY) / s;
+    const rawDx = (e.clientX - drag.clientX) / s;
+    const rawDy = (e.clientY - drag.clientY) / s;
 
     if (drag.mode === "rotate") {
       const rect = canvas.getBoundingClientRect();
@@ -456,6 +515,19 @@ export function createCanvasController(canvas, opts) {
     }
 
     if (drag.mode === "move") {
+      // Smart guides: probe the selection box at the raw position, snap to the nearest target
+      let dx = rawDx;
+      let dy = rawDy;
+      if (drag.snapCtx) {
+        const probe = { x: drag.box0[0] + dx, y: drag.box0[1] + dy, w: drag.box0[2], h: drag.box0[3] };
+        // An axis without real movement stays passive: no snap, no guide (a zero-delta
+        // coincidence like a shared left margin would otherwise draw a line on every drag)
+        const axes = { x: Math.abs(rawDx) >= 1, y: Math.abs(rawDy) >= 1 };
+        const snap = snapMove(probe, drag.snapCtx.others, drag.snapCtx.page, SNAP_SCREEN_PX / s, axes);
+        dx += snap.dx;
+        dy += snap.dy;
+        renderGuides(snap.guides);
+      }
       for (const a of drag.affected) {
         a.el.bounds[0] = Math.round(a.x + dx);
         a.el.bounds[1] = Math.round(a.y + dy);
@@ -468,6 +540,8 @@ export function createCanvasController(canvas, opts) {
     // Resize: relative to the selection bounding box, applied proportionally to each affected element
     const box0 = drag.box0;
     const m = drag.mode;
+    let dx = rawDx;
+    let dy = rawDy;
     let nx = box0[0];
     let ny = box0[1];
     let nw = box0[2];
@@ -486,6 +560,19 @@ export function createCanvasController(canvas, opts) {
     if (e.altKey && CORNERS.includes(m) && box0[2] > 0 && box0[3] > 0) {
       nh = Math.max(8, Math.round(nw * (box0[3] / box0[2])));
       if (m.includes("n")) ny = box0[1] + box0[3] - nh;
+    }
+    // Smart guides: only the moving edges snap (east/west, south/north)
+    if (drag.snapCtx) {
+      const edges = {
+        x: m.includes("e") ? "e" : m.includes("w") ? "w" : null,
+        y: m.includes("s") ? "s" : m.includes("n") ? "n" : null,
+      };
+      const snap = snapResize({ x: nx, y: ny, w: nw, h: nh }, edges, drag.snapCtx.others, drag.snapCtx.page, SNAP_SCREEN_PX / s);
+      if (edges.x === "e") nw = Math.max(8, nw + snap.dx);
+      else if (edges.x === "w") { nx += snap.dx; nw = Math.max(8, nw - snap.dx); }
+      if (edges.y === "s") nh = Math.max(8, nh + snap.dy);
+      else if (edges.y === "n") { ny += snap.dy; nh = Math.max(8, nh - snap.dy); }
+      renderGuides(snap.guides);
     }
     const sx = box0[2] ? nw / box0[2] : 1;
     const sy = box0[3] ? nh / box0[3] : 1;
@@ -514,6 +601,7 @@ export function createCanvasController(canvas, opts) {
     if (!drag) return;
     const d = drag;
     drag = null;
+    clearGuides();
     window.removeEventListener("pointermove", onDragMove);
     window.removeEventListener("pointerup", onDragEnd);
     window.removeEventListener("pointercancel", onDragEnd);

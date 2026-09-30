@@ -67,6 +67,7 @@ const suites = [
   // UI literal gate (spec 2026-09-30-ui-redesign-line T2): color literals only in tokens.css,
   // box-shadow only through var(--shadow-*); frozen whitelist for the data-grid inset fills
   ["UI 令牌字面量门禁", "node tests/regression/ui-token-literals.mjs"],
+  ["智能参考线吸附（align-guides）", "node tests/regression/align-guides.mjs"],
 ];
 for (const [name, cmd] of suites) {
   const { code, stdout } = await run(cmd);
