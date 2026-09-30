@@ -100,24 +100,20 @@ registerType({
 
   quickbar(el, h) {
     const c = el.content || {};
-    h.label("字体");
-    h.select(h.fontOptions(), c.fontFamily || "", (v) =>
+    h.select("字体", h.fontOptions(), c.fontFamily || "", (v) =>
       h.change(() => {
         if (v) el.content.fontFamily = v;
         else delete el.content.fontFamily;
       })
     );
-    h.label("字号");
-    h.select(FONT_SIZE_OPTIONS.map((n) => [String(n || ""), n ? `${n}px` : "默认 18px"]), String(c.fontSize || ""), (v) =>
+    h.select("字号", FONT_SIZE_OPTIONS.map((n) => [String(n || ""), n ? `${n}px` : "默认 18px"]), String(c.fontSize || ""), (v) =>
       h.change(() => {
         el.content.fontSize = v ? Number(v) : null;
       })
     );
-    h.label("样式");
     h.btn("B", "加粗", () => h.change(() => (el.content.bold = !el.content.bold)), c.bold);
     h.btn("I", "斜体", () => h.change(() => (el.content.italic = !el.content.italic)), c.italic);
-    h.label("对齐");
-    h.select(ALIGN_OPTIONS, Array.isArray(c.align) ? c.align[0] : "left", (v) =>
+    h.select("对齐", ALIGN_OPTIONS, Array.isArray(c.align) ? c.align[0] : "left", (v) =>
       h.change(() => {
         if (!el.content) el.content = {};
         // Default vertical alignment is top (matches PowerPoint) so that changing
@@ -125,7 +121,6 @@ registerType({
         el.content.align = [v, c.align?.[1] || "top"];
       })
     );
-    h.label("颜色");
-    h.color(c.color || "$text", (v) => h.change(() => (el.content.color = v)));
+    h.color("颜色", c.color || "$text", (v) => h.change(() => (el.content.color = v)));
   },
 });

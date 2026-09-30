@@ -279,7 +279,3 @@ export function quickbarIconBtn(icon, title, onClick) {
   b.innerHTML = icon;
   return b;
 }
-
-export function quickbarTextBtn(label, title, onClick) {
-  return button(label, onClick, { title, className: "qb-text-btn" });
-}

@@ -5,6 +5,9 @@
 import { svgIcon } from "../ui.js";
 import { nextElementId, registerType } from "../../packages/model/index.js";
 
+/** Quickbar "edit data" glyph (inline SVG next to its only consumer; stroke inherits currentColor). */
+const ICON_EDIT = svgIcon('<path d="M4.5 19.5h3.6L19.4 8.2a1.9 1.9 0 0 0-2.7-2.7L5.4 16.8l-.9 2.7z"/><path d="M14.6 6.6l2.7 2.7"/>');
+
 registerType({
   type: "table",
   label: "表格",
@@ -47,6 +50,6 @@ registerType({
   },
 
   quickbar(el, h) {
-    h.textBtn("数据…", "编辑表格内容", () => h.change(() => h.openEditor(el)));
+    h.iconBtn(ICON_EDIT, "编辑表格内容", () => h.change(() => h.openEditor(el)));
   },
 });

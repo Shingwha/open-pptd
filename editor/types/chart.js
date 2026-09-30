@@ -46,6 +46,9 @@ const TREE_ROWS = [["全公司", 100, null], ["华东", 45, "全公司"], ["华�
 const SUNBURST_ROWS = TREE_ROWS;
 const SANKEY_ROWS = [["A", "B", 40], ["A", "C", 60], ["B", "D", 25], ["B", "E", 15], ["C", "E", 35], ["C", "F", 25]];
 
+/** Quickbar "edit data" glyph (inline SVG next to its only consumer; stroke inherits currentColor). */
+const ICON_EDIT = svgIcon('<path d="M4.5 19.5h3.6L19.4 8.2a1.9 1.9 0 0 0-2.7-2.7L5.4 16.8l-.9 2.7z"/><path d="M14.6 6.6l2.7 2.7"/>');
+
 registerType({
   type: "chart",
   label: "图表",
@@ -92,8 +95,7 @@ registerType({
   },
 
   quickbar(el, h) {
-    h.label("类型");
-    h.select(CHART_TYPES, el.series?.[0]?.type || "bar", (v) =>
+    h.select("类型", CHART_TYPES, el.series?.[0]?.type || "bar", (v) =>
       h.change(() => {
         const s = el.series[0];
         s.type = v;
@@ -101,6 +103,6 @@ registerType({
         if (v !== "pie" && s.innerRadius != null) delete s.innerRadius;
       })
     );
-    h.textBtn("数据…", "编辑图表数据", () => h.change(() => h.openEditor(el)));
+    h.iconBtn(ICON_EDIT, "编辑图表数据", () => h.change(() => h.openEditor(el)));
   },
 });

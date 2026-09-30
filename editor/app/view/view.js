@@ -10,7 +10,7 @@
 // ============================================================================
 
 import { getType } from "../../types/index.js";
-import { quickbarColor, quickbarSelect, quickbarBtn, quickbarIconBtn, quickbarTextBtn, isNarrow, svgIcon } from "../../ui.js";
+import { quickbarColor, quickbarSelect, quickbarBtn, quickbarIconBtn, isNarrow, svgIcon } from "../../ui.js";
 import { relRect, setLayoutPage } from "../../coords.js";
 import { createViewport, deckSize } from "./viewport.js";
 import { createThumbnails } from "./thumbnails.js";
@@ -199,7 +199,6 @@ export function createView({ state, page, selected, api, controller, props, ops 
       fontOptions: () => api.fontOptions?.() || [["", "默认"]],
       btn: (label, title, onClick, active) => qb.appendChild(quickbarBtn(label, title, onClick, active)),
       iconBtn: (icon, title, onClick) => qb.appendChild(quickbarIconBtn(icon, title, onClick)),
-      textBtn: (label, title, onClick) => qb.appendChild(quickbarTextBtn(label, title, onClick)),
       change(fn) {
         api.beginChange();
         fn();
