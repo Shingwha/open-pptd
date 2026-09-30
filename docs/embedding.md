@@ -33,9 +33,9 @@
 | `open-pptd/writer` | `packages/writer/index.js` | `buildPptx` / `downloadPptx` / `downloadBlob` / `magicMatches` / `ZipWriter`；命名空间 `xml` / `parts` / `text` |
 | `open-pptd/server` | `packages/server/index.js` | `createServer` / `startServer` / `PROJECT_ROOT` |
 | `open-pptd/cli` | `packages/cli/index.js` | `runCheck` / `exportDeck` / `exportProject` / `runRender` / `runFonts` / `runIcons` / `runGallery` |
-| `open-pptd/editor` | `editor/index.js` | 契约 1/2/3（规划中） |
-| `open-pptd/paths` | `packages/paths.js` | 契约 5（规划中） |
-| `open-pptd/config` | `packages/config.js` | 契约 5（规划中） |
+| `open-pptd/editor` | `editor/index.js` | 契约 1/2/3：`createEditor`、`ProjectSource` 四实现、主题注入（browser-only，Node 不得 import） |
+| `open-pptd/paths` | `packages/paths.js` | 契约 5：home 布局、`resourceRoots`、`resolveCliRoot` 等 |
+| `open-pptd/config` | `packages/config.js` | 契约 5：`readConfig` / `writeConfig` |
 | `open-pptd/measure` | `packages/measure/index.js` | 统一排版度量：`measureTextRuns` / `measureCell` / `measureTable` / `lineHeightMultiplierFor` / `fontMetricsMeasure`（MeasurePort 默认实现）+ 度量表 |
 | `open-pptd/layout` | `packages/layout/index.js` | `layout(deck, measure?) → LayoutTree`（最终几何 + overflow 事实） |
 | `open-pptd/editor/index.html` | `editor/index.html` | 编辑器页面 |
@@ -182,9 +182,9 @@ node tests/regression/dep-graph.mjs    # 依赖方向与环境全局（含 barre
 
 ---
 
-## 2. 契约 1：可挂载编辑器 `createEditor`（规划中，W1–W2 落地）
+## 2. 契约 1：可挂载编辑器 `createEditor`（已实现，v2.0.0）
 
-> 状态：**规划中**，签名如下（`integration-plan.md` 附录 D.2），本波次不实现。
+> 状态：**已实现**（v2.0.0），签名如下（`integration-plan.md` 附录 D.2）。
 
 ```js
 // open-pptd/editor
@@ -212,9 +212,9 @@ export function createEditor(rootEl, options);
 
 ---
 
-## 3. 契约 2：传输接缝 `ProjectSource`（规划中，W1–W2 落地）
+## 3. 契约 2：传输接缝 `ProjectSource`（已实现，v2.0.0）
 
-> 状态：**规划中**，签名如下（`integration-plan.md` 附录 D.3）。
+> 状态：**已实现**（v2.0.0），签名如下（`integration-plan.md` 附录 D.3）。
 
 ```js
 /**
@@ -237,9 +237,9 @@ export function memorySource({ files = {} } = {});          // 测试与嵌入
 
 ---
 
-## 4. 契约 3：主题注入（规划中，W1–W2 落地）
+## 4. 契约 3：主题注入（已实现，v2.0.0）
 
-> 状态：**规划中**，签名如下（`integration-plan.md` 附录 D.4）。引擎自备 light / dark
+> 状态：**已实现**（v2.0.0），签名如下（`integration-plan.md` 附录 D.4）。引擎自备 light / dark
 > 两套内置令牌值，下游不必自己猜暗色。
 
 ```js
@@ -254,9 +254,9 @@ export function applyThemeTokens(
 
 ---
 
-## 5. 契约 5：资源与配置解析 `paths` / `config`（规划中，W2 落地）
+## 5. 契约 5：资源与配置解析 `paths` / `config`（已实现，v2.0.0）
 
-> 状态：**规划中**，签名如下（`integration-plan.md` 附录 D.1 的 `open-pptd/paths` /
+> 状态：**已实现**（v2.0.0），签名如下（`integration-plan.md` 附录 D.1 的 `open-pptd/paths` /
 > `open-pptd/config` 段，消费方式见附录 D.8）。规则：**读三级**（`$OPEN_PPTD_HOME` →
 > `~/.open-pptd` → 包内 `assets`）**写一级**（永远写 `~/.open-pptd`）；
 > `registry.json` 永远只读包内。

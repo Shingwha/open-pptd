@@ -6,8 +6,8 @@ barrels, `CONTRACT_VERSION`, and the one-to-one consistency between `contract.js
 
 Difference from `tests/regression/`: `tests/regression/` verifies **runtime behavior** (exporting a
 PPTX, rendering, dependency direction); `tests/contract/` verifies only the **public interface
-shape**. It is fast, needs no example project, and produces no artifacts. It is **not** launched by
-`tests/run-all.mjs` (run-all only collects the `tests/regression/` list); run it separately or on demand.
+shape**. It is fast, needs no example project, and produces no artifacts. It is part of
+`tests/run-all.mjs` (since the boot-seam wave) and can also be run standalone on demand.
 
 ## Run
 
