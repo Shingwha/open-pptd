@@ -362,7 +362,19 @@ html:has(.gallery-view) {
 .series-item .color-swatch-btn { width: 20px; height: 20px; border-radius: var(--radius); }
 .series-item .color-field input[type="color"] { width: 24px; height: 20px; border-radius: var(--radius); }
 .series-item .color-hex { width: 52px; flex: none; padding: 2px var(--space-1); font-size: var(--text-xs); }
-.series-item input { padding: var(--space-1) 6px; font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--radius); }
+/* Series name/hex inputs: the same line input language as the type dropdown */
+.series-item input {
+  padding: var(--space-1) 6px;
+  font-size: var(--text-sm);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--ink);
+  outline: none;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.series-item input:hover { border-color: var(--sub); }
+.series-item input:focus-visible { outline: none; border-color: var(--sel-ring); }
 .series-item input[type="text"] { flex: 1; min-width: 60px; }
 /* Series-type dropdown: the shared line input language (white ground, 1px --line-strong,
    hover --sub, a single 1px accent focus ring from the border) */
