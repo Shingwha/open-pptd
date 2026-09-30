@@ -295,7 +295,7 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .prop-cell { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 .prop-cell-label { font-size: var(--text-xs); color: var(--faint); }
 
-/* -- Icon tool row (align / layer): transparent ground, 1px frame, 28px tall -- */
+/* -- Align tool row: transparent ground, 1px frame, 28px tall -- */
 .prop-icon-row {
   display: flex;
   gap: var(--space-1);
