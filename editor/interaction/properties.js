@@ -2,7 +2,8 @@
 // interaction/properties.js — property panel (declarative field renderer)
 // ----------------------------------------------------------------------------
 // Layout template (one rule for every type):
-//   [single] element head (badge + id + duplicate + delete)
+//   [single] element head (badge + duplicate + delete; the internal elementId is
+//            not user-facing and is not rendered)
 //            → position & size (X/Y/W/H + align (page))
 //            → transform (rotation/opacity + flip)
 //            → type groups (declared by types/*.js props → groups)
@@ -123,7 +124,7 @@ export function bindProperties(panel, api) {
     }
   }
 
-  /** Element head: type badge + elementId + duplicate + delete. */
+  /** Element head: type badge + duplicate + delete (the elementId is an internal detail, not shown). */
   function itemHead(el) {
     const head = document.createElement("div");
     head.className = "inspector-item";
@@ -131,12 +132,9 @@ export function bindProperties(panel, api) {
     const badge = document.createElement("span");
     badge.className = "inspector-badge";
     badge.textContent = def?.label || el.elementType;
-    const id = document.createElement("code");
-    id.className = "inspector-elid";
-    id.textContent = el.elementId;
     const dup = ui.button("复制", () => { beginChange(); duplicateSelected(); endChange(); }, { className: "btn btn-sm", title: "复制元素（Ctrl+D）" });
     const del = ui.button("删除", () => { beginChange(); deleteSelected(); endChange(); }, { className: "btn btn-sm btn-danger" });
-    head.append(badge, id, dup, del);
+    head.append(badge, dup, del);
     return head;
   }
 
