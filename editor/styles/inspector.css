@@ -68,11 +68,12 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .inspector-badge {
   flex: 0 0 auto;
   font-size: var(--text-xs);
-  font-weight: 700;
-  color: var(--primary);
-  background: var(--primary-soft);
-  border-radius: var(--radius-lg);
-  padding: 1px 9px;
+  font-weight: 600;
+  color: var(--sub);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
 }
 
 /* -- Selected element head (badge + duplicate + delete; no fill, closed by a hairline) -- */

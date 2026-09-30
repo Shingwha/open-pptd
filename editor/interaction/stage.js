@@ -40,7 +40,7 @@ export function createStageController(stage, opts) {
 
   // Floating controls carry their own click/scroll behaviour and are not stage gestures
   const FLOATING =
-    ".zoom-ctl, .fab-stack, .add-menu, .quickbar, " +
+    ".fab-stack, .add-menu, .quickbar, " +
     "button, input, textarea, select, [contenteditable]";
   const isFloating = (t) => !!t.closest(FLOATING);
 

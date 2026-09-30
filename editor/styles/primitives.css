@@ -437,7 +437,7 @@ body:not(.inspector-collapsed) #btn-inspector-open {
 .add-chart-item:hover svg { color: var(--ink); }
 
 /* ----------------------------------------------------------------------------
-   Unified toast — same look as the quickbar (white, thin border, light shadow);
+   Unified toast — same look as the quickbar (white, thin border, no shadow);
    the type is distinguished by a small dot
    ---------------------------------------------------------------------------- */
 .toast-container {
