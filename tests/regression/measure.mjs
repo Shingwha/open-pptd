@@ -7,6 +7,9 @@
 //    estimate for 20 representative texts against scrollHeight, print the error
 //    distribution, and assert P95(|relative error|) ≤ 8%; table cell height error ≤ 4px.
 // No browser → the DOM cross-check prints SKIP (the pure-function part still runs).
+// Browser present but the baseline font (Microsoft YaHei) unavailable (e.g. CI runners)
+// → SKIP as well: the DOM then renders in a fallback font and is not comparable to the
+// font-metrics-driven estimate.
 // ============================================================================
 
 import { spawn } from "node:child_process";
@@ -89,6 +92,13 @@ try {
   cdp = await connectCdp(dbgPort, 20000);
   await cdp.send("Runtime.enable");
   await cdp.send("Page.enable");
+
+  const fontOk = await cdp.evalJs(`document.fonts.check('16px "Microsoft YaHei"')`);
+  if (fontOk !== true) {
+    console.log("SKIP  DOM 对拍（环境缺基准字体 Microsoft YaHei——回退字体渲染与度量表估算无可比性）");
+    profile.kill();
+    process.exit(ok ? 0 : 1);
+  }
 
   const domResults = await cdp.evalJs(`(async () => {
     const cases = ${JSON.stringify(cases)};
