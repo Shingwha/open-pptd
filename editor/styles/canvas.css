@@ -253,43 +253,45 @@
 
 /* ==== quickbar — floating quick-adjust bar (when an element is selected) ==== */
 
+/* D3 composition: [type badge] [type core controls] [⋯ property panel] [delete icon button].
+   Fine-line language (D1): white ground + 1px --line-strong hairline, no projection; the 4px
+   gap alone separates the controls (labels are gone, meaning rides on each control's title). */
 .quickbar {
   position: absolute;
   z-index: var(--z-dropdown);
   display: none;
   align-items: center;
-  gap: 5px;
-  padding: 6px 9px;
+  gap: var(--space-1);
+  padding: 4px 6px;
   background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
   white-space: nowrap;
   transform: translateX(-50%);
 }
 .quickbar.show { display: flex; }
 
+/* Type badge: a small pale chip (no accent fill — a tint stays reserved for on-states) */
 .qb-type {
   font-size: var(--text-xs);
-  font-weight: 700;
-  color: var(--primary);
-  background: var(--primary-soft);
-  border-radius: var(--radius-lg);
-  padding: 1px var(--space-2);
+  font-weight: 600;
+  color: var(--sub);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
   margin-right: 2px;
 }
 
-.qb-label {
-  font-size: var(--text-xs);
-  color: var(--faint);
-  margin-left: 3px;
-}
-
+/* Framed controls (select / color): white + 1px --line-strong at rest, hover border --sub,
+   focus turns that same border accent — exactly one 1px ring (the W1 control language).
+   --control-h pins every quickbar control to 28px; the font dropdown is the only one that
+   may grow, capped at ~150px so long family names do not stretch the bar. */
 .qb-select {
-  height: 26px;
-  max-width: 110px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  height: var(--control-h);
+  max-width: 150px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
   padding: 0 var(--space-1);
   font-size: var(--text-sm);
   color: var(--ink);
@@ -298,36 +300,36 @@
   cursor: pointer;
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.qb-select:hover { border-color: var(--faint); }
+.qb-select:hover { border-color: var(--sub); }
 .qb-select:focus-visible {
   outline: none;
-  border-color: var(--primary);
-  outline: 1px solid var(--sel-ring); outline-offset: 0;
+  border-color: var(--sel-ring);
 }
 
 .qb-color {
-  width: 26px;
-  height: 26px;
+  width: var(--control-h);
+  height: var(--control-h);
   padding: 2px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
   background: var(--panel);
   cursor: pointer;
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.qb-color:hover { border-color: var(--faint); }
+.qb-color:hover { border-color: var(--sub); }
 .qb-color:focus-visible {
   outline: none;
-  border-color: var(--primary);
-  outline: 1px solid var(--sel-ring); outline-offset: 0;
+  border-color: var(--sel-ring);
 }
 
+/* Unframed toggle buttons (B / I): hover is a neutral wash; .on marks the persistent
+   bold/italic state and is the only tinted fill in the bar */
 .qb-btn {
-  min-width: 26px;
-  height: 26px;
+  min-width: var(--control-h);
+  height: var(--control-h);
   padding: 0 var(--space-1);
   border: 0;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   background: none;
   font-size: var(--text-sm);
   font-weight: 700;
@@ -335,26 +337,28 @@
   cursor: pointer;
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.qb-btn:hover { background: var(--bg); color: var(--primary); }
-.qb-btn:active { background: var(--line); }
-.qb-btn:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; color: var(--primary); }
-.qb-btn.on { background: var(--primary-soft); color: var(--primary); }
+.qb-btn:hover { background: var(--hover); color: var(--ink); }
+.qb-btn:active { background: var(--active); }
+.qb-btn:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
+.qb-btn.on { background: var(--accent-soft); color: var(--accent); }
 
-.qb-text-btn {
-  height: 26px;
-  padding: 0 9px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--panel);
-  font-size: var(--text-sm);
-  color: var(--ink);
+/* Icon-only buttons (⋯ / delete / 更换 / 数据): square 28px, unframed, same hover/focus
+   rules as the toggles; the 16px glyph inherits currentColor from svgIcon */
+.qb-icon-btn {
+  width: var(--control-h);
+  height: var(--control-h);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--sub);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.qb-text-btn:hover { border-color: var(--primary); color: var(--primary); }
-.qb-text-btn:active { background: var(--bg); }
-.qb-text-btn:focus-visible {
-  outline: none;
-  border-color: var(--primary);
-  outline: 1px solid var(--sel-ring); outline-offset: 0;
-}
+.qb-icon-btn:hover { background: var(--hover); color: var(--ink); }
+.qb-icon-btn:active { background: var(--active); }
+.qb-icon-btn:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; color: var(--ink); }
+.qb-icon-btn svg { width: 16px; height: 16px; }
