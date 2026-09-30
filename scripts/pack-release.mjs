@@ -43,7 +43,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 // ---- Whitelist: files/dirs included in the release zip ----
 const WHITELIST = [
   "README.md",
-  "README.en.md",
+  "README.zh-CN.md",
   "index.html",
   "package.json",
   "contract.json",

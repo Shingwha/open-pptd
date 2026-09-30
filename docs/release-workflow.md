@@ -77,13 +77,12 @@ git tag -a v1.1.0 -F notes.md --cleanup=verbatim
 白名单的单一事实来源是 [`scripts/pack-release.mjs`](../scripts/pack-release.mjs) 顶部的 `WHITELIST` 数组（10 项）：
 
 ```
-README.md / README.en.md / SKILL.md / index.html / package.json
-bin/ / packages/ / editor/ / references/ / assets/fonts/registry.json
+README.md / README.zh-CN.md / index.html / package.json / contract.json
+bin/ / packages/ / editor/ / assets/fonts/registry.json / assets/icons/registry.json
 ```
 
-- **不含**：tests、docs、examples、.github、scripts、.gitignore、字体与图标 SVG 本体（registry.json 元数据入包，本体经 CLI download）——发布包只装 skill 运行时
-- zip 顶层目录为 `open-pptd/`，解压到 skills 文件夹即完成安装
-- 字体文件本体（约 155MB）不入包，装好后 `node bin/open-pptd.js fonts download` 按需下载
+- **不含**：tests、docs、examples、.github、scripts、.gitignore、字体与图标 SVG 本体（registry.json 元数据入包，本体经 `open-pptd assets sync` 或导出前置体检按需获取）
+- 2.0 起 zip 不再「解压到 skills 文件夹」用——它是 **CLI 运行时**，由仓库根的 `install.ps1` / `install.sh` 下载安装（校验 SHA256 → 解压到 `~/.open-pptd/cli/versions/<ver>` → current 指针 → 用户级 PATH）；AI 对话用法配合独立技能仓 [open-pptd-skill](https://github.com/Shingwha/open-pptd-skill)
 - 文件清单取自 `git ls-files`，只收 git 跟踪文件；打包时若工作树有未提交改动，脚本会打警示
 
 要调整发布内容 = 改 `WHITELIST`，然后本地验证：
