@@ -20,10 +20,18 @@ import { registerRegistryFontFace } from "./app/project/font-manager.js";
 import { createFileMenu } from "./app/file-menu.js";
 import { showToast } from "./app/toast.js";
 import { injectIcons } from "./icons.js";
+import { THEME_MODES, bindThemeMode } from "./theme.js";
 import { deckSize, parseDeck, parseFontResources, resolveTheme, yaml } from "../packages/model/index.js";
 import { disposeChartInstances, renderPage } from "../packages/renderer/index.js";
 
 injectIcons(); // topbar icon placeholders (data-icon) get the real SVG (single icon source icons.js)
+
+// Theme tri-state (light / dark / follow system): the shared mechanism from theme.js
+// (the editor's own binding), applied to <html> — the same root the editor themes, so
+// the two pages read and write one localStorage key and stay in sync. A host embedding
+// the gallery (DSH) can still override through applyThemeTokens on this element; no
+// cleanup is needed here (the gallery page has no destroy path).
+const themeMode = bindThemeMode();
 
 // Repo root URL (this file lives in <root>/editor/, so ../ is the site root — works for local and GitHub Pages sub-paths)
 const ROOT = new URL("../", import.meta.url).href;
@@ -207,7 +215,7 @@ export async function showGallery() {
   const fileBtn = $("btn-file");
   if (fileBtn) {
     const supported = "showDirectoryPicker" in window; // handle read/write bypasses the server, available locally and online
-    createFileMenu(fileBtn, async ({ menu, item, appendRecents }) => {
+    createFileMenu(fileBtn, async ({ menu, item, sep, label, appendRecents }) => {
       menu.appendChild(item("打开编辑器", { onClick: () => (location.href = new URL("editor/", ROOT).href) }));
       const openItem = item("打开本地项目", { onClick: openLocalFromPicker });
       if (!supported) openItem.hidden = true; // hidden in unsupported browsers
@@ -217,6 +225,14 @@ export async function showGallery() {
           setPendingProject(entry.id); // the editor reopens from this (no prompt while the grant holds)
           location.href = new URL("editor/", ROOT).href;
         });
+      }
+      // Appearance tri-state (light / dark / follow system): labels and storage key come
+      // from theme.js, so this menu and the editor's theme panel are two views of one choice
+      // (the checkmark marks the saved mode, re-read on every open)
+      menu.appendChild(sep(), label("外观"));
+      const current = themeMode.get();
+      for (const [mode, name] of THEME_MODES) {
+        menu.appendChild(item(name, { hint: mode === current ? "✓" : "", onClick: () => themeMode.set(mode) }));
       }
     });
   }

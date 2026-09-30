@@ -53,6 +53,7 @@ html:has(.gallery-view) {
   gap: var(--space-2) var(--space-3);
 }
 
+/* Run-mode badge: dot + text, no fill (Line); the remote mode keeps its warning color */
 .gallery-mode {
   display: inline-flex;
   align-items: center;
@@ -60,8 +61,7 @@ html:has(.gallery-view) {
   padding: 5px var(--space-3);
   border-radius: var(--radius-lg);
   font-size: var(--text-sm);
-  background: var(--primary-soft);
-  color: var(--primary-strong);
+  color: var(--accent);
 }
 .gallery-mode .mode-dot {
   width: 7px;
@@ -69,18 +69,16 @@ html:has(.gallery-view) {
   border-radius: 50%;
   background: currentColor;
 }
-.gallery-mode.remote {
-  background: var(--warning-soft);
-  color: var(--warning);
-}
+.gallery-mode.remote { color: var(--warning); }
 
-/* Category tabs (PPT / poster): a segmented pill with a slider indicator under the active item */
+/* Category tabs (PPT / poster): a segmented control — white ground + 1px --line-strong,
+   with an accent slider indicator under the active item (its slide animation is unchanged) */
 .gallery-tabs {
   display: inline-flex;
   gap: 4px;
   padding: 4px;
-  background: var(--bg);
-  border: 1px solid var(--line);
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-lg);
   position: relative;
 }
@@ -93,7 +91,7 @@ html:has(.gallery-view) {
   padding: 5px 18px;
   border-radius: var(--radius-lg);
   position: relative; /* paints the button above the indicator (which precedes it) */
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .gallery-tab:hover { color: var(--ink); }
 .gallery-tab.active {
@@ -102,8 +100,10 @@ html:has(.gallery-view) {
 .gallery-tab .cnt {
   margin-left: 5px;
   font-size: var(--text-xs);
-  opacity: 0.75;
+  color: var(--faint);
 }
+/* Inside the active cell the slider supplies the accent fill, so the count follows the label */
+.gallery-tab.active .cnt { color: inherit; opacity: 0.75; }
 /* Slider indicator: left/width set instantly by JS (not transitioned); the slide
    is animated via transform: translateX (compositor animation, no dropped frames
    when the main thread is busy) */
@@ -114,7 +114,7 @@ html:has(.gallery-view) {
   left: 4px;
   width: 0;
   border-radius: var(--radius-lg);
-  background: var(--primary);
+  background: var(--accent);
   will-change: transform;
   transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
 }
@@ -130,13 +130,15 @@ html:has(.gallery-view) {
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 }
 
+/* Card: white ground + 1px --line, no shadow (D1 leaves shadows to dropdowns/dialogs);
+   hover lifts the border to --line-strong and keeps the 2px rise, never a shadow */
 .gallery-card {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   overflow: hidden;
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 
 /* [experimental] Staggered card fade-in on tab switch: remove this block plus the
@@ -157,14 +159,13 @@ html:has(.gallery-view) {
 
 .gallery-card:hover {
   border-color: var(--line-strong);
-  box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
-.gallery-card:active { transform: translateY(0); box-shadow: var(--shadow-sm); }
+.gallery-card:active { transform: translateY(0); }
 .gallery-card:focus-visible {
+  /* Framed control rule (W1): one 1px accent ring, drawn by the existing border */
   outline: none;
-  border-color: var(--primary);
-  outline: 1px solid var(--sel-ring); outline-offset: 0;
+  border-color: var(--sel-ring);
 }
 
 .gallery-card-cover {
@@ -210,8 +211,8 @@ html:has(.gallery-view) {
 }
 
 .gallery-card-title {
-  font-size: var(--text-lg);
-  font-weight: 600;
+  font-size: var(--text-md);
+  font-weight: 500;
   line-height: 1.4;
   /* Single-line ellipsis: titles vary in length; a fixed one-line height keeps cards aligned */
   white-space: nowrap;
@@ -219,17 +220,19 @@ html:has(.gallery-view) {
   text-overflow: ellipsis;
 }
 
-/* Page-count badge: overlays the cover's bottom-right (like a video duration), readable on any cover color */
+/* Page-count badge: overlays the cover's bottom-right (like a video duration); a white
+   hairline chip (Line) rather than a translucent fill */
 .gallery-page-badge {
   position: absolute;
   right: 8px;
   bottom: 8px;
   z-index: var(--z-sticky);
   font-size: var(--text-xs);
-  color: var(--thumb-chip-ink);
-  background: var(--thumb-chip-bg);
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 2px 8px;
+  padding: 1px 7px;
 }
 
 .gallery-card-desc {
@@ -253,10 +256,11 @@ html:has(.gallery-view) {
   overflow: hidden;
 }
 
+/* Tag: 11px faint text in a hairline pill, no fill */
 .gallery-tag {
   font-size: var(--text-xs);
-  color: var(--primary-strong);
-  background: var(--primary-soft);
+  color: var(--faint);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius);
   padding: 1px 7px;
 }
@@ -358,9 +362,35 @@ html:has(.gallery-view) {
 .series-item .color-swatch-btn { width: 20px; height: 20px; border-radius: var(--radius); }
 .series-item .color-field input[type="color"] { width: 24px; height: 20px; border-radius: var(--radius); }
 .series-item .color-hex { width: 52px; flex: none; padding: 2px var(--space-1); font-size: var(--text-xs); }
-.series-item input { padding: var(--space-1) 6px; font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--radius); }
+/* Series name/hex inputs: the same line input language as the type dropdown */
+.series-item input {
+  padding: var(--space-1) 6px;
+  font-size: var(--text-sm);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--ink);
+  outline: none;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.series-item input:hover { border-color: var(--sub); }
+.series-item input:focus-visible { outline: none; border-color: var(--sel-ring); }
 .series-item input[type="text"] { flex: 1; min-width: 60px; }
-.series-item select { padding: var(--space-1); font-size: var(--text-sm); border: 1px solid var(--line); border-radius: var(--radius); max-width: 120px; }
+/* Series-type dropdown: the shared line input language (white ground, 1px --line-strong,
+   hover --sub, a single 1px accent focus ring from the border) */
+.series-item select {
+  padding: var(--space-1);
+  font-size: var(--text-sm);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--ink);
+  outline: none;
+  max-width: 120px;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.series-item select:hover { border-color: var(--sub); }
+.series-item select:focus-visible { outline: none; border-color: var(--sel-ring); }
 .series-item .btn-ghost { flex: none; }
 
 /* -- Excel-style data grid component (excel-grid.js, shared by table/chart) -- */
