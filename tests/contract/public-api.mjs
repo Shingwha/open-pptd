@@ -86,7 +86,7 @@ const BARRELS = {
     namespaceSpot: [],
   },
   "packages/cli/index.js": {
-    fns: ["runCheck", "exportDeck", "exportProject", "runRender", "runFonts", "runIcons", "runGallery"],
+    fns: ["runCheck", "exportDeck", "exportProject", "runRender", "renderDeck", "runFonts", "runIcons", "runGallery"],
     objs: [],
     consts: [],
     namespaceSpot: [],
