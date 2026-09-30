@@ -32,7 +32,7 @@
 | `open-pptd/renderer` | `packages/renderer/index.js` | `renderPage` / `autoGrowTexts` / `disposeChartInstances` / `iconThumb`；命名空间 `renderers` |
 | `open-pptd/writer` | `packages/writer/index.js` | `buildPptx` / `downloadPptx` / `downloadBlob` / `magicMatches` / `ZipWriter`；命名空间 `xml` / `parts` / `text` |
 | `open-pptd/server` | `packages/server/index.js` | `createServer` / `startServer` / `PROJECT_ROOT` |
-| `open-pptd/cli` | `packages/cli/index.js` | `runCheck` / `exportDeck` / `exportProject` / `runRender` / `runFonts` / `runIcons` / `runGallery` |
+| `open-pptd/cli` | `packages/cli/index.js` | `runCheck` / `exportDeck` / `exportProject` / `runRender` / `renderDeck`（程序化渲染管线，headless） / `runFonts` / `runIcons` / `runGallery` |
 | `open-pptd/editor` | `editor/index.js` | 契约 1/2/3：`createEditor`、`ProjectSource` 四实现、主题注入（browser-only，Node 不得 import） |
 | `open-pptd/paths` | `packages/paths.js` | 契约 5：home 布局、`resourceRoots`、`resolveCliRoot` 等 |
 | `open-pptd/config` | `packages/config.js` | 契约 5：`readConfig` / `writeConfig` |

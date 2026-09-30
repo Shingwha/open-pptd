@@ -17,7 +17,7 @@ import { runGallery as runGalleryImpl } from "./gallery.js";
 
 export { runCheck } from "./check.js";
 export { exportDeck, exportProject } from "./export.js";
-export { runRender } from "./render.js";
+export { runRender, renderDeck } from "./render.js";
 export { runFonts } from "./fonts.js";
 export { runIcons } from "./icons.js";
 export { runDoctor, runPaths, collectDoctorFacts } from "./doctor.js";
