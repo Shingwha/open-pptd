@@ -132,7 +132,9 @@
   background: var(--paper);
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.thumb:hover { box-shadow: var(--shadow-sm); }
+/* Hover reads as one line step lighter instead of the old shadow-sm (D1: shadows only
+   on floating overlays); .active keeps its accent frame untouched */
+.thumb:hover:not(.active) { border-color: var(--faint); }
 .thumb.active { border-color: var(--primary); background: var(--primary-soft); }
 /* Multi page selection: selected pages get a tint; the current page is still marked by .active's border */
 .thumb.multi { background: var(--sel-bg); }
