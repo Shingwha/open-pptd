@@ -49,13 +49,28 @@ export function createLoader({ state, view, ops, images, fontManager, source, co
   // --------------------------------------------------------------------------
   // Loading
   // --------------------------------------------------------------------------
-  /** Topbar project name: shows the name for a project; a blank project shows a dim "unnamed" (hover explains). */
+  /**
+   * Project file label for the topbar (D4): the last path segment — the project
+   * FILE name such as "deck.pptd" — with any query/hash dropped, so a "?deck="
+   * URL and a Windows path both reduce to the file name.
+   */
+  function brandLabel(text) {
+    const path = String(text).split(/[?#]/)[0];
+    const seg = path.split(/[\\/]/).filter(Boolean).pop() || path;
+    try {
+      return decodeURIComponent(seg);
+    } catch {
+      return seg; // malformed percent-encoding: show the raw segment
+    }
+  }
+
+  /** Topbar project name: shows the project file name; the full path/URL goes into the title. A blank project shows a dim "unnamed" (hover explains). */
   function setBrandFile(text) {
     const el = dom.brandFile;
     if (text) {
-      el.textContent = text;
+      el.textContent = brandLabel(text);
+      el.title = text; // full path/URL of the project (D4)
       el.classList.remove("unnamed");
-      el.removeAttribute("title");
     } else {
       el.textContent = "未命名";
       el.classList.add("unnamed");

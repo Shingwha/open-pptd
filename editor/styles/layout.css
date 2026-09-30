@@ -23,11 +23,14 @@
 
 /* ==== topbar — top bar ==== */
 
+/* Flat single row (see 00-overview red line 3) at the 44px Line height: the inner
+   controls are vertically centered by align-items, and the horizontal rhythm is one
+   10px gap for every sibling plus 12px edge padding */
 .topbar {
   display: flex;
   align-items: center;
   height: var(--topbar-h);
-  padding: 0 14px;
+  padding: 0 12px;
   background: var(--panel);
   border-bottom: 1px solid var(--line);
   gap: 10px;
@@ -53,6 +56,8 @@
 .brand-home:hover { opacity: 0.8; }
 .brand-home:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
+/* Project file label (D4): the file name only, full path/URL lives in the title;
+   a 1px hairline chip on the white bar, no fill */
 .brand-file {
   font-size: var(--text-sm);
   font-weight: 400;
@@ -61,8 +66,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: var(--bg);
-  border: 1px solid var(--line);
+  background: transparent;
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius);
   padding: 2px 9px;
 }
@@ -127,7 +132,9 @@
   background: var(--paper);
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.thumb:hover { box-shadow: var(--shadow-sm); }
+/* Hover reads as one line step lighter instead of the old shadow-sm (D1: shadows only
+   on floating overlays); .active keeps its accent frame untouched */
+.thumb:hover:not(.active) { border-color: var(--faint); }
 .thumb.active { border-color: var(--primary); background: var(--primary-soft); }
 /* Multi page selection: selected pages get a tint; the current page is still marked by .active's border */
 .thumb.multi { background: var(--sel-bg); }
@@ -208,12 +215,18 @@
 .thumb-add:active { background: var(--primary-tint); }
 .thumb-add:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
+/* Right end of the thumb bar: the zoom group (D2) + the page count, set apart from
+   the page strip by one hairline (the group itself stays chrome-free) */
 .thumbbar-meta {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--line);
   font-size: var(--text-xs);
   font-weight: 600;
   color: var(--faint);
-  padding-right: 6px;
   user-select: none;
 }
 

@@ -89,9 +89,14 @@ export function bindToolbar({ state, api, ops, view, io, present, themeMode = nu
   // --------------------------------------------------------------------------
   function bindTopbar() {
     const clickEls = []; // elements given an onclick, cleared together on destroy
+    const dblEls = []; // elements given an ondblclick, cleared together on destroy
     const on = (el, fn) => {
       el.onclick = fn;
       clickEls.push(el);
+    };
+    const onDbl = (el, fn) => {
+      el.ondblclick = fn;
+      dblEls.push(el);
     };
 
     on(dom.btnAddPage, () => api.addPage());
@@ -127,13 +132,18 @@ export function bindToolbar({ state, api, ops, view, io, present, themeMode = nu
     // Narrow: tapping the mask closes the bottom sheet
     on(dom.inspectorMask, () => document.body.classList.remove("inspector-open"));
 
-    // Canvas zoom control (same on both ends: buttons + percentage display)
+    // Canvas zoom control (now an inline group at the right end of the thumb bar, D2;
+    // the button ids are unchanged, so the binding stays the same)
     on(dom.btnZoomOut, () => view.zoomOut());
     on(dom.btnZoomIn, () => view.zoomIn());
     on(dom.btnZoomReset, () => view.zoomReset());
+    // Percentage label: double-click restores the fit view (the old drag-to-dock
+    // semantics is gone — the control no longer floats over the canvas)
+    if (dom.zoomLabel) onDbl(dom.zoomLabel, () => view.zoomReset());
 
     return () => {
       for (const el of clickEls) if (el) el.onclick = null;
+      for (const el of dblEls) if (el) el.ondblclick = null;
     };
   }
 

@@ -41,7 +41,8 @@
   /* Control heights */
   --control-h: 28px;
   --control-h-lg: 32px;
-  --topbar-h: 48px;
+  /* Line pass (D6): the topbar tightened from 48 to 44px */
+  --topbar-h: 44px;
   /* Font sizes */
   --text-xs: 11px;
   --text-sm: 12px;
