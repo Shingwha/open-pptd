@@ -2,7 +2,9 @@
 // tests/contract/public-api.mjs — package-level public contract test (contract 4, see docs/embedding.md)
 // ----------------------------------------------------------------------------
 // Asserts:
-//   1. Every export name of the five existing barrels is present (checked against the spec 01 T1 list);
+//   1. Every export name of the five existing barrels is present (spec 01 T1 list, plus the W-E
+//      additive server re-exports: MIME / resolveFile / resolveStaticFile / sendFile /
+//      handleSave / handlePing);
 //   2. CONTRACT_VERSION === 2 and matches contract.json's contractVersion;
 //   3. contract.json parses; entries correspond one-to-one with the package.json exports entries
 //      (both directions, guards against drift); the files an entry points at exist;
@@ -11,7 +13,10 @@
 //   5. the W1.5 flat re-export list (editor consumption surface) and the editor entry
 //      (open-pptd/editor): the editor barrel depends on the DOM and cannot be imported statically in
 //      Node, so it is checked textually (after stripping comments, the re-export statement must
-//      appear) plus the source files and their export names must exist.
+//      appear) plus the source files and their export names must exist;
+//   6. the W-E host boot seam in editor/main.js (browser-only → textual as well): boot parameters
+//      (?base= / ?chrome= / window.__PPTD_BOOT__) and the postMessage protocol
+//      (pptd:theme / pptd:ready / window.__pptdTheme).
 // Usage: node tests/contract/public-api.mjs (non-zero exit = contract broken)
 // ============================================================================
 
@@ -74,8 +79,9 @@ const BARRELS = {
     namespaceSpot: [["xml", "el"], ["parts", "buildContentTypes"], ["text", "buildTextBody"]],
   },
   "packages/server/index.js": {
-    fns: ["createServer", "startServer"],
-    objs: [],
+    // W-E additive re-exports: hosts mount these on their own routes (see docs/embedding.md §6)
+    fns: ["createServer", "startServer", "resolveFile", "resolveStaticFile", "sendFile", "handleSave", "handlePing"],
+    objs: ["MIME"],
     consts: ["PROJECT_ROOT"],
     namespaceSpot: [],
   },
@@ -127,6 +133,19 @@ const EDITOR_ENTRY = {
     "editor/theme.js": ["TOKENS", "defaultTokens", "applyThemeTokens"],
     "editor/app/project/source.js": ["httpSource", "directoryHandleSource", "memorySource", "delegatingSource"],
   },
+};
+
+// W-E host boot seam in editor/main.js (browser-only file, checked textually after comment stripping)
+const EDITOR_MAIN = {
+  file: "editor/main.js",
+  patterns: [
+    ["query base 解析", /params\.get\(\s*["']base["']\s*\)/],
+    ["query chrome 解析", /params\.get\(\s*["']chrome["']\s*\)/],
+    ["宿主 boot 参数", /__PPTD_BOOT__/],
+    ["宿主主题直调面", /__pptdTheme/],
+    ["主题消息钩子", /["']pptd:theme["']/],
+    ["就绪通知", /["']pptd:ready["']/],
+  ],
 };
 
 // ---------------------------------------------------------------------------
@@ -236,6 +255,17 @@ async function main() {
       const lack = names.filter((n) => !new RegExp(`export\\s+(?:const|function|class)\\s+${n}\\b`).test(text));
       if (lack.length) bad(`${src} 导出名`, `缺 ${lack.join(", ")}`);
       else ok(`${src} 导出名齐全`);
+    }
+  }
+  // W-E host boot seam: the textual names the DSH adapter and the W1/W2 tests rely on
+  {
+    const p = join(ROOT, EDITOR_MAIN.file);
+    if (!existsSync(p)) bad(`${EDITOR_MAIN.file} 存在`, "文件缺失");
+    else {
+      const text = stripComments(readFileSync(p, "utf8"));
+      const lack = EDITOR_MAIN.patterns.filter(([, re]) => !re.test(text)).map(([name]) => name);
+      if (lack.length) bad(`${EDITOR_MAIN.file} 宿主接缝`, `缺 ${lack.join(", ")}`);
+      else ok(`${EDITOR_MAIN.file} 宿主接缝齐全（${EDITOR_MAIN.patterns.length} 项）`);
     }
   }
 
