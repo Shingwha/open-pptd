@@ -1,5 +1,7 @@
 <!doctype html>
-<html lang="zh-CN">
+<!-- data-pptd-theme: the gallery is themed on the same root as the editor (theme.js
+     tri-state lands here; a host can override via applyThemeTokens on this element) -->
+<html lang="zh-CN" data-pptd-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -47,7 +49,7 @@
         const grid = document.getElementById("gallery-grid");
         grid.hidden = false;
         grid.innerHTML =
-          `<div style="text-align:center;color:#5b6572;padding:40px">画廊加载失败：${err.message}</div>`;
+          `<div style="text-align:center;color:var(--sub);padding:40px">画廊加载失败：${err.message}</div>`;
       });
     </script>
   </body>
