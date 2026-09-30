@@ -105,15 +105,13 @@ button, select, a.btn, .thumb, .add-thumb, .icon-cell, .theme-card {
 
 /* Present button: the one permanently accent-filled control in the chrome (D1/D5) */
 .btn-present {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
+  /* Quiet primary: no fill — accent text carries the identity (calmer than a solid block) */
+  color: var(--accent);
   font-weight: 600;
 }
 .btn-present:hover:not(:disabled) {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-  color: var(--on-accent);
+  background: var(--hover);
+  color: var(--accent-hover);
 }
 
 /* Ghost variant of the same family (still used by code that asks for it explicitly) */

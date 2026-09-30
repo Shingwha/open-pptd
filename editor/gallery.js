@@ -266,22 +266,19 @@ export async function showGallery() {
       card.style.setProperty("--card-i", i); // [experiment] staggered float-in index (pairs with gallery-card-in in gallery.css)
       const thumb = document.createElement("div");
       thumb.className = "gallery-card-cover loading";
-      // The render target canvas sits level with the page-count badge: clearing the canvas on re-render does not take the badge with it
+      // The render target canvas sits level with the page-count slot: clearing the canvas on re-render does not take it with it
       const canvas = document.createElement("div");
       canvas.className = "gallery-card-canvas";
-      const badge = document.createElement("span");
-      badge.className = "gallery-page-badge";
-      badge.textContent = `${entry.pages} 页`;
       thumb.appendChild(canvas);
-      thumb.appendChild(badge);
       const info = document.createElement("div");
       info.className = "gallery-card-info";
       const tags = (entry.tags || [])
         .map((t) => `<span class="gallery-tag">${escapeHtml(t)}</span>`)
         .join("");
-      // The title/description/tags slots always exist (empty when absent), so card info height is uniform and the grid stays tidy
+      // The title/description/tags slots always exist (empty when absent), so card info height is uniform and the grid stays tidy;
+      // the page count rides the title row as plain meta text — it never covers the cover
       info.innerHTML =
-        `<div class="gallery-card-title">${escapeHtml(entry.title)}</div>` +
+        `<div class="gallery-card-title-row"><span class="gallery-card-title">${escapeHtml(entry.title)}</span><span class="gallery-card-pages">${entry.pages} 页</span></div>` +
         `<div class="gallery-card-desc">${escapeHtml(entry.description || "")}</div>` +
         `<div class="gallery-card-tags">${tags}</div>`;
       card.appendChild(thumb);

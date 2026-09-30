@@ -89,7 +89,8 @@ html:has(.gallery-view) {
   font-size: var(--text-sm);
   color: var(--sub);
   padding: 5px 18px;
-  border-radius: var(--radius-lg);
+  /* 8px = container radius (12px) minus its 4px padding: concentric arcs, no bulge */
+  border-radius: var(--radius);
   position: relative; /* paints the button above the indicator (which precedes it) */
   transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
@@ -113,7 +114,8 @@ html:has(.gallery-view) {
   bottom: 4px;
   left: 4px;
   width: 0;
-  border-radius: var(--radius-lg);
+  /* concentric with the 12px container: 12 - 4px inset = 8px */
+  border-radius: var(--radius);
   background: var(--accent);
   will-change: transform;
   transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
@@ -210,7 +212,16 @@ html:has(.gallery-view) {
   padding: 10px 12px 11px;
 }
 
+/* Title row: title (ellipsis) left, page count as plain meta text right — the count used to
+   overlay the cover's corner and hid the first-page preview; as row meta it reads at a glance */
+.gallery-card-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
 .gallery-card-title {
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: var(--text-md);
   font-weight: 500;
   line-height: 1.4;
@@ -219,20 +230,10 @@ html:has(.gallery-view) {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-/* Page-count badge: overlays the cover's bottom-right (like a video duration); a white
-   hairline chip (Line) rather than a translucent fill */
-.gallery-page-badge {
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
-  z-index: var(--z-sticky);
+.gallery-card-pages {
+  flex: 0 0 auto;
   font-size: var(--text-xs);
-  color: var(--ink);
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 1px 7px;
+  color: var(--sub);
 }
 
 .gallery-card-desc {
@@ -259,7 +260,8 @@ html:has(.gallery-view) {
 /* Tag: 11px faint text in a hairline pill, no fill */
 .gallery-tag {
   font-size: var(--text-xs);
-  color: var(--faint);
+  color: var(--ink);
+  background: var(--bg);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
   padding: 1px 7px;

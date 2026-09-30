@@ -26,11 +26,6 @@ const measurePort = isDomMeasureAvailable() ? createDomMeasure() : undefined;
 
 // Quickbar trailing action icons (inline SVG, the same convention as the per-type menu icons:
 // declared next to their only consumer, sized by CSS, stroke inherits currentColor)
-const ICON_QB_PANEL = svgIcon(
-  '<circle cx="5.5" cy="12" r="1.5" fill="currentColor" stroke="none"/>' +
-  '<circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>' +
-  '<circle cx="18.5" cy="12" r="1.5" fill="currentColor" stroke="none"/>'
-);
 const ICON_QB_DELETE = svgIcon(
   '<path d="M3.5 6.5h17"/><path d="M9 6.5V4.8A1.3 1.3 0 0 1 10.3 3.5h3.4A1.3 1.3 0 0 1 15 4.8v1.7"/>' +
   '<path d="M18.6 6.5l-.9 13a1.6 1.6 0 0 1-1.6 1.5H7.9a1.6 1.6 0 0 1-1.6-1.5l-.9-13"/>' +
@@ -207,14 +202,13 @@ export function createView({ state, page, selected, api, controller, props, ops 
       openEditor: api.openEditor,
     };
 
-    // Type badge + type-specific core controls + ⋯ (property panel) + delete
+    // Type badge + type-specific core controls + delete
     const def = getType(el.elementType);
     const badge = document.createElement("span");
     badge.className = "qb-type";
     badge.textContent = def?.label || el.elementType;
     qb.appendChild(badge);
     if (def?.quickbar) def.quickbar(el, h);
-    qb.appendChild(quickbarIconBtn(ICON_QB_PANEL, "打开属性面板", openInspector));
     qb.appendChild(quickbarIconBtn(ICON_QB_DELETE, "删除元素", () => api.deleteSelected()));
 
     // Position: centered above the element; when there is not enough room (near the canvas top) it goes below
@@ -242,21 +236,9 @@ export function createView({ state, page, selected, api, controller, props, ops 
   }
 
   // --------------------------------------------------------------------------
-  // Property panel entry from the canvas (the quickbar ⋯ button)
+  // (the former quickbar "open panel" entry lived here; removed — the FAB/topbar
+  // toggle is the single property-panel entry point)
   // --------------------------------------------------------------------------
-  /** Reveal the property panel: desktop expands the persistent side panel, narrow opens the bottom
-   * sheet — the same DOM contract as the topbar/FAB entry point (see app/toolbar.js toggleInspector);
-   * only the collapse/toggle direction differs (here it is always "open"). */
-  function openInspector() {
-    if (isNarrow()) {
-      document.body.classList.add("inspector-open");
-    } else {
-      document.body.classList.remove("inspector-collapsed");
-      // Desktop: follow the panel width animation each frame so the canvas stays glued to the stage
-      viewObj.followStageWidth?.();
-    }
-    renderCanvas();
-  }
 
   // --------------------------------------------------------------------------
   // Button state
