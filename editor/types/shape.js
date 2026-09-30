@@ -171,11 +171,9 @@ registerType({
   },
 
   quickbar(el, h) {
-    h.label("填充");
-    h.color(el.fill?.color || "$primary", (v) => h.change(() => (el.fill = { type: "solid", color: v })));
-    h.label("边框");
-    h.color(el.border?.color || "$line", (v) => h.change(() => (el.border = { ...(el.border || {}), color: v })));
-    h.select([["0", "无"], ["1", "细"], ["2", "中"], ["4", "粗"]], String(el.border?.width || 0), (v) =>
+    h.color("填充", el.fill?.color || "$primary", (v) => h.change(() => (el.fill = { type: "solid", color: v })));
+    h.color("边框", el.border?.color || "$line", (v) => h.change(() => (el.border = { ...(el.border || {}), color: v })));
+    h.select("边宽", [["0", "无"], ["1", "细"], ["2", "中"], ["4", "粗"]], String(el.border?.width || 0), (v) =>
       h.change(() => {
         if (Number(v) === 0) el.border = null;
         else el.border = { ...(el.border || {}), width: Number(v) };

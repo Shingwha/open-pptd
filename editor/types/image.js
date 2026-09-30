@@ -125,8 +125,7 @@ registerType({
   },
 
   quickbar(el, h) {
-    h.label("适配");
-    h.select([["cover", "裁剪填充"], ["contain", "完整显示"], ["fill", "拉伸"]], el.fit?.mode || "cover", (v) =>
+    h.select("适配", [["cover", "裁剪填充"], ["contain", "完整显示"], ["fill", "拉伸"]], el.fit?.mode || "cover", (v) =>
       h.change(() => (el.fit = { mode: v }))
     );
   },

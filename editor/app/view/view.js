@@ -10,7 +10,7 @@
 // ============================================================================
 
 import { getType } from "../../types/index.js";
-import { quickbarColor, quickbarSelect, quickbarBtn, quickbarTextBtn, isNarrow } from "../../ui.js";
+import { quickbarColor, quickbarSelect, quickbarBtn, quickbarIconBtn, isNarrow, svgIcon } from "../../ui.js";
 import { relRect, setLayoutPage } from "../../coords.js";
 import { createViewport, deckSize } from "./viewport.js";
 import { createThumbnails } from "./thumbnails.js";
@@ -23,6 +23,19 @@ import { createDomMeasure, isDomMeasureAvailable } from "./dom-measure.js";
 
 // MeasurePort for editor layout: the DOM refinement adapter (M6) in a browser, otherwise the pure function
 const measurePort = isDomMeasureAvailable() ? createDomMeasure() : undefined;
+
+// Quickbar trailing action icons (inline SVG, the same convention as the per-type menu icons:
+// declared next to their only consumer, sized by CSS, stroke inherits currentColor)
+const ICON_QB_PANEL = svgIcon(
+  '<circle cx="5.5" cy="12" r="1.5" fill="currentColor" stroke="none"/>' +
+  '<circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>' +
+  '<circle cx="18.5" cy="12" r="1.5" fill="currentColor" stroke="none"/>'
+);
+const ICON_QB_DELETE = svgIcon(
+  '<path d="M3.5 6.5h17"/><path d="M9 6.5V4.8A1.3 1.3 0 0 1 10.3 3.5h3.4A1.3 1.3 0 0 1 15 4.8v1.7"/>' +
+  '<path d="M18.6 6.5l-.9 13a1.6 1.6 0 0 1-1.6 1.5H7.9a1.6 1.6 0 0 1-1.6-1.5l-.9-13"/>' +
+  '<path d="M10 11v5.5M14 11v5.5"/>'
+);
 
 // Out-of-bounds hint dedupe (remember the last count per page; the same state does not re-toast)
 const lastOverflow = new Map();
@@ -175,22 +188,17 @@ export function createView({ state, page, selected, api, controller, props, ops 
     }
     qb.innerHTML = "";
 
-    // Control helpers: all methods append the control to the quickbar (type modules only say "what", not "where to mount")
+    // Control helpers: all methods append the control to the quickbar (type modules only say
+    // "what", not "where to mount"). Text labels are gone (D3) — every control now takes a
+    // title instead, so the meaning survives on hover rather than taking bar space (title
+    // first, the same label-first shape as ui.js field()/cell()).
     const h = {
-      label(text) {
-        const s = document.createElement("span");
-        s.className = "qb-label";
-        s.textContent = text;
-        qb.appendChild(s);
-      },
       // Color: tokens ($primary etc.) resolve to a concrete hex, showing the current real color
-      color(value, onCommit) {
-        qb.appendChild(quickbarColor(resolveColor(state.theme, value) || "", onCommit));
-      },
-      select: (options, value, onCommit) => qb.appendChild(quickbarSelect(options, value, onCommit)),
+      color: (title, value, onCommit) => qb.appendChild(quickbarColor(resolveColor(state.theme, value) || "", onCommit, title)),
+      select: (title, options, value, onCommit) => qb.appendChild(quickbarSelect(options, value, onCommit, title)),
       fontOptions: () => api.fontOptions?.() || [["", "默认"]],
       btn: (label, title, onClick, active) => qb.appendChild(quickbarBtn(label, title, onClick, active)),
-      textBtn: (label, title, onClick) => qb.appendChild(quickbarTextBtn(label, title, onClick)),
+      iconBtn: (icon, title, onClick) => qb.appendChild(quickbarIconBtn(icon, title, onClick)),
       change(fn) {
         api.beginChange();
         fn();
@@ -199,14 +207,15 @@ export function createView({ state, page, selected, api, controller, props, ops 
       openEditor: api.openEditor,
     };
 
-    // Type badge + type-specific controls + delete
+    // Type badge + type-specific core controls + ⋯ (property panel) + delete
     const def = getType(el.elementType);
     const badge = document.createElement("span");
     badge.className = "qb-type";
     badge.textContent = def?.label || el.elementType;
     qb.appendChild(badge);
     if (def?.quickbar) def.quickbar(el, h);
-    qb.appendChild(quickbarTextBtn("删除", "删除元素", () => api.deleteSelected()));
+    qb.appendChild(quickbarIconBtn(ICON_QB_PANEL, "打开属性面板", openInspector));
+    qb.appendChild(quickbarIconBtn(ICON_QB_DELETE, "删除元素", () => api.deleteSelected()));
 
     // Position: centered above the element; when there is not enough room (near the canvas top) it goes below
     // (node → stage coordinate conversion goes through coords.js)
@@ -230,6 +239,23 @@ export function createView({ state, page, selected, api, controller, props, ops 
     // when it does not fit, flip below the element, leaving room for the bottom rotate-handle zone (connector 16 + handle 26 + gap 10 = 52px)
     const topY = y - qb.offsetHeight - 12;
     qb.style.top = topY >= 8 ? `${topY}px` : `${y + r.height + 52}px`;
+  }
+
+  // --------------------------------------------------------------------------
+  // Property panel entry from the canvas (the quickbar ⋯ button)
+  // --------------------------------------------------------------------------
+  /** Reveal the property panel: desktop expands the persistent side panel, narrow opens the bottom
+   * sheet — the same DOM contract as the topbar/FAB entry point (see app/toolbar.js toggleInspector);
+   * only the collapse/toggle direction differs (here it is always "open"). */
+  function openInspector() {
+    if (isNarrow()) {
+      document.body.classList.add("inspector-open");
+    } else {
+      document.body.classList.remove("inspector-collapsed");
+      // Desktop: follow the panel width animation each frame so the canvas stays glued to the stage
+      viewObj.followStageWidth?.();
+    }
+    renderCanvas();
   }
 
   // --------------------------------------------------------------------------

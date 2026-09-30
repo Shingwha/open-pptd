@@ -6,6 +6,7 @@
 // the official FA categories, ~2000 icons).
 // ============================================================================
 
+import { svgIcon } from "../ui.js";
 import { openIconPicker } from "../interaction/dialogs/icon-editor.js";
 import { getIconRegistrySync } from "../app/project/icons.js";
 import { nextElementId, registerType, resolveIconName } from "../../packages/model/index.js";
@@ -20,6 +21,9 @@ export function iconElement(raw = "fas:star", bounds = [380, 200, 72, 72]) {
     fill: { type: "solid", color: "$text" },
   };
 }
+
+/** Quickbar "swap icon" glyph (inline SVG next to its only consumer; stroke inherits currentColor). */
+const ICON_SWAP = svgIcon('<path d="M4 8.5h13.5"/><path d="M14 5l3.5 3.5L14 12"/><path d="M20 15.5H6.5"/><path d="M10 12l-3.5 3.5L10 19"/>');
 
 registerType({
   type: "icon",
@@ -62,8 +66,7 @@ registerType({
   },
 
   quickbar(el, h) {
-    h.label("颜色");
-    h.color(el.fill?.color || "$text", (v) => h.change(() => (el.fill = { type: "solid", color: v })));
-    h.textBtn("更换", "更换图标", () => h.change(() => h.openEditor(el)));
+    h.color("颜色", el.fill?.color || "$text", (v) => h.change(() => (el.fill = { type: "solid", color: v })));
+    h.iconBtn(ICON_SWAP, "更换图标", () => h.change(() => h.openEditor(el)));
   },
 });

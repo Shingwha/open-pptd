@@ -55,14 +55,11 @@ registerType({
   },
 
   quickbar(el, h) {
-    h.label("线宽");
-    h.select([[1, "1px"], [2, "2px"], [3, "3px"], [4, "4px"], [6, "6px"]], String(el.border?.width || 2), (v) =>
+    h.select("线宽", [[1, "1px"], [2, "2px"], [3, "3px"], [4, "4px"], [6, "6px"]], String(el.border?.width || 2), (v) =>
       h.change(() => (el.border = { ...(el.border || {}), width: Number(v) }))
     );
-    h.label("颜色");
-    h.color(el.border?.color || "$text", (v) => h.change(() => (el.border = { ...(el.border || {}), color: v })));
-    h.label("箭头");
-    h.select([["none", "无箭头"], ["arrow", "箭头"], ["dot", "圆点"]], el.arrow?.[1] || "none", (v) =>
+    h.color("颜色", el.border?.color || "$text", (v) => h.change(() => (el.border = { ...(el.border || {}), color: v })));
+    h.select("箭头", [["none", "无箭头"], ["arrow", "箭头"], ["dot", "圆点"]], el.arrow?.[1] || "none", (v) =>
       h.change(() => (el.arrow = [null, v === "none" ? null : v]))
     );
   },
