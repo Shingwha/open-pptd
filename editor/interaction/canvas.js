@@ -86,8 +86,25 @@ export function createCanvasController(canvas, opts) {
    * non-text elements such as tables use frame (the grown height, so the
    * selection box hugs a table that grew). Falls back to el.bounds when the
    * layout tree has no entry (e.g. a group shell, or the model has not re-rendered).
+   *
+   * While a drag/resize/rotate gesture is in progress the affected elements read
+   * the **live model bounds** instead: the gesture writes el.bounds per frame while
+   * the layout tree only recomputes on repaint — using it would leave the overlay
+   * one gesture behind. For move/rotate the layout's grown-height delta is carried
+   * over (the content does not change mid-gesture); for resize the declared box is
+   * correct mid-gesture and the repaint re-syncs on pointer-up.
    */
   function geomOf(el) {
+    if (drag) {
+      const hit = drag.affected.find((a) => a.el === el);
+      if (hit) {
+        const b = el.bounds || [0, 0, 0, 0];
+        if (el.elementType === "text" || (drag.mode !== "move" && drag.mode !== "rotate")) return b;
+        const le = layoutElementOf(el.elementId);
+        const growth = le ? Math.max(0, le.frame.h - le.declared.h) : 0;
+        return [b[0], b[1], b[2], b[3] + growth];
+      }
+    }
     const le = layoutElementOf(el.elementId);
     if (!le) return el.bounds || [0, 0, 0, 0];
     const b = el.elementType === "text" ? le.declared : le.frame;
