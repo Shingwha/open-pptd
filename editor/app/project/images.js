@@ -99,6 +99,9 @@ export function createImageStore(state) {
       return (await source.readMedia(src)) || null;
     }
     if (!state.manifestPath) return null;
+    if (typeof src !== "string" || /^[a-z][a-z0-9+.-]*:/i.test(src) || src.startsWith("/") || src.split(/[/\\]/).includes("..")) {
+      return null; // reject absolute URLs / paths and traversal sequences escaping the project directory
+    }
     const res = await fetch(state.manifestPath.replace(/[^/]*$/, "") + src);
     return res.ok ? new Uint8Array(await res.arrayBuffer()) : null;
   }
