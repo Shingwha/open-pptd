@@ -210,17 +210,6 @@ body.inspector-open .inspector-mask { opacity: 1; pointer-events: auto; }
 .prop-field:last-child { margin-bottom: 0; }
 .prop-label { color: var(--faint); font-size: var(--text-xs); }
 
-/* Multi-selection mixed placeholder (values differ): italic, read-only, disabled */
-.mix,
-input.mix {
-  color: var(--faint);
-  font-style: italic;
-}
-input.mix:disabled {
-  opacity: 1;
-  cursor: default;
-}
-
 /* Text-entry controls (number/text/select/textarea) share one frame in both
    the full-width field row (.prop-field) and the two-column cell (.prop-cell) */
 .prop-field input[type="number"],
@@ -279,6 +268,22 @@ input.mix:disabled {
   padding: var(--space-1) var(--space-2);
   resize: vertical;
   line-height: 1.6;
+}
+
+/* Multi-selection mixed placeholder ("混合", values differ): italic --faint on a
+   dashed hairline, so it reads as "not one value" and never as an editable field.
+   Declared after the frame/hover rules so the state wins the cascade (the control
+   is disabled, so no hover/focus feedback applies). */
+.mix { font-style: italic; }
+.prop-field input.mix:disabled,
+.prop-cell input.mix:disabled {
+  color: var(--faint);
+  font-style: italic;
+  background: var(--panel);
+  border-color: var(--line-strong);
+  border-style: dashed;
+  opacity: 1;
+  cursor: default;
 }
 
 /* -- Two-column compact cell (numeric): label on top, aligned column lines -- */
