@@ -83,7 +83,17 @@ export function resolveStaticFile(pathname, resourceRoots) {
 
 /** Respond with a resolved file (no-store; local serving always takes the latest). */
 export function sendFile(res, filePath) {
-  const body = readFileSync(filePath);
+  let body = readFileSync(filePath);
+  // Serve-mode capability marker: only the real server can promise a live channel
+  // (/events). The editor boots from this single entry, so the marker is injected here;
+  // static hosting (GitHub Pages) serves the same file without it and the editor never
+  // attempts an EventSource there (no console 404).
+  const norm = String(filePath).split(/[\\/]/).join("/");
+  if (norm.endsWith("editor/index.html")) {
+    body = Buffer.from(
+      body.toString("utf8").replace("</head>", '<script>window.__PPTD_LIVE__ = true;</script></head>')
+    );
+  }
   res.writeHead(200, {
     "Content-Type": MIME[extname(filePath)] || "application/octet-stream",
     "Cache-Control": "no-store",

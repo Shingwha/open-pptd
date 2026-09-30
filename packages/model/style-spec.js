@@ -10,7 +10,10 @@
 // ============================================================================
 
 // ---- Element types (canonical list; registry.js registration keys, validate.js known types) ----
-export const ELEMENT_TYPES = ["text", "shape", "line", "image", "icon", "table", "chart"];
+// "group" is an editor-side composite: its members stay flat in page.elements, the shell
+// only carries the bounding box, and renderer/writer skip it (validation treats members
+// individually), which is why it is a known type without renderer/writer shards.
+export const ELEMENT_TYPES = ["text", "shape", "line", "image", "icon", "table", "chart", "group"];
 
 // ---- Dash styles (Border.style / LineStyle, references/pptd.md) ----
 // One definition, three projections: css = SVG stroke-dasharray; cssBorder = CSS

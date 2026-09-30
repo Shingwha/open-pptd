@@ -75,7 +75,14 @@ export function httpSource({ base = "", deckUrl = null } = {}) {
   let manifestUrl = null;
 
   return {
-    capabilities: { writable: true, liveWatch: true, binary: true },
+    // liveWatch is promised by the serve-mode capability marker only (server injects
+    // window.__PPTD_LIVE__ into editor/index.html); on static hosting there is no
+    // /events endpoint and the editor must not even attempt an EventSource.
+    capabilities: {
+      writable: true,
+      liveWatch: typeof window !== "undefined" && window.__PPTD_LIVE__ === true,
+      binary: true,
+    },
 
     /** hint names this read's project URL (optional; defaults to the deckUrl given at construction). */
     async read(hint) {

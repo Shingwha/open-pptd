@@ -87,7 +87,9 @@ export function createEditor(rootEl, options = {}) {
 
   // Mount-point scope (unmatched ids fall back to document, see dom.js)
   dom.rebind(mount);
-  if (interactive) injectIcons(mount); // icon slots live in the editor skeleton only
+  // Icon slots live in the document-level editor skeleton (outside #pptd-root), so the
+  // injection must resolve through the same dual-mode scope as every other skeleton id.
+  if (interactive) injectIcons(dom.editorApp || document);
   if (dialogsImpl) configureDialogs(dialogsImpl);
 
   const disposers = [];

@@ -57,11 +57,12 @@
   pointer-events: none;
 }
 
-/* Single: 1px solid ring (ring, not a glow) + faint accent tint */
+/* Single: 1px solid ring only — NO fill. The overlay sits above the element, so any
+   opaque (even light) tint hides the element's own content (text especially). Handles
+   carry the affordance; PowerPoint behaves the same. */
 .el-single {
   outline: 1px solid var(--sel-ring);
   outline-offset: 0;
-  background: var(--sel-bg);
 }
 
 /* Multi/group: dashed bounds (distinguishing "bounds" from "member") */
