@@ -20,7 +20,7 @@ import { registerRegistryFontFace } from "./app/project/font-manager.js";
 import { createFileMenu } from "./app/file-menu.js";
 import { showToast } from "./app/toast.js";
 import { injectIcons } from "./icons.js";
-import { bindThemeMode } from "./theme.js";
+import { THEME_MODES, bindThemeMode } from "./theme.js";
 import { deckSize, parseDeck, parseFontResources, resolveTheme, yaml } from "../packages/model/index.js";
 import { disposeChartInstances, renderPage } from "../packages/renderer/index.js";
 
@@ -215,7 +215,7 @@ export async function showGallery() {
   const fileBtn = $("btn-file");
   if (fileBtn) {
     const supported = "showDirectoryPicker" in window; // handle read/write bypasses the server, available locally and online
-    createFileMenu(fileBtn, async ({ menu, item, appendRecents }) => {
+    createFileMenu(fileBtn, async ({ menu, item, sep, label, appendRecents }) => {
       menu.appendChild(item("打开编辑器", { onClick: () => (location.href = new URL("editor/", ROOT).href) }));
       const openItem = item("打开本地项目", { onClick: openLocalFromPicker });
       if (!supported) openItem.hidden = true; // hidden in unsupported browsers
@@ -225,6 +225,14 @@ export async function showGallery() {
           setPendingProject(entry.id); // the editor reopens from this (no prompt while the grant holds)
           location.href = new URL("editor/", ROOT).href;
         });
+      }
+      // Appearance tri-state (light / dark / follow system): labels and storage key come
+      // from theme.js, so this menu and the editor's theme panel are two views of one choice
+      // (the checkmark marks the saved mode, re-read on every open)
+      menu.appendChild(sep(), label("外观"));
+      const current = themeMode.get();
+      for (const [mode, name] of THEME_MODES) {
+        menu.appendChild(item(name, { hint: mode === current ? "✓" : "", onClick: () => themeMode.set(mode) }));
       }
     });
   }
