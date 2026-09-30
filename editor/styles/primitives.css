@@ -206,36 +206,20 @@ body:not(.inspector-collapsed) #btn-inspector-open {
   color: var(--on-accent);
 }
 
-/* ==== zoom — canvas zoom control ==== */
+/* ==== zoom — thumb-bar zoom group (D2) ==== */
 
-/* Canvas zoom control: floats at the bottom center of the canvas (unified across
-   both ends, independent of the bottom-right stack). Draggable (app/zoom-ctl.js):
-   the hand target is the control's blank area and the percentage label, buttons excluded */
+/* Zoom control: an inline group at the right end of the thumb bar. The old canvas
+   overlay (floating card, drag-to-move, localStorage docking) is gone — no
+   background, no shadow, no grab cursor; the hairline that sets it apart from the
+   page strip is the left border of .thumbbar-meta (layout.css). Controls are
+   --control-h(28); the button ids stay the public hook. */
 .zoom-ctl {
-  position: absolute;
-  left: 50%;
-  bottom: var(--space-3);
-  transform: translateX(-50%);
-  z-index: var(--z-dropdown);
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 3px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  cursor: grab;
-  touch-action: none; /* touch drag to reposition, without browser gesture handling */
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .zoom-ctl button { cursor: pointer; }
-.zoom-ctl.dragging {
-  cursor: grabbing;
-  box-shadow: var(--shadow-lg);
-  user-select: none;
-}
-.zoom-ctl .icon-btn { width: 26px; height: 26px; }
+.zoom-ctl .icon-btn { width: var(--control-h); height: var(--control-h); }
 .zoom-ctl .icon-btn svg { width: 14px; height: 14px; }
 .zoom-label {
   min-width: 42px;

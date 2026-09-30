@@ -213,12 +213,18 @@
 .thumb-add:active { background: var(--primary-tint); }
 .thumb-add:focus-visible { outline: none; border-color: var(--primary); outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
+/* Right end of the thumb bar: the zoom group (D2) + the page count, set apart from
+   the page strip by one hairline (the group itself stays chrome-free) */
 .thumbbar-meta {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--line);
   font-size: var(--text-xs);
   font-weight: 600;
   color: var(--faint);
-  padding-right: 6px;
   user-select: none;
 }
 

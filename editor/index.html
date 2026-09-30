@@ -83,20 +83,6 @@
             </button>
           </div>
 
-          <!-- canvas zoom control: floats at the bottom center of the canvas (same on both ends, away from the bottom-right button group) -->
-          <div id="zoom-ctl" class="zoom-ctl">
-            <button id="btn-zoom-out" class="icon-btn" title="缩小">
-              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16.5 16.5L21 21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 11h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            </button>
-            <span id="zoom-label" class="zoom-label" title="拖动空白处调整控件位置，双击此处归位">100%</span>
-            <button id="btn-zoom-in" class="icon-btn" title="放大">
-              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16.5 16.5L21 21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 11h6M11 8v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            </button>
-            <span class="zoom-sep"></span>
-            <button id="btn-zoom-reset" class="icon-btn" title="还原到适配视图">
-              <svg viewBox="0 0 24 24"><path d="M8 4H4v4M16 4h4v4M8 20H4v-4M16 20h4v-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 9l6 6M15 9l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            </button>
-          </div>
           <div id="add-menu" class="add-menu"></div>
         </main>
 
@@ -119,11 +105,25 @@
       <!-- narrow-screen property panel mask -->
       <div id="inspector-mask" class="inspector-mask"></div>
 
-      <!-- bottom page thumbnail bar -->
+      <!-- bottom page thumbnail bar (right end: zoom group + page count, D2) -->
       <footer class="thumbbar">
         <div id="page-thumbs" class="page-thumbs"></div>
         <button id="btn-add-page" class="thumb-add" title="添加页面">＋</button>
         <div class="thumbbar-meta">
+          <!-- canvas zoom control: inline group at the right end of the thumb bar (button ids unchanged, public hook) -->
+          <div id="zoom-ctl" class="zoom-ctl">
+            <button id="btn-zoom-out" class="icon-btn" title="缩小">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16.5 16.5L21 21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 11h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+            <span id="zoom-label" class="zoom-label" title="双击还原适配视图">100%</span>
+            <button id="btn-zoom-in" class="icon-btn" title="放大">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16.5 16.5L21 21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 11h6M11 8v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+            <span class="zoom-sep"></span>
+            <button id="btn-zoom-reset" class="icon-btn" title="还原到适配视图">
+              <svg viewBox="0 0 24 24"><path d="M8 4H4v4M16 4h4v4M8 20H4v-4M16 20h4v-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 9l6 6M15 9l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+          </div>
           <span id="page-count"></span>
         </div>
       </footer>

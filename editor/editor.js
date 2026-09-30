@@ -35,7 +35,6 @@ import { clearToasts } from "./app/toast.js";
 import { createCanvasController } from "./interaction/canvas.js";
 import { createStageController } from "./interaction/stage.js";
 import { bindContextMenu } from "./interaction/contextmenu.js";
-import { makeZoomCtlDraggable } from "./app/view/zoom-ctl.js";
 import { bindProperties } from "./interaction/properties.js";
 import { injectIcons } from "./icons.js";
 import { dom } from "./dom.js";
@@ -181,10 +180,6 @@ export function createEditor(rootEl, options = {}) {
     // Canvas right-click context menu (three states: single-select / multi-select / empty page-level)
     const contextMenu = bindContextMenu({ stage: dom.stage, api, state, page, groupOf, view });
     disposers.push(() => contextMenu.destroy?.());
-
-    // Zoom control: drag-to-move (position persisted, double-click the percentage resets)
-    const zoomCtl = makeZoomCtlDraggable(dom.stage, dom.zoomCtl, dom.zoomLabel);
-    disposers.push(() => zoomCtl.destroy?.());
   }
 
   const io = createIo({

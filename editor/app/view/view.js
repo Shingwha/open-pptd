@@ -230,17 +230,6 @@ export function createView({ state, page, selected, api, controller, props, ops 
     // when it does not fit, flip below the element, leaving room for the bottom rotate-handle zone (connector 16 + handle 26 + gap 10 = 52px)
     const topY = y - qb.offsetHeight - 12;
     qb.style.top = topY >= 8 ? `${topY}px` : `${y + r.height + 52}px`;
-    // Avoid the bottom-center zoom control: when the rectangles intersect, move up above the control (element dragged exactly to the canvas bottom).
-    // Stage coordinates are converted from sRect (the zoom-ctl rect is in client coords)
-    const zc = dom.zoomCtl;
-    if (zc) {
-      const sRect = stage.getBoundingClientRect();
-      const zr = zc.getBoundingClientRect();
-      const qr = qb.getBoundingClientRect();
-      if (qr.left < zr.right && qr.right > zr.left && qr.bottom > zr.top && qr.top < zr.bottom) {
-        qb.style.top = `${zr.top - sRect.top - qr.height - 10}px`;
-      }
-    }
   }
 
   // --------------------------------------------------------------------------
