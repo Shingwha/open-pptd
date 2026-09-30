@@ -258,16 +258,26 @@ export const BP_NARROW = 900;
 
 export const isNarrow = () => window.matchMedia(`(max-width: ${BP_NARROW}px)`).matches;
 
-export function quickbarColor(value, onCommit) {
-  return colorInput(value, onCommit, { className: "qb-color", title: "颜色" });
+/** Color swatch. Since decision D3 the bar has no text labels, so the title carries the meaning. */
+export function quickbarColor(value, onCommit, title = "颜色") {
+  return colorInput(value, onCommit, { className: "qb-color", title });
 }
 
-export function quickbarSelect(options, value, onCommit) {
-  return selectInput(options, value, onCommit, { className: "qb-select" });
+/** Compact dropdown. title carries the meaning in place of the removed text labels. */
+export function quickbarSelect(options, value, onCommit, title = "") {
+  return selectInput(options, value, onCommit, { className: "qb-select", title });
 }
 
+/** Text toggle (B / I). active appends .on (persistent on-state, accent-soft per the Line rules). */
 export function quickbarBtn(label, title, onClick, active) {
   return button(label, onClick, { title, className: "qb-btn", active });
+}
+
+/** Icon-only button (⋯ / delete / type-specific icon actions); icon = an svgIcon() string. */
+export function quickbarIconBtn(icon, title, onClick) {
+  const b = button("", onClick, { title, className: "qb-icon-btn" });
+  b.innerHTML = icon;
+  return b;
 }
 
 export function quickbarTextBtn(label, title, onClick) {
