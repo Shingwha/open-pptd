@@ -1,91 +1,116 @@
-# open-pptd — Local PPTD Presentation Skill
+<div align="center">
 
-> 🌏 中文版: [README.md](README.md)
+# open-pptd
 
-A "content → editable project → live preview → PPTX" presentation pipeline that runs entirely locally.
+**Say one sentence to your AI — get an editable, exportable deck or poster.**
 
-**See it in action 👉 https://shingwha.github.io/open-pptd/** — no installation needed: click a card to open it in the editor, tweak it freely, export PPTX, or download the project bundle for local editing.
+`v2.0.0` · `MIT` · `Node ≥ 18` · `zero dependencies · zero build`
 
-## Example Gallery
+🌐 [Online gallery](https://shingwha.github.io/open-pptd/) (no install, click & edit) · ⬇ [30-second setup](#30-second-setup) · 🤖 [Use it with AI](#use-it-with-ai)
 
-**Presentations (16:9)**
+<img src="docs/images/editor.png" width="880" alt="open-pptd editor: Qingshan Coffee business review — canvas on the left, property panel on the right, 12-page thumbnail strip at the bottom"/>
 
-<p align="center">
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fqingshan-coffee-review-12p%2Fdeck.pptd"><img src="docs/images/qingshan.png" width="32%" alt="Qingshan Coffee · H1 2026 Business Review (all 13 chart types)"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd"><img src="docs/images/business-review.png" width="32%" alt="Yuanchuan Hydrology Annual Report"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbrand-mori-showcase-7p%2Fdeck.pptd"><img src="docs/images/brand-mori.png" width="32%" alt="MORI Brand Proposal"/></a>
-</p>
+</div>
 
-**Posters (vertical, `kind: poster`)**
+---
 
-<p align="center">
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fxiaohongshu-intro-poster%2Fdeck.pptd"><img src="docs/images/xiaohongshu.png" width="18%" alt="open-pptd Xiaohongshu Intro Poster"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-artdeco-latelier%2Fdeck.pptd"><img src="docs/images/poster-artdeco.png" width="18%" alt="L'ATELIER Art Deco Poster"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-echo-valley-festival%2Fdeck.pptd"><img src="docs/images/poster-echo.png" width="18%" alt="Echo Valley Festival 2026 Poster"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-six-tea-types%2Fdeck.pptd"><img src="docs/images/poster-six-tea.png" width="18%" alt="Six Tea Types Infographic Poster"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-bailu-solar-term%2Fdeck.pptd"><img src="docs/images/poster-bailu.png" width="18%" alt="Bailu Solar Term Cultural Poster"/></a>
-</p>
+🇨🇳 中文版: [README.md](README.md)
 
-More examples (consulting decks, data annuals, pitch decks, architecture reviews) live in the online gallery and the `examples/` directory.
+## 30-second setup
 
-## What It Is
+The only prerequisite: **Node.js ≥ 18**.
 
-- **PPTD**: a human-readable YAML presentation format — one manifest (`deck.pptd`) + one `pages/*.page` per slide + `media/` images
-- A browser editor for live preview / collaborative editing (edit files, refresh to apply), exporting standard `.pptx`; **preview (browser) = export (PowerPoint)** — writer / renderer share the same source
-- Capabilities: 13 chart types, 187 preset shapes + custom paths, ~2000 Font Awesome icons (three styles), LaTeX formula mixing, font embedding (subset / complete), fade slide transitions
+**Windows (PowerShell)**
 
-> Fully self-developed (web editor, PPTX writer, chart & LaTeX rendering, CLI export pipeline) — zero dependencies, no npm install, no network; icons by [Font Awesome Free](https://fontawesome.com/license/free) (CC BY 4.0).
-
-## Quick Start
-
-### 1. Install
-
-The only prerequisite is **Node.js v18+** (Node 21+ recommended for the render command); Chrome / Edge recommended (needed for the "Open Folder" save feature).
-
-Install into your AI tool's **skills folder** (`~/.claude/skills` for Claude Code, `~/.pi/agent/skills` for pi, others per your tool's configuration; all paths inside the skill are relative, so it works wherever you install it) — pick one:
-
-- **Release zip (recommended — no git needed)**: grab `open-pptd-v*.zip` from [Releases](https://github.com/Shingwha/open-pptd/releases) and extract it into the skills folder; overwrite to update
-- **git clone (for tracking updates / development)**:
-
-```bash
-git clone https://github.com/Shingwha/open-pptd <your-skills-folder>/open-pptd
+```powershell
+irm https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.ps1 | iex
 ```
 
-**Font library (optional but recommended)**: font binaries (~155 MB) are not bundled; download before first use. Missing fonts do not block export (embedding is skipped with a warning; falls back to system fonts when opened).
+**macOS / Linux**
 
-```bash
-node bin/open-pptd.js fonts download all          # one-time full download, works offline
-node bin/open-pptd.js fonts download Smiley Sans  # on demand, run before export
+```sh
+curl -fsSL https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.sh | sh
 ```
 
-### 2. Use It Through Conversation
+This installs into `~/.open-pptd` and adds a user-level PATH entry (no admin needed); `open-pptd` is then available everywhere. Start a live preview server:
 
-Once installed, no extra configuration is needed — just describe the task to your AI assistant (Claude Code, pi, etc.), for example:
+```sh
+open-pptd serve --project <project-dir> --detach --json   # open in browser; edits refresh live
+open-pptd doctor                                          # environment self-check (CLI / Node / assets / PATH)
+```
 
-- "Make me a 7-page annual business review deck; tell the story with charts"
+Or skip installing: clone this repo and run `node bin/open-pptd.js serve …` — same result.
+
+## Use it with AI
+
+Install the skill package into your AI tool's skills directory (`~/.claude/skills` for Claude Code, `~/.pi/agent/skills` for pi, others per your tool's configuration):
+
+```sh
+git clone https://github.com/Shingwha/open-pptd-skill <your-skills-directory>/open-pptd
+```
+
+Then just talk — no configuration needed:
+
+- "Make me a 7-page annual business review; tell the story with charts"
 - "Turn this outline into a presentation" + paste the outline
 - "Design a Bailu solar-term poster"
 
-Following the open-pptd skill workflow (the separate `open-pptd-skill` repo, with SKILL.md and references/ methodology), the AI delivers **two things**: an editable PPTD project directory (manifest + pages + media), and a ready-to-send `.pptx` (fonts embedded, transitions applied).
+The AI delivers **two things**: an editable PPTD project directory (manifest + pages + media), and a ready-to-send `.pptx` (fonts embedded, opens in PowerPoint without repair). To watch it being built live, have the AI run the `serve` command above — every page appears as it's written.
 
-To watch the deck being built live, have the AI start a local preview server (or run it yourself):
+## What it does
 
-```bash
-node bin/open-pptd.js serve --project <project-dir>   # open in browser; every page shows up as it's written
+| | |
+|---|---|
+| **Charts** | 13 types with an Excel-style data grid — edit the numbers, the chart follows |
+| **Shapes / icons** | 187 preset shapes + custom paths; ~2000 Font Awesome icons (three styles) |
+| **Typography** | LaTeX formula mixing; font embedding (subset / full, with pre-export health checks that auto-fetch what's missing) |
+| **Web editor** | Live preview (refreshes on every file change), multi-select / marquee / context menu / group-align-distribute, 13-type chart editor, dark mode |
+| **Export** | Standard `.pptx` (fade transitions) and per-page PNG |
+| **Round-trip** | Download online work as a project bundle, or "Open Folder" to edit local projects directly |
+
+**Preview = export**: what you see in the browser and what opens in PowerPoint come from the same rendering pipeline, pixel for pixel — the core promise of this project, guarded page-by-page by a 156-page golden baseline.
+
+## How it works
+
+```
+your words ──AI (open-pptd-skill methodology)──▶ PPTD project (human-readable YAML: manifest + pages/ + media/)
+                                                      │
+                                  ┌───────────────────┴──────────────────┐
+                            web editor live preview                   PPTX export
+                                  └──────── same rendering pipeline ────┘
 ```
 
-Other CLI commands: `export` (PPTX) / `render` (PNG) / `check` (validate a project) / `fonts` — see `node bin/open-pptd.js --help`.
+- **This repo**: the engine (packages/*) + web editor + CLI. Zero npm dependencies, zero build steps, fully self-developed
+- **[open-pptd-skill](https://github.com/Shingwha/open-pptd-skill)**: the methodology the AI reads (pure markdown) — how to write a good PPTD
+- The font library (~155 MB) is not bundled: exports auto-fetch only what a deck actually uses, or pre-fetch everything with `open-pptd assets sync fonts`
 
-### 3. What the Web Editor Does
+## Example gallery
 
-Click any card in the online gallery to edit it (no installation); local projects get the same feature set via `serve`:
+<p align="center">
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fqingshan-coffee-review-12p%2Fdeck.pptd"><img src="docs/images/qingshan.png" width="32%" alt="Qingshan Coffee · H1 2026 business review (all 13 chart types)"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbrand-mori-showcase-7p%2Fdeck.pptd"><img src="docs/images/brand-mori.png" width="32%" alt="MORI brand proposal"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd"><img src="docs/images/business-review.png" width="32%" alt="Yuanchuan Tech · 2025 annual business review"/></a>
+</p>
+<p align="center">
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fxiaohongshu-intro-poster%2Fdeck.pptd"><img src="docs/images/xiaohongshu.png" width="27%" alt="open-pptd intro poster (Xiaohongshu)"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-artdeco-latelier%2Fdeck.pptd"><img src="docs/images/poster-artdeco.png" width="27%" alt="L'ATELIER · Art Deco fragrance poster"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fposter-bailu-solar-term%2Fdeck.pptd"><img src="docs/images/poster-bailu.png" width="27%" alt="Bailu solar-term cultural poster"/></a>
+</p>
 
-- **Live preview**: refreshes on every file change (SSE), WYSIWYG
-- **Element editing**: click-to-edit text/shapes/images/tables with a property panel
-- **Chart editor**: Excel-style data grid + 13 chart types with style panels
-- **Export**: PPTX (fonts embedded, opens in PowerPoint without repair) and PNG images
-- **Project round-trip**: download a project bundle, or "Open Folder" to edit local projects directly
+More examples (data annuals, pitch decks, architecture reviews, festival posters) live in the [online gallery](https://shingwha.github.io/open-pptd/) and the `examples/` directory — every card opens as an editable project.
+
+## CLI quick reference
+
+| Command | What it does |
+|---|---|
+| `open-pptd serve --project <dir> --detach --json` | Live preview server (`--stop` to end) |
+| `open-pptd export <deck.pptd>` | Export PPTX (auto health-checks & fetches fonts; `--json` for structured output) |
+| `open-pptd render <deck.pptd>` | Render per-page PNGs |
+| `open-pptd check <deck.pptd>` | Validate structure / tokens / geometry / contrast |
+| `open-pptd doctor` / `paths` / `assets sync` | Environment self-check / paths / font & icon asset management |
 
 ## License
 
-MIT
+MIT · icons by [Font Awesome Free](https://fontawesome.com/license/free) (CC BY 4.0)
+
+🇨🇳 中文版: [README.md](README.md)
