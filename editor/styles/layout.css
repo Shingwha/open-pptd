@@ -23,11 +23,14 @@
 
 /* ==== topbar — top bar ==== */
 
+/* Flat single row (see 00-overview red line 3) at the 44px Line height: the inner
+   controls are vertically centered by align-items, and the horizontal rhythm is one
+   10px gap for every sibling plus 12px edge padding */
 .topbar {
   display: flex;
   align-items: center;
   height: var(--topbar-h);
-  padding: 0 14px;
+  padding: 0 12px;
   background: var(--panel);
   border-bottom: 1px solid var(--line);
   gap: 10px;
@@ -53,6 +56,8 @@
 .brand-home:hover { opacity: 0.8; }
 .brand-home:focus-visible { outline: none; outline: 1px solid var(--sel-ring); outline-offset: 0; }
 
+/* Project file label (D4): the file name only, full path/URL lives in the title;
+   a 1px hairline chip on the white bar, no fill */
 .brand-file {
   font-size: var(--text-sm);
   font-weight: 400;
@@ -61,8 +66,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: var(--bg);
-  border: 1px solid var(--line);
+  background: transparent;
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius);
   padding: 2px 9px;
 }

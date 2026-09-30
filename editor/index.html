@@ -18,19 +18,19 @@
     <!-- editor mount point (createEditor's rootEl; in standalone the skeleton is still provided statically by this page) -->
     <div id="pptd-root"></div>
     <div class="app" id="editor-app">
-      <!-- topbar -->
+      <!-- topbar: flat single row — brand left, one right-aligned cluster (status + undo/redo + file group + GitHub) -->
       <header class="topbar">
         <div class="brand">
           <a class="brand-home" href="../" title="返回作品画廊">OPEN PPTD</a>
           <span class="brand-file" id="brand-file"></span>
         </div>
-        <div class="tb-status" id="tb-status">
-          <span class="status-hint" id="status-hint" hidden title="GitHub Pages 部署模式：保存将下载项目包（zip）"></span>
-          <span class="status-dirty" id="status-dirty" hidden>● 未保存</span>
-          <button type="button" class="status-btn" id="btn-reload" title="从磁盘重新加载当前项目">刷新</button>
-        </div>
         <div class="topbar-actions">
-          <span class="topbar-divider"></span>
+          <!-- status cluster (live-reload.js): shares the right cluster gap, one hairline divider follows it -->
+          <div class="tb-status" id="tb-status">
+            <span class="status-hint" id="status-hint" hidden title="GitHub Pages 部署模式：保存将下载项目包（zip）"></span>
+            <span class="status-dirty" id="status-dirty" hidden>● 未保存</span>
+            <button type="button" class="status-btn" id="btn-reload" title="从磁盘重新加载当前项目">刷新</button>
+          </div>
           <button id="btn-undo" class="icon-btn" title="撤销 (Ctrl+Z)">
             <svg viewBox="0 0 24 24"><path d="M8 7L4 11l4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 11h10a5 5 0 0 1 0 10h-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           </button>
