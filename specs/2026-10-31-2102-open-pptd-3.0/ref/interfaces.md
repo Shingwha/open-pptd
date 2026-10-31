@@ -28,6 +28,7 @@
 - 子入口：`open-pptd/{model,renderer,writer,runtime,export,measure,layout,paths,config,server,cli,editor,editor/index.html}`
 - `CONTRACT_VERSION = 3`；`contract.json.contractVersion = 3`；删除 `./internal/*`；删除旧深路径与 aliases。
 - 公开名以 `contract.json` + `tests/contract/public-api.mjs` 断言；新增导出兼容，删除/改名破坏性。
+- W10 已实现：`contract.json.entries` = model/renderer/writer/runtime/export/server/cli/editor/paths/config/measure/layout（12）；`package.json.exports` 同名 12 子入口 + `./editor/index.html` + `./package.json`；根 `.` 只导出双端核心（159 名，无 server/cli）；`packages/cli/index.js` 仅 `runOpen/runBuild/runCheck/runAssets/runDoctor`；renderer barrel 删除 `renderPage/autoGrowTexts`。
 
 ## 2. ProjectSource
 
@@ -371,6 +372,7 @@ open-pptd doctor [--json]
 - `build` 默认完整 check；`--fetch` 显式下载项目引用字体；不读 config.autoFetch。
 - `check` 只读；`--strict` warnings 也失败。
 - `assets` 管理内置/用户主题与字体；`doctor` 环境 + 路径 + 库摘要。
+- W10 已实现：`packages/cli/{bin,open,build,check,assets,doctor,project,resources,errors}.js`；旧 `ensure/fonts/icons/gallery/export/render.js` 删除；人类文本 stderr、`--json` stdout 单行；`open` 实例表 `~/.open-pptd/state/instances.json`（pid+/api/ping 校验）。
 
 ## 12. Contract 3.0 / 迁移
 

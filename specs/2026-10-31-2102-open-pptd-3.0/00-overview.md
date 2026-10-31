@@ -149,5 +149,6 @@
 - ✅ W7（2026-11-01 @ `feat/3.0-w7-editor` → main）：最小编辑器（删旧编辑 UI）；内容编辑/变换/多选/参考线/页面单页操作；懒加载 Design 面板。editor-minimal 21/21、page-ops 17/17。
 - ✅ W8（2026-11-01 @ `feat/3.0-w8-shell` → main）：骨架模板化 + 服务实例化（dom/toast/dialogs）；createPreview；createEditor 基于 preview；单壳 Home/Editor。preview-shell 23/23；golden 字节一致。
 - ✅ W9（2026-11-01 @ `feat/3.0-w9-save` → main）：revision 冲突 + 原子批量保存；浏览器导出接 ExportService；PNG foreignObject/capture 双后端；透明 alpha 回归。save-atomic 19/19、parity-png 22/22、browser-export 15/15。
-- W10 详单待补 `## 前置上下文`（JIT）。
+- ✅ W10（2026-11-01 @ `feat/3.0-w10-cli` → main）：CLI 5（open/build/check/assets/doctor）；contract 3.0（runtime/export 入口、根仅双端核心、删除旧命令/API/internal）；CLI surface 72/72、全量 37/37。
+- W11 详单待补 `## 前置上下文`（JIT）。
 - 旧 `specs/2026-09-30-ui-redesign-line/**`、`specs/ref/**`、`docs/archive/**` 已由 W1 删除；本组 spec 不依赖它们。
