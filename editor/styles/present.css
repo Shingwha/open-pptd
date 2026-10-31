@@ -14,7 +14,8 @@
    UI tokens; only layers/sizes go through tokens.
    ============================================================================ */
 body.presenting { user-select: none; }
-body.presenting .app { visibility: hidden; } /* hide the editor entirely to avoid stacking/focus interference */
+/* Hide the presenting instance only (3.0: several instances can share a page) */
+.pptd-presenting-hidden { visibility: hidden; }
 
 .present {
   position: fixed;

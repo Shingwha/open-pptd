@@ -23,12 +23,11 @@ import { pickProjectFolder, ensurePermission } from "./handle-io.js";
 import { addRecent, setPendingProject, clearPendingProject } from "./handle-store.js";
 import { createHistory } from "../../interaction/history.js";
 import { commitBaseline } from "../state.js";
-import { dialogs } from "../../dialogs.js";
-import { showToast } from "../toast.js";
 import { createDeck, createPage, normalizeTheme, syncElementId } from "../../../packages/model/index.js";
 
-export function createIo({ state, view, ops, source, onSaved, onDeckChange, onError }) {
-  const fontManager = createFontManager(state);
+export function createIo({ state, view, ops, source, ui, onSaved, onDeckChange, onError }) {
+  if (!ui) throw new Error("createIo: 需要实例上下文 ui");
+  const fontManager = createFontManager(state, ui);
   const images = createImageStore(state);
   bindIconMap(state.iconMap); // bind the icon preload cache (icons.js module singleton, shared by render/export)
 
@@ -51,6 +50,7 @@ export function createIo({ state, view, ops, source, onSaved, onDeckChange, onEr
     images,
     fontManager,
     source: projectSource,
+    ui,
     connect: () => live.connectLiveReload(), // subscribe to live reload once the project is ready (idempotent)
     renderStatusBar: () => live.renderStatusBar(), // refresh the statusbar after load
     onDeckChange,
@@ -61,6 +61,7 @@ export function createIo({ state, view, ops, source, onSaved, onDeckChange, onEr
     images,
     fontManager,
     source: projectSource,
+    ui,
     renderStatusBar: () => live.renderStatusBar(),
     onSaved: () => {
       live.suppressRefreshes(); // suppress the refresh loop after saving
@@ -71,6 +72,7 @@ export function createIo({ state, view, ops, source, onSaved, onDeckChange, onEr
   live = createLiveReload({
     state,
     source: projectSource,
+    ui,
     reload: () => loader.loadDeck(state.manifestPath, { keepPage: true, silent: true }),
     reloadHandle: () => loader.loadDeckFromHandle(state.projectHandle, { keepPage: true, silent: true }),
     manualReload: loader.manualReload, // topbar "live" marker click
@@ -83,7 +85,7 @@ export function createIo({ state, view, ops, source, onSaved, onDeckChange, onEr
    */
   async function openProjectHandle(handle) {
     if (!(await ensurePermission(handle))) {
-      showToast("需要文件夹读写权限才能打开并保存项目", "danger");
+      ui.toast.show("需要文件夹读写权限才能打开并保存项目", "danger");
       return false;
     }
     await loader.loadDeckFromHandle(handle);
@@ -108,7 +110,7 @@ export function createIo({ state, view, ops, source, onSaved, onDeckChange, onEr
    * first blank startup (no toast).
    */
   async function newProject({ toast = true } = {}) {
-    if (state.dirty && !(await dialogs.confirm("编辑器有未保存的修改，新建将放弃这些修改。确定继续？"))) return false;
+    if (state.dirty && !(await ui.dialogs.confirm("编辑器有未保存的修改，新建将放弃这些修改。确定继续？"))) return false;
     const deck = createDeck({ title: "未命名演示文稿" });
     deck.pages.push(createPage({ pageType: "content" }));
     ops.replaceDeck(deck);
@@ -132,7 +134,7 @@ export function createIo({ state, view, ops, source, onSaved, onDeckChange, onEr
     } catch (err) {
       console.warn("[io] deckChange 回调异常:", err?.message || err);
     }
-    if (toast) showToast("已新建空白演示", "info");
+    if (toast) ui.toast.show("已新建空白演示", "info");
     return true;
   }
 

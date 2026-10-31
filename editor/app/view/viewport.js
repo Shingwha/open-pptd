@@ -80,7 +80,7 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
     panY = Math.min(my, Math.max(-my, panY));
     canvas.style.transform = `scale(${s})`;
     wrap.style.transform = `translate(${panX}px, ${panY}px)`;
-    controller.setScale(s);
+    controller?.setScale(s);
   }
 
   // Recompute the scale every frame while the panel width animates:

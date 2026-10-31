@@ -26,10 +26,9 @@
 // ============================================================================
 
 import { createEditor } from "./editor.js";
-import { dom } from "./dom.js";
 import { applyThemeTokens } from "./theme.js";
 import { httpSource } from "./app/project/source.js";
-import { showToast } from "./app/toast.js";
+import { createToast } from "./app/toast.js";
 import { ensurePermission } from "./app/project/handle-io.js";
 import {
   getRecent,
@@ -38,11 +37,16 @@ import {
   addRecent,
   setPendingProject,
 } from "./app/project/handle-store.js";
-import { showDialog } from "./interaction/dialogs/base.js";
+import { createDialogs } from "./dialogs.js";
 import { SHOT_ERROR_TITLE } from "../packages/model/index.js";
 
 // Repo root URL (this file lives in <root>/editor/, so ../ is the site root)
 const ROOT = new URL("../", import.meta.url).href;
+
+// Page-level services for the boot shell itself (the editor owns its own instances)
+const shellToast = createToast(document.body);
+const shellDialogs = createDialogs();
+const showToast = (...args) => shellToast.show(...args);
 
 // ----------------------------------------------------------------------------
 // Host boot seam: query string > window.__PPTD_BOOT__ (both optional; see the
@@ -127,7 +131,7 @@ function showRestoreCard(io, entry) {
   openBtn.className = "btn btn-primary btn-sm";
   openBtn.textContent = "打开项目";
 
-  const { close } = showDialog("恢复本地项目", hint, {
+  const { close } = shellDialogs.showDialog("恢复本地项目", hint, {
     panelClass: "restore-card",
     closeBtn: false,
     overlayClose: false,
@@ -215,7 +219,7 @@ async function boot() {
   // Blank init clears the session marker, so capture the pending id first
   const pendingId = deckUrl ? null : getPendingProjectId();
   const bootParams = readBootParams(params);
-  const root = dom.pptdRoot || document.body;
+  const root = document.getElementById("pptd-root") || document.body;
   const options = {
     // no injected base → the standalone httpSource({ deckUrl }) call shape (base defaults to "")
     source: httpSource(bootParams.base ? { base: bootParams.base, deckUrl } : { deckUrl }),

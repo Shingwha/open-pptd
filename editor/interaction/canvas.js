@@ -18,7 +18,7 @@
 //     keep a constant on-screen size.
 // ============================================================================
 
-import { overlayGeom, layoutElementOf } from "../coords.js";
+import { createCoords } from "../coords.js";
 import { ICON_ROTATE } from "../icons.js";
 import { snapMove, snapResize, SNAP_SCREEN_PX } from "./align-guides.js";
 
@@ -30,6 +30,8 @@ const MOVE_THRESHOLD = 3; // px threshold to start a gesture; below it counts as
 
 export function createCanvasController(canvas, opts) {
   const {
+    coords = createCoords(),   // per-instance coordinate helpers (overlayGeom / layoutElementOf)
+    isActive = () => true,     // only the instance the user last interacted with reacts to global keys
     getPage,
     beginChange,       // () => void  snapshot before a change
     endChange,         // () => void  end a change (re-render + property panel refresh)
@@ -41,6 +43,7 @@ export function createCanvasController(canvas, opts) {
     deleteSelected,    // keyboard Delete/Backspace
   } = opts;
 
+  const { overlayGeom, layoutElementOf } = coords;
   const wrapLayer = canvas.parentElement; // canvas-wrap: the non-scaled layer
   let overlay = null;   // .sel-overlay (selection box / member borders / marquee hit highlight)
   let box = null;       // .sel-box (single box or multi/group bounds; handles hang off it)
@@ -586,6 +589,7 @@ export function createCanvasController(canvas, opts) {
   // Keyboard: Delete to delete / Esc to unwind layers / arrow-key nudge (1px / Alt 10px / Shift grid snap)
   // --------------------------------------------------------------------------
   document.addEventListener("keydown", (e) => {
+    if (!isActive()) return; // two instances: shortcuts follow the active one
     const tag = (e.target.tagName || "").toLowerCase();
     if (tag === "input" || tag === "textarea" || tag === "select" || e.target.isContentEditable) return;
 

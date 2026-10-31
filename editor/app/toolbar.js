@@ -9,13 +9,12 @@
 import { createFileMenu } from "./file-menu.js";
 import { bindPageMenu } from "./page-menu.js";
 import { bindAddMenu } from "../interaction/add-menu.js";
-import { openDesignPanel, destroyDesignPanel } from "../interaction/design-panel-lazy.js";
+import { createDesignPanelService } from "../interaction/design-panel-lazy.js";
 import { removeRecent } from "./project/handle-store.js";
-import { showToast } from "./toast.js";
-import { dom } from "../dom.js";
-import { dialogs } from "../dialogs.js";
 
-export function bindToolbar({ state, api, view, io, present, themeMode = null }) {
+export function bindToolbar({ state, api, view, io, present, themeMode = null, ui }) {
+  const { dom, toast, dialogs } = ui;
+  const designPanel = createDesignPanelService(ui);
   const disposers = []; // destroy set for child bindings (menus/popovers)
   let mainMenu = null;
 
@@ -32,7 +31,7 @@ export function bindToolbar({ state, api, view, io, present, themeMode = null })
       try {
         await io.openLocalProject();
       } catch (err) {
-        showToast(`打开失败: ${err.message}`, "danger");
+        toast.show(`打开失败: ${err.message}`, "danger");
       }
     }
 
@@ -42,7 +41,7 @@ export function bindToolbar({ state, api, view, io, present, themeMode = null })
       try {
         await io.openProjectHandle(entry.handle);
       } catch (err) {
-        showToast(`打开失败: ${err.message}`, "danger");
+        toast.show(`打开失败: ${err.message}`, "danger");
         await removeRecent(entry.id);
       }
     }
@@ -128,8 +127,8 @@ export function bindToolbar({ state, api, view, io, present, themeMode = null })
     if (!dom.btnDesign) return;
     const ac = new AbortController();
     const open = (tab = "theme") => {
-      openDesignPanel({ state, api, io, themeMode, tab }).catch((err) =>
-        showToast(`打开设计面板失败: ${err.message}`, "danger")
+      designPanel.open({ state, api, io, themeMode, tab }).catch((err) =>
+        toast.show(`打开设计面板失败: ${err.message}`, "danger")
       );
     };
     dom.btnDesign.onclick = () => open("theme");
@@ -138,7 +137,7 @@ export function bindToolbar({ state, api, view, io, present, themeMode = null })
     disposers.push(() => {
       ac.abort();
       if (dom.btnDesign) dom.btnDesign.onclick = null;
-      destroyDesignPanel();
+      designPanel.destroy();
     });
   }
 

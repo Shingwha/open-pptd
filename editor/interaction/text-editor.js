@@ -13,7 +13,6 @@
 // ============================================================================
 
 import * as ui from "../ui.js";
-import { showDialog } from "./dialogs/base.js";
 import { themeSwatches } from "./fields.js";
 import { resolveColor } from "../../packages/model/index.js";
 
@@ -34,12 +33,13 @@ const SIZE_PRESETS = [12, 14, 16, 18, 20, 24, 28, 32, 40, 48, 64];
 /**
  * Open the text content editor.
  * @param {object} el text element (model object)
- * @param {object} opts { theme, fontOptions, beginChange, onChange, onDone }
+ * @param {object} opts { theme, fontOptions, beginChange, onChange, onDone, dialogs }
  *   theme: theme object or getter; fontOptions: () => [[value,label],…];
  *   beginChange: idempotent per-dialog snapshot; onChange: light repaint;
- *   onDone: session end (full render)
+ *   onDone: session end (full render); dialogs: the instance dialog service
+ *   (editor/dialogs.js) that owns the modal
  */
-export function openTextEditor(el, { theme, fontOptions, beginChange, onChange, onDone } = {}) {
+export function openTextEditor(el, { theme, fontOptions, beginChange, onChange, onDone, dialogs } = {}) {
   const themeOf = typeof theme === "function" ? theme : () => theme;
   const content = () => (el.content ||= {});
   /** Apply one edit: snapshot once per session, then mutate + light repaint. */
@@ -150,5 +150,5 @@ export function openTextEditor(el, { theme, fontOptions, beginChange, onChange, 
   body.appendChild(hint);
 
   const done = () => onDone?.();
-  showDialog("文字编辑", body, { doneText: "完成", onDone: done, onClose: done });
+  dialogs.showDialog("文字编辑", body, { doneText: "完成", onDone: done, onClose: done });
 }

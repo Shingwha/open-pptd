@@ -10,7 +10,7 @@
 // export routing is unchanged (CHART_META.route).
 // ============================================================================
 
-import { button, resolveEditorTheme, showDialog } from "./base.js";
+import { button } from "./base.js";
 import { createExcelGrid } from "../excel-grid.js";
 import * as ui from "../../ui.js";
 import { themeSwatches } from "../fields.js";
@@ -33,12 +33,13 @@ function findUnusedValCol(el) {
   return `y${n}`;
 }
 
-export function openChartEditor(el, { theme, onChange, beginChange, onDone } = {}) {
+export function openChartEditor(el, { theme, onChange, beginChange, onDone, dialogs } = {}) {
   const container = document.createElement("div");
   container.className = "chart-editor";
 
-  // Live editor theme, falling back to the theme captured when the dialog opened
-  const editorTheme = () => resolveEditorTheme(theme);
+  // Live editor theme (a getter from app/api.js), falling back to the theme captured when the dialog opened
+  const themeOf = typeof theme === "function" ? theme : () => theme;
+  const editorTheme = () => themeOf();
   const palette = () => themeChartPalette(editorTheme());
   const commit = () => onChange?.();
   const curType = () => el.series?.[0]?.type || "bar";
@@ -58,6 +59,7 @@ export function openChartEditor(el, { theme, onChange, beginChange, onDone } = {
 
   // -- Excel-style data grid (shared interaction/excel-grid.js) --
   const grid = createExcelGrid({
+    dialogs,
     getRows: rowCount,
     getCols: colCount,
     cellValue: (r, c) => String(data.rows[r]?.[c] ?? ""),
@@ -304,7 +306,7 @@ export function openChartEditor(el, { theme, onChange, beginChange, onDone } = {
   }
   renderAll();
 
-  showDialog("图表编辑", container, { onClose: () => onDone?.() });
+  dialogs.showDialog("图表编辑", container, { onClose: () => onDone?.() });
   // Widen the dialog (data table + series list)
   const dlg = container.closest(".dialog");
   if (dlg) dlg.style.width = "min(880px, 96vw)";

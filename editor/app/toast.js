@@ -1,34 +1,55 @@
 // ============================================================================
-// app/toast.js — unified toast notifications (all operation feedback goes here)
+// app/toast.js — toast notifications, one layer per instance
 // ----------------------------------------------------------------------------
-// Usage: showToast(text, "success") / showToast(text, "danger") / showToast(text, "info").
-// Toasts stack in the top-right corner and auto-dismiss; the left color bar
-// distinguishes success / failure / info. Persistent status (e.g. live-reload
-// state) does not go through toasts — the topbar indicator covers that.
+// 3.0 componentisation: the toast layer belongs to the instance that created it,
+// so two editors on one page never share (or clear) each other's messages
+// (decisions.md D1). createToast(rootEl) returns:
+//   show(text, type?, duration?)   type: "success" | "danger" | "info"
+//   clear()                        drop the layer + pending timers (destroy)
+// The container is appended to the instance mount point; .toast-container is
+// position:fixed so the anchor does not matter visually, and destroy removes it
+// with the rest of the instance DOM.
 // ============================================================================
 
-let container = null;
+export function createToast(rootEl) {
+  const host = rootEl || (typeof document !== "undefined" ? document.body : null);
+  let container = null;
+  const timers = new Set();
 
-/** Tear down the toast layer (createEditor destroy: drops the container, no DOM left behind). */
-export function clearToasts() {
-  container?.remove();
-  container = null;
-}
-
-export function showToast(text, type = "info", duration = 3000) {
-  if (typeof document === "undefined") return; // Safe under Node (tests/CLI)
-  if (!container) {
-    container = document.createElement("div");
-    container.className = "toast-container";
-    document.body.appendChild(container);
+  function later(fn, ms) {
+    const id = setTimeout(() => {
+      timers.delete(id);
+      fn();
+    }, ms);
+    timers.add(id);
   }
-  const t = document.createElement("div");
-  t.className = `toast toast-${type}`;
-  t.textContent = text;
-  container.appendChild(t);
-  requestAnimationFrame(() => t.classList.add("show"));
-  setTimeout(() => {
-    t.classList.remove("show");
-    setTimeout(() => t.remove(), 220);
-  }, duration);
+
+  /** Show one toast; stacking/auto-dismiss behaviour is unchanged from 2.x. */
+  function show(text, type = "info", duration = 3000) {
+    if (!host || typeof document === "undefined") return; // Node/SSR: no-op
+    if (!container || !container.isConnected) {
+      container = document.createElement("div");
+      container.className = "toast-container";
+      host.appendChild(container);
+    }
+    const t = document.createElement("div");
+    t.className = `toast toast-${type}`;
+    t.textContent = text;
+    container.appendChild(t);
+    requestAnimationFrame(() => t.classList.add("show"));
+    later(() => {
+      t.classList.remove("show");
+      later(() => t.remove(), 220);
+    }, duration);
+  }
+
+  /** Tear down the layer (destroy: no DOM and no pending timers left behind). */
+  function clear() {
+    for (const id of timers) clearTimeout(id);
+    timers.clear();
+    container?.remove();
+    container = null;
+  }
+
+  return { show, clear };
 }

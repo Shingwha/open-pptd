@@ -1,44 +1,36 @@
 // ============================================================================
-// editor/editor.js — createEditor: a mountable, destroyable editor instance (contract 1)
+// editor/editor.js — createEditor: a self-contained, destroyable editor instance
 // ----------------------------------------------------------------------------
-// Moves the whole assembly logic of the old main.js boot()/initEditor() in here and
-// closes it over:
-//   createEditor(rootEl, { source, deck?, deckUrl?, theme?, chrome?, dialogs?, locale?, interactive?, on? })
+// 3.0 componentisation (decisions.md D1): the editor renders its own skeleton into
+// the mount point and creates every service per instance (dom / toast / dialogs /
+// theme / present). The host page only provides an empty container; nothing is
+// read from a document-level singleton.
+//
+//   createEditor(rootEl, { source, deck?, deckUrl?, theme?, chrome?, dialogs?, on? })
 //     → { ready, destroy, api, io, state, view }
 //
-// Assembly capability (`interactive`, default true; `chrome:"shot"` implies false):
-// the interactive assembly binds canvas/keyboard/present/toolbar/stage
-// and the permanent listeners (resize, theme-mode media query, live reload). The
-// non-interactive one keeps state/api/io and the SAME load → font → image → paint
-// pipeline, but swaps the full view for the headless paint view and binds nothing.
-// app/shot.js (?shot=1) is exactly this assembly mounted on #shot-root.
+// This module is the editing layer on top of the shared preview pipeline (the
+// preview split lands in this same wave; the non-interactive assembly is kept
+// until app/shot.js migrates to createPreview).
 //
-// rootEl is the mount point: dom refs prefer its subtree, falling back to document
-// for unmatched elements (the static skeleton is still in index.html; an embedded
-// caller may pass an empty container) — that fallback policy lives only in dom.js.
-// destroy() is idempotent: it removes DOM created or taken over by this instance,
-// unbinds all window/document listeners, closes push channels, releases chart
-// instances, clears the dom cache and restores the theme and default dialogs.
-//
-// Zero external behavior change: standalone main.js still opens with ?deck=,
-// screenshots with ?shot=1, and main.js keeps exposing window.__pptdEditor/__pptdIo.
+// destroy() is idempotent: it removes the skeleton DOM, unbinds all window/document
+// listeners, closes push channels, releases chart instances, clears toasts/dialogs,
+// restores the theme and drops the context's service instances.
 // ============================================================================
 
 import { createEditorState } from "./app/state.js";
 import { createEditorApi } from "./app/api.js";
-import { createView, createHeadlessView } from "./app/view/view.js";
+import { createView, createPageView } from "./app/view/view.js";
 import { createIo } from "./app/project/io.js";
 import { bindToolbar } from "./app/toolbar.js";
 import { bindKeyboard } from "./app/keyboard.js";
 import { createPresent } from "./app/present.js";
-import { clearToasts } from "./app/toast.js";
 import { createCanvasController } from "./interaction/canvas.js";
 import { createStageController } from "./interaction/stage.js";
 import { injectIcons } from "./icons.js";
-import { dom } from "./dom.js";
-import { applyThemeTokens, bindThemeMode } from "./theme.js";
-import { configureDialogs, resetDialogs } from "./dialogs.js";
-import { closeAllDialogs } from "./interaction/dialogs/base.js";
+import { editorSkeletonHtml } from "./skeleton.js";
+import { createUiContext } from "./context.js";
+import { createCoords } from "./coords.js";
 import { disposeChartInstances } from "../packages/renderer/index.js";
 
 // chrome presets: embedded = trims host-hostile outbound navigation (brand back to gallery / GitHub new window)
@@ -49,16 +41,15 @@ const CHROME_PRESETS = {
 
 /**
  * Assemble an editor instance on rootEl.
- * @param {HTMLElement} rootEl mount point
+ * @param {HTMLElement} rootEl mount point (the instance owns everything inside it)
  * @param {object} options
  *   source*    ProjectSource (required)
  *   deck?      { manifestText, pageFiles, manifestPath? } initial document (otherwise read from source)
  *   deckUrl?   project URL loaded via source.read(deckUrl) (standalone ?deck=)
  *   theme?     { tokens?: Record<string,string>, mode?: "light"|"dark" }
  *   chrome?    "full" | "embedded" | "shot" | { topbar?, brand?, github?, thumbbar?, zoom? }
- *              ("shot" = the non-interactive headless assembly, implies interactive:false)
- *   dialogs?   host implementation { alert, confirm } (overrides native dialogs, see editor/dialogs.js)
- *   locale?    "zh-CN" (default; no i18n resources yet, recorded only)
+ *              ("shot" = the non-interactive painter, implies interactive:false)
+ *   dialogs?   host implementation { alert, confirm } (overrides native dialogs)
  *   interactive? false = non-interactive assembly (headless paint only, no interaction slices)
  *   on?        { ready?, dirty?, saved?, error?, deckChange?, selectionChange? }
  * @returns {{ ready: Promise<void>, destroy(): void, api: object, io: object, state: object, view: object }}
@@ -71,48 +62,33 @@ export function createEditor(rootEl, options = {}) {
     theme = null,
     chrome = "full",
     dialogs: dialogsImpl = null,
-    locale = "zh-CN",
     on = {},
   } = options;
 
   // Assembly capability, decided in one place: "shot" is inherently non-interactive.
   const interactive = options.interactive !== false && chrome !== "shot";
-
   if (!source) throw new Error("createEditor: options.source（ProjectSource）为必填");
-  const mount = rootEl || (typeof document !== "undefined" ? document.body : null);
+  const mount = rootEl;
   if (!mount) throw new Error("createEditor: 需要可用的 rootEl");
 
-  // Mount-point scope (unmatched ids fall back to document, see dom.js)
-  dom.rebind(mount);
-  // Icon slots live in the document-level editor skeleton (outside #pptd-root), so the
-  // injection must resolve through the same dual-mode scope as every other skeleton id.
-  if (interactive) injectIcons(dom.editorApp || document);
-  if (dialogsImpl) configureDialogs(dialogsImpl);
+  // --------------------------------------------------------------------------
+  // Skeleton + instance services (the whole component lives inside rootEl)
+  // --------------------------------------------------------------------------
+  mount.innerHTML = interactive ? editorSkeletonHtml() : ""; // headless paints the deck only
+  if (interactive) injectIcons(mount);
+  const ctxChrome = chrome === "full" || chrome === "embedded" ? chrome : "embedded";
+  const ui = createUiContext(mount, { chrome: ctxChrome, theme, dialogs: dialogsImpl });
+  const { dom } = ui;
+  const coords = createCoords();
 
   const disposers = [];
   let destroyed = false;
 
   // --------------------------------------------------------------------------
-  // Theme injection (contract 3): mode/tokens land on the common ancestor (the
-  // skeleton is in body, the mount point may be an empty container)
-  // --------------------------------------------------------------------------
-  const themeHost = mount.contains && mount.contains(dom.editorApp) ? mount : document.documentElement;
-  const restoreTheme = theme ? applyThemeTokens(themeHost, theme) : null;
-
-  // Tri-state theme (B3: light / dark / follow system): when the host injects a
-  // mode, defer to the host (injection wins over the built-in palette); otherwise
-  // the editor manages it (localStorage persistence + prefers-color-scheme
-  // following, applied on data-pptd-theme).
-  // Non-interactive: there is no user to follow the system for, and flipping the
-  // palette would change the screenshot — the stylesheet default stays in place.
-  const themeMode = interactive && !theme?.mode ? bindThemeMode() : null;
-  disposers.push(() => themeMode?.destroy());
-
-  // --------------------------------------------------------------------------
-  // Assembly (the closure of the old main.js initEditor)
+  // Assembly
   // --------------------------------------------------------------------------
   const { state, page, selected, primarySelectedId, selectedElements, ops } = createEditorState();
-  const api = createEditorApi({ state, page, selected, primarySelectedId, selectedElements, ops });
+  const api = createEditorApi({ state, page, selected, primarySelectedId, selectedElements, ops, ui });
 
   // Public events: dirty/selectionChange dispatched after each render when the state changed
   let lastDirty = null;
@@ -138,17 +114,17 @@ export function createEditor(rootEl, options = {}) {
   };
 
   // Interaction slices (element gestures) exist only in the interactive assembly;
-  // the headless one builds the same api without them (the api guards
-  // controller-less calls, and view is the headless paint view).
+  // the headless one builds the same api without them.
   let controller = null;
   if (interactive) {
-    // Element gesture executor (drag/resize/rotate; viewport gestures are in the stage router)
-    controller = createCanvasController(dom.canvas, { ...api });
+    controller = createCanvasController(dom.canvas, { ...api, coords, isActive: ui.isActive });
   }
 
+  // Interactive: the full canvas view; headless: the deck-sized paint surface
+  // (scale 1, pure-function geometry — pixel stability of the golden baseline).
   const view = interactive
-    ? createView({ state, page, api, controller, ops })
-    : createHeadlessView({ state, container: mount });
+    ? createView({ state, page, api, controller, ops, ui, coords, editable: true })
+    : createPageView({ state, container: mount });
   api.bind({ controller, view });
   disposers.push(() => view.destroy?.());
 
@@ -170,6 +146,7 @@ export function createEditor(rootEl, options = {}) {
       setZoom: (z, anchor) => view.setZoom(z, anchor),
       getZoom: () => view.getZoom(),
       zoomReset: () => view.zoomReset(),
+      isActive: ui.isActive,
     });
     disposers.push(() => stage.destroy?.());
   }
@@ -179,6 +156,7 @@ export function createEditor(rootEl, options = {}) {
     view,
     ops,
     source,
+    ui,
     onSaved: () => {
       try {
         on.saved?.();
@@ -205,14 +183,14 @@ export function createEditor(rootEl, options = {}) {
   api.bind({ io }); // save/export/undo-redo/navigation delegate to the IO facade
 
   // --------------------------------------------------------------------------
-  // Interactive bindings (skipped entirely by the non-interactive assembly)
+  // Interactive bindings (skipped entirely by the headless assembly)
   // --------------------------------------------------------------------------
   const resizeAc = new AbortController();
   let resizeRaf = 0;
 
   if (interactive) {
     // Present mode (topbar "Present" button + F5)
-    const present = createPresent({ state, view, ops });
+    const present = createPresent({ state, view, ops, ui });
     api.bind({ present });
     disposers.push(() => present.destroy?.());
 
@@ -223,9 +201,9 @@ export function createEditor(rootEl, options = {}) {
       emitEvents();
     };
 
-    const toolbar = bindToolbar({ state, api, view, io, present, themeMode });
+    const toolbar = bindToolbar({ state, api, view, io, present, themeMode: ui.themeMode, ui });
     disposers.push(() => toolbar.destroy?.());
-    const keyboard = bindKeyboard({ state, api, io, present });
+    const keyboard = bindKeyboard({ state, api, io, present, ui });
     disposers.push(() => keyboard.destroy?.());
     disposers.push(() => controller.destroy?.());
 
@@ -250,7 +228,7 @@ export function createEditor(rootEl, options = {}) {
   // --------------------------------------------------------------------------
   // Initial load: deck → use directly; deckUrl → read(url); both omitted → follow
   // the contract via source.read() (a source.read failure = no established project
-  // → blank silently, matching the existing initEditor(null))
+  // → blank silently)
   // --------------------------------------------------------------------------
   const ready = bootstrap().then(() => {
     if (destroyed) return;
@@ -298,7 +276,6 @@ export function createEditor(rootEl, options = {}) {
   function applyChrome(spec) {
     const obj = spec === "embedded" ? CHROME_PRESETS.embedded : spec === "full" || !spec ? null : spec;
     if (!obj) return [];
-    // Skeleton region pickers; the scope-first / document-fallback policy is dom.js's (single point)
     const map = {
       topbar: () => dom.query(".topbar"),
       brand: () => dom.query(".brand-home"),
@@ -343,30 +320,26 @@ export function createEditor(rootEl, options = {}) {
     // 3) window-level listeners and rAF
     resizeAc.abort();
     cancelAnimationFrame(resizeRaf);
-    // 4) Chart instances (canvas) + dynamic DOM cleanup
+    // 4) Chart instances (canvas)
     try {
       disposeChartInstances(dom.canvas);
     } catch {
       /* the canvas is no longer in the document */
     }
-    closeAllDialogs();
-    clearToasts();
     // 5) Restore chrome-hidden elements
     for (const [el, prev] of chromeHidden) el.style.display = prev || "";
-    // 6) Restore theme
-    restoreTheme?.();
-    resetDialogs();
-    // 7) When the mount point is a standalone container (not body/html), clear its content
-    if (mount && mount !== document.body && mount !== document.documentElement) {
-      try {
-        if (mount.contains(dom.editorApp)) mount.innerHTML = "";
-      } catch {
-        /* ignore */
-      }
+    // 6) Instance services: dialogs / toasts / theme / dom cache
+    try {
+      ui.destroy();
+    } catch (err) {
+      console.warn("[editor] destroy ui 异常:", err?.message || err);
     }
-    // 8) Restore the dom cache to the document-level default instance
-    dom.clear();
-    dom.rebind(document);
+    // 7) Drop the skeleton the instance owns
+    try {
+      if (mount) mount.innerHTML = "";
+    } catch {
+      /* ignore */
+    }
   }
 
   const instance = { ready, destroy, api, io, state, view };

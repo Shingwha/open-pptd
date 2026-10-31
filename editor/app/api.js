@@ -28,12 +28,11 @@
 // ============================================================================
 
 import { createElement } from "../types/index.js";
-import { showToast } from "./toast.js";
 
 /** Content-editor types (single-element editing only). */
 const CONTENT_TYPES = new Set(["text", "table", "chart"]);
 
-export function createEditorApi({ state, page, selected, primarySelectedId, selectedElements, ops }) {
+export function createEditorApi({ state, page, selected, primarySelectedId, selectedElements, ops, ui }) {
   let controller = null; // canvas interaction controller (interaction/canvas.js)
   let view = null; // render orchestration (app/view/view.js)
   let io = null; // project IO facade (app/project/io.js)
@@ -76,6 +75,7 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
       beginChange: beginChangeTx,
       onChange,
       onDone,
+      dialogs: ui.dialogs, // instance dialog service (editor/dialogs.js)
     };
     try {
       if (el.elementType === "text") {
@@ -91,7 +91,7 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
       return true;
     } catch (err) {
       tx = false;
-      showToast(`打开编辑器失败: ${err.message}`, "danger");
+      ui.toast.show(`打开编辑器失败: ${err.message}`, "danger");
       return false;
     }
   }

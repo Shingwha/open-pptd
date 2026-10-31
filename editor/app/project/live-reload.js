@@ -15,13 +15,12 @@
 // (topbar "live" marker click = manual reload from disk, confirmed when dirty).
 // ============================================================================
 
-import { showToast } from "../toast.js";
 import { fingerprint } from "./handle-io.js";
-import { dom } from "../../dom.js";
 
 const POLL_MS = 900;
 
-export function createLiveReload({ state, source, reload, reloadHandle, manualReload }) {
+export function createLiveReload({ state, source, ui, reload, reloadHandle, manualReload }) {
+  const { dom, toast } = ui;
   let unwatch = null; // push-channel unsubscribe (non-null = subscribed)
   let pollTimer = null;
   let polledHandle = null;
@@ -114,7 +113,7 @@ export function createLiveReload({ state, source, reload, reloadHandle, manualRe
     if (state.dirty) return; // unsaved changes: skip the reload (don't interrupt editing)
     reload().catch((err) => {
       // Load failure (half-written file): keep the current view; the next push retries after the fix
-      showToast(`文件变更后加载失败（已保留当前视图）: ${err.message}`, "danger");
+      toast.show(`文件变更后加载失败（已保留当前视图）: ${err.message}`, "danger");
     });
   }
 

@@ -18,13 +18,17 @@ import { pickProjectFolder, hasDeck } from "./app/project/handle-io.js";
 import { addRecent, setPendingProject } from "./app/project/handle-store.js";
 import { registerRegistryFontFace } from "./app/project/font-manager.js";
 import { createFileMenu } from "./app/file-menu.js";
-import { showToast } from "./app/toast.js";
+import { createToast } from "./app/toast.js";
 import { injectIcons } from "./icons.js";
 import { THEME_MODES, bindThemeMode } from "./theme.js";
 import { deckSize, parseDeck, parseFontResources, resolveTheme, yaml } from "../packages/model/index.js";
 import { disposeChartInstances, renderPage } from "../packages/renderer/index.js";
 
-injectIcons(); // topbar icon placeholders (data-icon) get the real SVG (single icon source icons.js)
+injectIcons(document); // topbar icon placeholders (data-icon) get the real SVG (single icon source icons.js)
+
+// Page-level toast layer (the gallery page has no instance destroy path)
+const shellToast = createToast(document.body);
+const showToast = (...args) => shellToast.show(...args);
 
 // Theme tri-state (light / dark / follow system): the shared mechanism from theme.js
 // (the editor's own binding), applied to <html> — the same root the editor themes, so

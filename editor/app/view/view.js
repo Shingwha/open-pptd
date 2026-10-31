@@ -5,33 +5,40 @@
 // is a full refresh, while renderCanvas / renderThumbnails / updateButtons can be
 // called individually (progressive loading, window resize, etc.). Viewport
 // (zoom/pan) and the thumbnail bar are separate concerns split into viewport.js /
-// thumbnails.js, each owning its state and DOM wiring; this file only orchestrates
+// thumbnails.js, each owning their state and DOM wiring; this file only orchestrates
 // and rebuilds the canvas.
+//
+// Two assemblies share this module (3.0 componentisation, decisions.md D1):
+//   createView({ ..., editable })    preview (editable:false, no selection
+//                                    controller) and editor (editable:true)
+//   createPageView({ state, container })  the headless paint surface: one page
+//                                    painted at deck size, scale 1 (render e2e /
+//                                    golden output must stay pixel-identical)
+// The instance context (ui) supplies dom/toast; coords carries the per-instance
+// LayoutTree slot shared with the selection overlay.
 // ============================================================================
 
-import { setLayoutPage } from "../../coords.js";
 import { createViewport, deckSize } from "./viewport.js";
 import { createThumbnails } from "./thumbnails.js";
-import { dom } from "../../dom.js";
 import { layout } from "../../../packages/layout/index.js";
 import { paintPage, renderPage } from "../../../packages/renderer/index.js";
-import { showToast } from "../toast.js";
 import { createDomMeasure, isDomMeasureAvailable } from "./dom-measure.js";
 
 // MeasurePort for editor layout: the DOM refinement adapter (M6) in a browser, otherwise the pure function
 const measurePort = isDomMeasureAvailable() ? createDomMeasure() : undefined;
 
-// Out-of-bounds hint dedupe (remember the last count per page; the same state does not re-toast)
-const lastOverflow = new Map();
-let overflowDeck = null;
-
-export function createView({ state, page, api, controller, ops }) {
+export function createView({ state, page, api, controller = null, ops, ui, editable = true, coords }) {
+  const { dom, toast } = ui;
   // Under strict mode a bare render() call has this === undefined, so self-reference through viewObj
   const viewObj = {};
 
+  // Out-of-bounds hint dedupe (remember the last count per page; the same state does not re-toast)
+  const lastOverflow = new Map();
+  let overflowDeck = null;
+
   // Viewport: zoom/pan state and transform application. A zoom change needs a
   // canvas rebuild, while panning only changes the transform — the repaint
-  // callback is injected here.
+  // callback is injected here. controller is null in the preview assembly.
   const viewport = createViewport({
     stage: dom.stage,
     canvas: dom.canvas,
@@ -42,7 +49,7 @@ export function createView({ state, page, api, controller, ops }) {
     getSize: () => deckSize(state),
   });
   // Thumbnail bar: a page switch/delete needs a full refresh, going back to render() via the reload callback
-  const thumbnails = createThumbnails({ state, api, ops, reload: () => viewObj.render() });
+  const thumbnails = createThumbnails({ state, api, ops, ui, coords, editable, reload: () => viewObj.render() });
 
   // Method table: render() calls the other render functions bare, while allowing external hooks to be attached on viewObj
   Object.assign(viewObj, {
@@ -69,9 +76,9 @@ export function createView({ state, page, api, controller, ops }) {
     if (!state.deck) return; // load failed/incomplete: skip safely (external triggers such as resize)
     thumbnails.renderThumbnails();
     renderCanvas();
-    updateButtons();
+    if (editable) updateButtons();
     viewport.renderZoom();
-    // Externally registered per-render hook (statusbar dirty dot etc.), see the main.js assembly
+    // Externally registered per-render hook (statusbar dirty dot etc.), see the editor assembly
     viewObj.afterRender?.();
   }
 
@@ -91,6 +98,7 @@ export function createView({ state, page, api, controller, ops }) {
   function renderCanvas() {
     if (!state.deck) return;
     const canvas = dom.canvas;
+    if (!canvas) return; // a skeleton without a canvas surface (defensive)
     // Canvas size follows the deck's real canvas (inline override of the 960×540 fallback in canvas.css)
     const [pw, ph] = deckSize(state);
     canvas.style.width = `${pw}px`;
@@ -109,9 +117,9 @@ export function createView({ state, page, api, controller, ops }) {
       imageMap: state.imageMap,
       iconMap: state.iconMap,
     });
-    setLayoutPage(tree.pages[0]);
+    coords.setLayoutPage(tree.pages[0]);
     notifyOverflow(state.currentPage, tree.pages[0]);
-    controller.refreshSelection();
+    controller?.refreshSelection();
     // Progressive-load mask: cover the failure placeholder while the current page's assets are not ready (assets landing re-render via refreshPage)
     if (dom.canvasLoading) dom.canvasLoading.hidden = !state.pagesPending?.has(pg);
   }
@@ -125,17 +133,17 @@ export function createView({ state, page, api, controller, ops }) {
     const count = (layoutPageNode?.elements || []).filter((e) => e.overflow?.x || e.overflow?.y).length;
     const prev = lastOverflow.get(pageIndex);
     if (count > 0 && count !== prev) {
-      showToast(`⚠ 本页 ${count} 个元素超出画布范围`, "info", 4000);
+      toast.show(`⚠ 本页 ${count} 个元素超出画布范围`, "info", 4000);
     }
     lastOverflow.set(pageIndex, count);
   }
 
   // --------------------------------------------------------------------------
-  // Button state
+  // Button state (editor only; the preview skeleton has no undo/redo buttons)
   // --------------------------------------------------------------------------
   function updateButtons() {
-    dom.btnUndo.disabled = !state.history.canUndo();
-    dom.btnRedo.disabled = !state.history.canRedo();
+    if (dom.btnUndo) dom.btnUndo.disabled = !state.history.canUndo();
+    if (dom.btnRedo) dom.btnRedo.disabled = !state.history.canRedo();
   }
 
   /** Release: thumbnail chart instances + listeners, viewport animation (destroy; idempotent). */
@@ -148,19 +156,17 @@ export function createView({ state, page, api, controller, ops }) {
 }
 
 // ============================================================================
-// Non-interactive paint view
+// Headless / static paint surface
 // ============================================================================
 /**
- * Headless view for the non-interactive assembly (createEditor with
- * `chrome:"shot"` / `interactive:false`, i.e. the ?shot=1 screenshot path).
- *
- * It runs the SAME paint channel as the editor preview — renderPage
+ * Paint surface for the non-interactive preview assembly (the ?shot=1 headless
+ * path). It runs the SAME paint channel as the editor preview — renderPage
  * (layout → paintPage) with the same imageMap / iconMap / theme / fonts — and
  * nothing else. Everything the interactive view adds is deliberately absent:
  *   · no viewport fit/zoom/pan transform: the container is the deck-sized
  *     screenshot surface, so the scale must stay 1 (the editor's fit scale
  *     depends on the stage box and would shrink the capture);
- *   · no thumbnails / Design panel / button state / selection box;
+ *   · no thumbnails / chrome / selection box;
  *   · no DOM-measure refinement. The editor geometry is max(pure, DOM); the
  *     golden baseline was produced from the pure-function geometry, so the
  *     headless assembly must stay on it (pixel stability is the gate here).
@@ -170,9 +176,9 @@ export function createView({ state, page, api, controller, ops }) {
  * loader's progressive render calls work unchanged.
  *
  * @param {object} deps { state, container } container = the paint surface (the
- *   shot assembly uses createEditor's mount point, #shot-root).
+ *   shot assembly passes its mount point).
  */
-export function createHeadlessView({ state, container }) {
+export function createPageView({ state, container }) {
   function render(index = state.currentPage) {
     if (!state.deck || !container) return;
     const pg = state.deck.pages[index];

@@ -17,7 +17,6 @@
 // ============================================================================
 
 import { button, buildCellInput } from "./dialogs/base.js";
-import { dialogs } from "../dialogs.js";
 import { bindExcelDragSelect } from "./drag-select.js";
 import { colLetter } from "../../packages/model/index.js";
 
@@ -64,7 +63,7 @@ export function createExcelGrid(opts) {
     canInsertRows = null, canInsertCols = null,
     canDeleteRows = null, canDeleteCols = null,
     onInsertRows, onInsertCols, onDeleteRows, onDeleteCols,
-    extraToolbar = null, onSelect = null, afterRender = null,
+    extraToolbar = null, onSelect = null, afterRender = null, dialogs,
   } = opts;
 
   const root = document.createElement("div");
@@ -82,14 +81,14 @@ export function createExcelGrid(opts) {
   /** Directional insert (Excel style): at = insert position, n = count (= selection span). */
   const insertRows = (at, n) => {
     const err = canInsertRows ? canInsertRows(at, n) : null;
-    if (err) { dialogs.alert(err); return; }
+    if (err) { dialogs?.alert(err); return; }
     onInsertRows(at, n);
     sel = { r1: at, c1: 0, r2: at + n - 1, c2: getCols() - 1 }; // select the inserted rows
     render();
   };
   const insertCols = (at, n) => {
     const err = canInsertCols ? canInsertCols(at, n) : null;
-    if (err) { dialogs.alert(err); return; }
+    if (err) { dialogs?.alert(err); return; }
     onInsertCols(at, n);
     sel = { r1: 0, c1: at, r2: getRows() - 1, c2: at + n - 1 }; // select the inserted columns
     render();
@@ -97,7 +96,7 @@ export function createExcelGrid(opts) {
   const deleteRows = (r1, r2) => {
     if (getRows() <= 1) return;
     const err = canDeleteRows ? canDeleteRows(r1, r2) : null;
-    if (err) { dialogs.alert(err); return; }
+    if (err) { dialogs?.alert(err); return; }
     onDeleteRows(r1, r2);
     sel = { r: Math.min(r1, getRows() - 1), c: 0 }; // fall back to the adjacent row's first column (matches the table baseline)
     render();
@@ -105,7 +104,7 @@ export function createExcelGrid(opts) {
   const deleteCols = (c1, c2) => {
     if (getCols() <= 1) return;
     const err = canDeleteCols ? canDeleteCols(c1, c2) : null;
-    if (err) { dialogs.alert(err); return; }
+    if (err) { dialogs?.alert(err); return; }
     onDeleteCols(c1, c2);
     sel = { r: 0, c: Math.min(c1, getCols() - 1) }; // fall back to the first row's adjacent column
     render();

@@ -1,20 +1,21 @@
 // ============================================================================
-// app/view/thumbnails.js — bottom thumbnail bar: render + page switch + drag-sort
+// app/view/thumbnails.js — bottom thumbnail bar: render + page switch (+ edit ops)
 // ----------------------------------------------------------------------------
 // Minimal editor (editor-ux §2/§7):
 //   - click a card switches the current page (single page model; no page
 //     multi-select / batch operations)
-//   - drag-sort: drag a card (threshold-triggered) → drop line indicator
-//     (.drop-before/.drop-after) → release writes the model via api.movePage
-//     (beginChange snapshot) → Ctrl+Z can undo
-//   - × on a card deletes that page (at least one page is always kept)
+//   - drag-sort (editor only): drag a card (threshold-triggered) → drop line
+//     indicator (.drop-before/.drop-after) → release writes the model via
+//     api.movePage (beginChange snapshot) → Ctrl+Z can undo
+//   - × on a card deletes that page (editor only; at least one page is kept)
+// Preview instances (editable:false) render the same cards without the delete
+// chip and without drag-sort: a preview only navigates.
 // The page menu (insert before/after, move, delete) is bound in app/page-menu.js;
 // the stat text keeps the original "current / total" style. Thumbnail card size
 // keeps the CSS breakpoints (140×79). Pointer wiring is attached once at creation
 // (AbortController lifetime) while renderThumbnails only rebuilds card content.
 // ============================================================================
 
-import { dom } from "../../dom.js";
 import { deckSize } from "../../../packages/model/index.js";
 import { disposeChartInstances, renderPage } from "../../../packages/renderer/index.js";
 
@@ -23,8 +24,9 @@ import { disposeChartInstances, renderPage } from "../../../packages/renderer/in
 const THUMB_W = 140;
 const THUMB_H = 79;
 
-export function createThumbnails({ state, api, ops, reload }) {
-  const bar = dom.pageThumbs;
+export function createThumbnails({ state, api, ops, ui, editable = true, reload }) {
+  const bar = ui.dom.pageThumbs;
+  const pageCountEl = ui.dom.pageCount;
   const ac = new AbortController(); // lifetime: drag/wheel listeners are unbound once through this
 
   // --------------------------------------------------------------------------
@@ -86,14 +88,14 @@ export function createThumbnails({ state, api, ops, reload }) {
       const dy = e.clientY - thumbDrag.y;
       if (!thumbDrag.moved && Math.hypot(dx, dy) > 4) thumbDrag.moved = true;
       if (!thumbDrag.moved) return;
-      if (thumbDrag.index >= 0) {
+      if (editable && thumbDrag.index >= 0) {
         // Drag-sort: drop indicator (the model is written only on release)
         bar.classList.add("reordering");
         thumbDrag.drop = computeDropIndex(e.clientX, e.clientY);
         paintDrop(thumbDrag.drop);
         if (e.clientX < bar.getBoundingClientRect().left + 24) bar.scrollLeft -= 8;
         else if (e.clientX > bar.getBoundingClientRect().right - 24) bar.scrollLeft += 8;
-      } else {
+      } else if (editable) {
         // Dragging empty space = horizontal scroll
         bar.scrollLeft = thumbDrag.startScroll - dx;
       }
@@ -108,7 +110,7 @@ export function createThumbnails({ state, api, ops, reload }) {
       if (!d.moved) return;
       suppressClick = true; // swallow the click that immediately follows (avoids an accidental page switch)
       setTimeout(() => (suppressClick = false), 160);
-      if (d.index < 0 || !d.drop) return;
+      if (!editable || d.index < 0 || !d.drop) return;
       // Target index conversion: after removing the original page, a drop point past it shifts by -1
       let to = d.drop.index;
       if (to > d.index) to -= 1;
@@ -123,9 +125,10 @@ export function createThumbnails({ state, api, ops, reload }) {
   // --------------------------------------------------------------------------
   function renderThumbnails() {
     if (!state.deck) return;
+    const deck = state.deck;
     disposeChartInstances(bar);
     bar.innerHTML = "";
-    state.deck.pages.forEach((pg, i) => {
+    deck.pages.forEach((pg, i) => {
       const thumb = document.createElement("div");
       thumb.className = "thumb" + (i === state.currentPage ? " active" : "");
       thumb.dataset.pageIndex = String(i);
@@ -135,7 +138,7 @@ export function createThumbnails({ state, api, ops, reload }) {
       mini.className = "thumb-canvas";
       // Contain the canvas's real ratio into the measured card content box (16:9 fills exactly; a portrait poster
       // centers with top/bottom padding). Not a constant: the narrow-screen card box is smaller.
-      const [pw, ph] = deckSize(state.deck);
+      const [pw, ph] = deckSize(deck);
       const bw = thumb.clientWidth || THUMB_W;
       const bh = thumb.clientHeight || THUMB_H;
       const s = Math.min(bw / pw, bh / ph);
@@ -148,20 +151,23 @@ export function createThumbnails({ state, api, ops, reload }) {
       // Progressive loading: skeleton placeholder (page number/delete/click still work; refreshThumb swaps it in place once assets land)
       const skeleton = state.pagesPending?.has(pg) ? document.createElement("div") : null;
       if (skeleton) skeleton.className = "thumb-skeleton";
-      else renderPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
+      else renderPage(mini, pg, deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
 
       const num = document.createElement("span");
       num.className = "thumb-num";
       num.textContent = i + 1;
-      const del = document.createElement("button");
-      del.className = "thumb-del";
-      del.textContent = "✕";
-      del.title = "删除页面";
-      del.addEventListener("click", (e) => {
-        e.stopPropagation();
-        api.deletePage(i);
-      });
-      thumb.append(mini, ...(skeleton ? [skeleton] : []), num, del);
+      thumb.append(mini, ...(skeleton ? [skeleton] : []), num);
+      if (editable) {
+        const del = document.createElement("button");
+        del.className = "thumb-del";
+        del.textContent = "✕";
+        del.title = "删除页面";
+        del.addEventListener("click", (e) => {
+          e.stopPropagation();
+          api.deletePage(i);
+        });
+        thumb.appendChild(del);
+      }
       thumb.addEventListener("click", (e) => onThumbClick(e, i));
     });
     renderStat();
@@ -179,9 +185,9 @@ export function createThumbnails({ state, api, ops, reload }) {
 
   /** Statusbar stat: original style (current page / total). */
   function renderStat() {
-    if (!dom.pageCount) return;
+    if (!pageCountEl) return;
     const total = state.deck?.pages?.length || 0;
-    dom.pageCount.textContent = `${state.currentPage + 1} / ${total}`;
+    pageCountEl.textContent = `${state.currentPage + 1} / ${total}`;
   }
 
   /** Progressive-load targeted refresh: replace one page's thumbnail once its assets are ready (skeleton → real render). */
@@ -208,7 +214,7 @@ export function createThumbnails({ state, api, ops, reload }) {
         disposeChartInstances(bar);
         bar.innerHTML = "";
       }
-      if (dom.pageCount) dom.pageCount.textContent = "";
+      if (pageCountEl) pageCountEl.textContent = "";
     },
   };
 }

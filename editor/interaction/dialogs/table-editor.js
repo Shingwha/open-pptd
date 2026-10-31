@@ -14,8 +14,6 @@
 // WYSIWYG cell surface.
 // ============================================================================
 
-import { resolveEditorTheme, showDialog } from "./base.js";
-import { dialogs } from "../../dialogs.js";
 import { createExcelGrid } from "../excel-grid.js";
 import {
   colLetter,
@@ -31,7 +29,9 @@ import * as ui from "../../ui.js";
 import { themeSwatches } from "../fields.js";
 import { resolveColor } from "../../../packages/model/index.js";
 
-export function openTableEditor(el, { onChange, beginChange, onDone } = {}) {
+export function openTableEditor(el, { onChange, beginChange, onDone, theme: themeInput, dialogs } = {}) {
+  // Theme getter (live state theme) + the instance dialog service, both injected by app/api.js
+  const themeOf = typeof themeInput === "function" ? themeInput : () => themeInput;
   const container = document.createElement("div");
   container.className = "table-editor";
 
@@ -54,6 +54,7 @@ export function openTableEditor(el, { onChange, beginChange, onDone } = {}) {
 
   // -- Excel-style data grid (shared interaction/excel-grid.js) --
   const grid = createExcelGrid({
+    dialogs,
     getRows: () => rows.length,
     getCols: () => cols,
     cellValue: (r, c) => gd[r]?.[c]?.cell?.text ?? "",
@@ -180,7 +181,7 @@ export function openTableEditor(el, { onChange, beginChange, onDone } = {}) {
     syncDims(el);
     cols = colCount();
     ({ grid: gd } = tableGrid(rows, cols));
-    theme = resolveEditorTheme();
+    theme = themeOf();
     ts = resolveTableStyle(theme, el.style);
     // Same final measure as layout/renderer/writer (style-aware, rowSpan-balanced),
     // so the grid rows show the exported heights rather than the model floor estimate.
@@ -265,8 +266,8 @@ export function openTableEditor(el, { onChange, beginChange, onDone } = {}) {
       commit();
       render();
     };
-    const resolve = (val) => resolveColor(resolveEditorTheme(), val);
-    const swatches = themeSwatches(resolveEditorTheme());
+    const resolve = (val) => resolveColor(themeOf(), val);
+    const swatches = themeSwatches(themeOf());
 
     panel.appendChild(
       ui.field(
@@ -298,7 +299,7 @@ export function openTableEditor(el, { onChange, beginChange, onDone } = {}) {
   }
 
   render();
-  showDialog("表格编辑", container, { onClose: () => onDone?.() });
+  dialogs.showDialog("表格编辑", container, { onClose: () => onDone?.() });
   // Widen the dialog (table + right cell panel)
   const dlg = container.closest(".dialog");
   if (dlg) dlg.style.width = "min(880px, 96vw)";

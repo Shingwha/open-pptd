@@ -29,6 +29,7 @@ export function createStageController(stage, opts) {
     deselect,     // () => void  click blank to deselect
     onActivate,   // (id) => void  double-click an element to open its editor
     panBy, setZoom, getZoom, zoomReset,
+    isActive = () => true, // only the active instance handles the space hand tool
   } = opts;
   if (!stage) return { destroy() {} };
 
@@ -72,6 +73,7 @@ export function createStageController(stage, opts) {
     return tag === "input" || tag === "textarea" || tag === "select" || e.target.isContentEditable;
   };
   on(document, "keydown", (e) => {
+    if (!isActive()) return;
     // Keep native space behaviour on inputs and buttons (accessibility)
     if (e.code !== "Space" || e.repeat || isTyping(e) || e.target.closest?.("button")) return;
     spacePan = true;

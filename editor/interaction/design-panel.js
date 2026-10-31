@@ -22,10 +22,8 @@
 // operations outside deck undo (explicit toast).
 // ============================================================================
 
-import * as ui from "../ui.js";
-import { showDialog } from "./dialogs/base.js";
-import { dialogs } from "../dialogs.js";
-import { showToast } from "../app/toast.js";
+import * as controls from "../ui.js";
+// Instance services (ui.dialogs / ui.toast) are injected by createDesignPanel;
 import { THEME_MODES } from "../theme.js";
 import { SYSTEM_FONTS } from "../app/project/font-manager.js";
 import {
@@ -73,8 +71,14 @@ const HEX_RE = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 const FONT_SAMPLE = "永远相信美好的事情即将发生 AaBb 0123";
 
 // ----------------------------------------------------------------------------
-// Module state (one panel per page; the editor is a single instance per page)
+// Instance factory: one panel per editor instance (no module-level singleton)
 // ----------------------------------------------------------------------------
+/**
+ * Build the Design panel service of one editor instance.
+ * @param {object} ui instance context (dom / toast / dialogs / isActive)
+ * @returns {{ open(opts): void, close(): void }}
+ */
+export function createDesignPanel(ui) {
 let panel = null;
 let mask = null;
 let tabsEl = null;
@@ -96,7 +100,7 @@ const facesRegistered = new Set();
  * Open (or focus) the Design drawer.
  * @param {object} opts { state, api, io, themeMode?, tab? }
  */
-export function openDesignPanel(opts = {}) {
+function openDesignPanel(opts = {}) {
   if (opts.api) deps = opts;
   if (!deps?.api) return;
   if (opts.tab) activeTab = opts.tab;
@@ -111,7 +115,7 @@ export function openDesignPanel(opts = {}) {
 }
 
 /** Close and remove the panel DOM (idempotent; used by createEditor destroy). */
-export function closeDesignPanel() {
+function closeDesignPanel() {
   endTokenTx();
   ac?.abort();
   ac = null;
@@ -183,7 +187,9 @@ function build() {
 
   ac = new AbortController();
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && panel && !panel.hidden) close();
+    if (e.key !== "Escape" || !panel || panel.hidden) return;
+    if (!ui.isActive()) return;
+    close();
   }, { signal: ac.signal });
 }
 
@@ -311,7 +317,7 @@ function applyThemeFile(themeFile) {
   const kept =
     result.preserved.colors.length + result.preserved.textStyles.length + result.preserved.tableStyles.length;
   const name = typeof themeFile?.name === "string" ? themeFile.name : themeFile?.id || "主题";
-  showToast(
+  ui.toast.show(
     kept ? `已应用「${name}」；保留了 ${kept} 个仍被引用的自定义颜色/样式` : `已应用「${name}」`,
     "info"
   );
@@ -324,7 +330,7 @@ function writeToken(key, value) {
   try {
     next = setColorToken(deps.state.theme, key, value);
   } catch (err) {
-    dialogs.alert(err.message);
+    ui.dialogs.alert(err.message);
     return false;
   }
   deps.io.applyTheme({
@@ -420,8 +426,8 @@ function renderThemeTab() {
   // -- Library actions --
   const actions = document.createElement("div");
   actions.className = "design-actions";
-  const saveBtn = ui.button("保存当前为主题", () => saveCurrentTheme());
-  const importBtn = ui.button("导入…", () => importTheme());
+  const saveBtn = controls.button("保存当前为主题", () => saveCurrentTheme());
+  const importBtn = controls.button("导入…", () => importTheme());
   saveBtn.disabled = !themes.api;
   importBtn.disabled = !themes.api;
   actions.append(saveBtn, importBtn);
@@ -433,7 +439,7 @@ function renderThemeTab() {
   tokens.className = "design-tokens";
   for (const tok of listColorTokens(deps.state.theme)) tokens.appendChild(tokenRow(tok));
   bodyEl.appendChild(tokens);
-  const addBtn = ui.button("＋ 添加颜色", () => addColorDialog());
+  const addBtn = controls.button("＋ 添加颜色", () => addColorDialog());
   addBtn.classList.add("design-add-color");
   bodyEl.appendChild(addBtn);
 
@@ -548,7 +554,7 @@ function tokenRow(tok) {
       syncThemeHighlights();
     } else {
       endTokenTx();
-      dialogs.alert("颜色值需为 #RRGGBB 或 #RRGGBBAA");
+      ui.dialogs.alert("颜色值需为 #RRGGBB 或 #RRGGBBAA");
       paint();
     }
   }, { signal: ac.signal });
@@ -595,7 +601,7 @@ function toHex6(value) {
 function deleteToken(key) {
   const report = removeColorToken(deps.state.theme, key, { deck: deps.state.deck });
   if (report.blocked) {
-    dialogs.alert(`颜色 $${key} 仍被 deck 引用 ${report.usage} 处，无法删除。请先修改引用。`);
+    ui.dialogs.alert(`颜色 $${key} 仍被 deck 引用 ${report.usage} 处，无法删除。请先修改引用。`);
     return;
   }
   beginTokenTx();
@@ -605,7 +611,7 @@ function deleteToken(key) {
     tableStyles: deps.state.theme.tableStyles,
   });
   endTokenTx();
-  showToast(`已删除颜色 $${key}`, "info");
+  ui.toast.show(`已删除颜色 $${key}`, "info");
   renderBody();
 }
 
@@ -620,9 +626,9 @@ function addColorDialog() {
   valueInput.type = "color";
   valueInput.value = "#3366FF";
   valueInput.className = "design-token-picker";
-  wrap.append(ui.field("令牌名", keyInput), ui.field("颜色", valueInput));
+  wrap.append(controls.field("令牌名", keyInput), controls.field("颜色", valueInput));
 
-  showDialog("添加颜色", wrap, {
+  ui.dialogs.showDialog("添加颜色", wrap, {
     doneText: "添加",
     onDone() {
       const key = keyInput.value.trim();
@@ -633,7 +639,7 @@ function addColorDialog() {
         return;
       }
       endTokenTx();
-      showToast(`已添加颜色 $${key}（写入 deck 主题；可撤销）`, "info");
+      ui.toast.show(`已添加颜色 $${key}（写入 deck 主题；可撤销）`, "info");
       renderBody();
     },
   });
@@ -641,7 +647,7 @@ function addColorDialog() {
 
 function saveCurrentTheme() {
   if (!themes.api) {
-    showToast("保存主题需要本地 open 服务（静态站主题库只读）", "danger");
+    ui.toast.show("保存主题需要本地 open 服务（静态站主题库只读）", "danger");
     return;
   }
   const wrap = document.createElement("div");
@@ -654,14 +660,14 @@ function saveCurrentTheme() {
   descInput.type = "text";
   descInput.className = "design-input";
   descInput.placeholder = "可选：用途 / 场景";
-  wrap.append(ui.field("名称", nameInput), ui.field("描述", descInput));
+  wrap.append(controls.field("名称", nameInput), controls.field("描述", descInput));
 
-  showDialog("保存当前主题", wrap, {
+  ui.dialogs.showDialog("保存当前主题", wrap, {
     doneText: "保存",
     onDone() {
       const name = nameInput.value.trim();
       if (!name) {
-        showToast("主题名称不能为空", "danger");
+        ui.toast.show("主题名称不能为空", "danger");
         return;
       }
       const existing = themes.user.find((t) => t.name === name);
@@ -683,13 +689,13 @@ function saveCurrentTheme() {
           });
           await loadThemes(true);
           renderBody();
-          showToast(`已保存主题「${name}」${existing ? "（覆盖同名主题）" : ""}`, "success");
+          ui.toast.show(`已保存主题「${name}」${existing ? "（覆盖同名主题）" : ""}`, "success");
         } catch (err) {
-          showToast(`保存主题失败: ${err.message}`, "danger");
+          ui.toast.show(`保存主题失败: ${err.message}`, "danger");
         }
       };
       if (existing) {
-        dialogs.confirm(`已存在同名主题「${name}」，覆盖它？`).then((ok) => {
+        ui.dialogs.confirm(`已存在同名主题「${name}」，覆盖它？`).then((ok) => {
           if (ok) doSave();
         });
       } else {
@@ -701,7 +707,7 @@ function saveCurrentTheme() {
 
 function importTheme() {
   if (!themes.api) {
-    showToast("导入主题需要本地 open 服务", "danger");
+    ui.toast.show("导入主题需要本地 open 服务", "danger");
     return;
   }
   const input = document.createElement("input");
@@ -720,9 +726,9 @@ function importTheme() {
       await loadThemes(true);
       renderBody();
       const renamed = data.renamed ? "（id 重复，已另存）" : "";
-      showToast(`已导入主题「${data.theme?.name || file.name}」${renamed}`, "success");
+      ui.toast.show(`已导入主题「${data.theme?.name || file.name}」${renamed}`, "success");
     } catch (err) {
-      showToast(`导入主题失败: ${err.message}`, "danger");
+      ui.toast.show(`导入主题失败: ${err.message}`, "danger");
     }
   });
   input.click();
@@ -734,23 +740,23 @@ async function exportTheme(t) {
       ? JSON.stringify(t, null, 2)
       : (await apiJson(`${API.themes}?id=${encodeURIComponent(t.id)}&export=1`)).json;
     download(`${safeName(t.name)}.json`, json);
-    showToast(`已导出主题「${t.name}」`, "success");
+    ui.toast.show(`已导出主题「${t.name}」`, "success");
   } catch (err) {
-    showToast(`导出主题失败: ${err.message}`, "danger");
+    ui.toast.show(`导出主题失败: ${err.message}`, "danger");
   }
 }
 
 async function deleteTheme(t) {
   if (t.builtin) return;
-  const ok = await dialogs.confirm(`删除主题「${t.name}」？此操作不可撤销。`);
+  const ok = await ui.dialogs.confirm(`删除主题「${t.name}」？此操作不可撤销。`);
   if (!ok) return;
   try {
     await apiJson(`${API.themes}?id=${encodeURIComponent(t.id)}`, { method: "DELETE" });
     await loadThemes(true);
     renderBody();
-    showToast(`已删除主题「${t.name}」`, "info");
+    ui.toast.show(`已删除主题「${t.name}」`, "info");
   } catch (err) {
-    showToast(`删除主题失败: ${err.message}`, "danger");
+    ui.toast.show(`删除主题失败: ${err.message}`, "danger");
   }
 }
 
@@ -802,13 +808,13 @@ function renderFontsTab() {
     fileInput.type = "file";
     fileInput.accept = ".ttf,.otf";
     fileInput.hidden = true;
-    const localBtn = ui.button("导入本地字体…", () => fileInput.click());
+    const localBtn = controls.button("导入本地字体…", () => fileInput.click());
     fileInput.addEventListener("change", () => importLocalFont(fileInput));
     const urlInput = document.createElement("input");
     urlInput.type = "text";
     urlInput.className = "design-input";
     urlInput.placeholder = "字体 URL（http/https）";
-    const urlBtn = ui.button("从 URL 导入", () => importUrlFont(urlInput));
+    const urlBtn = controls.button("从 URL 导入", () => importUrlFont(urlInput));
     row.append(localBtn, urlInput, urlBtn, fileInput);
     bodyEl.appendChild(row);
   }
@@ -867,7 +873,7 @@ function fontStatusRow(family) {
   badge.textContent = status.text;
   row.append(name, badge);
   if (status.level === "missing") {
-    const fix = ui.button("从字体库选择", () => {
+    const fix = controls.button("从字体库选择", () => {
       fontQuery = family;
       setActiveTab("fonts");
     });
@@ -972,7 +978,7 @@ async function previewFont(entry, previewEl) {
     }
     previewEl.style.fontFamily = `"${entry.family}", var(--font)`;
   } catch (err) {
-    showToast(`字体预览失败: ${err.message}`, "danger");
+    ui.toast.show(`字体预览失败: ${err.message}`, "danger");
   }
 }
 
@@ -1014,9 +1020,9 @@ async function importLocalFont(fileInput) {
     await registerImportedFont(data.font, bytes);
     await loadFonts();
     renderBody();
-    showToast(`已导入字体「${data.font?.family || file.name}」到全局库`, "success");
+    ui.toast.show(`已导入字体「${data.font?.family || file.name}」到全局库`, "success");
   } catch (err) {
-    showToast(`导入字体失败: ${err.message}`, "danger");
+    ui.toast.show(`导入字体失败: ${err.message}`, "danger");
   } finally {
     fileInput.value = "";
   }
@@ -1041,14 +1047,14 @@ async function importUrlFont(urlInput) {
     await registerImportedFont(data.font, bytes);
     await loadFonts();
     renderBody();
-    showToast(`已导入字体「${data.font?.family || url}」到全局库`, "success");
+    ui.toast.show(`已导入字体「${data.font?.family || url}」到全局库`, "success");
   } catch (err) {
-    showToast(`导入字体失败: ${err.message}`, "danger");
+    ui.toast.show(`导入字体失败: ${err.message}`, "danger");
   }
 }
 
 async function deleteFont(entry) {
-  const ok = await dialogs.confirm(
+  const ok = await ui.dialogs.confirm(
     `删除字体「${entry.family}」？引用它的项目会显示字体缺失（不会扫描其他项目）。`
   );
   if (!ok) return;
@@ -1059,9 +1065,9 @@ async function deleteFont(entry) {
     delete deps.state.fontLibrary[entry.family];
     await loadFonts();
     renderBody();
-    showToast(data.warning || `已删除字体「${entry.family}」`, "info");
+    ui.toast.show(data.warning || `已删除字体「${entry.family}」`, "info");
   } catch (err) {
-    showToast(`删除字体失败: ${err.message}`, "danger");
+    ui.toast.show(`删除字体失败: ${err.message}`, "danger");
   }
 }
 
@@ -1103,4 +1109,7 @@ function renderAppearanceTab() {
   }
   bodyEl.appendChild(row);
   bodyEl.appendChild(hint("只影响查看器 UI（明暗），不写入 deck.theme。"));
+}
+
+return { open: openDesignPanel, close: closeDesignPanel };
 }

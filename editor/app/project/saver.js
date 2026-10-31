@@ -13,9 +13,7 @@
 // onSaved (suppress the SSE refresh loop after a successful save), renderStatusBar.
 // ============================================================================
 
-import { showToast } from "../toast.js";
 import { commitBaseline } from "../state.js";
-import { showDialog } from "../../interaction/dialogs/base.js";
 import { createImageExporter } from "../export-image.js";
 import { mediaFilesOfDeck } from "./images.js";
 import { base64ToBytes, deckSize, serializeDeck } from "../../../packages/model/index.js";
@@ -24,7 +22,8 @@ import { ZipWriter, buildPptx, downloadBlob, downloadPptx, safeFileName } from "
 /** Byte count → human-readable (MB to one decimal / KB rounded). */
 const fmtSize = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`);
 
-export function createProjectSaver({ state, images, fontManager, renderStatusBar, onSaved, onError, source }) {
+export function createProjectSaver({ state, images, fontManager, source, ui, renderStatusBar, onSaved, onError }) {
+  const { toast, dialogs } = ui;
   /** Save succeeded: record the current deck as the on-disk baseline (undo back to it = clean, not blanket-dirty). */
   const markSaved = () => commitBaseline(state);
   // --------------------------------------------------------------------------
@@ -97,7 +96,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
       window.dispatchEvent(new CustomEvent("pptd:open-design", { detail: { tab: "fonts" } }));
     });
     wrap.appendChild(mgrBtn);
-    const { close } = showDialog("导出 PPTX", wrap, {
+    const { close } = dialogs.showDialog("导出 PPTX", wrap, {
       doneText: "导出",
       onDone() {
         close();
@@ -120,13 +119,13 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
         });
         const name = safeFileName(state.deck.title || "deck") + ".pptx";
         downloadPptx(bytes, name);
-        showToast(`已导出 ${name}（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
+        toast.show(`已导出 ${name}（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
         if (skipped.length) {
           console.warn(`[export] ${skipped.length} 个字体未嵌入:`, skipped);
-          showToast(`⚠ ${skipped.length} 个字体未嵌入（${skipped.map((s) => s.family).join(", ")}），打开时可能回退系统字体`, "danger", 6000);
+          toast.show(`⚠ ${skipped.length} 个字体未嵌入（${skipped.map((s) => s.family).join(", ")}），打开时可能回退系统字体`, "danger", 6000);
         }
       } catch (err) {
-        showToast(`导出失败: ${err.message}`, "danger");
+        toast.show(`导出失败: ${err.message}`, "danger");
         console.error(err);
       }
     })();
@@ -158,9 +157,9 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
       const bytes = zip.build();
       const name = safeFileName(state.deck.title || "deck") + "-project.zip";
       downloadBlob(bytes, name, "application/zip");
-      showToast(`项目包已导出 ${name}（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
+      toast.show(`项目包已导出 ${name}（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
     } catch (err) {
-      showToast(`导出项目包失败: ${err.message}`, "danger");
+      toast.show(`导出项目包失败: ${err.message}`, "danger");
       console.error(err);
     }
   }
@@ -188,7 +187,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
         markSaved();
         onSaved(); // suppress the auto-refresh loop triggered by polling/push
         renderStatusBar();
-        showToast(
+        toast.show(
           state.projectHandle
             ? `已保存 ${count} 个文件到 ${state.projectName || "项目文件夹"}`
             : `已保存 ${count} 个文件到项目目录`,
@@ -198,7 +197,7 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
       } catch (err) {
         if (state.projectHandle) {
           // Handle write-back failed: report explicitly (no degrade-to-download, behavior kept)
-          showToast(`保存失败: ${err.message}`, "danger");
+          toast.show(`保存失败: ${err.message}`, "danger");
           console.error(err);
           onError?.(err);
           return;
@@ -225,15 +224,15 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
       downloadBlob(bytes, "project.zip", "application/zip");
       markSaved();
       renderStatusBar();
-      showToast(`项目已打包下载（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
+      toast.show(`项目已打包下载（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
     } catch (err) {
-      showToast(`保存失败: ${err.message}`, "danger");
+      toast.show(`保存失败: ${err.message}`, "danger");
       console.error(err);
     }
   }
 
   // Image export (pure front end, standalone module: offscreen render → foreignObject → PNG at the chosen multiplier)
-  const imageExporter = createImageExporter({ state });
+  const imageExporter = createImageExporter({ state, toast });
 
   /** Image-export dialog: arbitrary page checkboxes (multi-select) + multiplier (1x/2x/3x, default 2x, showing output pixels for the canvas size). */
   function openImageExportDialog() {
@@ -330,11 +329,11 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
       hint
     );
 
-    const { close } = showDialog("导出图片", wrap, {
+    const { close } = dialogs.showDialog("导出图片", wrap, {
       doneText: "导出",
       onDone() {
         if (!selected.size) {
-          showToast("请至少选择一页", "danger");
+          toast.show("请至少选择一页", "danger");
           return;
         }
         close();
