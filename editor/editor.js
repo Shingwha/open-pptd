@@ -199,8 +199,11 @@ export function createEditor(rootEl, options = {}) {
     core.destroy();
   }
 
-  // public shape (interfaces.md §10.1): preview = read-only handle, editor = the api surface
-  const instance = { ready, destroy, preview: previewHandle(core), editor: api, io, state };
+  // public shape (interfaces.md §10.1): preview = read-only handle, editor = the api surface.
+  // The nested preview's destroy delegates to the editor teardown (one instance, one destroy).
+  const preview = previewHandle(core);
+  preview.destroy = destroy;
+  const instance = { ready, destroy, preview, editor: api, io, state };
   return instance;
 }
 

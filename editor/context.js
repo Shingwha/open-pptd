@@ -98,11 +98,3 @@ export function createUiContext(rootEl, { chrome = "full", theme = null, dialogs
   rootEl.addEventListener("focusin", ctx.activate, { capture: true, signal: ac.signal });
   return ctx;
 }
-
-/**
- * Number of live instances (tests / hosts; not part of the public editor API).
- * @returns {number}
- */
-export function instanceCount() {
-  return mounted.length;
-}

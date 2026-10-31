@@ -326,6 +326,23 @@ try {
     };
   })()`);
   log("Home 文件菜单新建空白进入 Editor（?blank=1，1 页）", s.found && s.search.includes("blank=1") && s.pages === 1 && s.homeGone, JSON.stringify(s));
+
+  // -------------------------------------------------------------------------
+  // 6) Real browser navigation through the site root: / → /editor/ + ?deck=
+  // -------------------------------------------------------------------------
+  await cdp.send("Page.navigate", { url: `http://127.0.0.1:${PORT}/?deck=project/deck.pptd` });
+  await wait(4500);
+  s = await evalJs(`(() => ({
+    path: location.pathname,
+    search: location.search,
+    editor: typeof window.__pptdEditor,
+    pages: window.__pptdEditor?.state?.deck?.pages?.length,
+  }))()`);
+  log(
+    "根 index.html 在浏览器中重定向到 /editor/（保留 ?deck=）",
+    s.path === "/editor/" && s.search.includes("deck=") && s.editor === "object" && s.pages === 2,
+    JSON.stringify(s)
+  );
 } catch (err) {
   console.error("测试异常:", err);
   results.push({ name: "测试异常", pass: false });

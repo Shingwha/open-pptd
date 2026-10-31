@@ -27,7 +27,7 @@ import { createDomMeasure, isDomMeasureAvailable } from "./dom-measure.js";
 // MeasurePort for editor layout: the DOM refinement adapter (M6) in a browser, otherwise the pure function
 const measurePort = isDomMeasureAvailable() ? createDomMeasure() : undefined;
 
-export function createView({ state, page, api, controller = null, getController = null, ops, ui, editable = true, coords }) {
+export function createView({ state, page, api, controller = null, getController = null, ops, ui, editable = true, coords, fitPadding = 64, fitMinW = 320, fitMinH = 200 }) {
   // Editor assembly attaches the selection controller after the view exists (the
   // preview core builds the view first); this accessor keeps one source of truth.
   const ctl = () => (getController ? getController() : controller);
@@ -50,6 +50,9 @@ export function createView({ state, page, api, controller = null, getController 
     controller: getController ? { setScale: (s) => getController()?.setScale(s) } : controller,
     repaint: () => renderCanvas(),
     getSize: () => deckSize(state),
+    fitPadding,
+    fitMinW,
+    fitMinH,
   });
   // Thumbnail bar: a page switch/delete needs a full refresh, going back to render() via the reload callback
   const thumbnails = createThumbnails({ state, api, ops, ui, coords, editable, reload: () => viewObj.render() });

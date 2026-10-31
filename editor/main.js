@@ -156,7 +156,11 @@ function navigate(next, { replace = false } = {}) {
 async function leaveCurrent() {
   if (current?.kind === "editor" && current.editor?.state?.dirty) {
     const ok = await shellDialogs.confirm("编辑器有未保存的修改，离开将放弃这些修改。确定继续？");
-    if (!ok) return false;
+    if (!ok) {
+      // The navigation already rewrote the URL: put it back to the view still on screen.
+      if (current.url) history.replaceState(null, "", current.url);
+      return false;
+    }
   }
   current?.destroy?.();
   current = null;
@@ -183,7 +187,7 @@ async function mountEditor(deckUrl) {
     chrome: bootParams.chrome || "full",
     ...(bootParams.theme ? { theme: bootParams.theme } : {}),
   });
-  current = { kind: "editor", editor: ed, destroy: () => ed.destroy() };
+  current = { kind: "editor", editor: ed, url: location.pathname + location.search, destroy: () => ed.destroy() };
 
   // Public test hooks (depended on by e2e / ui-shots / headless drivers)
   window.__pptdEditor = ed.editor;
@@ -240,7 +244,7 @@ async function mountHome() {
     onOpenLocal: openLocalProject,
     onOpenRecent: openRecent,
   });
-  current = { kind: "home", destroy: () => view.destroy() };
+  current = { kind: "home", url: location.pathname + location.search, destroy: () => view.destroy() };
   // Editor hooks belong to the editor view only
   delete window.__pptdEditor;
   delete window.__pptdIo;

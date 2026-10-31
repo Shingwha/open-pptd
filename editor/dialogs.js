@@ -31,7 +31,7 @@ export const defaultDialogs = {
 /**
  * Build the dialog service of one preview/editor instance.
  * @param {{alert?: Function, confirm?: Function}|null} [override] host implementation
- * @returns {{alert, confirm, showDialog, closeAll, destroy, overlayCount}}
+ * @returns {{alert, confirm, showDialog, closeAll, destroy}}
  */
 export function createDialogs(override = null) {
   const impl = override || defaultDialogs;
@@ -115,8 +115,6 @@ export function createDialogs(override = null) {
     },
     showDialog,
     closeAll,
-    /** Number of modals this instance currently has open (tests / hosts). */
-    overlayCount: () => openOverlays.size,
     destroy() {
       closeAll();
     },

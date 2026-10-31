@@ -125,6 +125,8 @@ export function createPreviewCore(rootEl, options, { html, chrome, editable }) {
 
   // The selection controller is attached by createEditor after the core is built.
   let controller = null;
+  // Embedded covers fit their host box exactly; editor/viewer keep the 64px margin.
+  const embeddedFit = !editable && chrome === "embedded";
   const view = headless
     ? createPageView({ state, container: mount })
     : createView({
@@ -136,6 +138,7 @@ export function createPreviewCore(rootEl, options, { html, chrome, editable }) {
         coords,
         editable,
         getController: () => controller,
+        ...(embeddedFit ? { fitPadding: 0, fitMinW: 0, fitMinH: 0 } : {}),
       });
   api.bind({ view });
 
@@ -168,6 +171,7 @@ export function createPreviewCore(rootEl, options, { html, chrome, editable }) {
   // --------------------------------------------------------------------------
   let present = null;
   const chromeAc = new AbortController();
+  let resizeRaf = 0; // viewer resize debounce (cancelled on destroy)
   if (!headless) {
     present = createPresent({ state, view, ops, ui });
     api.bind({ present });
@@ -187,12 +191,11 @@ export function createPreviewCore(rootEl, options, { html, chrome, editable }) {
     dom.zoomLabel?.addEventListener("dblclick", () => view.zoomReset(), { signal: chromeAc.signal });
 
     // Resize: rAF debounce + full render (fit scale follows the container)
-    let raf = 0;
     window.addEventListener(
       "resize",
       () => {
-        cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(() => view.render());
+        cancelAnimationFrame(resizeRaf);
+        resizeRaf = requestAnimationFrame(() => view.render());
       },
       { signal: chromeAc.signal }
     );
@@ -330,6 +333,7 @@ export function createPreviewCore(rootEl, options, { html, chrome, editable }) {
     } catch {
       /* already aborted */
     }
+    cancelAnimationFrame(resizeRaf);
     try {
       io.destroy?.();
     } catch (err) {
