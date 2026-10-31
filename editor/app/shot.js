@@ -1,9 +1,9 @@
 // ============================================================================
-// app/shot.js — headless screenshot driver (?shot=1, used by `open-pptd render`)
+// app/shot.js — headless screenshot driver (?shot=1, used by `open-pptd build --format png`)
 // ----------------------------------------------------------------------------
 // No assembly of its own: it mounts createPreview in the headless paint mode on a
 // fixed, deck-sized #shot-root surface. State, project IO (load / fonts / images /
-// live channel) and the paint channel (renderPage → layout → paintPage + the same
+// live channel) and the paint channel (layout → paintPage + the same
 // imageMap / iconMap / theme / font files as the editor preview) are therefore the
 // shared preview code path, not a parallel one (spec 22 S5, 3.0 D1).
 //
@@ -75,7 +75,7 @@ async function runShot(deckUrl) {
   /** Paint one page and wait for the frame to settle: fonts ready + images decoded + double rAF (charts drawn synchronously with animation:false). */
   async function goto(index) {
     const i = Math.max(0, Math.min(state.deck.pages.length - 1, index));
-    view.render(i); // the headless paint view (renderPage over the shared pipeline)
+    view.render(i); // the headless paint view (layout → paintPage over the shared pipeline)
     const imgs = [...root.querySelectorAll("img")];
     await Promise.all([
       document.fonts.ready,

@@ -40,7 +40,7 @@ import {
   serializeProject,
 } from "../../packages/runtime/index.js";
 import { createDiskProjectSource, createFsResourceProvider } from "../../packages/server/runtime-node.js";
-import { loadProjectFiles } from "../../packages/cli/export.js";
+import { loadProjectFiles } from "../../packages/cli/project.js";
 import { checkDeck } from "../../packages/cli/check.js";
 import { parseDeck } from "../../packages/model/pptd-io.js";
 import { validateDeck } from "../../packages/model/validate.js";
@@ -323,14 +323,16 @@ elements:
   checkEq("checkDeck == checkProject", cliReport.warnings, report.warnings);
   checkEq("checkDeck perPage parity", [...cliReport.perPage.keys()], [...report.perPage.keys()]);
 
-  // CLI command output baseline (human text must stay byte-identical to 2.x).
+  // CLI command output baseline: contract 3.0 keeps the same issue lines/counts, but human
+  // text goes to stderr (stdout is reserved for --json single-line output).
   const cli = spawnSync(process.execPath, [join(ROOT, "bin/open-pptd.js"), "check", tableManifest], {
     cwd: ROOT,
     encoding: "utf8",
   });
   checkEq("CLI check exit code", cli.status, 0);
-  check("CLI check count line", cli.stdout.includes("0 个错误，2 个警告"));
-  check("CLI check warning line", cli.stdout.includes("⚠ [geometry] 第2页 t1"));
+  check("CLI check count line", cli.stderr.includes("0 个错误，2 个警告"));
+  check("CLI check warning line", cli.stderr.includes("⚠ [geometry] t1"));
+  checkEq("CLI check stdout empty without --json", cli.stdout, "");
 
   // No layout facts when explicitly disabled (fast structural path).
   const fast = checkProject(proj, { resources: provider, layout: false, fileExists: () => true });

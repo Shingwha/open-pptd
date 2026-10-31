@@ -3,14 +3,14 @@
 // ----------------------------------------------------------------------------
 // 1. Every gallery project under examples/: 0 errors (warnings allowed by design)
 // 2. Synthetic bad deck: schema errors must be caught (unknown type / negative size / missing required field)
-// 3. Export gate: a bad deck must be blocked by exportDeck
+// 3. Export gate: a bad deck must be blocked by the build pipeline
 // ============================================================================
 
 import { readdirSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { validateDeck } from "../../packages/model/validate.js";
 import { checkDeck } from "../../packages/cli/check.js";
-import { exportDeck } from "../../packages/cli/export.js";
+import { buildDeck } from "../../packages/cli/build.js";
 
 let ok = true;
 function check(name, cond, detail = "") {
@@ -76,7 +76,7 @@ writeFileSync(join(dir, "deck.pptd"), "version: v2\ntitle: bad\npages:\n  - page
 writeFileSync(join(dir, "pages", "p1.page"), "elements:\n  - elementId: x\n    elementType: widget\n    bounds: [0, 0, 10, 10]\n");
 let blocked = false;
 try {
-  await exportDeck({ manifest: join(dir, "deck.pptd"), outPath: join(dir, "out.pptx") });
+  await buildDeck({ manifest: join(dir, "deck.pptd"), outPath: join(dir, "out.pptx") });
 } catch {
   blocked = true;
 }

@@ -1,5 +1,5 @@
 // ============================================================================
-// packages/paths.js — resource and config path resolution (contract 5, see docs/embedding.md §5)
+// packages/paths.js — resource and config path resolution (contract 3.0 entry open-pptd/paths)
 // ----------------------------------------------------------------------------
 // Rules (owned by this file; downstream only consumes, never builds dir names itself):
 //   · read three levels: $OPEN_PPTD_HOME → ~/.open-pptd → <package root>/assets (first hit wins)
@@ -27,7 +27,7 @@ export const PACKAGE_ROOT = resolve(__dirname, "..");
 /**
  * In-package registry dirs (registry.json only; version-coupled with the code, so home never
  * shadows them). These are also the in-package fallback roots for font/icon bytes (the package
- * ships only registry.json there; large bytes live in home). Single source for cli/export.js and
+ * ships only registry.json there; large bytes live in home). Single source for
  * cli/resource-status.js — downstream must not rebuild these paths itself.
  */
 export const FONT_REGISTRY_DIR = join(PACKAGE_ROOT, "assets", "fonts");

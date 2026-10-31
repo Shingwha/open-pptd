@@ -27,9 +27,9 @@ import { createExportImageHandler } from "./export-image.js";
 import { createSseHub } from "./events.js";
 import { buildManifest } from "./gallery.js";
 
-// Barrel surface (contract 4, purely additive): downstream hosts (see
-// docs/embedding.md §6) mount the static resolver/sender and the write-back /
-// liveness handlers on their own routes without deep imports into packages/server/*.
+// Barrel surface (contract 3.0 entry open-pptd/server): downstream hosts mount the
+// static resolver/sender and the write-back / liveness handlers on their own
+// routes without deep imports into packages/server/*.
 export { MIME, resolveFile, resolveStaticFile, sendFile } from "./static.js";
 export { handleSave, handlePing } from "./api.js";
 // Theme/font library API + Node stores (W6 additive surface)

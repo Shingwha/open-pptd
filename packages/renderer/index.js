@@ -11,10 +11,9 @@
 // ============================================================================
 
 // ---- Page painting (page.js; disposeChartInstances is re-exported by page.js) ----
-// paintPage = paint entry of the three-stage pipeline (consumes LayoutTree);
-// renderPage/autoGrowTexts are the 2.x contract-compat surface (renderPage does
-// layout → paintPage internally; autoGrowTexts is a deprecated empty stub).
-export { paintPage, renderPage, autoGrowTexts, disposeChartInstances } from "./page.js";
+// paintPage = the only paint entry of the three-stage pipeline (consumes LayoutTree).
+// Callers run layout(deck) themselves; the 2.x renderPage/autoGrowTexts adapters are gone.
+export { paintPage, disposeChartInstances } from "./page.js";
 
 // ---- Icon thumbnail (icon.js) ----
 export { iconThumb } from "./icon.js";

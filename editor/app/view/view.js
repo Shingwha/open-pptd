@@ -21,7 +21,8 @@
 import { createViewport, deckSize } from "./viewport.js";
 import { createThumbnails } from "./thumbnails.js";
 import { layout } from "../../../packages/layout/index.js";
-import { paintPage, renderPage } from "../../../packages/renderer/index.js";
+import { paintPage } from "../../../packages/renderer/index.js";
+import { paintModelPage } from "../paint-page.js";
 import { createDomMeasure, isDomMeasureAvailable } from "./dom-measure.js";
 
 // MeasurePort for editor layout: the DOM refinement adapter (M6) in a browser, otherwise the pure function
@@ -166,8 +167,8 @@ export function createView({ state, page, api, controller = null, getController 
 // ============================================================================
 /**
  * Paint surface for the non-interactive preview assembly (the ?shot=1 headless
- * path). It runs the SAME paint channel as the editor preview — renderPage
- * (layout → paintPage) with the same imageMap / iconMap / theme / fonts — and
+ * path). It runs the SAME paint channel as the editor preview — layout → paintPage
+ * (paintModelPage) with the same imageMap / iconMap / theme / fonts — and
  * nothing else. Everything the interactive view adds is deliberately absent:
  *   · no viewport fit/zoom/pan transform: the container is the deck-sized
  *     screenshot surface, so the scale must stay 1 (the editor's fit scale
@@ -192,7 +193,7 @@ export function createPageView({ state, container }) {
     const [w, h] = deckSize(state);
     container.style.width = `${w}px`;
     container.style.height = `${h}px`;
-    renderPage(container, pg, state.deck, state.theme, {
+    paintModelPage(container, pg, state.deck, state.theme, {
       imageMap: state.imageMap,
       iconMap: state.iconMap,
     });

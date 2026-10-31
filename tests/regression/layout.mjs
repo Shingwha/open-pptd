@@ -12,7 +12,7 @@ import { readdirSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { layout } from "../../packages/layout/index.js";
 import { parseDeck } from "../../packages/model/pptd-io.js";
-import { loadProjectFiles } from "../../packages/cli/export.js";
+import { loadProjectFiles } from "../../packages/cli/project.js";
 
 let ok = true;
 const check = (name, cond, detail = "") => {

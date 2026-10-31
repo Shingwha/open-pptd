@@ -9,7 +9,7 @@
 //   5. Atomic download: concurrent writes to one target leave no .part residue, content intact
 //   6. Browser-side resource URL construction unchanged (source-level assertions on font-registry.js / icon-fa.js)
 //   7. assets --from offline import (store + deflate); the registry never lands in assets/
-//   8. serve --stop does not kill a stale/foreign pid
+//   8. open --stop does not kill a stale/foreign pid
 // Usage: node tests/regression/resource-paths.mjs (non-zero exit = contract broken)
 // ============================================================================
 
@@ -115,10 +115,10 @@ try {
   step("ensureHome() 幂等可重入", existsSync(paths.fonts) && existsSync(paths.icons) && existsSync(paths.state) && existsSync(paths.tmp));
   {
     const ghost = join(HOME, "ghost-home");
-    const r = cli(["fonts", "list"], { OPEN_PPTD_HOME: ghost });
-    step("~/.open-pptd 不存在时 fonts list 照常（只读回退）", r.status === 0, r.stderr.slice(0, 120));
-    const r2 = cli(["icons", "list"], { OPEN_PPTD_HOME: ghost });
-    step("~/.open-pptd 不存在时 icons list 照常", r2.status === 0, r2.stderr.slice(0, 120));
+    const r = cli(["assets", "fonts", "list"], { OPEN_PPTD_HOME: ghost });
+    step("~/.open-pptd 不存在时 assets fonts list 照常（只读回退）", r.status === 0, r.stderr.slice(0, 120));
+    const r2 = cli(["assets", "list"], { OPEN_PPTD_HOME: ghost });
+    step("~/.open-pptd 不存在时 assets list 照常", r2.status === 0, r2.stderr.slice(0, 120));
     step("只读命令不创建 home", !existsSync(ghost));
   }
 
@@ -180,24 +180,27 @@ try {
     step("注册表永不进 assets/", !existsSync(join(paths.icons, "registry.json")) || readFileSync(join(paths.icons, "registry.json"), "utf8") === '{"EXPIRED":true}');
   }
 
-  // 8. serve --stop does not kill the wrong process ----------------------------
-  console.log("\n=== 8. serve --stop 陈旧/外来 pid ===");
+  // 8. open --stop does not kill the wrong process -----------------------------
+  console.log("\n=== 8. open --stop 陈旧/外来 pid ===");
   {
-    // Foreign live process: write its pid to the state file → --stop must refuse and not kill it
+    // Foreign live process: write its pid to the instance table → --stop must refuse and not kill it
+    const instanceFile = join(paths.state, "instances.json");
     const foreign = spawn(process.execPath, ["-e", "setTimeout(()=>{},60000)"], { stdio: "ignore" });
     await sleep(400);
     mkdirSync(paths.state, { recursive: true });
-    writeFileSync(join(paths.state, "serve.json"), JSON.stringify({ pid: foreign.pid, port: 1, url: "x" }));
-    const r = cli(["serve", "--stop"]);
+    writeFileSync(instanceFile, JSON.stringify({ version: 1, instances: [{ pid: foreign.pid, port: 1, url: "x", project: null, deck: null }] }));
+    const r = cli(["open", "--stop", "--all"]);
     step("外来 pid 被拒绝（非零退出）", r.status === 1, `exit=${r.status} ${r.stdout}${r.stderr}`);
     let alive = true;
     try { process.kill(foreign.pid, 0); } catch { alive = false; }
     step("外来进程未被误杀", alive);
+    step("拒绝的实例保留在表中", JSON.parse(readFileSync(instanceFile, "utf8")).instances.length === 1);
     foreign.kill();
     // Stale dead pid → clean up without error
-    writeFileSync(join(paths.state, "serve.json"), JSON.stringify({ pid: 999999, port: 1, url: "x" }));
-    const r2 = cli(["serve", "--stop"]);
-    step("陈旧死 pid 清理且退出 0", r2.status === 0 && !existsSync(join(paths.state, "serve.json")), `exit=${r2.status}`);
+    writeFileSync(instanceFile, JSON.stringify({ version: 1, instances: [{ pid: 999999, port: 1, url: "x", project: null, deck: null }] }));
+    const r2 = cli(["open", "--stop", "--all"]);
+    const left = existsSync(instanceFile) ? JSON.parse(readFileSync(instanceFile, "utf8")).instances : [];
+    step("陈旧死 pid 清理且退出 0", r2.status === 0 && left.length === 0, `exit=${r2.status}`);
   }
 } catch (err) {
   bad("resource-paths 执行异常", err?.stack || String(err));

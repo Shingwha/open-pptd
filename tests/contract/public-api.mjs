@@ -1,15 +1,15 @@
 // ============================================================================
-// tests/contract/public-api.mjs — package-level public contract test (contract 4, see docs/embedding.md)
+// tests/contract/public-api.mjs — package-level public contract test (contract 3.0)
 // ----------------------------------------------------------------------------
 // Asserts:
-//   1. Every export name of the five existing barrels is present (spec 01 T1 list, plus the W-E
-//      additive server re-exports: MIME / resolveFile / resolveStaticFile / sendFile /
-//      handleSave / handlePing);
-//   2. CONTRACT_VERSION === 2 and matches contract.json's contractVersion;
+//   1. Every export name of the barrels is present (model / renderer / writer / runtime /
+//      export / server / cli); Node-only faces are sub-entries only;
+//   2. CONTRACT_VERSION === 3 and matches contract.json's contractVersion; the root entry
+//      exports the dual-end core and does NOT re-export server/cli;
 //   3. contract.json parses; entries correspond one-to-one with the package.json exports entries
-//      (both directions, guards against drift); the files an entry points at exist;
-//   4. the three dual-end barrels (model/renderer/writer) import statically and their sources contain
-//      no Node/DOM globals (browser safety constraint, complementing dep-graph);
+//      (both directions, guards against drift); `./internal/*` is gone; files exist;
+//   4. the dual-end barrels (model/renderer/writer/runtime/export) import statically and their
+//      sources contain no Node/DOM globals (browser safety constraint, complementing dep-graph);
 //   5. the W1.5 flat re-export list (editor consumption surface) and the editor entry
 //      (open-pptd/editor): the editor barrel depends on the DOM and cannot be imported statically in
 //      Node, so it is checked textually (after stripping comments, the re-export statement must
@@ -62,7 +62,7 @@ const BARRELS = {
     ],
   },
   "packages/renderer/index.js": {
-    fns: ["renderPage", "autoGrowTexts", "disposeChartInstances", "iconThumb"],
+    fns: ["paintPage", "disposeChartInstances", "iconThumb"],
     objs: ["renderers"],
     consts: [],
     namespaceSpot: [
@@ -70,6 +70,23 @@ const BARRELS = {
       ["renderers", "renderImage"], ["renderers", "renderIcon"], ["renderers", "renderTable"],
       ["renderers", "renderChart"], ["renderers", "pageBackground"],
     ],
+  },
+  "packages/runtime/index.js": {
+    fns: [
+      "loadProject", "memorySource", "normalizeProjectFiles", "normalizeSourceFile", "isProjectSource",
+      "assertImageFormat", "canonicalImageExt", "decodeImageDataUrl", "imageExtOf", "imageFormatOfBytes",
+      "memoryProvider", "parseProject", "createProject", "resolveProject", "serializeProject",
+      "checkProject", "projectRevision", "assertRevision", "requireResource",
+    ],
+    objs: ["IMAGE_EXTS"],
+    consts: ["RevisionConflictError", "ResourceMissingError", "UnsupportedFormatError"],
+    namespaceSpot: [],
+  },
+  "packages/export/index.js": {
+    fns: ["exportProject", "exportPptx", "exportBundle", "exportPng", "formatIssue", "issueLocation"],
+    objs: [],
+    consts: ["EXPORT_FORMATS", "ExportError", "EXPORT_ERRORS"],
+    namespaceSpot: [],
   },
   "packages/writer/index.js": {
     // ZipWriter is a class (typeof "function"), checked alongside the functions
@@ -79,22 +96,29 @@ const BARRELS = {
     namespaceSpot: [["xml", "el"], ["parts", "buildContentTypes"], ["text", "buildTextBody"]],
   },
   "packages/server/index.js": {
-    // W-E additive re-exports: hosts mount these on their own routes (see docs/embedding.md §6)
+    // Node-only entry: hosts mount these on their own routes
     fns: ["createServer", "startServer", "resolveFile", "resolveStaticFile", "sendFile", "handleSave", "handlePing"],
     objs: ["MIME"],
     consts: ["PROJECT_ROOT"],
     namespaceSpot: [],
   },
   "packages/cli/index.js": {
-    fns: ["runCheck", "exportDeck", "exportProject", "runRender", "renderDeck", "runFonts", "runIcons", "runGallery"],
+    // Contract 3.0: exactly the five command entry points (bin.js dispatches to the same functions)
+    fns: ["runOpen", "runBuild", "runCheck", "runAssets", "runDoctor"],
     objs: [],
     consts: [],
     namespaceSpot: [],
   },
 };
 
-// Dual-end barrels: the source must contain no Node-only source or DOM global (T1 "browser safety constraint")
-const DUAL_END = ["packages/model/index.js", "packages/renderer/index.js", "packages/writer/index.js"];
+// Dual-end barrels: the source must contain no Node-only source or DOM global (contract 3.0)
+const DUAL_END = [
+  "packages/model/index.js",
+  "packages/renderer/index.js",
+  "packages/writer/index.js",
+  "packages/runtime/index.js",
+  "packages/export/index.js",
+];
 const PURITY_PATTERNS = [
   [/\bfrom\s*["']node:/, "node: import"],
   [/\bimport\s*\(\s*["']node:/, "node: 动态 import"],
@@ -125,11 +149,12 @@ const FLAT = {
 const EDITOR_ENTRY = {
   barrel: "editor/index.js",
   exports: [
-    "createEditor", "TOKENS", "defaultTokens", "applyThemeTokens",
+    "createEditor", "createPreview", "TOKENS", "defaultTokens", "applyThemeTokens",
     "httpSource", "directoryHandleSource", "memorySource", "delegatingSource",
   ],
   sources: {
     "editor/editor.js": ["createEditor"],
+    "editor/preview.js": ["createPreview"],
     "editor/theme.js": ["TOKENS", "defaultTokens", "applyThemeTokens"],
     "editor/app/project/source.js": ["httpSource", "directoryHandleSource", "memorySource", "delegatingSource"],
   },
@@ -178,10 +203,25 @@ async function main() {
   console.log("=== 1. barrel 导出名与类型 ===");
   for (const [rel, spec] of Object.entries(BARRELS)) await checkBarrel(rel, spec);
 
-  console.log("\n=== 2. CONTRACT_VERSION ===");
+  console.log("\n=== 2. CONTRACT_VERSION / 根入口面 ===");
   const rootMod = await import(pathToFileURL(join(ROOT, "packages/index.js")).href);
-  if (rootMod.CONTRACT_VERSION === 2) ok("packages/index.js CONTRACT_VERSION === 2");
-  else bad("packages/index.js CONTRACT_VERSION === 2", `实际 ${rootMod.CONTRACT_VERSION}`);
+  if (rootMod.CONTRACT_VERSION === 3) ok("packages/index.js CONTRACT_VERSION === 3");
+  else bad("packages/index.js CONTRACT_VERSION === 3", `实际 ${rootMod.CONTRACT_VERSION}`);
+  // Root = dual-end core only; Node-only server/cli faces live in sub-entries.
+  const rootCore = [
+    "parseDeck", "paintPage", "buildPptx", "createProject", "exportProject",
+    "openPptdHome", "readConfig", "layout",
+  ];
+  const rootMissing = rootCore.filter((n) => !(n in rootMod));
+  if (!rootMod.measure || typeof rootMod.measure.measureTextRuns !== "function") rootMissing.push("measure.measureTextRuns");
+  if (rootMissing.length) bad("根入口导出双端核心", `缺 ${rootMissing.join(", ")}`);
+  else ok(`根入口导出双端核心（抽查 ${rootCore.length + 1} 个）`);
+  const rootForbidden = ["createServer", "startServer", "runOpen", "runBuild", "runCheck", "runAssets", "runDoctor"];
+  const leaked = rootForbidden.filter((n) => n in rootMod);
+  if (leaked.length) bad("根入口不再导出 server/cli", leaked.join(", "));
+  else ok("根入口不再导出 server/cli");
+  if (rootMod.exportProject && typeof rootMod.exportProject === "function" && rootMod.createProject) ok("根入口导出 runtime + export 核心");
+  else bad("根入口导出 runtime + export 核心", `exportProject=${typeof rootMod.exportProject}`);
 
   console.log("\n=== 3. contract.json ↔ package.json exports ===");
   const contractPath = join(ROOT, "contract.json");
@@ -195,12 +235,18 @@ async function main() {
   }
   const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
 
-  if (contract.contractVersion === rootMod.CONTRACT_VERSION) ok("contract.json contractVersion 与 CONTRACT_VERSION 一致（2）");
+  if (contract.contractVersion === rootMod.CONTRACT_VERSION) ok("contract.json contractVersion 与 CONTRACT_VERSION 一致（3）");
   else bad("contract.json contractVersion", `${contract.contractVersion} ≠ ${rootMod.CONTRACT_VERSION}`);
 
-  // Both directions: every entries key has a matching exports item; every non-escape-hatch,
-  // non-metadata exports item appears in entries
-  const META_SUBPATHS = new Set([".", "./editor/index.html", "./package.json", "./internal/*"]);
+  // Both directions: every entries key has a matching exports item; every non-metadata
+  // exports item appears in entries. Contract 3.0 has no escape hatch (./internal/* removed).
+  const META_SUBPATHS = new Set([".", "./editor/index.html", "./package.json"]);
+  if (pkg.exports?.["./internal/*"] !== undefined) bad("./internal/* 已删除", `仍存在: ${pkg.exports["./internal/*"]}`);
+  else ok("./internal/* 已删除");
+  for (const sub of ["./runtime", "./export"]) {
+    if (typeof pkg.exports?.[sub] === "string") ok(`exports 增加 ${sub}`);
+    else bad(`exports 增加 ${sub}`, "缺失");
+  }
   const entryKeys = Object.keys(contract.entries || {});
   const drift = [];
   for (const [k, v] of Object.entries(contract.entries || {})) {
@@ -227,8 +273,7 @@ async function main() {
     }
   }
 
-  console.log("\n=== 4. 双端 barrel 源文件纯净度（无 Node/DOM 全局）===");
-  const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+  console.log("\n=== 4. 双端 barrel 源文件纯净度（无 Node/DOM 全局）===");  const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
   for (const rel of DUAL_END) {
     const src = stripComments(readFileSync(join(ROOT, rel), "utf8"));
     const hits = PURITY_PATTERNS.filter(([re]) => re.test(src)).map(([, label]) => label);

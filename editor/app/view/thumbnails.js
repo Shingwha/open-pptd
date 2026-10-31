@@ -17,7 +17,8 @@
 // ============================================================================
 
 import { deckSize } from "../../../packages/model/index.js";
-import { disposeChartInstances, renderPage } from "../../../packages/renderer/index.js";
+import { disposeChartInstances } from "../../../packages/renderer/index.js";
+import { paintModelPage } from "../paint-page.js";
 
 // Fallback card box: used only when an element cannot be measured (e.g. rendered
 // hidden); the real size is decided by the CSS breakpoint and measured at render.
@@ -156,7 +157,7 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
       // Progressive loading: skeleton placeholder (page number/delete/click still work; refreshThumb swaps it in place once assets land)
       const skeleton = state.pagesPending?.has(pg) ? document.createElement("div") : null;
       if (skeleton) skeleton.className = "thumb-skeleton";
-      else renderPage(mini, pg, deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
+      else paintModelPage(mini, pg, deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
 
       const num = document.createElement("span");
       num.className = "thumb-num";
@@ -205,7 +206,7 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
     disposeChartInstances(thumb);
     thumb.querySelector(".thumb-skeleton")?.remove();
     const mini = thumb.querySelector(".thumb-canvas");
-    if (mini) renderPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
+    if (mini) paintModelPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
   }
 
   return {

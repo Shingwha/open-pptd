@@ -18,7 +18,7 @@
 // Invariants: no measurement after layout (paint only reads this tree); the model is never
 // written back (el.bounds is read-only); MeasurePort defaults to a deterministic pure function.
 // Group shells are skipped and each member laid out individually (members already live in
-// page.elements; renderer renderPage returns null for shells with the same semantics).
+// page.elements; paintPage renders nothing for shells with the same semantics).
 // Chart size passes through (single-sourced in model/chart/layout.js).
 // Dual-end pure functions: this file forbids node:/fs/window./document. (enforced by dep-graph).
 // ============================================================================

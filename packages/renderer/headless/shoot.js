@@ -1,5 +1,5 @@
 // ============================================================================
-// renderer/headless/shoot.js — headless render orchestration (open-pptd render, Node-only)
+// renderer/headless/shoot.js — headless render orchestration (build --format png, Node-only)
 // ----------------------------------------------------------------------------
 // Flow: a temporary static server + local headless Chrome/Edge + CDP screenshots, emitting
 // one PNG per page through the same render pipeline as the editor preview
