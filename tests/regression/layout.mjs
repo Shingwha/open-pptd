@@ -56,7 +56,8 @@ const tableDeck = deckWith([
 const ltT = layout(tableDeck);
 const tb = ltT.pages[0].elements.find((e) => e.elementId === "tb");
 check("表格 table 结构（列宽/行高/总高）", tb.table && tb.table.rowHeights.length === 2 && tb.table.totalHeight > 40, JSON.stringify(tb.table));
-check("表格 frame.h 被内容撑高", tb.frame.h === Math.max(40, tb.table.totalHeight) && tb.grown === true, `h=${tb.frame.h}`);
+check("表格 frame.h == totalHeight（唯一高度 D6）", tb.frame.h === tb.table.totalHeight, `h=${tb.frame.h}`);
+check("表格内容撑高声明高时 grown=true", tb.grown === true, `frame=${tb.frame.h} declared=${tb.declared.h}`);
 check("表格撑高压下方元素 → overlaps 命中", tb.overflow.overlaps.some((o) => o.elementId === "under"));
 
 // ---- 3. out of canvas ----
