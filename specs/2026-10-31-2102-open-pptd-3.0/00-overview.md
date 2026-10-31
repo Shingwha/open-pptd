@@ -143,5 +143,7 @@
 - ✅ W1（2026-10-31 @ `feat/3.0-w1-baseline` → main `b9e876c`）：基线 26/26 全绿；死代码/docs 第一阶段已清；parity harness 已建。
 - ✅ W2（2026-10-31 @ `feat/3.0-w2-runtime` → main）：ProjectRuntime + memory/disk source/provider；CLI check/export 接入，命令面与输出不变；runtime 92/92 已接入 run-all。
 - ✅ W3（2026-10-31 @ `feat/3.0-w3-export` → main）：ExportService 统一 check/pptx/bundle/png；修复 headless 单页竞态与图表 DPR；export 56/56 已接入 run-all。
-- W4 详单待补 `## 前置上下文`（JIT）。runtime/export 尚未进入 contract 导出面，W10 统一。
+- ✅ W4（2026-10-31 @ `feat/3.0-w4-types` → main）：TypeManifest 成为唯一类型清单；validate/layout/菜单派生；renderer/writer 懒加载分片；type-manifest 42/42 已接入 run-all。
+- W5 详单待补 `## 前置上下文`（JIT）。golden 在 main 上存在 5 处既有感知漂移（与本轮改动无关），W5/W13 处理。
+- runtime/export 尚未进入 contract 导出面，W10 统一。
 - 旧 `specs/2026-09-30-ui-redesign-line/**`、`specs/ref/**`、`docs/archive/**` 已由 W1 删除；本组 spec 不依赖它们。

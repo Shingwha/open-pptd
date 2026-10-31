@@ -196,6 +196,8 @@ export function defineType({
 - `schema`/`layout` 默认纯函数；类型特例（text/table/group）在 shard 内处理，不写回 model。
 - `group`：`composite: true`，无 render/toXml；layout 跳过 shell，成员独立；编辑器不提供组合操作；已有 group 壳按成员渲染。
 - `contentEditor` 只允许 text/table/chart；不得有 menu/create/props/quickbar 字段。
+- W4 已实现：`packages/model/types/*` descriptor（`id/label/composite/layoutKey/schema/contentEditor`），`TYPE_IDS` 派生 `ELEMENT_TYPES`（顺序不变）；registry 新增 `defineType/typeIds/isKnownType`；validate 走 `schema` hook（issue 文本不变）；layout 用 `composite`/`layoutKey`（映射在 layout 包内）；renderer/writer `types/load.js` 提供 `loadType(id, importer?)` 动态分片入口。
+- 公开面：`defineType/typeIds/isKnownType` 当前为深路径 API，是否进 contract 3.0 barrel 由 W10 统一决定。
 
 ### 7.1 TableFacts
 
