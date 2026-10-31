@@ -7,18 +7,19 @@
 //   - source.capabilities.writable === false → degrade straight to "download project zip"
 //   - write() throws (no /api/save endpoint in deploy mode) → degrade to zip too (behavior kept)
 //   - a write-back failure for a local handle project → explicit error (no silent degrade, behavior kept)
-// Export PPTX (exportPptx): dialog with the font-embed checkbox + embed scope
-// (subset/full) → buildPptx → download. Dependency injection: images (dataURL
-// image persistence), fontManager (font library sync/embed), source (transport),
-// onSaved (suppress the SSE refresh loop after a successful save), renderStatusBar.
+//   - revision conflict (ERR_REVISION_CONFLICT) → explicit 覆盖 / 重新加载 / 取消 dialog
+// Export (PPTX / bundle / PNG) is delegated to the browser ExportService adapter
+// (./export-service.js): no zip/preflight/report logic remains in this module.
+// Dependency injection: images (dataURL image persistence), fontManager, source
+// (transport), onSaved (suppress the SSE refresh loop after a successful save),
+// renderStatusBar, reload (conflict "重新加载"), onError.
 // ============================================================================
 
 import { commitBaseline } from "../state.js";
 import { createImageExporter } from "../export-image.js";
-import { mediaFilesOfDeck } from "./images.js";
+import { createBrowserExportService } from "./export-service.js";
 import { base64ToBytes, deckSize, serializeDeck } from "../../../packages/model/index.js";
 import { projectRevision } from "../../../packages/runtime/index.js";
-import { ZipWriter, buildPptx, downloadBlob, downloadPptx, safeFileName } from "../../../packages/writer/index.js";
 
 /** Byte count → human-readable (MB to one decimal / KB rounded). */
 const fmtSize = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`);
@@ -39,6 +40,10 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
   const { toast, dialogs } = ui;
   /** Save succeeded: record the current deck as the on-disk baseline (undo back to it = clean, not blanket-dirty). */
   const markSaved = () => commitBaseline(state);
+  /** Browser ExportService adapter: PPTX / bundle / PNG all go through packages/export. */
+  const exportService = createBrowserExportService({ state, fontManager });
+  const baseNameOf = (path) => String(path || "").split(/[\\/]/).pop() || "export.bin";
+  const reportError = (report, fallback) => new Error(report?.errors?.join("；") || fallback);
   // --------------------------------------------------------------------------
   // Export (PPTX dialog / project zip direct; entry points in the topbar File menu)
   // --------------------------------------------------------------------------
@@ -121,21 +126,21 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
   function doExport(embedFonts, fullFonts = false) {
     (async () => {
       try {
-        const skipped = [];
-        const bytes = await buildPptx(state.deck, {
-          imageMap: state.imageMap,
-          iconDefs: state.iconMap, // icon preload cache (icons.js; loadIconDefs fills in un-preloaded entries)
-          fontFiles: embedFonts ? fontManager.exportFontFiles() : null,
-          embedFonts,
-          fullFonts,
-          onFontSkipped: (list) => skipped.push(...list),
-        });
-        const name = safeFileName(state.deck.title || "deck") + ".pptx";
-        downloadPptx(bytes, name);
-        toast.show(`已导出 ${name}（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
-        if (skipped.length) {
-          console.warn(`[export] ${skipped.length} 个字体未嵌入:`, skipped);
-          toast.show(`⚠ ${skipped.length} 个字体未嵌入（${skipped.map((s) => s.family).join(", ")}），打开时可能回退系统字体`, "danger", 6000);
+        toast.show("正在导出 PPTX…", "info", 8000);
+        const report = await exportService.exportPptx({ embedFonts, fullFonts });
+        if (!report.ok) throw reportError(report, "PPTX 导出失败");
+        const name = baseNameOf(report.files?.[0]) || "deck.pptx";
+        toast.show(`已导出 ${name}（${fmtSize(report.bytes || 0)}）`, "success");
+        if (report.skipped?.length) {
+          console.warn(`[export] ${report.skipped.length} 个字体未嵌入:`, report.skipped);
+          toast.show(
+            `⚠ ${report.skipped.length} 个字体未嵌入（${report.skipped.map((s) => s.family).join(", ")}），打开时可能回退系统字体`,
+            "danger",
+            6000
+          );
+        }
+        if (report.missing?.length) {
+          console.warn("[export] 缺失资源:", report.missing);
         }
       } catch (err) {
         toast.show(`导出失败: ${err.message}`, "danger");
@@ -152,25 +157,16 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
    * **current editing session** (possibly with unsaved changes), which must be
    * re-serialized from the model, so comments/raw formatting are not preserved.
    * "Disk as-is" is the CLI's job, "editing-session snapshot" the browser's; the
-   * two no longer align implementations.
+   * two no longer align implementations. Packaging itself now lives in
+   * packages/export (bundle format), not here.
    */
   async function doExportZip() {
     try {
-      fontManager.syncToDeck(); // font resource table → deck.fonts, carried in the bundle
-      // Collect images and serialize the snapshot — exporting does not change the current editing session
-      // (imageMap covers both inline dataURLs and persisted relative-path references, so the zip has all bytes)
-      const snapshot = JSON.parse(JSON.stringify(state.deck));
-      const mediaFiles = mediaFilesOfDeck(snapshot, state.imageMap);
-      const files = serializeDeck(snapshot, {
-        manifestName: state.manifestPath?.split("/").pop() || "deck.pptd",
-      });
-      const zip = new ZipWriter();
-      for (const f of files) zip.add(f.path, f.content);
-      for (const m of mediaFiles) zip.add(m.path, base64ToBytes(m.b64));
-      const bytes = zip.build();
-      const name = safeFileName(state.deck.title || "deck") + "-project.zip";
-      downloadBlob(bytes, name, "application/zip");
-      toast.show(`项目包已导出 ${name}（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
+      toast.show("正在导出项目包…", "info", 8000);
+      const report = await exportService.exportBundle();
+      if (!report.ok) throw reportError(report, "项目包导出失败");
+      const name = baseNameOf(report.files?.[0]) || "project.zip";
+      toast.show(`项目包已导出 ${name}（${fmtSize(report.bytes || 0)}）`, "success");
     } catch (err) {
       toast.show(`导出项目包失败: ${err.message}`, "danger");
       console.error(err);
@@ -289,7 +285,7 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
         // URL-mode write-back failed (no /api/save in deploy mode): degrade to downloading the project zip
       }
     }
-    saveProjectAsZip(files);
+    saveProjectAsZip();
   }
 
   /** Internal save entry → ProjectSource.write contract (text / bytes). */
@@ -297,26 +293,23 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
     return f.b64 != null ? { path: f.path, bytes: base64ToBytes(f.b64) } : { path: f.path, text: f.content };
   }
 
-  /** Deploy-mode save: package and download (the zip path of the original saveProject). */
-  async function saveProjectAsZip(files) {
+  /** Deploy-mode save: download the editing-session bundle (same packaging as "导出项目文件"). */
+  async function saveProjectAsZip() {
     try {
-      const zip = new ZipWriter();
-      for (const f of files) {
-        zip.add(f.path, f.b64 ? base64ToBytes(f.b64) : f.content);
-      }
-      const bytes = zip.build();
-      downloadBlob(bytes, "project.zip", "application/zip");
+      const report = await exportService.exportBundle();
+      if (!report.ok) throw reportError(report, "项目包导出失败");
+      const name = baseNameOf(report.files?.[0]) || "project.zip";
       markSaved();
       renderStatusBar();
-      toast.show(`项目已打包下载（${(bytes.length / 1024).toFixed(1)} KB）`, "success");
+      toast.show(`项目已打包下载 ${name}（${fmtSize(report.bytes || 0)}）`, "success");
     } catch (err) {
       toast.show(`保存失败: ${err.message}`, "danger");
       console.error(err);
     }
   }
 
-  // Image export (pure front end, standalone module: offscreen render → foreignObject → PNG at the chosen multiplier)
-  const imageExporter = createImageExporter({ state, toast });
+  // Image export (PNG packaging paths live in the ExportService adapter; this keeps the UI toasts)
+  const imageExporter = createImageExporter({ state, toast, exportService });
 
   /** Image-export dialog: arbitrary page checkboxes (multi-select) + multiplier (1x/2x/3x, default 2x, showing output pixels for the canvas size). */
   function openImageExportDialog() {

@@ -56,6 +56,11 @@ export async function exportPng(ctx) {
   }
   const [width, height] = deckSize(deck);
   const mode = options.backend || "headless";
+  const count = Array.isArray(deck.pages) ? deck.pages.length : 0;
+  if (!count) throw new ExportError(EXPORT_ERRORS.PAGES, "项目没有页面，无法导出 PNG");
+  // Normalize before the backend factory: capture backends batch one request for the
+  // selected range, so the factory receives `pages` (additive field; headless ignores it).
+  const pageNums = normalizePages(options.pages == null ? "all" : options.pages, count);
 
   let backend;
   try {
@@ -64,6 +69,7 @@ export async function exportPng(ctx) {
       height,
       scale,
       mode,
+      pages: pageNums.slice(),
       target: { project, deck },
       browserPath: options.browserPath,
       timeoutMs: options.timeoutMs,
@@ -88,9 +94,13 @@ export async function exportPng(ctx) {
       });
     }
     const info = backend.info || {};
-    const count = Number.isInteger(info.count) ? info.count : Array.isArray(deck.pages) ? deck.pages.length : 0;
-    if (!count) throw new ExportError(EXPORT_ERRORS.PAGES, "项目没有页面，无法导出 PNG");
-    const pageNums = normalizePages(options.pages == null ? "all" : options.pages, count);
+    const backendCount = Number.isInteger(info.count) ? info.count : count;
+    if (backendCount !== count) {
+      throw new ExportError(
+        EXPORT_ERRORS.RENDER_BACKEND,
+        `渲染后端页数不一致：deck ${count} 页 vs 后端 ${backendCount} 页`
+      );
+    }
     progress(env, {
       stage: "backend-ready",
       format: "png",
