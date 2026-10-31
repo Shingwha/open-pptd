@@ -195,6 +195,78 @@ export function validateDims(dims, name) {
 }
 
 // ----------------------------------------------------------------------------
+// Row-height ratio lifecycle (rowHeights is a ratio array aligned 1:1 with rows)
+// ----------------------------------------------------------------------------
+
+/**
+ * Validate and normalize el.rowHeights.
+ * An array whose length differs from rows.length (or that contains non-finite / negative
+ * entries, or sums to <= 0) is NOT a usable ratio set → null. This is deliberately strict:
+ * the caller must not silently treat a stale array as valid (insert/delete row shifts the
+ * alignment; the table schema reports a warning).
+ * @param {object} el table element
+ * @returns {number[]|null} a copy normalized to sum 1, or null when unusable
+ */
+export function normalizeRowHeights(el) {
+  const rows = Array.isArray(el?.rows) ? el.rows : [];
+  const rh = el?.rowHeights;
+  if (!Array.isArray(rh) || !rh.length || rh.length !== rows.length) return null;
+  let sum = 0;
+  for (const v of rh) {
+    if (typeof v !== "number" || !Number.isFinite(v) || v < 0) return null;
+    sum += v;
+  }
+  if (!(sum > 0)) return null;
+  return rh.map((v) => v / sum);
+}
+
+/**
+ * Keep el.rowHeights aligned after inserting/deleting rows.
+ *   - insertion (delta > 0): inserted rows share 1/newCount each; existing rows scale down
+ *     proportionally so the total stays 1
+ *   - deletion (delta < 0): the rows starting at `index` are removed and the remainder is
+ *     renormalized; deleting every row returns null (no ratio set)
+ * A stale array (length !== rows) returns null instead of guessing which entries moved.
+ * @param {number[]} ratios current rowHeights
+ * @param {number} rows current row count (must equal ratios.length)
+ * @param {number} index insertion/deletion start (clamped)
+ * @param {number} delta +n inserted rows / -n deleted rows
+ * @returns {number[]|null} the next ratio set (sum 1) or null
+ */
+export function adjustRowHeightsForRowChange(ratios, rows, index, delta) {
+  if (!Array.isArray(ratios)) return null;
+  const count = Math.trunc(Number(rows));
+  const d = Math.trunc(Number(delta));
+  if (!Number.isFinite(count) || count < 0 || !Number.isFinite(d)) return null;
+  if (ratios.length !== count) return null;
+  let sum = 0;
+  for (const v of ratios) {
+    if (typeof v !== "number" || !Number.isFinite(v) || v < 0) return null;
+    sum += v;
+  }
+  if (count > 0 && !(sum > 0)) return null;
+  const at = Math.max(0, Math.min(count, Math.trunc(Number(index)) || 0));
+  if (d === 0) return count ? ratios.map((v) => v / sum) : null;
+  if (d > 0) {
+    if (count === 0) return Array.from({ length: d }, () => 1 / d);
+    const nextCount = count + d;
+    const share = 1 / nextCount;
+    // Existing rows fill the rest; scale = (1 - d·share) / sum
+    const scale = (1 - d * share) / sum;
+    const next = ratios.map((v) => v * scale);
+    next.splice(at, 0, ...Array.from({ length: d }, () => share));
+    return next;
+  }
+  const remove = Math.min(-d, count);
+  const start = Math.max(0, Math.min(at, count - remove));
+  const next = ratios.slice(0, start).concat(ratios.slice(start + remove));
+  if (!next.length) return null;
+  const nextSum = next.reduce((a, b) => a + b, 0);
+  if (!(nextSum > 0)) return null;
+  return next.map((v) => v / nextSum);
+}
+
+// ----------------------------------------------------------------------------
 // Layout: column-width ratios + minimum row height (no content estimation; rows grow with content)
 // ----------------------------------------------------------------------------
 
@@ -226,10 +298,9 @@ export function estimateTableLayout(el) {
       ? el.columnWidths
       : Array.from({ length: cols }, () => 1 / cols);
 
-  const ratios =
-    Array.isArray(el.rowHeights) && el.rowHeights.length === rows.length
-      ? el.rowHeights
-      : null;
+  // Length mismatch / invalid entries are not silently treated as a ratio set: they fall
+  // back to content-height floors (and the table schema reports a warning).
+  const ratios = normalizeRowHeights(el);
   const rowHeights = rows.map((_, r) => {
     const minH = r === 0 ? TABLE_MIN_HEADER : TABLE_MIN_ROW;
     return ratios ? Math.max(boundsH * (ratios[r] ?? 1 / Math.max(1, rows.length)), minH) : minH;
