@@ -141,5 +141,6 @@
 ## 8. 当前状态
 
 - ✅ W1（2026-10-31 @ `feat/3.0-w1-baseline` → main `b9e876c`）：基线 26/26 全绿；死代码/docs 第一阶段已清；parity harness 已建。
-- W2 详单已补 `## 前置上下文`，可派工。契约无变化（runtime 包尚未进入 contract 导出面，W10 统一）。
+- ✅ W2（2026-10-31 @ `feat/3.0-w2-runtime` → main）：ProjectRuntime + memory/disk source/provider；CLI check/export 接入，命令面与输出不变；runtime 92/92 已接入 run-all。
+- W3 详单待补 `## 前置上下文`（JIT）。runtime 尚未进入 contract 导出面，W10 统一。
 - 旧 `specs/2026-09-30-ui-redesign-line/**`、`specs/ref/**`、`docs/archive/**` 已由 W1 删除；本组 spec 不依赖它们。

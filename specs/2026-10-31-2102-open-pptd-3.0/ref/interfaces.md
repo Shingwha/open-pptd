@@ -49,6 +49,7 @@
 - preview 可只实现 `read/readMedia/watch`；editor 保存需要 `write`。
 - `expectedRevision` 用于冲突检测；不匹配必须抛 `RevisionConflictError`（含 currentRevision），不得静默覆盖。
 - 删除旧的 `source.write(files)` 单参数歧义；统一 `SourceFile[]`。
+- 实现（W2）：纯内存 `memorySource` 在 `packages/runtime/source.js`；Node 磁盘 source `createDiskProjectSource` 在 `packages/server/runtime-node.js`（Node-only）。
 
 ## 3. ResourceProvider
 
@@ -66,22 +67,26 @@
 - `FontRef`：`{family, key?, file?, url?, subset?}`；解析顺序：deck/project → global user library → built-in registry → system → missing。
 - Browser adapter：fetch/Cache/FontFace；Node adapter：fs + registry + user index；memory：tests。
 - 图片返回原始字节（PNG/JPEG/GIF）；不支持格式返回 null 并诊断；转换（WebP/SVG→PNG）在 skill/agent 侧完成，不进入核心。
+- 实现（W2）：`memoryProvider` 在 `packages/runtime/provider.js`；`createFsResourceProvider` 在 `packages/server/runtime-node.js`，不联网（`fetchable` 只表示 registry 有 url 无本地字节）。
+- 可选环境事实扩展（W2，非必需）：provider 可提供 `fileExists(path)`、`fontRegistry()`、`iconRegistry()` 供 check 使用。
 
 ## 4. ProjectRuntime
 
 ```js
 export async function loadProject(input, { source }) → ProjectFiles
 export function parseProject(files) → Deck
-export async function resolveProject(deck, { resources, themeLibrary? }) → ResolvedProject
+export function createProject(files, deck?) → Project
+export async function resolveProject(deckOrProject, { resources, themeLibrary? }) → ResolvedProject
 export function serializeProject(project, { mode: "snapshot"|"raw" }) → FileBundle
-export async function checkProject(project, { resources, layout? }) → CheckReport
+export function checkProject(project, { resources, layout?, fileExists?, fontRegistry?, iconRegistry? }) → CheckReport
 ```
 
-- `Project`：`{manifestName, manifestPath, baseDir?, pageFiles, media?, deck}`
-- `ResolvedProject`：`{project, deck, theme, fontFaces?, imageMap, iconMap, fontStatus}`
+- `Project`：`{manifestName, manifestPath, baseDir?, pageFiles, media?, deck, manifestText?, revision?}`
+- `ResolvedProject`：`{project, deck, theme, fontFaces?, imageMap, iconMap, fontStatus, missing:{fonts,icons,images}, unsupported:[]}`
 - `FileBundle`：`{files: SourceFile[], manifestName}`；`snapshot` 由模型序列化；`raw` 仅 Node 磁盘原样（CLI bundle `--raw`），浏览器不实现。
 - `loadProject` 不解析 page YAML 之外的环境资源；字体/图片解析在 `resolveProject`。
-- `checkProject` 纯逻辑；CLI/editor/server 共享；不写文件、不下载。
+- `checkProject` 纯逻辑（W2 起同步，无 IO）；CLI/editor/server 共享；不写文件、不下载。
+- W2 已实现：`packages/runtime/{index,source,provider,parse,resolve,serialize,check,errors,paths}.js`；CLI `check`/`export` 已接入，命令面与输出不变。
 
 ## 5. ExportService
 
@@ -373,6 +378,7 @@ open-pptd doctor [--json]
 - `UnsupportedFormatError { format }`：图片/导出格式不支持。
 - `RenderBackendUnavailableError { backend }`：PNG 无浏览器；提示 Chrome/Edge。
 - 所有公开错误带 `code` 字符串；JSON 输出使用 `{ok:false,error:{code,message}}`。
+- W2 已实现 code：`ERR_REVISION_CONFLICT` / `ERR_RESOURCE_MISSING` / `ERR_UNSUPPORTED_FORMAT`（`packages/runtime/errors.js`）。
 
 ## 15. 不做兼容的边界
 
