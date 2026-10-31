@@ -32,14 +32,15 @@ irm https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.ps1 | iex
 curl -fsSL https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.sh | sh
 ```
 
-装到 `~/.open-pptd` 并写入用户级 PATH（不需要管理员），装完 `open-pptd` 全局可用。起一个本地预览服务：
+装到 `~/.open-pptd` 并写入用户级 PATH（不需要管理员），装完 `open-pptd` 全局可用。打开项目并产出文件：
 
 ```sh
-open-pptd serve --project <项目目录> --detach --json   # 浏览器打开，改文件实时刷新
-open-pptd doctor                                        # 环境自检（CLI / Node / 资源 / PATH）
+open-pptd open <项目目录> --detach --json   # 浏览器打开，改文件实时刷新
+open-pptd build <项目目录>/deck.pptd --format pptx
+open-pptd doctor                            # 环境自检（CLI / Node / 资源 / PATH / PNG）
 ```
 
-不装也行：clone 本仓库后 `node bin/open-pptd.js serve …` 效果相同。
+不装也行：clone 本仓库后 `node bin/open-pptd.js open …` 效果相同。
 
 ## 和 AI 一起用
 
@@ -55,7 +56,7 @@ git clone https://github.com/Shingwha/open-pptd-skill <你的技能目录>/open-
 - 「把这份大纲做成演示文稿」+ 粘贴大纲
 - 「做一张白露节气主题海报」
 
-AI 会交付**两样东西**：可编辑的 PPTD 项目目录（manifest + pages + media），以及可直接发送的 `.pptx`（字体已嵌入、PowerPoint 打开零修复）。想围观生成过程，让 AI 跑上面的 `serve`，每写一页你就能看到。
+AI 会交付**两样东西**：可编辑的 PPTD 项目目录（manifest + pages + media），以及可直接发送的 `.pptx`（字体已嵌入、PowerPoint 打开零修复）。想围观生成过程，让 AI 跑上面的 `open`，每写一页你就能看到。
 
 ## 能做什么
 
@@ -63,7 +64,7 @@ AI 会交付**两样东西**：可编辑的 PPTD 项目目录（manifest + pages
 |---|---|
 | **图表** | 13 种类型，Excel 式数据网格改数即改图 |
 | **形状 / 图标** | 187 种预置形状 + 自定义路径；约 2000 个 Font Awesome 图标（三风格） |
-| **排版** | LaTeX 公式混排；字体嵌入（子集 / 完整，导出前自动体检补齐缺失字体） |
+| **排版** | LaTeX 公式混排；字体嵌入（子集 / 完整，导出前体检；`build --fetch` 显式补齐缺失字体） |
 | **网页编辑器** | 实时预览（改文件即刷新）、多选 / 框选 / 右键菜单 / 组合对齐分布、13 种图表编辑器、深色模式 |
 | **导出** | 标准 `.pptx`（淡入淡出转场）与逐页 PNG |
 | **项目互通** | 线上作品可下载项目包带回本地，本地项目可「打开文件夹」直接编辑 |
@@ -101,13 +102,30 @@ AI 会交付**两样东西**：可编辑的 PPTD 项目目录（manifest + pages
 
 ## CLI 速查
 
+5 个命令，无别名（契约 3.0）。人类文本走 stderr；`--json` 时 stdout 只有一行。
+
 | 命令 | 作用 |
 |---|---|
-| `open-pptd serve --project <目录> --detach --json` | 本地预览服务（实时刷新；`--stop` 停止） |
-| `open-pptd export <deck.pptd>` | 导出 PPTX（自动体检并补齐字体；`--json` 结构化输出） |
-| `open-pptd render <deck.pptd>` | 逐页渲染 PNG |
-| `open-pptd check <deck.pptd>` | 结构 / 令牌 / 几何 / 对比度校验 |
-| `open-pptd doctor` / `paths` / `assets sync` | 环境自检 / 路径 / 字体图标资源管理 |
+| `open-pptd open [目录] --detach --json` | 编辑器 / Home（自动识别 deck；`--stop` 停止，`--blank` 空白） |
+| `open-pptd build <deck.pptd> --format pptx\|png\|bundle` | 产出 PPTX / 逐页 PNG / 项目包（先跑完整体检；`--strict`、`--fetch`） |
+| `open-pptd check <deck.pptd> [--json] [--strict]` | 只读体检：schema / 令牌 / 资源 / 几何 / 对比度 |
+| `open-pptd assets list\|sync\|themes\|fonts` | 字体、图标、主题库（内置 + `~/.open-pptd`） |
+| `open-pptd doctor [--json]` | 环境、全部路径、库计数与 Chrome/Edge（PNG）能力 |
+
+### 从 2.x 迁移
+
+旧命令已删除（执行会退出 1 并提示新命令）：
+
+| 2.x | 3.0 |
+|---|---|
+| `serve` | `open` |
+| `export` | `build --format pptx` |
+| `export-project` | `build --format bundle`（`--raw` 原样文件） |
+| `render` | `build --format png` |
+| `ensure` | `check`（只读）/ `build --fetch`（显式下载字体） |
+| `paths` | `doctor` |
+| `gallery scan` | `open`（Home）/ `node scripts/gen-gallery-manifest.mjs`（发布） |
+| `fonts …` / `icons …` | `assets fonts …` / `assets sync` |
 
 ## License
 

@@ -16,8 +16,9 @@ on:
       - "editor/**"      # 编辑器前端
       - "examples/**"    # 画廊示例
       - "assets/**"      # 站点资源（图标 / 字体 registry）
-      - "packages/**"    # 引擎七包 model/writer/renderer/server/cli/measure/layout（测试守门对象）
+      - "packages/**"    # 引擎包 model/writer/renderer/server/cli/runtime/export/measure/layout（测试守门对象）
       - "bin/**"
+      - "scripts/**"     # 发布辅助脚本（gen-gallery-manifest 等）
       - "tests/**"
       - "package.json"
       - ".github/workflows/pages.yml"
@@ -52,7 +53,7 @@ jobs:
 
       # ③ 重建静态画廊索引（examples/manifest.json），保证与 examples/ 一致
       - name: 重建画廊索引
-        run: node bin/open-pptd.js gallery scan
+        run: node scripts/gen-gallery-manifest.mjs
 
       # ④ 部署产物瘦身：站点只需 index.html + editor/ + assets/ + examples/
       - name: 清理产物

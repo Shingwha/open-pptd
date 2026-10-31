@@ -32,14 +32,15 @@ irm https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.ps1 | iex
 curl -fsSL https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.sh | sh
 ```
 
-This installs into `~/.open-pptd` and adds a user-level PATH entry (no admin needed); `open-pptd` is then available everywhere. Start a live preview server:
+This installs into `~/.open-pptd` and adds a user-level PATH entry (no admin needed); `open-pptd` is then available everywhere. Open a deck and produce a file:
 
 ```sh
-open-pptd serve --project <project-dir> --detach --json   # open in browser; edits refresh live
-open-pptd doctor                                          # environment self-check (CLI / Node / assets / PATH)
+open-pptd open <project-dir> --detach --json   # editor in the browser; edits refresh live
+open-pptd build <project-dir>/deck.pptd --format pptx
+open-pptd doctor                               # environment self-check (CLI / Node / assets / PATH / PNG)
 ```
 
-Or skip installing: clone this repo and run `node bin/open-pptd.js serve …` — same result.
+Or skip installing: clone this repo and run `node bin/open-pptd.js open …` — same result.
 
 ## Use it with AI
 
@@ -55,7 +56,7 @@ Then just talk — no configuration needed:
 - "Turn this outline into a presentation" + paste the outline
 - "Design a Bailu solar-term poster"
 
-The AI delivers **two things**: an editable PPTD project directory (manifest + pages + media), and a ready-to-send `.pptx` (fonts embedded, opens in PowerPoint without repair). To watch it being built live, have the AI run the `serve` command above — every page appears as it's written.
+The AI delivers **two things**: an editable PPTD project directory (manifest + pages + media), and a ready-to-send `.pptx` (fonts embedded, opens in PowerPoint without repair). To watch it being built live, have the AI run the `open` command above — every page appears as it's written.
 
 ## What it does
 
@@ -63,7 +64,7 @@ The AI delivers **two things**: an editable PPTD project directory (manifest + p
 |---|---|
 | **Charts** | 13 types with an Excel-style data grid — edit the numbers, the chart follows |
 | **Shapes / icons** | 187 preset shapes + custom paths; ~2000 Font Awesome icons (three styles) |
-| **Typography** | LaTeX formula mixing; font embedding (subset / full, with pre-export health checks that auto-fetch what's missing) |
+| **Typography** | LaTeX formula mixing; font embedding (subset / full, with a pre-export health check; `build --fetch` completes missing fonts explicitly) |
 | **Web editor** | Live preview (refreshes on every file change), multi-select / marquee / context menu / group-align-distribute, 13-type chart editor, dark mode |
 | **Export** | Standard `.pptx` (fade transitions) and per-page PNG |
 | **Round-trip** | Download online work as a project bundle, or "Open Folder" to edit local projects directly |
@@ -82,7 +83,7 @@ your words ──AI (open-pptd-skill methodology)──▶ PPTD project (human-r
 
 - **This repo**: the engine (packages/*) + web editor + CLI. Zero npm dependencies, zero build steps, fully self-developed
 - **[open-pptd-skill](https://github.com/Shingwha/open-pptd-skill)**: the methodology the AI reads (pure markdown) — how to write a good PPTD
-- The font library (~155 MB) is not bundled: exports auto-fetch only what a deck actually uses, or pre-fetch everything with `open-pptd assets sync fonts`
+- The font library (~155 MB) is not bundled: `build` reports what a deck needs and `build --fetch` (or `open-pptd assets sync fonts`) downloads only that
 
 ## Example gallery
 
@@ -101,13 +102,30 @@ More examples (data annuals, pitch decks, architecture reviews, festival posters
 
 ## CLI quick reference
 
+Five commands, no aliases (contract 3.0). Human text goes to stderr; `--json` prints one line on stdout.
+
 | Command | What it does |
 |---|---|
-| `open-pptd serve --project <dir> --detach --json` | Live preview server (`--stop` to end) |
-| `open-pptd export <deck.pptd>` | Export PPTX (auto health-checks & fetches fonts; `--json` for structured output) |
-| `open-pptd render <deck.pptd>` | Render per-page PNGs |
-| `open-pptd check <deck.pptd>` | Validate structure / tokens / geometry / contrast |
-| `open-pptd doctor` / `paths` / `assets sync` | Environment self-check / paths / font & icon asset management |
+| `open-pptd open [dir] --detach --json` | Editor / Home (auto-detects the deck; `--stop` ends it, `--blank` for an empty deck) |
+| `open-pptd build <deck.pptd> --format pptx\|png\|bundle` | Produce a PPTX / per-page PNGs / project bundle (full check first; `--strict`, `--fetch`) |
+| `open-pptd check <deck.pptd> [--json] [--strict]` | Read-only validation: schema / tokens / resources / geometry / contrast |
+| `open-pptd assets list\|sync\|themes\|fonts` | Font, icon and theme libraries (built-in + `~/.open-pptd`) |
+| `open-pptd doctor [--json]` | Environment, every path, library counts and Chrome/Edge (PNG) capability |
+
+### Migrating from 2.x
+
+Old commands are removed (they exit 1 and print the target command):
+
+| 2.x | 3.0 |
+|---|---|
+| `serve` | `open` |
+| `export` | `build --format pptx` |
+| `export-project` | `build --format bundle` (`--raw` for verbatim files) |
+| `render` | `build --format png` |
+| `ensure` | `check` (read-only) / `build --fetch` (explicit font download) |
+| `paths` | `doctor` |
+| `gallery scan` | `open` (Home) / `node scripts/gen-gallery-manifest.mjs` (release) |
+| `fonts …` / `icons …` | `assets fonts …` / `assets sync` |
 
 ## License
 
