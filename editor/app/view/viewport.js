@@ -14,7 +14,7 @@ export function deckSize(state) {
   return deckSizeOf(state.deck);
 }
 
-export function createViewport({ stage, canvas, wrap, zoomLabel, controller, repaint, getSize }) {
+export function createViewport({ stage, canvas, wrap, zoomLabel, controller, repaint, getSize, fitPadding = 64, fitMinW = 320, fitMinH = 200 }) {
   let zoom = 1;
   let panX = 0;
   let panY = 0;
@@ -62,8 +62,10 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
 
   function fitScale() {
     const [pw, ph] = getSize();
-    const w = Math.max(320, stage.clientWidth - 64);
-    const h = Math.max(200, stage.clientHeight - 64);
+    // Editor/viewer: leave a 64px breathing margin (with a small-stage floor). Embedded
+    // previews (gallery covers) fit the host box exactly: padding 0 and no floor.
+    const w = Math.max(fitMinW, stage.clientWidth - fitPadding);
+    const h = Math.max(fitMinH, stage.clientHeight - fitPadding);
     return Math.min(w / pw, h / ph, 1.2);
   }
 
@@ -80,7 +82,7 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
     panY = Math.min(my, Math.max(-my, panY));
     canvas.style.transform = `scale(${s})`;
     wrap.style.transform = `translate(${panX}px, ${panY}px)`;
-    controller.setScale(s);
+    controller?.setScale(s);
   }
 
   // Recompute the scale every frame while the panel width animates:

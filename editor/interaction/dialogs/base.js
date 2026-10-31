@@ -1,92 +1,10 @@
 // ============================================================================
-// interaction/dialogs/base.js — dialog infrastructure (showDialog + cell/form helpers)
+// interaction/dialogs/base.js — dialog building blocks (cell inputs / buttons)
 // ----------------------------------------------------------------------------
-// Shared by the chart and table editors; showDialog is the single modal entry point.
+// Shared by the chart and table editors. The modal itself is no longer here: 3.0
+// dialogs are per instance (editor/dialogs.js createDialogs), and the content
+// editors receive that service through their open options.
 // ============================================================================
-
-/**
- * Current editor theme, single implementation for both dialogs: the live editor
- * state's theme when the editor facade is present, otherwise the caller's fallback.
- * The fallback is parameterized because the two callers differ: the chart editor
- * is opened with a theme captured at assembly time (a useful fallback when the
- * dialog is driven by external assembly / tests without window.__pptdEditor),
- * while the table editor has no such captured theme (null = no theme, the
- * renderer then applies its own defaults).
- */
-export function resolveEditorTheme(fallback = null) {
-  return window.__pptdEditor?.state?.theme || fallback;
-}
-
-// Registry of open modals (closed together on destroy, avoiding leftover DOM)
-const openOverlays = new Set();
-
-/** Close and remove every open modal (used by createEditor's destroy). */
-export function closeAllDialogs() {
-  for (const overlay of [...openOverlays]) overlay.remove();
-  openOverlays.clear();
-}
-
-/** Generic modal: title + body + footer buttons (a single done button by default; overlay/✕ close).
- * actions: { doneText, onDone, buttons, panelClass, closeBtn, overlayClose, onClose }
- *   buttons      custom footer button group (replacing the default done button; close via the returned close())
- *   panelClass   extra panel class (e.g. restore-card fixed width)
- *   closeBtn     false = hide the header ✕ (shown by default)
- *   overlayClose false = clicking the overlay does not close (closes by default)
- *   onClose      called once whenever the dialog closes (done / ✕ / overlay), after the DOM is removed */
-export function showDialog(title, buildBody, actions) {
-  const overlay = document.createElement("div");
-  overlay.className = "dialog-overlay";
-  const panel = document.createElement("div");
-  panel.className = "dialog" + (actions?.panelClass ? ` ${actions.panelClass}` : "");
-  const head = document.createElement("div");
-  head.className = "dialog-head";
-  head.innerHTML = `<strong>${title}</strong>`;
-  const close = () => {
-    if (!overlay.isConnected) return;
-    overlay.remove();
-    openOverlays.delete(overlay);
-    try {
-      actions?.onClose?.();
-    } catch (err) {
-      console.warn("[dialog] onClose 回调异常:", err?.message || err);
-    }
-  };
-  if (actions?.closeBtn !== false) {
-    const closeBtn = document.createElement("button");
-    closeBtn.className = "btn btn-sm";
-    closeBtn.textContent = "✕";
-    closeBtn.onclick = close;
-    head.appendChild(closeBtn);
-  }
-  const body = document.createElement("div");
-  body.className = "dialog-body";
-  body.appendChild(buildBody);
-  const foot = document.createElement("div");
-  foot.className = "dialog-foot";
-  let doneBtn = null;
-  if (actions?.buttons) {
-    foot.append(...actions.buttons);
-  } else {
-    doneBtn = document.createElement("button");
-    doneBtn.className = "btn btn-primary btn-sm";
-    doneBtn.textContent = actions?.doneText || "完成";
-    doneBtn.onclick = () => {
-      actions?.onDone && actions.onDone();
-      close();
-    };
-    foot.appendChild(doneBtn);
-  }
-  panel.append(head, body, foot);
-  overlay.appendChild(panel);
-  document.body.appendChild(overlay);
-  openOverlays.add(overlay);
-  if (actions?.overlayClose !== false) {
-    overlay.addEventListener("pointerdown", (e) => {
-      if (e.target === overlay) close();
-    });
-  }
-  return { overlay, body, close, doneBtn };
-}
 
 // ----------------------------------------------------------------------------
 // Cell interaction (focus-select + Enter moves down one row)

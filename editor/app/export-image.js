@@ -36,7 +36,6 @@
 // rendered by the local machine and need no embedding.
 // ============================================================================
 
-import { showToast } from "./toast.js";
 import { bytesToBase64, base64ToBytes, deckSize, serializeDeck } from "../../packages/model/index.js";
 import { disposeChartInstances, renderPage } from "../../packages/renderer/index.js";
 import { ZipWriter, dataUrlOf, downloadBlob, safeFileName } from "../../packages/writer/index.js";
@@ -58,7 +57,7 @@ function forceFallback() {
   return false;
 }
 
-export function createImageExporter({ state }) {
+export function createImageExporter({ state, toast }) {
   /** Embedded-font @font-face (fallback path; result cached — the font set is stable within a project). */
   let fontFaceCache = null;
   function fontFaceCss() {
@@ -307,7 +306,7 @@ export function createImageExporter({ state }) {
       .filter((i) => Number.isInteger(i) && i >= 0 && i < total);
     if (!indices.length) return [];
     const base = safeFileName(state.deck.title || "deck");
-    showToast(indices.length > 1 ? `正在导出 ${indices.length} 页图片…` : "正在导出图片…", "info", 8000);
+    toast.show(indices.length > 1 ? `正在导出 ${indices.length} 页图片…` : "正在导出图片…", "info", 8000);
     try {
       // capture first: probe failure / no browser / call failure → fall back (forceFallback is for walkthroughs)
       let results = !forceFallback() && (await probeCapture()) ? await capturePages(indices, scale) : null;
@@ -322,22 +321,22 @@ export function createImageExporter({ state }) {
 
       if (pngs.length === 1 || opts.mode === "files") {
         for (const p of pngs) downloadBlob(p.bytes, p.name, "image/png");
-        showToast(`已导出 ${pngs.length} 张图片${pngs.length > 1 ? "（逐张下载）" : `（${(pngs[0].bytes.length / 1024).toFixed(1)} KB）`}`, "success");
+        toast.show(`已导出 ${pngs.length} 张图片${pngs.length > 1 ? "（逐张下载）" : `（${(pngs[0].bytes.length / 1024).toFixed(1)} KB）`}`, "success");
       } else {
         const zip = new ZipWriter();
         for (const p of pngs) zip.add(p.name, p.bytes);
         const bytes = zip.build();
         downloadBlob(bytes, `${base}-images.zip`, "application/zip");
-        showToast(`已导出 ${pngs.length} 页图片（${(bytes.length / 1024 / 1024).toFixed(1)} MB）`, "success");
+        toast.show(`已导出 ${pngs.length} 页图片（${(bytes.length / 1024 / 1024).toFixed(1)} MB）`, "success");
       }
       if (dropped.length) {
         console.warn(`[export] ${dropped.length} 个元素未能导出：`, dropped);
-        showToast(`⚠ ${dropped.length} 个元素未能导出（清单见控制台）`, "danger", 6000);
+        toast.show(`⚠ ${dropped.length} 个元素未能导出（清单见控制台）`, "danger", 6000);
       }
       state.lastImageExport = results; // walkthrough/tests read droppedElements
       return results;
     } catch (err) {
-      showToast(`导出图片失败: ${err.message}`, "danger");
+      toast.show(`导出图片失败: ${err.message}`, "danger");
       console.error(err);
       return [];
     }

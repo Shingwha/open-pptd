@@ -17,7 +17,6 @@
 //     title: <slot-key>                                                              # component slot reference
 // ============================================================================
 
-import { showToast } from "../toast.js";
 import {
   fetchFontBytes,
   findFont,
@@ -48,7 +47,7 @@ export async function registerRegistryFontFace(keyOrFamily) {
   return { hit, bytes };
 }
 
-export function createFontManager(state) {
+export function createFontManager(state, ui) {
   /** FontFace registration: family must match the renderer CSS font-family exactly (parseFontInfo reads the name table). */
   async function registerFace(family, bytes) {
     const face = new FontFace(family, bytes);
@@ -177,7 +176,7 @@ export function createFontManager(state) {
           entry.bytes = bytes;
           entry.size = bytes.length;
         } catch {
-          showToast(`网络字体加载失败: ${family}`, "danger");
+          ui.toast.show(`网络字体加载失败: ${family}`, "danger");
         }
       } else if (registry) {
         // Registry reference ({family: <registry-name>}): auto-load the preview from the built-in library (remote fallback when the local file is missing)
@@ -191,7 +190,7 @@ export function createFontManager(state) {
           entry.source = "registry";
           entry.size = bytes.length;
         } catch {
-          showToast(`内置字体加载失败: ${family}`, "danger");
+          ui.toast.show(`内置字体加载失败: ${family}`, "danger");
         }
       }
     }

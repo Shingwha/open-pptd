@@ -1,36 +1,36 @@
 // ============================================================================
-// main.js — standalone entry (thin composition root)
+// main.js — single application shell (Home ⇄ Editor) + host boot seam
 // ----------------------------------------------------------------------------
-// Only decides "where to open from, what to mount on, which test hooks to expose";
-// editor assembly all lives in editor.js:
-//   - ?shot=1        → headless screenshot mode (app/shot.js, skips the editor UI)
-//   - ?deck=<project> → createEditor + httpSource({ deckUrl })
-//   - session-restore marker present → reopen the last local project (open directly
-//     while the grant holds, otherwise show the restore card)
-//   - otherwise      → blank editor
+// /editor/ is the ONE app shell (3.0 single shell, decisions.md D1):
+//   ?shot=1            headless screenshot driver (app/shot.js; no shell)
+//   ?deck=<project>    Editor view for that project
+//   ?blank=1           Editor view, blank deck (shell navigation: new blank)
+//   otherwise          Home view (gallery grid)
+// Routing is in-page: history.pushState + popstate, so Home ↔ Editor keeps the
+// same page and the same file menu / theme mode. The root index.html redirects
+// here (query/hash preserved), so the old second gallery page is gone.
 //
-// Host boot seam (contract 1 embedding): a same-origin host may inject the boot
+// Host boot seam (unchanged contract): a same-origin host may inject boot
 // parameters through the query string (highest priority) or window.__PPTD_BOOT__
-// (an inline script before this module runs); with none of them set, the boot path
-// is byte-for-byte the standalone behavior:
+// (an inline script before this module runs):
 //   ?base=   / __PPTD_BOOT__.base     site prefix for httpSource (default "")
 //   ?chrome= / __PPTD_BOOT__.chrome   "full" | "embedded" (other values ignored + warning)
-//   __PPTD_BOOT__.theme               { tokens?, mode? } → createEditor options.theme
+//   __PPTD_BOOT__.theme               { tokens?, mode? } → editor theme injection
 //
-// Public contract (zero behavior change; consumers: tests/e2e/incremental-load.mjs,
-// packages/renderer/headless/shoot.js):
-//   window.__pptdEditor = ed.api   editor operation facade
-//   window.__pptdIo     = ed.io    project IO (e2e calls saveProject() to verify write-back)
-//   window.__pptdShot              shot-mode only (set by app/shot.js)
-//   window.__pptdTheme  = { apply(opts), reset() }   host theme injection (contract 3)
+// Public contract (zero behavior change; consumers: tests/e2e/*, headless shoot):
+//   window.__pptdEditor = editor.editor   editor operation facade (editor view only)
+//   window.__pptdIo     = editor.io      project IO (e2e calls saveProject())
+//   window.__pptdShot                    shot mode only (set by app/shot.js)
+//   window.__pptdTheme  = { apply(opts), reset() }   host theme injection
 // ============================================================================
 
 import { createEditor } from "./editor.js";
-import { dom } from "./dom.js";
-import { applyThemeTokens } from "./theme.js";
+import { createHomeView } from "./gallery.js";
+import { applyThemeTokens, bindThemeMode } from "./theme.js";
 import { httpSource } from "./app/project/source.js";
-import { showToast } from "./app/toast.js";
-import { ensurePermission } from "./app/project/handle-io.js";
+import { createToast } from "./app/toast.js";
+import { createDialogs } from "./dialogs.js";
+import { pickProjectFolder, hasDeck } from "./app/project/handle-io.js";
 import {
   getRecent,
   getPendingProjectId,
@@ -38,17 +38,26 @@ import {
   addRecent,
   setPendingProject,
 } from "./app/project/handle-store.js";
-import { showDialog } from "./interaction/dialogs/base.js";
 import { SHOT_ERROR_TITLE } from "../packages/model/index.js";
 
 // Repo root URL (this file lives in <root>/editor/, so ../ is the site root)
 const ROOT = new URL("../", import.meta.url).href;
 
+// Shell-level services (the mounted views own their own instance services)
+const shellToast = createToast(document.body);
+const shellDialogs = createDialogs();
+// Tri-state theme of the shell: same storage key + root as the editor's binding, so
+// Home's appearance menu and the Design panel are two views of one choice.
+const themeMode = bindThemeMode();
+
+// Shell mount point (editor/index.html provides only this container)
+const root = document.getElementById("pptd-root") || document.body;
+
 // ----------------------------------------------------------------------------
 // Host boot seam: query string > window.__PPTD_BOOT__ (both optional; see the
 // file header for the parameter table)
 // ----------------------------------------------------------------------------
-/** chrome presets a host may select through the boot seam (?shot=1 keeps its own path). */
+/** chrome presets a host may select through the boot seam. */
 const BOOT_CHROME_VALUES = ["full", "embedded"];
 
 /**
@@ -66,112 +75,29 @@ function readBootParams(params) {
   const base = typeof baseRaw === "string" ? baseRaw : null;
 
   // chrome: only the two interactive presets are accepted; anything else is ignored
-  // instead of being forwarded to createEditor (which would treat it as an object spec).
+  // instead of being forwarded to createEditor (which would throw on it).
   const chromeRaw = params.get("chrome") ?? boot.chrome;
   let chrome = null;
   if (BOOT_CHROME_VALUES.includes(chromeRaw)) chrome = chromeRaw;
   else if (chromeRaw) console.warn(`[main] 忽略无效的 chrome 启动参数: ${chromeRaw}`);
 
-  // theme: host token/mode override (contract 3); there is no query-string form.
+  // theme: host token/mode override; there is no query-string form.
   const theme = boot.theme && typeof boot.theme === "object" ? boot.theme : null;
 
   return { base, chrome, theme };
 }
 
-/**
- * Local project session restore: the last opened local project (gallery jump /
- * editor refresh) — reopen directly while the grant still holds, otherwise show
- * the restore card and let the "Open" click re-grant inside a user gesture (a
- * browser requirement).
- * @param {object} io editor io facade
- * @param {string|null} pendingId the pending entry id captured before boot (blank init clears the marker)
- */
-async function restorePendingProject(io, pendingId) {
-  if (!pendingId) return false;
-  const entry = await getRecent(pendingId);
-  if (!entry?.handle) {
-    clearPendingProject();
-    return false;
-  }
-  let granted = false;
-  try {
-    granted = (await entry.handle.queryPermission({ mode: "readwrite" })) === "granted";
-  } catch {
-    /* handle invalid → route through the card so the user confirms */
-  }
-  if (granted) {
-    try {
-      await io.loadDeckFromHandle(entry.handle);
-      return true;
-    } catch (err) {
-      showToast(`恢复项目失败: ${err.message}`, "danger");
-    }
-  }
-  showRestoreCard(io, entry);
-  return true;
-}
-
-/** Restore card: project name + [new blank / open project] (open requests the grant inside the click gesture).
- * Goes through the showDialog infrastructure; no ✕ / overlay close — the user must pick explicitly (an accidental close would lose the session entry). */
-function showRestoreCard(io, entry) {
-  const hint = document.createElement("div");
-  hint.className = "prop-hint";
-  hint.textContent = `上次打开的「${entry.name}」。浏览器要求重新授权后才能访问该文件夹。`;
-
-  const blankBtn = document.createElement("button");
-  blankBtn.type = "button";
-  blankBtn.className = "btn btn-sm";
-  blankBtn.textContent = "新建空白演示";
-  const openBtn = document.createElement("button");
-  openBtn.type = "button";
-  openBtn.className = "btn btn-primary btn-sm";
-  openBtn.textContent = "打开项目";
-
-  const { close } = showDialog("恢复本地项目", hint, {
-    panelClass: "restore-card",
-    closeBtn: false,
-    overlayClose: false,
-    buttons: [blankBtn, openBtn],
-  });
-
-  blankBtn.onclick = () => {
-    clearPendingProject();
-    close();
-    showToast("已新建空白演示", "info");
-  };
-  openBtn.onclick = async () => {
-    openBtn.disabled = true;
-    try {
-      if (!(await ensurePermission(entry.handle))) {
-        openBtn.disabled = false;
-        showToast("未获得文件夹访问授权", "danger");
-        return;
-      }
-      await io.loadDeckFromHandle(entry.handle);
-      const fresh = await addRecent(entry.handle);
-      if (fresh) setPendingProject(fresh.id);
-      close();
-    } catch (err) {
-      openBtn.disabled = false;
-      showToast(`打开失败: ${err.message}`, "danger");
-    }
-  };
-}
+let bootParams = { base: null, chrome: null, theme: null };
 
 // ----------------------------------------------------------------------------
-// Host theme hook (contract 3, postMessage protocol): the embedding host sends
+// Host theme hook (postMessage protocol): the embedding host sends
 // { type: "pptd:theme", tokens, mode } from window.parent at the same origin.
 // window.__pptdTheme exposes the same implementation for direct same-origin calls
-// and tests. Every application undoes the previous one first (last host wins);
-// boot-injected theme stays owned by createEditor and is untouched by reset().
+// and tests. Every application undoes the previous one first (last host wins).
 // ----------------------------------------------------------------------------
 let restoreHostTheme = null;
 
-/**
- * Apply a host theme payload on the document root.
- * @param {{ tokens?: Record<string,string>, mode?: "light"|"dark" }} [opts]
- * @returns {() => void} restore function of this application (idempotent)
- */
+/** Apply a host theme payload on the document root. */
 function applyHostTheme(opts) {
   restoreHostTheme?.();
   restoreHostTheme = applyThemeTokens(document.documentElement, opts || {});
@@ -184,27 +110,179 @@ function resetHostTheme() {
   restoreHostTheme = null;
 }
 
-window.__pptdTheme = { apply: applyHostTheme, reset: resetHostTheme };
-window.addEventListener("message", (e) => {
-  if (e.source !== window.parent) return; // only the embedding parent may theme us
-  if (e.origin !== location.origin) return; // same-origin embedding only
-  const data = e.data;
-  if (!data || data.type !== "pptd:theme") return;
-  applyHostTheme({ tokens: data.tokens, mode: data.mode });
-});
+function bindHostThemeChannel() {
+  window.__pptdTheme = { apply: applyHostTheme, reset: resetHostTheme };
+  window.addEventListener("message", (e) => {
+    if (e.source !== window.parent) return; // only the embedding parent may theme us
+    if (e.origin !== location.origin) return; // same-origin embedding only
+    const data = e.data;
+    if (!data || data.type !== "pptd:theme") return;
+    applyHostTheme({ tokens: data.tokens, mode: data.mode });
+  });
+}
+
+/** One ready message once a view is mounted (host boot handshake). */
+function notifyHostReady() {
+  if (window.parent !== window) window.parent.postMessage({ type: "pptd:ready" }, location.origin);
+}
 
 // ----------------------------------------------------------------------------
-// Boot: ?shot=1 screenshot; ?deck= loads the given project; with a session-restore
-// marker reopen it; otherwise blank
+// Shell routing: Home (gallery) ⇄ Editor, in-page via History API
+// ----------------------------------------------------------------------------
+let current = null; // { kind: "home"|"editor", destroy() }
+
+function deckUrlOf(params) {
+  const deckParam = params.get("deck");
+  if (!deckParam) return null;
+  return /^https?:/.test(deckParam) ? deckParam : new URL(deckParam, ROOT).href;
+}
+
+function navigate(next, { replace = false } = {}) {
+  const params = new URLSearchParams(location.search);
+  params.delete("deck");
+  params.delete("blank");
+  params.delete("shot");
+  for (const [key, value] of Object.entries(next)) {
+    if (value != null) params.set(key, value);
+  }
+  const search = params.toString();
+  const url = location.pathname + (search ? `?${search}` : "") + location.hash;
+  if (replace) history.replaceState(null, "", url);
+  else history.pushState(null, "", url);
+  route();
+}
+
+/** Leave the current view (dirty-confirmed when it is an editor with unsaved edits). */
+async function leaveCurrent() {
+  if (current?.kind === "editor" && current.editor?.state?.dirty) {
+    const ok = await shellDialogs.confirm("编辑器有未保存的修改，离开将放弃这些修改。确定继续？");
+    if (!ok) {
+      // The navigation already rewrote the URL: put it back to the view still on screen.
+      if (current.url) history.replaceState(null, "", current.url);
+      return false;
+    }
+  }
+  current?.destroy?.();
+  current = null;
+  return true;
+}
+
+async function route() {
+  const params = new URLSearchParams(location.search);
+  if (params.get("shot") === "1") return; // handled before the shell boots
+  const deckUrl = deckUrlOf(params);
+  if (deckUrl || params.get("blank") === "1") return mountEditor(deckUrl);
+  return mountHome();
+}
+
+// ----------------------------------------------------------------------------
+// Editor view
+// ----------------------------------------------------------------------------
+async function mountEditor(deckUrl) {
+  if (!(await leaveCurrent())) return; // dirty cancel: keep the current editor
+  const ed = createEditor(root, {
+    // no injected base → the standalone httpSource({ deckUrl }) call shape (base defaults to "")
+    source: httpSource(bootParams.base ? { base: bootParams.base, deckUrl } : { deckUrl }),
+    deckUrl: deckUrl || null,
+    chrome: bootParams.chrome || "full",
+    ...(bootParams.theme ? { theme: bootParams.theme } : {}),
+  });
+  current = { kind: "editor", editor: ed, url: location.pathname + location.search, destroy: () => ed.destroy() };
+
+  // Public test hooks (depended on by e2e / ui-shots / headless drivers)
+  window.__pptdEditor = ed.editor;
+  window.__pptdIo = ed.io;
+  notifyHostReady();
+
+  if (deckUrl) {
+    clearPendingProject(); // URL project wins; clear the local-project session marker
+    return;
+  }
+  // Local project opened from Home (picker / recent): reopen it while the grant holds.
+  // No session-restore card in 3.0: an expired grant asks the user to reopen from File.
+  if (await consumePendingProject(ed)) return;
+  shellToast.show("已新建空白演示", "info");
+}
+
+/** Open the pending local project (set by Home's open/recent flow). */
+async function consumePendingProject(ed) {
+  const id = getPendingProjectId();
+  if (!id) return false;
+  const entry = await getRecent(id);
+  clearPendingProject();
+  if (!entry?.handle) return false;
+  let granted = false;
+  try {
+    granted = (await entry.handle.queryPermission({ mode: "readwrite" })) === "granted";
+  } catch {
+    /* invalid handle → route the user through File → open */
+  }
+  if (!granted) {
+    shellToast.show("本地项目需要重新授权，请用「文件 → 打开本地项目」重新打开", "danger", 6000);
+    return false;
+  }
+  try {
+    await ed.io.loadDeckFromHandle(entry.handle);
+    return true;
+  } catch (err) {
+    shellToast.show(`恢复项目失败: ${err.message}`, "danger");
+    return false;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Home view
+// ----------------------------------------------------------------------------
+async function mountHome() {
+  if (!(await leaveCurrent())) return;
+  const view = createHomeView({
+    root,
+    themeMode,
+    toast: shellToast,
+    onOpenDeck: (deck) => navigate({ deck }),
+    onNewBlank: () => navigate({ blank: "1" }),
+    onOpenLocal: openLocalProject,
+    onOpenRecent: openRecent,
+  });
+  current = { kind: "home", url: location.pathname + location.search, destroy: () => view.destroy() };
+  // Editor hooks belong to the editor view only
+  delete window.__pptdEditor;
+  delete window.__pptdIo;
+  notifyHostReady();
+}
+
+/** "Open local project": native picker → validate deck.pptd → record recent → open in the editor. */
+async function openLocalProject() {
+  try {
+    const handle = await pickProjectFolder();
+    if (!handle) return; // user cancelled
+    if (!(await hasDeck(handle))) {
+      shellToast.show("所选文件夹里没有 deck.pptd，请选择 PPTD 项目文件夹", "danger", 5000);
+      return;
+    }
+    const entry = await addRecent(handle);
+    if (entry) setPendingProject(entry.id); // the editor opens it while the grant holds
+    navigate({ blank: "1" });
+  } catch (err) {
+    shellToast.show(`打开失败: ${err.message}`, "danger");
+  }
+}
+
+/** Reopen a recent local project (the marker is consumed by the editor mount). */
+function openRecent(entry) {
+  setPendingProject(entry.id);
+  navigate({ blank: "1" });
+}
+
+// ----------------------------------------------------------------------------
+// Boot
 // ----------------------------------------------------------------------------
 async function boot() {
   const params = new URLSearchParams(location.search);
-  const deckParam = params.get("deck");
-  const deckUrl = deckParam ? (/^https?:/.test(deckParam) ? deckParam : new URL(deckParam, ROOT).href) : null;
   if (params.get("shot") === "1") {
-    // Headless screenshot mode (used by `open-pptd render`): skip the editor UI, render the page only
+    // Headless screenshot mode (used by `open-pptd render`): skip the shell, render pages only
     import("./app/shot.js")
-      .then((m) => m.initShot(deckUrl))
+      .then((m) => m.initShot(deckUrlOf(params)))
       .catch((err) => {
         console.error("[shot] 初始化失败:", err);
         document.title = SHOT_ERROR_TITLE;
@@ -212,33 +290,22 @@ async function boot() {
     return;
   }
 
-  // Blank init clears the session marker, so capture the pending id first
-  const pendingId = deckUrl ? null : getPendingProjectId();
-  const bootParams = readBootParams(params);
-  const root = dom.pptdRoot || document.body;
-  const options = {
-    // no injected base → the standalone httpSource({ deckUrl }) call shape (base defaults to "")
-    source: httpSource(bootParams.base ? { base: bootParams.base, deckUrl } : { deckUrl }),
-    deckUrl: deckUrl || null, // load it when ?deck= is present; otherwise createEditor starts blank silently
-    chrome: bootParams.chrome || "full",
-  };
-  if (bootParams.theme) options.theme = bootParams.theme;
-  const ed = createEditor(root, options);
+  bootParams = readBootParams(params);
+  bindHostThemeChannel();
 
-  // Public test hooks (depended on by ui-shots.mjs / incremental-load.mjs / shoot.js)
-  window.__pptdEditor = ed.api;
-  window.__pptdIo = ed.io;
+  // Home theme = the shell's theme; the host theme injection applies to the document root.
+  if (bootParams.theme) applyThemeTokens(document.documentElement, bootParams.theme);
 
-  // Embedded host ping: one ready message once the editor is mounted (before the
-  // async initial load, so the host can inject the theme without a palette flash).
-  if (window.parent !== window) window.parent.postMessage({ type: "pptd:ready" }, location.origin);
+  // Editor → Home: the brand link is the single back entry of the shell
+  root.addEventListener("click", (e) => {
+    const brand = e.target.closest?.(".brand-home");
+    if (!brand || current?.kind !== "editor") return;
+    e.preventDefault();
+    navigate({}, { replace: false });
+  });
+  window.addEventListener("popstate", () => route());
 
-  if (deckUrl) {
-    clearPendingProject(); // URL project wins; clear the local-project session marker
-    return;
-  }
-  if (await restorePendingProject(ed.io, pendingId)) return;
-  showToast("已新建空白演示", "info");
+  await route();
 }
 
 boot();

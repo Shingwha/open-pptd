@@ -44,16 +44,29 @@ export function relRect(rect, base) {
 // box/alignment guides read frames from it instead of measuring the DOM
 // (offsetHeight) or recomputing el.bounds. Group shells are not in the LayoutTree
 // (layout skips them), so callers fall back when they are missing.
+//
+// 3.0: the tree is per instance (createCoords), not a module-level slot — two
+// previews/editors on one page each publish their own page geometry.
 // ----------------------------------------------------------------------------
-let _layoutPage = null;
-
-/** Write the current page's LayoutTree.pages[i] (called after every canvas repaint). */
-export function setLayoutPage(page) {
-  _layoutPage = page || null;
-}
-
-/** Look up a LayoutElement by elementId (null when there is no current tree or no match). */
-export function layoutElementOf(elementId) {
-  if (!_layoutPage || !elementId) return null;
-  return _layoutPage.elements?.find((le) => le.elementId === elementId) || null;
+/**
+ * Build the coordinate helpers of one instance.
+ * @param {{overlayGeom: Function, relRect: Function}} [base] pure conversions (default: the module functions)
+ */
+export function createCoords(base = { overlayGeom, relRect }) {
+  let layoutPage = null;
+  return {
+    overlayGeom: base.overlayGeom,
+    relRect: base.relRect,
+    /** Write the current page's LayoutTree.pages[i] (called after every canvas repaint). */
+    setLayoutPage(page) {
+      layoutPage = page || null;
+    },
+    /** Look up a LayoutElement by elementId (null when there is no current tree or no match). */
+    layoutElementOf(elementId) {
+      if (!layoutPage || !elementId) return null;
+      return layoutPage.elements?.find((le) => le.elementId === elementId) || null;
+    },
+    /** Current LayoutTree page node (tests/debug; null before the first paint). */
+    page: () => layoutPage,
+  };
 }

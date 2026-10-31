@@ -12,9 +12,11 @@
 // editor (editor-ux §7): no clipboard, duplicate, grouping or layer ordering.
 // ============================================================================
 
-export function bindKeyboard({ state, api, io, present }) {
+export function bindKeyboard({ state, api, io, present, ui }) {
   const ac = new AbortController();
   document.addEventListener("keydown", (e) => {
+    // Two instances on one page: only the one the user last interacted with acts on shortcuts
+    if (ui && !ui.isActive()) return;
     // While presenting, the present layer owns all keys (page/blackout/exit); editor shortcuts stay quiet
     if (present?.isActive()) return;
     const tag = (e.target.tagName || "").toLowerCase();

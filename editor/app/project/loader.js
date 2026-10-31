@@ -12,13 +12,11 @@
 // ============================================================================
 
 import { applyDeck as applyDeckToState } from "./source.js";
-import { dialogs } from "../../dialogs.js";
-import { showToast } from "../toast.js";
 import { preloadIcons } from "./icons.js";
-import { dom } from "../../dom.js";
 import { DEFAULT_THEME, resolveTheme, syncElementId } from "../../../packages/model/index.js";
 
-export function createLoader({ state, view, ops, images, fontManager, source, connect, renderStatusBar, onDeckChange, onError }) {
+export function createLoader({ state, view, ops, images, fontManager, source, ui, connect, renderStatusBar, onDeckChange, onError }) {
+  const { dom, toast, dialogs } = ui;
   // --------------------------------------------------------------------------
   // Theme and state application
   // --------------------------------------------------------------------------
@@ -67,6 +65,7 @@ export function createLoader({ state, view, ops, images, fontManager, source, co
   /** Topbar project name: shows the project file name; the full path/URL goes into the title. A blank project shows a dim "unnamed" (hover explains). */
   function setBrandFile(text) {
     const el = dom.brandFile;
+    if (!el) return; // embedded/headless skeleton has no brand label
     if (text) {
       el.textContent = brandLabel(text);
       el.title = text; // full path/URL of the project (D4)
@@ -151,7 +150,7 @@ export function createLoader({ state, view, ops, images, fontManager, source, co
     state.pagesPending = pending;
     if (cur) {
       await preloadPage(cur);
-      await preloadIcons([cur]);
+      await preloadIcons([cur], state.iconMap);
     }
     view.render(); // first paint: the current page complete + the other pages as thumbnail skeletons
 
@@ -165,7 +164,7 @@ export function createLoader({ state, view, ops, images, fontManager, source, co
         (async () => {
           try {
             await preloadPage(pg);
-            await preloadIcons([pg]);
+            await preloadIcons([pg], state.iconMap);
           } catch (err) {
             console.warn("[io] 页面资产预载失败:", err?.message || err);
           }
@@ -187,16 +186,16 @@ export function createLoader({ state, view, ops, images, fontManager, source, co
     if (!silent) {
       // Missing-page hint: an Agent-mid-write project shows one page as it lands, without blocking the preview
       const suffix = missing > 0 ? ` · ${missing} 页缺失（写入中？）` : "";
-      showToast(`已加载 · ${state.deck.pages.length} 页 · 主题已应用${suffix}`, "info");
+      toast.show(`已加载 · ${state.deck.pages.length} 页 · 主题已应用${suffix}`, "info");
     }
   }
 
   /** Manually reload the current project from disk (file menu): confirm when dirty. */
   async function manualReload() {
     if (state.dirty && !(await dialogs.confirm("编辑器有未保存的修改，重新加载将放弃这些修改。确定继续？"))) return;
-    const done = () => showToast("已从磁盘重新加载", "success");
+    const done = () => toast.show("已从磁盘重新加载", "success");
     const fail = (err) => {
-      showToast(`重新加载失败: ${err.message}`, "danger");
+      toast.show(`重新加载失败: ${err.message}`, "danger");
       onError?.(err);
     };
     if (state.projectHandle) {

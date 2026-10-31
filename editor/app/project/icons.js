@@ -5,23 +5,16 @@
 // The render side (renderer/icon.js via renderPage opts.iconMap) and the export
 // side (saver → buildPptx options.iconDefs) share this one cache.
 //
-// Module-level singleton (single editor instance): bindIconMap(state.iconMap) is
-// called once during io assembly; preloadIcons(deck.pages) preloads every icon
-// after the deck loads (live-reload fills in new ones); ensureIcon(raw) fetches a
-// single icon on demand for pickers/newly added elements.
+// 3.0: no module-level icon map. The caller passes its own state.iconMap (each
+// preview/editor instance owns one; gallery covers pass theirs) so two instances
+// never fill each other's cache. Only the registry fetch is shared (read-only).
 // ============================================================================
 
 import { fetchIconSvg, loadIconRegistry, normalizeIconSvg, resolveIconName } from "../../../packages/model/index.js";
 
-let iconMap = null; // valid after bindIconMap (= state.iconMap)
 let registryPromise = null;
 let registrySync = null; // synchronous snapshot once getIconRegistry resolves
 const pending = new Map(); // raw → Promise (dedupes concurrent requests)
-
-/** Bind the render cache map (called once during io.js assembly). */
-export function bindIconMap(map) {
-  iconMap = map;
-}
 
 /** Registry (singleton promise; a synchronous snapshot is available once it resolves). */
 export function getIconRegistry() {
@@ -39,8 +32,8 @@ export function getIconRegistrySync() {
   return registrySync;
 }
 
-/** Fetch a single icon (a cache hit returns immediately; failure logs console.warn and returns null). map defaults to the bound map. */
-export async function ensureIcon(raw, map = iconMap) {
+/** Fetch a single icon into `map` (a cache hit returns immediately; failure logs console.warn and returns null). */
+export async function ensureIcon(raw, map) {
   if (!raw || !map) return null;
   if (map[raw]?.inner) return map[raw];
   if (pending.has(raw)) return pending.get(raw);
@@ -65,8 +58,8 @@ export async function ensureIcon(raw, map = iconMap) {
 }
 
 /** Preload a whole set of pages (called after loader finishLoad / live-reload; existing entries are skipped).
- *  Callers without editor state, such as the gallery, pass an explicit map. */
-export async function preloadIcons(pages, map = iconMap) {
+ *  Every caller passes its own instance cache map. */
+export async function preloadIcons(pages, map) {
   if (!map || !Array.isArray(pages)) return;
   const names = new Set();
   const walk = (el) => {

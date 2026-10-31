@@ -1,34 +1,21 @@
 // ============================================================================
-// dom.js — static skeleton element registry (the single entry for editor/index.html)
+// dom.js — skeleton element registry, scoped to one instance mount point
 // ----------------------------------------------------------------------------
-// Editor modules never call document.getElementById/querySelector for
-// editor/index.html skeleton elements; they read dom.<name> (or, for regions that
-// carry no id of their own, dom.query(selector)).
-// Lookups are lazy (first access) and cached: the skeleton is authored once by
-// editor/index.html and never replaced, so caching is safe. The authoritative id
-// contract is editor/index.html; register new skeleton elements here.
+// Editor modules never call document.getElementById/querySelector for skeleton
+// elements; they read dom.<name> (or dom.query(selector) for regions without an
+// id) from the instance context created by createPreview/createEditor.
 //
-// Scope and the one fallback: createEditor mounts on #pptd-root, which in
-// editor/index.html is an empty container while the skeleton is a sibling in
-// <body>. Every lookup therefore resolves "mount subtree first, document
-// fallback", and that fallback policy lives ONLY here (byId / query) — no module
-// carries its own equivalent.
-//
-// The skeleton deliberately stays a <body>-level sibling of #pptd-root: nesting
-// it inside the mount point would change three observable things at once — the
-// .icon-slot[data-icon] set that injectIcons() replaces within createEditor's
-// scope, the contract-3 theme injection host chosen by createEditor, and the
-// element destroy() clears.
-//
-// createDom(rootEl) factory: an embedded host that owns its skeleton inside its
-// container gets its own instance; the default `dom` singleton is rebound by
-// createEditor to its mount point and restored to document on destroy.
+// Scope: createDom(rootEl) resolves every lookup inside rootEl ONLY. There is no
+// document fallback and no module-level singleton (3.0 componentisation,
+// decisions.md D1): two instances mounted side by side each get their own
+// registry, and a missing element is a genuine null rather than a silent reach
+// into another instance's skeleton.
+// Lookups are lazy (first access) and cached: the skeleton is authored once per
+// instance (editor/skeleton.js) and never replaced while the instance lives.
 // ============================================================================
 
-/** Property name → editor/index.html element id (the id contract). */
+/** Property name → skeleton element id (the id contract; mirrors editor/skeleton.js). */
 const IDS = {
-  pptdRoot: "pptd-root",
-  editorApp: "editor-app",
   stage: "stage",
   canvas: "canvas",
   canvasWrap: "canvas-wrap",
@@ -56,38 +43,39 @@ const IDS = {
   btnZoomReset: "btn-zoom-reset",
 };
 
-/** document.getElementById when available (document), a scoped query otherwise (element). */
+/** document.getElementById when the scope is a document, a scoped query for an element. */
 function findById(scope, id) {
   return typeof scope.getElementById === "function" ? scope.getElementById(id) : scope.querySelector(`#${CSS.escape(id)}`);
 }
 
 /**
  * Build a dom ref factory scoped to rootEl.
- * @param {HTMLElement|Document} [rootEl] scope (document by default)
+ * @param {HTMLElement|Document} rootEl instance mount point (required)
+ * @returns {object} lazy element getters + query/clear
  */
 export function createDom(rootEl) {
+  if (!rootEl || typeof rootEl.querySelector !== "function") {
+    throw new Error("createDom: 需要实例挂载点（HTMLElement）");
+  }
+  const scope = rootEl;
   const cache = new Map();
-  let scope = rootEl || document;
 
-  /** Cached scope-first lookup with the document fallback (the single copy of that policy). */
+  /** Cached lookup inside the instance scope (null when the skeleton has no such element). */
   function resolve(key, find) {
     if (cache.has(key)) return cache.get(key);
     let el = null;
-    if (scope && typeof scope.querySelector === "function") {
-      try {
-        el = find(scope);
-      } catch {
-        el = null;
-      }
+    try {
+      el = find(scope);
+    } catch {
+      el = null;
     }
-    if (!el && typeof document !== "undefined") el = find(document);
     cache.set(key, el);
     return el;
   }
 
-  /** Resolve a skeleton element by id (mount subtree first, then document). */
+  /** Resolve a skeleton element by id. */
   const byId = (id) => resolve(`id:${id}`, (r) => findById(r, id));
-  /** Resolve a skeleton region by CSS selector (mount subtree first, then document). */
+  /** Resolve a skeleton region by CSS selector. */
   const query = (selector) => resolve(`sel:${selector}`, (r) => r.querySelector(selector));
 
   const dom = Object.defineProperties(
@@ -95,15 +83,7 @@ export function createDom(rootEl) {
     Object.fromEntries(Object.entries(IDS).map(([name, id]) => [name, { get: () => byId(id), enumerable: true }]))
   );
   dom.query = query;
-  /** Switch scope and clear the cache (createEditor mount / destroy restore). */
-  dom.rebind = (next) => {
-    cache.clear();
-    scope = next || document;
-  };
-  /** Clear the cache (used by destroy). */
+  /** Clear the cache (instance destroy; the skeleton is about to be dropped). */
   dom.clear = () => cache.clear();
   return dom;
 }
-
-/** Default instance (module-level singleton; unmigrated call sites keep working). */
-export const dom = createDom(typeof document !== "undefined" ? document : null);

@@ -23,7 +23,7 @@ const FADE_MS = 260; // matches the <p:fade/> cadence in the exported PPTX
 const UI_HIDE_MS = 1800; // hide the bottom toolbar after the pointer stops moving
 const WHEEL_DEBOUNCE_MS = 600;
 
-export function createPresent({ state, view, ops }) {
+export function createPresent({ state, view, ops, ui = null }) {
   let root = null; // overlay
   let stage = null; // slide viewport (scaled container)
   let layers = []; // double-buffered layers (deck's real canvas size, cross-faded)
@@ -281,6 +281,8 @@ export function createPresent({ state, view, ops }) {
     active = true;
     index = clamp(state.currentPage); // start the show from the editor's current page
     document.body.classList.add("presenting");
+    // Hide only this instance (two editors on one page: the other one stays visible)
+    ui?.root?.classList.add("pptd-presenting-hidden");
     buildDOM();
     fit();
     showSlide(index, { instant: true });
@@ -306,6 +308,7 @@ export function createPresent({ state, view, ops }) {
     clearTimeout(cleanTimer);
     clearTimeout(hideTimer);
     document.body.classList.remove("presenting");
+    ui?.root?.classList.remove("pptd-presenting-hidden");
     // Exiting the show restores the window state (we never auto-fullscreened on entry, so exit is symmetric)
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {});
