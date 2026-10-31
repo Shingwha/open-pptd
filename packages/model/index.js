@@ -1,12 +1,11 @@
 // ============================================================================
 // model/index.js — packages/model package barrel (contract entry 4, open-pptd/model)
 // ----------------------------------------------------------------------------
-// Pure re-export, zero logic: collapses 300+ deep paths into a stable entry point
-// (see docs/embedding.md). The export surface follows
-// docs/specs/ref/integration-plan.md appendix D.1, verified one by one against the
-// real export names of each source file before being written down (PRESET_SHAPES
-// comes from preset-geometry.data.js, ELEMENT_TYPES from style-spec.js — neither
-// lives in model.js, D.1 lists names only, not files).
+// Pure re-export, zero logic: collapses 300+ deep paths into a stable entry point.
+// The export surface is machine-readable in contract.json and asserted by
+// tests/contract/public-api.mjs; the names come from the real exports of each
+// source file (PRESET_SHAPES from preset-geometry.data.js, ELEMENT_TYPES from
+// style-spec.js — neither lives in model.js).
 //
 // Browser + Node: neither this file nor its transitive closure may contain node:* /
 // fs / window. / document. (the Node branches of the font and icon registries use

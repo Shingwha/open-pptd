@@ -8,10 +8,9 @@
 //     such entries), so packages/renderer needs no change.
 //   - Export: the writer has no group.toXml, so the group shell is skipped on
 //     export and members export individually (no content is lost).
-//   - Known limitation: packages/model/style-spec.js ELEMENT_TYPES omits group,
-//     so registration logs one console.warn and `open-pptd check` reports an
-//     unknown type for decks containing groups. Engine-side group support is
-//     out of scope here.
+//   - Group is a registered engine type: packages/model/style-spec.js
+//     ELEMENT_TYPES includes "group", so validate/check accept group shells
+//     while the writer still skips them (members export individually).
 //   - Transform: move/scale apply to children; whole-group rotation is
 //     unsupported (keeps behaviour predictable).
 // ============================================================================

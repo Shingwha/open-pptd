@@ -3,8 +3,8 @@
 // ----------------------------------------------------------------------------
 // The MeasurePort interface plus the default deterministic implementation
 // fontMetricsMeasure (pure functions, runnable on Node/CLI/CI). This is the
-// "MeasurePort defaults to a deterministic pure function" invariant; domMeasure is
-// only an optional browser-side refinement adapter (adapters/dom.js is still a stub).
+// "MeasurePort defaults to a deterministic pure function" invariant; a browser-side
+// refinement adapter, when needed, is implemented in the editor layer.
 //
 // Dual-end pure functions: this barrel and its transitive closure forbid
 // node:/fs/window./document. (enforced by dep-graph).

@@ -1,7 +1,7 @@
 // ============================================================================
 // font.js — font byte utilities: metadata parsing / EOT wrapping / TTF subsetting (zero deps, browser + Node)
 // ----------------------------------------------------------------------------
-// Core of the whole PPTX embedded-font pipeline (spec in docs/pptx-font-embedding.md):
+// Core of the whole PPTX embedded-font pipeline:
 //   1. parseFontInfo  reads the OS/2/head/name tables -> embedding permission / font names / EOT header fields
 //   2. checkEmbeddable fsType embedding permission check (0x0002 Restricted forbids embedding)
 //   3. buildEot       TTF/OTF -> EOT v2.2 (plain FontData, same as PowerPoint/LibreOffice)
