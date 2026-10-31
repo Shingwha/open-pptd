@@ -4,10 +4,163 @@
 //   POST /api/save  browser save → disk (only with --project mount)
 //   GET  /api/ping  liveness probe (local serve only, 404 on GitHub Pages) — the
 //                   gallery uses it to tell local from online mode
+//
+// /api/save batch semantics (W9, interfaces.md §2/§14):
+//   body { files:[{path,text}|{path,b64}|{path,content}], expectedRevision? }
+//   · all paths are validated before anything is written (traversal → 403)
+//   · the current on-disk revision (manifest + pages) is compared with
+//     expectedRevision; a mismatch returns 409 {ok:false,error:{code:
+//     "ERR_REVISION_CONFLICT",currentRevision}} and never writes
+//   · atomic batch: back up old bytes → write every target through a same-dir
+//     temp file → rename (manifest last); any failure restores the backups /
+//     removes newly created files and returns 500
+//   · success returns {ok:true,count,revision}
+// The legacy single-file body {path,content} is still accepted (no revision).
 // ============================================================================
 
-import { mkdirSync, writeFileSync } from "node:fs";
-import { join, normalize, sep, dirname } from "node:path";
+import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
+import { dirname, join, normalize, sep } from "node:path";
+import * as yaml from "../model/vendor/js-yaml.mjs";
+import { projectRevision } from "../runtime/index.js";
+
+const MAX_BODY = 64 * 1024 * 1024; // 64MB (images are base64-inflated by ~33%)
+
+const json = (res, status, payload, extraHeaders = {}) =>
+  res
+    .writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...extraHeaders })
+    .end(JSON.stringify(payload));
+
+/** Read the request body as UTF-8 text (aborts when over the cap). */
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let size = 0;
+    const chunks = [];
+    req.on("data", (c) => {
+      size += c.length;
+      if (size > MAX_BODY) {
+        req.destroy();
+        reject(Object.assign(new Error(`请求体过大（>${(MAX_BODY / 1024 / 1024) | 0}MB）`), { status: 413 }));
+        return;
+      }
+      chunks.push(c);
+    });
+    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+    req.on("error", reject);
+  });
+}
+
+/** Project-relative path → absolute, refusing escapes. */
+function targetOf(projectRoot, rel) {
+  const filePath = normalize(join(projectRoot, rel));
+  if (filePath !== projectRoot && !filePath.startsWith(projectRoot + sep)) return null;
+  return filePath;
+}
+
+/** Read the current manifest + listed pages from disk (the revision domain). */
+function readDiskProject(projectRoot, manifestRel) {
+  const manifestPath = targetOf(projectRoot, manifestRel);
+  const pageFiles = new Map();
+  let manifestText = "";
+  if (!manifestPath) return { manifestText, pageFiles };
+  try {
+    manifestText = readFileSync(manifestPath, "utf8");
+  } catch {
+    return { manifestText, pageFiles };
+  }
+  let manifest = null;
+  try {
+    manifest = yaml.load(manifestText) || {};
+  } catch {
+    manifest = {};
+  }
+  for (const rel of manifest.pages || []) {
+    const abs = targetOf(projectRoot, String(rel));
+    if (!abs) continue;
+    try {
+      pageFiles.set(String(rel), readFileSync(abs, "utf8"));
+    } catch {
+      /* a page missing on disk is not part of the current revision */
+    }
+  }
+  return { manifestText, pageFiles };
+}
+
+/** Normalize the body into unique write entries ({rel, abs, data}) and the manifest path. */
+function normalizeEntries(projectRoot, files) {
+  const entries = [];
+  const seen = new Map();
+  for (const f of files) {
+    const rel = String(f?.path || "").replace(/^\/+/, "");
+    if (!rel) throw Object.assign(new Error("文件路径不能为空"), { status: 400 });
+    const abs = targetOf(projectRoot, rel);
+    if (!abs) throw Object.assign(new Error(`path outside project: ${rel}`), { status: 403 });
+    const data = f.b64 != null ? Buffer.from(String(f.b64), "base64") : Buffer.from(String(f.content ?? ""), "utf8");
+    if (seen.has(rel)) {
+      seen.get(rel).data = data;
+      continue;
+    }
+    const entry = { rel, abs, data };
+    seen.set(rel, entry);
+    entries.push(entry);
+  }
+  return entries;
+}
+
+/**
+ * Atomic batch write: backup → tmp writes → renames (manifest last) → rollback on
+ * any failure. Returns the number of files written (throws otherwise).
+ */
+function writeBatch(entries, manifestRel) {
+  const backups = entries.map((e) => {
+    try {
+      return { existed: true, bytes: readFileSync(e.abs) };
+    } catch {
+      return { existed: false };
+    }
+  });
+  const tmpOf = (abs) => `${abs}.${process.pid.toString(36)}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}.tmp`;
+  const knownTmps = new Set();
+  const renamed = [];
+  try {
+    // 1. materialize every new file next to its target (no target touched yet)
+    for (const e of entries) {
+      mkdirSync(dirname(e.abs), { recursive: true });
+      const tmp = tmpOf(e.abs);
+      knownTmps.add(tmp);
+      writeFileSync(tmp, e.data);
+      e.tmp = tmp;
+    }
+    // 2. rename non-manifest files first, the manifest last
+    const manifestIndex = entries.findIndex((e) => e.rel === manifestRel);
+    const order = entries.map((_, i) => i).filter((i) => i !== manifestIndex);
+    if (manifestIndex >= 0) order.push(manifestIndex);
+    for (const i of order) {
+      renameSync(entries[i].tmp, entries[i].abs);
+      knownTmps.delete(entries[i].tmp);
+      renamed.push(i);
+    }
+    return entries.length;
+  } catch (err) {
+    // Roll back renamed targets (best effort), then drop leftover temp files.
+    for (let k = renamed.length - 1; k >= 0; k--) {
+      const i = renamed[k];
+      try {
+        if (backups[i].existed) writeFileSync(entries[i].abs, backups[i].bytes);
+        else if (existsSync(entries[i].abs)) unlinkSync(entries[i].abs);
+      } catch {
+        /* rollback is best effort; the error below still reports the failure */
+      }
+    }
+    for (const tmp of knownTmps) {
+      try {
+        if (existsSync(tmp)) unlinkSync(tmp);
+      } catch {
+        /* temp cleanup is best effort */
+      }
+    }
+    throw err;
+  }
+}
 
 /**
  * Write-back API: body is { path, content } for a single file or { files: [...] }
@@ -19,34 +172,52 @@ export function handleSave(req, res, projectRoot) {
     res.writeHead(404).end("not found");
     return;
   }
-  let body = "";
-  req.on("data", (c) => (body += c));
-  req.on("end", () => {
-    try {
-      const payload = JSON.parse(body || "{}");
-      const files = payload.files || (payload.path ? [payload] : []);
-      if (!files.length) {
-        res.writeHead(400).end("empty");
-        return;
-      }
-      let count = 0;
-      for (const f of files) {
-        const rel = String(f.path || "").replace(/^\//, "");
-        const filePath = normalize(join(projectRoot, rel));
-        if (filePath !== projectRoot && !filePath.startsWith(projectRoot + sep)) {
-          res.writeHead(403).end(`path outside project: ${rel}`);
+  readBody(req).then(
+    (body) => {
+      try {
+        const payload = JSON.parse(body || "{}");
+        const files = payload.files || (payload.path ? [payload] : []);
+        if (!files.length) {
+          json(res, 400, { ok: false, error: { code: "ERR_EMPTY_SAVE", message: "没有待保存的文件" } });
           return;
         }
-        mkdirSync(dirname(filePath), { recursive: true });
-        if (f.b64 != null) writeFileSync(filePath, Buffer.from(String(f.b64), "base64"));
-        else writeFileSync(filePath, String(f.content ?? ""), "utf8");
-        count += 1;
+        const entries = normalizeEntries(projectRoot, files);
+        const manifestEntry = entries.find((e) => /\.pptd$/i.test(e.rel));
+        const manifestRel = manifestEntry ? manifestEntry.rel : "deck.pptd";
+        const currentRevision = projectRevision(readDiskProject(projectRoot, manifestRel));
+
+        // ---- revision gate (all paths already validated; nothing written yet) ----
+        const expectedRevision = payload.expectedRevision;
+        if (expectedRevision != null && String(expectedRevision) !== currentRevision) {
+          json(res, 409, {
+            ok: false,
+            error: {
+              code: "ERR_REVISION_CONFLICT",
+              message: "项目已被外部修改，保存已取消（重新加载或选择覆盖）",
+              currentRevision,
+              expectedRevision: String(expectedRevision),
+            },
+          });
+          return;
+        }
+
+        writeBatch(entries, manifestRel);
+        const revision = projectRevision(readDiskProject(projectRoot, manifestRel));
+        json(res, 200, { ok: true, count: entries.length, revision });
+      } catch (err) {
+        const status = Number(err?.status) || 500;
+        if (status === 403) {
+          res.writeHead(403).end(String(err?.message || err));
+          return;
+        }
+        json(res, status, { ok: false, error: { code: status === 400 ? "ERR_INVALID_SAVE" : "ERR_SAVE_FAILED", message: String(err?.message || err) } });
       }
-      res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ ok: true, count }));
-    } catch (err) {
-      res.writeHead(500).end(String(err?.message || err));
+    },
+    (err) => {
+      const status = Number(err?.status) || 500;
+      json(res, status, { ok: false, error: { code: "ERR_SAVE_FAILED", message: String(err?.message || err) } });
     }
-  });
+  );
 }
 
 /** Liveness probe. */

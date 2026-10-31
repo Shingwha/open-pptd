@@ -41,6 +41,9 @@ export { serializeProject } from "./serialize.js";
 // ---- Pure validation ----
 export { checkProject } from "./check.js";
 
+// ---- Stable project revision (pure JS hash, browser + Node) ----
+export { projectRevision } from "./revision.js";
+
 // ---- Unified errors + guards ----
 export {
   RevisionConflictError,

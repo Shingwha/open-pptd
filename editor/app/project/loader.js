@@ -83,9 +83,9 @@ export function createLoader({ state, view, ops, images, fontManager, source, ui
    * (createEditor reuses the same). handle: local project handle mode (opened via
    * the OS folder picker), null = URL mode.
    */
-  function applyDeck(manifestText, pageFiles, { manifestPath = "", handle = null, projectName = "" } = {}) {
+  function applyDeck(manifestText, pageFiles, { manifestPath = "", handle = null, projectName = "", revision = null } = {}) {
     applyDeckToState(
-      { manifestText, pageFiles, manifestPath, handle, projectName },
+      { manifestText, pageFiles, manifestPath, handle, projectName, revision },
       { state, ops, images, renderStatusBar, setBrandFile, applyTheme }
     );
     try {
@@ -103,7 +103,10 @@ export function createLoader({ state, view, ops, images, fontManager, source, ui
     const prevPage = state.currentPage;
     // Cross-session caching (project-cache.js) is reused inside httpSource.read, behavior unchanged
     const data = await source.read(manifestUrl);
-    applyDeck(data.manifestText, data.pageFiles, { manifestPath: data.manifestPath || manifestUrl });
+    applyDeck(data.manifestText, data.pageFiles, {
+      manifestPath: data.manifestPath || manifestUrl,
+      revision: data.revision ?? null,
+    });
     await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0 });
   }
 
@@ -113,7 +116,11 @@ export function createLoader({ state, view, ops, images, fontManager, source, ui
     const data = source.readFromHandle
       ? await source.readFromHandle(handle)
       : await source.read();
-    applyDeck(data.manifestText, data.pageFiles, { handle, projectName: handle.name || "本地项目" });
+    applyDeck(data.manifestText, data.pageFiles, {
+      handle,
+      projectName: handle.name || "本地项目",
+      revision: data.revision ?? null,
+    });
     await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0 });
   }
 
@@ -124,6 +131,7 @@ export function createLoader({ state, view, ops, images, fontManager, source, ui
       manifestPath: data.manifestPath || "",
       handle: null,
       projectName: "",
+      revision: data.revision ?? null,
     });
     await finishLoad(prevPage, { keepPage, silent, missing: data.missing || 0 });
   }

@@ -34,10 +34,23 @@ import {
   syncElementId,
   yaml,
 } from "../../../packages/model/index.js";
+import { RevisionConflictError, assertRevision, projectRevision } from "../../../packages/runtime/index.js";
 import { extToMime } from "../../../packages/writer/index.js";
 
 // Editor site root (this file lives in <root>/editor/app/project/, so ../../../ is editor/)
 const EDITOR_BASE = new URL("../../", import.meta.url).href;
+
+/** Revision domain used by HTTP/handle saves: manifest + page texts (no media). */
+function revisionOfSourceFiles(files) {
+  let manifestText = "";
+  const pageFiles = new Map();
+  for (const f of files || []) {
+    if (typeof f?.text !== "string") continue;
+    if (/\.pptd$/i.test(f.path)) manifestText = f.text;
+    else if (/\.page$/i.test(f.path)) pageFiles.set(f.path, f.text);
+  }
+  return projectRevision({ manifestText, pageFiles });
+}
 
 /** Normalize a deckUrl to an absolute URL (http(s) as-is; otherwise resolved against base or the editor site root). */
 function resolveDeckUrl(deckUrl, base = "") {
@@ -73,8 +86,9 @@ export function httpSource({ base = "", deckUrl = null } = {}) {
   // Manifest URL of the last read: readMedia resolves project-relative paths against
   // it (i.e. against the project directory), which is what preview/export expect.
   let manifestUrl = null;
+  let lastRevision = null;
 
-  return {
+  const api = {
     // liveWatch is promised by the serve-mode capability marker only (server injects
     // window.__PPTD_LIVE__ into editor/index.html); on static hosting there is no
     // /events endpoint and the editor must not even attempt an EventSource.
@@ -84,27 +98,44 @@ export function httpSource({ base = "", deckUrl = null } = {}) {
       binary: true,
     },
 
+    /** Revision of the last read/write (opaque; used by the saver after write). */
+    get lastRevision() {
+      return lastRevision;
+    },
+
     /** hint names this read's project URL (optional; defaults to the deckUrl given at construction). */
     async read(hint) {
       manifestUrl = resolveDeckUrl(hint || deckUrlOf(), base);
       if (!manifestUrl) throw new Error("httpSource 未指定 deckUrl");
       const { manifestText, pageTexts, missing = 0 } = await fetchProjectTexts(manifestUrl, yaml.load);
-      return { manifestText, pageFiles: pageTexts, missing, manifestPath: manifestUrl };
+      lastRevision = projectRevision({ manifestText, pageFiles: pageTexts });
+      return { manifestText, pageFiles: pageTexts, missing, manifestPath: manifestUrl, revision: lastRevision };
     },
 
-    /** Batch write-back (POST /api/save; body shape matches the existing server: text content / image b64). */
-    async write(files) {
+    /**
+     * Batch write-back (POST /api/save; body shape matches the server: text content / image b64).
+     * A stale expectedRevision surfaces as RevisionConflictError (server 409), never a silent overwrite.
+     */
+    async write(files, { expectedRevision } = {}) {
+      const body = {
+        files: files.map((f) =>
+          f.bytes != null ? { path: f.path, b64: bytesToBase64(f.bytes) } : { path: f.path, content: f.text ?? "" }
+        ),
+      };
+      if (expectedRevision != null) body.expectedRevision = expectedRevision;
       const res = await fetch(withBase(base, "/api/save"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          files: files.map((f) =>
-            f.bytes != null ? { path: f.path, b64: bytesToBase64(f.bytes) } : { path: f.path, content: f.text ?? "" }
-          ),
-        }),
+        body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (res.status === 409) {
+          throw new RevisionConflictError(data?.error?.currentRevision ?? data?.currentRevision ?? null, expectedRevision);
+        }
+        throw new Error(data?.error?.message || `HTTP ${res.status}`);
+      }
+      if (typeof data.revision === "string") lastRevision = data.revision;
       return data.count ?? files.length;
     },
 
@@ -156,6 +187,7 @@ export function httpSource({ base = "", deckUrl = null } = {}) {
       };
     },
   };
+  return api;
 }
 
 // ----------------------------------------------------------------------------
@@ -168,21 +200,35 @@ export function httpSource({ base = "", deckUrl = null } = {}) {
  */
 export function directoryHandleSource(handle) {
   const dir = handle;
-  return {
+  let lastRevision = null;
+  const readRevision = async () => {
+    const { manifestText, pageTexts } = await readProject(dir);
+    return projectRevision({ manifestText, pageFiles: pageTexts });
+  };
+  const api = {
     capabilities: { writable: true, liveWatch: false, binary: true },
+
+    get lastRevision() {
+      return lastRevision;
+    },
 
     async read() {
       const { manifestText, pageTexts, missing = 0 } = await readProject(dir);
-      return { manifestText, pageFiles: pageTexts, missing };
+      lastRevision = projectRevision({ manifestText, pageFiles: pageTexts });
+      return { manifestText, pageFiles: pageTexts, missing, revision: lastRevision };
     },
 
-    async write(files) {
-      return writeFiles(
+    async write(files, { expectedRevision } = {}) {
+      // Same revision domain as HTTP saves: manifest + page texts as read from disk.
+      assertRevision(await readRevision(), expectedRevision);
+      const count = await writeFiles(
         dir,
         files.map((f) =>
           f.bytes != null ? { path: f.path, b64: bytesToBase64(f.bytes) } : { path: f.path, content: f.text ?? "" }
         )
       );
+      lastRevision = revisionOfSourceFiles(files);
+      return count;
     },
 
     async readMedia(path) {
@@ -199,6 +245,7 @@ export function directoryHandleSource(handle) {
       return fingerprint(dir);
     },
   };
+  return api;
 }
 
 // ----------------------------------------------------------------------------
@@ -218,25 +265,46 @@ export function memorySource({ files = {}, writable = true } = {}) {
     for (const key of store.keys()) if (/\.pptd$/i.test(key)) return key;
     return "deck.pptd";
   };
+  /** Snapshot of the store in ProjectFiles shape (revision covers manifest + pages + media). */
+  const snapshot = () => {
+    const mPath = manifestPath();
+    const pageFiles = new Map();
+    const media = new Map();
+    for (const [path, value] of store.entries()) {
+      if (path === mPath) continue;
+      if (typeof value === "string") pageFiles.set(path, value);
+      else media.set(path, value);
+    }
+    return {
+      manifestText: store.has(mPath) ? textOf(store.get(mPath)) : "",
+      pageFiles,
+      media,
+    };
+  };
+  let lastRevision = projectRevision(snapshot());
 
-  return {
+  const api = {
     capabilities: { writable, liveWatch: false, binary: true },
 
-    async read() {
-      const mPath = manifestPath();
-      const manifestText = store.has(mPath) ? textOf(store.get(mPath)) : "";
-      const pageFiles = new Map();
-      const media = new Map();
-      for (const [path, value] of store.entries()) {
-        if (path === mPath) continue;
-        if (typeof value === "string") pageFiles.set(path, value);
-        else media.set(path, value);
-      }
-      return { manifestText, pageFiles, media: media.size ? media : undefined };
+    get lastRevision() {
+      return lastRevision;
     },
 
-    async write(files) {
+    async read() {
+      const data = snapshot();
+      lastRevision = projectRevision(data);
+      return {
+        manifestText: data.manifestText,
+        pageFiles: data.pageFiles,
+        media: data.media.size ? data.media : undefined,
+        revision: lastRevision,
+      };
+    },
+
+    async write(files, { expectedRevision } = {}) {
+      assertRevision(lastRevision, expectedRevision);
       for (const f of files) store.set(f.path, f.bytes != null ? f.bytes : f.text ?? "");
+      lastRevision = projectRevision(snapshot());
       return files.length;
     },
 
@@ -246,6 +314,7 @@ export function memorySource({ files = {}, writable = true } = {}) {
       return typeof v === "string" ? new TextEncoder().encode(v) : v;
     },
   };
+  return api;
 }
 
 // ----------------------------------------------------------------------------
@@ -260,11 +329,12 @@ export function memorySource({ files = {}, writable = true } = {}) {
  */
 export function applyDeck(deckData, ctx) {
   const { state, ops, images, renderStatusBar, setBrandFile } = ctx;
-  const { manifestText, pageFiles, manifestPath = "", handle = null, projectName = "" } = deckData;
+  const { manifestText, pageFiles, manifestPath = "", handle = null, projectName = "", revision = null } = deckData;
   ops.replaceDeck(parseDeck(manifestText, pageFiles));
   state.manifestPath = manifestPath;
   state.projectHandle = handle;
   state.projectName = projectName;
+  state.revision = revision; // revision the save conflict check is based on (null = unconditional)
   setBrandFile(handle ? projectName : manifestPath);
   // Theme: prefer loader's applyTheme (stays the single implementation); external callers without that dep use the inline equivalent
   if (typeof ctx.applyTheme === "function") {
@@ -298,8 +368,11 @@ export function delegatingSource({ base, handleSource, currentHandle }) {
     get capabilities() {
       return chosen()?.capabilities || { writable: false, liveWatch: false, binary: false };
     },
+    get lastRevision() {
+      return chosen()?.lastRevision ?? null;
+    },
     read: (hint) => chosen().read(hint),
-    write: (files) => chosen().write(files),
+    write: (files, opts) => chosen().write(files, opts),
     readMedia: (path) => chosen().readMedia?.(path) ?? Promise.resolve(null),
     watch: (cb, hooks) => chosen().watch?.(cb, hooks) ?? (() => {}),
     fingerprint: () => chosen().fingerprint?.() ?? Promise.resolve(null),

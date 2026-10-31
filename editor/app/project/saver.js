@@ -17,12 +17,25 @@ import { commitBaseline } from "../state.js";
 import { createImageExporter } from "../export-image.js";
 import { mediaFilesOfDeck } from "./images.js";
 import { base64ToBytes, deckSize, serializeDeck } from "../../../packages/model/index.js";
+import { projectRevision } from "../../../packages/runtime/index.js";
 import { ZipWriter, buildPptx, downloadBlob, downloadPptx, safeFileName } from "../../../packages/writer/index.js";
 
 /** Byte count → human-readable (MB to one decimal / KB rounded). */
 const fmtSize = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`);
 
-export function createProjectSaver({ state, images, fontManager, source, ui, renderStatusBar, onSaved, onError }) {
+/** Save-time revision domain (manifest + page texts) — must match the source/server implementation. */
+function revisionOfSourceFiles(files) {
+  let manifestText = "";
+  const pageFiles = new Map();
+  for (const f of files || []) {
+    if (typeof f.text !== "string") continue;
+    if (/\.pptd$/i.test(f.path)) manifestText = f.text;
+    else if (/\.page$/i.test(f.path)) pageFiles.set(f.path, f.text);
+  }
+  return projectRevision({ manifestText, pageFiles });
+}
+
+export function createProjectSaver({ state, images, fontManager, source, ui, renderStatusBar, onSaved, onError, reload }) {
   const { toast, dialogs } = ui;
   /** Save succeeded: record the current deck as the on-disk baseline (undo back to it = clean, not blanket-dirty). */
   const markSaved = () => commitBaseline(state);
@@ -171,6 +184,46 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
   // --------------------------------------------------------------------------
   // Save project
   // --------------------------------------------------------------------------
+  /** Write through the source, updating the editor revision on success. */
+  async function writeSources(sources, { skipRevision = false } = {}) {
+    const expectedRevision = skipRevision ? undefined : state.revision ?? undefined;
+    const count = await source.write(sources, expectedRevision == null ? undefined : { expectedRevision });
+    // Server/handle sources report the authoritative revision; fall back to the texts we wrote.
+    state.revision = source.lastRevision || revisionOfSourceFiles(sources);
+    return count;
+  }
+
+  /** Conflict dialog: overwrite / reload / cancel (must be explicit — never a silent overwrite). */
+  function askConflict(err) {
+    return new Promise((resolve) => {
+      const wrap = document.createElement("div");
+      wrap.className = "prop-hint";
+      wrap.textContent =
+        `项目已在其他窗口或磁盘上被修改（当前版本 ${err?.currentRevision ?? "未知"}）。` +
+        "覆盖保存会丢弃对方的修改；重新加载会放弃当前编辑并读取磁盘版本。";
+      const make = (text, className, value) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `btn btn-sm${className ? ` ${className}` : ""}`;
+        btn.textContent = text;
+        btn.onclick = () => {
+          close();
+          resolve(value);
+        };
+        return btn;
+      };
+      const { close } = dialogs.showDialog("项目已被外部修改", wrap, {
+        buttons: [
+          make("取消", "", "cancel"),
+          make("重新加载磁盘版本", "", "reload"),
+          make("覆盖保存", "btn-danger", "overwrite"),
+        ],
+        closeBtn: false,
+        overlayClose: false,
+      });
+    });
+  }
+
   async function saveProject() {
     fontManager.syncToDeck(); // font library (embed checkboxes) → deck.fonts resource table, persisted with the project
     // Persist dataURL images first (rewrite el.src to media/ paths); the serialized pages reference media files cleanly
@@ -179,11 +232,12 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
       manifestName: state.manifestPath?.split("/").pop() || "deck.pptd",
     }).map((f) => ({ path: f.path, content: f.content }));
     files.push(...mediaFiles);
+    const sources = files.map(toSourceFile);
     // Transport seam: ProjectSource.write (HTTP POST /api/save or handle write-back, decided by assembly)
     const writable = source && source.capabilities?.writable !== false;
     if (writable) {
       try {
-        const count = await source.write(files.map(toSourceFile));
+        const count = await writeSources(sources);
         markSaved();
         onSaved(); // suppress the auto-refresh loop triggered by polling/push
         renderStatusBar();
@@ -195,6 +249,36 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
         );
         return;
       } catch (err) {
+        if (err?.code === "ERR_REVISION_CONFLICT") {
+          const action = await askConflict(err);
+          if (action === "overwrite") {
+            try {
+              const count = await writeSources(sources, { skipRevision: true });
+              markSaved();
+              onSaved();
+              renderStatusBar();
+              toast.show(`已覆盖保存 ${count} 个文件（外部修改已被当前版本替换）`, "success");
+            } catch (err2) {
+              toast.show(`保存失败: ${err2.message}`, "danger");
+              console.error(err2);
+              onError?.(err2);
+            }
+            return;
+          }
+          if (action === "reload") {
+            try {
+              await reload?.();
+              toast.show("已重新加载磁盘版本（当前编辑已放弃）", "info");
+            } catch (err2) {
+              toast.show(`重新加载失败: ${err2.message}`, "danger");
+              console.error(err2);
+              onError?.(err2);
+            }
+            return;
+          }
+          toast.show("已取消保存", "info");
+          return;
+        }
         if (state.projectHandle) {
           // Handle write-back failed: report explicitly (no degrade-to-download, behavior kept)
           toast.show(`保存失败: ${err.message}`, "danger");
