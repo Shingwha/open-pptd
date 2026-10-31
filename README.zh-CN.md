@@ -2,15 +2,15 @@
 
 # open-pptd
 
-**对 AI 说一句话，得到可编辑、可导出的 PPT 与海报。**
+**对 AI 说一句话，得到可编辑的 PPT 与海报，导出为原生 PPTX。**
 
-`v2.0.0` · `MIT` · `Node ≥ 18` · `零依赖 · 零构建`
+`v3.0.0` · `MIT` · `Node ≥ 18` · `contract 3.0` · `零依赖 · 零构建`
 
 English: [README.md](README.md)
 
 [线上画廊](https://shingwha.github.io/open-pptd/)（免安装，点开即改）· [30 秒安装](#30-秒上手) · [和 AI 一起用](#和-ai-一起用)
 
-<img src="docs/images/editor.png" width="880" alt="open-pptd 编辑器：青山咖啡经营复盘，左侧画布 + 右侧属性面板 + 底部 12 页缩略条"/>
+<img src="docs/images/editor.png" width="880" alt="open-pptd 编辑器：青山咖啡经营复盘，左侧画布 + 底部页面缩略条"/>
 
 </div>
 
@@ -44,11 +44,19 @@ open-pptd doctor                            # 环境自检（CLI / Node / 资源
 
 ## 和 AI 一起用
 
-把技能包装进 AI 工具的技能目录（Claude Code 在 `~/.claude/skills`，pi 在 `~/.pi/agent/skills`，其他工具按其配置）：
+把技能包装进 AI 工具的技能目录（Claude Code 在 `~/.claude/skills`，pi 在 `~/.pi/agent/skills`，其他工具按其配置）。两种装法：
 
 ```sh
-git clone https://github.com/Shingwha/open-pptd-skill <你的技能目录>/open-pptd
+# A. Release zip：下载 open-pptd-skill-v3.0.0.zip，解压到技能目录
+#    （zip 顶层只有一个 open-pptd/）。
+#    PowerShell: Expand-Archive open-pptd-skill-v3.0.0.zip -DestinationPath <技能目录>
+unzip open-pptd-skill-v3.0.0.zip -d <技能目录>
+
+# B. 从本仓库拷贝：
+cp -r skill <技能目录>/open-pptd
 ```
+
+原独立 `open-pptd-skill` 仓库已归档；本仓库的 `skill/` 是方法论的唯一来源。
 
 然后直接说人话，无需任何配置：
 
@@ -63,27 +71,27 @@ AI 会交付**两样东西**：可编辑的 PPTD 项目目录（manifest + pages
 | | |
 |---|---|
 | **图表** | 13 种类型，Excel 式数据网格改数即改图 |
-| **形状 / 图标** | 187 种预置形状 + 自定义路径；约 2000 个 Font Awesome 图标（三风格） |
+| **形状 / 图标** | 187 种预置形状 + 自定义路径；约 2000 个 Font Awesome 图标（三风格），用于渲染与导出 |
 | **排版** | LaTeX 公式混排；字体嵌入（子集 / 完整，导出前体检；`build --fetch` 显式补齐缺失字体） |
-| **网页编辑器** | 实时预览（改文件即刷新）、多选 / 框选 / 右键菜单 / 组合对齐分布、13 种图表编辑器、深色模式 |
-| **导出** | 标准 `.pptx`（淡入淡出转场）与逐页 PNG |
+| **网页编辑器** | 文字 / 表格 / 图表内容编辑；拖动缩放 + 对齐参考线；多选（Ctrl 点选 / Shift / 框选）；页面插入、删除、拖拽排序；Design 面板管理主题、颜色令牌、字体与深浅色外观 |
+| **导出** | 原生 `.pptx`（淡入淡出转场）、逐页 PNG、项目包 |
 | **项目互通** | 线上作品可下载项目包带回本地，本地项目可「打开文件夹」直接编辑 |
 
-**预览 = 导出**：浏览器里看到的和 PowerPoint 里打开的是同一条渲染管线，像素级一致——这是本项目的核心承诺，由 156 页黄金基线逐页守门。
+**预览与 PNG 同管线，PPTX 保持原生可编辑。** 浏览器预览与 PNG 导出走同一条 layout/paint 渲染管线，由 156 页黄金基线逐页守门；`.pptx` 是原生、可编辑的 PowerPoint 文档而不是像素截图，与浏览器预览存在轻微字体度量/断行差异属正常现象。
 
 ## 原理
 
 ```
-你说的话 ──AI（open-pptd-skill 方法论）──▶ PPTD 项目（人类可读 YAML：manifest + pages/ + media/）
-                                              │
-                            ┌─────────────────┴─────────────────┐
-                        网页编辑器实时预览                    PPTX 导出
-                            └──────── 同一条渲染管线 ───────────┘
+你说的话 ──AI（open-pptd skill）──▶ PPTD 项目（人类可读 YAML：manifest + pages/ + media/）
+                                          │
+                      ┌───────────────────┴──────────────────┐
+                  网页编辑器实时预览                     PPTX 导出
+                      └──────── 同一条渲染管线 ──────────────┘
 ```
 
-- **本仓库**：引擎（packages/*）+ 网页编辑器 + CLI。零 npm 依赖、零构建，全部自研
-- **[open-pptd-skill](https://github.com/Shingwha/open-pptd-skill)**：给 AI 看的方法论（纯 markdown），教 AI 怎么写好一份 PPTD
-- 字体库（约 155 MB）不入包：导出时按需自动下载真正用到的，也可 `open-pptd assets sync fonts` 全量预存
+- **本仓库**：引擎（packages/*）+ 网页编辑器 + CLI + 技能知识包（`skill/`）。零 npm 依赖、零构建，全部自研
+- **`skill/`**：给 AI 看的方法论（SKILL.md + references + 6 个 kit：academic、business-review、consulting-report、brand-proposal、lecture、poster）
+- 字体库（约 155 MB）不入包：导出时按需获取真正用到的，也可 `open-pptd assets sync fonts` 全量预存
 
 ## 示例画廊
 
@@ -126,6 +134,10 @@ AI 会交付**两样东西**：可编辑的 PPTD 项目目录（manifest + pages
 | `paths` | `doctor` |
 | `gallery scan` | `open`（Home）/ `node scripts/gen-gallery-manifest.mjs`（发布） |
 | `fonts …` / `icons …` | `assets fonts …` / `assets sync` |
+
+## 发布
+
+发布打包与版本 bump / tag 清单见 [docs/release-workflow.md](docs/release-workflow.md)。
 
 ## License
 

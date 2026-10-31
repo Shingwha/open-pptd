@@ -14,8 +14,7 @@
 //   watch?(cb, hooks?): () => void  returns an unsubscribe function
 //
 // The engine ships three implementations (httpSource / directoryHandleSource /
-// memorySource); the adapter repo's dshSource is implemented out of tree against
-// the same test cases.
+// memorySource).
 //
 // Also exports applyDeck(deckData, ctx): applies a read result to the editor
 // state (loader.js and external assembly share one implementation).

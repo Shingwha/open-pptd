@@ -2,7 +2,8 @@
 
 ## 3.0.0（开发中）
 
-破坏性接口收口：契约 3.0 + CLI 5 命令。零 npm 依赖、零构建保持不变。
+破坏性接口收口：契约 3.0 + CLI 5 命令 + 最小编辑器 + skill 入主仓。零 npm 依赖、零构建保持不变；
+不提供 2.x 兼容层（旧命令/旧公共 API/深路径/`./internal/*` 全部删除，旧 deck 数据仍可读）。
 
 ### 契约 3.0（CONTRACT_VERSION = 3）
 
@@ -13,6 +14,57 @@
   删除 `exportDeck/exportProject/renderDeck/runFonts/runIcons/runEnsure/runGallery`。
 - renderer barrel 删除 `renderPage`/`autoGrowTexts`（只用 `layout` + `paintPage`）；
   editor 内部改用 `editor/app/paint-page.js` 的 `paintModelPage`。
+
+### 运行时与导出服务
+
+- 新增 ProjectRuntime：`loadProject` / `parseProject` / `createProject` / `resolveProject` /
+  `serializeProject`（snapshot|raw）/ `checkProject`，统一 `ResourceProvider` 与
+  `ERR_REVISION_CONFLICT` / `ERR_RESOURCE_MISSING` / `ERR_UNSUPPORTED_FORMAT` 错误。
+- 新增 ExportService：`exportProject(project, options, env)` 统一 `check|pptx|png|bundle`，
+  校验、字体/图标/媒体资源、进度与报告一个入口；CLI 与编辑器浏览器导出共用。
+- PNG 双后端：headless Chrome（CDP）与浏览器 foreignObject/capture；DPR/scale 正确重绘，
+  透明背景与逐元素审计保留。
+
+### 类型与分片
+
+- 新增 TypeManifest（`packages/model/types/`）：text/shape/line/image/icon/table/chart/group
+  各一个 descriptor（schema/layoutKey/contentEditor），validate/layout/editor 从清单派生。
+- renderer/writer 每类型分片 + `loadType(id)` 显式加载；主路径仍静态汇总，按类型拆包不再复制实现。
+
+### 度量、布局与表格（行为变更）
+
+- `packages/measure` 纯函数度量 + `packages/layout` LayoutTree（几何事实、overflow/重叠）
+  收缩为唯一排版事实源；preview/PNG/PPTX 共用。
+- 表格高度唯一事实 `totalHeight`：layout frame、renderer box、writer `a:ext cy` 三者一致，
+  `a:tr h = rowHeights`，writer 不再自行调用 `measureTable`；rowSpan 额外高度平均补差。
+- 文本不再因框小被裁剪（转为 `check` 几何告警）；表格行高由 min 语义改为精确值。
+- 黄金基线一次性 rebaseline（24 项目 / 156 页），之后零漂移；新增 table-facts /
+  measure-consistency 回归。
+
+### 最小编辑器（breaking）
+
+- 删除旧编辑 UI：属性面板、右键菜单、组合、对齐/分布、内部剪贴板、批量页面操作、
+  字体/主题侧栏、图标编辑器、形状/线条/图片/菜单类型编辑器；DOM/CSS/状态/API 同步收窄。
+- 保留并重做：文字/表格/图表内容编辑器（按需动态加载）；拖动缩放、多选（Ctrl/Shift/框选）、
+  对齐参考线；页面插入/删除/拖拽排序（至少保留 1 页，全部可撤销）。
+- 新增 Design 面板（懒加载）：主题库应用/保存/导入/导出/删除、颜色令牌编辑、
+  字体库搜索/预览/本地或 URL 导入/删除、深浅色外观。
+- 单壳 `createPreview` / `createEditor`：`?deck=` 编辑器、`?blank=1` 空白、`?shot=1` headless、
+  Home 画廊卡片走同一预览管线；`destroy` 幂等，无模块级 DOM/状态单例。
+
+### 主题库与字体库
+
+- 内置 `builtin:default` + 10 个完整主题快照；用户主题库 `~/.open-pptd/themes`（import/export/delete）。
+- `applyTheme` 替换 colors/textStyles/tableStyles，并保留 deck 仍引用的旧 token；`--dry-run` 可预览。
+- 用户字体库 `~/.open-pptd/assets/fonts/user`：本地/URL 导入、删除、元数据索引；内置库只读。
+- CLI `assets themes|fonts` 与编辑器 Design 面板共用同一套 store/API。
+
+### 保存与导出接线
+
+- Revision 冲突检测 + 原子批量保存（同目录 tmp→rename、manifest 最后、失败回滚）；
+  `/api/save` 409 返回当前 revision；HTTP/handle/memory 三通道同一 revision 域。
+- 编辑器 PPTX/bundle/PNG 全部改走 ExportService（浏览器 ResourceProvider），不再直调 writer。
+- `build` 前统一 full `checkProject`；`check` 只读；字体下载只走 `build --fetch` / `assets sync`。
 
 ### CLI（5 命令，无别名/shim）
 
@@ -32,6 +84,24 @@
 - `assets`：保留 `list/sync/clean` 并补 JSON/错误；`themes apply <id> <deck.pptd> [--dry-run]`
   原子写 deck.theme（替换 + 保留引用项）；`fonts import/remove` 支持本地/URL。
 - `doctor`：吸收 `paths`（全部路径/配置/库计数），加 Chrome/Edge PNG 能力；关键失败 exit 1。
+
+### Skill 入主仓
+
+- 内容面回到主仓 `skill/`：`SKILL.md` + `references/`（7 篇）+ `kits/`（academic、business-review、
+  consulting-report、brand-proposal、lecture、poster 共 6 套，含真实 `.page` fragments）。
+- 原独立 `open-pptd-skill` 仓库归档；`npm run test:skill` 对 SKILL/refs/kits 做 lint 与逐 kit
+  `check` + `build` 回归，并校验 release skill zip 的条目与 SHA256。
+- 发布产物新增 `open-pptd-skill-v<版本>.zip`（顶层 `open-pptd/`，不含测试/媒体/脚本）；
+  `package.json.files` 不包含 `skill/`，CLI 运行时包保持干净。
+
+### 文档与发布
+
+- `docs/` 收敛为 `release-workflow.md` + `images/`：删除 `embedding.md`、`image-generation.md`
+  （内容已迁 `skill/references/images.md`）及全部引用；README/README.zh-CN 重写为 3.0。
+- 新增 `npm run test:docs`：docs 目录白名单、全仓无已删文档/DSH 引用、README 5 命令与 skill
+  安装口径、release-workflow 资产清单、版本一致性。
+- `package.json.version` 升到 `3.0.0`；`npm run pack` 产 runtime + skill + icons/fonts（本机有本体时）
+  + install 脚本 + `SHA256SUMS`。
 
 ### 迁移（2.x → 3.0）
 
