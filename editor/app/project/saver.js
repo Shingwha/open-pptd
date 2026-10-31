@@ -87,6 +87,16 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     };
     renderHint();
     wrap.appendChild(hint);
+    const mgrBtn = document.createElement("button");
+    mgrBtn.className = "btn btn-sm";
+    mgrBtn.textContent = "字体管理…";
+    mgrBtn.title = "打开「设计 → 字体」";
+    mgrBtn.addEventListener("click", () => {
+      close();
+      // Decoupled jump: the editor toolbar owns the Design panel deps
+      window.dispatchEvent(new CustomEvent("pptd:open-design", { detail: { tab: "fonts" } }));
+    });
+    wrap.appendChild(mgrBtn);
     const { close } = showDialog("导出 PPTX", wrap, {
       doneText: "导出",
       onDone() {

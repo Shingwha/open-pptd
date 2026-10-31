@@ -223,7 +223,7 @@ export function createEditor(rootEl, options = {}) {
       emitEvents();
     };
 
-    const toolbar = bindToolbar({ state, api, view, io, present });
+    const toolbar = bindToolbar({ state, api, view, io, present, themeMode });
     disposers.push(() => toolbar.destroy?.());
     const keyboard = bindKeyboard({ state, api, io, present });
     disposers.push(() => keyboard.destroy?.());

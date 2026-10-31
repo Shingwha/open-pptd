@@ -9,12 +9,13 @@
 import { createFileMenu } from "./file-menu.js";
 import { bindPageMenu } from "./page-menu.js";
 import { bindAddMenu } from "../interaction/add-menu.js";
+import { openDesignPanel, destroyDesignPanel } from "../interaction/design-panel-lazy.js";
 import { removeRecent } from "./project/handle-store.js";
 import { showToast } from "./toast.js";
 import { dom } from "../dom.js";
 import { dialogs } from "../dialogs.js";
 
-export function bindToolbar({ state, api, view, io, present }) {
+export function bindToolbar({ state, api, view, io, present, themeMode = null }) {
   const disposers = []; // destroy set for child bindings (menus/popovers)
   let mainMenu = null;
 
@@ -103,7 +104,7 @@ export function bindToolbar({ state, api, view, io, present }) {
   }
 
   // --------------------------------------------------------------------------
-  // Add control (three content types) + page menu
+  // Add control (three content types) + page menu + Design panel (lazy)
   // --------------------------------------------------------------------------
   function bindAddMenuUI() {
     const h = bindAddMenu({
@@ -123,9 +124,28 @@ export function bindToolbar({ state, api, view, io, present }) {
     if (h?.destroy) disposers.push(h.destroy);
   }
 
+  function bindDesignButton() {
+    if (!dom.btnDesign) return;
+    const ac = new AbortController();
+    const open = (tab = "theme") => {
+      openDesignPanel({ state, api, io, themeMode, tab }).catch((err) =>
+        showToast(`打开设计面板失败: ${err.message}`, "danger")
+      );
+    };
+    dom.btnDesign.onclick = () => open("theme");
+    // Cross-module entry: the PPTX export dialog's "字体管理…" jumps to Design > 字体
+    window.addEventListener("pptd:open-design", (e) => open(e.detail?.tab || "theme"), { signal: ac.signal });
+    disposers.push(() => {
+      ac.abort();
+      if (dom.btnDesign) dom.btnDesign.onclick = null;
+      destroyDesignPanel();
+    });
+  }
+
   const unbindTopbar = bindTopbar();
   bindAddMenuUI();
   bindPageMenuUI();
+  bindDesignButton();
 
   return {
     /** Release: unbind every child binding (menus/popovers/topbar buttons). */
