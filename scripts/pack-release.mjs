@@ -1,20 +1,25 @@
 #!/usr/bin/env node
 // ============================================================================
-// pack-release.mjs — package the skill as release zips according to the runtime whitelist
+// pack-release.mjs — package the runtime and the skill knowledge pack as release zips
 // ----------------------------------------------------------------------------
 // Artifacts (dist/):
-//   open-pptd-v<version>.zip         runtime (top-level dir open-pptd/; unzip into skills and it works)
+//   open-pptd-v<version>.zip         runtime (top-level dir open-pptd/)
+//   open-pptd-skill-v<version>.zip   skill knowledge pack (top-level dir open-pptd/:
+//                                    SKILL.md + README.md + references/** + kits/**)
 //   open-pptd-icons-v<version>.zip   full icons (solid/regular/brands/*.svg, no registry.json)
 //   open-pptd-fonts-v<version>.zip   full fonts (*.ttf, no registry.json)
 //   install.ps1 / install.sh         copies of the install scripts (directly downloadable from the release page)
 //   SHA256SUMS                       covers all of the above zips
 //
+// Usage: npm run pack                 # everything (runtime + skill + assets + install scripts)
+//        npm run pack -- --only skill # skill zip only (tests/skill/zip.mjs uses this)
+//
 // The whitelist is the single source of truth for runtime release contents: tests/, docs/,
 // examples/, .github/, scripts/, icon source files and .gitignore never enter the package;
 // font files themselves do not enter the package (about 155MB; fetched on demand via CLI after
-// install). Content surfaces (skill docs and knowledge base) have moved to the separate skill
-// repo open-pptd-skill; this package ships runtime only. contract.json is included (contract
-// manifest, read by repo 3 and the contract tests).
+// install). The skill knowledge pack ships from the same repository: skill/{SKILL.md,README.md,
+// references/**,kits/**} only — never tests, demos, generated media, or executable scripts.
+// contract.json is included (contract manifest, read by repo 3 and the contract tests).
 //
 // Resource bodies (assets/fonts/*.ttf, assets/icons/{solid,regular,brands}/*.svg) are not
 // committed to git, so asset zips are based on **files actually present in the local working
@@ -182,20 +187,75 @@ function buildZip(entries) {
   return Buffer.concat(chunks);
 }
 
+// --only skill: produce just the skill knowledge-pack zip (tests/skill/zip.mjs runs this).
+// Without --only, every artifact below is produced as before, now including the skill zip.
+const ONLY = (() => {
+  const i = process.argv.indexOf("--only");
+  if (i === -1) return null;
+  const value = process.argv[i + 1];
+  if (!value || value.startsWith("--")) {
+    console.error("✗ --only 需要参数（当前仅支持 skill）");
+    process.exit(1);
+  }
+  if (value !== "skill") {
+    console.error(`✗ 未知的 --only 目标: ${value}（当前仅支持 skill）`);
+    process.exit(1);
+  }
+  return value;
+})();
+
 const outDir = path.join(ROOT, "dist");
 mkdirSync(outDir, { recursive: true });
 const mb = (n) => (n / 1024 / 1024).toFixed(2);
-const produced = []; // { file, entries }
+const produced = [];
+
+function logZip(outPath, count, raw) {
+  console.log(`✓ ${outPath}`);
+  console.log(`  ${count} 个文件，${mb(raw)}MB → 压缩后 ${mb(statSync(outPath).size)}MB`);
+}
 
 // ---- 1) Runtime zip (whitelist ∪ contract.json) ----
-const runtimePath = path.join(outDir, `open-pptd-v${version}.zip`);
-writeFileSync(runtimePath, buildZip(files));
-produced.push(runtimePath);
-const rawTotal = files.reduce((s, f) => s + f.data.length, 0);
-console.log(`✓ ${runtimePath}`);
-console.log(`  ${files.length} 个文件，${mb(rawTotal)}MB → 压缩后 ${mb(statSync(runtimePath).size)}MB`);
+function packRuntime() {
+  const runtimePath = path.join(outDir, `open-pptd-v${version}.zip`);
+  writeFileSync(runtimePath, buildZip(files));
+  produced.push(runtimePath);
+  logZip(runtimePath, files.length, files.reduce((s, f) => s + f.data.length, 0));
+}
 
-// ---- 2) Asset zips: based on bodies actually present in the local working tree; skip when missing (no failure) ----
+// ---- 2) Skill knowledge-pack zip: skill/{SKILL.md,README.md,references/**,kits/**} ----
+// Top level is open-pptd/ so unzipping into an agent's skills directory works directly.
+// Tests, demos, generated media, and executable scripts never enter this zip.
+function collectSkillFiles() {
+  const skillRoot = path.join(ROOT, "skill");
+  const allowed = (rel) =>
+    rel === "SKILL.md" || rel === "README.md" || rel.startsWith("references/") || rel.startsWith("kits/");
+  const listed = execSync("git ls-files --cached --others --exclude-standard -- skill", { cwd: ROOT, encoding: "utf8" })
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((rel) => rel.replace(/^skill\//, ""))
+    .filter(allowed)
+    .filter((rel) => existsSync(path.join(skillRoot, rel)))
+    .sort();
+  if (!listed.length) {
+    console.error("✗ skill 知识包为空（skill/{SKILL.md,README.md,references,kits} 未找到文件）");
+    process.exit(1);
+  }
+  return listed.map((rel) => {
+    const abs = path.join(skillRoot, rel);
+    return { name: `open-pptd/${rel}`, data: readFileSync(abs), mtime: statSync(abs).mtime };
+  });
+}
+
+function packSkill() {
+  const entries = collectSkillFiles();
+  const outPath = path.join(outDir, `open-pptd-skill-v${version}.zip`);
+  writeFileSync(outPath, buildZip(entries));
+  produced.push(outPath);
+  logZip(outPath, entries.length, entries.reduce((s, e) => s + e.data.length, 0));
+}
+
+// ---- 3) Asset zips: based on bodies actually present in the local working tree; skip when missing (no failure) ----
 function walkFiles(dir) {
   const out = [];
   if (!existsSync(dir)) return out;
@@ -215,54 +275,69 @@ function packAssets(label, zipName, entries) {
   const outPath = path.join(outDir, zipName);
   writeFileSync(outPath, buildZip(entries));
   produced.push(outPath);
-  const raw = entries.reduce((s, e) => s + e.data.length, 0);
-  console.log(`✓ ${outPath}`);
-  console.log(`  ${entries.length} 个文件，${mb(raw)}MB → 压缩后 ${mb(statSync(outPath).size)}MB`);
+  logZip(outPath, entries.length, entries.reduce((s, e) => s + e.data.length, 0));
 }
 
-// icons: assets/icons/{solid,regular,brands}/**/*.svg (no registry.json; directory structure
-// preserved, entry names relative to assets/icons → solid/…, regular/…, brands/…; the install
-// script extracts to assets/icons)
-const iconsRoot = path.join(ROOT, "assets", "icons");
-const iconEntries = walkFiles(iconsRoot)
-  .filter((p) => p.endsWith(".svg"))
-  .map((p) => ({ rel: path.relative(iconsRoot, p).split(path.sep).join("/"), abs: p }))
-  .sort((a, b) => a.rel.localeCompare(b.rel))
-  .map(({ rel, abs }) => ({ name: rel, data: readFileSync(abs), mtime: statSync(abs).mtime }));
-packAssets("图标资产包", `open-pptd-icons-v${version}.zip`, iconEntries);
+function packAssetZips() {
+  // icons: assets/icons/{solid,regular,brands}/**/*.svg (no registry.json; directory structure
+  // preserved, entry names relative to assets/icons → solid/…, regular/…, brands/…; the install
+  // script extracts to assets/icons)
+  const iconsRoot = path.join(ROOT, "assets", "icons");
+  const iconEntries = walkFiles(iconsRoot)
+    .filter((p) => p.endsWith(".svg"))
+    .map((p) => ({ rel: path.relative(iconsRoot, p).split(path.sep).join("/"), abs: p }))
+    .sort((a, b) => a.rel.localeCompare(b.rel))
+    .map(({ rel, abs }) => ({ name: rel, data: readFileSync(abs), mtime: statSync(abs).mtime }));
+  packAssets("图标资产包", `open-pptd-icons-v${version}.zip`, iconEntries);
 
-// fonts: assets/fonts/*.ttf (no registry.json; entry name = file name; the install script
-// extracts to assets/fonts)
-const fontsRoot = path.join(ROOT, "assets", "fonts");
-const fontEntries = (existsSync(fontsRoot) ? readdirSync(fontsRoot, { withFileTypes: true }) : [])
-  .filter((e) => e.isFile() && e.name.toLowerCase().endsWith(".ttf"))
-  .map((e) => e.name)
-  .sort()
-  .map((name) => {
-    const abs = path.join(fontsRoot, name);
-    return { name, data: readFileSync(abs), mtime: statSync(abs).mtime };
-  });
-packAssets("字体资产包", `open-pptd-fonts-v${version}.zip`, fontEntries);
+  // fonts: assets/fonts/*.ttf (no registry.json; entry name = file name; the install script
+  // extracts to assets/fonts)
+  const fontsRoot = path.join(ROOT, "assets", "fonts");
+  const fontEntries = (existsSync(fontsRoot) ? readdirSync(fontsRoot, { withFileTypes: true }) : [])
+    .filter((e) => e.isFile() && e.name.toLowerCase().endsWith(".ttf"))
+    .map((e) => e.name)
+    .sort()
+    .map((name) => {
+      const abs = path.join(fontsRoot, name);
+      return { name, data: readFileSync(abs), mtime: statSync(abs).mtime };
+    });
+  packAssets("字体资产包", `open-pptd-fonts-v${version}.zip`, fontEntries);
 
-// ---- 3) Install-script copies (directly downloadable from the release page) ----
-for (const s of ["install.ps1", "install.sh"]) {
-  const src = path.join(ROOT, s);
-  if (!existsSync(src)) {
-    console.warn(`! 跳过 ${s}：仓库根未找到`);
-    continue;
+  return { iconCount: iconEntries.length, fontCount: fontEntries.length };
+}
+
+// ---- 4) Install-script copies (directly downloadable from the release page) ----
+function packInstallScripts() {
+  for (const s of ["install.ps1", "install.sh"]) {
+    const src = path.join(ROOT, s);
+    if (!existsSync(src)) {
+      console.warn(`! 跳过 ${s}：仓库根未找到`);
+      continue;
+    }
+    copyFileSync(src, path.join(outDir, s));
+    console.log(`✓ ${path.join(outDir, s)}`);
   }
-  copyFileSync(src, path.join(outDir, s));
-  console.log(`✓ ${path.join(outDir, s)}`);
 }
 
-// ---- 4) SHA256SUMS (covering all produced zips) ----
-const sumsLines = produced
-  .map((p) => path.basename(p))
-  .sort()
-  .map((name) => `${createHash("sha256").update(readFileSync(path.join(outDir, name))).digest("hex")}  ${name}`);
-const sumsPath = path.join(outDir, "SHA256SUMS");
-writeFileSync(sumsPath, sumsLines.join("\n") + "\n");
-console.log(`✓ ${sumsPath}（${sumsLines.length} 项）`);
-if (produced.length < 3) {
-  console.warn("! 本次仅产出运行时 zip（缺图标/字体本体）；CI 上这是合法产物，本机补全本体后可产五件套");
+// ---- 5) SHA256SUMS (covering all produced zips) ----
+function writeSums() {
+  const sumsLines = produced
+    .map((p) => path.basename(p))
+    .sort()
+    .map((name) => `${createHash("sha256").update(readFileSync(path.join(outDir, name))).digest("hex")}  ${name}`);
+  const sumsPath = path.join(outDir, "SHA256SUMS");
+  writeFileSync(sumsPath, sumsLines.join("\n") + "\n");
+  console.log(`✓ ${sumsPath}（${sumsLines.length} 项）`);
+}
+
+let assetCounts = { iconCount: 0, fontCount: 0 };
+if (!ONLY) {
+  packRuntime();
+  assetCounts = packAssetZips();
+  packInstallScripts();
+}
+packSkill();
+writeSums();
+if (!ONLY && !assetCounts.iconCount && !assetCounts.fontCount) {
+  console.warn("! 本次产出运行时 zip + skill zip（缺图标/字体本体）；CI 上这是合法产物，本机补全本体后可产六件套");
 }
