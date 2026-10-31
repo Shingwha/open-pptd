@@ -10,6 +10,7 @@
 //   5. each kit's fragments assemble into a temp project, then `check` and
 //      `build --format pptx` report 0 errors (warnings are recorded only)
 //   6. no links into the main repo docs/ tree
+//   7. the release skill zip (tests/skill/zip.mjs): entries, SHA256SUMS
 // Usage: node tests/skill/run.mjs
 // ============================================================================
 
@@ -29,6 +30,7 @@ import { dirname, join, resolve, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { load as loadYaml } from "../../packages/model/vendor/js-yaml.mjs";
+import { skillZipTests } from "./zip.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const SKILL = join(ROOT, "skill");
@@ -95,12 +97,20 @@ for (const r of REFS) {
   ok(`SKILL.md 索引 references/${r}.md`, skillText.includes(`references/${r}.md`));
 }
 
-const KITS = ["academic", "business-review", "consulting-report", "brand-proposal"];
+const KITS = ["academic", "business-review", "consulting-report", "brand-proposal", "lecture", "poster"];
 const SYSTEM = {
   academic: "academic",
   "business-review": "executive",
   "consulting-report": "executive",
   "brand-proposal": "editorial",
+  lecture: "instructional",
+  poster: "editorial",
+};
+// Canvas per kit: decks are 960×540; poster is a single A-series page (1:√2),
+// written larger so type sizes in the fragment are print sizes, not deck sizes.
+const CANVAS = {
+  default: [960, 540],
+  poster: [1191, 1684],
 };
 const sizes = { "design.md": [10 * 1024, 15 * 1024], "images.md": [6 * 1024, 12 * 1024] };
 for (const [name, [min, max]] of Object.entries(sizes)) {
@@ -140,15 +150,28 @@ const themes = {
     primarySoft: "#E8EDF8", primaryTint: "#CBD8F0", primaryDeep: "#001F66",
     accent3: "#6E7F6A", accent4: "#8A6E4B", accent5: "#5C6B72", accent6: "#9C6B5A",
   },
+  lecture: {
+    primary: "#1F6B5C", accent: "#4C9A86", bg: "#FBFAF6", text: "#1F2421", muted: "#6B726C",
+    line: "#DEDCD3", success: "#3D7A4E", warning: "#B4872D", danger: "#B3362E",
+    primarySoft: "#E8F0EC", primaryTint: "#CBDDD6", primaryDeep: "#0E3A31",
+    accent3: "#6E7F6A", accent4: "#8A6E4B", accent5: "#5C6B72", accent6: "#9C6B5A",
+  },
+  poster: {
+    primary: "#14504A", accent: "#B2542D", bg: "#F7F4EC", text: "#161616", muted: "#6C675E",
+    line: "#DAD2C4", success: "#3D7A4E", warning: "#B4872D", danger: "#B3362E",
+    primarySoft: "#E6EFEC", primaryTint: "#C8DCD6", primaryDeep: "#08302B",
+    accent3: "#6E7F6A", accent4: "#8A6E4B", accent5: "#5C6B72", accent6: "#9C6B5A",
+  },
 };
 
 function manifestFor(kit, pageNames) {
   const c = themes[kit];
+  const [W, H] = CANVAS[kit] || CANVAS.default;
   const colors = Object.entries(c).map(([k, v]) => `    ${k}: "${v}"`).join("\n");
   return [
     "version: v2",
     `title: "${kit} fragment assembly"`,
-    "size: [960, 540]",
+    `size: [${W}, ${H}]`,
     "theme:",
     "  colors:",
     colors,
@@ -228,6 +251,12 @@ for (const kit of KITS) {
   const frags = readdirSync(fragDir).filter((f) => f.endsWith(".page")).sort();
   ok(`kit ${kit}: fragments ≥1`, frags.length >= 1, `${frags.length}`);
 
+  const [W, H] = CANVAS[kit] || CANVAS.default;
+  if (kit === "poster") {
+    ok("kit poster: 单页画布非 16:9", Math.abs(W / H - 16 / 9) > 0.2 && H > W, `${W}×${H} (1:${(H / W).toFixed(3)})`);
+    ok("kit poster: kit.md 声明不拉伸 16:9", /16:9/.test(kitText));
+  }
+
   const tmp = mkdtempSync(join(tmpdir(), `pptd-skill-${kit}-`));
   temps.push(tmp);
   mkdirSync(join(tmp, "pages"), { recursive: true });
@@ -255,7 +284,7 @@ for (const kit of KITS) {
       const b = el.bounds;
       if (!Array.isArray(b) || b.length !== 4 || b.some((n) => typeof n !== "number")) {
         badBounds = el.elementId;
-      } else if (b[0] < 0 || b[1] < 0 || b[2] <= 0 || b[3] <= 0 || b[0] + b[2] > 960.01 || b[1] + b[3] > 540.01) {
+      } else if (b[0] < 0 || b[1] < 0 || b[2] <= 0 || b[3] <= 0 || b[0] + b[2] > W + 0.01 || b[1] + b[3] > H + 0.01) {
         badBounds = `${el.elementId} ${JSON.stringify(b)}`;
       }
       if (el.elementType === "image" && typeof el.src === "string" && !/^https?:/.test(el.src)) {
@@ -322,6 +351,9 @@ ok("skill 内无完整 deck/校准 demo/可执行脚本", forbidden.length === 0
   forbidden.slice(0, 3).map(rel).join(", "));
 
 for (const tmp of temps) rmSync(tmp, { recursive: true, force: true });
+
+// ------------------------------------------------- 4. release skill zip
+skillZipTests(ok, { root: ROOT });
 
 console.log(`\n结果: ${pass}/${pass + fail} 通过${fail === 0 ? " ✅" : " ❌"}（warnings recorded: ${warningTotal}）`);
 process.exit(fail === 0 ? 0 : 1);

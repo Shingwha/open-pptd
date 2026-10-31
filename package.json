@@ -43,6 +43,7 @@
     "test:incremental": "node tests/e2e/incremental-load.mjs",
     "test:render": "node tests/e2e/render.mjs",
     "test:fixtures": "node tests/tools/dump-formula-mml.mjs",
+    "test:skill": "node tests/skill/run.mjs",
     "pack": "node scripts/pack-release.mjs"
   },
   "license": "MIT"

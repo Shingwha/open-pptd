@@ -1,0 +1,128 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+elements:
+  - elementId: pr-kicker
+    elementType: text
+    bounds: [64, 40, 420, 20]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      letterSpacing: 2
+      align: [left, middle]
+      text: PRACTICE · 10 MIN
+  - elementId: pr-title
+    elementType: text
+    bounds: [64, 68, 832, 44]
+    content:
+      fontSize: 30
+      fontFamily: "MiSans"
+      color: "$text"
+      bold: true
+      lineHeight: 1.2
+      align: [left, middle]
+      text: "Your turn: convert a flow rate to minutes"
+  - elementId: pr-task-panel
+    elementType: shape
+    bounds: [64, 132, 520, 150]
+    shapeName: rect
+    fill: {type: solid, color: "#FFFFFF"}
+    border: {style: solid, width: 1, color: "$line"}
+  - elementId: pr-task-label
+    elementType: text
+    bounds: [84, 146, 160, 18]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$primary"
+      letterSpacing: 1.6
+      align: [left, middle]
+      text: TASK
+  - elementId: pr-task-text
+    elementType: text
+    bounds: [84, 172, 480, 96]
+    content:
+      fontSize: 19
+      fontFamily: "Microsoft YaHei"
+      color: "$text"
+      lineHeight: 1.5
+      align: [left, top]
+      text: A tank holds 1.5 m³. The pump moves 20 L/min. How many minutes until it is full, to the nearest minute?
+  - elementId: pr-check-label
+    elementType: text
+    bounds: [608, 132, 288, 18]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$primary"
+      letterSpacing: 1.6
+      align: [left, middle]
+      text: CHECK
+  - elementId: pr-check-text
+    elementType: text
+    bounds: [608, 160, 288, 120]
+    content:
+      fontSize: 15
+      fontFamily: "Microsoft YaHei"
+      color: "$text"
+      lineHeight: 1.6
+      align: [left, top]
+      text: |
+        • You converted m³ to litres first.
+        • The answer carries the unit minutes.
+        • Your value is within ±1 minute of 75.
+  - elementId: pr-hint
+    elementType: text
+    bounds: [64, 300, 832, 44]
+    content:
+      fontSize: 15
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      lineHeight: 1.45
+      align: [left, top]
+      text: "Hint: 1 m³ = 1,000 L. Write the unit beside every number before you divide."
+  - elementId: pr-answer-panel
+    elementType: shape
+    bounds: [64, 360, 832, 72]
+    shapeName: rect
+    fill: {type: solid, color: "$primarySoft"}
+  - elementId: pr-answer-label
+    elementType: text
+    bounds: [84, 372, 120, 18]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$primary"
+      letterSpacing: 1.6
+      align: [left, middle]
+      text: ANSWER
+  - elementId: pr-answer-text
+    elementType: text
+    bounds: [84, 396, 792, 28]
+    content:
+      fontSize: 18
+      fontFamily: "Microsoft YaHei"
+      color: "$text"
+      lineHeight: 1.4
+      align: [left, middle]
+      text: "1.5 m³ = 1,500 L; 1,500 ÷ 20 = 75 minutes. The unit and the value both pass the check."
+  - elementId: pr-source
+    elementType: text
+    bounds: [64, 504, 760, 18]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [left, middle]
+      text: "Source: practice set B, item 4; answer key verified against the course solution sheet."
+  - elementId: pr-page
+    elementType: text
+    bounds: [900, 504, 28, 18]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [right, middle]
+      text: "06"

@@ -24,7 +24,7 @@ push tag 后 CI 自动执行：
 |---|---|
 | 校验版本 | tag 与 package.json 的 version 必须一致 |
 | 回归测试 | `npm run test:fixtures` + `npm test`（与 Deploy Pages 同款守门，任何一步失败都不会发布） |
-| 打包 | `npm run pack` → `dist/` 五类资产：`open-pptd-v<版本>.zip`（运行时白名单包）+ `open-pptd-icons-v<版本>.zip` + `open-pptd-fonts-v<版本>.zip`（图标/字体本体仅取本地工作树实际存在的，CI 无本体时自动跳过）+ `install.ps1`/`install.sh`（同步自仓库根）+ `SHA256SUMS`（覆盖全部 zip） |
+| 打包 | `npm run pack` → `dist/` 六类资产：`open-pptd-v<版本>.zip`（CLI 运行时白名单包）+ `open-pptd-skill-v<版本>.zip`（技能知识包：顶层 `open-pptd/`，含 `SKILL.md`/`README.md`/`references/`/`kits/`，不含测试与媒体）+ `open-pptd-icons-v<版本>.zip` + `open-pptd-fonts-v<版本>.zip`（图标/字体本体仅取本地工作树实际存在的，CI 无本体时自动跳过）+ `install.ps1`/`install.sh`（同步自仓库根）+ `SHA256SUMS`（覆盖全部 zip） |
 | 发布 | 创建 GitHub Release 并上传 `dist/*` 全部资产；notes 优先取 tag 注释，未写则 commit 列表自动生成。用户侧安装走仓库根 install 脚本（raw URL 一键安装），Release zip 是离线/手动安装渠道 |
 
 ## 更新说明（Release Notes）
@@ -82,7 +82,8 @@ bin/ / packages/ / editor/ / assets/fonts/registry.json / assets/icons/registry.
 ```
 
 - **不含**：tests、docs、examples、.github、scripts、.gitignore、字体与图标 SVG 本体（registry.json 元数据入包，本体经 `open-pptd assets sync` 或导出前置体检按需获取）
-- 2.0 起 zip 不再「解压到 skills 文件夹」用——它是 **CLI 运行时**，由仓库根的 `install.ps1` / `install.sh` 下载安装（校验 SHA256 → 解压到 `~/.open-pptd/cli/versions/<ver>` → current 指针 → 用户级 PATH）；AI 对话用法配合独立技能仓 [open-pptd-skill](https://github.com/Shingwha/open-pptd-skill)
+- **skill zip 单独产出**：`open-pptd-skill-v<版本>.zip` 是 AI 技能知识包，顶层目录同样是 `open-pptd/`，内容仅 `SKILL.md` / `README.md` / `references/**` / `kits/**`，不含测试、demo、媒体与可执行脚本；本机可跑 `npm run pack -- --only skill` 单独复验。SHA256 写在 `SHA256SUMS`
+- 2.0 起运行时 zip 不再「解压到 skills 文件夹」用——它是 **CLI 运行时**，由仓库根的 `install.ps1` / `install.sh` 下载安装（校验 SHA256 → 解压到 `~/.open-pptd/cli/versions/<ver>` → current 指针 → 用户级 PATH）；AI 对话用法使用 Release 中的 `open-pptd-skill-v<版本>.zip`（解压到 agent 的 skills 目录）
 - 文件清单取自 `git ls-files`，只收 git 跟踪文件；打包时若工作树有未提交改动，脚本会打警示
 
 要调整发布内容 = 改 `WHITELIST`，然后本地验证：
