@@ -23,7 +23,7 @@ import {
   createFontLibrary,
   safeFontFileName,
 } from "../../packages/model/index.js";
-import { createFileFontLibrary, fontLibraryPaths } from "../../packages/server/font-library.js";
+import { createFileFontLibrary, fontLibraryPaths, mergeUserFonts, userFontReady } from "../../packages/server/font-library.js";
 import { createFsResourceProvider } from "../../packages/server/runtime-node.js";
 
 const results = [];
@@ -193,7 +193,18 @@ try {
     checkEq("builtin 无字节 = null", await p2.fontBytes({ family: "Builtin No Bytes" }), null);
   }
 
-  console.log("\n== 6. 索引损坏与错误码 ==");
+  console.log("\n== 6. 合并视图（预检/check 共用）与索引损坏 ==");
+  {
+    const base = { version: 2, fonts: [{ key: "B", family: "Builtin Family", file: "b.ttf" }], systemFonts: [] };
+    const merged = mergeUserFonts(base, { home });
+    checkEq("合并视图用户字体在前", merged.fonts[0].family, "User Font");
+    checkEq("合并视图标记 userFont", merged.fonts[0].userFont, true);
+    checkEq("合并视图保留内置", merged.fonts.at(-1).family, "Builtin Family");
+    check("userFontReady 命中完整字节", userFontReady(merged.fonts[0], { home }) === true);
+    check("userFontReady 大小不符 = false", userFontReady({ ...merged.fonts[0], size: merged.fonts[0].size + 1 }, { home }) === false);
+    check("userFontReady 缺文件 = false", userFontReady({ ...merged.fonts[0], file: "missing.ttf" }, { home }) === false);
+    check("mergeUserFonts 空库返回原对象", mergeUserFonts(base, { home: join(home, "empty-home") }) === base);
+  }
   {
     writeFileSync(join(home, "assets", "fonts", "user", "index.json"), "{broken", "utf8");
     const listed = await lib.list();

@@ -28,7 +28,7 @@ import { resolveIconName } from "../model/icon-fa.js";
 import { assertRevision } from "../runtime/index.js";
 import { IMAGE_EXTS, imageExtOf } from "../runtime/provider.js";
 import { FONT_REGISTRY_DIR, ICON_REGISTRY_DIR, paths, resolveResourceFile } from "../paths.js";
-import { createFileFontLibrary, readUserFontEntries } from "./font-library.js";
+import { createFileFontLibrary, mergeUserFonts } from "./font-library.js";
 
 /** Project-relative path -> absolute path, refusing escapes from the project dir. */
 function safeProjectPath(baseDir, rel) {
@@ -176,21 +176,7 @@ export function createFsResourceProvider({ baseDir = ".", fontRegistry = null, i
   // The registry exposed to check/export includes user entries first, so a deck
   // that declares only {family} still resolves through the global user library
   // (findFont sees user families/keys; bytes are then read by the provider).
-  const fonts = () => {
-    const base = (fontReg ??= readRegistry(FONT_REGISTRY_DIR, "字体"));
-    const users = readUserFontEntries({ home: userHome });
-    if (!users.length) return base;
-    const entries = users.map((e) => ({
-      key: e.key,
-      family: e.family,
-      file: e.file,
-      url: e.url || null,
-      subset: e.subset,
-      license: e.license || null,
-      size: e.size,
-    }));
-    return { ...base, fonts: [...entries, ...(base.fonts || [])] };
-  };
+  const fonts = () => mergeUserFonts((fontReg ??= readRegistry(FONT_REGISTRY_DIR, "字体")), { home: userHome });
   const icons = () => (iconReg ??= readRegistry(ICON_REGISTRY_DIR, "图标"));
   // Global user font library (user -> built-in registry -> system); bytes never fetched here.
   const library = fontLibrary || createFileFontLibrary(home ? { home } : {});

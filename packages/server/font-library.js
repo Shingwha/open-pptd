@@ -12,7 +12,7 @@
 // API / provider (D14).
 // ============================================================================
 
-import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { join, resolve, sep } from "node:path";
 import { paths, atomicWriteFile, FONT_REGISTRY_DIR, resolveResourceFile } from "../paths.js";
 import { FontLibraryError, MAX_FONT_BYTES, createFontLibrary, safeFontFileName } from "../model/font-library.js";
@@ -40,6 +40,52 @@ export function readUserFontEntries({ home = paths.home } = {}) {
   } catch (err) {
     console.warn(`[fonts] 用户字体索引读取失败（视为空库）: ${err.message}`);
     return [];
+  }
+}
+
+/**
+ * Merge the user font library into a built-in registry view. This is the single
+ * shared helper for the Node ResourceProvider (check/export) and the CLI export
+ * preflight (cli/ensure.js), so "a deck declares only {family}" resolves through
+ * the global user library everywhere. User entries carry `userFont: true` so
+ * readiness checks can look in the user dir instead of the built-in roots.
+ * @param {object} registry built-in registry ({fonts,systemFonts})
+ * @param {{home?:string}} [options]
+ * @returns {object} registry view with user entries first (same object when empty)
+ */
+export function mergeUserFonts(registry, { home = paths.home } = {}) {
+  const base = registry && typeof registry === "object" ? registry : { fonts: [], systemFonts: [] };
+  const users = readUserFontEntries({ home });
+  if (!users.length) return base;
+  const entries = users.map((e) => ({
+    key: e.key,
+    family: e.family,
+    file: e.file,
+    url: e.url || null,
+    subset: e.subset,
+    license: e.license || null,
+    size: e.size,
+    userFont: true,
+  }));
+  return { ...base, fonts: [...entries, ...(base.fonts || [])] };
+}
+
+/**
+ * Is a user-library entry's byte file present (and, when the index records a
+ * size, complete)? Used by the export preflight; built-in entries keep using
+ * cli/resource-status.js#fontFileReady (home/package roots).
+ * @param {object} entry entry from mergeUserFonts (with userFont:true)
+ * @param {{home?:string}} [options]
+ * @returns {boolean}
+ */
+export function userFontReady(entry, { home = paths.home } = {}) {
+  const file = safeFontFileName(entry?.file);
+  if (!file) return false;
+  try {
+    const stat = statSync(join(fontLibraryPaths({ home }).userDir, file));
+    return typeof entry.size !== "number" || stat.size === entry.size;
+  } catch {
+    return false;
   }
 }
 
