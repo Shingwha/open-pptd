@@ -20,6 +20,7 @@ import { decodeDataUrl, imageSize, safeFileName } from "../writer/util.js";
 import { ZipWriter } from "../writer/zip.js";
 import { paths, FONT_REGISTRY_DIR, ICON_REGISTRY_DIR } from "../paths.js";
 import { readFontRegistry, readIconRegistry } from "./resource-status.js";
+import { createDiskProjectSource } from "../server/runtime-node.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 /** Skill root dir (assets/ is located relative to this); kept as an export for existing deep importers. */
@@ -86,20 +87,21 @@ const EXT_BY_EXTNAME = { ".png": "png", ".jpg": "jpg", ".jpeg": "jpg", ".gif": "
 
 /**
  * Read the manifest plus all page files (shared by exportDeck / exportProject / check
- * to avoid duplicate implementations drifting).
+ * to avoid duplicate implementations drifting). Delegates the actual read to the
+ * runtime disk source (packages/server/runtime-node.js); the returned shape stays the
+ * historical one so every existing caller is untouched.
  * @param {string} manifest .pptd file path
  * @returns {{ manifestText: string, manifestObj: object, deckDir: string, pageFiles: Map<string,string> }}
  *  pageFiles: page relative path → file text
  */
 export function loadProjectFiles(manifest) {
-  const manifestText = readFileSync(manifest, "utf8");
-  const deckDir = dirname(manifest);
-  const manifestObj = yaml.load(manifestText);
-  const pageFiles = new Map();
-  for (const rel of manifestObj?.pages || []) {
-    pageFiles.set(String(rel), readFileSync(join(deckDir, String(rel)), "utf8"));
-  }
-  return { manifestText, manifestObj, deckDir, pageFiles };
+  const files = createDiskProjectSource(manifest).readSync();
+  return {
+    manifestText: files.manifestText,
+    manifestObj: yaml.load(files.manifestText),
+    deckDir: dirname(manifest),
+    pageFiles: files.pageFiles,
+  };
 }
 
 /** Validation-issue location prefix ("page N elementId", either part optional); shared by the check and export gates. */
