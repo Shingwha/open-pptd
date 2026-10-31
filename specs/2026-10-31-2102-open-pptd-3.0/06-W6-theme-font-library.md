@@ -39,4 +39,30 @@
 
 ## 前置上下文
 
-待 W2 合并后补：runtime/provider API、paths、W2 handoff、现有 font/theme 结构、稳定区、已知坑。
+- 必读顺序：`ref/repo-map.md` → `ref/interfaces.md` §3/§8/§9 → `ref/theme-font.md`（全文，尤其 §2–§6、§8）→ `ref/decisions.md` D11–D15 → `handoff/W2-worker.md` → `handoff/W5-worker.md` → 本工单。
+- 基线命令（开工先跑，贴真实输出）：`node tests/tools/dump-formula-mml.mjs`；`node tests/run-all.mjs` → 31/31；`node tests/runtime/run.mjs`；`node tests/export/run.mjs`；`node tests/regression/{table-facts,measure-consistency,type-manifest}.mjs`；dep-graph；contract；`tests/e2e/render.mjs`。
+- 稳定区（勿重读/勿改）：`packages/{runtime,export,writer,layout,measure}/**`、`packages/renderer/**`、`editor/**`（Design 面板 W7）、`tests/golden/**`、`tests/projects/**`、`tests/run-all.mjs`（lead 接入）。
+- 现有事实（lead 已核实）：
+  - `packages/model/theme.js` 有 normalizeTheme/resolveTheme/resolveTextStyle/resolveTableStyle/cellTextStyle；`theme-presets.js` 有 DEFAULT_THEME + THEME_PALETTES（10 套颜色）；`paths.js` 有 home/assets/fonts 路径；`assets/fonts/registry.json` 是内置字体 registry（字节不入 git）。
+  - `packages/server/index.js` 已有静态服务 + `/api/save` + `/events` + `/api/export-image`；路由集中在 index.js。
+  - `packages/cli/assets.js` 现仅内置资产 sync；`bin.js` 负责命令分发。
+  - W5 已把表格度量改为样式感知，主题改动会影响渲染；本波不得改变既有 deck 的默认渲染（不应用新主题时）。
+- 已知坑：字体字节约 155MB 不入 git，home 字体可能不存在；测试必须在无用户库/无字体字节环境下可跑（用临时 home 目录注入）；server API 只允许 loopback + 路径校验 + 原子写；零新增依赖。
+
+## 本波实施口径（lead 已拍板）
+
+1. **分层**：
+   - 纯核心放 `packages/model/theme-library.js` 与 `packages/model/font-library.js`：内置主题快照生成、主题 JSON 校验、`applyTheme`、引用扫描/usage、`createThemeStore(adapter)`/`createFontLibrary(adapter)` 工厂（adapter 注入读写，纯逻辑无 node:/DOM）。
+   - Node 存储适配器放 `packages/server/{theme-store.js,font-library.js}`（home 路径、原子写、索引）；`packages/paths.js` 增加 `themes`、`userFonts`、`userFontIndex`。
+   - server API 放 `packages/server/{themes,fonts}.js` 并由 `packages/server/index.js` 挂载；CLI `assets themes/fonts` 在 `packages/cli/assets.js` + `bin.js` 分发。
+2. **内置主题**：默认主题 + 10 个 palette 展开为**完整快照**（colors 用 palette，textStyles/tableStyles 用 DEFAULT_THEME）；id 稳定（如 `builtin:default`、`builtin:<paletteKey>`），`builtin:true` 只读。用户主题 `~/.open-pptd/themes/<id>.json`，`version:1`。
+3. **applyTheme**：`applyTheme(currentTheme, themeFile, { deck } = {}) → { theme, preserved:{colors,textStyles,tableStyles} }`；替换三块；扫描 deck 的 `$token`、`style`/`textStyle`/table `style` 引用；新主题缺失但被引用的项从旧主题保留；未引用旧项丢弃；无 deck 时只做纯替换。另提供 `colorTokenUsage(deck, token)`/`listColorTokens(theme)` 纯函数；自定义 token 任意 key。
+4. **FontLibrary**：`list/read/importFile/importUrl/remove/resolve`；用户字体 `~/.open-pptd/assets/fonts/user/` + `index.json`（family/key/file/source/license/size/subset）；`deck.fonts` 只引用 family；resolve 顺序 user → builtin registry → system → missing（system 只声明不嵌入）。Node provider `createFsResourceProvider` 的 `fontBytes/fontStatus` 接入用户库（全局可复用）。
+5. **嵌入设置**：保持全局 `embedFonts/fullFonts`；不做 per-font chip；ExportService 已消费 provider，本波只验证用户库字节能进 PPTX。
+6. **server API**（仅 loopback，路径 traversal 校验，body 上限，原子写）：
+   - `GET /api/themes`（list）、`POST /api/themes`（save/import）、`DELETE /api/themes?id=`；
+   - `GET /api/fonts`（list）、`POST /api/fonts`（base64 或 url 导入）、`DELETE /api/fonts?key=`；
+   - 错误 JSON `{ok:false,error:{code,message}}`；code 用 `ERR_*`。
+7. **CLI assets**：`assets themes list|import|export|delete|apply`、`assets fonts list|import|remove`；保留旧 `assets sync` 行为；JSON 单行。命令面最终由 W10 收敛。
+8. **barrel/分支例外**：为让 W7 通过包级入口消费，允许最小改动 `packages/model/index.js`（导出 theme/font library 公共名）与 `packages/server/index.js`（挂载路由、导出 store）；`packages/cli/bin.js`（分发）。这三处只加导出/挂载，不改既有行为；diff 必须在报告中单列。`contract.json`/`package.json`/`tests/run-all.mjs` 仍由 lead 改。
+9. **测试**：`tests/regression/theme-library.mjs`、`font-library.mjs`（自跑，临时 home，不依赖真实字体字节）；覆盖 builtin 只读/用户 CRUD/非法 JSON/重复 id、apply preserved/丢弃/undo 数据层、usage、字体导入删除/resolve/跨端 bytes/deck refs、缺失/系统状态、全局 embed 设置。不得改变默认 deck 渲染（golden 不得变化）。
