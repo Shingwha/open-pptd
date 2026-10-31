@@ -140,6 +140,6 @@
 
 ## 8. 当前状态
 
-- 本组仅供评审；**未改代码、未建分支、未派 subagent、未提交**。
-- W1 已可派工；在用户明确说“开始 W1”前不执行。
-- 旧 `specs/2026-09-30-ui-redesign-line/**`、`specs/ref/**`、`docs/archive/**` 将在 W1/W13 按 `ref/docs.md` 删除；本组 spec 不依赖它们。
+- ✅ W1（2026-10-31 @ `feat/3.0-w1-baseline` → main `b9e876c`）：基线 26/26 全绿；死代码/docs 第一阶段已清；parity harness 已建。
+- W2 详单已补 `## 前置上下文`，可派工。契约无变化（runtime 包尚未进入 contract 导出面，W10 统一）。
+- 旧 `specs/2026-09-30-ui-redesign-line/**`、`specs/ref/**`、`docs/archive/**` 已由 W1 删除；本组 spec 不依赖它们。

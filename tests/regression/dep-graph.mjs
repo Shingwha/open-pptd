@@ -3,11 +3,14 @@
 // ----------------------------------------------------------------------------
 // Scans every .js/.mjs under packages/ and editor/ for imports and source, asserting:
 //   1. packages/model must not import any sibling package (another directory under packages/);
-//   2. the allowed cross-package import edge table (spec 09 T0/T5, three-stage render pipeline):
+//   2. the allowed cross-package import edge table (spec 09 T0/T5, three-stage render pipeline;
+//      3.0 adds runtime/export):
 //        writer   → model | vendor | measure
 //        renderer → model | vendor | layout
 //        layout   → model | measure
 //        measure  → model
+//        runtime  → model | measure | layout
+//        export   → runtime | model | measure | layout | writer
 //      Any other cross-package direction is a violation. The table includes vendor (the neutral
 //      shared vendor area, e.g. echarts.mjs); "exists means checked": a missing target package
 //      directory is not an error (the edge table lands first, packages follow).
@@ -67,13 +70,16 @@ const inVendor = (r) => r.split("/").includes("vendor");
 const inHeadless = (r) => r.startsWith("packages/renderer/headless/"); // Node-only subdirectory (headless screenshot path)
 // Dual-end packages (run in both browser and Node, must stay environment-pure); server/cli are
 // Node-only and are not bound by the environment-global / node: source rules
-const DUAL_END_PKGS = new Set(["model", "writer", "renderer", "measure", "layout"]);
-// Allowed cross-package import edges (spec 09 T0/T5 target state; model is handled separately as "no sibling imports")
+const DUAL_END_PKGS = new Set(["model", "writer", "renderer", "measure", "layout", "runtime", "export"]);
+// Allowed cross-package import edges (spec 09 T0/T5 target state; model is handled separately as "no sibling imports";
+// 3.0 runtime/export edges per specs/2026-10-31-2102-open-pptd-3.0/ref/interfaces.md §1.1)
 const ALLOWED_CROSS = {
   writer: ["model", "vendor", "measure"],
   renderer: ["model", "vendor", "layout"],
   layout: ["model", "measure"],
   measure: ["model"],
+  runtime: ["model", "measure", "layout"],
+  export: ["runtime", "model", "measure", "layout", "writer"],
 };
 const pkgOf = (r) => (r.startsWith("packages/") ? r.split("/")[1] : null);
 
