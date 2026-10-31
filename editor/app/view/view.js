@@ -27,7 +27,10 @@ import { createDomMeasure, isDomMeasureAvailable } from "./dom-measure.js";
 // MeasurePort for editor layout: the DOM refinement adapter (M6) in a browser, otherwise the pure function
 const measurePort = isDomMeasureAvailable() ? createDomMeasure() : undefined;
 
-export function createView({ state, page, api, controller = null, ops, ui, editable = true, coords }) {
+export function createView({ state, page, api, controller = null, getController = null, ops, ui, editable = true, coords }) {
+  // Editor assembly attaches the selection controller after the view exists (the
+  // preview core builds the view first); this accessor keeps one source of truth.
+  const ctl = () => (getController ? getController() : controller);
   const { dom, toast } = ui;
   // Under strict mode a bare render() call has this === undefined, so self-reference through viewObj
   const viewObj = {};
@@ -44,7 +47,7 @@ export function createView({ state, page, api, controller = null, ops, ui, edita
     canvas: dom.canvas,
     wrap: dom.canvasWrap,
     zoomLabel: dom.zoomLabel,
-    controller,
+    controller: getController ? { setScale: (s) => getController()?.setScale(s) } : controller,
     repaint: () => renderCanvas(),
     getSize: () => deckSize(state),
   });
@@ -119,7 +122,7 @@ export function createView({ state, page, api, controller = null, ops, ui, edita
     });
     coords.setLayoutPage(tree.pages[0]);
     notifyOverflow(state.currentPage, tree.pages[0]);
-    controller?.refreshSelection();
+    ctl()?.refreshSelection();
     // Progressive-load mask: cover the failure placeholder while the current page's assets are not ready (assets landing re-render via refreshPage)
     if (dom.canvasLoading) dom.canvasLoading.hidden = !state.pagesPending?.has(pg);
   }

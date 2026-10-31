@@ -14,7 +14,6 @@
 
 import { createFontManager } from "./font-manager.js";
 import { createImageStore } from "./images.js";
-import { bindIconMap } from "./icons.js";
 import { createLoader } from "./loader.js";
 import { createLiveReload } from "./live-reload.js";
 import { createProjectSaver } from "./saver.js";
@@ -25,11 +24,10 @@ import { createHistory } from "../../interaction/history.js";
 import { commitBaseline } from "../state.js";
 import { createDeck, createPage, normalizeTheme, syncElementId } from "../../../packages/model/index.js";
 
-export function createIo({ state, view, ops, source, ui, onSaved, onDeckChange, onError }) {
+export function createIo({ state, view, ops, source, ui, live = true, onSaved, onDeckChange, onError }) {
   if (!ui) throw new Error("createIo: 需要实例上下文 ui");
   const fontManager = createFontManager(state, ui);
   const images = createImageStore(state);
-  bindIconMap(state.iconMap); // bind the icon preload cache (icons.js module singleton, shared by render/export)
 
   // Transport seam: the injected source is the URL-mode default; handle projects route to directoryHandleSource
   const baseSource = source || memorySource({});
@@ -39,10 +37,10 @@ export function createIo({ state, view, ops, source, ui, onSaved, onDeckChange, 
     currentHandle: () => state.projectHandle,
   });
 
-  // Assembly order: loader/saver callbacks close over `live`, but only run on the
-  // first load/save, by which time `live` is assigned (a const would hit the TDZ,
-  // hence `let`).
-  let live;
+  // Assembly order: loader/saver callbacks close over the live-reload handle, but
+  // only run on the first load/save, by which time it is assigned (a const would
+  // hit the TDZ, hence `let`). `live:false` (gallery covers) keeps the channel off.
+  let liveReload;
   const loader = createLoader({
     state,
     view,
@@ -51,8 +49,8 @@ export function createIo({ state, view, ops, source, ui, onSaved, onDeckChange, 
     fontManager,
     source: projectSource,
     ui,
-    connect: () => live.connectLiveReload(), // subscribe to live reload once the project is ready (idempotent)
-    renderStatusBar: () => live.renderStatusBar(), // refresh the statusbar after load
+    connect: () => (live ? liveReload.connectLiveReload() : undefined), // subscribe to live reload once the project is ready (idempotent)
+    renderStatusBar: () => liveReload.renderStatusBar(), // refresh the statusbar after load
     onDeckChange,
     onError,
   });
@@ -62,14 +60,14 @@ export function createIo({ state, view, ops, source, ui, onSaved, onDeckChange, 
     fontManager,
     source: projectSource,
     ui,
-    renderStatusBar: () => live.renderStatusBar(),
+    renderStatusBar: () => liveReload.renderStatusBar(),
     onSaved: () => {
-      live.suppressRefreshes(); // suppress the refresh loop after saving
+      liveReload.suppressRefreshes(); // suppress the refresh loop after saving
       onSaved?.(); // public event (createEditor options.on.saved)
     },
     onError,
   });
-  live = createLiveReload({
+  liveReload = createLiveReload({
     state,
     source: projectSource,
     ui,
@@ -128,7 +126,7 @@ export function createIo({ state, view, ops, source, ui, onSaved, onDeckChange, 
     clearPendingProject();
     history.replaceState(null, "", location.pathname);
     view.render();
-    live.connectLiveReload(); // blank project: disconnect the old live channel (internally treated as no project)
+    if (live) liveReload.connectLiveReload(); // blank project: disconnect the old live channel (internally treated as no project)
     try {
       onDeckChange?.(state.deck);
     } catch (err) {
@@ -149,16 +147,18 @@ export function createIo({ state, view, ops, source, ui, onSaved, onDeckChange, 
     openLocalProject,
     openProjectHandle,
     manualReload: loader.manualReload,
-    connectLiveReload: live.connectLiveReload,
+    connectLiveReload: () => {
+      if (live) liveReload.connectLiveReload();
+    },
     rebuildImageMap: images.rebuildImageMap,
     exportPptx: saver.exportPptx,
     exportProjectZip: saver.exportProjectZip,
     exportImages: saver.exportImages,
     saveProject: saver.saveProject,
     preloadImages: images.preloadImages,
-    renderStatusBar: live.renderStatusBar,
+    renderStatusBar: liveReload.renderStatusBar,
     fontManager,
     source: projectSource, // transport facade (hosts/tests can read it; all internal IO goes through it)
-    destroy: () => live.destroy(),
+    destroy: () => liveReload.destroy(),
   };
 }

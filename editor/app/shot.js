@@ -1,12 +1,11 @@
 // ============================================================================
 // app/shot.js — headless screenshot driver (?shot=1, used by `open-pptd render`)
 // ----------------------------------------------------------------------------
-// No assembly of its own: it mounts createEditor with the non-interactive
-// capability (chrome:"shot" → interactive:false) on a fixed, deck-sized
-// #shot-root paint surface. State, api, project IO (load / fonts / images / live
-// channel) and the paint channel (renderPage → layout → paintPage + the same
-// imageMap / iconMap / theme / font files as the editor preview) are therefore
-// the editor's own code path, not a parallel one (spec 22 S5).
+// No assembly of its own: it mounts createPreview in the headless paint mode on a
+// fixed, deck-sized #shot-root surface. State, project IO (load / fonts / images /
+// live channel) and the paint channel (renderPage → layout → paintPage + the same
+// imageMap / iconMap / theme / font files as the editor preview) are therefore the
+// shared preview code path, not a parallel one (spec 22 S5, 3.0 D1).
 //
 // The driver only owns the CDP-facing contract:
 //   window.__pptdShot = { count, goto(index), width, height }
@@ -19,7 +18,7 @@
 // This module is not loaded when the editor is opened normally (no ?shot=1).
 // ============================================================================
 
-import { createEditor } from "../editor.js";
+import { createPreview } from "../preview.js";
 import { httpSource } from "./project/source.js";
 import { SHOT_READY_TITLE, deckSize } from "../../packages/model/index.js";
 
@@ -59,13 +58,15 @@ async function runShot(deckUrl) {
   document.body.appendChild(root);
   root.style.cssText = "position:fixed;left:0;top:0;overflow:hidden;background:#fff;";
 
-  // Standard assembly, non-interactive. ready rejects when the deck cannot be
-  // loaded (the headless bootstrap propagates instead of showing an error state).
-  const { state, view, ready } = createEditor(root, {
+  // Shared preview core in headless mode: no skeleton, no chrome, no interaction.
+  // ready rejects when the deck cannot be loaded (the bootstrap propagates instead
+  // of showing an error state). chrome "embedded" keeps the theme on the mount point
+  // instead of the document root.
+  const { state, view, ready } = createPreview(root, {
     source: httpSource({}),
     deckUrl,
-    chrome: "shot",
-    interactive: false,
+    chrome: "embedded",
+    headless: true,
   });
   await ready;
 

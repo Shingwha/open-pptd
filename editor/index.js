@@ -8,7 +8,10 @@
 // import this entry.
 // ============================================================================
 
-// ---- mountable editor (contract 1) ----
+// ---- mountable components (contract 1) ----
+// createPreview: read-only viewer (gallery covers / embeds / headless PNG)
+// createEditor: the same preview core + the editing layer
+export { createPreview } from "./preview.js";
 export { createEditor } from "./editor.js";
 
 // ---- theme injection (contract 3) ----
