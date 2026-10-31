@@ -1,0 +1,82 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+elements:
+  - elementId: result-kicker
+    elementType: text
+    bounds: [64, 40, 420, 20]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      letterSpacing: 1.6
+      align: [left, middle]
+      text: RESULT 1 · MAIN EFFECT
+  - elementId: result-title
+    elementType: text
+    bounds: [64, 72, 832, 64]
+    content:
+      fontSize: 28
+      fontFamily: "Source Han Serif CN"
+      color: "$text"
+      bold: true
+      lineHeight: 1.2
+      align: [left, top]
+      text: Treatment reduced recovery time by 38% (p < 0.01)
+  - elementId: result-reading
+    elementType: text
+    bounds: [64, 168, 368, 250]
+    content:
+      fontSize: 17
+      fontFamily: "Microsoft YaHei"
+      color: "$text"
+      lineHeight: 1.5
+      align: [left, top]
+      text: |
+        <p>The effect appears in every site and survives the pre-registered controls.</p>
+        <p style="margin-top:12px">The gap widens with baseline severity — the group with the highest baseline gains most.</p>
+        <p style="margin-top:12px"><span style="color:$primary; font-weight:bold">Read:</span> the lower bound of the interval is still a 24% reduction.</p>
+  - elementId: figure-frame
+    elementType: shape
+    bounds: [480, 156, 416, 296]
+    shapeName: rect
+    fill: {type: solid, color: "#FFFFFF"}
+    border: {style: solid, width: 1, color: "$line"}
+  - elementId: figure-placeholder
+    elementType: text
+    bounds: [500, 284, 376, 40]
+    content:
+      fontSize: 12
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [center, middle]
+      text: "Replace this frame with media/fig-2.png · fit: contain"
+  - elementId: figure-caption
+    elementType: text
+    bounds: [480, 462, 416, 42]
+    content:
+      fontSize: 10
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      lineHeight: 1.35
+      align: [left, top]
+      text: Figure 2. Recovery time by condition (mean ± SD; n = 48). Higher bars indicate slower recovery.
+  - elementId: source-line
+    elementType: text
+    bounds: [64, 504, 700, 18]
+    content:
+      fontSize: 9
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [left, middle]
+      text: "Source: Author et al. (2025), Journal of X, Fig. 2; author's re-plot of the published values."
+  - elementId: page-number
+    elementType: text
+    bounds: [900, 504, 28, 18]
+    content:
+      fontSize: 9
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [right, middle]
+      text: "06"

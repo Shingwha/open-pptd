@@ -1,0 +1,75 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+elements:
+  - elementId: table-title
+    elementType: text
+    bounds: [64, 48, 832, 56]
+    content:
+      fontSize: 27
+      fontFamily: "Source Han Serif CN"
+      color: "$text"
+      bold: true
+      lineHeight: 1.2
+      align: [left, top]
+      text: Model B wins on every held-out set; the gap widens with label noise
+  - elementId: result-table
+    elementType: table
+    bounds: [64, 132, 832, 280]
+    columnWidths: [0.28, 0.18, 0.18, 0.18, 0.18]
+    rowHeights: [0.2, 0.2, 0.2, 0.2, 0.2]
+    style: "$default"
+    rows:
+      - - text: "Condition"
+        - text: "n"
+        - text: "Model A"
+        - text: "Model B"
+        - text: "Δ (pp)"
+      - - text: "Clean labels"
+        - text: "1,200"
+        - text: "0.842"
+        - text: "0.867"
+        - text: "+2.5"
+      - - text: "10% noise"
+        - text: "1,200"
+        - text: "0.781"
+        - text: "0.826"
+        - text: "+4.5"
+      - - text: "25% noise"
+        - text: "1,200"
+        - text: "0.694"
+        - text: "0.761"
+        - text: "+6.7"
+      - - text: "40% noise"
+        - text: "1,200"
+        - text: "0.598"
+        - text: "0.684"
+        - text: "+8.6"
+  - elementId: table-caption
+    elementType: text
+    bounds: [64, 426, 832, 26]
+    content:
+      fontSize: 10
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [left, top]
+      text: "Table 1. Held-out accuracy by label-noise level; mean of five seeds. Δ = B − A in percentage points."
+  - elementId: source-line
+    elementType: text
+    bounds: [64, 500, 720, 18]
+    content:
+      fontSize: 9
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [left, middle]
+      text: "Source: Author's experiments (2026), protocol §3.4; test split fixed across conditions."
+  - elementId: page-number
+    elementType: text
+    bounds: [900, 500, 28, 18]
+    content:
+      fontSize: 9
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [right, middle]
+      text: "07"

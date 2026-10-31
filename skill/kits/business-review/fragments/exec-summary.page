@@ -1,0 +1,127 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+elements:
+  - elementId: summary-title
+    elementType: text
+    bounds: [64, 44, 832, 76]
+    content:
+      fontSize: 30
+      fontFamily: "MiSans"
+      color: "$text"
+      bold: true
+      lineHeight: 1.22
+      align: [left, top]
+      text: Growth held, margin slipped — three findings and one decision
+  - elementId: finding-index-1
+    elementType: text
+    bounds: [64, 146, 32, 24]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$primary"
+      bold: true
+      align: [left, middle]
+      text: "01"
+  - elementId: finding-1
+    elementType: text
+    bounds: [104, 140, 792, 30]
+    content:
+      fontSize: 18
+      fontFamily: "Microsoft YaHei"
+      color: "$text"
+      bold: true
+      align: [left, middle]
+      text: Renewals delivered 96% of plan; EMEA accounts for 82% of the shortfall.
+  - elementId: finding-1-detail
+    elementType: text
+    bounds: [104, 172, 792, 22]
+    content:
+      fontSize: 12
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [left, middle]
+      text: Detail — Chart 1 (p. 5) and segment table (p. 7).
+  - elementId: finding-index-2
+    elementType: text
+    bounds: [64, 224, 32, 24]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$primary"
+      bold: true
+      align: [left, middle]
+      text: "02"
+  - elementId: finding-2
+    elementType: text
+    bounds: [104, 218, 792, 30]
+    content:
+      fontSize: 18
+      fontFamily: "Microsoft YaHei"
+      color: "$text"
+      bold: true
+      align: [left, middle]
+      text: Gross margin fell 1.6 pp because discount depth rose, not delivery cost.
+  - elementId: finding-2-detail
+    elementType: text
+    bounds: [104, 250, 792, 22]
+    content:
+      fontSize: 12
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [left, middle]
+      text: Detail — margin bridge (p. 6); discount bands (appendix A).
+  - elementId: finding-index-3
+    elementType: text
+    bounds: [64, 302, 32, 24]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$primary"
+      bold: true
+      align: [left, middle]
+      text: "03"
+  - elementId: finding-3
+    elementType: text
+    bounds: [104, 296, 792, 30]
+    content:
+      fontSize: 18
+      fontFamily: "Microsoft YaHei"
+      color: "$text"
+      bold: true
+      align: [left, middle]
+      text: Pipeline coverage at 2.1× leaves Q3 one renewal cycle short of target.
+  - elementId: finding-3-detail
+    elementType: text
+    bounds: [104, 328, 792, 22]
+    content:
+      fontSize: 12
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [left, middle]
+      text: Detail — pipeline aging (p. 8); risk R2 (p. 10).
+  - elementId: decision-band
+    elementType: shape
+    bounds: [64, 404, 832, 64]
+    shapeName: rect
+    fill: {type: solid, color: "$primary"}
+  - elementId: decision-text
+    elementType: text
+    bounds: [84, 412, 792, 48]
+    content:
+      fontSize: 14
+      fontFamily: "Microsoft YaHei"
+      color: "#FFFFFF"
+      lineHeight: 1.35
+      align: [left, middle]
+      text: "Decision needed by 15 July: approve the Q3 discount cap (≤8%) and one EMEA renewal sprint. Owner: CFO; support: Sales Ops."
+  - elementId: summary-source
+    elementType: text
+    bounds: [64, 492, 832, 18]
+    content:
+      fontSize: 9
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [left, middle]
+      text: "Source: company data, Q2 FY2026; plan and prior-year comparatives as filed."

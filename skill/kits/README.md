@@ -48,6 +48,6 @@ the recipe or use another one — do not invent filler to fill a box.
 ## Adding a kit (maintainers)
 
 Add `kits/<name>/{kit.md,theme.md,pages/,fragments/}` following the contract
-above, map it to one of the four systems in `references/design.md`, and add a
+above, map it to one of the four systems in `../references/design.md`, and add a
 row to the table. Keep fragments single-page and asset-free; verify them with
 `node tests/skill/run.mjs`.

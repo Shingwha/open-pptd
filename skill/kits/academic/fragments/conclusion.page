@@ -1,0 +1,122 @@
+pageType: final
+background:
+  type: solid
+  color: "$bg"
+elements:
+  - elementId: conclusion-title
+    elementType: text
+    bounds: [64, 56, 832, 44]
+    content:
+      fontSize: 30
+      fontFamily: "Source Han Serif CN"
+      color: "$text"
+      bold: true
+      align: [left, middle]
+      text: Answer
+  - elementId: answer-index-1
+    elementType: text
+    bounds: [64, 142, 44, 40]
+    content:
+      fontSize: 28
+      fontFamily: "Source Han Serif CN"
+      color: "$primary"
+      align: [left, top]
+      text: "1"
+  - elementId: answer-1
+    elementType: text
+    bounds: [120, 142, 720, 54]
+    content:
+      fontSize: 19
+      fontFamily: "Microsoft YaHei"
+      color: "$text"
+      lineHeight: 1.4
+      align: [left, top]
+      text: Exposure, not mechanism, drives the long-run gap.
+  - elementId: answer-evidence-1
+    elementType: text
+    bounds: [120, 198, 720, 20]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [left, middle]
+      text: Evidence — Figure 2; Table 1.
+  - elementId: answer-index-2
+    elementType: text
+    bounds: [64, 248, 44, 40]
+    content:
+      fontSize: 28
+      fontFamily: "Source Han Serif CN"
+      color: "$primary"
+      align: [left, top]
+      text: "2"
+  - elementId: answer-2
+    elementType: text
+    bounds: [120, 248, 720, 54]
+    content:
+      fontSize: 19
+      fontFamily: "Microsoft YaHei"
+      color: "$text"
+      lineHeight: 1.4
+      align: [left, top]
+      text: The effect survives controls but not the rural-only subsample.
+  - elementId: answer-evidence-2
+    elementType: text
+    bounds: [120, 304, 720, 20]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [left, middle]
+      text: Evidence — Figure 3; §5.2 robustness checks.
+  - elementId: answer-index-3
+    elementType: text
+    bounds: [64, 354, 44, 40]
+    content:
+      fontSize: 28
+      fontFamily: "Source Han Serif CN"
+      color: "$primary"
+      align: [left, top]
+      text: "3"
+  - elementId: answer-3
+    elementType: text
+    bounds: [120, 354, 720, 54]
+    content:
+      fontSize: 19
+      fontFamily: "Microsoft YaHei"
+      color: "$text"
+      lineHeight: 1.4
+      align: [left, top]
+      text: A two-stage design is now needed to test the causal channel.
+  - elementId: answer-evidence-3
+    elementType: text
+    bounds: [120, 410, 720, 20]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [left, middle]
+      text: Evidence — §6.1; pre-registered follow-up.
+  - elementId: closing-rule
+    elementType: shape
+    bounds: [64, 468, 120, 1]
+    shapeName: rect
+    fill: {type: solid, color: "$line"}
+  - elementId: closing-line
+    elementType: text
+    bounds: [64, 482, 400, 28]
+    content:
+      fontSize: 18
+      fontFamily: "Source Han Serif CN"
+      color: "$primary"
+      align: [left, middle]
+      text: Questions
+  - elementId: contact
+    elementType: text
+    bounds: [600, 486, 328, 20]
+    content:
+      fontSize: 10
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [right, middle]
+      text: lin.wei@example.edu · dataset DOI on the references page
