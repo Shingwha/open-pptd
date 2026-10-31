@@ -3,9 +3,10 @@
 // ----------------------------------------------------------------------------
 // Combines three shard layers: renderer `render`, writer `toXml`, and local UI
 // (label/menu/create/props/quickbar), merged into the single registry in
-// packages/model/registry.js. To add an element type, create a shard module in
-// each layer (registerType) and import it from the matching index.js — the
-// renderer / writer / property panel / quickbar / add-menu then pick it up.
+// packages/model/registry.js. The type list itself comes from the manifest
+// (packages/model/types/, seeded by registry.js); a new engine type only needs a
+// descriptor plus its renderer/writer shard. Editor content-editor types are
+// derived from manifest contentEditor:true (see contentEditorTypeIds).
 // ============================================================================
 
 import "../../packages/renderer/index.js";
@@ -21,4 +22,4 @@ import "./chart.js";
 import "./group.js";
 
 export { registerType, getType, allTypes } from "../../packages/model/index.js";
-export { buildAddItems } from "./menu.js";
+export { buildAddItems, contentEditorTypeIds } from "./menu.js";

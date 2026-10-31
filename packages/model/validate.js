@@ -21,9 +21,7 @@ import { findFont, findSystemFont } from "./font-registry.js";
 import { resolveIconName } from "./icon-fa.js";
 import { walkElements } from "./walk.js";
 import { deckSize } from "./model.js";
-import { ELEMENT_TYPES } from "./style-spec.js";
-
-const KNOWN_TYPES = new Set(ELEMENT_TYPES);
+import { getType, typeIds } from "./registry.js";
 
 // ---- Rule registry (extension point: a new registerRule immediately joins the check command and the export gate) ----
 const RULES = [];
@@ -73,6 +71,8 @@ registerRule((deck, ctx, report) => {
     report({ level: "error", rule: "schema", message: "deck.pages 为空（manifest 未声明任何页面）" });
     return;
   }
+  const knownIds = typeIds();
+  const KNOWN_TYPES = new Set(knownIds);
   deck.pages.forEach((page, i) => {
     const pageNo = i + 1;
     if (!Array.isArray(page?.elements)) {
@@ -87,7 +87,7 @@ registerRule((deck, ctx, report) => {
         continue;
       }
       if (!KNOWN_TYPES.has(el.elementType)) {
-        report({ ...at, message: `未知 elementType "${el.elementType}"（已知: ${[...KNOWN_TYPES].join("/")}）` });
+        report({ ...at, message: `未知 elementType "${el.elementType}"（已知: ${knownIds.join("/")}）` });
       }
       if (!el.elementId) {
         report({ ...at, message: "缺 elementId" });
@@ -108,51 +108,16 @@ registerRule((deck, ctx, report) => {
   });
 });
 
-// ---- schema: type-specific required fields (aligned with references/pptd.md §5) ----
+// ---- schema: type-specific required fields (each type's manifest schema hook) ----
+// The hook returns partial issues ({ message, rule? }); validate stamps level/page/
+// elementId and defaults the rule to "schema-type" (message text/order unchanged).
 registerRule((deck, ctx, report) => {
   walkElements(deck?.pages, (el, page, pageIdx) => {
+    const schema = getType(el.elementType)?.schema;
+    if (!schema) return;
     const at = { level: "error", rule: "schema-type", page: pageIdx + 1, elementId: el.elementId };
-    switch (el.elementType) {
-      case "text":
-        // content = TextContent object (.text is rich text; YAML parses 01/2024 into a number, which is allowed)
-        if (!el.content || typeof el.content !== "object" || el.content.text == null || String(el.content.text).trim() === "") {
-          report({ ...at, message: "text 元素缺 content.text（或为空）" });
-        }
-        break;
-      case "image":
-        if (!el.src) report({ ...at, message: "image 元素缺 src" });
-        break;
-      case "icon":
-        if (!el.iconName) report({ ...at, message: "icon 元素缺 iconName" });
-        break;
-      case "shape":
-        if (!el.shapeName) {
-          report({ ...at, message: "shape 元素缺 shapeName" });
-        } else if (el.shapeName === "custom" && (!el.path || !Array.isArray(el.viewBox))) {
-          report({ ...at, message: "custom shape 缺 path 或 viewBox" });
-        }
-        break;
-      case "line":
-        if (typeof el.points !== "string" || el.points.trim().split(/\s+/).length < 2) {
-          report({ ...at, message: "line 元素 points 至少需要 2 个点" });
-        }
-        if (!Array.isArray(el.viewBox) || el.viewBox.length !== 2) {
-          report({ ...at, message: "line 元素缺 viewBox [w, h]" });
-        }
-        break;
-      case "table":
-        if (!Array.isArray(el.rows) || !el.rows.length) {
-          report({ ...at, message: "table 元素缺 rows（Cell 二维数组）" });
-        }
-        break;
-      case "chart":
-        if (!el.data || typeof el.data !== "object") {
-          report({ ...at, message: "chart 元素缺 data" });
-        }
-        if (!Array.isArray(el.series) || !el.series.length) {
-          report({ ...at, message: "chart 元素 series 至少 1 个" });
-        }
-        break;
+    for (const issue of schema(el) || []) {
+      report({ ...at, ...(issue.rule ? { rule: issue.rule } : {}), message: issue.message });
     }
   });
 });

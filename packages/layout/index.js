@@ -26,6 +26,7 @@
 import { deckSize } from "../model/model.js";
 import { normalizeTheme, resolveFont } from "../model/theme.js";
 import { computeBaseStyle } from "../model/style.js";
+import { getType } from "../model/registry.js";
 import { fontMetricsMeasure, runsFromRichText, familiesOf } from "../measure/index.js";
 
 const EPS = 0.5; // growth tolerance (sub-pixel jitter does not count as growth)
@@ -76,6 +77,15 @@ function layoutTable(el, measure) {
   };
 }
 
+/**
+ * layoutKey (manifest metadata) → local layout hook. The mapping lives here, not in
+ * model, so model never depends on layout. Keys without a hook pass size through.
+ */
+const LAYOUT_HOOKS = {
+  text: (theme, el, measure) => layoutText(theme, el, measure),
+  table: (theme, el, measure) => layoutTable(el, measure),
+};
+
 /** Intersection of two rectangles (null when disjoint). */
 function intersection(a, b) {
   const x = Math.max(a.x, b.x);
@@ -100,12 +110,12 @@ export function layout(deck, measure = fontMetricsMeasure) {
     const elements = [];
     for (const el of page?.elements || []) {
       if (!el) continue;
-      if (el.elementType === "group") continue; // skip the shell, lay out its members (they are in this array)
+      const def = getType(el.elementType);
+      if (def?.composite) continue; // group shell: members are laid out individually (they are in this array)
       const d = declaredOf(el);
-      let part;
-      if (el.elementType === "text") part = layoutText(theme, el, measure);
-      else if (el.elementType === "table") part = layoutTable(el, measure);
-      else part = { frame: { ...d }, grown: false }; // shape/line/image/icon/chart: size passes through
+      const hook = def?.layoutKey ? LAYOUT_HOOKS[def.layoutKey] : null;
+      // No hook (shape/line/image/icon/chart): size passes through
+      const part = hook ? hook(theme, el, measure) : { frame: { ...d }, grown: false };
       elements.push({
         elementId: el.elementId,
         elementType: el.elementType,

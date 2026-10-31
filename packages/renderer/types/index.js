@@ -1,25 +1,18 @@
 // ============================================================================
-// renderer/types/index.js — render fragment registration entry (importing registers every type's render)
+// renderer/types/index.js — render fragment registration entry (static closure)
 // ----------------------------------------------------------------------------
-// Wiring: the render path (renderer/page.js) only needs this module to get render dispatch
-// for every type; UI fragments (label/menu/props...) are registered separately by editor/types/.
+// Imports every built-in render shard (./<id>.js) for side-effect registration, so
+// the sync preview paint path (renderer/page.js) has render dispatch for all
+// manifest types. Non-built-in/lazy types go through types/load.js instead.
+// UI fragments (label/menu/props...) are registered separately by editor/types/.
 // ============================================================================
 
-import { registerType } from "../../model/registry.js";
-import { renderText } from "../text.js";
-import { renderShape } from "../shape.js";
-import { renderIcon } from "../icon.js";
-import { renderLine } from "../line.js";
-import { renderImage } from "../image.js";
-import { renderTable } from "../table.js";
-import { renderChart } from "../chart.js";
-
-registerType({ type: "text", render: renderText });
-registerType({ type: "shape", render: renderShape });
-registerType({ type: "icon", render: renderIcon });
-registerType({ type: "line", render: renderLine });
-registerType({ type: "image", render: renderImage });
-registerType({ type: "table", render: renderTable });
-registerType({ type: "chart", render: renderChart });
+import "./text.js";
+import "./shape.js";
+import "./icon.js";
+import "./line.js";
+import "./image.js";
+import "./table.js";
+import "./chart.js";
 
 export { registerType, getType, allTypes } from "../../model/registry.js";

@@ -9,11 +9,13 @@
 // (historically dash/fill/border/align each had 4~8 copies).
 // ============================================================================
 
-// ---- Element types (canonical list; registry.js registration keys, validate.js known types) ----
-// "group" is an editor-side composite: its members stay flat in page.elements, the shell
-// only carries the bounding box, and renderer/writer skip it (validation treats members
-// individually), which is why it is a known type without renderer/writer shards.
-export const ELEMENT_TYPES = ["text", "shape", "line", "image", "icon", "table", "chart", "group"];
+// ---- Element types (derived from the TypeManifest; order is manifest order) ----
+// The single source of truth is packages/model/types/index.js. "group" is a composite:
+// its members stay flat in page.elements, the shell only carries the bounding box, and
+// layout/renderer/writer skip it (validation treats members individually).
+import { TYPE_IDS } from "./types/index.js";
+
+export const ELEMENT_TYPES = [...TYPE_IDS];
 
 // ---- Dash styles (Border.style / LineStyle, references/pptd.md) ----
 // One definition, three projections: css = SVG stroke-dasharray; cssBorder = CSS
