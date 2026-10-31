@@ -7,7 +7,7 @@
 // app/view/viewport.js — this module only calls panBy / setZoom / zoomReset.
 //
 // Routing rules (pointerdown on #stage, capture phase, before inner controls):
-//   1. floating controls (zoom bar / button rows / add menu / quickbar …) → pass through
+//   1. floating controls (zoom bar / button rows / add popup …) → pass through
 //   2. space held / middle mouse button  → pan (anywhere, including over elements)
 //   3. selection-box handle (resize/rotate/move) → element gesture
 //   4. element body                      → select + move gesture
@@ -40,7 +40,7 @@ export function createStageController(stage, opts) {
 
   // Floating controls carry their own click/scroll behaviour and are not stage gestures
   const FLOATING =
-    ".fab-stack, .add-menu, .quickbar, " +
+    ".fab-stack, .add-list, " +
     "button, input, textarea, select, [contenteditable]";
   const isFloating = (t) => !!t.closest(FLOATING);
 
@@ -153,25 +153,22 @@ export function createStageController(stage, opts) {
         return;
       }
       // 3) element body → select (Shift adds / Ctrl toggles) + move gesture
-      //    Ctrl/Alt + drag = duplicate drag (threshold in canvas.js: without a drag,
-      //    Ctrl-click toggles selection)
       const node = e.target.closest("[data-element-id]");
       if (node) {
         const id = node.dataset.elementId;
         const additive = e.shiftKey;
         const toggle = e.ctrlKey || e.metaKey;
-        const copyMod = e.altKey || e.ctrlKey || e.metaKey;
         let toggleOnTap = false;
         if (additive) {
           if (!isSelected?.(id)) select(id, "add");
         } else if (toggle) {
-          if (isSelected?.(id)) toggleOnTap = true; // already selected: drag-copy / toggle-off without a drag
+          if (isSelected?.(id)) toggleOnTap = true; // already selected: Ctrl-click toggles off without a drag
           else select(id, "add");
         } else if (!isSelected?.(id)) {
           select(id, "replace");
         }
         e.preventDefault();
-        element.startGesture(e, "move", id, { copyOnMove: copyMod, toggleOnTap });
+        element.startGesture(e, "move", id, { toggleOnTap });
         return;
       }
       // 4) blank area (inside or outside canvas) → marquee selection (space/middle pan, see above)

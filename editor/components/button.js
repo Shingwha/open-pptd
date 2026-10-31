@@ -2,7 +2,7 @@
 // components/button.js — Button primitive (3 sizes × 4 variants + icon)
 // ----------------------------------------------------------------------------
 // The only button construction point site-wide: shared by the property panel /
-// quickbar / dialogs / topbar / toolbar, replacing scattered .btn / .icon-btn /
+// dialogs / topbar / toolbar, replacing scattered .btn / .icon-btn /
 // .status-btn / .thumb-add duplicates (styles centralized in the .btn system in
 // editor/styles/primitives.css).
 //
@@ -35,7 +35,7 @@ export function btnClass({ variant = "default", size = "default", className = ""
  *   icon?           SVG string (placed before the text)
  *   title?          hover tooltip (defaults to label)
  *   className?      full class override (compatible with old calls)
- *   active?         append .on (quickbar toggle state)
+ *   active?         append .on (toggle state)
  *   preventDefault? default true: prevent default on mousedown (avoids textarea blur)
  *   disabled?
  * @returns {HTMLButtonElement}

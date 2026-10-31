@@ -16,7 +16,6 @@
 import { showToast } from "../toast.js";
 import { commitBaseline } from "../state.js";
 import { showDialog } from "../../interaction/dialogs/base.js";
-import { openFontPanel } from "../../interaction/font-panel.js";
 import { createImageExporter } from "../export-image.js";
 import { mediaFilesOfDeck } from "./images.js";
 import { base64ToBytes, deckSize, serializeDeck } from "../../../packages/model/index.js";
@@ -91,9 +90,11 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     const mgrBtn = document.createElement("button");
     mgrBtn.className = "btn btn-sm";
     mgrBtn.textContent = "字体管理…";
+    mgrBtn.title = "打开「设计 → 字体」";
     mgrBtn.addEventListener("click", () => {
       close();
-      openFontPanel(); // close the export box, open the font popover (no stacked masks)
+      // Decoupled jump: the editor toolbar owns the Design panel deps
+      window.dispatchEvent(new CustomEvent("pptd:open-design", { detail: { tab: "fonts" } }));
     });
     wrap.appendChild(mgrBtn);
     const { close } = showDialog("导出 PPTX", wrap, {

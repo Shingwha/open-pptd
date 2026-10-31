@@ -1,21 +1,18 @@
 // ============================================================================
-// app/view/view.js — render orchestration (canvas / thumbnail bar / property panel / quickbar / button state)
+// app/view/view.js — render orchestration (canvas / thumbnail bar / button state)
 // ----------------------------------------------------------------------------
 // Every entry that "paints the model onto the screen" is centralized here: render()
-// is a full refresh, while renderCanvas / renderThumbnails / renderProps /
-// renderQuickbar / updateButtons can be called individually (lightweight selection,
-// window resize, etc.). Viewport (zoom/pan) and the thumbnail bar are separate
-// concerns split into viewport.js / thumbnails.js, each owning its state and DOM
-// wiring; this file only orchestrates and rebuilds the canvas.
+// is a full refresh, while renderCanvas / renderThumbnails / updateButtons can be
+// called individually (progressive loading, window resize, etc.). Viewport
+// (zoom/pan) and the thumbnail bar are separate concerns split into viewport.js /
+// thumbnails.js, each owning its state and DOM wiring; this file only orchestrates
+// and rebuilds the canvas.
 // ============================================================================
 
-import { getType } from "../../types/index.js";
-import { quickbarColor, quickbarSelect, quickbarBtn, quickbarIconBtn, isNarrow, svgIcon } from "../../ui.js";
-import { relRect, setLayoutPage } from "../../coords.js";
+import { setLayoutPage } from "../../coords.js";
 import { createViewport, deckSize } from "./viewport.js";
 import { createThumbnails } from "./thumbnails.js";
 import { dom } from "../../dom.js";
-import { resolveColor } from "../../../packages/model/index.js";
 import { layout } from "../../../packages/layout/index.js";
 import { paintPage, renderPage } from "../../../packages/renderer/index.js";
 import { showToast } from "../toast.js";
@@ -24,19 +21,11 @@ import { createDomMeasure, isDomMeasureAvailable } from "./dom-measure.js";
 // MeasurePort for editor layout: the DOM refinement adapter (M6) in a browser, otherwise the pure function
 const measurePort = isDomMeasureAvailable() ? createDomMeasure() : undefined;
 
-// Quickbar trailing action icons (inline SVG, the same convention as the per-type menu icons:
-// declared next to their only consumer, sized by CSS, stroke inherits currentColor)
-const ICON_QB_DELETE = svgIcon(
-  '<path d="M3.5 6.5h17"/><path d="M9 6.5V4.8A1.3 1.3 0 0 1 10.3 3.5h3.4A1.3 1.3 0 0 1 15 4.8v1.7"/>' +
-  '<path d="M18.6 6.5l-.9 13a1.6 1.6 0 0 1-1.6 1.5H7.9a1.6 1.6 0 0 1-1.6-1.5l-.9-13"/>' +
-  '<path d="M10 11v5.5M14 11v5.5"/>'
-);
-
 // Out-of-bounds hint dedupe (remember the last count per page; the same state does not re-toast)
 const lastOverflow = new Map();
 let overflowDeck = null;
 
-export function createView({ state, page, selected, api, controller, props, ops }) {
+export function createView({ state, page, api, controller, ops }) {
   // Under strict mode a bare render() call has this === undefined, so self-reference through viewObj
   const viewObj = {};
 
@@ -59,8 +48,6 @@ export function createView({ state, page, selected, api, controller, props, ops 
   Object.assign(viewObj, {
     render,
     renderCanvas,
-    renderProps,
-    renderQuickbar,
     updateButtons,
     renderZoom: viewport.renderZoom,
     setZoom: viewport.setZoom,
@@ -82,8 +69,6 @@ export function createView({ state, page, selected, api, controller, props, ops 
     if (!state.deck) return; // load failed/incomplete: skip safely (external triggers such as resize)
     thumbnails.renderThumbnails();
     renderCanvas();
-    renderProps();
-    renderQuickbar();
     updateButtons();
     viewport.renderZoom();
     // Externally registered per-render hook (statusbar dirty dot etc.), see the main.js assembly
@@ -146,101 +131,6 @@ export function createView({ state, page, selected, api, controller, props, ops 
   }
 
   // --------------------------------------------------------------------------
-  // Property panel (element properties + page settings)
-  // --------------------------------------------------------------------------
-  function renderProps() {
-    const el = selected();
-    const count = api.getSelection().length; // selection reads via the api surface, never state.selection
-    const badge = dom.inspectorBadge;
-    const def = el ? getType(el.elementType) : null;
-    if (count > 1) {
-      badge.hidden = false;
-      badge.textContent = `多选 ×${count}`;
-    } else if (el && def) {
-      badge.hidden = false;
-      badge.textContent = def.label;
-    } else {
-      badge.hidden = true;
-    }
-    dom.inspectorTitle.textContent = count > 1 ? "多个元素" : count === 1 ? "元素属性" : "页面设置";
-    props.refresh();
-  }
-
-  // --------------------------------------------------------------------------
-  // Floating quickbar (high-frequency actions shown while an element is selected)
-  // --------------------------------------------------------------------------
-  function renderQuickbar() {
-    const qb = dom.quickbar;
-    const el = selected();
-    const canvas = dom.canvas;
-    const stage = dom.stage;
-    // The quickbar only appears on a single selection (batch actions for multi-select live in the property panel / context menu, U2 consolidation)
-    const node = el && api.getSelection().length === 1 ? canvas.querySelector(`[data-element-id="${CSS.escape(el.elementId)}"]`) : null;
-    if (!el || !node) {
-      qb.classList.remove("show");
-      qb.innerHTML = "";
-      return;
-    }
-    qb.innerHTML = "";
-
-    // Control helpers: all methods append the control to the quickbar (type modules only say
-    // "what", not "where to mount"). Text labels are gone (D3) — every control now takes a
-    // title instead, so the meaning survives on hover rather than taking bar space (title
-    // first, the same label-first shape as ui.js field()/cell()).
-    const h = {
-      // Color: tokens ($primary etc.) resolve to a concrete hex, showing the current real color
-      color: (title, value, onCommit) => qb.appendChild(quickbarColor(resolveColor(state.theme, value) || "", onCommit, title)),
-      select: (title, options, value, onCommit) => qb.appendChild(quickbarSelect(options, value, onCommit, title)),
-      fontOptions: () => api.fontOptions?.() || [["", "默认"]],
-      btn: (label, title, onClick, active) => qb.appendChild(quickbarBtn(label, title, onClick, active)),
-      iconBtn: (icon, title, onClick) => qb.appendChild(quickbarIconBtn(icon, title, onClick)),
-      change(fn) {
-        api.beginChange();
-        fn();
-        render();
-      },
-      openEditor: api.openEditor,
-    };
-
-    // Type badge + type-specific core controls + delete
-    const def = getType(el.elementType);
-    const badge = document.createElement("span");
-    badge.className = "qb-type";
-    badge.textContent = def?.label || el.elementType;
-    qb.appendChild(badge);
-    if (def?.quickbar) def.quickbar(el, h);
-    qb.appendChild(quickbarIconBtn(ICON_QB_DELETE, "删除元素", () => api.deleteSelected()));
-
-    // Position: centered above the element; when there is not enough room (near the canvas top) it goes below
-    // (node → stage coordinate conversion goes through coords.js)
-    const r = relRect(node.getBoundingClientRect(), stage.getBoundingClientRect());
-    const x = r.left + r.width / 2;
-    const y = r.top;
-    qb.classList.add("show");
-    // Narrow: CSS owns the bottom-docked horizontal layout, so clear any leftover inline positioning (when the window crosses breakpoints)
-    if (isNarrow()) {
-      qb.style.left = "";
-      qb.style.top = "";
-      return;
-    }
-    // Edge clamp: constrained by the quickbar's own width (including translateX(-50%)) to avoid spilling out of the canvas area/screen
-    const qbW = qb.offsetWidth;
-    const half = qbW / 2;
-    const minLeft = half + 8;
-    const maxLeft = Math.max(minLeft, stage.getBoundingClientRect().width - half - 8);
-    qb.style.left = `${Math.max(minLeft, Math.min(x, maxLeft))}px`;
-    // Above placement: flush to the element's top edge (the rotate handle is at the box bottom, so the whole top space goes to the quickbar);
-    // when it does not fit, flip below the element, leaving room for the bottom rotate-handle zone (connector 16 + handle 26 + gap 10 = 52px)
-    const topY = y - qb.offsetHeight - 12;
-    qb.style.top = topY >= 8 ? `${topY}px` : `${y + r.height + 52}px`;
-  }
-
-  // --------------------------------------------------------------------------
-  // (the former quickbar "open panel" entry lived here; removed — the FAB/topbar
-  // toggle is the single property-panel entry point)
-  // --------------------------------------------------------------------------
-
-  // --------------------------------------------------------------------------
   // Button state
   // --------------------------------------------------------------------------
   function updateButtons() {
@@ -270,7 +160,7 @@ export function createView({ state, page, selected, api, controller, props, ops 
  *   · no viewport fit/zoom/pan transform: the container is the deck-sized
  *     screenshot surface, so the scale must stay 1 (the editor's fit scale
  *     depends on the stage box and would shrink the capture);
- *   · no thumbnails / property panel / quickbar / button state / selection box;
+ *   · no thumbnails / Design panel / button state / selection box;
  *   · no DOM-measure refinement. The editor geometry is max(pure, DOM); the
  *     golden baseline was produced from the pure-function geometry, so the
  *     headless assembly must stay on it (pixel stability is the gate here).

@@ -1,41 +1,28 @@
 // ============================================================================
-// editor/interaction/dialogs/chart-editor.js — chart editor
+// editor/interaction/dialogs/chart-editor.js — chart content editor (minimal)
 // ----------------------------------------------------------------------------
-// Same shape as the table editor (Excel-style grid + declarative style panel):
-//   - layout: type row on top / main area (data toolbar + data table + series list) / style panel on the right
-//   - data table: Excel-style row/column headers (numbers/letters), click to select a row/column, drag-select, directional insert
-//   - series list: click to select → the series group on the right follows
-//   - style panel: fields.js declarative groups — chart / data labels / axes / series (by type)
-//   - type switch: semantic key remap (remapEncode) + coexistence-constraint warnings (validateChartSeries)
+// Kept (editor-ux §4.3): Excel-style data grid, column rename (encode remap),
+// chart type switch (semantic remap + coexistence warnings), series add/remove,
+// value-column selection, series name, series color.
+// Removed with 3.0: chart / data-label / axis / legend / series style panels,
+// bubble size, line styles, smooth, stack and every other advanced option.
+// Chart size/position stay on the canvas (charts resize but never rotate);
+// export routing is unchanged (CHART_META.route).
 // ============================================================================
 
 import { button, resolveEditorTheme, showDialog } from "./base.js";
-import { renderGroup, themeSwatches, fieldHandlers } from "../fields.js";
 import { createExcelGrid } from "../excel-grid.js";
 import * as ui from "../../ui.js";
+import { themeSwatches } from "../fields.js";
 import {
   CHART_META,
   CHART_TYPE_ORDER,
-  DATA_LABEL_CONTENTS,
-  NUMBER_FORMAT_CODES,
   colLetter,
   remapEncode,
   resolveColor,
   themeChartPalette,
   validateChartSeries,
 } from "../../../packages/model/index.js";
-
-const LEGEND_POS = [["bottom", "底部"], ["top", "顶部"], ["right", "右侧"], ["left", "左侧"]];
-const LABEL_CONTENT = [["value", "数值"], ["percentage", "百分比"], ["category", "分类名"]];
-// Format-code set = model NUMBER_FORMAT_CODES (same source as the formatChartValue
-// interpreter); the labels live in this layer
-const NUMBER_FMT_LABELS = { "": "无", "0": "整数", "0.0": "一位小数", "0%": "百分比", "0.0%": "一位百分比", "#,##0": "千分位", "0.0E+00": "科学计数" };
-const NUMBER_FMTS = NUMBER_FORMAT_CODES.map((code) => [code, NUMBER_FMT_LABELS[code]]);
-const LINE_STYLES = [["solid", "实线"], ["dash", "虚线"], ["dot", "点线"]];
-const STACK_OPTS = [["", "无"], ["normal", "普通堆叠"], ["percent", "百分比堆叠"]];
-const MARKER_SHAPES = [["circle", "圆点"], ["rect", "方块"], ["diamond", "菱形"], ["triangle", "三角"]];
-const SIZE_SCALES = [["sqrt", "平方根"], ["linear", "线性"], ["log", "对数"]];
-const NODE_ALIGNS = [["justify", "两端对齐"], ["left", "左对齐"], ["right", "右对齐"]];
 
 /** Find an unused value-column name (y2/y3…). */
 function findUnusedValCol(el) {
@@ -46,10 +33,7 @@ function findUnusedValCol(el) {
   return `y${n}`;
 }
 
-// ----------------------------------------------------------------------------
-// Chart editor
-// ----------------------------------------------------------------------------
-export function openChartEditor(el, { theme, onChange }) {
+export function openChartEditor(el, { theme, onChange, beginChange, onDone } = {}) {
   const container = document.createElement("div");
   container.className = "chart-editor";
 
@@ -72,12 +56,13 @@ export function openChartEditor(el, { theme, onChange }) {
 
   let curSeries = 0;
 
-  // -- Excel-style data grid (shared interaction/excel-grid.js, same impl as the table editor) --
+  // -- Excel-style data grid (shared interaction/excel-grid.js) --
   const grid = createExcelGrid({
     getRows: rowCount,
     getCols: colCount,
     cellValue: (r, c) => String(data.rows[r]?.[c] ?? ""),
     onCellChange: (r, c, v) => {
+      beginChange?.();
       data.rows[r][c] = v;
       commit();
     },
@@ -92,6 +77,7 @@ export function openChartEditor(el, { theme, onChange }) {
       input.value = data.cols[c] ?? "";
       input.placeholder = "列名";
       input.addEventListener("change", () => {
+        beginChange?.();
         renameColumn(c, input.value);
         setAndRefresh();
       });
@@ -99,18 +85,22 @@ export function openChartEditor(el, { theme, onChange }) {
       return wrap;
     },
     onInsertRows: (at, n) => {
+      beginChange?.();
       data.rows.splice(at, 0, ...Array.from({ length: n }, () => data.cols.map(() => null)));
       commit();
     },
     onInsertCols: (at, n) => {
+      beginChange?.();
       for (const r of data.rows) r.splice(at, 0, ...Array.from({ length: n }, () => null));
       commit();
     },
     onDeleteRows: (r1, r2) => {
+      beginChange?.();
       data.rows.splice(r1, r2 - r1 + 1);
       commit();
     },
     onDeleteCols: (c1, c2) => {
+      beginChange?.();
       const removed = data.cols.slice(c1, c2 + 1);
       for (const r of data.rows) r.splice(c1, c2 - c1 + 1);
       data.cols.splice(c1, c2 - c1 + 1);
@@ -131,14 +121,9 @@ export function openChartEditor(el, { theme, onChange }) {
   warnBox.className = "chart-warn";
   warnBox.hidden = true;
 
-  const bodyRow = document.createElement("div");
-  bodyRow.className = "chart-body";
   const main = document.createElement("div");
   main.className = "chart-main";
-  const panel = document.createElement("div");
-  panel.className = "style-panel";
-  bodyRow.append(main, panel);
-  container.append(topRow, bodyRow);
+  container.append(topRow, main);
 
   // On every change: commit + full re-render (a data-cell input change only commits, so focus is not lost)
   const setAndRefresh = () => { commit(); renderAll(); };
@@ -156,6 +141,7 @@ export function openChartEditor(el, { theme, onChange }) {
       curType(),
       (v) => {
         const meta = metaOf(v);
+        beginChange?.();
         for (const s of el.series || []) {
           s.type = v;
           s.encode = remapEncode(s.encode || {}, meta);
@@ -166,6 +152,7 @@ export function openChartEditor(el, { theme, onChange }) {
       }
     );
     const addBtn = button("＋ 添加系列", () => {
+      beginChange?.();
       el.series ||= [];
       const type = curType();
       const meta = metaOf(type);
@@ -194,11 +181,10 @@ export function openChartEditor(el, { theme, onChange }) {
   }
 
   // --------------------------------------------------------------------------
-  // Data table (Excel style: numeric row headers / letter column headers / drag
-  // select / directional insert) — implemented by the component
+  // Data table — implemented by the shared grid component
   // --------------------------------------------------------------------------
-  const gridBox = grid.root;
-  main.appendChild(gridBox);
+  main.appendChild(grid.root);
+  main.appendChild(warnBox);
   /** Column rename: also updates every series encode reference. */
   function renameColumn(c, newName) {
     const old = data.cols[c];
@@ -212,7 +198,7 @@ export function openChartEditor(el, { theme, onChange }) {
   }
 
   // --------------------------------------------------------------------------
-  // Series list (click selects → the style panel on the right follows)
+  // Series list: name / value column / color / delete (the only style kept)
   // --------------------------------------------------------------------------
   const seriesBox = document.createElement("div");
   seriesBox.className = "series-box";
@@ -230,7 +216,7 @@ export function openChartEditor(el, { theme, onChange }) {
     (el.series || []).forEach((s, i) => {
       const wrap = document.createElement("div");
       wrap.className = "series-item" + (i === curSeries ? " series-active" : "");
-      wrap.title = "点击选中此系列，右侧面板编辑其样式";
+      wrap.title = "点击选中此系列";
       const t = s.type || curType();
       // Main color field: bar/scatter/bubble/pie → color; line/area/radar → lineColor
       const hasMainColor = ["bar", "scatter", "bubble", "pie", "line", "area", "radar"].includes(t);
@@ -239,6 +225,7 @@ export function openChartEditor(el, { theme, onChange }) {
         const cf = ui.colorField(
           s[colorKey] || palette()[i % palette().length],
           (v) => {
+            beginChange?.();
             if (v) s[colorKey] = v;
             else delete s[colorKey];
             setAndRefresh();
@@ -254,6 +241,7 @@ export function openChartEditor(el, { theme, onChange }) {
       nameInput.placeholder = `系列 ${i + 1}`;
       nameInput.title = "系列名称";
       nameInput.addEventListener("change", () => {
+        beginChange?.();
         s.name = nameInput.value;
         commit();
       });
@@ -263,6 +251,7 @@ export function openChartEditor(el, { theme, onChange }) {
         data.cols.map((c, idx) => [String(idx), c]),
         String(Math.max(0, data.cols.indexOf(s.encode?.[valKeyOf(t)] ?? ""))),
         (v) => {
+          beginChange?.();
           const col = data.cols[Number(v)];
           if (col) {
             s.encode ||= {};
@@ -281,6 +270,7 @@ export function openChartEditor(el, { theme, onChange }) {
       del.title = "删除系列";
       del.addEventListener("click", (e) => {
         e.stopPropagation();
+        beginChange?.();
         el.series.splice(i, 1);
         curSeries = Math.min(curSeries, Math.max(0, (el.series.length || 1) - 1));
         setAndRefresh();
@@ -307,295 +297,15 @@ export function openChartEditor(el, { theme, onChange }) {
     seriesBox.appendChild(list);
   }
 
-  // --------------------------------------------------------------------------
-  // Style panel (declarative groups rendered by fields.js; follows the type and
-  // the selected series)
-  // --------------------------------------------------------------------------
-  const h = fieldHandlers({ theme: () => editorTheme() });
-
-  /** Safe access to a numeric-axis object (shared by xAxis/yAxis/spokeAxis). */
-  const axisObj = (el, key) => {
-    if (el[key] === false || el[key] == null || typeof el[key] !== "object") el[key] = {};
-    return el[key];
-  };
-
-  function chartGroup() {
-    const t = curType();
-    const fields = [
-      { kind: "checks", items: [
-        { label: "显示图例", get: () => el.legend !== false,
-          set: (v) => { if (v) { if (el.legend === false) el.legend = {}; } else el.legend = false; setAndRefresh(); } },
-      ] },
-      { kind: "select", label: "图例位置", options: LEGEND_POS,
-        get: () => (typeof el.legend === "object" ? el.legend.position : "") || "bottom",
-        set: (v) => { const o = axisObj(el, "legend"); o.position = v; setAndRefresh(); } },
-      { kind: "num", label: "图例字号", min: 8, max: 24,
-        get: () => (typeof el.legend === "object" ? el.legend.fontSize : "") || 11,
-        set: (v) => { axisObj(el, "legend").fontSize = Number(v); setAndRefresh(); } },
-      { kind: "color", label: "图例颜色",
-        get: () => (typeof el.legend === "object" ? el.legend.color : "") || "",
-        set: (v) => { const o = axisObj(el, "legend"); v ? (o.color = v) : delete o.color; setAndRefresh(); } },
-    ];
-    if (t === "bar") {
-      fields.push(
-        { kind: "num", label: "柱宽", min: 0.1, max: 1, step: 0.05,
-          get: () => el.barWidth ?? 0.6, set: (v) => { el.barWidth = Number(v); setAndRefresh(); } },
-        { kind: "num", label: "柱间距", min: 0, max: 1, step: 0.05,
-          get: () => el.barGap ?? 0, set: (v) => { el.barGap = Number(v); setAndRefresh(); } },
-        { kind: "num", label: "分类间距", min: 0, max: 1, step: 0.05,
-          get: () => el.categoryGap ?? 0.2, set: (v) => { el.categoryGap = Number(v); setAndRefresh(); } }
-      );
-    }
-    return { title: "图表", fields };
-  }
-
-  function labelGroup() {
-    const t = curType();
-    const o = () => (typeof el.dataLabels === "object" ? el.dataLabels : (el.dataLabels = {}));
-    return {
-      title: "数据标签",
-      fields: [
-        { kind: "checks", items: [
-          { label: "显示", get: () => el.dataLabels !== false,
-            set: (v) => { if (v) { if (el.dataLabels === false || el.dataLabels == null) el.dataLabels = {}; } else el.dataLabels = false; setAndRefresh(); } },
-        ] },
-        { kind: "select", label: "内容", options: LABEL_CONTENT.filter(([k]) => (DATA_LABEL_CONTENTS[t] || ["value"]).includes(k)),
-          get: () => o().content || "value",
-          set: (v) => { o().content = v; setAndRefresh(); } },
-        { kind: "select", label: "数字格式", options: NUMBER_FMTS,
-          get: () => o().numberFormat || "",
-          set: (v) => { v ? (o().numberFormat = v) : delete o().numberFormat; setAndRefresh(); } },
-        { kind: "num", label: "字号", min: 8, max: 24,
-          get: () => o().fontSize || 10,
-          set: (v) => { o().fontSize = Number(v); setAndRefresh(); } },
-        { kind: "color", label: "颜色",
-          get: () => o().color || "",
-          set: (v) => { v ? (o().color = v) : delete o().color; setAndRefresh(); } },
-      ],
-    };
-  }
-
-  function axisGroup(key, title, { minMax = false } = {}) {
-    const cfg = () => (el[key] === false ? null : el[key]);
-    const obj = () => (el[key] === false || el[key] == null || typeof el[key] !== "object" ? (el[key] = {}) : el[key]);
-    const fields = [
-      { kind: "checks", items: [
-        { label: "显示", get: () => el[key] !== false,
-          set: (v) => { if (v) { if (el[key] === false) el[key] = {}; } else el[key] = false; setAndRefresh(); } },
-      ] },
-      { kind: "text", label: "标题",
-        get: () => {
-          const t2 = cfg()?.title;
-          return typeof t2 === "string" ? t2 : (t2 && t2.text) || "";
-        },
-        set: (v) => { const o = obj(); v ? (o.title = v) : delete o.title; setAndRefresh(); } },
-      { kind: "num", label: "标签字号", min: 8, max: 20,
-        get: () => cfg()?.label?.fontSize || 11,
-        set: (v) => { const o = obj(); o.label ||= {}; o.label.fontSize = Number(v); setAndRefresh(); } },
-      { kind: "color", label: "标签颜色",
-        get: () => cfg()?.label?.color || "",
-        set: (v) => { const o = obj(); o.label ||= {}; v ? (o.label.color = v) : delete o.label.color; setAndRefresh(); } },
-    ];
-    if (minMax) {
-      fields.push(
-        { kind: "num", label: "最小值",
-          get: () => (cfg()?.min != null ? cfg().min : ""),
-          set: (v) => { const o = obj(); v === "" ? delete o.min : (o.min = Number(v)); setAndRefresh(); } },
-        { kind: "num", label: "最大值",
-          get: () => (cfg()?.max != null ? cfg().max : ""),
-          set: (v) => { const o = obj(); v === "" ? delete o.max : (o.max = Number(v)); setAndRefresh(); } }
-      );
-    }
-    fields.push(
-      { kind: "checks", items: [
-        { label: "网格线", get: () => !(cfg() && cfg().gridLine === false),
-          set: (v) => { const o = obj(); v ? delete o.gridLine : (o.gridLine = false); setAndRefresh(); } },
-      ] },
-      { kind: "select", label: "网格样式", options: LINE_STYLES,
-        get: () => (cfg()?.gridLine && typeof cfg().gridLine === "object" && cfg().gridLine.style) || "solid",
-        set: (v) => { const o = obj(); if (o.gridLine === false) delete o.gridLine; o.gridLine ||= {}; v && v !== "solid" ? (o.gridLine.style = v) : delete o.gridLine.style; setAndRefresh(); } }
-    );
-    return { title, fields };
-  }
-
-  function spokeGroup() {
-    const cfg = () => (el.spokeAxis && typeof el.spokeAxis === "object" ? el.spokeAxis : null);
-    const obj = () => (el.spokeAxis && typeof el.spokeAxis === "object" ? el.spokeAxis : (el.spokeAxis = {}));
-    return {
-      title: "蛛网轴",
-      fields: [
-        { kind: "checks", items: [
-          { label: "轴线", get: () => !(cfg() && cfg().axisLine === false),
-            set: (v) => { const o = obj(); v ? delete o.axisLine : (o.axisLine = false); setAndRefresh(); } },
-          { label: "网格线", get: () => !(cfg() && cfg().gridLine === false),
-            set: (v) => { const o = obj(); v ? delete o.gridLine : (o.gridLine = false); setAndRefresh(); } },
-        ] },
-        { kind: "color", label: "网格颜色",
-          get: () => (cfg()?.gridLine && typeof cfg().gridLine === "object" ? cfg().gridLine.color : "") || "",
-          set: (v) => { const o = obj(); if (o.gridLine === false) delete o.gridLine; o.gridLine ||= {}; v ? (o.gridLine.color = v) : delete o.gridLine.color; setAndRefresh(); } },
-        { kind: "num", label: "最大刻度",
-          get: () => (cfg()?.max != null ? cfg().max : ""),
-          set: (v) => { const o = obj(); v === "" ? delete o.max : (o.max = Number(v)); setAndRefresh(); } },
-      ],
-    };
-  }
-
-  function seriesGroup() {
-    const t = curType();
-    const s = el.series?.[curSeries];
-    if (!s) return null;
-    const setS = (fn) => { fn(s); setAndRefresh(); };
-    const colorFieldF = (key, label) => {
-      const getV = (x) => key.split(".").reduce((o, k) => (o == null ? undefined : o[k]), x);
-      const setV = (x, v) => {
-        const parts = key.split(".");
-        let o = x;
-        for (let i = 0; i < parts.length - 1; i++) { o[parts[i]] ||= {}; o = o[parts[i]]; }
-        v ? (o[parts[parts.length - 1]] = v) : delete o[parts[parts.length - 1]];
-      };
-      return {
-        kind: "color", label,
-        get: () => getV(s) || "",
-        set: (v) => setS((x) => setV(x, v)),
-      };
-    };
-    const borderFields = [
-      { kind: "color", label: "边框",
-        get: () => s.border?.color || "",
-        set: (v) => setS((x) => { x.border ||= {}; v ? (x.border.color = v) : delete x.border.color; }) },
-      { kind: "num", label: "边框宽", min: 0, max: 8,
-        get: () => s.border?.width ?? 0,
-        set: (v) => setS((x) => { x.border ||= {}; x.border.width = Number(v); }) },
-    ];
-    const markerFields = [
-      { kind: "checks", items: [
-        { label: "显示标记", get: () => s.marker !== false,
-          set: (v) => setS((x) => { if (v) { if (x.marker === false) x.marker = {}; } else x.marker = false; }) },
-      ] },
-      { kind: "select", label: "标记形状", options: MARKER_SHAPES,
-        get: () => (typeof s.marker === "object" && s.marker.shape) || "circle",
-        set: (v) => setS((x) => { if (x.marker === false || x.marker == null) x.marker = {}; x.marker.shape = v; }) },
-      { kind: "num", label: "标记尺寸", min: 2, max: 16,
-        get: () => (typeof s.marker === "object" && s.marker.size) || 8,
-        set: (v) => setS((x) => { if (x.marker === false || x.marker == null) x.marker = {}; x.marker.size = Number(v); }) },
-    ];
-    const lineFields = [
-      colorFieldF("lineColor", "线色"),
-      { kind: "num", label: "线宽", min: 1, max: 10,
-        get: () => s.width ?? 2, set: (v) => setS((x) => { x.width = Number(v); }) },
-      { kind: "select", label: "线型", options: LINE_STYLES,
-        get: () => s.lineStyle || "solid",
-        set: (v) => setS((x) => { v && v !== "solid" ? (x.lineStyle = v) : delete x.lineStyle; }) },
-      { kind: "checks", items: [
-        { label: "平滑", get: () => !!s.smooth, set: (v) => setS((x) => { v ? (x.smooth = true) : delete x.smooth; }) },
-      ] },
-      ...markerFields,
-    ];
-    const stackField = {
-      kind: "select", label: "堆叠", options: STACK_OPTS,
-      get: () => (s.stack === "percent" ? "percent" : s.stack === "normal" ? "normal" : ""),
-      set: (v) => setS((x) => { v ? (x.stack = v) : delete x.stack; }),
-    };
-
-    let fields;
-    if (t === "line" || t === "area" || t === "radar") {
-      fields = [...lineFields];
-      if (t === "area") fields.push(colorFieldF("areaColor", "面积色"));
-      if (t !== "radar") fields.push(stackField);
-    } else if (t === "bar" || t === "scatter" || t === "bubble") {
-      fields = [colorFieldF("color", "填充"), ...borderFields];
-      if (t === "bar") fields.push(stackField);
-      if (t === "bubble") {
-        fields.push(
-          { kind: "select", label: "尺寸缩放", options: SIZE_SCALES,
-            get: () => s.sizeScale || "sqrt",
-            set: (v) => setS((x) => { v && v !== "sqrt" ? (x.sizeScale = v) : delete x.sizeScale; }) },
-          { kind: "num", label: "最小半径", min: 2, max: 60,
-            get: () => s.sizeRange?.[0] ?? 6,
-            set: (v) => setS((x) => { x.sizeRange = [Number(v), x.sizeRange?.[1] ?? 48]; }) },
-          { kind: "num", label: "最大半径", min: 2, max: 120,
-            get: () => s.sizeRange?.[1] ?? 48,
-            set: (v) => setS((x) => { x.sizeRange = [x.sizeRange?.[0] ?? 6, Number(v)]; }) }
-        );
-      }
-    } else if (t === "pie") {
-      fields = [
-        colorFieldF("color", "填充"),
-        { kind: "num", label: "内径比例", min: 0, max: 0.9, step: 0.05,
-          get: () => s.innerRadius || 0,
-          set: (v) => setS((x) => { v > 0 ? (x.innerRadius = Number(v)) : delete x.innerRadius; }) },
-        { kind: "num", label: "起始角度", min: 0, max: 360,
-          get: () => s.startAngle || 0,
-          set: (v) => setS((x) => { v ? (x.startAngle = Number(v)) : delete x.startAngle; }) },
-        ...borderFields,
-      ];
-    } else if (t === "candlestick") {
-      fields = [
-        colorFieldF("upBars.fill", "上涨色"),
-        colorFieldF("downBars.fill", "下跌色"),
-      ];
-    } else if (t === "waterfall") {
-      fields = [
-        colorFieldF("totalBars.fill", "总计色"),
-        colorFieldF("increaseBars.fill", "上升色"),
-        colorFieldF("decreaseBars.fill", "下降色"),
-      ];
-    } else if (t === "heatmap") {
-      fields = [
-        { kind: "color", label: "浅端色",
-          get: () => (Array.isArray(s.colorScheme) ? s.colorScheme[0] : "") || "",
-          set: (v) => setS((x) => { const arr = Array.isArray(x.colorScheme) ? [...x.colorScheme] : ["", ""]; v ? (arr[0] = v) : (arr[0] = ""); arr[0] || arr[1] ? (x.colorScheme = arr) : delete x.colorScheme; }) },
-        { kind: "color", label: "深端色",
-          get: () => (Array.isArray(s.colorScheme) ? s.colorScheme[1] : "") || "",
-          set: (v) => setS((x) => { const arr = Array.isArray(x.colorScheme) ? [...x.colorScheme] : ["", ""]; v ? (arr[1] = v) : (arr[1] = ""); arr[0] || arr[1] ? (x.colorScheme = arr) : delete x.colorScheme; }) },
-        { kind: "checks", items: [
-          { label: "颜色条", get: () => s.colorbar !== false,
-            set: (v) => setS((x) => { if (v) { if (x.colorbar === false) x.colorbar = {}; } else x.colorbar = false; }) },
-        ] },
-      ];
-    } else if (t === "treemap" || t === "sunburst") {
-      fields = [
-        { kind: "num", label: "层级深度", min: 1, max: 20,
-          get: () => s.levels ?? "",
-          set: (v) => setS((x) => { v ? (x.levels = Number(v)) : delete x.levels; }) },
-      ];
-    } else if (t === "sankey") {
-      fields = [
-        { kind: "select", label: "节点对齐", options: NODE_ALIGNS,
-          get: () => s.nodeAlign || "justify",
-          set: (v) => setS((x) => { v && v !== "justify" ? (x.nodeAlign = v) : delete x.nodeAlign; }) },
-        colorFieldF("fill", "节点色"),
-      ];
-    } else {
-      fields = [];
-    }
-    return { title: `系列${curSeries + 1}`, fields };
-  }
-
-  function renderStylePanel() {
-    panel.innerHTML = "";
-    const t = curType();
-    const meta = metaOf(t);
-    const groups = [chartGroup(), labelGroup()];
-    if (meta.axes === "cartesian") {
-      groups.push(axisGroup("xAxis", "X 轴"), axisGroup("yAxis", "Y 轴", { minMax: true }));
-    }
-    if (t === "radar") groups.push(spokeGroup());
-    const sg = seriesGroup();
-    if (sg) groups.push(sg);
-    for (const g of groups) panel.appendChild(renderGroup(g, h));
-  }
-
   function renderAll() {
     renderTop();
     grid.render();
     renderSeries();
-    renderStylePanel();
   }
   renderAll();
 
-  showDialog("图表编辑", container);
-  // Widen the dialog (data table + series + right style panel)
+  showDialog("图表编辑", container, { onClose: () => onDone?.() });
+  // Widen the dialog (data table + series list)
   const dlg = container.closest(".dialog");
-  if (dlg) dlg.style.width = "min(960px, 96vw)";
+  if (dlg) dlg.style.width = "min(880px, 96vw)";
 }

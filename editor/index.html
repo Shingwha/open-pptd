@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="./styles/primitives.css" />
     <link rel="stylesheet" href="./styles/layout.css" />
     <link rel="stylesheet" href="./styles/canvas.css" />
-    <link rel="stylesheet" href="./styles/inspector.css" />
+    <link rel="stylesheet" href="./styles/forms.css" />
     <link rel="stylesheet" href="./styles/panels.css" />
     <link rel="stylesheet" href="./styles/present.css" />
     <link rel="stylesheet" href="./styles/responsive.css" />
@@ -18,7 +18,7 @@
     <!-- editor mount point (createEditor's rootEl; in standalone the skeleton is still provided statically by this page) -->
     <div id="pptd-root"></div>
     <div class="app" id="editor-app">
-      <!-- topbar: flat single row — brand left, one right-aligned cluster (status + undo/redo + file group + GitHub) -->
+      <!-- topbar: flat single row — brand left, one right-aligned cluster (status + undo/redo + file/design/present + GitHub) -->
       <header class="topbar">
         <div class="brand">
           <a class="brand-home" href="../" title="返回作品画廊">OPEN PPTD</a>
@@ -42,13 +42,9 @@
             <span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M3 6a1.5 1.5 0 0 1 1.5-1.5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.2V18a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
             <span class="btn-label">文件</span>
           </button>
-          <button id="btn-fonts" class="btn" title="字体管理：添加本地/网络字体，导出时嵌入">
-            <span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M5 5h14M12 5v14M9 19h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
-            <span class="btn-label">字体</span>
-          </button>
-          <button id="btn-theme" class="btn" title="配色：预设色板与语义色编辑">
+          <button id="btn-design" class="btn" title="设计：主题 / 字体 / 外观">
             <span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18h1.6a1.6 1.6 0 0 0 0-3.2H12a1.6 1.6 0 0 1 0-3.2h4.4A4.6 4.6 0 0 0 21 10C21 6.1 17 3 12 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7.4" cy="10.6" r="1.1" fill="currentColor"/><circle cx="11.8" cy="7.4" r="1.1" fill="currentColor"/><circle cx="16.4" cy="8.6" r="1.1" fill="currentColor"/></svg></span>
-            <span class="btn-label">配色</span>
+            <span class="btn-label">设计</span>
           </button>
           <button id="btn-present" class="btn btn-present" title="放映：从当前页开始全屏演示 (F5)">
             <span class="btn-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 21v-2M8 21h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 8.5v5l4.2-2.5z" fill="currentColor"/></svg></span>
@@ -60,9 +56,8 @@
         </div>
       </header>
 
-      <!-- workspace -->
+      <!-- workspace: canvas fills the whole width (the Design panel is a drawer) -->
       <div class="workspace">
-        <!-- canvas (full-width preview) -->
         <main id="stage" class="stage">
           <div id="canvas-wrap" class="canvas-wrap">
             <div id="canvas" class="canvas"></div>
@@ -70,45 +65,23 @@
             <div id="canvas-loading" class="canvas-loading"></div>
           </div>
 
-          <!-- floating quickbar while an element is selected -->
-          <div id="quickbar" class="quickbar"></div>
-
-          <!-- bottom-right action group (same on both ends): property-panel entry / add element -->
+          <!-- bottom-right add control: text / table / chart only -->
           <div class="fab-stack">
-            <button id="btn-inspector-open" class="fab" title="打开/收起属性面板">
-              <svg viewBox="0 0 24 24" class="fab-ic"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="6" r="2.2" fill="currentColor"/><circle cx="15" cy="12" r="2.2" fill="currentColor"/><circle cx="7" cy="18" r="2.2" fill="currentColor"/></svg>
-            </button>
-            <button id="btn-add" class="fab" title="添加元素">
+            <button id="btn-add" class="fab" title="添加元素（文字 / 表格 / 图表）">
               <svg viewBox="0 0 24 24" class="fab-ic"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
             </button>
           </div>
-
-          <div id="add-menu" class="add-menu"></div>
+          <div id="add-list" class="add-list" hidden></div>
         </main>
-
-        <!-- right property drawer -->
-        <aside class="inspector" id="inspector">
-          <div class="inspector-head">
-            <div class="inspector-title-row">
-              <span id="inspector-badge" class="inspector-badge" hidden></span>
-              <span id="inspector-title">属性</span>
-            </div>
-            <button id="btn-inspector-toggle" class="icon-btn" title="收起属性面板">
-              <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </button>
-          </div>
-          <div id="props"></div>
-        </aside>
-
       </div>
 
-      <!-- narrow-screen property panel mask -->
-      <div id="inspector-mask" class="inspector-mask"></div>
-
-      <!-- bottom page thumbnail bar (right end: zoom group + page count, D2) -->
+      <!-- bottom page thumbnail bar (right end: page menu + zoom group + page count) -->
       <footer class="thumbbar">
         <div id="page-thumbs" class="page-thumbs"></div>
-        <button id="btn-add-page" class="thumb-add" title="添加页面">＋</button>
+        <button id="btn-add-page" class="thumb-add" title="在当前页后插入新页">＋</button>
+        <button id="btn-page-menu" class="icon-btn" title="页面操作：前插 / 后插 / 移动 / 删除">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
         <div class="thumbbar-meta">
           <!-- canvas zoom control: inline group at the right end of the thumb bar (button ids unchanged, public hook) -->
           <div id="zoom-ctl" class="zoom-ctl">

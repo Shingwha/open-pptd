@@ -27,11 +27,12 @@ export function closeAllDialogs() {
 }
 
 /** Generic modal: title + body + footer buttons (a single done button by default; overlay/✕ close).
- * actions: { doneText, onDone, buttons, panelClass, closeBtn, overlayClose }
+ * actions: { doneText, onDone, buttons, panelClass, closeBtn, overlayClose, onClose }
  *   buttons      custom footer button group (replacing the default done button; close via the returned close())
  *   panelClass   extra panel class (e.g. restore-card fixed width)
  *   closeBtn     false = hide the header ✕ (shown by default)
- *   overlayClose false = clicking the overlay does not close (closes by default) */
+ *   overlayClose false = clicking the overlay does not close (closes by default)
+ *   onClose      called once whenever the dialog closes (done / ✕ / overlay), after the DOM is removed */
 export function showDialog(title, buildBody, actions) {
   const overlay = document.createElement("div");
   overlay.className = "dialog-overlay";
@@ -41,8 +42,14 @@ export function showDialog(title, buildBody, actions) {
   head.className = "dialog-head";
   head.innerHTML = `<strong>${title}</strong>`;
   const close = () => {
+    if (!overlay.isConnected) return;
     overlay.remove();
     openOverlays.delete(overlay);
+    try {
+      actions?.onClose?.();
+    } catch (err) {
+      console.warn("[dialog] onClose 回调异常:", err?.message || err);
+    }
   };
   if (actions?.closeBtn !== false) {
     const closeBtn = document.createElement("button");

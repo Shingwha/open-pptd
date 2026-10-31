@@ -7,7 +7,7 @@
 //     → { ready, destroy, api, io, state, view }
 //
 // Assembly capability (`interactive`, default true; `chrome:"shot"` implies false):
-// the interactive assembly binds canvas/keyboard/contextmenu/present/toolbar/stage
+// the interactive assembly binds canvas/keyboard/present/toolbar/stage
 // and the permanent listeners (resize, theme-mode media query, live reload). The
 // non-interactive one keeps state/api/io and the SAME load → font → image → paint
 // pipeline, but swaps the full view for the headless paint view and binds nothing.
@@ -34,8 +34,6 @@ import { createPresent } from "./app/present.js";
 import { clearToasts } from "./app/toast.js";
 import { createCanvasController } from "./interaction/canvas.js";
 import { createStageController } from "./interaction/stage.js";
-import { bindContextMenu } from "./interaction/contextmenu.js";
-import { bindProperties } from "./interaction/properties.js";
 import { injectIcons } from "./icons.js";
 import { dom } from "./dom.js";
 import { applyThemeTokens, bindThemeMode } from "./theme.js";
@@ -46,7 +44,7 @@ import { disposeChartInstances } from "../packages/renderer/index.js";
 // chrome presets: embedded = trims host-hostile outbound navigation (brand back to gallery / GitHub new window)
 const CHROME_PRESETS = {
   full: null,
-  embedded: { topbar: true, brand: false, github: false, thumbbar: true, quickbar: true, zoom: true, inspector: true },
+  embedded: { topbar: true, brand: false, github: false, thumbbar: true, zoom: true },
 };
 
 /**
@@ -57,7 +55,7 @@ const CHROME_PRESETS = {
  *   deck?      { manifestText, pageFiles, manifestPath? } initial document (otherwise read from source)
  *   deckUrl?   project URL loaded via source.read(deckUrl) (standalone ?deck=)
  *   theme?     { tokens?: Record<string,string>, mode?: "light"|"dark" }
- *   chrome?    "full" | "embedded" | "shot" | { topbar?, brand?, github?, thumbbar?, quickbar?, zoom?, inspector? }
+ *   chrome?    "full" | "embedded" | "shot" | { topbar?, brand?, github?, thumbbar?, zoom? }
  *              ("shot" = the non-interactive headless assembly, implies interactive:false)
  *   dialogs?   host implementation { alert, confirm } (overrides native dialogs, see editor/dialogs.js)
  *   locale?    "zh-CN" (default; no i18n resources yet, recorded only)
@@ -113,7 +111,7 @@ export function createEditor(rootEl, options = {}) {
   // --------------------------------------------------------------------------
   // Assembly (the closure of the old main.js initEditor)
   // --------------------------------------------------------------------------
-  const { state, page, selected, primarySelectedId, selectedElements, groupOf, ops } = createEditorState();
+  const { state, page, selected, primarySelectedId, selectedElements, ops } = createEditorState();
   const api = createEditorApi({ state, page, selected, primarySelectedId, selectedElements, ops });
 
   // Public events: dirty/selectionChange dispatched after each render when the state changed
@@ -139,19 +137,17 @@ export function createEditor(rootEl, options = {}) {
     }
   };
 
-  // Interaction slices (element gestures, property panel) exist only in the
-  // interactive assembly; the headless one builds the same api without them (the
-  // api guards controller-less calls, and view is the headless paint view).
+  // Interaction slices (element gestures) exist only in the interactive assembly;
+  // the headless one builds the same api without them (the api guards
+  // controller-less calls, and view is the headless paint view).
   let controller = null;
-  let props = null;
   if (interactive) {
     // Element gesture executor (drag/resize/rotate; viewport gestures are in the stage router)
     controller = createCanvasController(dom.canvas, { ...api });
-    props = bindProperties(dom.props, api);
   }
 
   const view = interactive
-    ? createView({ state, page, selected, api, controller, props, ops })
+    ? createView({ state, page, api, controller, ops })
     : createHeadlessView({ state, container: mount });
   api.bind({ controller, view });
   disposers.push(() => view.destroy?.());
@@ -176,11 +172,6 @@ export function createEditor(rootEl, options = {}) {
       zoomReset: () => view.zoomReset(),
     });
     disposers.push(() => stage.destroy?.());
-
-    // Canvas right-click context menu (three states: single-select / multi-select / empty page-level).
-    // Bound to the canvas element itself: everywhere outside keeps the browser's native menu.
-    const contextMenu = bindContextMenu({ canvas: dom.canvas, api, state, page, groupOf, view });
-    disposers.push(() => contextMenu.destroy?.());
   }
 
   const io = createIo({
@@ -211,6 +202,7 @@ export function createEditor(rootEl, options = {}) {
     },
   });
   api.fontOptions = () => io.fontManager.fontOptions(); // element font dropdown options (late-bound)
+  api.bind({ io }); // save/export/undo-redo/navigation delegate to the IO facade
 
   // --------------------------------------------------------------------------
   // Interactive bindings (skipped entirely by the non-interactive assembly)
@@ -221,7 +213,7 @@ export function createEditor(rootEl, options = {}) {
   if (interactive) {
     // Present mode (topbar "Present" button + F5)
     const present = createPresent({ state, view, ops });
-    api.present = present;
+    api.bind({ present });
     disposers.push(() => present.destroy?.());
 
     view.afterRender = () => {
@@ -231,18 +223,17 @@ export function createEditor(rootEl, options = {}) {
       emitEvents();
     };
 
-    const toolbar = bindToolbar({ state, api, ops, view, io, present, themeMode });
+    const toolbar = bindToolbar({ state, api, view, io, present, themeMode });
     disposers.push(() => toolbar.destroy?.());
     const keyboard = bindKeyboard({ state, api, io, present });
     disposers.push(() => keyboard.destroy?.());
-    disposers.push(() => props.destroy?.());
     disposers.push(() => controller.destroy?.());
 
     // Live reload (unified project mode): subscribe to push/polling once the project is ready.
     // (The headless assembly still connects through the load pipeline's own connect() call.)
     io.connectLiveReload();
 
-    // resize: rAF debounce + full render (thumbnail sizes / quickbar positioning sync when dragging the window across breakpoints)
+    // resize: rAF debounce + full render (thumbnail sizes / canvas fit sync when crossing breakpoints)
     window.addEventListener(
       "resize",
       () => {
@@ -313,9 +304,7 @@ export function createEditor(rootEl, options = {}) {
       brand: () => dom.query(".brand-home"),
       github: () => dom.query(".topbar-actions a[href^='http']"),
       thumbbar: () => dom.query("footer.thumbbar"),
-      quickbar: () => dom.quickbar,
       zoom: () => dom.zoomCtl,
-      inspector: () => dom.query("aside.inspector"),
     };
     const hidden = [];
     for (const [key, pick] of Object.entries(map)) {
@@ -362,7 +351,6 @@ export function createEditor(rootEl, options = {}) {
     }
     closeAllDialogs();
     clearToasts();
-    if (dom.quickbar) dom.quickbar.innerHTML = "";
     // 5) Restore chrome-hidden elements
     for (const [el, prev] of chromeHidden) el.style.display = prev || "";
     // 6) Restore theme

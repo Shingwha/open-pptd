@@ -1,18 +1,17 @@
 // ============================================================================
-// app/view/thumbnails.js — bottom thumbnail bar: render + page multi-select + drag-sort + context menu
+// app/view/thumbnails.js — bottom thumbnail bar: render + page switch + drag-sort
 // ----------------------------------------------------------------------------
-// B2 (U2-lite port: the feature part of a06f3c5, layout/size kept at the original 140×79):
-//   - page multi-select: click switches the current page and clears the page selection;
-//     Shift = range select; Ctrl/⌘ = toggle one page
+// Minimal editor (editor-ux §2/§7):
+//   - click a card switches the current page (single page model; no page
+//     multi-select / batch operations)
 //   - drag-sort: drag a card (threshold-triggered) → drop line indicator
 //     (.drop-before/.drop-after) → release writes the model via api.movePage
 //     (beginChange snapshot) → Ctrl+Z can undo
-//   - context menu: duplicate page / delete page / new page / page background…
-//     (batch duplicate N / delete N when multi-selected)
-// The stat text keeps the original style (current page / total); thumbnail card
-// size keeps the original CSS breakpoints (140×79). Concerns stay separate:
-// pointer wiring is attached once at creation (AbortController lifetime) while
-// renderThumbnails only rebuilds card content.
+//   - × on a card deletes that page (at least one page is always kept)
+// The page menu (insert before/after, move, delete) is bound in app/page-menu.js;
+// the stat text keeps the original "current / total" style. Thumbnail card size
+// keeps the CSS breakpoints (140×79). Pointer wiring is attached once at creation
+// (AbortController lifetime) while renderThumbnails only rebuilds card content.
 // ============================================================================
 
 import { dom } from "../../dom.js";
@@ -28,20 +27,8 @@ export function createThumbnails({ state, api, ops, reload }) {
   const bar = dom.pageThumbs;
   const ac = new AbortController(); // lifetime: drag/wheel listeners are unbound once through this
 
-  /** Page multi-select set (stores page object refs; prunes pages that no longer exist on each render) */
-  const pageSel = new Set();
-  let anchorPage = null; // Shift range-select anchor (the last clicked page)
-
-  /** Page index (-1 = not in the current deck) */
-  const indexOfPage = (pg) => (state.deck?.pages || []).indexOf(pg);
-
-  function pruneSelection() {
-    for (const pg of [...pageSel]) if (indexOfPage(pg) < 0) pageSel.delete(pg);
-    if (anchorPage && indexOfPage(anchorPage) < 0) anchorPage = null;
-  }
-
   // --------------------------------------------------------------------------
-  // Pointer wiring (drag-sort / horizontal drag-scroll / multi-select click / context menu)
+  // Pointer wiring (drag-sort / horizontal drag-scroll / click switch)
   // --------------------------------------------------------------------------
   let thumbDrag = null; // { x, y, startScroll, moved, card, index, drop }
   let suppressClick = false;
@@ -128,7 +115,7 @@ export function createThumbnails({ state, api, ops, reload }) {
       api.movePage(d.index, to);
     }, { signal: ac.signal });
     // No context menu on the thumbnail bar: outside the canvas the browser's native
-    // menu stays (page ops live in the canvas blank menu / the ＋ button / the × chip)
+    // menu stays (page ops live in the visible page menu / the ＋ button / the × chip)
   }
 
   // --------------------------------------------------------------------------
@@ -136,20 +123,18 @@ export function createThumbnails({ state, api, ops, reload }) {
   // --------------------------------------------------------------------------
   function renderThumbnails() {
     if (!state.deck) return;
-    pruneSelection();
     disposeChartInstances(bar);
     bar.innerHTML = "";
     state.deck.pages.forEach((pg, i) => {
-      const multi = pageSel.has(pg);
       const thumb = document.createElement("div");
-      thumb.className = "thumb" + (i === state.currentPage ? " active" : "") + (multi ? " multi" : "");
+      thumb.className = "thumb" + (i === state.currentPage ? " active" : "");
       thumb.dataset.pageIndex = String(i);
       thumb.title = `第 ${i + 1} 页`;
-      bar.appendChild(thumb); // insert before measuring: the card size is decided by the CSS breakpoint and measured at runtime (border-box content)
+      bar.appendChild(thumb); // insert before measuring: the card size is decided by the CSS breakpoint and measured at runtime
       const mini = document.createElement("div");
       mini.className = "thumb-canvas";
-      // Contain the canvas's real ratio into the measured card content box (16:9 fills exactly; a portrait poster centers with top/bottom padding).
-      // Not a constant: the narrow-screen card box is smaller, so positioning mini at the desktop 140×79 would sink and overflow.
+      // Contain the canvas's real ratio into the measured card content box (16:9 fills exactly; a portrait poster
+      // centers with top/bottom padding). Not a constant: the narrow-screen card box is smaller.
       const [pw, ph] = deckSize(state.deck);
       const bw = thumb.clientWidth || THUMB_W;
       const bh = thumb.clientHeight || THUMB_H;
@@ -174,37 +159,19 @@ export function createThumbnails({ state, api, ops, reload }) {
       del.title = "删除页面";
       del.addEventListener("click", (e) => {
         e.stopPropagation();
-        api.deletePages([i]);
+        api.deletePage(i);
       });
       thumb.append(mini, ...(skeleton ? [skeleton] : []), num, del);
-      thumb.addEventListener("click", (e) => onThumbClick(e, pg, i));
+      thumb.addEventListener("click", (e) => onThumbClick(e, i));
     });
     renderStat();
     // Scroll the current page into view automatically (keeps it visible with many pages; visible cards are not force-scrolled)
     bar.querySelector(".thumb.active")?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
 
-  /** Click: Shift = range select; Ctrl/⌘ = toggle one page; otherwise switch the current page and clear the page selection. */
-  function onThumbClick(e, pg, i) {
+  /** Click: switch the current page (single page model). */
+  function onThumbClick(e, i) {
     if (suppressClick) return;
-    if (e.shiftKey && anchorPage && indexOfPage(anchorPage) >= 0) {
-      const a = indexOfPage(anchorPage);
-      pageSel.clear();
-      for (let k = Math.min(a, i); k <= Math.max(a, i); k += 1) pageSel.add(state.deck.pages[k]);
-      state.currentPage = i;
-      reload();
-      return;
-    }
-    if (e.ctrlKey || e.metaKey) {
-      if (pageSel.has(pg)) pageSel.delete(pg);
-      else pageSel.add(pg);
-      anchorPage = pg;
-      state.currentPage = i;
-      reload();
-      return;
-    }
-    pageSel.clear();
-    anchorPage = pg;
     state.currentPage = i;
     ops.clearSelection(); // page switch drops the element selection (single write entry)
     reload();
@@ -237,8 +204,6 @@ export function createThumbnails({ state, api, ops, reload }) {
     destroy() {
       ac.abort();
       thumbDrag = null;
-      pageSel.clear();
-      anchorPage = null;
       if (bar) {
         disposeChartInstances(bar);
         bar.innerHTML = "";

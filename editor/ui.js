@@ -1,10 +1,9 @@
 // ============================================================================
-// ui.js — shared form controls (used by the property panel / quickbar / type-registry props)
+// ui.js — shared form controls (content editors / Design panel)
 // ----------------------------------------------------------------------------
-// Interaction convention: controls support an { onBlur } hook, which the property
-// panel uses to implement the "first commit → beginChange snapshot / blur →
-// endChange re-render" transaction mode; the quickbar passes no hook and wraps
-// change() directly in onCommit.
+// Interaction convention: controls support an { onBlur } hook, which callers use to
+// implement the "first commit → beginChange snapshot / blur → endChange re-render"
+// transaction mode; controls that need no transaction pass no hook.
 // ============================================================================
 
 // svgIcon moved to icons.js (the single inline-icon source); re-exported here so existing import paths stay valid
@@ -236,7 +235,7 @@ export function checkbox(label, checked, onCommit, { onFocus, onBlur } = {}) {
   return wrap;
 }
 
-/** Button. active appends .on (quickbar toggle state); preventDefault defaults to preventing textarea blur.
+/** Button. active appends .on (toggle state); preventDefault defaults to preventing textarea blur.
  * The implementation delegates to components/button.js (the Button primitive, the only button construction point site-wide). */
 export function button(label, onClick, { title = "", className = "btn btn-sm", active = false, preventDefault = true } = {}) {
   return coreButton(label, {
@@ -246,36 +245,4 @@ export function button(label, onClick, { title = "", className = "btn btn-sm", a
     preventDefault,
     onClick,
   });
-}
-
-// ----------------------------------------------------------------------------
-// Quickbar-only controls (qb-* styles)
-// ----------------------------------------------------------------------------
-
-/** Narrow breakpoint (px): thumbnail narrowing, bottom-docked quickbar horizontal scroll and the property drawer form share it
- * (in sync with the max-width media queries in editor/styles/; changes must match on both sides). */
-export const BP_NARROW = 900;
-
-export const isNarrow = () => window.matchMedia(`(max-width: ${BP_NARROW}px)`).matches;
-
-/** Color swatch. Since decision D3 the bar has no text labels, so the title carries the meaning. */
-export function quickbarColor(value, onCommit, title = "颜色") {
-  return colorInput(value, onCommit, { className: "qb-color", title });
-}
-
-/** Compact dropdown. title carries the meaning in place of the removed text labels. */
-export function quickbarSelect(options, value, onCommit, title = "") {
-  return selectInput(options, value, onCommit, { className: "qb-select", title });
-}
-
-/** Text toggle (B / I). active appends .on (persistent on-state, accent-soft per the Line rules). */
-export function quickbarBtn(label, title, onClick, active) {
-  return button(label, onClick, { title, className: "qb-btn", active });
-}
-
-/** Icon-only button (⋯ / delete / type-specific icon actions); icon = an svgIcon() string. */
-export function quickbarIconBtn(icon, title, onClick) {
-  const b = button("", onClick, { title, className: "qb-icon-btn" });
-  b.innerHTML = icon;
-  return b;
 }

@@ -11,8 +11,9 @@
 //       single = .el-single 1px solid ring + four .h square corner handles + .rot handle
 //       multi/group = a thin .member border per member + one dashed .mbounds box + corner handles
 //   - Marquee (drag on blank canvas) → dashed .marquee box; on release Shift adds / Ctrl toggles.
-//   - Ctrl/Alt + drag = duplicate drag (threshold: a drag duplicates, no drag = Ctrl-click toggles).
-//   - Group elements (elementType:"group") transform as a whole: move/resize apply to children.
+//   - Ctrl-click on an already selected element (no drag) toggles it off.
+//   - Group shells are inert: members are hit and transformed as ordinary elements
+//     (no grouping UI in 3.0).
 //   - Geometry goes through coords.js overlayGeom (model coords → wrap layer); controls
 //     keep a constant on-screen size.
 // ============================================================================
@@ -37,9 +38,7 @@ export function createCanvasController(canvas, opts) {
     getSelection,      // () => id[]
     select,            // (id, mode) => void
     selectMany,        // (ids, mode) => void
-    duplicateInPlace,  // () => void  duplicate selection in place (for duplicate drag)
     deleteSelected,    // keyboard Delete/Backspace
-    moveLayerEdge,     // (edge) => void  bring to front / send to back (keyboard ] / [)
   } = opts;
 
   const wrapLayer = canvas.parentElement; // canvas-wrap: the non-scaled layer
@@ -58,26 +57,10 @@ export function createCanvasController(canvas, opts) {
   const findElement = (id) => elements().find((el) => el.elementId === id);
   const nodeBy = (id) => canvas.querySelector(`[data-element-id="${CSS.escape(id)}"]`);
 
-  /** Selection → affected elements (groups expand to children) + members needing a thin border. */
+  /** Selection → affected elements (one entry per selected element; group shells are inert). */
   function selectionUnits() {
     const picked = getSelectedElements ? getSelectedElements() : [];
-    const affected = [];
-    const members = [];
-    for (const el of picked) {
-      affected.push(el);
-      if (el.elementType === "group" && Array.isArray(el.children)) {
-        for (const cid of el.children) {
-          const c = findElement(cid);
-          if (c) {
-            affected.push(c);
-            members.push(c);
-          }
-        }
-      } else {
-        members.push(el);
-      }
-    }
-    return { picked, affected, members };
+    return { picked, affected: picked.slice(), members: picked.slice() };
   }
 
   /**
@@ -132,7 +115,7 @@ export function createCanvasController(canvas, opts) {
   function boxModelBounds() {
     const picked = getSelectedElements ? getSelectedElements() : [];
     if (picked.length === 0) return null;
-    if (picked.length === 1 && picked[0].elementType !== "group") {
+    if (picked.length === 1) {
       return geomOf(picked[0]);
     }
     return unionOf(picked);
@@ -152,7 +135,7 @@ export function createCanvasController(canvas, opts) {
 
     overlay = document.createElement("div");
     overlay.className = "sel-overlay";
-    const isSingle = picked.length === 1 && picked[0].elementType !== "group";
+    const isSingle = picked.length === 1;
 
     // Multi/group: thin member borders (not drawn for single, to avoid overlapping the solid ring)
     if (!isSingle) {
@@ -178,7 +161,7 @@ export function createCanvasController(canvas, opts) {
     }
 
     // Rotate handle: single selection only (chart/table cannot rotate); placed at
-    // the box's bottom center (the top is left to the quickbar)
+    // the box's bottom center (the top stays free)
     if (isSingle && !["chart", "table"].includes(picked[0].elementType)) {
       const stem = document.createElement("div");
       stem.className = "sel-rotate-stem";
@@ -211,7 +194,7 @@ export function createCanvasController(canvas, opts) {
     box.style.top = `${g.top}px`;
     box.style.width = `${g.width}px`;
     box.style.height = `${g.height}px`;
-    const single = picked.length === 1 && picked[0].elementType !== "group";
+    const single = picked.length === 1;
     box.style.transform = single && picked[0].rotation ? `rotate(${picked[0].rotation}deg)` : "";
 
     for (const { el, node } of memberNodes) {
@@ -265,7 +248,7 @@ export function createCanvasController(canvas, opts) {
   const hitTest = (rect) => {
     const [x, y, w, h] = rect;
     return elements()
-      .filter((el) => el.elementType !== "group") // group members are hit via the group
+      .filter((el) => el.elementType !== "group") // group shells are inert (members are ordinary elements)
       .filter((el) => {
         const b = geomOf(el);
         return b[0] < x + w && b[0] + b[2] > x && b[1] < y + h && b[1] + b[3] > y;
@@ -357,7 +340,7 @@ export function createCanvasController(canvas, opts) {
   // --------------------------------------------------------------------------
   // Drag / resize / rotate (routed in from interaction/stage.js)
   //   mode = "move" | "rotate" | "nw"|"ne"|"sw"|"se"
-  //   gopts = { copyOnMove, toggleOnTap }
+  //   gopts = { toggleOnTap }
   // --------------------------------------------------------------------------
   function startGesture(e, mode, id, gopts = {}) {
     const { affected } = selectionUnits();
@@ -371,7 +354,6 @@ export function createCanvasController(canvas, opts) {
       box0,
       affected: affected.map((el) => ({ el, x: el.bounds[0], y: el.bounds[1], w: el.bounds[2], h: el.bounds[3] })),
       changed: false, // snapshot only on the first real movement (a pure select-click is not dirty and enters no history)
-      copyOnMove: !!gopts.copyOnMove,
       toggleOnTap: !!gopts.toggleOnTap,
     };
     if (mode === "rotate") {
@@ -408,16 +390,6 @@ export function createCanvasController(canvas, opts) {
     window.addEventListener("pointerup", onDragEnd);
     window.addEventListener("pointercancel", onDragEnd);
     window.addEventListener("blur", onDragEnd);
-  }
-
-  /** Duplicate drag: copy the selection in place (offset 0), switch selection to the copy, and re-base the drag. */
-  function retargetToCopy() {
-    duplicateInPlace && duplicateInPlace();
-    const { affected } = selectionUnits();
-    const box0 = boxModelBounds();
-    if (!box0) return;
-    drag.box0 = box0;
-    drag.affected = affected.map((el) => ({ el, x: el.bounds[0], y: el.bounds[1], w: el.bounds[2], h: el.bounds[3] }));
   }
 
   function updateNodeGeom(el) {
@@ -491,11 +463,6 @@ export function createCanvasController(canvas, opts) {
       if (Math.hypot(e.clientX - drag.clientX, e.clientY - drag.clientY) < MOVE_THRESHOLD) return;
       drag.changed = true;
       beginChange(); // snapshot before the first real movement (orig captured, model unchanged)
-      if (drag.copyOnMove) {
-        retargetToCopy(); // Ctrl/Alt duplicate drag: once the copy is placed, keep dragging from the pointer
-        drag.clientX = e.clientX;
-        drag.clientY = e.clientY;
-      }
     }
     const rawDx = (e.clientX - drag.clientX) / s;
     const rawDy = (e.clientY - drag.clientY) / s;
@@ -646,12 +613,6 @@ export function createCanvasController(canvas, opts) {
     if (e.key === "Delete" || e.key === "Backspace") {
       e.preventDefault();
       deleteSelected && deleteSelected();
-      return;
-    }
-    // ] bring to front / [ send to back
-    if (e.key === "]" || e.key === "[") {
-      e.preventDefault();
-      moveLayerEdge?.(e.key === "]" ? "front" : "back");
       return;
     }
     const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };

@@ -1,55 +1,29 @@
 // ============================================================================
-// types/table.js — table element type registration
+// types/table.js — table element UI boundary (label + create)
+// ----------------------------------------------------------------------------
+// The table content editor lives in interaction/dialogs/table-editor.js (grid,
+// insert/delete, merge/split, cell text/color/fill). No style panel / row-height
+// dialog in 3.0 (editor-ux §4.2).
 // ============================================================================
 
 import { svgIcon } from "../ui.js";
 import { nextElementId, registerType } from "../../packages/model/index.js";
 
-/** Quickbar "edit data" glyph (inline SVG next to its only consumer; stroke inherits currentColor). */
-const ICON_EDIT = svgIcon('<path d="M4.5 19.5h3.6L19.4 8.2a1.9 1.9 0 0 0-2.7-2.7L5.4 16.8l-.9 2.7z"/><path d="M14.6 6.6l2.7 2.7"/>');
-
 registerType({
   type: "table",
   label: "表格",
-
-  menu: {
-    group: "数据",
-    items: [
-      {
-        id: "table",
-        label: "表格",
-        desc: "双击编辑内容",
-        icon: svgIcon(
-          '<rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M4 9.5h16M4 15h16M10 4v16"/>'
-        ),
-        create: () => ({
-          elementId: nextElementId("table"),
-          elementType: "table",
-          bounds: [220, 150, 460, 120],
-          style: "$default",
-          columnWidths: [0.4, 0.3, 0.3],
-          rows: [
-            [{ text: "指标" }, { text: "数值" }, { text: "说明" }],
-            [{ text: "示例" }, { text: "—" }, { text: "—" }],
-            [{ text: "示例" }, { text: "—" }, { text: "—" }],
-          ],
-        }),
-      },
+  addIcon: svgIcon('<rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M4 9.5h16M4 15h16M10 4v16"/>'),
+  addHint: "创建后直接编辑单元格",
+  create: () => ({
+    elementId: nextElementId("table"),
+    elementType: "table",
+    bounds: [220, 150, 460, 120],
+    style: "$default",
+    columnWidths: [0.4, 0.3, 0.3],
+    rows: [
+      [{ text: "指标" }, { text: "数值" }, { text: "说明" }],
+      [{ text: "示例" }, { text: "—" }, { text: "—" }],
+      [{ text: "示例" }, { text: "—" }, { text: "—" }],
     ],
-  },
-
-  props(el, h) {
-    return [{
-      title: "表格",
-      fields: [
-        { kind: "button", label: "编辑表格内容…",
-          onClick: () => { h.beginChange(); h.openEditor(el); h.endChange(); } },
-        { kind: "hint", text: "表格高度随内容自适应；也可在画布上双击进入编辑。" },
-      ],
-    }];
-  },
-
-  quickbar(el, h) {
-    h.iconBtn(ICON_EDIT, "编辑表格内容", () => h.change(() => h.openEditor(el)));
-  },
+  }),
 });
