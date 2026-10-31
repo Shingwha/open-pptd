@@ -16,9 +16,10 @@
 // (same as CLI render).
 // ============================================================================
 
-import { mkdirSync, writeFileSync, existsSync, rmSync, readFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, existsSync, rmSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { discoverProjects, renderProject, deckSourceHash, pageFingerprint, probeBrowser, ROOT } from "./golden-run.mjs";
+import { decodePng } from "./golden-lib.mjs";
 
 const GOLDEN_DIR = join(ROOT, "tests", "golden");
 const PNG_ROOT = join(GOLDEN_DIR, "png");
@@ -26,6 +27,37 @@ const MANIFEST = join(GOLDEN_DIR, "manifest.json");
 
 const filterIdx = process.argv.indexOf("--filter");
 const FILTER = filterIdx > 0 ? process.argv[filterIdx + 1] : null;
+
+/**
+ * Sanity gate (D8): every rendered page must be a non-empty PNG at exactly the deck's
+ * declared size and must contain at least one non-white pixel. A failure aborts the
+ * rebaseline before manifest.json is written — a broken render must never become a
+ * golden baseline.
+ * @param {string} file PNG path
+ * @param {[number, number]} size declared deck size [w, h]
+ * @param {string} key project key (for messages)
+ */
+function assertSanity(file, size, key) {
+  const bytes = statSync(file).size;
+  if (!bytes) throw new Error(`${key} ${file} 为空文件`);
+  const img = decodePng(readFileSync(file));
+  if (img.width !== size[0] || img.height !== size[1]) {
+    throw new Error(`${key} ${file} 尺寸 ${img.width}×${img.height} != deck.size ${size[0]}×${size[1]}`);
+  }
+  const { data, channels } = img;
+  let nonWhite = 0;
+  for (let i = 0; i < data.length; i += channels) {
+    const opaque = channels < 4 || data[i + 3] >= 8;
+    if (opaque && (data[i] < 250 || data[i + 1] < 250 || data[i + 2] < 250)) { nonWhite += 1; break; }
+  }
+  if (!nonWhite) throw new Error(`${key} ${file} 全白页（无有效像素）`);
+}
+
+/** Declared deck size from the manifest source (size: [w, h]); defaults to 960×540. */
+function deckSizeOf(entry) {
+  const m = readFileSync(entry.deck, "utf8").match(/^\s*size:\s*\[\s*(\d+)\s*,\s*(\d+)\s*\]/m);
+  return m ? [Number(m[1]), Number(m[2])] : [960, 540];
+}
 
 if (!probeBrowser()) process.exit(1);
 
@@ -65,6 +97,18 @@ for (const entry of projects) {
     process.exit(1);
   }
   const files = res.files.slice().sort();
+  if (!files.length) {
+    console.error(`\n✗ ${entry.key} 未渲染出任何页面（页数必须 > 0）`);
+    process.exit(1);
+  }
+  const deckSize = deckSizeOf(entry);
+  try {
+    for (const f of files) assertSanity(f, deckSize, entry.key);
+  } catch (e) {
+    console.error(`\n✗ 尺寸/空白 sanity gate 失败: ${e.message}`);
+    console.error("  中止 rebaseline；manifest.json 未写入。");
+    process.exit(1);
+  }
   const pages = files.map((f, i) => ({ page: i + 1, ...pageFingerprint(f) }));
   manifest.projects[entry.key] = {
     deck: entry.relDeck,
