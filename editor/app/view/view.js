@@ -160,7 +160,7 @@ export function createView({ state, page, api, controller, ops }) {
  *   · no viewport fit/zoom/pan transform: the container is the deck-sized
  *     screenshot surface, so the scale must stay 1 (the editor's fit scale
  *     depends on the stage box and would shrink the capture);
- *   · no thumbnails / property panel / quickbar / button state / selection box;
+ *   · no thumbnails / Design panel / button state / selection box;
  *   · no DOM-measure refinement. The editor geometry is max(pure, DOM); the
  *     golden baseline was produced from the pure-function geometry, so the
  *     headless assembly must stay on it (pixel stability is the gate here).

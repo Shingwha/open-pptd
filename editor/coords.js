@@ -1,5 +1,5 @@
 // ============================================================================
-// coords.js — model / node coordinate conversion (shared by selection box, quickbar positioning etc.)
+// coords.js — model / node coordinate conversion (shared by the selection box and overlays)
 // ----------------------------------------------------------------------------
 // The canvas (#canvas) scales around its center as transform-origin, so the visual
 // position of model (0,0) differs from canvas-wrap (0,0); "model coords →

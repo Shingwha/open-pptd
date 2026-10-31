@@ -7,7 +7,7 @@
 // app/view/viewport.js — this module only calls panBy / setZoom / zoomReset.
 //
 // Routing rules (pointerdown on #stage, capture phase, before inner controls):
-//   1. floating controls (zoom bar / button rows / add menu / quickbar …) → pass through
+//   1. floating controls (zoom bar / button rows / add popup …) → pass through
 //   2. space held / middle mouse button  → pan (anywhere, including over elements)
 //   3. selection-box handle (resize/rotate/move) → element gesture
 //   4. element body                      → select + move gesture
@@ -40,7 +40,7 @@ export function createStageController(stage, opts) {
 
   // Floating controls carry their own click/scroll behaviour and are not stage gestures
   const FLOATING =
-    ".fab-stack, .add-menu, .quickbar, " +
+    ".fab-stack, .add-list, " +
     "button, input, textarea, select, [contenteditable]";
   const isFloating = (t) => !!t.closest(FLOATING);
 

@@ -1,10 +1,9 @@
 // ============================================================================
-// ui.js — shared form controls (used by the property panel / quickbar / type-registry props)
+// ui.js — shared form controls (content editors / Design panel)
 // ----------------------------------------------------------------------------
-// Interaction convention: controls support an { onBlur } hook, which the property
-// panel uses to implement the "first commit → beginChange snapshot / blur →
-// endChange re-render" transaction mode; the quickbar passes no hook and wraps
-// change() directly in onCommit.
+// Interaction convention: controls support an { onBlur } hook, which callers use to
+// implement the "first commit → beginChange snapshot / blur → endChange re-render"
+// transaction mode; controls that need no transaction pass no hook.
 // ============================================================================
 
 // svgIcon moved to icons.js (the single inline-icon source); re-exported here so existing import paths stay valid
@@ -236,7 +235,7 @@ export function checkbox(label, checked, onCommit, { onFocus, onBlur } = {}) {
   return wrap;
 }
 
-/** Button. active appends .on (quickbar toggle state); preventDefault defaults to preventing textarea blur.
+/** Button. active appends .on (toggle state); preventDefault defaults to preventing textarea blur.
  * The implementation delegates to components/button.js (the Button primitive, the only button construction point site-wide). */
 export function button(label, onClick, { title = "", className = "btn btn-sm", active = false, preventDefault = true } = {}) {
   return coreButton(label, {

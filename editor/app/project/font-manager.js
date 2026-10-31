@@ -9,7 +9,7 @@
 //   - restore from the resource table on load: url fonts are fetched and registered
 //     automatically; file fonts wait for the user to re-pick them
 //   - on export build options.fontFiles from the embed checkboxes
-// The management UI (popover) lives in interaction/font-panel.js; this module is data only.
+// The management UI (font library tab) lives in interaction/design-panel.js; this module is data only.
 //
 // PPTD format (see references/pptd.md):
 //   fonts:

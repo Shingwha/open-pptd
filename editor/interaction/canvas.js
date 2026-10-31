@@ -161,7 +161,7 @@ export function createCanvasController(canvas, opts) {
     }
 
     // Rotate handle: single selection only (chart/table cannot rotate); placed at
-    // the box's bottom center (the top is left to the quickbar)
+    // the box's bottom center (the top stays free)
     if (isSingle && !["chart", "table"].includes(picked[0].elementType)) {
       const stem = document.createElement("div");
       stem.className = "sel-rotate-stem";
