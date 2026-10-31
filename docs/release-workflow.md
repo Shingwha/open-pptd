@@ -2,20 +2,29 @@
 
 单仓库发布：push 版本 tag → CI 自动「回归测试 → 打包 → 创建 GitHub Release」。完整流水线定义在 [`.github/workflows/release.yml`](../.github/workflows/release.yml)。
 
-> 历史：2026-08-15 前采用双仓库模式（白名单快照同步到 open-pptd-publish 仓库供用户 clone），现已退役归档，安装方式统一为「下载 Release zip（推荐）或 clone 本仓库」。
+3.0 的 CLI 只有 5 个命令：`open` / `build` / `check` / `assets` / `doctor`（无别名、无旧命令兼容）；发布前用 `node bin/open-pptd.js --help` 复核。
+
+> 历史：2026-08-15 前采用双仓库模式（白名单快照同步到 open-pptd-publish 仓库供用户 clone），现已退役归档，安装方式统一为「下载 Release zip（推荐）或 clone 本仓库」。原独立 `open-pptd-skill` 技能仓也已归档，技能内容以本仓 `skill/` 为唯一来源，发布时产出 skill zip。
 
 ## 发一个新版本
 
 ```bash
-# 1. bump 版本：改 package.json 的 "version" 字段（如 1.0.0 → 1.1.0）
-# 2. 提交
-# 3. 写更新说明到临时文件（格式见下方「更新说明」），打带注释的 tag 并推送
+# 1. bump 版本：改 package.json 的 "version"（如 3.0.0 → 3.1.0），
+#    README.md / README.zh-CN.md 头部版本串、CHANGELOG.md 同步
+# 2. 本地守门（与 CI 同款；test:docs / test:skill 已包含在 npm test 内，可单独先跑）
+npm run test:docs
+npm run test:skill
+npm run test:fixtures
+npm test
+npm run pack                    # 干跑打包，检查 dist/ 资产清单
+# 3. 提交
+# 4. 写更新说明到临时文件（格式见下方「更新说明」），打带注释的 tag 并推送
 #    tag 必须以 v 开头，且去掉 v 后与 package.json 版本一致，否则 CI 第一步即失败
 #    ⚠️ 必须加 --cleanup=verbatim，否则 # 开头的 Markdown 标题行会被 git 当注释剔除（见踩坑记录②）
-git tag -a v1.1.0 -F notes.md --cleanup=verbatim
-git push origin main v1.1.0
-# 4.（推荐）push 后本地自检一遍注释完整：
-git tag -l --format='%(contents)' v1.1.0
+git tag -a v3.0.0 -F notes.md --cleanup=verbatim
+git push origin main v3.0.0
+# 5.（推荐）push 后本地自检一遍注释完整：
+git tag -l --format='%(contents)' v3.0.0
 ```
 
 push tag 后 CI 自动执行：
@@ -23,8 +32,9 @@ push tag 后 CI 自动执行：
 | 步骤 | 内容 |
 |---|---|
 | 校验版本 | tag 与 package.json 的 version 必须一致 |
-| 回归测试 | `npm run test:fixtures` + `npm test`（与 Deploy Pages 同款守门，任何一步失败都不会发布） |
-| 打包 | `npm run pack` → `dist/` 六类资产：`open-pptd-v<版本>.zip`（CLI 运行时白名单包）+ `open-pptd-skill-v<版本>.zip`（技能知识包：顶层 `open-pptd/`，含 `SKILL.md`/`README.md`/`references/`/`kits/`，不含测试与媒体）+ `open-pptd-icons-v<版本>.zip` + `open-pptd-fonts-v<版本>.zip`（图标/字体本体仅取本地工作树实际存在的，CI 无本体时自动跳过）+ `install.ps1`/`install.sh`（同步自仓库根）+ `SHA256SUMS`（覆盖全部 zip） |
+| 生成公式产物 | `npm run test:fixtures`（`tests/fixtures/formula/mml/` 不入库，KaTeX 本地生成） |
+| 回归测试 | `npm test`（含 `test:docs` 文档门禁与 `test:skill` 技能包回归；与 Deploy Pages 同款守门，任何一步失败都不会发布） |
+| 打包 | `npm run pack` → `dist/`：`open-pptd-v<版本>.zip`（CLI 运行时白名单包）+ `open-pptd-skill-v<版本>.zip`（技能知识包：顶层 `open-pptd/`，含 `SKILL.md`/`README.md`/`references/`/`kits/`，不含测试与媒体）+ `open-pptd-icons-v<版本>.zip` + `open-pptd-fonts-v<版本>.zip`（图标/字体本体仅取本地工作树实际存在的，CI 无本体时自动跳过）+ `install.ps1`/`install.sh`（同步自仓库根）+ `SHA256SUMS`（覆盖全部 zip） |
 | 发布 | 创建 GitHub Release 并上传 `dist/*` 全部资产；notes 优先取 tag 注释，未写则 commit 列表自动生成。用户侧安装走仓库根 install 脚本（raw URL 一键安装），Release zip 是离线/手动安装渠道 |
 
 ## 更新说明（Release Notes）
@@ -33,13 +43,13 @@ push tag 后 CI 自动执行：
 
 ```bash
 # 写好 notes.md（格式示例见下），再打 tag：
-git tag -a v1.1.0 -F notes.md --cleanup=verbatim
+git tag -a v3.0.0 -F notes.md --cleanup=verbatim
 ```
 
-**Release 正文格式**（与 v1.1.0 对齐，标题行必须存在否则 Release 列表显示难看）：
+**Release 正文格式**（标题行必须存在，否则 Release 列表显示难看）：
 
 ```markdown
-## v1.1.0 更新内容
+## v3.0.0 更新内容
 
 （一段概述，说明本版定位）
 
@@ -52,15 +62,15 @@ git tag -a v1.1.0 -F notes.md --cleanup=verbatim
 ### 修复
 - **粗体关键词**：描述
 
-**Full Changelog**: https://github.com/Shingwha/open-pptd/commits/v1.1.0
+**Full Changelog**: https://github.com/Shingwha/open-pptd/commits/v3.0.0
 ```
 
-⚠️ **Markdown 标题会被吃**：`git tag -a` 默认 `--cleanup=strip`，注释里 `#` 开头的行（如 `## v1.1.0 更新内容`、`### 新增`）会被当注释剔除，`-m`/编辑器方式同样如此。**务必加 `--cleanup=verbatim`**（见踩坑记录②）。
+⚠️ **Markdown 标题会被吃**：`git tag -a` 默认 `--cleanup=strip`，注释里 `#` 开头的行（如 `## v3.0.0 更新内容`、`### 新增`）会被当注释剔除，`-m`/编辑器方式同样如此。**务必加 `--cleanup=verbatim`**（见踩坑记录②）。
 
-验证注释完整：`git tag -l --format='%(contents)' v1.1.0`（应能看到 `## ` 标题行）
+验证注释完整：`git tag -l --format='%(contents)' v3.0.0`（应能看到 `## ` 标题行）
 
 - 忘了写注释（轻量 tag）不阻塞发布：CI 自动退回 commits 自动生成（此时 Release 标题 = tag 名，正文为自动 changelog）
-- 发布后想补充修改：Release 页面右上角 Edit，或 `gh release edit v1.1.0 --notes "..." --title v1.1.0`（**改 notes 时 title 也要显式带上**，否则 gh 会用 notes 第一行覆盖标题）
+- 发布后想补充修改：Release 页面右上角 Edit，或 `gh release edit v3.0.0 --notes "..." --title v3.0.0`（**改 notes 时 title 也要显式带上**，否则 gh 会用 notes 第一行覆盖标题）
 
 ## 踩坑记录（2026-08-15 v1.1.1 发版实战）
 
@@ -68,31 +78,47 @@ git tag -a v1.1.0 -F notes.md --cleanup=verbatim
    **已在 release.yml 修复**：发版前 `git fetch --force origin "+refs/tags/${GITHUB_REF_NAME}:refs/tags/${GITHUB_REF_NAME}"` 重新拉回 annotated tag。
 2. **git tag 默认 `--cleanup=strip` 剔除 `#` 行**：`-m`/`-F`/编辑器写注释时，`## 标题`、`### 分类` 等 Markdown 标题行被当注释删除，Release 正文缺标题和分类。
    **预防**：打 tag 一律 `--cleanup=verbatim`；本地验证 `git tag -l --format='%(contents)'`。
-3. **`gh release create --notes-file` 会把 notes 第一行当 Release 标题**：手写 notes 时列表页标题变成 `## v1.1.1 更新内容`；`--generate-notes` 分支则默认用 tag 名，行为不一致。
+3. **`gh release create --notes-file` 会把 notes 第一行当 Release 标题**：手写 notes 时列表页标题变成 `## v3.0.0 更新内容`；`--generate-notes` 分支则默认用 tag 名，行为不一致。
    **已在 release.yml 修复**：两条分支都显式 `--title "$GITHUB_REF_NAME"`。
 4. **推送 workflow 文件需要 `workflow` scope 的 token**：普通 PAT 推 `.github/workflows/` 会被 GitHub 拒绝（`refusing to allow a Personal Access Token...`）。发版若改 workflow，先确认 token 带 `workflow` 权限。
 
 ## 发布包里有什么
 
-白名单的单一事实来源是 [`scripts/pack-release.mjs`](../scripts/pack-release.mjs) 顶部的 `WHITELIST` 数组（10 项）：
+`npm run pack` 产出以下资产（`dist/` 不入 git；图标/字体本体缺失时对应 zip 自动跳过，不视为失败）：
 
-```
-README.md / README.zh-CN.md / index.html / package.json / contract.json
-bin/ / packages/ / editor/ / assets/fonts/registry.json / assets/icons/registry.json
-```
+| 资产 | 内容 |
+|---|---|
+| `open-pptd-v<版本>.zip` | CLI 运行时。白名单单一事实来源是 [`scripts/pack-release.mjs`](../scripts/pack-release.mjs) 顶部的 `WHITELIST`（10 项）：`README.md` / `README.zh-CN.md` / `index.html` / `package.json` / `contract.json` / `bin/` / `packages/` / `editor/` / `assets/fonts/registry.json` / `assets/icons/registry.json` |
+| `open-pptd-skill-v<版本>.zip` | 技能知识包：顶层目录 `open-pptd/`，内容仅 `SKILL.md` / `README.md` / `references/**` / `kits/**`；不含测试、demo、媒体与可执行脚本。可跑 `npm run pack -- --only skill` 单独复验 |
+| `open-pptd-icons-v<版本>.zip` | 图标本体（`solid/regular/brands/**/*.svg`，不含 registry.json），本机工作树有本体时才产出 |
+| `open-pptd-fonts-v<版本>.zip` | 字体本体（`*.ttf`，不含 registry.json），本机工作树有本体时才产出 |
+| `install.ps1` / `install.sh` | 仓库根安装脚本副本，可直接从 Release 页面下载 |
+| `SHA256SUMS` | 覆盖本次全部 zip 的 SHA256 清单 |
 
-- **不含**：tests、docs、examples、.github、scripts、.gitignore、字体与图标 SVG 本体（registry.json 元数据入包，本体经 `open-pptd assets sync` 或导出前置体检按需获取）
-- **skill zip 单独产出**：`open-pptd-skill-v<版本>.zip` 是 AI 技能知识包，顶层目录同样是 `open-pptd/`，内容仅 `SKILL.md` / `README.md` / `references/**` / `kits/**`，不含测试、demo、媒体与可执行脚本；本机可跑 `npm run pack -- --only skill` 单独复验。SHA256 写在 `SHA256SUMS`
-- 2.0 起运行时 zip 不再「解压到 skills 文件夹」用——它是 **CLI 运行时**，由仓库根的 `install.ps1` / `install.sh` 下载安装（校验 SHA256 → 解压到 `~/.open-pptd/cli/versions/<ver>` → current 指针 → 用户级 PATH）；AI 对话用法使用 Release 中的 `open-pptd-skill-v<版本>.zip`（解压到 agent 的 skills 目录）
+- **运行时 zip 不含**：tests、docs、examples、.github、scripts、`skill/`、字体与图标本体（registry.json 元数据入包，本体经 `open-pptd assets sync` 或导出前置体检按需获取）
+- **skill zip 单独产出**：技能内容来自主仓 `skill/`（原独立技能仓已归档）；`package.json.files` 不包含 `skill/`，CLI 运行时包保持干净
+- **运行时 zip 不是技能包**：2.0 起运行时 zip 不再「解压到 skills 文件夹」用——它是 **CLI 运行时**，由仓库根的 `install.ps1` / `install.sh` 下载安装（校验 SHA256 → 解压到 `~/.open-pptd/cli/versions/<ver>` → current 指针 → 用户级 PATH）；AI 对话用法使用 Release 中的 `open-pptd-skill-v<版本>.zip`（解压到 agent 的 skills 目录，zip 顶层即 `open-pptd/`），或直接从主仓 `skill/` 拷贝
 - 文件清单取自 `git ls-files`，只收 git 跟踪文件；打包时若工作树有未提交改动，脚本会打警示
 
 要调整发布内容 = 改 `WHITELIST`，然后本地验证：
 
 ```bash
-npm run pack    # 产物 dist/open-pptd-v<版本>.zip（dist/ 不入 git），解压比对即可
+npm run pack                          # 产物 dist/open-pptd-v<版本>.zip 等（dist/ 不入 git），解压比对即可
+npm run pack -- --only skill          # 只产 skill zip + SHA256SUMS，用于单独复验
 ```
+
+## 本地守门命令
+
+| 命令 | 作用 |
+|---|---|
+| `node bin/open-pptd.js --help` | 复核 CLI 只有 5 个命令（open/build/check/assets/doctor） |
+| `npm run test:docs` | docs 目录白名单、已删文档/DSH 引用扫描、README 口径、版本一致性 |
+| `npm run test:skill` | SKILL/refs/kits lint + 6 个 kit 的 check/build 回归 + skill zip 条目与 SHA |
+| `npm test` | 全量回归（含上述两项、contract、CLI surface、golden 等） |
+| `npm run pack` | 按白名单产出全部发布资产与 `SHA256SUMS` |
 
 ## 用户如何更新
 
 - **zip 用户**：到 [Releases](https://github.com/Shingwha/open-pptd/releases) 下载新版本 zip，解压覆盖旧目录
 - **clone 用户**：`git pull`（版本 tag 打在 main 上，随源码一起拉到）
+- **技能用户**：重新下载 `open-pptd-skill-v<版本>.zip` 解压覆盖 skills 目录中的 `open-pptd/`（或重新 `cp -r skill`）
