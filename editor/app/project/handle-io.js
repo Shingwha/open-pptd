@@ -86,17 +86,74 @@ export async function readImageAsDataUrl(dirHandle, src, mime) {
   }
 }
 
-/** Batch-write files ({path, content|b64}, subdirectories auto-created) → write count. */
-export async function writeFiles(dirHandle, files) {
-  let count = 0;
-  for (const f of files) {
-    const fh = await fileHandleAt(dirHandle, f.path, { create: true });
-    const writable = await fh.createWritable();
-    await writable.write(f.b64 ? base64ToBytes(f.b64) : String(f.content ?? ""));
-    await writable.close();
-    count += 1;
+/** Delete a single file through the handle (best effort; used by rollback). */
+async function removeFileAt(dirHandle, relPath) {
+  const parts = relPath.split("/").filter(Boolean);
+  let dir = dirHandle;
+  for (const seg of parts.slice(0, -1)) dir = await dir.getDirectoryHandle(seg);
+  if (typeof dir.removeEntry === "function") {
+    try {
+      await dir.removeEntry(parts[parts.length - 1]);
+    } catch (err) {
+      if (err?.name !== "NotFoundError" && err?.code !== 8) throw err;
+    }
   }
-  return count;
+}
+
+/**
+ * Batch-write files ({path, content|b64}, subdirectories auto-created) → write count.
+ * Atomic batch semantics (W9): every target is backed up first; a failure while
+ * writing rolls the already written files (including the failing one) back to
+ * their old bytes and removes files that did not exist before.
+ */
+export async function writeFiles(dirHandle, files) {
+  const prepared = files.map((f) => ({
+    path: String(f.path || "").replace(/^\/+/, ""),
+    data: f.b64 ? base64ToBytes(f.b64) : String(f.content ?? ""),
+  }));
+  if (prepared.some((f) => !f.path)) throw new Error("writeFiles 需要文件路径");
+
+  // 1. Back up every target (bytes + existence) before touching anything.
+  const backups = [];
+  for (const f of prepared) {
+    try {
+      const fh = await fileHandleAt(dirHandle, f.path);
+      const file = await fh.getFile();
+      backups.push({ existed: true, bytes: new Uint8Array(await file.arrayBuffer()) });
+    } catch (err) {
+      if (err?.name === "NotFoundError" || err?.code === 8) backups.push({ existed: false });
+      else throw err;
+    }
+  }
+
+  // 2. Write sequentially; on failure restore the written prefix (incl. current).
+  let current = -1;
+  try {
+    for (let i = 0; i < prepared.length; i++) {
+      current = i;
+      const fh = await fileHandleAt(dirHandle, prepared[i].path, { create: true });
+      const writable = await fh.createWritable();
+      await writable.write(prepared[i].data);
+      await writable.close();
+    }
+    return prepared.length;
+  } catch (err) {
+    for (let i = current; i >= 0; i--) {
+      try {
+        if (backups[i]?.existed) {
+          const fh = await fileHandleAt(dirHandle, prepared[i].path, { create: true });
+          const writable = await fh.createWritable();
+          await writable.write(backups[i].bytes);
+          await writable.close();
+        } else {
+          await removeFileAt(dirHandle, prepared[i].path);
+        }
+      } catch {
+        /* rollback is best effort; the original failure is rethrown below */
+      }
+    }
+    throw err;
+  }
 }
 
 /**

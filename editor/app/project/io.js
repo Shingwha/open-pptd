@@ -73,6 +73,11 @@ export function createIo({ state, view, ops, source, ui, live = true, onSaved, o
     source: projectSource,
     ui,
     renderStatusBar: () => liveReload.renderStatusBar(),
+    /** Conflict → "重新加载": discard the in-memory edits and re-read the source (revision comes from applyDeck). */
+    reload: async () => {
+      if (state.projectHandle) await loader.loadDeckFromHandle(state.projectHandle, { keepPage: true, silent: true });
+      else if (state.manifestPath) await loader.loadDeck(state.manifestPath, { keepPage: true, silent: true });
+    },
     onSaved: () => {
       liveReload.suppressRefreshes(); // suppress the refresh loop after saving
       onSaved?.(); // public event (createEditor options.on.saved)
@@ -128,6 +133,7 @@ export function createIo({ state, view, ops, source, ui, live = true, onSaved, o
     state.manifestPath = null;
     state.projectHandle = null;
     state.projectName = "";
+    state.revision = null; // blank project: nothing on disk to conflict with
     loader.setBrandFile(""); // topbar back to "unnamed", clearing the old project name
     state.currentPage = 0;
     ops.clearSelection();
