@@ -61,6 +61,8 @@ const suites = [
   ["表格事实（TableFacts）", "node tests/regression/table-facts.mjs"],
   ["度量一致性（measure）", "node tests/regression/measure-consistency.mjs"],
   ["字体文件校验（font-file）", "node tests/regression/font-file.mjs"],
+  ["主题库（theme-library）", "node tests/regression/theme-library.mjs"],
+  ["字体库（font-library）", "node tests/regression/font-library.mjs"],
   ["背景尺寸随 deck.size", "node tests/regression/background-size.mjs"],
   ["校验器与导出闸门", "node tests/regression/validate.mjs"],
   ["颜色一致性", "node tests/regression/color-consistency.mjs"],

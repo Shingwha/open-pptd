@@ -253,8 +253,9 @@ applyTheme(currentDeckTheme, theme) → { theme, preserved: {colors:string[], te
   - 主题 colors/textStyles/tableStyles 覆盖当前；
   - 扫描 deck 引用（`$token`、`style`、`textStyle`）；新主题缺少但 deck 仍引用的项从旧主题保留；
   - 未引用的旧项丢弃；结果可撤销；报告 preserved。
-- 自定义颜色：`colors` 任意 key；UI 添加/编辑/删除；删除被引用 token 必须警告/阻止；颜色选择器读取全部 token。
+  - 自定义颜色：`colors` 任意 key；UI 添加/编辑/删除；删除被引用 token 必须警告/阻止；颜色选择器读取全部 token。
 - 主题库只存 JSON，不存字体字节；textStyles/tableStyles 的 fontFamily 由 FontLibrary 解析。
+- W6 已实现：纯核心 `packages/model/theme-library.js`（`createThemeStore(adapter)`、`BUILTIN_THEMES`、`applyTheme(currentTheme, theme, {deck})`、`listColorTokens/colorTokenUsage/setColorToken/removeColorToken`）；Node 存储 `packages/server/theme-store.js` + `packages/paths.js` 的 `themes`；内置 id `builtin:default` + `builtin:<palette>`。错误码 `ERR_THEME_*`。
 
 ## 9. FontLibrary
 
@@ -283,6 +284,8 @@ export const FontLibrary = {
 - 导出字体嵌入全局设置：`embedFonts`/`fullFonts`；所有 used fonts 统一；系统字体不嵌入；缺失字体警告。
 - 文本/表格/图表字体选择器按 theme/library/system 分组；不维护 per-font embed/subset chip。
 - 项目包携带字体后移；PPTX 嵌入负责交付；项目包依赖全局字体库。
+- W6 已实现：纯核心 `packages/model/font-library.js`（`createFontLibrary(adapter)`、`list/read/importFile/importUrl/remove/resolve`、`MAX_FONT_BYTES`）；Node 存储 `packages/server/font-library.js` + `paths.userFonts/userFontIndex`；`createFsResourceProvider().fontRegistry` 合并用户条目（user → builtin → system），`fontBytes/fontStatus` 优先用户库。错误码 `ERR_FONT_*`。
+- 字体就绪判定：存在 + sfnt magic（`packages/cli/font-file.js`）；注册表 `size` 仅作展示，下载校验 Content-Length + magic，原子写避免半截文件。
 
 ## 10. Editor
 
