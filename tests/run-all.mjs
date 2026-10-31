@@ -58,6 +58,8 @@ const suites = [
   ["项目运行时（runtime）", "node tests/runtime/run.mjs"],
   ["导出服务（export）", "node tests/export/run.mjs"],
   ["类型清单（TypeManifest）", "node tests/regression/type-manifest.mjs"],
+  ["表格事实（TableFacts）", "node tests/regression/table-facts.mjs"],
+  ["度量一致性（measure）", "node tests/regression/measure-consistency.mjs"],
   ["背景尺寸随 deck.size", "node tests/regression/background-size.mjs"],
   ["校验器与导出闸门", "node tests/regression/validate.mjs"],
   ["颜色一致性", "node tests/regression/color-consistency.mjs"],

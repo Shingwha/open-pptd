@@ -214,6 +214,8 @@ export function defineType({
 - `bounds.h` 只作为 `rowHeights` 比例种子；无 rowHeights = 内容高；纵向缩放统一写 `rowHeights`。
 - rowSpan 额外高度平均分给跨度行；padding 只算一次；整数余数确定分配。
 - writer 消费 layout facts，不自行 `measureTable`。
+- W5 已实现：`measureTable(table, { theme, fonts }?)`（样式感知 `resolveTableStyle`+`cellTextStyle`，兼容旧 `(table, fonts)` 调用）；rowSpan 整数均分（q=floor(deficit/span)，余数依次给前 rem 行）；`frame.h` 不再 max bounds；`buildPptx` 单次 layout 并把 facts 经 `ctx` 下发给 toXml；model 提供 `normalizeRowHeights`/`adjustRowHeightsForRowChange`，rowHeights 长度不一致发 schema warning。
+- golden：W5 一次性 rebaseline（sanity gate + 第二遍零漂移），`tests/golden/whitelist.json` 已清空；非表格渲染与 rebase 前逐字节一致。
 
 ## 8. ThemeStore
 
