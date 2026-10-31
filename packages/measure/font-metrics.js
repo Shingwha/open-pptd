@@ -7,7 +7,8 @@
 //
 //   measureTextRuns(runs, style, maxWidth, fonts) → { lines, height }
 //   measureCell(cell, colWidth, fonts)           → number (cell content height in px)
-//   measureTable(table, fonts)                   → { columnWidths, rowHeights, totalHeight }
+//   measureTable(table, opts?)                   → { columnWidths, rowHeights, totalHeight }
+//     opts = { theme, fonts } (a bare metrics table is still accepted for compatibility)
 //
 // Wrapping: greedy by character-width class (CJK ≈ cjkWidth em, Latin ≈ latinWidth em,
 // formulas via the closed form), biased to over- rather than under-estimate — a safety
@@ -20,6 +21,7 @@
 import { parseRichText } from "../model/richtext.js";
 import { TABLE_CELL_PAD, TABLE_CELL_PAD_X, TABLE_FONT_SIZE } from "../model/table.js";
 import { tableGrid, estimateTableLayout } from "../model/table.js";
+import { cellTextStyle, resolveTableStyle } from "../model/theme.js";
 import { defaultMetricsTable } from "./metrics-table.js";
 
 const DEFAULT_FONT_SIZE = 18;
@@ -78,6 +80,9 @@ export function measureTextRuns(runs, style = {}, maxWidth = Infinity, fonts = d
   const table = fonts || defaultMetricsTable;
   const baseSize = numOr(style.fontSize, DEFAULT_FONT_SIZE);
   const lhm = style.lineHeightPx == null ? numOr(style.lineHeight, DEFAULT_LINE_HEIGHT) : null;
+  // Optional tracking (px per character): table cells pass it through measureCell; text
+  // measurement is unchanged when the field is absent.
+  const letterSpacing = numOr(style.letterSpacing, 0);
   const families = familiesOf(style.fontFamily);
   const m = table.metricsFor(families.length ? families : null);
   const width = Math.max(1, numOr(maxWidth, 1));
@@ -94,21 +99,24 @@ export function measureTextRuns(runs, style = {}, maxWidth = Infinity, fonts = d
       if (ch === "\n") { atoms.push({ kind: "nl" }); i++; continue; }
       if (ch === " ") {
         let w = 0;
-        while (str[i] === " ") { w += charWidth(" ", fs, m); i++; }
-        atoms.push({ kind: "space", w, fs });
+        let n = 0;
+        while (str[i] === " ") { w += charWidth(" ", fs, m); i++; n++; }
+        atoms.push({ kind: "space", w: w + letterSpacing * n, fs });
         continue;
       }
       if (isWide(ch)) {
-        atoms.push({ kind: "ch", w: charWidth(ch, fs, m), fs });
+        atoms.push({ kind: "ch", w: charWidth(ch, fs, m) + letterSpacing, fs });
         i++;
         continue;
       }
       let w = 0;
+      let n = 0;
       while (i < str.length && str[i] !== " " && str[i] !== "\n" && !isWide(str[i])) {
         w += charWidth(str[i], fs, m);
         i++;
+        n++;
       }
-      atoms.push({ kind: "word", w, fs });
+      atoms.push({ kind: "word", w: w + letterSpacing * n, fs });
     }
   };
   for (const run of runs || []) {
@@ -116,7 +124,7 @@ export function measureTextRuns(runs, style = {}, maxWidth = Infinity, fonts = d
     if (run.formula) {
       const fs = numOr(run.style?.fontSize, baseSize);
       maxFontSize = Math.max(maxFontSize, fs);
-      atoms.push({ kind: "formula", w: formulaWidth(run.latex, fs), fs });
+      atoms.push({ kind: "formula", w: formulaWidth(run.latex, fs) + letterSpacing, fs });
       continue;
     }
     const fs = numOr(run.style?.fontSize, baseSize);
@@ -157,7 +165,7 @@ export function measureTextRuns(runs, style = {}, maxWidth = Infinity, fonts = d
 
 /**
  * Cell content height (px): laid out within colWidth (padding included) plus top/bottom padding.
- * @param {{text?: string, fontSize?, lineHeight?, lineHeightPx?, fontFamily?}} cell
+ * @param {{text?: string, fontSize?, lineHeight?, lineHeightPx?, fontFamily?, letterSpacing?}} cell
  * @param {number} colWidth px
  * @param {object} [fonts]
  */
@@ -167,6 +175,7 @@ export function measureCell(cell, colWidth, fonts = defaultMetricsTable) {
     lineHeight: cell?.lineHeight,
     lineHeightPx: cell?.lineHeightPx,
     fontFamily: cell?.fontFamily,
+    letterSpacing: cell?.letterSpacing,
   };
   const runs = runsFromRichText(cell?.text);
   const inner = Math.max(1, numOr(colWidth, 1) - 2 * TABLE_CELL_PAD_X);
@@ -176,13 +185,31 @@ export function measureCell(cell, colWidth, fonts = defaultMetricsTable) {
 
 /**
  * Table layout: column widths (ratios) + exact row heights + total height (the deterministic value).
- * Row height = max(model minimum row height, content height of that row); content of a rowSpan>1
- * cell is split across the spanned rows.
+ *
+ * Style awareness: each cell's text style is resolved through the official inheritance chain
+ * (cell inline > Cell.textStyle > position class > bodyStyles > cellStyle > default) with
+ * `resolveTableStyle` + `cellTextStyle`, then handed to measureCell. Without a theme the
+ * result is identical to the previous cell-inline-only measurement (the single-cell API and
+ * its direct callers are unchanged).
+ *
+ * Row heights:
+ *   1. seed = estimateTableLayout (rowHeights ratio × bounds height, never below the floor),
+ *      rounded up once so every subsequent deficit is an integer;
+ *   2. non-spanning cells raise their own row to max(seed, content height);
+ *   3. each rowSpan>1 cell computes required = content height (padding counted once) and
+ *      available = current sum over its span; a positive deficit is split as
+ *      q = floor(deficit / span) with the first `rem` rows taking one extra pixel, so the
+ *      span total is >= required with exactly one rounding step (D7).
+ *
  * @param {object} table table element (rows/columnWidths/rowHeights/bounds/fill/style)
- * @param {object} [fonts]
+ * @param {{theme?: object, fonts?: object}|object} [opts] { theme, fonts } or a bare metrics table (compatibility)
  * @returns {{ columnWidths: number[], columnWidthsPx: number[], rowHeights: number[], totalHeight: number }}
  */
-export function measureTable(table, fonts = defaultMetricsTable) {
+export function measureTable(table, opts = undefined) {
+  // Compatibility: measureTable(table, fonts) — a metrics table exposes metricsFor().
+  const options = opts && typeof opts.metricsFor === "function" ? { fonts: opts } : opts || {};
+  const fonts = options.fonts || defaultMetricsTable;
+  const theme = options.theme || EMPTY_THEME;
   const el = table || {};
   const rows = Array.isArray(el.rows) ? el.rows : [];
   const boundsW = Array.isArray(el.bounds) ? numOr(el.bounds[2], 0) : 0;
@@ -191,24 +218,67 @@ export function measureTable(table, fonts = defaultMetricsTable) {
   const cols = colRatios.length;
   const colPx = colRatios.map((r) => r * boundsW);
   const { grid } = tableGrid(rows, cols);
+  const rowCount = rows.length;
+  // Resolve the table style once; per-cell inheritance is the model's single source.
+  const ts = resolveTableStyle(theme, el.style);
 
-  const rowHeights = base.rowHeights.slice();
+  /** Content height of one grid cell, style-resolved, padding counted once (+ marginTop). */
+  const contentHeight = (g, r, c) => {
+    const span = Math.max(1, g.cell.colSpan || 1);
+    let w = 0;
+    for (let k = 0; k < span && c + k < cols; k++) w += colPx[c + k];
+    const st = cellTextStyle(theme, ts, r, c, rowCount, cols, g.cell);
+    const styled = {
+      ...g.cell,
+      fontSize: st.fontSize,
+      fontFamily: st.fontFamily,
+      lineHeight: st.lineHeight,
+      lineHeightPx: st.lineHeightPx,
+      letterSpacing: st.letterSpacing,
+    };
+    const marginTop = numOr(st.marginTop, 0);
+    return Math.ceil(measureCell(styled, w, fonts) + marginTop);
+  };
+
+  // One rounding of the ratio seed; all later arithmetic stays integer.
+  const rowHeights = base.rowHeights.map((h) => Math.ceil(numOr(h, 0)));
+
+  // Pass 1: non-spanning cells set their row's content requirement.
   for (let r = 0; r < grid.length; r++) {
-    let contentH = rowHeights[r] ?? 0;
     for (const g of grid[r]) {
       if (g.covered || !g.cell) continue;
-      const span = Math.max(1, g.cell.colSpan || 1);
-      const rowSpan = Math.max(1, g.cell.rowSpan || 1);
-      let w = 0;
-      for (let k = 0; k < span && g.c + k < cols; k++) w += colPx[g.c + k];
-      const h = measureCell(g.cell, w, fonts) / rowSpan;
-      contentH = Math.max(contentH, h);
+      if (Math.max(1, g.cell.rowSpan || 1) > 1) continue;
+      rowHeights[r] = Math.max(rowHeights[r] ?? 0, contentHeight(g, r, g.c));
     }
-    rowHeights[r] = Math.ceil(contentH);
+  }
+
+  // Pass 2: rowSpan cells top up the deficit over their span (average split, first rows take the remainder).
+  for (let r = 0; r < grid.length; r++) {
+    for (const g of grid[r]) {
+      if (g.covered || !g.cell) continue;
+      const rowSpan = Math.max(1, g.cell.rowSpan || 1);
+      if (rowSpan <= 1) continue;
+      const span = Math.min(rowSpan, rowCount - r);
+      if (span <= 1) {
+        rowHeights[r] = Math.max(rowHeights[r] ?? 0, contentHeight(g, r, g.c));
+        continue;
+      }
+      const required = contentHeight(g, r, g.c);
+      let available = 0;
+      for (let k = 0; k < span; k++) available += rowHeights[r + k] ?? 0;
+      const deficit = required - available;
+      if (deficit <= 0) continue;
+      const q = Math.floor(deficit / span);
+      const rem = deficit - q * span;
+      for (let k = 0; k < span; k++) rowHeights[r + k] = (rowHeights[r + k] ?? 0) + q + (k < rem ? 1 : 0);
+    }
   }
   const totalHeight = rowHeights.reduce((a, b) => a + b, 0);
   return { columnWidths: colRatios, columnWidthsPx: colPx, rowHeights, totalHeight };
 }
+
+/** Empty theme for themeless direct calls (styles fall back to cell inline fields / official defaults). */
+const EMPTY_THEME = { colors: {}, textStyles: {}, tableStyles: {} };
 
 /**
  * Single-line-height multiplier for a font (writer consumes it for the
