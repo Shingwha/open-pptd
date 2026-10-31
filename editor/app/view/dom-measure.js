@@ -1,10 +1,10 @@
 // ============================================================================
 // app/view/dom-measure.js — browser offscreen batch-measure adapter (RP-C / M6 wiring)
 // ----------------------------------------------------------------------------
-// packages/measure/adapters/dom.js was left as a stub in the RP-A/RP-B waves; this
-// wave (RP-C) provides the implementation on the **editor side** and wires it into
-// canvas layout (packages/measure belongs to RP-A and is off-limits here, so the
-// implementation lives in the editor layer; the interface matches MeasurePort).
+// The implementation lives on the **editor side** and is wired into canvas layout
+// (packages/measure stays pure and DOM-free, so the adapter lives in the editor
+// layer; the interface matches MeasurePort). The editor-only adapter is also the
+// single such implementation — packages/measure ships no adapter stub.
 //
 // Purpose: measure text runs once with offscreen DOM to refine the pure-function
 // residual of fontMetricsMeasure.

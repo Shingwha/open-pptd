@@ -1,0 +1,57 @@
+# W1 CLI baseline (2.x)
+# 采集: 2026-10-31, worktree w1-baseline, branch feat/3.0-w1-baseline, HEAD 7af07eb
+# Node: v24.21.0 / Windows 10.0.28120 x64 / Git Bash
+
+$ node bin/open-pptd.js --help
+open-pptd CLI
+
+用法:
+  open-pptd serve [--port <port>] [--project <目录>] [--detach] [--json] [--open]
+                  启动本地网页编辑器（绑 127.0.0.1，端口占用自动顺延）
+      --detach: 后台启动后立即返回；--json: stdout 仅一行 {url,port,pid}；--open: 唤起浏览器
+  open-pptd serve --stop                     停止由本 CLI 启动的 serve（陈旧 pid 不误杀）
+  open-pptd export <deck.pptd> [-o <out.pptx>]  命令行导出 PPTX
+                           [--no-embed-fonts]   不嵌入字体（默认嵌入）
+                           [--full-fonts]       嵌入完整字体（默认子集化；导出后可继续编辑，文件更大）
+                           [--offline]          只体检不下载（默认也仅体检；--fetch 才补齐）
+                           [--strict]           资源缺失即非零退出；[--json] 输出体检清单
+  open-pptd export-project <deck.pptd> [-o <out.zip>]  导出项目包（pptd+pages+media，原样打包）
+                           [--offline] [--strict] [--json]
+  open-pptd ensure <manifest> [--offline] [--strict] [--json]  导出前置资源体检 + 按需补齐
+  open-pptd check <deck.pptd>                   结构自查（schema/token/资源/字体/几何/对比度）
+  open-pptd render <deck.pptd> [-o <目录>] [--page <n|all>] [--scale <1|2|3>]
+                           [--browser <路径>] [--timeout <毫秒>]
+                        逐页渲染为 PNG（无头浏览器，与编辑器预览同管线）
+  open-pptd gallery scan                      扫描 examples/ 生成静态画廊索引
+                        （examples/manifest.json，仅提交给 GitHub Pages 用；本地 serve 自动扫描）
+  open-pptd gallery list                      列出画廊条目
+
+  资源与自检：
+  open-pptd assets list                        资源状态（字体/图标就绪数、体积、注册表版本）
+  open-pptd assets sync [icons|fonts|all]      下载资产包并解压到 ~/.open-pptd/assets
+                        [--from <zip>]         离线导入本地 zip
+  open-pptd assets clean                       清 cache/ 与 tmp/（可安全删除）
+  open-pptd paths [--json]                     输出 home 与各资源目录
+  open-pptd doctor [--json]                    五项自检（cli/node/home/assets/path）
+
+  字体库（注册表读包内，字节读 ~/.open-pptd/assets/fonts，下载只写 home）：
+  open-pptd fonts list                         查看内置字体库（状态 ✓/✗）
+  open-pptd fonts download <名称|all>          按需/全量下载字体文件（兼容别名）
+  open-pptd fonts check <deck.pptd>            体检 deck 字体声明（嵌入/仅声明/缺失）
+
+  图标库（Font Awesome Free，浏览器/导出有 CDN 兜底，下载仅供离线）：
+  open-pptd icons list                         查看图标库状态（fas/far/fab 本地/总数）
+  open-pptd icons download [--force]           全量下载三风格 SVG（兼容别名）
+[exit 0]
+
+$ node bin/open-pptd.js export tests/projects/chart/deck.pptd -o <tmp>/export-chart.pptx
+▸ 资源体检：字体 0/0 就绪 · 图标 0/0 · 媒体 0/0
+✓ 已导出 → <tmp>/export-chart.pptx
+[exit 0, elapsed 1s, 837227 bytes]
+
+$ node bin/open-pptd.js check tests/projects/table/deck.pptd
+  ⚠ [geometry] 第2页 t1 元素内容撑高后与「t2」重叠（实际高 47 vs 声明 40）
+  ⚠ [geometry] 第7页 t1 元素内容撑高后与「t2」重叠（实际高 47 vs 声明 40）
+
+0 个错误，2 个警告
+[exit 0]

@@ -6,7 +6,7 @@
 //   dialogs.alert(msg)            notice
 //   dialogs.confirm(msg)          confirm → boolean or Promise<boolean> (callers await)
 // The default implementation wraps native window.alert / window.confirm;
-// createEditor's options.dialogs can override it wholesale (hosts such as DSH
+// createEditor's options.dialogs can override it wholesale (embedding hosts
 // swap in self-drawn dialogs, avoiding iframes needing allow-modals and a visual
 // mismatch).
 //

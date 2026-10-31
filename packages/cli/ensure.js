@@ -1,5 +1,5 @@
 // ============================================================================
-// cli/ensure.js — export preflight resource check + on-demand fetch (integration-plan §3.6)
+// cli/ensure.js — export preflight resource check + on-demand fetch
 // ----------------------------------------------------------------------------
 // Five steps:
 //   1 collect references  parse deck → font declarations (registry-resolved) / icon refs / media files

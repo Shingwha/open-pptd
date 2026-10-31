@@ -2,7 +2,7 @@
 // tests/regression/ui-token-literals.mjs — UI literal-token gate (Line pass, spec 05 T2)
 // ----------------------------------------------------------------------------
 // Static scan of editor/styles/*.css, enforcing the "values only live in tokens.css" rule
-// (ref/dsh-theme-requirements.md §4.4):
+// (the Line design pass token rules; historical design in git history):
 //   1. Color literals (#hex3/4/6/8, rgb()/rgba(), hsl()/hsla()) may only appear in
 //      tokens.css. present.css is exempt as a whole file (the projection surface paints
 //      on arbitrary media); commented-out text does not count (comments quote values).

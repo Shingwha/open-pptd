@@ -28,8 +28,8 @@ injectIcons(); // topbar icon placeholders (data-icon) get the real SVG (single 
 
 // Theme tri-state (light / dark / follow system): the shared mechanism from theme.js
 // (the editor's own binding), applied to <html> — the same root the editor themes, so
-// the two pages read and write one localStorage key and stay in sync. A host embedding
-// the gallery (DSH) can still override through applyThemeTokens on this element; no
+// the two pages read and write one localStorage key and stay in sync. An embedding host
+// can still override through applyThemeTokens on this element; no
 // cleanup is needed here (the gallery page has no destroy path).
 const themeMode = bindThemeMode();
 

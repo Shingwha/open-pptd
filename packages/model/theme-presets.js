@@ -6,8 +6,7 @@
 //     tableStyles: Record<string, TableStyleConfig> }
 // No top-level fields beyond the official ones. Colors are a one-time design
 // decision made at generation time (aligned with the Kimi skill workflow); the
-// editor offers the 10 colors presets for one-click application
-// (see docs/editor-v2-ux.md).
+// editor offers the 10 colors presets for one-click application.
 //
 // colors key conventions (all are valid $reference targets, all explicit hex, no
 // dynamic derivation):

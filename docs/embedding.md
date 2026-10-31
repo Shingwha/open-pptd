@@ -1,7 +1,8 @@
 # open-pptd 嵌入契约（embedding）
 
-> 面向**下游嵌入方**（DSH 适配仓、技能仓、任何宿主）的对外契约文档。
-> 权威设计稿：`docs/specs/ref/integration-plan.md` §3.3（契约面）与附录 D（接口签名）。
+> 面向**下游嵌入方**（技能仓、任何宿主）的对外契约文档。
+> 历史设计稿（integration-plan 等）已从 docs/specs 删除，见 git 历史；机器可读契约以
+> `contract.json` + `tests/contract/public-api.mjs` 为准。
 > 本文件只描述**已冻结或已规划**的对外面，不描述内部布局。
 
 ## 0. 契约总览
@@ -148,7 +149,7 @@ const writer = await import(pathToFileURL(join(root, c.entries.writer)).href);
 
 ### 1.4 深路径迁移映射
 
-下游（尤其 `editor/`）把下表的左列换到右列；映射表由 `integration-plan.md` §3.3 定义。
+下游（尤其 `editor/`）把下表的左列换到右列；映射表如下（历史设计见 git 历史）。
 
 | 现有深路径 | 目标入口 |
 |---|---|
@@ -184,7 +185,7 @@ node tests/regression/dep-graph.mjs    # 依赖方向与环境全局（含 barre
 
 ## 2. 契约 1：可挂载编辑器 `createEditor`（已实现，v2.0.0）
 
-> 状态：**已实现**（v2.0.0），签名如下（`integration-plan.md` 附录 D.2）。
+> 状态：**已实现**（v2.0.0），签名如下（契约断言见 `tests/contract/public-api.mjs`）。
 
 ```js
 // open-pptd/editor
@@ -214,7 +215,7 @@ export function createEditor(rootEl, options);
 
 ## 3. 契约 2：传输接缝 `ProjectSource`（已实现，v2.0.0）
 
-> 状态：**已实现**（v2.0.0），签名如下（`integration-plan.md` 附录 D.3）。
+> 状态：**已实现**（v2.0.0），签名如下（契约断言见 `tests/contract/public-api.mjs`）。
 
 ```js
 /**
@@ -239,7 +240,7 @@ export function memorySource({ files = {} } = {});          // 测试与嵌入
 
 ## 4. 契约 3：主题注入（已实现，v2.0.0）
 
-> 状态：**已实现**（v2.0.0），签名如下（`integration-plan.md` 附录 D.4）。引擎自备 light / dark
+> 状态：**已实现**（v2.0.0），签名如下（契约断言见 `tests/contract/public-api.mjs`）。引擎自备 light / dark
 > 两套内置令牌值，下游不必自己猜暗色。
 
 ```js
@@ -256,8 +257,8 @@ export function applyThemeTokens(
 
 ## 5. 契约 5：资源与配置解析 `paths` / `config`（已实现，v2.0.0）
 
-> 状态：**已实现**（v2.0.0），签名如下（`integration-plan.md` 附录 D.1 的 `open-pptd/paths` /
-> `open-pptd/config` 段，消费方式见附录 D.8）。规则：**读三级**（`$OPEN_PPTD_HOME` →
+> 状态：**已实现**（v2.0.0），签名如下（`open-pptd/paths` / `open-pptd/config`；契约断言见
+> `tests/contract/public-api.mjs`）。规则：**读三级**（`$OPEN_PPTD_HOME` →
 > `~/.open-pptd` → 包内 `assets`）**写一级**（永远写 `~/.open-pptd`）；
 > `registry.json` 永远只读包内。
 
@@ -302,7 +303,7 @@ set, the boot path is byte-for-byte the standalone behavior (same requests, same
 | theme | — | `theme: { tokens?, mode? }` | Host theme override (contract 3) forwarded as `createEditor`'s `options.theme`; a `mode` also switches off the built-in tri-state palette. |
 
 Recommended embedding URL (document-relative, never root-absolute — the host document may
-live on a custom scheme such as `dsh-app://app`):
+live on a custom scheme such as `app://host`):
 
 ```
 pptd/editor/index.html?deck=<encodeURIComponent("project/" + relDeck)>&base=%2Fpptd&chrome=embedded

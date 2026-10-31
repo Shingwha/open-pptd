@@ -1,8 +1,7 @@
 // ============================================================================
 // cli/bin.js — CLI assembly root (argument parsing and command dispatch, thin shell)
 // ----------------------------------------------------------------------------
-// Command surface (stable surface in integration-plan appendix D.9; adding a
-// subcommand is a compatible change):
+// Command surface (documented in README; adding a subcommand is a compatible change):
 //   serve [--port <n>] [--project <dir>] [--detach] [--json] [--stop] [--open]
 //   export <deck.pptd> [--out <pptx>] [--theme <key>] [--no-embed-fonts] [--full-fonts]
 //                      [--offline] [--strict] [--json] [--fetch]
