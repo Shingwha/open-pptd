@@ -150,5 +150,6 @@
 - ✅ W8（2026-11-01 @ `feat/3.0-w8-shell` → main）：骨架模板化 + 服务实例化（dom/toast/dialogs）；createPreview；createEditor 基于 preview；单壳 Home/Editor。preview-shell 23/23；golden 字节一致。
 - ✅ W9（2026-11-01 @ `feat/3.0-w9-save` → main）：revision 冲突 + 原子批量保存；浏览器导出接 ExportService；PNG foreignObject/capture 双后端；透明 alpha 回归。save-atomic 19/19、parity-png 22/22、browser-export 15/15。
 - ✅ W10（2026-11-01 @ `feat/3.0-w10-cli` → main）：CLI 5（open/build/check/assets/doctor）；contract 3.0（runtime/export 入口、根仅双端核心、删除旧命令/API/internal）；CLI surface 72/72、全量 37/37。
-- W11 详单待补 `## 前置上下文`（JIT）。
+- ✅ W11（2026-11-01 @ `feat/3.0-w11-skill` → main）：skill/ 唯一源（SKILL 9.5KB + 7 refs + 4 kits + 13 fragments）；images.md 唯一图片规则；tests/skill 67/67、全量 38/38。
+- W12 详单待补 `## 前置上下文`（JIT）。
 - 旧 `specs/2026-09-30-ui-redesign-line/**`、`specs/ref/**`、`docs/archive/**` 已由 W1 删除；本组 spec 不依赖它们。
