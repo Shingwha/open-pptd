@@ -19,6 +19,10 @@ import { fileURLToPath } from "node:url";
 import { resolveFile, resolveStaticFile, sendFile } from "./static.js";
 import { resourceRoots as DEFAULT_RESOURCE_ROOTS } from "../paths.js";
 import { handleSave, handlePing } from "./api.js";
+import { handleThemes } from "./themes.js";
+import { handleFonts } from "./fonts.js";
+import { createFileThemeStore } from "./theme-store.js";
+import { createFileFontLibrary } from "./font-library.js";
 import { createExportImageHandler } from "./export-image.js";
 import { createSseHub } from "./events.js";
 import { buildManifest } from "./gallery.js";
@@ -28,6 +32,11 @@ import { buildManifest } from "./gallery.js";
 // liveness handlers on their own routes without deep imports into packages/server/*.
 export { MIME, resolveFile, resolveStaticFile, sendFile } from "./static.js";
 export { handleSave, handlePing } from "./api.js";
+// Theme/font library API + Node stores (W6 additive surface)
+export { handleThemes } from "./themes.js";
+export { handleFonts } from "./fonts.js";
+export { createFileThemeStore, themeStorePaths } from "./theme-store.js";
+export { createFileFontLibrary, fontLibraryPaths } from "./font-library.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 export const PROJECT_ROOT = join(__dirname, "..", "..");
@@ -47,6 +56,10 @@ export function createServer(options = {}) {
   // POST renders headless. The handler shares this module's origin; startServer is
   // injected here (renderDeck needs a temporary static server).
   const exportImage = createExportImageHandler({ startServer });
+  // Theme / font library API (W6): stores are cheap closures; inject for tests or
+  // pass `false` to disable the endpoints. File IO happens per request.
+  const themeStore = options.themeStore === false ? null : (options.themeStore || createFileThemeStore());
+  const fontLibrary = options.fontLibrary === false ? null : (options.fontLibrary || createFileFontLibrary());
 
   return http.createServer((req, res) => {
     try {
@@ -56,6 +69,15 @@ export function createServer(options = {}) {
       if (projectRoot && (pathname === "/project" || pathname.startsWith("/project/"))) {
         base = projectRoot;
         pathname = pathname === "/project" ? "/" : pathname.slice("/project".length);
+      }
+      // Theme/font library API (loopback-only inside the handlers)
+      if (pathname === "/api/themes" && themeStore) {
+        handleThemes(req, res, url, { store: themeStore });
+        return;
+      }
+      if (pathname === "/api/fonts" && fontLibrary) {
+        handleFonts(req, res, url, { library: fontLibrary });
+        return;
       }
       // SSE change push: only with --project mount
       if (pathname === "/events" && sse) {
