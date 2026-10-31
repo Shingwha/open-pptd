@@ -16,7 +16,6 @@
 import { showToast } from "../toast.js";
 import { commitBaseline } from "../state.js";
 import { showDialog } from "../../interaction/dialogs/base.js";
-import { openFontPanel } from "../../interaction/font-panel.js";
 import { createImageExporter } from "../export-image.js";
 import { mediaFilesOfDeck } from "./images.js";
 import { base64ToBytes, deckSize, serializeDeck } from "../../../packages/model/index.js";
@@ -88,14 +87,6 @@ export function createProjectSaver({ state, images, fontManager, renderStatusBar
     };
     renderHint();
     wrap.appendChild(hint);
-    const mgrBtn = document.createElement("button");
-    mgrBtn.className = "btn btn-sm";
-    mgrBtn.textContent = "字体管理…";
-    mgrBtn.addEventListener("click", () => {
-      close();
-      openFontPanel(); // close the export box, open the font popover (no stacked masks)
-    });
-    wrap.appendChild(mgrBtn);
     const { close } = showDialog("导出 PPTX", wrap, {
       doneText: "导出",
       onDone() {

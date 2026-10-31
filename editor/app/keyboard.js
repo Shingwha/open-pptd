@@ -1,14 +1,15 @@
 // ============================================================================
-// app/keyboard.js — global shortcuts (Ctrl+Z/Y/S/D/A/G/C/V)
+// app/keyboard.js — global shortcuts (Ctrl+Z / Ctrl+Y / Ctrl+S / Ctrl+A / F5)
 // ----------------------------------------------------------------------------
-// Element-level keys (Delete/arrows/Esc layering/[ ] layer order) are handled in
-// interaction/canvas.js; the two are complementary.
+// Element-level keys (Delete/Backspace, arrows, Esc layering) are handled in
+// interaction/canvas.js; this module only owns the app-level shortcuts that must
+// work regardless of the focused widget:
 //   Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y  undo / redo
 //   Ctrl+S                          save
-//   Ctrl+D                          duplicate selection (offset copy)
-//   Ctrl+C / Ctrl+V                 copy / paste (editor-internal clipboard; B6)
-//   Ctrl+A                          select all on the current page (U1)
-//   Ctrl+G / Ctrl+Shift+G           group / ungroup (U1)
+//   Ctrl+A                          select all on the current page
+//   F5                              present
+// The old editing shortcuts (Ctrl+C/V/D/G, ] [) went away with the minimal
+// editor (editor-ux §7): no clipboard, duplicate, grouping or layer ordering.
 // ============================================================================
 
 export function bindKeyboard({ state, api, io, present }) {
@@ -29,28 +30,12 @@ export function bindKeyboard({ state, api, io, present }) {
     } else if (mod && key === "s") {
       e.preventDefault();
       io.saveProject();
-    } else if (mod && key === "d") {
-      // Duplicate the selected element (needs a selection; api handles the rest)
-      e.preventDefault();
-      if (api.getSelection().length) api.duplicateSelected(); // selection read via the api surface
-    } else if (mod && key === "c") {
-      // Copy into the editor-internal clipboard (used by the context menu "paste" and Ctrl+V; B6)
-      e.preventDefault();
-      api.copySelected();
-    } else if (mod && key === "v") {
-      e.preventDefault();
-      api.pasteClipboard();
     } else if (mod && key === "a") {
-      // Select all on the current page (U1)
+      // Select all on the current page
       e.preventDefault();
       api.selectAll();
-    } else if (mod && key === "g") {
-      // Group / ungroup (U1)
-      e.preventDefault();
-      if (e.shiftKey) api.ungroup();
-      else api.group();
     } else if (e.key === "F5") {
-      // Present: start a fullscreen show from the current page (PowerPoint muscle memory)
+      // Present: start a fullscreen show from the current page
       e.preventDefault();
       present?.start();
     }

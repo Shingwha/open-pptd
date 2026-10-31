@@ -17,13 +17,11 @@
 // ============================================================================
 
 import * as ui from "../ui.js";
-import { resolveColor } from "../../packages/model/index.js";
+import { listColorTokens, resolveColor } from "../../packages/model/index.js";
 
-/** Theme semantic-color swatches (for colorField swatches; shared by property/table/chart panels). */
+/** Every theme color token (standard keys first, then custom tokens; D13). Used by all color controls. */
 export function themeSwatches(theme) {
-  const c = theme?.colors || {};
-  const keys = ["primary", "accent", "text", "muted", "line", "success", "warning", "danger", "primaryDeep", "primarySoft", "primaryTint", "accent3"];
-  return keys.map((k) => ({ key: `$${k}`, value: resolveColor(theme, c[k]) || "#cccccc" }));
+  return listColorTokens(theme).map((t) => ({ key: `$${t.key}`, value: resolveColor(theme, t.value) || "#cccccc" }));
 }
 
 /**

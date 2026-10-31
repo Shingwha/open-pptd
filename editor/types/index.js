@@ -1,25 +1,47 @@
 // ============================================================================
 // types/index.js — editor type-registry assembly entry (imports register shards)
 // ----------------------------------------------------------------------------
-// Combines three shard layers: renderer `render`, writer `toXml`, and local UI
-// (label/menu/create/props/quickbar), merged into the single registry in
-// packages/model/registry.js. The type list itself comes from the manifest
-// (packages/model/types/, seeded by registry.js); a new engine type only needs a
-// descriptor plus its renderer/writer shard. Editor content-editor types are
-// derived from manifest contentEditor:true (see contentEditorTypeIds).
+// Combines the renderer `render` shard, the writer `toXml` shard and the local UI
+// boundary (label/create) into the single registry in packages/model/registry.js.
+// The type list itself comes from the manifest (packages/model/types/, seeded by
+// registry.js); the editor only adds UI metadata for the three content types it
+// still offers (text / table / chart). Shape / line / image / icon / group have
+// no editor UI in 3.0 (editor-ux §1): they stay selectable/transformable on the
+// canvas and render/export through their own shards.
 // ============================================================================
 
 import "../../packages/renderer/index.js";
 import "../../packages/writer/index.js";
 
 import "./text.js";
-import "./shape.js";
-import "./icon.js";
-import "./line.js";
-import "./image.js";
 import "./table.js";
 import "./chart.js";
-import "./group.js";
+
+import { allTypes, getType, nextElementId } from "../../packages/model/index.js";
 
 export { registerType, getType, allTypes } from "../../packages/model/index.js";
-export { buildAddItems, contentEditorTypeIds } from "./menu.js";
+
+/** Manifest type ids that declare a content editor (contentEditor:true → text/table/chart). */
+export function contentEditorTypeIds() {
+  return allTypes()
+    .filter((t) => t.contentEditor === true)
+    .map((t) => t.id);
+}
+
+/** Types the add menu offers (content editors only, in menu order). */
+export const ADD_TYPE_IDS = Object.freeze(["text", "table", "chart"]);
+
+/**
+ * Create a fresh element of an add-menu type via its registered shard.
+ * @param {"text"|"table"|"chart"} type
+ * @returns {object|null} element (null for unknown/no-create types)
+ */
+export function createElement(type) {
+  if (!ADD_TYPE_IDS.includes(type)) return null;
+  const def = getType(type);
+  if (!def?.create) return null;
+  const el = def.create();
+  // Defensive: a shard that forgot the id gets a valid one (never writes without an id)
+  if (!el.elementId) el.elementId = nextElementId(type);
+  return el;
+}

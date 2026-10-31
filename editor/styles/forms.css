@@ -1,0 +1,172 @@
+/* ============================================================================
+   forms.css — shared form primitives (content editors + Design panel)
+   ----------------------------------------------------------------------------
+   The old inspector layout is gone (editor-ux §1/§9); only the field/control
+   language survives: prop groups, full-width fields, two-column numeric cells,
+   the color control with its token popover, checks and hints. Values come from
+   tokens.css only (ui-token-literals gate).
+   ============================================================================ */
+
+/* -- Sections: hairline separators, no filled blocks, 12px medium title -- */
+.prop-group {
+  padding: var(--space-3) 14px;
+  border-top: 1px solid var(--line);
+}
+/* The head above and the panel edge already carry the hairline */
+.prop-group:first-child { border-top: 0; }
+.prop-group-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--sub);
+  margin-bottom: var(--space-2);
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.prop-group-title:hover { color: var(--ink); }
+/* Collapse chevron: pure CSS (pointing down = expanded), no markup change;
+   a 1px hairline in currentColor so it follows the title's hover */
+.prop-group-title::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-left: auto;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.prop-group.collapsed > :not(.prop-group-title) { display: none; }
+.prop-group.collapsed .prop-group-title::after { transform: rotate(-45deg); }
+/* A block sitting right under the title keeps the same 8px gap as a plain grid */
+.prop-group-title + .prop-checks { margin-top: 0; }
+
+/* -- Three-in-one color control (colorField): swatch button + picker + hex + theme-swatch popover -- */
+.color-field { display: flex; align-items: center; gap: 6px; min-width: 0; position: relative; }
+/* The 20px color chips carry the chip outline (--chip-border), not the input frame */
+.color-swatch-btn {
+  width: 20px; height: 20px; border-radius: var(--radius-sm); padding: 0; cursor: pointer; flex: none;
+  border: 1px solid var(--chip-border);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.color-swatch-btn:hover { border-color: var(--sub); }
+.color-swatch-btn:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
+.color-field input[type="color"] {
+  width: 20px; height: 20px; padding: 0; border: 1px solid var(--chip-border);
+  border-radius: var(--radius-sm); background: none; cursor: pointer; flex: none;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.color-field input[type="color"]:hover { border-color: var(--sub); }
+.color-field input[type="color"]:focus { border-color: var(--sel-ring); }
+.color-hex {
+  flex: 1; min-width: 0; height: var(--control-h); font-size: var(--text-xs); padding: 0 var(--space-2);
+  border: 1px solid var(--line-strong); border-radius: var(--radius);
+  background: var(--panel); color: var(--ink); outline: none; font-family: var(--mono);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.color-hex:hover { border-color: var(--sub); }
+.color-hex:focus { border-color: var(--sel-ring); }
+/* Theme-swatch popover: an overlay, so it keeps its light shadow; items use the
+   neutral hover (a color tint would read as a persistent state) */
+.color-pop {
+  position: fixed;
+  z-index: var(--z-toast); /* above the dialog mask (--z-modal) so it can sit over any container */
+  width: 216px;
+  padding: var(--space-2);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+/* hidden wins over display:grid (otherwise every popover stays visible) */
+.color-pop[hidden] { display: none; }
+.color-pop-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 7px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.color-pop-item:hover { background: var(--hover); }
+.color-pop-item:active { background: var(--active); }
+.color-pop-item:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
+.color-pop-chip { width: 18px; height: 18px; border-radius: var(--radius-sm); border: 1px solid var(--chip-border); flex: none; }
+.color-pop-name { font-size: var(--text-xs); color: var(--ink); }
+
+/* -- Two-column compact cell (numeric): label on top, aligned column lines -- */
+.prop-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2) var(--space-3);
+}
+.prop-cell { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.prop-cell-label { font-size: var(--text-xs); color: var(--faint); }
+
+.prop-checks {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+.prop-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  color: var(--sub);
+  cursor: pointer;
+  user-select: none;
+}
+/* Native checkbox restyled as a hairline switch (no markup change): a white
+   1px-frame track, the state read from the accent border + knob (no heavy fill) */
+.prop-check input[type="checkbox"] {
+  appearance: none;
+  width: 30px;
+  height: 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  position: relative;
+  cursor: pointer;
+  flex: none;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.prop-check input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--faint);
+  transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.prop-check input[type="checkbox"]:hover { border-color: var(--sub); }
+.prop-check input[type="checkbox"]:checked { border-color: var(--accent); }
+.prop-check input[type="checkbox"]:checked::before { background: var(--accent); transform: translateX(12px); }
+.prop-check input[type="checkbox"]:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
+
+/* Hint text: flat hairline box, no fill (11px --faint) */
+.prop-hint {
+  font-size: var(--text-xs);
+  color: var(--faint);
+  line-height: 1.5;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-2) 10px;
+}
+/* Panel-level hint (page setup mode, no element selected) */
+.panel-hint {
+  margin: 0 14px 14px;
+}

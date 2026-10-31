@@ -9,7 +9,7 @@
   flex-direction: column;
   height: 100vh;
   /* Editor app layout: the page itself never scrolls; inner areas scroll individually
-     (property panel / thumbbar / menus) */
+     (thumbbar / menus / dialogs) */
   overflow: hidden;
 }
 
@@ -17,7 +17,7 @@
   flex: 1;
   min-height: 0;
   position: relative;
-  /* Two columns: canvas (stage flex:1) + property panel (fixed width) */
+  /* Single column: the canvas fills the workspace; Design opens as a drawer */
   display: flex;
 }
 
