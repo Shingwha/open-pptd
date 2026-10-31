@@ -46,10 +46,11 @@
 
 - `ProjectFiles`：`{ manifestText, pageFiles: Map<string,string>, media?: Map<string,Uint8Array>, manifestPath?, revision? }`
 - `SourceFile`：`{ path, text?, bytes? }`
-- preview 可只实现 `read/readMedia/watch`；editor 保存需要 `write`。
+- `preview` 可只实现 `read/readMedia/watch`；editor 保存需要 `write`。
 - `expectedRevision` 用于冲突检测；不匹配必须抛 `RevisionConflictError`（含 currentRevision），不得静默覆盖。
 - 删除旧的 `source.write(files)` 单参数歧义；统一 `SourceFile[]`。
 - 实现（W2）：纯内存 `memorySource` 在 `packages/runtime/source.js`；Node 磁盘 source `createDiskProjectSource` 在 `packages/server/runtime-node.js`（Node-only）。
+- W9：`read()` 返回 `revision`（`packages/runtime/revision.js` 的 `projectRevision`，manifest+页文本；memory 含 media）；`write(files,{expectedRevision})` 冲突抛 `ERR_REVISION_CONFLICT`。server `/api/save` 返回 409 `{error:{code,currentRevision}}`，成功 `{ok:true,count,revision}`；原子批量（备份→tmp→rename→manifest 最后→失败回滚）。
 
 ## 3. ResourceProvider
 
@@ -87,6 +88,7 @@ export function checkProject(project, { resources, layout?, fileExists?, fontReg
 - `loadProject` 不解析 page YAML 之外的环境资源；字体/图片解析在 `resolveProject`。
 - `checkProject` 纯逻辑（W2 起同步，无 IO）；CLI/editor/server 共享；不写文件、不下载。
 - W2 已实现：`packages/runtime/{index,source,provider,parse,resolve,serialize,check,errors,paths}.js`；CLI `check`/`export` 已接入，命令面与输出不变。
+- W9 新增 `packages/runtime/revision.js`：`projectRevision(files)`（纯 JS FNV-1a，顺序无关）供 source/server/handle 共享；冲突错误字段 `currentRevision`。
 
 ## 5. ExportService
 
@@ -152,6 +154,7 @@ export async function exportProject(project, options, env) → ExportReport
 - W3 已实现：`packages/export/{index,errors,report,pptx,bundle,png}.js`（纯双端）。报告扩展字段 `check`（结构化 CheckReport）、`skippedIcons`、`unsupported`、`files`、`artifacts`（无 sink 时内存字节）、`bytes`。
 - W3 错误码：`ERR_INVALID_FORMAT/ERR_INVALID_OPTION/ERR_NO_RESOURCES/ERR_NO_RENDER_BACKEND/ERR_RENDER_BACKEND/ERR_PAGES/ERR_BUNDLE_RAW/ERR_EXPORT`；check 失败以 `ok:false` 返回，基础设施失败抛 `ExportError`。
 - CLI 兼容期口径（W3）：`export` 传 `checkLayout:false` 保持旧闸门输出；`export-project` 已按 checkProject 阻断坏 deck；W10 切到完整 check。
+- W9 已实现浏览器 adapter：`editor/app/project/export-service.js`（ResourceProvider + download sink；PPTX/bundle/PNG 全走 ExportService）；`saver.js`/`export-image.js` 不再有重复 zip/preflight；浏览器 PNG 用 `editor/app/render-backend-browser.js` 的 foreignObject backend，server capture 仍走 `/api/export-image`。PNG 目前保留草稿可导出（`check:false`）。
 
 ## 6. RenderBackend / PNG
 
@@ -176,6 +179,7 @@ createRenderBackend({
 - 三条 backend 共用 ExportService 的页选择、scale、命名、zip、报告；只有 rasterize 实现不同。
 - 禁止依赖 `window.devicePixelRatio` 决定导出清晰度。
 - W3 已实现 Node/headless backend：`packages/renderer/headless/backend.js`（由 CLI/`render.js` 注入 `env.renderBackend`）。修复要点：导航前 `setDeviceMetricsOverride(dsf=scale)`；ready 后按 deck 尺寸复设并重绘 page 0；每次 goto 后等 ready 再截图；临时渲染 server 必须 `liveReload:false`（否则 SSE 重载把页码重置为 0）。
+- W9 已实现浏览器 backend：`editor/app/render-backend-browser.js` 的 foreignObject（canvas 不填背景，RGBA colorType 6）与 capture（POST `/api/export-image`）两实现；server handler 内部改 ExportService png + headless；ExportService 只做页选择/scale/命名/report。
 
 ## 7. TypeManifest
 

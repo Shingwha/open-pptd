@@ -63,6 +63,8 @@ const suites = [
   ["字体文件校验（font-file）", "node tests/regression/font-file.mjs"],
   ["主题库（theme-library）", "node tests/regression/theme-library.mjs"],
   ["字体库（font-library）", "node tests/regression/font-library.mjs"],
+  ["保存原子性（save-atomic）", "node tests/regression/save-atomic.mjs"],
+  ["图片透明通道（image-alpha）", "node tests/regression/image-alpha.mjs"],
   ["背景尺寸随 deck.size", "node tests/regression/background-size.mjs"],
   ["校验器与导出闸门", "node tests/regression/validate.mjs"],
   ["颜色一致性", "node tests/regression/color-consistency.mjs"],
