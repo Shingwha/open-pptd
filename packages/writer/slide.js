@@ -70,10 +70,19 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
       `</p:notes>`;
   }
 
+  // Geometry facts of this page (LayoutTree.pages[i] from buildPptx): toXml shards read
+  // their own element through ctx.layoutOf instead of measuring again.
+  const layoutById = new Map();
+  for (const le of options.layoutPage?.elements || []) layoutById.set(le.elementId, le);
+
   const ctx = {
     // Page size (deck.size): background image cover cropping etc. is computed against the actual page; default 960×540
     pageSize: Array.isArray(options.pageSize) ? options.pageSize : [PAGE_WIDTH, PAGE_HEIGHT],
     nextId: () => idCounter++,
+    /** LayoutElement for this element (frame/table/text facts), or null for direct callers. */
+    layoutOf(element) {
+      return (element && layoutById.get(element.elementId)) || null;
+    },
     registerLink(url) {
       if (links.has(url)) return links.get(url);
       linkCounter += 1;
