@@ -49,7 +49,11 @@ export const paths = Object.freeze({
   home: openPptdHome(),
   assets: join(openPptdHome(), "assets"),
   fonts: join(openPptdHome(), "assets", "fonts"),
+  // User font library (theme-font.md §8): files + index.json live under fonts/user.
+  userFonts: join(openPptdHome(), "assets", "fonts", "user"),
+  userFontIndex: join(openPptdHome(), "assets", "fonts", "user", "index.json"),
   icons: join(openPptdHome(), "assets", "icons"),
+  themes: join(openPptdHome(), "themes"),
   cli: join(openPptdHome(), "cli"),
   cliCurrent: join(openPptdHome(), "cli", "current"),
   config: join(openPptdHome(), "config.json"),
@@ -75,7 +79,7 @@ export const resourceRoots = Object.freeze({
  * @returns {string} home path
  */
 export function ensureHome() {
-  const dirs = [paths.home, paths.assets, paths.fonts, paths.icons, paths.cli, paths.state, paths.cache, paths.tmp];
+  const dirs = [paths.home, paths.assets, paths.fonts, paths.userFonts, paths.icons, paths.themes, paths.cli, paths.state, paths.cache, paths.tmp];
   try {
     for (const d of dirs) mkdirSync(d, { recursive: true });
   } catch (err) {
@@ -120,15 +124,16 @@ export function isRegistryPath(rel) {
  * always sees complete or old bytes).
  * @param {string} destPath absolute target path
  * @param {Buffer|Uint8Array|string} bytes
+ * @param {{tmpDir?:string}} [options] tmpDir overrides paths.tmp (injected home in tests/adapters)
  * @returns {string} destPath
  */
-export function atomicWriteFile(destPath, bytes) {
+export function atomicWriteFile(destPath, bytes, { tmpDir = paths.tmp } = {}) {
   mkdirSync(dirname(destPath), { recursive: true });
-  mkdirSync(paths.tmp, { recursive: true });
+  mkdirSync(tmpDir, { recursive: true });
   let lastErr;
   for (let i = 0; i < 5; i++) {
     const part = join(
-      paths.tmp,
+      tmpDir,
       `.${basename(destPath)}.${process.pid.toString(36)}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}.part`
     );
     try {
