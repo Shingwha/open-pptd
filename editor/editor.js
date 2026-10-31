@@ -9,7 +9,7 @@
 //   page operations, undo/redo, Design panel, save/export
 //
 //   createEditor(rootEl, { source, deck?, deckUrl?, theme?, chrome?, dialogs?, on? })
-//     → { ready, destroy, api, io, state, view }      (public editor handle)
+//     → { ready, destroy, preview, editor, io, state }  (contract 3.0 §10.1)
 //
 // Self-contained: the editor skeleton (editor/skeleton.js) is rendered into
 // rootEl; every service is per instance. chrome is "full" | "embedded" — the old
@@ -25,7 +25,7 @@ import { createStageController } from "./interaction/stage.js";
 import { bindToolbar } from "./app/toolbar.js";
 import { bindKeyboard } from "./app/keyboard.js";
 import { editorSkeletonHtml } from "./skeleton.js";
-import { createPreviewCore, normalizeChrome } from "./preview.js";
+import { createPreviewCore, previewHandle, normalizeChrome } from "./preview.js";
 
 // chrome presets: embedded = trims host-hostile outbound navigation (brand back to gallery / GitHub new window)
 const CHROME_PRESETS = {
@@ -44,7 +44,7 @@ const CHROME_PRESETS = {
  *   chrome?    "full" | "embedded"
  *   dialogs?   host implementation { alert, confirm } (overrides native dialogs)
  *   on?        { ready?, dirty?, saved?, error?, deckChange?, selectionChange? }
- * @returns {{ ready: Promise<void>, destroy(): void, api: object, io: object, state: object, view: object }}
+ * @returns {{ ready: Promise<void>, destroy(): void, preview: object, editor: object, io: object, state: object }}
  */
 export function createEditor(rootEl, options = {}) {
   const { chrome: chromeInput = "full", on = {} } = options;
@@ -199,7 +199,8 @@ export function createEditor(rootEl, options = {}) {
     core.destroy();
   }
 
-  const instance = { ready, destroy, api, io, state, view };
+  // public shape (interfaces.md §10.1): preview = read-only handle, editor = the api surface
+  const instance = { ready, destroy, preview: previewHandle(core), editor: api, io, state };
   return instance;
 }
 

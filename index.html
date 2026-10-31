@@ -1,55 +1,20 @@
 <!doctype html>
-<!-- data-pptd-theme: the gallery is themed on the same root as the editor (theme.js
-     tri-state lands here; a host can override via applyThemeTokens on this element) -->
-<html lang="zh-CN" data-pptd-theme="light">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>OPEN PPTD · 作品画廊</title>
+    <title>OPEN PPTD</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23eef4fd'/><rect x='6.5' y='10.5' width='19' height='11' rx='2.4' fill='none' stroke='%232563eb' stroke-width='2.3'/><circle cx='11.7' cy='16' r='2.1' fill='%232563eb'/></svg>" />
-    <link rel="stylesheet" href="./editor/styles/tokens.css" />
-    <link rel="stylesheet" href="./editor/styles/primitives.css" />
-    <link rel="stylesheet" href="./editor/styles/layout.css" />
-    <link rel="stylesheet" href="./editor/styles/panels.css" />
-    <link rel="stylesheet" href="./editor/styles/responsive.css" />
+    <meta http-equiv="refresh" content="0; url=./editor/" />
+    <script>
+      // 3.0 single shell: the site root only redirects into /editor/ (Home or Editor
+      // by query), preserving ?deck= / ?shot= / #hash for existing links.
+      (function () {
+        location.replace("./editor/" + location.search + location.hash);
+      })();
+    </script>
   </head>
   <body>
-    <!-- gallery port (site root): sample-work cover display, click to enter the editor -->
-    <div id="gallery-view" class="gallery-view">
-      <header class="gallery-top">
-        <div class="brand">
-          <strong>OPEN PPTD</strong>
-          <span class="brand-file">作品画廊</span>
-        </div>
-        <div class="gallery-top-actions">
-          <button id="btn-file" class="btn" title="文件：打开编辑器 / 打开本地项目 / 最近打开">
-            <span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M3 6a1.5 1.5 0 0 1 1.5-1.5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.2V18a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
-            <span class="btn-label">文件</span>
-          </button>
-          <a class="icon-btn" href="https://github.com/Shingwha/open-pptd" target="_blank" rel="noopener" title="GitHub 仓库">
-            <span class="icon-slot" data-icon="github"></span>
-          </a>
-        </div>
-      </header>
-
-      <div id="gallery-body">
-        <div id="gallery-toolbar" class="gallery-toolbar">
-          <div id="gallery-tabs" class="gallery-tabs" hidden></div>
-          <div id="gallery-mode" class="gallery-mode" hidden></div>
-        </div>
-        <div id="gallery-grid" class="gallery-grid" hidden></div>
-      </div>
-    </div>
-
-    <script type="module">
-      import { showGallery } from "./editor/gallery.js";
-      showGallery().catch((err) => {
-        console.error("画廊加载失败:", err);
-        const grid = document.getElementById("gallery-grid");
-        grid.hidden = false;
-        grid.innerHTML =
-          `<div style="text-align:center;color:var(--sub);padding:40px">画廊加载失败：${err.message}</div>`;
-      });
-    </script>
+    <p>正在打开 <a href="./editor/">OPEN PPTD</a>…</p>
   </body>
 </html>

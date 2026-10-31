@@ -49,6 +49,16 @@ export function createPreview(rootEl, options = {}) {
     chrome,
     editable: false,
   });
+  return previewHandle(core);
+}
+
+/**
+ * Public preview handle over an assembled preview core (shared with createEditor,
+ * whose instance also exposes the preview as `preview`).
+ * @param {object} core createPreviewCore result
+ * @returns {object} { ready, destroy, view, io, state, goToPage, nextPage, prevPage, zoomIn, zoomOut, zoomReset, present, reload }
+ */
+export function previewHandle(core) {
   const { api } = core;
   return {
     ready: core.ready,
@@ -195,6 +205,7 @@ export function createPreviewCore(rootEl, options, { html, chrome, editable }) {
           if (!ui.isActive() || present?.isActive()) return;
           const tag = (e.target.tagName || "").toLowerCase();
           if (tag === "input" || tag === "textarea" || tag === "select" || e.target.isContentEditable) return;
+          if (e.target.closest?.("button")) return; // keep native Space on focused buttons
           if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "PageDown" || e.key === " ") {
             e.preventDefault();
             api.nextPage();

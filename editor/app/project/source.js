@@ -111,8 +111,10 @@ export function httpSource({ base = "", deckUrl = null } = {}) {
     async readMedia(path) {
       try {
         // project-relative path → URL: against the manifest read last (project dir);
-        // before any read, fall back to the site prefix (the construction-time base)
-        const url = manifestUrl ? new URL(path, manifestUrl).href : withBase(base, path);
+        // before any read, against the construction-time deckUrl (gallery covers pass
+        // already-parsed texts, no read happens), then against the site prefix.
+        const hintUrl = manifestUrl || (deckUrlOf() ? resolveDeckUrl(deckUrlOf(), base) : null);
+        const url = hintUrl ? new URL(path, hintUrl).href : withBase(base, path);
         const res = await fetch(url);
         if (!res.ok) return null;
         return new Uint8Array(await res.arrayBuffer());

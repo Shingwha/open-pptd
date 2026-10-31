@@ -16,7 +16,6 @@
 
 /** Property name → skeleton element id (the id contract; mirrors editor/skeleton.js). */
 const IDS = {
-  editorApp: "editor-app",
   stage: "stage",
   canvas: "canvas",
   canvasWrap: "canvas-wrap",

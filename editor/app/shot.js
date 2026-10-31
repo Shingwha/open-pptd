@@ -14,7 +14,7 @@
 //   window.pptdReady("error")   = initialization failed
 //   document.title === "PPTD_READY" / "PPTD_ERROR" is kept as an observable (manual/walkthrough use)
 // ?shot=1 semantics are unchanged: .shot-mode on <html> (zero chrome, no
-// transitions, #editor-app display:none) and a bare body-level #shot-root.
+// transitions) and a bare body-level #shot-root (the shell skeleton is not rendered).
 // This module is not loaded when the editor is opened normally (no ?shot=1).
 // ============================================================================
 

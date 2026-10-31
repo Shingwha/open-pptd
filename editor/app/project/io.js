@@ -24,6 +24,18 @@ import { createHistory } from "../../interaction/history.js";
 import { commitBaseline } from "../state.js";
 import { createDeck, createPage, normalizeTheme, syncElementId } from "../../../packages/model/index.js";
 
+/** Drop the project-bearing query param, keeping shell params (base / chrome / blank / shot). */
+function clearProjectUrl() {
+  try {
+    const params = new URLSearchParams(location.search);
+    params.delete("deck");
+    const search = params.toString();
+    history.replaceState(null, "", location.pathname + (search ? `?${search}` : ""));
+  } catch {
+    /* non-browser (tests/embedding without history): nothing to rewrite */
+  }
+}
+
 export function createIo({ state, view, ops, source, ui, live = true, onSaved, onDeckChange, onError }) {
   if (!ui) throw new Error("createIo: 需要实例上下文 ui");
   const fontManager = createFontManager(state, ui);
@@ -87,7 +99,7 @@ export function createIo({ state, view, ops, source, ui, live = true, onSaved, o
       return false;
     }
     await loader.loadDeckFromHandle(handle);
-    history.replaceState(null, "", location.pathname); // drop the old ?deck=, refresh goes through session restore
+    clearProjectUrl(); // drop the old ?deck=, keep shell params
     const entry = await addRecent(handle);
     if (entry) setPendingProject(entry.id);
     return true;
@@ -124,7 +136,7 @@ export function createIo({ state, view, ops, source, ui, live = true, onSaved, o
     syncElementId(state.deck);
     images.rebuildImageMap();
     clearPendingProject();
-    history.replaceState(null, "", location.pathname);
+    clearProjectUrl();
     view.render();
     if (live) liveReload.connectLiveReload(); // blank project: disconnect the old live channel (internally treated as no project)
     try {

@@ -166,9 +166,6 @@ body.presenting { user-select: none; }
   overflow: hidden;
   background: var(--panel);
 }
-.shot-mode #editor-app {
-  display: none;
-}
 .shot-mode #shot-root {
   z-index: var(--z-modal);
 }

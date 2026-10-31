@@ -126,6 +126,11 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
   function renderThumbnails() {
     if (!state.deck) return;
     const deck = state.deck;
+    if (!bar) {
+      // Embedded preview skeletons have no page bar (canvas surface only)
+      renderStat();
+      return;
+    }
     disposeChartInstances(bar);
     bar.innerHTML = "";
     deck.pages.forEach((pg, i) => {
@@ -192,7 +197,7 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
 
   /** Progressive-load targeted refresh: replace one page's thumbnail once its assets are ready (skeleton → real render). */
   function refreshThumb(pg) {
-    if (!state.deck) return;
+    if (!state.deck || !bar) return;
     const i = state.deck.pages.indexOf(pg);
     if (i < 0) return; // deleted or deck swapped while loading
     const thumb = bar.children[i];

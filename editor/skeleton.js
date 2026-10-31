@@ -7,6 +7,7 @@
 //   editorSkeletonHtml()          full editor shell (topbar / stage / thumbnail bar)
 //   previewSkeletonHtml(opts)     preview shell: "full" = view chrome + page bar,
 //                                 "embedded" = canvas surface only (covers / embeds)
+//   homeSkeletonHtml()            Home (gallery) shell of the single-page app
 //
 // The ids are the DOM contract used by the view modules through createDom(rootEl);
 // keep them in sync with editor/dom.js.
@@ -156,6 +157,35 @@ export function previewSkeletonHtml({ chrome = "full" } = {}) {
     `<div id="page-thumbs" class="page-thumbs"></div>` +
     `<div class="thumbbar-meta">${ZOOM_GROUP}<span id="page-count"></span></div>` +
     `</footer>` +
+    `</div>`
+  );
+}
+
+/**
+ * Home view shell (gallery as the single-page app's start view). The file menu and
+ * the sample grid are wired by gallery.js; this is only the DOM contract.
+ * @returns {string} HTML for the shell mount point
+ */
+export function homeSkeletonHtml() {
+  return (
+    `<div class="gallery-view" id="home-view">` +
+    `<header class="gallery-top">` +
+    `<div class="brand"><a class="brand-home" href="./" title="刷新作品画廊">OPEN PPTD</a><span class="brand-file">作品画廊</span></div>` +
+    `<div class="gallery-top-actions">` +
+    `<button id="btn-file" class="btn" title="文件：新建 / 打开本地项目 / 最近打开">` +
+    `<span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M3 6a1.5 1.5 0 0 1 1.5-1.5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.2V18a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>` +
+    `<span class="btn-label">文件</span>` +
+    `</button>` +
+    GITHUB_LINK +
+    `</div>` +
+    `</header>` +
+    `<div id="gallery-body">` +
+    `<div id="gallery-toolbar" class="gallery-toolbar">` +
+    `<div id="gallery-tabs" class="gallery-tabs" hidden></div>` +
+    `<div id="gallery-mode" class="gallery-mode" hidden></div>` +
+    `</div>` +
+    `<div id="gallery-grid" class="gallery-grid" hidden></div>` +
+    `</div>` +
     `</div>`
   );
 }
