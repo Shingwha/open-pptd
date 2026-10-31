@@ -149,6 +149,9 @@ export async function exportProject(project, options, env) → ExportReport
 - PPTX/bundle 不依赖浏览器；PNG 依赖 browser backend。
 - bundle `snapshot` 与编辑器“导出项目包”一致；`raw` 保留磁盘原样（CLI 归档模式）。
 - **禁止**再出现 saver/export-image/cli export 各自实现 zip/preflight/report。
+- W3 已实现：`packages/export/{index,errors,report,pptx,bundle,png}.js`（纯双端）。报告扩展字段 `check`（结构化 CheckReport）、`skippedIcons`、`unsupported`、`files`、`artifacts`（无 sink 时内存字节）、`bytes`。
+- W3 错误码：`ERR_INVALID_FORMAT/ERR_INVALID_OPTION/ERR_NO_RESOURCES/ERR_NO_RENDER_BACKEND/ERR_RENDER_BACKEND/ERR_PAGES/ERR_BUNDLE_RAW/ERR_EXPORT`；check 失败以 `ok:false` 返回，基础设施失败抛 `ExportError`。
+- CLI 兼容期口径（W3）：`export` 传 `checkLayout:false` 保持旧闸门输出；`export-project` 已按 checkProject 阻断坏 deck；W10 切到完整 check。
 
 ## 6. RenderBackend / PNG
 
@@ -172,6 +175,7 @@ createRenderBackend({
 - foreignObject：浏览器 DOM → dataURL/SVG/canvas；仍用 `pixelRatio=scale`，图表 canvas 不被二次压扁。
 - 三条 backend 共用 ExportService 的页选择、scale、命名、zip、报告；只有 rasterize 实现不同。
 - 禁止依赖 `window.devicePixelRatio` 决定导出清晰度。
+- W3 已实现 Node/headless backend：`packages/renderer/headless/backend.js`（由 CLI/`render.js` 注入 `env.renderBackend`）。修复要点：导航前 `setDeviceMetricsOverride(dsf=scale)`；ready 后按 deck 尺寸复设并重绘 page 0；每次 goto 后等 ready 再截图；临时渲染 server 必须 `liveReload:false`（否则 SSE 重载把页码重置为 0）。
 
 ## 7. TypeManifest
 
