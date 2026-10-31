@@ -66,3 +66,6 @@
 7. **CLI assets**：`assets themes list|import|export|delete|apply`、`assets fonts list|import|remove`；保留旧 `assets sync` 行为；JSON 单行。命令面最终由 W10 收敛。
 8. **barrel/分支例外**：为让 W7 通过包级入口消费，允许最小改动 `packages/model/index.js`（导出 theme/font library 公共名）与 `packages/server/index.js`（挂载路由、导出 store）；`packages/cli/bin.js`（分发）。这三处只加导出/挂载，不改既有行为；diff 必须在报告中单列。`contract.json`/`package.json`/`tests/run-all.mjs` 仍由 lead 改。
 9. **测试**：`tests/regression/theme-library.mjs`、`font-library.mjs`（自跑，临时 home，不依赖真实字体字节）；覆盖 builtin 只读/用户 CRUD/非法 JSON/重复 id、apply preserved/丢弃/undo 数据层、usage、字体导入删除/resolve/跨端 bytes/deck refs、缺失/系统状态、全局 embed 设置。不得改变默认 deck 渲染（golden 不得变化）。
+10. **预检与导出验收（2026-11-01 修正）**：
+    - `packages/cli/ensure.js` 的字体预检必须使用“用户库 + 内置 registry”的合并视图，与 `packages/server/runtime-node.js` 的 fontRegistry 同源；用户库字体不得被报 missing。CLI `check` 同样接受用户库字体。
+    - 导出验收**不要求 PPTX 字节一致/字节数固定**（zip 时间戳非确定）；改为 exit 0 + package-integrity + 包内引用完整 + 用户字体场景断言 `ppt/fonts/*.fntdata` 与 `embeddedFontLst` 存在 + 无缺失警告。详见 `ref/testing.md` §10.1。

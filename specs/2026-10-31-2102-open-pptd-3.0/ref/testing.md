@@ -133,3 +133,13 @@ npm run test:editor             # minimal e2e（有浏览器；无则 skip）
 4. 性能/体积（如本波涉及 lazy/字体/chart）
 5. 未决/已知跳过（浏览器/Office/外部工具）
 ```
+
+### 10.1 导出验收口径（2026-11-01 调整）
+
+- **不要求 PPTX/ZIP 字节一致或字节数固定**：zip DOS 时间戳、`docProps/core.xml` 时间与内嵌 xlsx 时间戳天然非确定，字节比较过于苛刻。
+- 导出验收改为结构性事实：
+  1. 命令 exit 0；`tests/regression/package-integrity.mjs` 通过；
+  2. 包内引用完整（图片/图标/字体关系）；
+  3. 字体场景断言 `ppt/fonts/*.fntdata` 与 `embeddedFontLst` 存在，且无“未嵌入/缺失”警告；
+  4. bundle 断言条目集合与页面/媒体数量；PNG 断言尺寸与非空/区域指标。
+- 字节/哈希只用于“默认 deck 未受影响”的辅助 sanity（同一进程/同机重复可复现时），不作为阻断门禁。
