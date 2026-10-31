@@ -4,7 +4,8 @@
 // Contract 5 concurrency atomicity:
 //   · write target is home (single write level): `~/.open-pptd/assets/{fonts,icons}`
 //   · write `tmp/<random>.part` first → same-volume `rename()` (paths.atomicWriteFile)
-//   · fonts keep the existing checks: magic first 4 bytes + size vs registry;
+//   · fonts verify transport completeness (Content-Length) + sfnt magic; the registry
+//     `size` is advisory only (upstream re-releases change otherwise valid bytes);
 //     icons keep the SVG structure check
 //   · concurrency 6, two-stage timeouts (connect 10s / body 60s [fonts] · 30s [icons]) kept
 //
@@ -13,10 +14,11 @@
 // `icons download` compatibility aliases.
 // ============================================================================
 
-import { existsSync, statSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { paths, ensureHome, atomicWriteFile, resolveResourceFile } from "../paths.js";
 import { ICON_STYLES } from "./resource-status.js";
+import { isSfntMagic, readFontMagic, verifyFontBytes } from "./font-file.js";
 
 // ---------------------------------------------------------------------------
 // Fonts
@@ -30,9 +32,6 @@ const FONT_DOWNLOAD_CONCURRENCY = 6;
 // not misclassified as a dead mirror, which a single shared helper cannot express without
 // changing the mirror-health-tracking behavior.
 
-function isFontMagic(buf) {
-  return buf.length >= 4 && (buf.subarray(0, 4).toString("latin1") === "OTTO" || buf.subarray(0, 4).equals(Buffer.from([0, 1, 0, 0])));
-}
 
 /**
  * Download registry fonts to home (targets matched by key/family/substring).
@@ -62,17 +61,16 @@ export async function downloadFonts(reg, name = "all") {
 
   const downloadOne = async (f) => {
     const out = join(paths.fonts, f.file);
-    // already ready (hit in home or package, size matches) → skip; a size mismatch means upstream bytes changed → redownload
+    // already present with a valid sfnt header → skip. The registry size is advisory:
+    // upstream re-releases change the length of a perfectly valid font, and treating
+    // that as "stale" caused endless re-downloads (see font-file.js).
     const existing = resolveResourceFile("fonts", f.file);
     if (existing) {
-      const magic = readFileSync(existing).subarray(0, 4);
-      const validMagic = magic.toString("latin1") === "OTTO" || magic.equals(Buffer.from([0, 1, 0, 0]));
-      const stale = typeof f.size === "number" && statSync(existing).size !== f.size;
-      if (validMagic && !stale) {
+      if (isSfntMagic(readFontMagic(existing))) {
         console.log(`  = ${f.key} 已存在（${f.file}），跳过`);
         return true;
       }
-      if (validMagic && stale) console.log(`  ↻ ${f.key} 本地文件与注册表尺寸不符，重新下载`);
+      console.log(`  ↻ ${f.key} 本地文件不是有效字体，重新下载`);
     }
     // fallback chain: primary url (GitHub raw) → mirrors (jsDelivr etc.), tried in order until one succeeds
     const sources = [f.url, ...(f.mirrors || [])].filter(Boolean);
@@ -88,6 +86,11 @@ export async function downloadFonts(reg, name = "all") {
           clearTimeout(timer);
         }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        // Content-Length describes the encoded body when the response is compressed
+        // (fetch decodes transparently) → only compare it for identity responses.
+        const encoding = res.headers.get("content-encoding");
+        const lengthHeader = res.headers.get("content-length");
+        const declared = (!encoding || encoding === "identity") && lengthHeader ? Number(lengthHeader) : null;
         let bodyTimer;
         const buf = Buffer.from(
           await Promise.race([
@@ -97,7 +100,9 @@ export async function downloadFonts(reg, name = "all") {
             }),
           ]).finally(() => clearTimeout(bodyTimer))
         );
-        if (buf.length < 1000 || !isFontMagic(buf)) throw new Error("响应不是有效字体文件");
+        const check = verifyFontBytes(buf, { contentLength: declared });
+        if (!check.ok) throw new Error(check.reason);
+        if (buf.length < 1000) throw new Error("响应过短，不是有效字体文件");
         atomicWriteFile(out, buf); // tmp/*.part → rename (concurrency-safe)
         console.log(`  ✓ ${f.key} ← ${src} ${(buf.length / 1024 / 1024).toFixed(1)}MB`);
         return true;

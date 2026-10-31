@@ -1,18 +1,22 @@
 // ============================================================================
-// cli/resource-status.js — resource readiness (three-level read + size consistency)
+// cli/resource-status.js — resource readiness (three-level read + sfnt header check)
 // ----------------------------------------------------------------------------
-// The "✓/✗" rule (contract 5 concurrency-atomicity fix):
-//   font ready = the file is found in a candidate root (home → package) **and** its
-//   size matches the registry. existsSync alone would treat a half-downloaded TTF as
-//   installed and only blow up at export — hence the size comparison.
+// The "✓/✗" rule:
+//   font ready = the file is found in a candidate root (home → package) **and**
+//   starts with a valid sfnt magic. Atomic downloads (tmp → rename) never expose a
+//   partial file, so a byte-length comparison against the registry is unnecessary
+//   and fragile: the registry `size` is a generation-time snapshot, while upstream
+//   re-releases change the length of an otherwise valid font. Export still parses
+//   the font when embedding, which is the authoritative integrity gate.
 // The registry (registry.json) is always read from the package (version-coupled) and
 // is separate from the bytes dir, so this file reads the registry from PACKAGE_ROOT
 // only; byte existence goes through paths.resolveResourceFile (three-level read).
 // ============================================================================
 
-import { readFileSync, statSync, existsSync, readdirSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { PACKAGE_ROOT, resourceRoots, resolveResourceFile, FONT_REGISTRY_DIR, ICON_REGISTRY_DIR } from "../paths.js";
+import { isSfntMagic, readFontMagic } from "./font-file.js";
 
 // In-package registry dirs (registry.json only) are single-sourced in packages/paths.js;
 // re-exported here so existing deep importers keep working.
@@ -40,17 +44,12 @@ export function readIconRegistry() {
   return JSON.parse(readFileSync(join(ICON_REGISTRY_DIR, "registry.json"), "utf8"));
 }
 
-/** Is a single font's bytes ready (present **and** size matches the registry). */
+/** Is a single font's bytes ready (present **and** a valid sfnt header). */
 export function fontFileReady(f) {
   if (!f?.file) return false;
   const p = resolveResourceFile("fonts", f.file);
   if (!p) return false;
-  if (typeof f.size !== "number") return true; // registry declares no size → presence only
-  try {
-    return statSync(p).size === f.size;
-  } catch {
-    return false;
-  }
+  return isSfntMagic(readFontMagic(p));
 }
 
 /** Font readiness stats { ready, total }. */
