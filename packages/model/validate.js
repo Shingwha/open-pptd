@@ -109,15 +109,22 @@ registerRule((deck, ctx, report) => {
 });
 
 // ---- schema: type-specific required fields (each type's manifest schema hook) ----
-// The hook returns partial issues ({ message, rule? }); validate stamps level/page/
-// elementId and defaults the rule to "schema-type" (message text/order unchanged).
+// The hook returns partial issues ({ message, level?, rule? }); validate stamps level/page/
+// elementId and defaults level to "error" and rule to "schema-type" (message text/order
+// unchanged). A hook may return level: "warning" for repairable inconsistencies (e.g. a
+// stale table rowHeights array) that must not block export.
 registerRule((deck, ctx, report) => {
   walkElements(deck?.pages, (el, page, pageIdx) => {
     const schema = getType(el.elementType)?.schema;
     if (!schema) return;
     const at = { level: "error", rule: "schema-type", page: pageIdx + 1, elementId: el.elementId };
     for (const issue of schema(el) || []) {
-      report({ ...at, ...(issue.rule ? { rule: issue.rule } : {}), message: issue.message });
+      report({
+        ...at,
+        ...(issue.level ? { level: issue.level } : {}),
+        ...(issue.rule ? { rule: issue.rule } : {}),
+        message: issue.message,
+      });
     }
   });
 });

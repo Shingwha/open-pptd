@@ -27,7 +27,8 @@ export { createMetricsTable, defaultMetricsTable, metricKey, METRICS_VERSION } f
  * @typedef {object} MeasurePort
  * @property {(runs, style, maxWidth, fonts?) => {lines:number,height:number}} measureTextRuns
  * @property {(cell, colWidth, fonts?) => number} measureCell
- * @property {(table, fonts?) => {columnWidths:number[],rowHeights:number[],totalHeight:number}} measureTable
+ * @property {(table, opts?) => {columnWidths:number[],rowHeights:number[],totalHeight:number}} measureTable
+ *   opts = { theme?, fonts? } (a bare metrics table is still accepted)
  * @property {(font, fonts?) => number} lineHeightMultiplierFor
  */
 export const fontMetricsMeasure = Object.freeze({

@@ -10,6 +10,7 @@
 import { resolveTheme } from "../model/theme.js";
 import { deckSize } from "../model/model.js";
 import { walkElements } from "../model/walk.js";
+import { layout } from "../layout/index.js";
 import { ZipWriter } from "./zip.js";
 import { xmlHeader } from "./xml.js";
 import { buildEmbeddedFonts } from "./font.js";
@@ -70,6 +71,11 @@ export async function buildPptx(deck, options = {}) {
   const pages = Array.isArray(deck.pages) ? deck.pages : [];
   const slideCount = pages.length;
   if (slideCount === 0) throw new Error("deck 没有页面，无法导出");
+
+  // Single layout pass for the whole deck (D6): every element's geometry fact (table
+  // totalHeight in particular) is computed once here and handed to the toXml shards
+  // through ctx; the writer never re-measures tables.
+  const tree = layout({ ...deck, theme });
 
   const loadImage = options.loadImage || ((src) => defaultLoadImage(src, options));
 
@@ -150,7 +156,12 @@ export async function buildPptx(deck, options = {}) {
   // 2. Per-page slide + media + charts (media names are globally unique across pages to avoid collisions)
   let mediaBase = 0;
   pages.forEach((page, i) => {
-    const result = buildSlide(theme, page, i + 1, registry, { chartBase: chartPrefix[i], mediaBase, pageSize: size });
+    const result = buildSlide(theme, page, i + 1, registry, {
+      chartBase: chartPrefix[i],
+      mediaBase,
+      pageSize: size,
+      layoutPage: tree.pages[i],
+    });
     mediaBase = result.mediaCount;
     zip.add(`ppt/slides/slide${i + 1}.xml`, result.xml);
     zip.add(`ppt/slides/_rels/slide${i + 1}.xml.rels`, result.relsXml);

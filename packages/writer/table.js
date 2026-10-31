@@ -21,8 +21,7 @@ import { el, escAttr } from "./xml.js";
 import { buildParagraph } from "./text.js";
 import { parseRichText } from "../model/richtext.js";
 import { resolveTableStyle, resolveTableCellStyle, cellTextStyle } from "../model/theme.js";
-import { tableGrid, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../model/table.js";
-import { measureTable } from "../measure/index.js";
+import { tableGrid, estimateTableLayout, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../model/table.js";
 import { borderSides, dashSpec, normalizeFill, ooxmlAnchor } from "../model/style-spec.js";
 import { colorElement, buildFill, buildShadow } from "./drawing.js";
 
@@ -44,11 +43,14 @@ export function tableXml(theme, tableEl, ctx) {
   const [x, y, w] = tableEl.bounds;
   const ts = resolveTableStyle(theme, tableEl.style);
   const rows = Array.isArray(tableEl.rows) ? tableEl.rows : [];
-  // Row-height single source: consume measure's exact rowHeights — derived from the same metrics
-  // table as the preview (layout→paint); no longer the model's min semantics (which let PowerPoint
-  // auto-grow by content and drift from the preview by pixels). Column-width ratios match
-  // (measure internally is estimateTableLayout).
-  const { rowHeights, columnWidths } = measureTable(tableEl);
+  // Height single source (D6): consume the LayoutTree facts computed once by buildPptx
+  // (ctx.layoutOf). The writer never re-measures tables — row heights, column ratios and
+  // the graphic-frame height all come from the same Tree the preview paints.
+  // Direct callers without a layout page (internal tests/legacy) fall back to the model's
+  // minimum estimate; that path is not used by buildPptx.
+  const facts = ctx?.layoutOf?.(tableEl)?.table;
+  const { rowHeights, columnWidths } = facts || estimateTableLayout(tableEl);
+  const totalHeight = facts ? facts.totalHeight : rowHeights.reduce((a, b) => a + b, 0);
   const colWs = columnWidths;
   const rowCount = rows.length;
   const colCount = colWs.length;
@@ -60,8 +62,8 @@ export function tableXml(theme, tableEl, ctx) {
     .join("");
   const trs = grid
     .map((gRow, r) => {
-      // Row height: min-height semantics (minimum row height = rowHeights ratio × bounds or a
-      // readability floor); PowerPoint grows it by content when exceeded (matching the preview's tr)
+      // Row height = the exact layout fact (content-aware, rowSpan-deficit balanced, integer);
+      // a:tr h is authoritative, so PowerPoint does not need to auto-grow and matches the preview.
       const rh = rowHeights[r] != null ? rowHeights[r] : 26;
       const trAttrs = { h: Math.round(Math.max(0.01, rh) * 12700) };
       const tcs = gRow
@@ -92,8 +94,9 @@ export function tableXml(theme, tableEl, ctx) {
       ]),
       el("p:xfrm", {}, [
         el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) }),
-        // Graphic-frame height = bounds height (suggested box); the table's actual height comes from each row's laid-out height
-        el("a:ext", { cx: Math.round(w * 12700), cy: Math.round((tableEl.bounds[3] ?? 0) * 12700) }),
+        // Graphic-frame height = the single height fact (TableFacts.totalHeight), identical to
+        // layout.frame.h and the preview box; declared bounds.h is only a ratio seed.
+        el("a:ext", { cx: Math.round(w * 12700), cy: Math.round(totalHeight * 12700) }),
       ]),
       el("a:graphic", {}, el("a:graphicData", { uri: "http://schemas.openxmlformats.org/drawingml/2006/table" }, tbl)),
     ].join(""))

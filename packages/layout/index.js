@@ -8,8 +8,8 @@
 //   LayoutElement = {
 //     elementId, elementType,
 //     declared: {x,y,w,h},          // author declaration (el.bounds; the model is never written back)
-//     frame:    {x,y,w,h},          // layout fact (h = the actual grown value)
-//     grown: boolean,               // frame.h > declared.h
+//     frame:    {x,y,w,h},          // layout fact (text: max(declared, content); table: totalHeight)
+//     grown: boolean,               // frame.h > declared.h (tables shrink to content per D6)
 //     text?:  { lines, contentHeight },
 //     table?: { columnWidths, rowHeights, totalHeight },
 //     overflow: { x, y, page, overlaps: [{elementId, rect}] },
@@ -24,7 +24,7 @@
 // ============================================================================
 
 import { deckSize } from "../model/model.js";
-import { normalizeTheme, resolveFont } from "../model/theme.js";
+import { normalizeTheme, resolveTheme, resolveFont } from "../model/theme.js";
 import { computeBaseStyle } from "../model/style.js";
 import { getType } from "../model/registry.js";
 import { fontMetricsMeasure, runsFromRichText, familiesOf } from "../measure/index.js";
@@ -65,11 +65,15 @@ function layoutText(theme, el, measure) {
   };
 }
 
-/** Table element → { frame, table }. */
-function layoutTable(el, measure) {
+/**
+ * Table element → { frame, table }.
+ * D6: totalHeight is the single height fact — frame.h is exactly totalHeight (the declared
+ * bounds.h only seeds the rowHeights ratio estimate inside measureTable, never clips or pads).
+ */
+function layoutTable(theme, el, measure) {
   const d = declaredOf(el);
-  const t = measure.measureTable(el);
-  const h = Math.max(d.h, t.totalHeight);
+  const t = measure.measureTable(el, { theme });
+  const h = t.totalHeight;
   return {
     frame: { x: d.x, y: d.y, w: d.w, h },
     grown: h > d.h + EPS,
@@ -83,7 +87,7 @@ function layoutTable(el, measure) {
  */
 const LAYOUT_HOOKS = {
   text: (theme, el, measure) => layoutText(theme, el, measure),
-  table: (theme, el, measure) => layoutTable(el, measure),
+  table: (theme, el, measure) => layoutTable(theme, el, measure),
 };
 
 /** Intersection of two rectangles (null when disjoint). */
@@ -104,6 +108,12 @@ function intersection(a, b) {
  */
 export function layout(deck, measure = fontMetricsMeasure) {
   const theme = themeOf(deck);
+  // Table cell styles inherit the full chain (default textStyles lineHeight etc. + deck.fonts
+  // resource keys). The preview/writer hand layout a resolveTheme output already; a bare deck
+  // theme (CLI check, validation, tests) is resolved here so table facts agree everywhere.
+  // Resolved lazily: decks without tables keep the previous cost/behavior.
+  let tableTheme = null;
+  const themeForTable = () => (tableTheme ||= theme && theme.fontResources ? theme : resolveTheme(deck));
   const [W, H] = deckSize(deck);
   const pages = [];
   (deck?.pages || []).forEach((page, pi) => {
@@ -115,7 +125,8 @@ export function layout(deck, measure = fontMetricsMeasure) {
       const d = declaredOf(el);
       const hook = def?.layoutKey ? LAYOUT_HOOKS[def.layoutKey] : null;
       // No hook (shape/line/image/icon/chart): size passes through
-      const part = hook ? hook(theme, el, measure) : { frame: { ...d }, grown: false };
+      const hookTheme = def?.layoutKey === "table" ? themeForTable() : theme;
+      const part = hook ? hook(hookTheme, el, measure) : { frame: { ...d }, grown: false };
       elements.push({
         elementId: el.elementId,
         elementType: el.elementType,
