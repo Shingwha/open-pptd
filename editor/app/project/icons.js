@@ -2,7 +2,7 @@
 // app/project/icons.js — FA icon preload and on-demand loading (same pattern as images.js imageMap)
 // ----------------------------------------------------------------------------
 // state.iconMap: { [rawIconName]: {inner, w, h} } (the normalizeIconSvg product).
-// The render side (renderer/icon.js via renderPage opts.iconMap) and the export
+// The render side (renderer/icon.js, fed through the paint ctx iconMap) and the export
 // side (saver → buildPptx options.iconDefs) share this one cache.
 //
 // 3.0: no module-level icon map. The caller passes its own state.iconMap (each

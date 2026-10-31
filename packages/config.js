@@ -19,9 +19,9 @@ export const CONFIG_VERSION = 1;
 /** Default config (register new keys here; downstream reads on demand, unknown keys are preserved). */
 export const DEFAULT_CONFIG = Object.freeze({
   version: CONFIG_VERSION,
-  // Whether the export preflight auto-fetches missing fonts by default (default false: export
-  // only checks, so CI/agent envs don't trigger tens of MB of downloads; `open-pptd ensure`
-  // fetches by default).
+  // Whether an export preflight auto-fetches missing fonts by default. The 3.0 CLI never reads
+  // this: downloads are explicit (`build --fetch` / `assets sync`), so CI/agent envs never
+  // trigger tens of MB of downloads.
   autoFetch: false,
 });
 

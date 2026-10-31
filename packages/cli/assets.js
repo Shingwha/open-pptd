@@ -1,20 +1,22 @@
 // ============================================================================
-// cli/assets.js — assets subcommand: install everything in one request (replaces per-file downloads)
+// cli/assets.js — `assets`: bundled assets, theme library and user font library
 // ----------------------------------------------------------------------------
-//   assets list                                   status (what is installed, version, size, libraries)
-//   assets sync [icons|fonts|all] [--from <zip>]  download → verify → extract to home/assets
-//   assets clean                                  clear cache/ and tmp/ (safe to delete wholesale)
-//   assets themes list|import|export|delete|apply theme library (W6; built-ins read-only)
-//   assets fonts  list|import|remove              global user font library (W6)
+//   assets list [--json]
+//   assets sync [all|fonts|icons] [--from <zip>] [--json]
+//   assets clean [--json]
+//   assets themes list|import|export|delete|apply [--json]
+//   assets fonts  list|import|remove [--json]
 //
 // Asset zip sources (GitHub Releases, produced by pack-release):
 //   https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-icons-v<ver>.zip
 //   https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-fonts-v<ver>.zip
-// Missing zip (404) → fall back to the per-file downloader (cli/download.js) with a clear notice.
-// Verification: prefer SHA256SUMS (same release), otherwise structural (valid ZIP + expected extension).
+// Missing zip (404) → fall back to the per-file downloader (cli/download.js).
+// Verification: SHA256SUMS when available, otherwise structural (ZIP + extension).
 // **The registry never enters assets/**: any registry.json entry is dropped at extraction.
 // Theme/font library IO lives in the Node adapters (server/theme-store.js,
-// server/font-library.js); this file only formats CLI output.
+// server/font-library.js); this file formats output and, for `themes apply`, does
+// the explicit deck write (atomic, only deck.theme is touched).
+// Human text goes to stderr; --json prints a single line on stdout.
 // ============================================================================
 
 import { existsSync, readFileSync, rmSync, readdirSync } from "node:fs";
@@ -28,8 +30,10 @@ import { readFontRegistry, readIconRegistry, fontReadyInfo, iconReadyInfo, packa
 import { downloadFonts, downloadIcons } from "./download.js";
 import { createFileThemeStore } from "../server/theme-store.js";
 import { createFileFontLibrary, fontLibraryPaths } from "../server/font-library.js";
+import { CliError, jsonLine } from "./errors.js";
 
 const RELEASES = "https://github.com/Shingwha/open-pptd/releases/latest/download";
+const human = (m) => console.error(m);
 
 /** Asset target definitions: zip name / extraction dest / expected extension. */
 export const ASSET_TARGETS = {
@@ -142,10 +146,7 @@ async function verifySha256(name, bytes) {
   }
 }
 
-/**
- * Download one asset zip and extract it to home.
- * @returns {Promise<{ok:boolean, files?:number, reason?:string}>}
- */
+/** Download one asset zip and extract it to home. */
 async function syncTargetFromRelease(target) {
   const def = ASSET_TARGETS[target];
   const name = def.zipName();
@@ -153,75 +154,52 @@ async function syncTargetFromRelease(target) {
   try {
     bytes = await fetchBytes(`${RELEASES}/${name}`);
   } catch (err) {
-    return { ok: false, reason: `${name} 下载失败（${err.message}）` };
+    return { ok: false, target, reason: `${name} 下载失败（${err.message}）` };
   }
   const sha = await verifySha256(name, bytes);
-  if (sha === false) return { ok: false, reason: `${name} SHA256 校验失败` };
+  if (sha === false) return { ok: false, target, reason: `${name} SHA256 校验失败` };
   try {
     const { files } = extractZipTo(bytes, def.dest(), { verifyExt: def.ext });
-    return { ok: true, files: files.length, sha, name };
+    return { ok: true, target, files: files.length, sha, name };
   } catch (err) {
-    return { ok: false, reason: `${name} 解压/校验失败（${err.message}）` };
+    return { ok: false, target, reason: `${name} 解压/校验失败（${err.message}）` };
   }
 }
 
 /** Offline import: extract from a local zip (no network). */
 function syncTargetFromZip(target, zipPath) {
-  if (!existsSync(zipPath)) throw new Error(`zip 不存在: ${zipPath}`);
+  if (!existsSync(zipPath)) throw new CliError("ERR_NOT_FOUND", `zip 不存在: ${zipPath}`);
   const def = ASSET_TARGETS[target];
   const bytes = readFileSync(zipPath);
   const { files } = extractZipTo(bytes, def.dest(), { verifyExt: def.ext });
-  return { ok: true, files: files.length, name: zipPath };
+  return { ok: true, target, files: files.length, name: zipPath };
 }
 
 // ---------------------------------------------------------------------------
-// Subcommands
+// Argument helpers
 // ---------------------------------------------------------------------------
-async function assetsList() {
-  const fontReg = readFontRegistry();
-  const iconReg = readIconRegistry();
-  const f = fontReadyInfo(fontReg);
-  const ic = iconReadyInfo(iconReg);
-  let themeCounts = { builtin: 0, user: 0 };
-  let userFontCount = 0;
-  try {
-    const themes = await createFileThemeStore().list();
-    themeCounts = { builtin: themes.filter((t) => t.builtin).length, user: themes.filter((t) => !t.builtin).length };
-  } catch (err) {
-    console.warn(`⚠ 主题库读取失败: ${err.message}`);
-  }
-  try {
-    const fonts = await createFileFontLibrary().list();
-    userFontCount = fonts.filter((x) => x.source === "user" || x.source === "url").length;
-  } catch (err) {
-    console.warn(`⚠ 字体库读取失败: ${err.message}`);
-  }
-  console.log("open-pptd 资源状态\n");
-  console.log(`  home        ${paths.home}`);
-  console.log(`  fonts       ${f.ready} / ${f.total} 就绪 · ${(dirSize(paths.fonts) / 1024 / 1024).toFixed(1)} MB（${paths.fonts}）`);
-  console.log(`  icons       ${ic.ready} / ${ic.total} 就绪 · ${(dirSize(paths.icons) / 1024 / 1024).toFixed(2)} MB（${paths.icons}）`);
-  console.log(`  themes      ${themeCounts.builtin} 内置 · ${themeCounts.user} 我的（${paths.themes}）`);
-  console.log(`  user fonts  ${userFontCount} 种（${paths.userFonts}）`);
-  console.log(`  registry    包内只读（fonts v${fontReg.version} · FA ${iconReg.faVersion}），永不被 home 遮蔽`);
-  console.log(`\n  安装：node bin/open-pptd.js assets sync [icons|fonts|all]    离线：--from <zip>`);
-}
+const VALUED = new Set(["-o", "--out", "--from", "--deck", "--family", "--key", "--file", "--license", "--url"]);
 
-// ---------------------------------------------------------------------------
-// W6: theme library subcommands (built-ins read-only; user themes in home)
-// ---------------------------------------------------------------------------
-const CARD_KEYS = ["primary", "accent", "accent3", "accent4", "accent5", "accent6"];
-
-function positional(args) {
-  const valued = new Set(["-o", "--out", "--from", "--deck", "--family", "--key", "--file", "--license", "--url"]);
+function positionals(args) {
+  const out = [];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
-    if (valued.has(a)) {
+    if (VALUED.has(a)) {
       i += 1; // skip the option's value
       continue;
     }
-    if (!a.startsWith("--")) return a;
+    if (a === "-") {
+      out.push(a); // themes import - reads stdin
+      continue;
+    }
+    if (a.startsWith("-")) continue;
+    out.push(a);
   }
-  return null;
+  return out;
+}
+
+function positional(args) {
+  return positionals(args)[0] || null;
 }
 
 function optValue(args, name) {
@@ -229,15 +207,148 @@ function optValue(args, name) {
   return idx >= 0 ? args[idx + 1] : null;
 }
 
-function emitJson(payload) {
-  process.stdout.write(JSON.stringify(payload) + "\n");
+function flagValue(args, name) {
+  const hit = args.find((a) => a.startsWith(name + "="));
+  return hit ? hit.slice(name.length + 1) : optValue(args, name);
 }
 
+// ---------------------------------------------------------------------------
+// list / sync / clean
+// ---------------------------------------------------------------------------
+async function collectListFacts() {
+  const fontReg = readFontRegistry();
+  const iconReg = readIconRegistry();
+  const f = fontReadyInfo(fontReg);
+  const ic = iconReadyInfo(iconReg);
+  let themes = { builtin: 0, user: 0 };
+  let userFonts = 0;
+  try {
+    const list = await createFileThemeStore().list();
+    themes = { builtin: list.filter((t) => t.builtin).length, user: list.filter((t) => !t.builtin).length };
+  } catch (err) {
+    human(`⚠ 主题库读取失败: ${err.message}`);
+  }
+  try {
+    const fonts = await createFileFontLibrary().list();
+    userFonts = fonts.filter((x) => x.source === "user" || x.source === "url").length;
+  } catch (err) {
+    human(`⚠ 字体库读取失败: ${err.message}`);
+  }
+  return {
+    ok: true,
+    home: paths.home,
+    fonts: { ready: f.ready, total: f.total, bytes: dirSize(paths.fonts), dir: paths.fonts },
+    icons: { ready: ic.ready, total: ic.total, bytes: dirSize(paths.icons), dir: paths.icons },
+    themes: { ...themes, dir: paths.themes },
+    userFonts: { count: userFonts, dir: paths.userFonts },
+    registry: { fontsVersion: fontReg.version, faVersion: iconReg.faVersion, readonly: true },
+  };
+}
+
+async function assetsList(args) {
+  const json = args.includes("--json");
+  const facts = await collectListFacts();
+  if (json) {
+    jsonLine(facts);
+    return true;
+  }
+  human("open-pptd 资源状态\n");
+  human(`  home        ${facts.home}`);
+  human(`  fonts       ${facts.fonts.ready} / ${facts.fonts.total} 就绪 · ${(facts.fonts.bytes / 1024 / 1024).toFixed(1)} MB（${facts.fonts.dir}）`);
+  human(`  icons       ${facts.icons.ready} / ${facts.icons.total} 就绪 · ${(facts.icons.bytes / 1024 / 1024).toFixed(2)} MB（${facts.icons.dir}）`);
+  human(`  themes      ${facts.themes.builtin} 内置 · ${facts.themes.user} 我的（${facts.themes.dir}）`);
+  human(`  user fonts  ${facts.userFonts.count} 种（${facts.userFonts.dir}）`);
+  human(`  registry    包内只读（fonts v${facts.registry.fontsVersion} · FA ${facts.registry.faVersion}），永不被 home 遮蔽`);
+  human("\n  安装：node bin/open-pptd.js assets sync [icons|fonts|all]    离线：--from <zip>");
+  return true;
+}
+
+async function fallbackDownload(t) {
+  if (t === "fonts") {
+    const reg = readFontRegistry();
+    await downloadFonts(reg, "all");
+  } else {
+    const reg = readIconRegistry();
+    await downloadIcons(reg, { force: false });
+  }
+}
+
+async function assetsSync(args) {
+  const json = args.includes("--json");
+  const target = ["icons", "fonts", "all"].includes(args[0]) ? args[0] : "all";
+  const targets = target === "all" ? ["icons", "fonts"] : [target];
+  const fromZip = flagValue(args, "--from");
+  ensureHome();
+
+  const results = [];
+  for (const t of targets) {
+    if (fromZip) {
+      try {
+        const r = syncTargetFromZip(t, fromZip);
+        results.push({ ...r, source: "zip" });
+        if (!json) human(`✓ ${t} 离线导入 → ${ASSET_TARGETS[t].dest()}（${r.files} 个文件）`);
+      } catch (err) {
+        results.push({ ok: false, target: t, reason: err.message, source: "zip" });
+        if (!json) human(`✗ ${t} 离线导入失败: ${err.message}`);
+      }
+      continue;
+    }
+    if (!json) human(`▸ ${t}：尝试 release 资产包…`);
+    const r = await syncTargetFromRelease(t);
+    if (r.ok) {
+      results.push({ ...r, source: "release" });
+      if (!json) human(`✓ ${t} ← ${r.name}（${r.files} 个文件）${r.sha === null ? "（无 SHA256SUMS，已结构性校验）" : ""}`);
+      continue;
+    }
+    if (!json) human(`  ! ${r.reason}；回退逐文件下载器`);
+    try {
+      await fallbackDownload(t);
+      results.push({ ok: true, target: t, source: "fallback" });
+      if (!json) human(`✓ ${t} 逐文件下载完成`);
+    } catch (err) {
+      results.push({ ok: false, target: t, reason: err.message, source: "fallback" });
+      if (!json) human(`✗ ${t} 逐文件下载失败: ${err.message}`);
+    }
+  }
+
+  const ok = results.every((r) => r.ok);
+  if (json) jsonLine({ ok, target, results });
+  if (!ok) process.exitCode = 1;
+  return true;
+}
+
+function assetsClean(args) {
+  const json = args.includes("--json");
+  const cleaned = [];
+  for (const dir of [paths.cache, paths.tmp]) {
+    if (!existsSync(dir)) continue;
+    let n = 0;
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      try {
+        rmSync(join(dir, e.name), { recursive: true, force: true });
+        n++;
+      } catch {
+        /* in use → skip */
+      }
+    }
+    cleaned.push({ dir, count: n });
+    if (!json) human(`✓ 已清 ${dir}（${n} 项）`);
+  }
+  if (json) jsonLine({ ok: true, cleaned });
+  else human("（cache/ 与 tmp/ 可整目录安全删除；assets/ 与 config.json 未动）");
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// themes
+// ---------------------------------------------------------------------------
+const CARD_KEYS = ["primary", "accent", "accent3", "accent4", "accent5", "accent6"];
+
 function printPreserved(preserved) {
-  console.log(`  保留：颜色 ${preserved.colors.length} · 文字样式 ${preserved.textStyles.length} · 表格样式 ${preserved.tableStyles.length}`);
-  if (preserved.colors.length) console.log(`  颜色令牌：${preserved.colors.join(", ")}`);
-  if (preserved.textStyles.length) console.log(`  文字样式：${preserved.textStyles.join(", ")}`);
-  if (preserved.tableStyles.length) console.log(`  表格样式：${preserved.tableStyles.join(", ")}`);
+  human(`  保留：颜色 ${preserved.colors.length} · 文字样式 ${preserved.textStyles.length} · 表格样式 ${preserved.tableStyles.length}`);
+  if (preserved.colors.length) human(`  颜色令牌：${preserved.colors.join(", ")}`);
+  if (preserved.textStyles.length) human(`  文字样式：${preserved.textStyles.join(", ")}`);
+  if (preserved.tableStyles.length) human(`  表格样式：${preserved.tableStyles.join(", ")}`);
 }
 
 function loadDeckForTheme(manifestPath) {
@@ -250,10 +361,36 @@ function loadDeckForTheme(manifestPath) {
     try {
       pages.push(yaml.load(readFileSync(p, "utf8")));
     } catch {
-      /* one unreadable page should not block theme preview */
+      /* one unreadable page should not block a theme preview */
     }
   }
   return { ...(manifest && typeof manifest === "object" ? manifest : {}), pages };
+}
+
+/** Replace the top-level `theme:` block in a manifest text (all other lines untouched). */
+export function replaceThemeBlock(text, theme) {
+  const eol = text.includes("\r\n") ? "\r\n" : "\n";
+  const lines = text.split(/\r?\n/);
+  const block = yaml.dump({ theme }).replace(/\n$/, "").split("\n");
+  const start = lines.findIndex((l) => /^theme\s*:/.test(l));
+  if (start >= 0) {
+    let end = start + 1;
+    while (end < lines.length && !/^[A-Za-z_][\w-]*\s*:/.test(lines[end])) end++;
+    lines.splice(start, end - start, ...block);
+  } else {
+    const pagesIdx = lines.findIndex((l) => /^pages\s*:/.test(l));
+    if (pagesIdx >= 0) lines.splice(pagesIdx, 0, ...block, "");
+    else {
+      if (lines.length && lines[lines.length - 1] !== "") lines.push("");
+      lines.push(...block);
+    }
+  }
+  return lines.join(eol) + eol;
+}
+
+function writeDeckTheme(deckPath, theme) {
+  const text = readFileSync(deckPath, "utf8");
+  atomicWriteFile(deckPath, replaceThemeBlock(text, theme), { tmpDir: dirname(deckPath) });
 }
 
 async function assetsThemes(args) {
@@ -266,87 +403,90 @@ async function assetsThemes(args) {
       const themes = await store.list();
       const builtin = themes.filter((t) => t.builtin).length;
       if (json) {
-        emitJson({ ok: true, themes, counts: { builtin, user: themes.length - builtin } });
+        jsonLine({ ok: true, themes, counts: { builtin, user: themes.length - builtin } });
         return true;
       }
-      console.log(`open-pptd 主题库（${builtin} 内置 · ${themes.length - builtin} 我的）\n`);
+      human(`open-pptd 主题库（${builtin} 内置 · ${themes.length - builtin} 我的）\n`);
       for (const t of themes) {
         const swatches = CARD_KEYS.map((k) => t.colors?.[k]).filter(Boolean).join(" ");
-        console.log(`  ${t.builtin ? "[内置]" : "[我的]"} ${t.id.padEnd(30)} ${String(t.name).padEnd(12)} ${swatches}`);
+        human(`  ${t.builtin ? "[内置]" : "[我的]"} ${t.id.padEnd(30)} ${String(t.name).padEnd(12)} ${swatches}`);
       }
-      console.log(`\n  路径：${paths.themes}`);
+      human(`\n  路径：${paths.themes}`);
       return true;
     }
 
     if (sub === "import") {
-      const file = positional(rest) || optValue(rest, "--from");
-      if (!file) throw Object.assign(new Error("用法: assets themes import <file.json|->"), { code: "ERR_THEME_ID" });
+      const file = positional(rest) || flagValue(rest, "--from");
+      if (!file) throw new CliError("ERR_USAGE", "用法: assets themes import <file.json|->");
       const text = file === "-" ? readFileSync(0, "utf8") : readFileSync(file, "utf8");
       const theme = await createFileThemeStore().import(text);
-      if (json) emitJson({ ok: true, theme });
-      else console.log(`✓ 已导入主题「${theme.name}」→ ${theme.id}（${paths.themes}）`);
+      if (json) jsonLine({ ok: true, theme });
+      else human(`✓ 已导入主题「${theme.name}」→ ${theme.id}（${paths.themes}）`);
       return true;
     }
 
     if (sub === "export") {
-      const id = positional(rest);
-      if (!id) throw Object.assign(new Error("用法: assets themes export <id> [-o <file>]"), { code: "ERR_THEME_ID" });
+      const pos = positionals(rest);
+      const id = pos[0];
+      if (!id) throw new CliError("ERR_USAGE", "用法: assets themes export <id> <file.json>");
       const text = await createFileThemeStore().export(id);
-      const out = optValue(rest, "-o") || optValue(rest, "--out");
+      const out = pos[1] || flagValue(rest, "-o") || flagValue(rest, "--out");
       if (out) {
         atomicWriteFile(out, text);
-        if (json) emitJson({ ok: true, id, out });
-        else console.log(`✓ 已导出主题 ${id} → ${out}`);
+        if (json) jsonLine({ ok: true, id, out });
+        else human(`✓ 已导出主题 ${id} → ${out}`);
       } else if (json) {
-        emitJson({ ok: true, id, json: text });
+        jsonLine({ ok: true, id, json: text });
       } else {
         process.stdout.write(text);
       }
       return true;
     }
 
-    if (sub === "delete" || sub === "remove") {
+    if (sub === "delete") {
       const id = positional(rest);
-      if (!id) throw Object.assign(new Error("用法: assets themes delete <id>"), { code: "ERR_THEME_ID" });
+      if (!id) throw new CliError("ERR_USAGE", "用法: assets themes delete <id>");
       await createFileThemeStore().remove(id);
-      if (json) emitJson({ ok: true, id });
-      else console.log(`✓ 已删除用户主题 ${id}`);
+      if (json) jsonLine({ ok: true, id });
+      else human(`✓ 已删除用户主题 ${id}`);
       return true;
     }
 
     if (sub === "apply") {
-      const id = positional(rest);
-      if (!id) throw Object.assign(new Error("用法: assets themes apply <id> [--deck <deck.pptd>] [-o <theme.json>]"), { code: "ERR_THEME_ID" });
-      const store = createFileThemeStore();
-      const themeFile = await store.read(id);
-      if (!themeFile) throw Object.assign(new Error(`主题不存在: ${id}`), { code: "ERR_THEME_NOT_FOUND" });
-      const deckPath = optValue(rest, "--deck");
-      const deck = deckPath ? loadDeckForTheme(deckPath) : null;
+      const pos = positionals(rest);
+      const id = pos[0];
+      const deckPath = pos[1] || flagValue(rest, "--deck");
+      const dryRun = rest.includes("--dry-run");
+      if (!id) throw new CliError("ERR_USAGE", "用法: assets themes apply <id> <deck.pptd> [--dry-run] [--json]");
+      if (!deckPath) throw new CliError("ERR_USAGE", "assets themes apply 需要 deck.pptd（写 deck.theme）");
+      if (!existsSync(deckPath)) throw new CliError("ERR_NOT_FOUND", `deck 不存在: ${deckPath}`);
+      const themeFile = await createFileThemeStore().read(id);
+      if (!themeFile) throw new CliError("ERR_THEME_NOT_FOUND", `主题不存在: ${id}`);
+      const deck = loadDeckForTheme(deckPath);
       const result = applyTheme(deck?.theme || {}, themeFile, { deck });
-      const out = optValue(rest, "-o") || optValue(rest, "--out");
-      if (out) atomicWriteFile(out, `${JSON.stringify(result.theme, null, 2)}\n`);
+      if (!dryRun) writeDeckTheme(deckPath, result.theme);
       if (json) {
-        emitJson({ ok: true, id, theme: result.theme, preserved: result.preserved, deck: deckPath || null });
+        jsonLine({ ok: true, id, deck: deckPath, dryRun, written: !dryRun, preserved: result.preserved, theme: result.theme });
       } else {
-        console.log(`主题「${themeFile.name}」应用到 ${deckPath || "（未提供 --deck，纯替换预览）"}`);
+        human(`主题「${themeFile.name}」${dryRun ? "预演（未写入）" : "已写入"} ${deckPath}`);
         printPreserved(result.preserved);
-        if (out) console.log(`  结果主题 → ${out}`);
-        else console.log("  （仅预览；如需写入 deck，使用编辑器或 build --theme）");
+        if (dryRun) human("  --dry-run：deck 未修改；去掉该参数即原子写入 deck.theme");
+        else human("  deck.theme 已替换（其余字段/citation 引用保持不变）");
       }
       return true;
     }
 
     return false;
   } catch (err) {
-    if (json) emitJson({ ok: false, error: { code: err?.code || "ERR_THEME", message: err?.message || String(err) } });
-    else console.error(`✗ ${err?.message || err}`);
+    if (json) jsonLine({ ok: false, error: { code: err?.code || "ERR_THEME", message: err?.message || String(err) } });
+    else human(`✗ ${err?.message || err}`);
     process.exitCode = 1;
     return true;
   }
 }
 
 // ---------------------------------------------------------------------------
-// W6: global user font library subcommands
+// fonts (global user library)
 // ---------------------------------------------------------------------------
 async function assetsFonts(args) {
   const sub = args[0];
@@ -363,7 +503,7 @@ async function assetsFonts(args) {
         else groups.user.push(f);
       }
       if (json) {
-        emitJson({
+        jsonLine({
           ok: true,
           fonts,
           counts: { builtin: groups.builtin.length, user: groups.user.length, system: groups.system.length },
@@ -371,36 +511,40 @@ async function assetsFonts(args) {
         });
         return true;
       }
-      console.log(`open-pptd 字体库（内置 ${groups.builtin.length} · 我的 ${groups.user.length} · 系统 ${groups.system.length}）\n`);
-      console.log("【我的字体】");
-      if (!groups.user.length) console.log("  （空）用 assets fonts import <file.ttf> 导入");
-      for (const f of groups.user) console.log(`  ✓ ${String(f.key).padEnd(14)} ${String(f.family).padEnd(28)} ${f.file}${f.subset ? " · 子集化" : ""}`);
-      console.log("\n【内置字体】");
+      human(`open-pptd 字体库（内置 ${groups.builtin.length} · 我的 ${groups.user.length} · 系统 ${groups.system.length}）\n`);
+      human("【我的字体】");
+      if (!groups.user.length) human("  （空）用 assets fonts import <file.ttf> 导入");
+      for (const f of groups.user) human(`  ✓ ${String(f.key).padEnd(14)} ${String(f.family).padEnd(28)} ${f.file}${f.subset ? " · 子集化" : ""}`);
+      human("\n【内置字体】");
       for (const f of groups.builtin) {
         const ready = f.file && resolveResourceFile("fonts", f.file);
-        console.log(`  ${ready ? "✓" : "✗"} ${String(f.key).padEnd(14)} ${String(f.family).padEnd(28)} ${f.file || ""}`);
+        human(`  ${ready ? "✓" : "✗"} ${String(f.key).padEnd(14)} ${String(f.family).padEnd(28)} ${f.file || ""}`);
       }
       if (groups.system.length) {
-        console.log("\n【系统字体（仅声明不嵌入）】");
-        for (const f of groups.system) console.log(`  ○ ${String(f.key).padEnd(12)} ${String(f.family).padEnd(24)} ${f.platform || ""}`);
+        human("\n【系统字体（仅声明不嵌入）】");
+        for (const f of groups.system) human(`  ○ ${String(f.key).padEnd(12)} ${String(f.family).padEnd(24)} ${f.platform || ""}`);
       }
-      console.log(`\n  用户字体路径：${fontLibraryPaths().userDir}`);
+      human(`\n  用户字体路径：${fontLibraryPaths().userDir}`);
       return true;
     }
 
     if (sub === "import") {
-      const url = optValue(rest, "--url");
-      const file = positional(rest) || optValue(rest, "--from");
+      const pos = positionals(rest);
+      let url = flagValue(rest, "--url");
+      let file = pos[0] || flagValue(rest, "--from");
+      if (!url && file && /^https?:\/\//i.test(file)) {
+        url = file;
+        file = null;
+      }
+      if (!url && !file) throw new CliError("ERR_USAGE", "用法: assets fonts import <file.ttf|otf|https://...> [--family <name>]");
       const meta = {
-        family: optValue(rest, "--family") || undefined,
-        key: optValue(rest, "--key") || undefined,
-        file: optValue(rest, "--file") || undefined,
-        license: optValue(rest, "--license") || undefined,
+        family: flagValue(rest, "--family") || undefined,
+        key: flagValue(rest, "--key") || undefined,
+        file: flagValue(rest, "--file") || undefined,
+        license: flagValue(rest, "--license") || undefined,
         subset: rest.includes("--no-subset") ? false : undefined,
       };
-      if (!url && !file) {
-        throw Object.assign(new Error("用法: assets fonts import <file.ttf> | --url <https://...>"), { code: "ERR_FONT_INVALID" });
-      }
+      if (file && !existsSync(file)) throw new CliError("ERR_NOT_FOUND", `字体文件不存在: ${file}`);
       const lib = createFileFontLibrary();
       let font;
       if (url) {
@@ -409,102 +553,41 @@ async function assetsFonts(args) {
         meta.file ||= basename(file);
         font = await lib.importFile(new Uint8Array(readFileSync(file)), meta);
       }
-      if (json) emitJson({ ok: true, font });
+      if (json) jsonLine({ ok: true, font });
       else {
-        console.log(`✓ 已导入字体「${font.family}」→ ${font.file}（${font.key}）`);
-        console.log(`  路径：${join(fontLibraryPaths().userDir, font.file)} · ${(font.size / 1024 / 1024).toFixed(1)} MB`);
+        human(`✓ 已导入字体「${font.family}」→ ${font.file}（${font.key}）`);
+        human(`  路径：${join(fontLibraryPaths().userDir, font.file)} · ${(font.size / 1024 / 1024).toFixed(1)} MB`);
       }
       return true;
     }
 
     if (sub === "remove") {
       const ref = positional(rest);
-      if (!ref) throw Object.assign(new Error("用法: assets fonts remove <key|family>"), { code: "ERR_FONT_NOT_FOUND" });
+      if (!ref) throw new CliError("ERR_USAGE", "用法: assets fonts remove <key|family>");
       const entry = await createFileFontLibrary().remove(ref);
-      if (json) emitJson({ ok: true, key: entry.key, family: entry.family, warning: "引用该字体的项目将显示缺失（未扫描项目）" });
+      if (json) jsonLine({ ok: true, key: entry.key, family: entry.family, warning: "引用该字体的项目将显示缺失（未扫描项目）" });
       else {
-        console.log(`✓ 已删除用户字体「${entry.family}」（${entry.key}）`);
-        console.log("  ⚠ 引用该字体的项目将显示缺失；未扫描项目（按需在项目中重新选择/导入）");
+        human(`✓ 已删除用户字体「${entry.family}」（${entry.key}）`);
+        human("  ⚠ 引用该字体的项目将显示缺失；未扫描项目（按需在项目中重新选择/导入）");
       }
       return true;
     }
 
     return false;
   } catch (err) {
-    if (json) emitJson({ ok: false, error: { code: err?.code || "ERR_FONT", message: err?.message || String(err) } });
-    else console.error(`✗ ${err?.message || err}`);
+    if (json) jsonLine({ ok: false, error: { code: err?.code || "ERR_FONT", message: err?.message || String(err) } });
+    else human(`✗ ${err?.message || err}`);
     process.exitCode = 1;
     return true;
   }
 }
 
-async function assetsSync(args) {
-  const target = ["icons", "fonts", "all"].includes(args[0]) ? args[0] : "all";
-  const targets = target === "all" ? ["icons", "fonts"] : [target];
-  const fromIdx = args.indexOf("--from");
-  const fromZip = fromIdx >= 0 ? args[fromIdx + 1] : null;
-  ensureHome();
-
-  for (const t of targets) {
-    if (fromZip) {
-      try {
-        const r = syncTargetFromZip(t, fromZip);
-        console.log(`✓ ${t} 离线导入 → ${ASSET_TARGETS[t].dest()}（${r.files} 个文件）`);
-      } catch (err) {
-        console.error(`✗ ${t} 离线导入失败: ${err.message}`);
-        process.exitCode = 1;
-      }
-      continue;
-    }
-    console.log(`▸ ${t}：尝试 release 资产包…`);
-    const r = await syncTargetFromRelease(t);
-    if (r.ok) {
-      console.log(`✓ ${t} ← ${r.name}（${r.files} 个文件）${r.sha === null ? "（无 SHA256SUMS，已结构性校验）" : ""}`);
-      continue;
-    }
-    console.log(`  ! ${r.reason}；回退逐文件下载器`);
-    await fallbackDownload(t);
-  }
-  return true;
-}
-
-async function fallbackDownload(t) {
-  if (t === "fonts") {
-    const reg = readFontRegistry();
-    await downloadFonts(reg, "all");
-  } else {
-    const reg = readIconRegistry();
-    await downloadIcons(reg, { force: false });
-  }
-}
-
-function assetsClean() {
-  for (const dir of [paths.cache, paths.tmp]) {
-    if (!existsSync(dir)) continue;
-    let n = 0;
-    for (const e of readdirSync(dir, { withFileTypes: true })) {
-      try {
-        rmSync(join(dir, e.name), { recursive: true, force: true });
-        n++;
-      } catch { /* in use → skip */ }
-    }
-    console.log(`✓ 已清 ${dir}（${n} 项）`);
-  }
-  console.log("（cache/ 与 tmp/ 可整目录安全删除；assets/ 与 config.json 未动）");
-}
-
-/** assets subcommand entry. */
+/** assets subcommand entry. Returns false for an unknown subcommand (bin prints usage). */
 export async function runAssets(args) {
   const sub = args[0] || "list";
-  if (sub === "list") {
-    await assetsList();
-    return true;
-  }
+  if (sub === "list") return assetsList(args.slice(1));
   if (sub === "sync") return assetsSync(args.slice(1));
-  if (sub === "clean") {
-    assetsClean();
-    return true;
-  }
+  if (sub === "clean") return assetsClean(args.slice(1));
   if (sub === "themes") return assetsThemes(args.slice(1));
   if (sub === "fonts") return assetsFonts(args.slice(1));
   return false;

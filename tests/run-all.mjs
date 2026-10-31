@@ -24,6 +24,7 @@ function record(name, ok, detail = "") {
 }
 
 // 1. Export every component project
+//    (contract 3.0: `build --format pptx` is the only artifact command)
 const projectsDir = resolve("tests/projects");
 const projects = readdirSync(projectsDir)
   .filter((name) => statSync(join(projectsDir, name)).isDirectory() && existsSync(join(projectsDir, name, "deck.pptd")))
@@ -33,9 +34,9 @@ let allOk = true;
 for (const name of projects) {
   const out = join(projectsDir, name, "out", `check-${name}.pptx`);
   mkdirSync(join(projectsDir, name, "out"), { recursive: true });
-  const { code, stdout } = await run(`node bin/open-pptd.js export tests/projects/${name}/deck.pptd -o ${out}`);
+  const { code, stdout, stderr } = await run(`node bin/open-pptd.js build tests/projects/${name}/deck.pptd --format pptx -o ${out}`);
   if (code !== 0) {
-    record(`导出 ${name}`, false, stdout.slice(-200));
+    record(`导出 ${name}`, false, (stderr || stdout).slice(-200));
     allOk = false;
     continue;
   }
@@ -53,7 +54,8 @@ const suites = [
   // Package-level public contract (tests/contract/, contract 4): barrel export surface,
   // CONTRACT_VERSION, contract.json ↔ package.json exports drift, editor/main.js boot seam.
   // Fast and artifact-free — run before the regression suites so interface breakage is visible first.
-  ["包级公开契约（contract 4）", "node tests/contract/public-api.mjs"],
+  ["包级公开契约（contract 3.0）", "node tests/contract/public-api.mjs"],
+  ["CLI 命令面（5 命令）", "node tests/cli/surface.mjs"],
   ["依赖方向与环境全局", "node tests/regression/dep-graph.mjs"],
   ["项目运行时（runtime）", "node tests/runtime/run.mjs"],
   ["导出服务（export）", "node tests/export/run.mjs"],
@@ -84,9 +86,10 @@ const suites = [
   ["智能参考线吸附（align-guides）", "node tests/regression/align-guides.mjs"],
 ];
 for (const [name, cmd] of suites) {
-  const { code, stdout } = await run(cmd);
+  const { code, stdout, stderr } = await run(cmd);
   const ok = code === 0;
-  record(name, ok, ok ? "" : stdout.split("\n").filter((l) => l.includes("✗") || l.includes("失败") || l.includes("FAIL")).slice(0, 5).join("; "));
+  const output = `${stdout}\n${stderr}`;
+  record(name, ok, ok ? "" : output.split("\n").filter((l) => l.includes("✗") || l.includes("失败") || l.includes("FAIL")).slice(0, 5).join("; "));
   if (!ok) allOk = false;
 }
 

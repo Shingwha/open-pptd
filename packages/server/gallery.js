@@ -5,8 +5,8 @@
 // + media/) and builds gallery entries. The same scan serves two consumers:
 //   1. local serve: GET /examples/manifest.json generated on the fly (drop a
 //      folder in and it appears, always up to date)
-//   2. CLI `open-pptd gallery scan`: writes the static examples/manifest.json
-//      (for GitHub Pages)
+//   2. release script `node scripts/gen-gallery-manifest.mjs`: writes the static
+//      examples/manifest.json (for GitHub Pages)
 // Entry facts are extracted from the project itself where possible
 // (title/fonts/pages/size) without requiring extra metadata; an optional
 // examples/<id>/meta.yaml adds description/tags/kind:

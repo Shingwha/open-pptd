@@ -11,6 +11,8 @@
     "./model": "./packages/model/index.js",
     "./renderer": "./packages/renderer/index.js",
     "./writer": "./packages/writer/index.js",
+    "./runtime": "./packages/runtime/index.js",
+    "./export": "./packages/export/index.js",
     "./server": "./packages/server/index.js",
     "./cli": "./packages/cli/index.js",
     "./editor": "./editor/index.js",
@@ -19,8 +21,7 @@
     "./measure": "./packages/measure/index.js",
     "./layout": "./packages/layout/index.js",
     "./editor/index.html": "./editor/index.html",
-    "./package.json": "./package.json",
-    "./internal/*": "./*"
+    "./package.json": "./package.json"
   },
   "files": [
     "bin",

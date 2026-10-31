@@ -22,7 +22,7 @@ import { measureTable, measureCell, fontMetricsMeasure } from "../../packages/me
 import { layout } from "../../packages/layout/index.js";
 import { resolveTheme } from "../../packages/model/theme.js";
 import { parseDeck } from "../../packages/model/pptd-io.js";
-import { loadProjectFiles } from "../../packages/cli/export.js";
+import { loadProjectFiles } from "../../packages/cli/project.js";
 import { buildPptx } from "../../packages/writer/pptx.js";
 import { readText } from "../lib/unzip.js";
 

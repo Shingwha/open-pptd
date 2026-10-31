@@ -2,8 +2,8 @@
 // editor/index.js — editor package barrel (contract 4 entry `open-pptd/editor`)
 // ----------------------------------------------------------------------------
 // Pure re-exports, zero logic: downstream mounts/controls the editor through this
-// entry and is unaware of the internal file layout. The full createEditor
-// signature is in docs/embedding.md (contracts 1/2/3).
+// entry and is unaware of the internal file layout. The createEditor/createPreview
+// signatures are the contract asserted by tests/contract/public-api.mjs.
 // Red line: this file is browser-only (depends on DOM); Node consumers must not
 // import this entry.
 // ============================================================================

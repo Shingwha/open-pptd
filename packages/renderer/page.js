@@ -1,14 +1,11 @@
 // ============================================================================
-// renderer/page.js — page painting (paintPage consumes LayoutTree + legacy renderPage adapter)
+// renderer/page.js — page painting (paintPage consumes LayoutTree)
 // ----------------------------------------------------------------------------
 // Third stage of the three-stage pipeline: resolve → layout → paint.
 //   paintPage(layoutPage, ctx)  ← the only paint entry. All geometry is read from
 //                                 the LayoutTree (position/size from frame; text
 //                                 box height from declared, see withFrame). This
 //                                 file never measures nor writes back to the model.
-//   renderPage(container, page, deck, theme, opts)  ← 2.x compat adapter
-//                                 (page → layout → paintPage internally); the
-//                                 contract-4 export surface stays stable.
 // Element → DOM dispatch goes through the type registry (packages/model/registry.js);
 // adding an element type only needs a render fragment under renderer/types/.
 // ============================================================================
@@ -17,7 +14,6 @@ import { getType } from "./types/index.js";
 import { pageBackground } from "./background.js";
 import { disposeChartInstances } from "./chart.js";
 import { createElementShell } from "./shell.js";
-import { layout } from "../layout/index.js";
 import { normalizeTheme } from "../model/theme.js";
 
 /** Return as-is when already normalized (has colors), else normalizeTheme (same rule as layout's themeOf). */
@@ -107,26 +103,4 @@ export function paintPage(layoutPage, ctx = {}) {
   }
 }
 
-/**
- * Compat adapter (contract-4 export surface: kept through 2.x).
- * Resolved deck/page → single-page layout (fontMetricsMeasure by default) → paintPage.
- * Legacy signature (container, page, deck, theme, opts); opts.measure can inject a MeasurePort.
- * @deprecated New code should call layout(deck) + paintPage(layoutPage, ctx) directly.
- */
-export function renderPage(container, page, deck, theme, opts = {}) {
-  const th = theme ?? deck?.theme;
-  const measure = opts.measure || undefined;
-  const tree = layout({ ...(deck || {}), theme: themeOf(th), pages: [page] }, measure);
-  paintPage(tree.pages[0], { ...opts, container, page, theme: th });
-}
-
 export { disposeChartInstances } from "./chart.js";
-
-/**
- * @deprecated There is no measuring after layout: box heights come from the LayoutTree
- * (exact rowHeights for tables, author box + visible overflow for text), so size is no
- * longer a render-time DOM fact. Kept as an empty stub purely for 2.x contract-4 export
- * compatibility (the renderer barrel's autoGrowTexts symbol); removed in 3.0. All callers
- * already go through layout.
- */
-export function autoGrowTexts() {}

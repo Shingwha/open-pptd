@@ -8,7 +8,7 @@
 // Font byte sources (both ends):
 //   - options.fontFiles[family]: preload cache (Node export layer / browser editor)
 //   - spec.url: fetch (CDN, needs CORS; Node 18+ global fetch)
-//   - spec.file: preloaded into fontFiles by the caller on Node only (cli/export.js)
+//   - spec.file: preloaded into fontFiles by the caller on Node only (cli/build.js)
 // ============================================================================
 
 import { parseFontInfo, checkEmbeddable, buildEot, subsetTtf } from "../model/font.js";

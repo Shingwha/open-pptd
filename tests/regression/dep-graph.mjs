@@ -3,8 +3,8 @@
 // ----------------------------------------------------------------------------
 // Scans every .js/.mjs under packages/ and editor/ for imports and source, asserting:
 //   1. packages/model must not import any sibling package (another directory under packages/);
-//   2. the allowed cross-package import edge table (spec 09 T0/T5, three-stage render pipeline;
-//      3.0 adds runtime/export):
+//   2. the allowed cross-package import edge table (three-stage render pipeline + contract 3.0
+//      runtime/export; Node-only server/cli are leaves and are not in the table):
 //        writer   → model | vendor | measure | layout
 //        renderer → model | vendor | layout
 //        layout   → model | measure

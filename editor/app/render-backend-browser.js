@@ -26,7 +26,8 @@
 // ============================================================================
 
 import { base64ToBytes, bytesToBase64, deckSize, resolveTheme } from "../../packages/model/index.js";
-import { disposeChartInstances, renderPage } from "../../packages/renderer/index.js";
+import { disposeChartInstances } from "../../packages/renderer/index.js";
+import { paintModelPage } from "./paint-page.js";
 import { dataUrlOf } from "../../packages/writer/index.js";
 import { serializeProject } from "../../packages/runtime/index.js";
 
@@ -225,7 +226,7 @@ export function createBrowserRenderBackend({ width = null, height = null, scale 
       holder.style.cssText = `position:relative;width:${w}px;height:${h}px;overflow:hidden;`;
       clipper.appendChild(holder);
       document.body.appendChild(clipper);
-      renderPage(holder, deck.pages[index], deck, state?.theme || resolveTheme(deck), {
+      paintModelPage(holder, deck.pages[index], deck, state?.theme || resolveTheme(deck), {
         imageMap: state?.imageMap || {},
         iconMap: state?.iconMap || {},
         pixelRatio: shotScale,

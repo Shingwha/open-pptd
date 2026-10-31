@@ -7,7 +7,7 @@
 //   metadata/categories.yml     — official categories (id → {label, icons[]})
 // Output registry.json: { version, faVersion, license, prefixes, cats, icons:[…] }
 //   icons entries {name, w, h, styles(prefix array), aliases?, terms?, label?, cat?}
-// SVGs are not committed (.gitignore policy as for fonts); CLI `open-pptd icons download` fetches them.
+// SVGs are not committed (.gitignore policy as for fonts); `open-pptd assets sync icons` fetches them.
 // Regenerate: node scripts/gen-icon-registry.mjs [--fa 7.3.1]
 // ============================================================================
 

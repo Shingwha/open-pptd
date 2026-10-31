@@ -8,10 +8,11 @@ tests/
   lib/                   shared test helpers
     run.js               subprocess execution (used by run-all)
     unzip.js             minimal ZIP reader (regression reads pptx parts)
-  contract/              package-level public contract (export surface / CONTRACT_VERSION)
+  contract/              package-level public contract (contract 3.0 export surface / CONTRACT_VERSION)
+  cli/                   CLI 5-command surface (help / old commands / JSON / build / open / assets / doctor)
   regression/            automated regression (pure Node, all in npm test)
     dep-graph.mjs        architecture gate: dependency direction + environment-global scan (v3)
-    validate.mjs         validator + check command + export gate
+    validate.mjs         validator + check command + build gate
     background-size.mjs  background cover crop follows deck.size
     color-consistency.mjs  preview/export color consistency
     theme-presets.mjs    theme preset data + normalizeTheme behavior
@@ -74,8 +75,10 @@ Flow: `tests/projects/` auto-discovers every component project and exports it (a
 ## Component test projects (manual PowerPoint verification)
 
 ```bash
-# start the editor mounted on a component project
-node bin/open-pptd.js serve --project tests/projects/table
+# start the editor mounted on a component project (contract 3.0: open auto-detects deck.pptd)
+node bin/open-pptd.js open tests/projects/table
+# produce the PPTX for manual verification
+node bin/open-pptd.js build tests/projects/table/deck.pptd --format pptx
 # open the printed URL in a browser → check the preview → web export → open in PowerPoint
 ```
 

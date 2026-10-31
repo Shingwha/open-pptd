@@ -1,5 +1,53 @@
 # Changelog
 
+## 3.0.0（开发中）
+
+破坏性接口收口：契约 3.0 + CLI 5 命令。零 npm 依赖、零构建保持不变。
+
+### 契约 3.0（CONTRACT_VERSION = 3）
+
+- `contract.json.contractVersion = 3`；`exports` 新增 `./runtime`、`./export`，删除 `./internal/*`。
+- 包根 `.` 只导出双端核心（model/renderer/writer/runtime/export/paths/config/measure/layout）；
+  `server`/`cli` 仅通过子入口 `open-pptd/server`、`open-pptd/cli` 进入。
+- `packages/cli/index.js` 改为 `runOpen/runBuild/runCheck/runAssets/runDoctor`；
+  删除 `exportDeck/exportProject/renderDeck/runFonts/runIcons/runEnsure/runGallery`。
+- renderer barrel 删除 `renderPage`/`autoGrowTexts`（只用 `layout` + `paintPage`）；
+  editor 内部改用 `editor/app/paint-page.js` 的 `paintModelPage`。
+
+### CLI（5 命令，无别名/shim）
+
+`open / build / check / assets / doctor`。人类文本走 stderr；`--json` 时 stdout 只有一行；
+退出码 1 = 错误或严格失败；`config.autoFetch` 不再被读取（下载只走 `build --fetch` / `assets sync`）。
+
+- `open`：Home/`<dir>` 自动识别唯一 `.pptd`（缺失/多个 fail-fast）、`--blank`、`--detach`、
+  `--json`、`--stop`（`--all`）；实例表 `~/.open-pptd/state/instances.json`，`--stop` 先
+  `/api/ping` + pid 存活校验，不误杀。
+- `build`：`--format pptx|png|bundle`（默认 pptx）；全部先跑 full `checkProject`
+  （error 阻断 / warning 软 / `--strict` 阻断）；`--fetch|--offline` 互斥且默认不下载；
+  `pptx --theme <id>`（ThemeStore 快照，不改项目）、`--no-embed-fonts`、`--full-fonts`；
+  `png --page/--scale/--browser/--timeout`（无浏览器 `ERR_RENDER_BACKEND`）；
+  `bundle [--raw]`（默认模型快照）。
+- `check`：只读；`--json`（errors/warnings/perPage/resources/summary）；`--strict` warning 也失败；
+  吸收旧 `fonts check` 的资源摘要，不下载。
+- `assets`：保留 `list/sync/clean` 并补 JSON/错误；`themes apply <id> <deck.pptd> [--dry-run]`
+  原子写 deck.theme（替换 + 保留引用项）；`fonts import/remove` 支持本地/URL。
+- `doctor`：吸收 `paths`（全部路径/配置/库计数），加 Chrome/Edge PNG 能力；关键失败 exit 1。
+
+### 迁移（2.x → 3.0）
+
+| 2.x | 3.0 |
+|---|---|
+| `serve` | `open` |
+| `export` | `build --format pptx` |
+| `export-project` | `build --format bundle`（`--raw` 原样文件） |
+| `render` | `build --format png` |
+| `ensure` | `check`（只读）/ `build --fetch`（显式下载字体） |
+| `paths` | `doctor` |
+| `gallery scan` | `open`（Home）/ `node scripts/gen-gallery-manifest.mjs`（发布） |
+| `fonts …` / `icons …` | `assets fonts …` / `assets sync` |
+
+旧命令执行时退出 1 并打印迁移提示；旧 deck 数据仍可读（不做自动升级）。
+
 ## 2.0.0（2026-09-29）
 
 引擎接口化 + 渲染管线三段式重构 + 技能拆分。零 npm 依赖、零构建的纪律保持不变。

@@ -8,7 +8,7 @@
 // Environment-free (no fs/fetch): checks needing environment capabilities are injected
 // through opts and skipped automatically when absent:
 //   - opts.fileExists(rel)  relative-path resource existence (the CLI passes an fs implementation)
-//   - opts.fontRegistry     font registry object (the product of cli/fonts.js loadRegistry)
+//   - opts.fontRegistry     font registry object (the product of cli/resource-status.js readFontRegistry)
 //   - opts.iconRegistry     FA icon registry object (assets/icons/registry.json)
 //   - opts.layout           LayoutTree (packages/layout): when passed, consumes overflow facts
 //                           to report out-of-bounds/overlap issues; when absent that class of

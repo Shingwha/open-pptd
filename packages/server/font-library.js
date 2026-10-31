@@ -46,7 +46,7 @@ export function readUserFontEntries({ home = paths.home } = {}) {
 /**
  * Merge the user font library into a built-in registry view. This is the single
  * shared helper for the Node ResourceProvider (check/export) and the CLI export
- * preflight (cli/ensure.js), so "a deck declares only {family}" resolves through
+ * preflight (cli/resources.js), so "a deck declares only {family}" resolves through
  * the global user library everywhere. User entries carry `userFont: true` so
  * readiness checks can look in the user dir instead of the built-in roots.
  * @param {object} registry built-in registry ({fonts,systemFonts})

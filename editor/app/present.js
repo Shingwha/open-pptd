@@ -17,7 +17,8 @@
 
 import { ICON_FULLSCREEN } from "../icons.js";
 import { deckSize } from "../../packages/model/index.js";
-import { disposeChartInstances, renderPage } from "../../packages/renderer/index.js";
+import { disposeChartInstances } from "../../packages/renderer/index.js";
+import { paintModelPage } from "./paint-page.js";
 
 const FADE_MS = 260; // matches the <p:fade/> cadence in the exported PPTX
 const UI_HIDE_MS = 1800; // hide the bottom toolbar after the pointer stops moving
@@ -90,7 +91,7 @@ export function createPresent({ state, view, ops, ui = null }) {
     disposeChartInstances(layer);
     layer.innerHTML = "";
     const pg = state.deck.pages[i];
-    renderPage(layer, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
+    paintModelPage(layer, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
   }
 
   /** Change page: render the new page into the idle layer → cross-fade → clean up the old layer. */

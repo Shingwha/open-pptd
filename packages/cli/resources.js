@@ -1,15 +1,13 @@
 // ============================================================================
-// cli/ensure.js — export preflight resource check + on-demand fetch
+// cli/resources.js — deck resource requirements + on-demand fetch (Node adapter)
 // ----------------------------------------------------------------------------
-// Five steps:
+// Shared by `check` (read-only summary) and `build --fetch` (explicit download):
 //   1 collect references  parse deck → font declarations (registry-resolved) / icon refs / media files
 //   2 three-level compare  home/assets → in-package assets → decide ready | fetchable | system | unknown | missing
-//   3 fetch on demand      download only what is missing and has url/mirrors in the registry (reusing cli/download.js)
+//   3 fetch on demand      download only what is missing and has url/mirrors in the registry (cli/download.js)
 //   4 re-check             run step 2 again; list what is still missing
-//   5 output manifest      {checked, fetched[], embedded[], skipped[], missing[]}
-//
-// Programmatic API: collectRequirements / checkResources / ensureResources (D.8).
-// Soft-degrade contract: a network failure never affects export — warn and skip embedding only.
+// No command surface here: `assets sync` is the explicit asset installer, `build --fetch`
+// the per-project font completion; nothing downloads during a plain build/check.
 // ============================================================================
 
 import { existsSync } from "node:fs";
@@ -19,10 +17,10 @@ import { collectImageSrcs, walkElements } from "../model/walk.js";
 import { findFont, findSystemFont } from "../model/font-registry.js";
 import { resolveIconName } from "../model/icon-fa.js";
 import { collectFontSpecs } from "../writer/font.js";
-import { loadProjectFiles } from "./export.js";
-import { readFontRegistry, readIconRegistry, fontFileReady } from "./resource-status.js";
 import { mergeUserFonts, userFontReady } from "../server/font-library.js";
+import { readFontRegistry, readIconRegistry, fontFileReady } from "./resource-status.js";
 import { downloadFonts } from "./download.js";
+import { loadProjectFiles } from "./project.js";
 
 const isRemote = (src) => /^(https?:|data:)/i.test(String(src || ""));
 
@@ -123,39 +121,4 @@ export async function ensureResources(reqs, { offline = false } = {}) {
     for (const t of targets) failed.push({ family: t.family, file: t.file, reason: "offline" });
   }
   return { fetched, failed, summary: checkResources(reqs) };
-}
-
-/** ensure subcommand entry (CLI product surface). */
-export async function runEnsure(args) {
-  const manifest = args[1];
-  if (!manifest || !existsSync(manifest)) {
-    console.error(`✗ 文件不存在: ${manifest}`);
-    process.exit(1);
-  }
-  const json = args.includes("--json");
-  const offline = args.includes("--offline");
-  const strict = args.includes("--strict");
-  const log = json ? console.error : console.log;
-
-  const reqs = collectRequirements({ manifest });
-  const pre = checkResources(reqs);
-  log(`▸ 资源体检（${manifest} 引用：字体 ${pre.checked.fonts} · 图标 ${pre.checked.icons} · 媒体 ${pre.checked.media}）`);
-  for (const f of reqs.fonts) {
-    const mark = f.status === "ready" ? "✓" : f.status === "system" || f.status === "unknown" ? "○" : "✗";
-    log(`    ${mark} ${f.family}（${f.file || f.status}）`);
-  }
-  if (!offline && pre.fonts.fetchable) log(`▸ 按需补齐 ${pre.fonts.fetchable} 个字体…`);
-  const { fetched, failed } = await ensureResources(reqs, { offline });
-  const post = checkResources(reqs);
-  if (fetched.length) log(`    ✓ 已补齐 ${fetched.map((f) => f.family).join("、")}`);
-  if (failed.length) log(`    ✗ 未补齐 ${failed.map((f) => f.family).join("、")}`);
-
-  const result = { checked: post.checked, fonts: post.fonts, icons: post.icons, media: post.media, fetched, missing: post.missing, failed };
-  if (json) process.stdout.write(JSON.stringify(result) + "\n");
-  else {
-    log(`▸ 结果：字体就绪 ${post.fonts.ready}/${post.checked.fonts}（系统/未注册 ${post.fonts.system}）· 图标 ${post.icons.known}/${post.checked.icons} · 媒体 ${post.media.ready}/${post.checked.media}`);
-    if (post.missing.length) log(`⚠ 缺失 ${post.missing.length} 项（软降级：不阻塞导出，字体将跳过嵌入）`);
-    else log("✓ 资源齐备");
-  }
-  if (strict && post.missing.length) process.exit(1);
 }

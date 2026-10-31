@@ -10,8 +10,7 @@
 //   · concurrency 6, two-stage timeouts (connect 10s / body 60s [fonts] · 30s [icons]) kept
 //
 // This module is the **fallback path** for `assets sync` (when the release zip is
-// missing); it is also the implementation behind the `fonts download` /
-// `icons download` compatibility aliases.
+// missing); human progress goes to stderr so `assets sync --json` keeps stdout clean.
 // ============================================================================
 
 import { existsSync } from "node:fs";
@@ -44,7 +43,7 @@ export async function downloadFonts(reg, name = "all") {
     (f) => f.key === name || f.family === name || f.key.includes(name) || f.family.toLowerCase().includes(name.toLowerCase())
   );
   if (sysHit.length) {
-    console.log(`○ ${sysHit.map((f) => `${f.key}（${f.family}）`).join("、")} 是系统字体：仅声明不嵌入，无需下载。`);
+    console.error(`○ ${sysHit.map((f) => `${f.key}（${f.family}）`).join("、")} 是系统字体：仅声明不嵌入，无需下载。`);
     return { ok: 0, total: 0, notFound: false };
   }
   const targets =
@@ -67,10 +66,10 @@ export async function downloadFonts(reg, name = "all") {
     const existing = resolveResourceFile("fonts", f.file);
     if (existing) {
       if (isSfntMagic(readFontMagic(existing))) {
-        console.log(`  = ${f.key} 已存在（${f.file}），跳过`);
+        console.error(`  = ${f.key} 已存在（${f.file}），跳过`);
         return true;
       }
-      console.log(`  ↻ ${f.key} 本地文件不是有效字体，重新下载`);
+      console.error(`  ↻ ${f.key} 本地文件不是有效字体，重新下载`);
     }
     // fallback chain: primary url (GitHub raw) → mirrors (jsDelivr etc.), tried in order until one succeeds
     const sources = [f.url, ...(f.mirrors || [])].filter(Boolean);
@@ -104,7 +103,7 @@ export async function downloadFonts(reg, name = "all") {
         if (!check.ok) throw new Error(check.reason);
         if (buf.length < 1000) throw new Error("响应过短，不是有效字体文件");
         atomicWriteFile(out, buf); // tmp/*.part → rename (concurrency-safe)
-        console.log(`  ✓ ${f.key} ← ${src} ${(buf.length / 1024 / 1024).toFixed(1)}MB`);
+        console.error(`  ✓ ${f.key} ← ${src} ${(buf.length / 1024 / 1024).toFixed(1)}MB`);
         return true;
       } catch (e) {
         const detail = `${e.message}${e.cause?.message ? "：" + e.cause.message : ""}`;
@@ -113,13 +112,13 @@ export async function downloadFonts(reg, name = "all") {
           unhealthy.add(src);
           if (!hintShown) {
             hintShown = true;
-            console.log(`  ! ${new URL(src).host} 网络不可达，后续字体直接使用镜像源`);
+            console.error(`  ! ${new URL(src).host} 网络不可达，后续字体直接使用镜像源`);
           }
         }
-        console.log(`  ✗ ${f.key} ← ${src} ${detail}`);
+        console.error(`  ✗ ${f.key} ← ${src} ${detail}`);
       }
     }
-    console.log(`  ✗ ${f.key}：所有下载源均失败`);
+    console.error(`  ✗ ${f.key}：所有下载源均失败`);
     return false;
   };
 
@@ -173,7 +172,7 @@ export async function downloadIcons(registry, { force = false } = {}) {
       tasks.push({ prefix, name: icon.name, file });
     }
   }
-  console.log(`Font Awesome Free ${fa} — 待下载 ${tasks.length} 个 SVG → ${paths.icons}（已存在${force ? "强制重下" : "跳过"}）`);
+  console.error(`Font Awesome Free ${fa} — 待下载 ${tasks.length} 个 SVG → ${paths.icons}（已存在${force ? "强制重下" : "跳过"}）`);
 
   let done = 0;
   let fail = 0;
@@ -202,7 +201,7 @@ export async function downloadIcons(registry, { force = false } = {}) {
           lastErr = err.message;
           if (/abort|timeout|fetch failed|ECONN|ENOTFOUND|ETIMEDOUT|UND_ERR|network/i.test(err.message)) {
             unhealthy.add(url.split("/npm/")[0]);
-            console.log(`  ⚠ 源不可达，后续跳过：${url.split("/npm/")[0]}`);
+            console.error(`  ⚠ 源不可达，后续跳过：${url.split("/npm/")[0]}`);
           }
         }
       }
@@ -211,12 +210,12 @@ export async function downloadIcons(registry, { force = false } = {}) {
         fail += 1;
         console.error(`  ✗ ${task.prefix}:${task.name} ${lastErr}`);
       }
-      if (done % 200 === 0) console.log(`  … ${done}/${tasks.length}`);
+      if (done % 200 === 0) console.error(`  … ${done}/${tasks.length}`);
     }
   }
 
   const queue = [...tasks];
   await Promise.all(Array.from({ length: 6 }, () => worker(queue)));
-  console.log(`完成：${tasks.length - fail} 成功${fail ? `，${fail} 失败（重跑 icons download 续传）` : ""} → ${paths.icons}`);
+  console.error(`完成：${tasks.length - fail} 成功${fail ? `，${fail} 失败（重跑 assets sync icons 续传）` : ""} → ${paths.icons}`);
   return fail === 0;
 }

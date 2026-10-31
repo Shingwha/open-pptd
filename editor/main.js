@@ -280,7 +280,7 @@ function openRecent(entry) {
 async function boot() {
   const params = new URLSearchParams(location.search);
   if (params.get("shot") === "1") {
-    // Headless screenshot mode (used by `open-pptd render`): skip the shell, render pages only
+    // Headless screenshot mode (used by `open-pptd build --format png`): skip the shell, render pages only
     import("./app/shot.js")
       .then((m) => m.initShot(deckUrlOf(params)))
       .catch((err) => {

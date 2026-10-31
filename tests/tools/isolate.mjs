@@ -21,7 +21,7 @@ const argOut = process.argv[2] ? resolve(process.argv[2]) : null;
 
 const EXT_BY_EXTNAME = { ".png": "png", ".jpg": "jpg", ".jpeg": "jpg", ".gif": "gif" };
 
-/** CLI image loader: reads files relative to the project directory (same as packages/cli/export.js createLoadImage). */
+/** CLI image loader: reads files relative to the project directory (same resolution as packages/export/pptx.js). */
 function loadImageFor(projectDir) {
   return (src) => {
     if (typeof src !== "string" || !src) return null;
