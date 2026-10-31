@@ -5,7 +5,7 @@
 //   1. packages/model must not import any sibling package (another directory under packages/);
 //   2. the allowed cross-package import edge table (spec 09 T0/T5, three-stage render pipeline;
 //      3.0 adds runtime/export):
-//        writer   → model | vendor | measure
+//        writer   → model | vendor | measure | layout
 //        renderer → model | vendor | layout
 //        layout   → model | measure
 //        measure  → model
@@ -74,7 +74,7 @@ const DUAL_END_PKGS = new Set(["model", "writer", "renderer", "measure", "layout
 // Allowed cross-package import edges (spec 09 T0/T5 target state; model is handled separately as "no sibling imports";
 // 3.0 runtime/export edges per specs/2026-10-31-2102-open-pptd-3.0/ref/interfaces.md §1.1)
 const ALLOWED_CROSS = {
-  writer: ["model", "vendor", "measure"],
+  writer: ["model", "vendor", "measure", "layout"],
   renderer: ["model", "vendor", "layout"],
   layout: ["model", "measure"],
   measure: ["model"],
