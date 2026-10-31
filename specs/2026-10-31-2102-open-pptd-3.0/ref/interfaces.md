@@ -334,6 +334,7 @@ editor: {
 - 页面操作单页；无页面多选/批量/复制页。
 - 删除的 API 不保留：group/ungroup、align/distribute、moveLayer/edge、clipboard、duplicate、page duplicate/batch。
 - `view`/`state` 暴露为只读/不稳定；对外 API 以 `editor` 为准。
+- W7 已实现：`insertPage(at)/deletePage(index)/movePage(from,to)`（≥1 页、当前页跟随、undoable）；内容编辑器 `openTextEditor/openTableEditor/openChartEditor` 动态 import；旧 UI（属性/快捷条/右键/字体/主题/样式/组合/对齐/层级/剪贴板/页面批量）已删除；Design 面板懒加载（`editor/interaction/design-panel*.js`）。
 
 ### 10.3 ProjectSource 读写
 
