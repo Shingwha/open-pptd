@@ -14,7 +14,7 @@
 //   - delete row/col: deletes the selection's covered span (with merge protection; split first)
 //   - merge: enabled for a region >1×1 (the button shows the merge span); split: enabled on a merged cell
 // Style = the fixed right panel (no floating/wrapping); the grid reuses renderer/table.js's
-// full style chain (cellFinal/tdCss/estimateTableLayout) — WYSIWYG.
+// full style chain (cellFinal/tdCss/measureTable) — WYSIWYG.
 // ============================================================================
 
 import { resolveEditorTheme, showDialog } from "./base.js";
@@ -23,7 +23,6 @@ import { renderGroup, fieldHandlers } from "../fields.js";
 import { createExcelGrid } from "../excel-grid.js";
 import {
   colLetter,
-  estimateTableLayout,
   normalizeCells,
   resolveColor,
   resolveTableStyle,
@@ -32,6 +31,7 @@ import {
   trySplit,
   validateDims,
 } from "../../../packages/model/index.js";
+import { measureTable } from "../../../packages/measure/index.js";
 import { cellFinal, tdCss } from "../../../packages/renderer/index.js";
 
 const H_ALIGNS = [["left", "左"], ["center", "居中"], ["right", "右"], ["justify", "两端"]];
@@ -184,7 +184,9 @@ export function openTableEditor(el, { onChange }) {
     ({ grid: gd } = tableGrid(rows, cols));
     theme = resolveEditorTheme();
     ts = resolveTableStyle(theme, el.style);
-    ({ rowHeights, columnWidths } = estimateTableLayout(el));
+    // Same final measure as layout/renderer/writer (style-aware, rowSpan-balanced),
+    // so the grid rows show the exported heights rather than the model floor estimate.
+    ({ rowHeights, columnWidths } = measureTable(el, { theme }));
     container.innerHTML = "";
     const body = document.createElement("div");
     body.className = "table-body";
