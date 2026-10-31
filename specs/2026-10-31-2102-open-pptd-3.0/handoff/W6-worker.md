@@ -1,27 +1,26 @@
 # W6 handoff · 主题库 + 全局字体库（核心/API/CLI）
-> 分支 `feat/3.0-w6-theme`，起点 `main c32e6da`；7 个实现/测试 commit + 本文件。Windows 10.0.28120 + Git Bash + Node v24.21.0；零依赖。
+> 分支 `feat/3.0-w6-theme`，起点 `main c32e6da`；8 个实现/测试 commit + 2 个文档 commit。Windows 10.0.28120 + Git Bash + Node v24.21.0；零依赖。
 ## A. 自测真实输出
 ```text
 # 开工基线（main c32e6da）
-$ node tests/tools/dump-formula-mml.mjs → 204/204
-$ node tests/run-all.mjs → 31/31 ✅；runtime 92/92 ✅；export 56/56 ✅
+$ node tests/tools/dump-formula-mml.mjs → 204/204；run-all 31/31 ✅；runtime 92/92 ✅；export 56/56 ✅
 $ table-facts/measure-consistency/type-manifest → 全部通过 ✅；dep-graph → ✓；contract → 契约通过 ✅
 $ node tests/e2e/render.mjs → 9/9 ✅；golden-diff → 156/156 字节一致，0 未登记漂移 ✅
 # 完工（真实输出）
-$ node tests/regression/theme-library.mjs → 66/66 ✅；font-library.mjs → 56/56 ✅
-$ node tests/run-all.mjs → 31/31 ✅；runtime → 92/92 ✅；export → 56/56 ✅
-$ table-facts / measure-consistency / type-manifest → 全部通过 ✅；dep-graph → ✓；contract → 契约通过 ✅
-$ node tests/e2e/render.mjs → 9/9 ✅（timeouts=0）
-$ node tests/tools/golden-diff.mjs → 156/156 字节一致，0 未登记漂移 ✅
-$ CLI export 字节：chart 837227 / text 141748 / table 250833（与 W5 基线一致，默认 deck 零变化）
+$ node tests/regression/theme-library.mjs → 66/66 ✅；font-library.mjs → 63/63 ✅
+$ node tests/run-all.mjs → 31/31 ✅；runtime → 92/92 ✅；export → 56/56 ✅；table/measure/type-manifest → 全部通过 ✅；
+dep-graph → ✓；contract → 契约通过 ✅
+$ node tests/e2e/render.mjs → 9/9 ✅（timeouts=0）；golden-diff → 156/156 字节一致，0 未登记漂移 ✅
+# 结构/事实校验（不比较 PPTX 字节）
+$ export tests/projects/text/deck.pptd → exit 0；package-integrity.mjs → 通过；无字体未嵌入/缺失警告
 # server API 冒烟（默认 store + 临时 OPEN_PPTD_HOME，loopback）
 GET /api/themes {"builtin":11,"user":0}；POST/GET/DELETE theme 200；GET ?id=../../evil 404；
 POST font 200；GET fonts {"builtin":27,"user":1,"system":0}；DELETE builtin:default 403；
 body>1MB → 413 ERR_BODY_TOO_LARGE；坏 JSON → 400 ERR_INVALID_JSON。
 # CLI assets 冒烟（临时 home）：themes import/export/list/delete、fonts import/list/remove 全 exit 0，JSON 单行。
-# 用户字体导出 PPTX：MiSans 8073152B 导入临时用户库 → 子集化 10268B → ppt/fonts/font1.fntdata 存在，含 embeddedFontLst。
+# 用户字体（临时 home + MiSans）：预检前 字体 0/1 就绪 + ⚠1 项缺失；预检后 字体 1/1 就绪，check ✓ 校验通过；
+# export --json missing:[]、embedded:[MiSans]；PPTX ppt/fonts/font1.fntdata 存在，presentation.xml 含 embeddedFontLst。
 ```
-
 ## B. 实现、API、偏差与审计
 **纯核心（双端，无 node:/DOM）**
 - `model/theme-library.js`：`BUILTIN_THEMES`（`builtin:default` + 10 palette 完整快照，深冻结）、`listBuiltinThemes`、
@@ -37,7 +36,7 @@ body>1MB → 413 ERR_BODY_TOO_LARGE；坏 JSON → 400 ERR_INVALID_JSON。
 **Node 适配 / API**
 - `server/theme-store.js`：`~/.open-pptd/themes/<id>.json`，id 路径校验 + 原子写；损坏文件 list 跳过、read 抛 `ERR_THEME_STORE`。
 - `server/font-library.js`：`~/.open-pptd/assets/fonts/user/*` + `index.json`（v1）；basename/唯一文件名；同 key 覆盖、
-  同名文件自动改名；内置只读；URL 下载 60s/64MB 上限。
+  同名文件自动改名；内置只读；URL 下载 60s/64MB 上限；`mergeUserFonts`/`userFontReady` 供 provider、预检与 check 共用。
 - `server/{themes,fonts}.js`：仅 loopback；body 上限 1MB/96MB；错误 JSON `{ok:false,error:{code,message}}`。错误码：
   `ERR_THEME_INVALID/ID/NOT_FOUND/BUILTIN_READONLY/STORE`、`ERR_FONT_INVALID/NOT_FOUND/BUILTIN_READONLY/FETCH/INDEX/STORE`、
   `ERR_BODY_TOO_LARGE/ERR_INVALID_JSON/ERR_METHOD/ERR_FORBIDDEN`。
@@ -46,20 +45,20 @@ body>1MB → 413 ERR_BODY_TOO_LARGE；坏 JSON → 400 ERR_INVALID_JSON。
   ExportService/checkProject 识别只写 family 的用户字体；仍不联网。
 - `cli/assets.js`：`assets themes list|import|export|delete|apply`、`assets fonts list|import|remove`（JSON 单行）；
   `assets list` 增加主题/用户字体计数；旧 `assets sync/list/clean` 保留；`bin.js` 仅 usage 增两行。
+- `cli/ensure.js`：预检用 `mergeUserFonts`（与 provider 同源）+ `userFontReady`；CLI check 经 provider.fontRegistry 同样接受用户库。
 **偏差/需 lead 知悉**
-1. `cli/ensure.js` 预检仍只读内置 registry，用户字体导出显示“1 项缺失”软警告（实际已嵌入）；文件在红线外，W10 迁移。
-2. `doctor` 计数未加（`cli/doctor.js` 不在写范围）；计数由 `assets list` + `assets themes/fonts list` + API 提供。
-3. `assets themes apply` 为只读预览/报告（`-o` 输出结果主题 JSON），不重写 deck.pptd；写入由编辑器/W10 `build --theme`。
-4. `normalizeThemeFile` 做“非法字段规范化”：缺省样式块回退 DEFAULT_THEME、坏颜色项丢弃；空 colors 非法。
-5. `fontRegistry` getter 返回含用户条目的新合并对象（非原引用）；`builtin:default` 与 `builtin:consult` 颜色相同（按工单保留两条 id）。
-6. 新测试未接入 `tests/run-all.mjs`（lead 所有）。
+1. `doctor` 计数未加（`cli/doctor.js` 不在写范围）；计数由 `assets list` + `assets themes/fonts list` + API 提供。
+2. `assets themes apply` 为只读预览/报告（`-o` 输出结果主题 JSON），不重写 deck.pptd；写入由编辑器/W10 `build --theme`。
+3. `normalizeThemeFile` 做“非法字段规范化”：缺省样式块回退 DEFAULT_THEME、坏颜色项丢弃；空 colors 非法。
+4. `fontRegistry` getter 返回含用户条目的新合并对象（非原引用）；`builtin:default` 与 `builtin:consult` 颜色相同（按工单保留两条 id）。
+5. 新测试未接入 `tests/run-all.mjs`（lead 所有）。
 **探索审计（只读）**：specs 本组 repo-map/interfaces §3/§8/§9/theme-font/decisions D11–D15/W2/W5/工单；model/{theme,
 theme-presets,font,font-registry,style-spec,walk,validate,index}、paths.js、server/{index,api,static,runtime-node}、
 cli/{bin,assets,fonts,doctor,resource-status,ensure/export 局部}、export/pptx.js#preloadFonts、writer/font.js#loadFontBytes、
 editor/interaction/theme-panel.js（语义参考）、tests/{run-all,contract,regression/{dep-graph,theme-presets,resource-paths},runtime,e2e}。
 未全仓重读；未触碰主检出/其他 worktree。
 **未决/后移**：W7 Design 面板（主题/字体/外观 + 浏览器 FontFace 读用户字节）；W10 删除旧 fonts/icons CLI、contract 3、
-`build --theme`、ensure 预检接用户库；静态站用户库只读提示；主题样式可视化编辑器后移。
+`build --theme`；静态站用户库只读提示；主题样式可视化编辑器后移。
 ## C. 文件 / commit 指针
 
 | commit | message |
@@ -71,6 +70,7 @@ editor/interaction/theme-panel.js（语义参考）、tests/{run-all,contract,re
 | `8ad5d02` | feat(cli): assets 增加 themes/fonts 子命令（保留 sync/clean） |
 | `7bcee2a` | test(theme): 新增主题库与 applyTheme 回归（临时 home） |
 | `325d4c9` | test(font): 新增全局字体库与 provider 回归（无真实字体字节） |
+| `9334fbb` | fix(cli): 导出预检接入全局用户字体库 |
 | （本文件） | docs(w6): 写 W6 交接 |
 
 新增：`packages/model/{theme-library,font-library}.js`、`packages/server/{theme-store,font-library,themes,fonts}.js`、
