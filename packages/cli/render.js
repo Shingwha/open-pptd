@@ -7,8 +7,8 @@
 import { startServer } from "../server/index.js";
 import { renderDeck } from "../renderer/headless/shoot.js";
 
-// Programmatic API: expose the pure render pipeline for in-process consumers (e.g. the DSH
-// adapter's pptd_render tool); runRender above stays the CLI entry (prints + process.exit).
+// Programmatic API: expose the pure render pipeline for in-process consumers (e.g. an
+// embedding host's render tool); runRender above stays the CLI entry (prints + process.exit).
 export { renderDeck };
 
 /** render subcommand entry. */

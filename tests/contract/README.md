@@ -20,7 +20,7 @@ Exit code 0 = contract holds; non-zero = contract broken (it prints each missing
 ## Coverage
 
 1. Export names and types of the five existing barrels (model / renderer / writer / server / cli)
-   (the list = spec `docs/specs/01-engine-api.md` T1, i.e. `integration-plan.md` appendix D.1);
+   (the list is asserted by this test and mirrored in `contract.json`; run `node tests/contract/public-api.mjs`);
    plus spot checks of named members inside the `chart` / `icons` / `fonts` / `bytes` /
    `renderers` / `xml` / `parts` / `text` namespaces.
 2. `packages/index.js`'s `CONTRACT_VERSION === 2`, matching `contract.json`'s `contractVersion`.

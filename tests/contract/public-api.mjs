@@ -257,7 +257,7 @@ async function main() {
       else ok(`${src} 导出名齐全`);
     }
   }
-  // W-E host boot seam: the textual names the DSH adapter and the W1/W2 tests rely on
+  // W-E host boot seam: the textual names downstream hosts and the W1/W2 tests rely on
   {
     const p = join(ROOT, EDITOR_MAIN.file);
     if (!existsSync(p)) bad(`${EDITOR_MAIN.file} 存在`, "文件缺失");
