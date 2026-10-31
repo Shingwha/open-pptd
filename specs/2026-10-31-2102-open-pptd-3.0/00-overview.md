@@ -147,5 +147,6 @@
 - ✅ W5（2026-10-31 @ `feat/3.0-w5-table` → main）：样式感知度量 + rowSpan 补差；frame/box/cy 统一 totalHeight；writer 消费 layout facts；golden 一次性 rebaseline（第二遍零漂移，白名单清空）；table-facts/measure-consistency 已接入 run-all。
 - ✅ W6（2026-11-01 @ `feat/3.0-w6-theme` → main）：ThemeStore/FontLibrary + 用户 home 存储 + `/api/themes`/`/api/fonts` + CLI assets；预检接入用户字体；导出验收改为结构事实。另修正字体就绪判定（sfnt magic，Hedvig 注册表尺寸过期导致反复重下）。
 - ✅ W7（2026-11-01 @ `feat/3.0-w7-editor` → main）：最小编辑器（删旧编辑 UI）；内容编辑/变换/多选/参考线/页面单页操作；懒加载 Design 面板。editor-minimal 21/21、page-ops 17/17。
-- W8 详单待补 `## 前置上下文`（JIT）。runtime/export 尚未进入 contract 导出面，W10 统一。
+- ✅ W8（2026-11-01 @ `feat/3.0-w8-shell` → main）：骨架模板化 + 服务实例化（dom/toast/dialogs）；createPreview；createEditor 基于 preview；单壳 Home/Editor。preview-shell 23/23；golden 字节一致。
+- W9 详单待补 `## 前置上下文`（JIT）。runtime/export 尚未进入 contract 导出面，W10 统一。
 - 旧 `specs/2026-09-30-ui-redesign-line/**`、`specs/ref/**`、`docs/archive/**` 已由 W1 删除；本组 spec 不依赖它们。

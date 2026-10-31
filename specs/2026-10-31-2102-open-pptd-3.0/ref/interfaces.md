@@ -306,6 +306,7 @@ createEditor(rootEl, {
 - 自包含：骨架渲染进 rootEl；dom/dialog/toast/popover/present/theme 实例级；无 document 全局骨架/单例；destroy 幂等；双实例互不污染。
 - `chrome`: `"full" | "embedded"`；删除 `"shot"`/`interactive` 旧分支；headless 直接用 createPreview。
 - `locale` 删除；`dialogs` 保留（宿主可注入 alert/confirm）。
+- W8 已实现：`editor/preview.js` 的 createPreview 返回 `{ready,destroy,view,io,state,goToPage,nextPage,prevPage,zoomIn,zoomOut,zoomReset,present,reload}`；createEditor 返回 `{ready,destroy,preview,editor,io,state}`（`editor` 为 §10.2 API）。`editor/skeleton.js` 提供 editor/preview/home 骨架；单壳 `/editor/`：无 deck/shot → Home，`?deck=` → Editor，`?blank=1` → 空白 Editor，根 `index.html` 重定向到 `./editor/`。headless 仍走 `/editor/?shot=1` + `window.__pptdShot`，输出字节不变。
 
 ### 10.2 Editor API
 
