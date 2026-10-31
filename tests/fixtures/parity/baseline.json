@@ -1,0 +1,1290 @@
+{
+  "version": 1,
+  "generator": "tests/tools/parity-baseline.mjs",
+  "capturedOn": "2026-10-31",
+  "environment": {
+    "node": "v24.21.0",
+    "platform": "win32",
+    "browser": "chrome.exe"
+  },
+  "renderNote": "Full-deck render (page=all), pages 1/2 extracted; 2.x single-page --page n races and can capture page 1.",
+  "chart": {
+    "manifest": "tests/projects/chart/deck.pptd",
+    "pages": [
+      1,
+      2
+    ],
+    "scales": [
+      1,
+      2
+    ],
+    "renders": [
+      {
+        "page": 1,
+        "scale": 1,
+        "file": "deck-01.png",
+        "width": 960,
+        "height": 540,
+        "bytes": 8733,
+        "sha256": "01b0622dca83b5898e4efaa6116d4e6fb4279ccaa1fd292f62b8c7ddb81446cc",
+        "chartRegion": {
+          "supported": true,
+          "region": {
+            "x": [
+              96,
+              864
+            ],
+            "y": [
+              108,
+              513
+            ],
+            "step": 4
+          },
+          "distinctColors": 19,
+          "nonWhiteRatio": 0.2819
+        }
+      },
+      {
+        "page": 2,
+        "scale": 1,
+        "file": "deck-02.png",
+        "width": 960,
+        "height": 540,
+        "bytes": 10753,
+        "sha256": "1eb66434359f071a0a4adbf1f17458f54f92041f454c8ab8e3a0775bbed8b761",
+        "chartRegion": {
+          "supported": true,
+          "region": {
+            "x": [
+              96,
+              864
+            ],
+            "y": [
+              108,
+              513
+            ],
+            "step": 4
+          },
+          "distinctColors": 28,
+          "nonWhiteRatio": 0.1757
+        }
+      },
+      {
+        "page": 1,
+        "scale": 2,
+        "file": "deck-01.png",
+        "width": 1920,
+        "height": 1080,
+        "bytes": 29118,
+        "sha256": "846d85804e2d02695d66fdf2754bffacb5c1478ceb18eda8842e0dce33b24fa6",
+        "chartRegion": {
+          "supported": true,
+          "region": {
+            "x": [
+              192,
+              1728
+            ],
+            "y": [
+              216,
+              1026
+            ],
+            "step": 4
+          },
+          "distinctColors": 44,
+          "nonWhiteRatio": 0.278
+        }
+      },
+      {
+        "page": 2,
+        "scale": 2,
+        "file": "deck-02.png",
+        "width": 1920,
+        "height": 1080,
+        "bytes": 41400,
+        "sha256": "6ffeca9f562d1b55c7ac1ded3b8cf8d7edec146a65ff0caaa51df05aac9efc20",
+        "chartRegion": {
+          "supported": true,
+          "region": {
+            "x": [
+              192,
+              1728
+            ],
+            "y": [
+              216,
+              1026
+            ],
+            "step": 4
+          },
+          "distinctColors": 55,
+          "nonWhiteRatio": 0.1785
+        }
+      }
+    ]
+  },
+  "tables": [
+    {
+      "project": "tests/projects/table",
+      "page": 1,
+      "elementId": "tb1",
+      "declared": [
+        60,
+        140,
+        800,
+        220
+      ],
+      "columnWidths": [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26,
+        26
+      ],
+      "totalHeight": 108
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 2,
+      "elementId": "tb1",
+      "declared": [
+        60,
+        108,
+        840,
+        180
+      ],
+      "columnWidths": [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26,
+        26
+      ],
+      "totalHeight": 108
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 2,
+      "elementId": "tb2",
+      "declared": [
+        60,
+        324,
+        840,
+        180
+      ],
+      "columnWidths": [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26,
+        26
+      ],
+      "totalHeight": 108
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 3,
+      "elementId": "tb1",
+      "declared": [
+        60,
+        108,
+        420,
+        150
+      ],
+      "columnWidths": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26
+      ],
+      "totalHeight": 82
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 3,
+      "elementId": "tb2",
+      "declared": [
+        60,
+        294,
+        420,
+        150
+      ],
+      "columnWidths": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26
+      ],
+      "totalHeight": 82
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 3,
+      "elementId": "tb3",
+      "declared": [
+        520,
+        108,
+        380,
+        150
+      ],
+      "columnWidths": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26,
+        26
+      ],
+      "totalHeight": 108
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 3,
+      "elementId": "tb4",
+      "declared": [
+        520,
+        294,
+        380,
+        150
+      ],
+      "columnWidths": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26
+      ],
+      "totalHeight": 82
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 4,
+      "elementId": "tb1",
+      "declared": [
+        60,
+        108,
+        840,
+        200
+      ],
+      "columnWidths": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26,
+        26
+      ],
+      "totalHeight": 108
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 4,
+      "elementId": "tb2",
+      "declared": [
+        60,
+        344,
+        840,
+        160
+      ],
+      "columnWidths": [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26
+      ],
+      "totalHeight": 82
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 5,
+      "elementId": "tb1",
+      "declared": [
+        60,
+        108,
+        700,
+        220
+      ],
+      "columnWidths": [
+        0.34,
+        0.33,
+        0.33
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26
+      ],
+      "totalHeight": 82
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 5,
+      "elementId": "tb2",
+      "declared": [
+        60,
+        364,
+        700,
+        140
+      ],
+      "columnWidths": [
+        0.34,
+        0.33,
+        0.33
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26
+      ],
+      "totalHeight": 82
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 6,
+      "elementId": "tb1",
+      "declared": [
+        60,
+        108,
+        840,
+        220
+      ],
+      "columnWidths": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "rowHeights": [
+        30,
+        38,
+        26,
+        27
+      ],
+      "totalHeight": 121
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 6,
+      "elementId": "tb2",
+      "declared": [
+        60,
+        364,
+        840,
+        140
+      ],
+      "columnWidths": [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26
+      ],
+      "totalHeight": 82
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 7,
+      "elementId": "tb1",
+      "declared": [
+        60,
+        108,
+        840,
+        120
+      ],
+      "columnWidths": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "rowHeights": [
+        30,
+        26
+      ],
+      "totalHeight": 56
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 7,
+      "elementId": "tb2",
+      "declared": [
+        60,
+        264,
+        840,
+        120
+      ],
+      "columnWidths": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "rowHeights": [
+        30
+      ],
+      "totalHeight": 30
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 7,
+      "elementId": "tb3",
+      "declared": [
+        60,
+        420,
+        840,
+        100
+      ],
+      "columnWidths": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26
+      ],
+      "totalHeight": 82
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 8,
+      "elementId": "tb1",
+      "declared": [
+        60,
+        108,
+        840,
+        130
+      ],
+      "columnWidths": [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      "rowHeights": [
+        30,
+        26
+      ],
+      "totalHeight": 56
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 8,
+      "elementId": "tb2",
+      "declared": [
+        60,
+        274,
+        840,
+        160
+      ],
+      "columnWidths": [
+        0.25,
+        0.25,
+        0.25,
+        0.25
+      ],
+      "rowHeights": [
+        30,
+        26
+      ],
+      "totalHeight": 56
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 8,
+      "elementId": "tb3",
+      "declared": [
+        60,
+        470,
+        840,
+        60
+      ],
+      "columnWidths": [
+        0.5,
+        0.5
+      ],
+      "rowHeights": [
+        30
+      ],
+      "totalHeight": 30
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 9,
+      "elementId": "tb1",
+      "declared": [
+        60,
+        108,
+        840,
+        200
+      ],
+      "columnWidths": [
+        0.34,
+        0.33,
+        0.33
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26
+      ],
+      "totalHeight": 82
+    },
+    {
+      "project": "tests/projects/table",
+      "page": 9,
+      "elementId": "tb2",
+      "declared": [
+        60,
+        344,
+        840,
+        160
+      ],
+      "columnWidths": [
+        0.34,
+        0.33,
+        0.33
+      ],
+      "rowHeights": [
+        30,
+        26,
+        26,
+        26,
+        26
+      ],
+      "totalHeight": 134
+    },
+    {
+      "project": "examples/business-review-7p",
+      "page": 2,
+      "elementId": "compare-table",
+      "declared": [
+        520,
+        268,
+        380,
+        190
+      ],
+      "columnWidths": [
+        0.34,
+        0.2,
+        0.2,
+        0.26
+      ],
+      "rowHeights": [
+        31,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        26
+      ],
+      "totalHeight": 213
+    },
+    {
+      "project": "examples/business-review-7p",
+      "page": 4,
+      "elementId": "region-table",
+      "declared": [
+        664,
+        178,
+        236,
+        292
+      ],
+      "columnWidths": [
+        0.44,
+        0.28,
+        0.28
+      ],
+      "rowHeights": [
+        53,
+        48,
+        48,
+        48,
+        48,
+        48
+      ],
+      "totalHeight": 293
+    },
+    {
+      "project": "examples/business-review-7p",
+      "page": 6,
+      "elementId": "roadmap-table",
+      "declared": [
+        520,
+        266,
+        380,
+        202
+      ],
+      "columnWidths": [
+        0.24,
+        0.19,
+        0.19,
+        0.19,
+        0.19
+      ],
+      "rowHeights": [
+        41,
+        54,
+        54,
+        54
+      ],
+      "totalHeight": 203
+    }
+  ],
+  "textFrames": {
+    "project": "tests/projects/text",
+    "elements": [
+      {
+        "page": 1,
+        "elementId": "title-grad",
+        "declaredH": 110,
+        "frameH": 110,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 46.64
+      },
+      {
+        "page": 1,
+        "elementId": "subtitle",
+        "declaredH": 50,
+        "frameH": 50,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 21.2
+      },
+      {
+        "page": 1,
+        "elementId": "caption",
+        "declaredH": 40,
+        "frameH": 40,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 13.78
+      },
+      {
+        "page": 2,
+        "elementId": "pg-title",
+        "declaredH": 40,
+        "frameH": 42.4,
+        "grown": true,
+        "lines": 1,
+        "contentHeight": 42.4
+      },
+      {
+        "page": 2,
+        "elementId": "pg-sub",
+        "declaredH": 30,
+        "frameH": 30,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 12.72
+      },
+      {
+        "page": 2,
+        "elementId": "rt-1",
+        "declaredH": 150,
+        "frameH": 150,
+        "grown": false,
+        "lines": 4,
+        "contentHeight": 79.5
+      },
+      {
+        "page": 2,
+        "elementId": "rt-2",
+        "declaredH": 40,
+        "frameH": 40,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 15.9
+      },
+      {
+        "page": 2,
+        "elementId": "rt-3",
+        "declaredH": 130,
+        "frameH": 130,
+        "grown": false,
+        "lines": 4,
+        "contentHeight": 63.6
+      },
+      {
+        "page": 2,
+        "elementId": "rt-4",
+        "declaredH": 130,
+        "frameH": 130,
+        "grown": false,
+        "lines": 4,
+        "contentHeight": 63.6
+      },
+      {
+        "page": 3,
+        "elementId": "pg-title",
+        "declaredH": 40,
+        "frameH": 84.8,
+        "grown": true,
+        "lines": 2,
+        "contentHeight": 84.8
+      },
+      {
+        "page": 3,
+        "elementId": "pg-sub",
+        "declaredH": 30,
+        "frameH": 30,
+        "grown": false,
+        "lines": 2,
+        "contentHeight": 25.44
+      },
+      {
+        "page": 3,
+        "elementId": "fm-1",
+        "declaredH": 60,
+        "frameH": 60,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 23.32
+      },
+      {
+        "page": 3,
+        "elementId": "fm-2",
+        "declaredH": 60,
+        "frameH": 60,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 27.56
+      },
+      {
+        "page": 3,
+        "elementId": "fm-3",
+        "declaredH": 70,
+        "frameH": 70,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 37.31
+      },
+      {
+        "page": 3,
+        "elementId": "fm-4",
+        "declaredH": 60,
+        "frameH": 60,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 33.92
+      },
+      {
+        "page": 3,
+        "elementId": "fm-5",
+        "declaredH": 80,
+        "frameH": 80,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 16.96
+      },
+      {
+        "page": 4,
+        "elementId": "pg-title",
+        "declaredH": 40,
+        "frameH": 84.8,
+        "grown": true,
+        "lines": 2,
+        "contentHeight": 84.8
+      },
+      {
+        "page": 4,
+        "elementId": "lo-1",
+        "declaredH": 120,
+        "frameH": 120,
+        "grown": false,
+        "lines": 3,
+        "contentHeight": 47.7
+      },
+      {
+        "page": 4,
+        "elementId": "lo-2",
+        "declaredH": 120,
+        "frameH": 120,
+        "grown": false,
+        "lines": 3,
+        "contentHeight": 66.78
+      },
+      {
+        "page": 4,
+        "elementId": "lo-3",
+        "declaredH": 120,
+        "frameH": 120,
+        "grown": false,
+        "lines": 2,
+        "contentHeight": 31.8
+      },
+      {
+        "page": 4,
+        "elementId": "lo-4",
+        "declaredH": 80,
+        "frameH": 80,
+        "grown": false,
+        "lines": 2,
+        "contentHeight": 50.88
+      },
+      {
+        "page": 4,
+        "elementId": "lo-5",
+        "declaredH": 40,
+        "frameH": 40,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 16.96
+      },
+      {
+        "page": 4,
+        "elementId": "lo-6",
+        "declaredH": 40,
+        "frameH": 40,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 16.96
+      },
+      {
+        "page": 4,
+        "elementId": "lo-7",
+        "declaredH": 160,
+        "frameH": 160,
+        "grown": false,
+        "lines": 3,
+        "contentHeight": 50.88
+      },
+      {
+        "page": 4,
+        "elementId": "lo-8",
+        "declaredH": 60,
+        "frameH": 60,
+        "grown": false,
+        "lines": 2,
+        "contentHeight": 54.27
+      },
+      {
+        "page": 5,
+        "elementId": "pg-title",
+        "declaredH": 40,
+        "frameH": 42.4,
+        "grown": true,
+        "lines": 1,
+        "contentHeight": 42.4
+      },
+      {
+        "page": 5,
+        "elementId": "ef-1",
+        "declaredH": 60,
+        "frameH": 60,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 27.56
+      },
+      {
+        "page": 5,
+        "elementId": "ef-2",
+        "declaredH": 60,
+        "frameH": 60,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 27.56
+      },
+      {
+        "page": 5,
+        "elementId": "ef-3",
+        "declaredH": 50,
+        "frameH": 50,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 21.2
+      },
+      {
+        "page": 5,
+        "elementId": "ef-4",
+        "declaredH": 50,
+        "frameH": 50,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 21.2
+      },
+      {
+        "page": 5,
+        "elementId": "ef-5",
+        "declaredH": 50,
+        "frameH": 50,
+        "grown": false,
+        "lines": 2,
+        "contentHeight": 42.4
+      },
+      {
+        "page": 5,
+        "elementId": "ef-6",
+        "declaredH": 60,
+        "frameH": 60,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 25.44
+      },
+      {
+        "page": 5,
+        "elementId": "ef-7",
+        "declaredH": 70,
+        "frameH": 70,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 21.2
+      },
+      {
+        "page": 5,
+        "elementId": "ef-8",
+        "declaredH": 50,
+        "frameH": 50,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 16.96
+      },
+      {
+        "page": 6,
+        "elementId": "pg-title",
+        "declaredH": 40,
+        "frameH": 84.8,
+        "grown": true,
+        "lines": 2,
+        "contentHeight": 84.8
+      },
+      {
+        "page": 6,
+        "elementId": "pg-sub",
+        "declaredH": 30,
+        "frameH": 30,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 12.72
+      },
+      {
+        "page": 6,
+        "elementId": "ic-note",
+        "declaredH": 240,
+        "frameH": 240,
+        "grown": false,
+        "lines": 5,
+        "contentHeight": 84.8
+      },
+      {
+        "page": 7,
+        "elementId": "pg-title",
+        "declaredH": 40,
+        "frameH": 84.8,
+        "grown": true,
+        "lines": 2,
+        "contentHeight": 84.8
+      },
+      {
+        "page": 7,
+        "elementId": "c-primary",
+        "declaredH": 36,
+        "frameH": 36,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 21.2
+      },
+      {
+        "page": 7,
+        "elementId": "c-accent",
+        "declaredH": 36,
+        "frameH": 36,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 21.2
+      },
+      {
+        "page": 7,
+        "elementId": "c-muted",
+        "declaredH": 36,
+        "frameH": 36,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 21.2
+      },
+      {
+        "page": 7,
+        "elementId": "c-text",
+        "declaredH": 36,
+        "frameH": 36,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 21.2
+      },
+      {
+        "page": 7,
+        "elementId": "c-success",
+        "declaredH": 36,
+        "frameH": 36,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 21.2
+      },
+      {
+        "page": 7,
+        "elementId": "c-warning",
+        "declaredH": 36,
+        "frameH": 36,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 21.2
+      },
+      {
+        "page": 7,
+        "elementId": "c-danger",
+        "declaredH": 36,
+        "frameH": 36,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 21.2
+      },
+      {
+        "page": 7,
+        "elementId": "c-soft",
+        "declaredH": 36,
+        "frameH": 36,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 21.2
+      },
+      {
+        "page": 7,
+        "elementId": "c-hex6",
+        "declaredH": 36,
+        "frameH": 36,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 21.2
+      },
+      {
+        "page": 7,
+        "elementId": "c-hex8",
+        "declaredH": 36,
+        "frameH": 36,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 21.2
+      },
+      {
+        "page": 7,
+        "elementId": "c-runs",
+        "declaredH": 40,
+        "frameH": 40,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 19.08
+      },
+      {
+        "page": 7,
+        "elementId": "c-grad1",
+        "declaredH": 60,
+        "frameH": 60,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 29.68
+      },
+      {
+        "page": 7,
+        "elementId": "c-grad2",
+        "declaredH": 60,
+        "frameH": 60,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 29.68
+      },
+      {
+        "page": 7,
+        "elementId": "c-highlight",
+        "declaredH": 44,
+        "frameH": 44,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 19.08
+      },
+      {
+        "page": 8,
+        "elementId": "pg-title",
+        "declaredH": 40,
+        "frameH": 127.2,
+        "grown": true,
+        "lines": 3,
+        "contentHeight": 127.2
+      },
+      {
+        "page": 8,
+        "elementId": "f-misans",
+        "declaredH": 32,
+        "frameH": 32,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 19.08
+      },
+      {
+        "page": 8,
+        "elementId": "f-noto",
+        "declaredH": 32,
+        "frameH": 32,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 19.08
+      },
+      {
+        "page": 8,
+        "elementId": "f-songti",
+        "declaredH": 32,
+        "frameH": 32,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 19.08
+      },
+      {
+        "page": 8,
+        "elementId": "f-kaiti",
+        "declaredH": 32,
+        "frameH": 32,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 19.08
+      },
+      {
+        "page": 8,
+        "elementId": "f-yahei",
+        "declaredH": 32,
+        "frameH": 32,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 19.08
+      },
+      {
+        "page": 8,
+        "elementId": "f-latin",
+        "declaredH": 32,
+        "frameH": 32,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 19.08
+      },
+      {
+        "page": 8,
+        "elementId": "f-latin2",
+        "declaredH": 32,
+        "frameH": 32,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 19.08
+      },
+      {
+        "page": 8,
+        "elementId": "f-span",
+        "declaredH": 64,
+        "frameH": 64,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 19.08
+      },
+      {
+        "page": 8,
+        "elementId": "f-sizes",
+        "declaredH": 32,
+        "frameH": 32,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 27.56
+      },
+      {
+        "page": 8,
+        "elementId": "f-sizes2",
+        "declaredH": 32,
+        "frameH": 32,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 23.32
+      },
+      {
+        "page": 8,
+        "elementId": "f-sizes3",
+        "declaredH": 32,
+        "frameH": 32,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 14.84
+      },
+      {
+        "page": 8,
+        "elementId": "f-sizes4",
+        "declaredH": 32,
+        "frameH": 32,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 10.6
+      },
+      {
+        "page": 8,
+        "elementId": "f-sizes5",
+        "declaredH": 44,
+        "frameH": 44,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 16.96
+      },
+      {
+        "page": 8,
+        "elementId": "f-combo",
+        "declaredH": 64,
+        "frameH": 64,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 19.08
+      },
+      {
+        "page": 8,
+        "elementId": "f-mix",
+        "declaredH": 64,
+        "frameH": 64,
+        "grown": false,
+        "lines": 1,
+        "contentHeight": 27.56
+      }
+    ]
+  }
+}
