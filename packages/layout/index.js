@@ -38,7 +38,6 @@ function themeOf(deck) {
   return normalizeTheme(t);
 }
 
-
 /** Declared element geometry [x,y,w,h] → {x,y,w,h} (invalid values fall back to zero size). */
 function declaredOf(el) {
   const b = Array.isArray(el?.bounds) ? el.bounds : [0, 0, 0, 0];
@@ -112,7 +111,9 @@ export function layout(deck, measure = fontMetricsMeasure) {
   // Table cell styles inherit the full chain (default textStyles lineHeight etc. + deck.fonts
   // resource keys). The preview/writer hand layout a resolveTheme output already; a bare deck
   // theme (CLI check, validation, tests) is resolved here so table facts agree everywhere.
-  const tableTheme = theme && theme.fontResources ? theme : resolveTheme(deck);
+  // Resolved lazily: decks without tables keep the previous cost/behavior.
+  let tableTheme = null;
+  const themeForTable = () => (tableTheme ||= theme && theme.fontResources ? theme : resolveTheme(deck));
   const [W, H] = deckSize(deck);
   const pages = [];
   (deck?.pages || []).forEach((page, pi) => {
@@ -124,7 +125,7 @@ export function layout(deck, measure = fontMetricsMeasure) {
       const d = declaredOf(el);
       const hook = def?.layoutKey ? LAYOUT_HOOKS[def.layoutKey] : null;
       // No hook (shape/line/image/icon/chart): size passes through
-      const hookTheme = def?.layoutKey === "table" ? tableTheme : theme;
+      const hookTheme = def?.layoutKey === "table" ? themeForTable() : theme;
       const part = hook ? hook(hookTheme, el, measure) : { frame: { ...d }, grown: false };
       elements.push({
         elementId: el.elementId,
