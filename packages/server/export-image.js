@@ -1,32 +1,42 @@
 // ============================================================================
-// server/export-image.js — image export endpoint (RP-C / M5: capture-first)
+// server/export-image.js — image export endpoint (capture backend over ExportService)
 // ----------------------------------------------------------------------------
 //   GET  /api/export-image   capability probe: is a usable Chrome/Edge present
 //                            (404 semantics otherwise)
 //   POST /api/export-image   body = snapshot of the current editing state
 //                            (serialized PPTD files + media/fonts bytes),
 //                            materialized into a temp dir as a complete project,
-//                            then driven through renderer/headless/shoot.js to
-//                            produce one PNG per page; base64 returned in JSON.
+//                            then rendered through ExportService format=png with
+//                            the headless RenderBackend; base64 PNGs in JSON.
+//
+// W9: the endpoint keeps its request body / security checks / response shape, but
+// no longer drives shoot.js page-by-page itself — page selection, scale, naming
+// and the report belong to packages/export, rasterization to
+// renderer/headless/backend.js (the same path CLI `render` uses).
 //
 // Design notes:
 //   · Editing-state semantics: the browser serializes the **current editing state**
 //     (possibly with unsaved changes) and sends it, instead of letting the server
 //     read .pptd from disk — consistent with the old foreignObject export (what you
 //     export is what you see).
-//   · Layering: this module is Node-only packages/server and may import
-//     renderer/headless/** (headless is the Node path; server has no reverse-dependency
-//     constraint, see dep-graph).
 //   · All temp files are removed in finally; the body has a size cap; write paths are
-//     traversal-checked.
+//     traversal-checked; Origin (when present) must be loopback.
 // ============================================================================
 
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, normalize, sep, dirname } from "node:path";
+import { createDiskProjectSource, createFsResourceProvider } from "./runtime-node.js";
+import { createProject } from "../runtime/index.js";
+import { exportProject } from "../export/index.js";
 
 const MAX_BODY = 256 * 1024 * 1024; // 256MB (safe cap for many pages + large images)
-const RENDER_TIMEOUT_MS = 60000; // per-page screenshot timeout (headless cold start is slow)
+const RENDER_TIMEOUT_MS = 60000; // per-session screenshot timeout (headless cold start is slow)
+
+const json = (res, status, payload) =>
+  res
+    .writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" })
+    .end(JSON.stringify(payload));
 
 /** Read the request body (aborts when over the cap). */
 function readBody(req) {
@@ -70,23 +80,29 @@ async function browserAvailable() {
   }
 }
 
-/** Render one page and read back PNG bytes. */
-async function renderPages({ renderDeck, startServer, manifestPath, page, scale, workDir }) {
-  const outDir = join(workDir, "out");
-  mkdirSync(outDir, { recursive: true });
-  const { files } = await renderDeck({
-    manifest: manifestPath,
-    outPath: outDir,
-    page,
-    scale,
-    timeoutMs: RENDER_TIMEOUT_MS,
-    quiet: true,
-    startServer,
-  });
+/** Render selected pages through ExportService + headless backend → [{page, b64}]. */
+async function renderPages({ manifestPath, pages, scale, workDir, startServer }) {
+  const { createHeadlessRenderBackend } = await import("../renderer/headless/backend.js");
+  const files = await createDiskProjectSource(manifestPath).read();
+  const project = createProject(files);
+  const resources = createFsResourceProvider({ baseDir: workDir });
+  const renderBackend = (options) =>
+    createHeadlessRenderBackend({
+      ...options,
+      startServer,
+      timeoutMs: RENDER_TIMEOUT_MS,
+      quiet: true,
+    });
+  const report = await exportProject(
+    project,
+    { format: "png", pages, scale, backend: "headless", check: false },
+    { resources, renderBackend }
+  );
+  if (!report.ok) throw new Error(report.errors.join("；") || "PNG 导出失败");
   const pngs = [];
-  for (const file of files) {
-    const n = Number(/-(\d+)\.png$/i.exec(file)?.[1]);
-    pngs.push({ page: Number.isInteger(n) ? n : pngs.length + 1, b64: readFileSync(file).toString("base64") });
+  const artifacts = report.artifacts || [];
+  for (let i = 0; i < artifacts.length; i++) {
+    pngs.push({ page: report.pages[i], b64: Buffer.from(artifacts[i].bytes).toString("base64") });
   }
   return pngs;
 }
@@ -105,13 +121,12 @@ export function createExportImageHandler({ startServer } = {}) {
 
   async function probe(res) {
     const browser = await browserAvailable();
-    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
-    res.end(JSON.stringify({ ok: true, capture: true, browser }));
+    json(res, 200, { ok: true, capture: true, browser });
   }
 
   async function exportImage(req, res) {
     if (!originAllowed(req)) {
-      res.writeHead(403, { "Content-Type": "application/json; charset=utf-8" }).end(JSON.stringify({ ok: false, error: "origin denied" }));
+      json(res, 403, { ok: false, error: "origin denied" });
       return;
     }
     let workDir = null;
@@ -121,14 +136,14 @@ export function createExportImageHandler({ startServer } = {}) {
       const files = Array.isArray(payload.files) ? payload.files : [];
       const manifestName = String(payload.manifestName || "deck.pptd").replace(/[\\/]+/g, "/");
       if (!files.length || !manifestName) {
-        res.writeHead(400, { "Content-Type": "application/json; charset=utf-8" }).end(JSON.stringify({ ok: false, error: "files/manifestName 缺失" }));
+        json(res, 400, { ok: false, error: "files/manifestName 缺失" });
         return;
       }
       const scale = [1, 2, 3].includes(Number(payload.scale)) ? Number(payload.scale) : 2;
       const reqPages = (Array.isArray(payload.pages) ? payload.pages : []).map(Number).filter((n) => Number.isInteger(n) && n > 0);
       const all = payload.all === true;
       if (!all && reqPages.length === 0) {
-        res.writeHead(400, { "Content-Type": "application/json; charset=utf-8" }).end(JSON.stringify({ ok: false, error: "pages 缺失" }));
+        json(res, 400, { ok: false, error: "pages 缺失" });
         return;
       }
 
@@ -145,22 +160,18 @@ export function createExportImageHandler({ startServer } = {}) {
       }
       const manifestPath = normalize(join(workDir, manifestName));
 
-      // ---- headless rendering (renderer/headless loads lazily: zero cost when unused) ----
-      const { renderDeck } = await import("../renderer/headless/shoot.js");
-      const pngs = [];
-      if (all) {
-        pngs.push(...(await renderPages({ renderDeck, startServer: silentStart, manifestPath, page: "all", scale, workDir })));
-      } else {
-        for (const n of reqPages) {
-          pngs.push(...(await renderPages({ renderDeck, startServer: silentStart, manifestPath, page: n, scale, workDir })));
-        }
-      }
-      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
-      res.end(JSON.stringify({ ok: true, scale, pngs }));
+      // ---- ExportService + headless backend (renderer/headless loads lazily) ----
+      const pngs = await renderPages({
+        manifestPath,
+        pages: all ? "all" : reqPages,
+        scale,
+        workDir,
+        startServer: silentStart,
+      });
+      json(res, 200, { ok: true, scale, pngs });
     } catch (err) {
-      const msg = String(err?.message || err);
       try {
-        res.writeHead(500, { "Content-Type": "application/json; charset=utf-8" }).end(JSON.stringify({ ok: false, error: msg }));
+        json(res, 500, { ok: false, error: String(err?.message || err) });
       } catch {
         /* headers already sent */
       }
@@ -178,7 +189,7 @@ export function createExportImageHandler({ startServer } = {}) {
   return async function handleExportImage(req, res) {
     if (req.method === "GET" || req.method === "HEAD") return probe(res);
     if (req.method !== "POST") {
-      res.writeHead(405, { "Content-Type": "application/json; charset=utf-8" }).end(JSON.stringify({ ok: false, error: "method not allowed" }));
+      json(res, 405, { ok: false, error: "method not allowed" });
       return;
     }
     return exportImage(req, res);
