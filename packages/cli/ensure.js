@@ -21,9 +21,16 @@ import { resolveIconName } from "../model/icon-fa.js";
 import { collectFontSpecs } from "../writer/font.js";
 import { loadProjectFiles } from "./export.js";
 import { readFontRegistry, readIconRegistry, fontFileReady } from "./resource-status.js";
+import { mergeUserFonts, userFontReady } from "../server/font-library.js";
 import { downloadFonts } from "./download.js";
 
 const isRemote = (src) => /^(https?:|data:)/i.test(String(src || ""));
+
+/** Readiness across both libraries: built-in/home roots vs the user font dir. */
+function fontHitReady(hit) {
+  if (!hit) return false;
+  return hit.userFont ? userFontReady(hit) : fontFileReady(hit);
+}
 
 /**
  * 1. Collect the resources referenced by the deck.
@@ -34,15 +41,19 @@ const isRemote = (src) => /^(https?:|data:)/i.test(String(src || ""));
 export function collectRequirements({ manifest }) {
   const { manifestText, deckDir, pageFiles } = loadProjectFiles(manifest);
   const deck = parseDeck(manifestText, pageFiles);
-  const fontRegistry = readFontRegistry();
+  const fontRegistry = mergeUserFonts(readFontRegistry());
   const iconRegistry = readIconRegistry();
 
   const fonts = collectFontSpecs(deck).map((spec) => {
     const hit = findFont(fontRegistry, spec.family);
     const sys = hit ? undefined : findSystemFont(fontRegistry, spec.family);
     let status;
-    if (hit) status = fontFileReady(hit) ? "ready" : [spec.url, hit.url, ...(hit.mirrors || [])].filter(Boolean).length ? "fetchable" : "missing";
-    else status = sys ? "system" : "unknown";
+    if (hit) {
+      if (fontHitReady(hit)) status = "ready";
+      // A stale user-library entry is not auto-downloaded into the user dir.
+      else if (hit.userFont) status = "missing";
+      else status = [spec.url, hit.url, ...(hit.mirrors || [])].filter(Boolean).length ? "fetchable" : "missing";
+    } else status = sys ? "system" : "unknown";
     return { family: spec.family, key: hit?.key || null, file: hit?.file || spec.file || null, subset: hit ? (spec.subset == null ? hit.subset !== false : spec.subset) : false, status, known: !!hit };
   });
 
@@ -101,7 +112,7 @@ export async function ensureResources(reqs, { offline = false } = {}) {
     // re-read readiness (downloadFonts has written to disk; ✗ not-on-disk ones go to failed)
     for (const t of targets) {
       const hit = findFont(reqs.fontRegistry, t.family);
-      if (hit && fontFileReady(hit)) {
+      if (hit && fontHitReady(hit)) {
         fetched.push({ family: t.family, file: hit.file });
         t.status = "ready";
       } else {

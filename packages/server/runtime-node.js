@@ -10,7 +10,8 @@
 //     · write()     atomic per-file write with revision conflict detection
 //
 //   createFsResourceProvider({baseDir})   ResourceProvider over home/package assets
-//     · fontBytes/fontStatus  registry -> home bytes -> in-package fallback
+//     · fontBytes/fontStatus  user library -> built-in registry -> system -> missing
+//                             (global user library first, D14; no network)
 //     · iconSvg               Font Awesome registry + local SVG library
 //     · imageBytes            project-relative image files
 //     · fontRegistry/iconRegistry getters + fileExists (validation facts)
@@ -23,11 +24,11 @@ import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSyn
 import { basename, dirname, join, resolve, sep } from "node:path";
 import * as yaml from "../model/vendor/js-yaml.mjs";
 import { collectImageSrcs } from "../model/walk.js";
-import { findFont, findSystemFont } from "../model/font-registry.js";
 import { resolveIconName } from "../model/icon-fa.js";
 import { assertRevision } from "../runtime/index.js";
 import { IMAGE_EXTS, imageExtOf } from "../runtime/provider.js";
-import { FONT_REGISTRY_DIR, ICON_REGISTRY_DIR, resolveResourceFile } from "../paths.js";
+import { FONT_REGISTRY_DIR, ICON_REGISTRY_DIR, paths, resolveResourceFile } from "../paths.js";
+import { createFileFontLibrary, mergeUserFonts } from "./font-library.js";
 
 /** Project-relative path -> absolute path, refusing escapes from the project dir. */
 function safeProjectPath(baseDir, rel) {
@@ -164,32 +165,32 @@ function readRegistry(dir, label) {
  * @param {string} [options.baseDir] project directory for imageBytes/fileExists
  * @param {object} [options.fontRegistry] preloaded font registry
  * @param {object} [options.iconRegistry] preloaded icon registry
+ * @param {object} [options.fontLibrary] injected FontLibrary (default: file-backed user library + package registry)
+ * @param {string} [options.home] home override for the default font library (tests)
  * @returns {object} ResourceProvider + fontRegistry/iconRegistry/fileExists
  */
-export function createFsResourceProvider({ baseDir = ".", fontRegistry = null, iconRegistry = null } = {}) {
+export function createFsResourceProvider({ baseDir = ".", fontRegistry = null, iconRegistry = null, fontLibrary = null, home = null } = {}) {
   let fontReg = fontRegistry;
   let iconReg = iconRegistry;
-  const fonts = () => (fontReg ??= readRegistry(FONT_REGISTRY_DIR, "字体"));
+  const userHome = home || paths.home;
+  // The registry exposed to check/export includes user entries first, so a deck
+  // that declares only {family} still resolves through the global user library
+  // (findFont sees user families/keys; bytes are then read by the provider).
+  const fonts = () => mergeUserFonts((fontReg ??= readRegistry(FONT_REGISTRY_DIR, "字体")), { home: userHome });
   const icons = () => (iconReg ??= readRegistry(ICON_REGISTRY_DIR, "图标"));
+  // Global user font library (user -> built-in registry -> system); bytes never fetched here.
+  const library = fontLibrary || createFileFontLibrary(home ? { home } : {});
 
-  const fontHit = (registry, ref) => {
-    if (!ref) return undefined;
-    if (typeof ref.family === "string") {
-      const hit = findFont(registry, ref.family);
-      if (hit) return hit;
+  /** Direct deck/project font file references win over library lookups (same roots as before). */
+  const directFontBytes = async (ref) => {
+    if (!ref?.file) return null;
+    const p = resolveResourceFile("fonts", ref.file);
+    if (!p) return null;
+    try {
+      return new Uint8Array(readFileSync(p));
+    } catch {
+      return null;
     }
-    if (typeof ref.key === "string") return findFont(registry, ref.key);
-    return undefined;
-  };
-
-  const systemHit = (registry, ref) => {
-    if (!ref) return undefined;
-    if (typeof ref.family === "string") {
-      const hit = findSystemFont(registry, ref.family);
-      if (hit) return hit;
-    }
-    if (typeof ref.key === "string") return findSystemFont(registry, ref.key);
-    return undefined;
   };
 
   return {
@@ -205,32 +206,29 @@ export function createFsResourceProvider({ baseDir = ".", fontRegistry = null, i
 
     /** @param {object} ref @returns {Promise<Uint8Array|null>} */
     async fontBytes(ref) {
-      const hit = fontHit(fonts(), ref);
-      const file = ref?.file || hit?.file;
-      if (!file) return null;
-      const p = resolveResourceFile("fonts", file);
-      if (!p) return null;
-      try {
-        return new Uint8Array(readFileSync(p));
-      } catch {
-        return null;
-      }
+      const direct = await directFontBytes(ref);
+      if (direct) return direct;
+      const entry = await library.resolve(ref);
+      if (!entry || entry.source === "system") return null;
+      return library.read(entry);
     },
 
     /** @param {object} ref @returns {Promise<"ready"|"system"|"missing"|"fetchable">} */
     async fontStatus(ref) {
       if (!ref) return "missing";
-      const registry = fonts();
-      const hit = fontHit(registry, ref);
-      const file = ref.file || hit?.file;
-      const url = ref.url || hit?.url;
-      if (file) {
-        if (resolveResourceFile("fonts", file)) return "ready";
-        return url ? "fetchable" : "missing";
+      if (ref.file && resolveResourceFile("fonts", ref.file)) return "ready";
+      const entry = await library.resolve(ref);
+      if (!entry) return ref.url ? "fetchable" : "missing";
+      if (entry.source === "system") return "system";
+      if (entry.source === "builtin") {
+        if (entry.file && resolveResourceFile("fonts", entry.file)) return "ready";
+        // Injected/custom libraries may serve built-in bytes outside the standard roots.
+        if (await library.read(entry)) return "ready";
+        return entry.url || ref.url ? "fetchable" : "missing";
       }
-      if (url) return "fetchable";
-      if (systemHit(registry, ref)) return "system";
-      return "missing";
+      // user library entry: bytes present -> ready; stale index with a URL -> fetchable
+      if (await library.read(entry)) return "ready";
+      return entry.url || ref.url ? "fetchable" : "missing";
     },
 
     /** @param {string} name @returns {Promise<string|null>} */
@@ -258,14 +256,17 @@ export function createFsResourceProvider({ baseDir = ".", fontRegistry = null, i
     },
 
     async inventory() {
-      const registry = fonts();
+      const entries = await library.list({ includeSystem: true });
       return {
-        fonts: (registry.fonts || []).map((f) => ({
+        fonts: entries.map((f) => ({
           key: f.key,
           family: f.family,
           file: f.file,
-          source: resolveResourceFile("fonts", f.file) ? "builtin" : "fetchable",
+          source: f.source === "builtin"
+            ? (f.file && resolveResourceFile("fonts", f.file) ? "builtin" : "fetchable")
+            : f.source,
           size: f.size,
+          subset: f.subset,
         })),
         icons: (icons().icons || []).map((i) => ({ name: i.name, styles: i.styles })),
         themes: [],

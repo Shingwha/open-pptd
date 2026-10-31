@@ -49,6 +49,34 @@ export {
   mergePaletteColors,
 } from "./theme.js";
 
+// ---- Theme library core (theme-library.js: built-in snapshots, user ThemeStore factory, applyTheme) ----
+export {
+  BUILTIN_THEMES,
+  BUILTIN_THEME_PREFIX,
+  STANDARD_COLOR_KEYS,
+  THEME_FILE_VERSION,
+  ThemeError,
+  applyTheme,
+  collectThemeReferences,
+  colorTokenUsage,
+  createThemeStore,
+  isBuiltinThemeId,
+  isUserThemeId,
+  listBuiltinThemes,
+  listColorTokens,
+  normalizeThemeFile,
+  removeColorToken,
+  setColorToken,
+} from "./theme-library.js";
+
+// ---- Font library core (font-library.js: built-in registry + user library factory) ----
+export {
+  FontLibraryError,
+  MAX_FONT_BYTES,
+  createFontLibrary,
+  safeFontFileName,
+} from "./font-library.js";
+
 // ---- Validation (validate.js) ----
 export { validateDeck, registerRule } from "./validate.js";
 

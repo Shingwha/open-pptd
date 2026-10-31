@@ -71,6 +71,8 @@ function usage() {
       "  open-pptd assets sync [icons|fonts|all]      下载资产包并解压到 ~/.open-pptd/assets\n" +
       "                        [--from <zip>]         离线导入本地 zip\n" +
       "  open-pptd assets clean                       清 cache/ 与 tmp/（可安全删除）\n" +
+      "  open-pptd assets themes list|import|export|delete|apply  主题库（内置只读 + ~/.open-pptd/themes）\n" +
+      "  open-pptd assets fonts list|import|remove    全局用户字体库（~/.open-pptd/assets/fonts/user）\n" +
       "  open-pptd paths [--json]                     输出 home 与各资源目录\n" +
       "  open-pptd doctor [--json]                    五项自检（cli/node/home/assets/path）\n" +
       "\n" +
