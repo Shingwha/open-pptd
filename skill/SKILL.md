@@ -52,6 +52,8 @@ single best kit:
 | `kits/business-review` | Managers, board; grasp period status, drivers, risks, actions | executive |
 | `kits/consulting-report` | Decision makers, clients; compare options and commit to a recommendation | executive |
 | `kits/brand-proposal` | Brand owner, creative jury; believe the concept and buy the direction | editorial |
+| `kits/lecture` | Students, trainees; understand, practise, and apply one idea | instructional |
+| `kits/poster` | Poster-hall visitors at 1–2 m; get one claim from a single page | editorial (single page) |
 
 Read that kit's `kit.md`, then only the `pages/*.md` recipes needed for this
 deck's page map, plus the matching system section of `references/design.md`.

@@ -13,6 +13,8 @@ order, the page count, the copy, and the theme for each deck.
 | `business-review/` | executive | Quarterly/monthly review, management report, business update; the reader needs status, drivers, risks, and actions. |
 | `consulting-report/` | executive | Strategy study, diagnosis, options appraisal; the reader must commit to a recommendation. |
 | `brand-proposal/` | editorial | Brand/creative proposal, campaign pitch, visual direction; the reader must believe a concept. |
+| `lecture/` | instructional | Class, workshop, training, explainer; the learner must understand, practise, and remember. |
+| `poster/` | editorial (single page) | Conference, exhibition, or public-science poster; one page read from 1–2 m, never a stretched 16:9 deck. |
 
 Rules:
 

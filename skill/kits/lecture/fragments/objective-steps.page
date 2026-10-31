@@ -1,0 +1,119 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+elements:
+  - elementId: obj-kicker
+    elementType: text
+    bounds: [64, 44, 480, 20]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      letterSpacing: 2
+      align: [left, middle]
+      text: LECTURE 3 · OBJECTIVES
+  - elementId: obj-title
+    elementType: text
+    bounds: [64, 76, 640, 52]
+    content:
+      fontSize: 34
+      fontFamily: "MiSans"
+      color: "$text"
+      bold: true
+      lineHeight: 1.2
+      align: [left, middle]
+      text: By the end you can…
+  - elementId: obj-progress
+    elementType: text
+    bounds: [836, 44, 60, 20]
+    content:
+      fontSize: 12
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [right, middle]
+      text: 2 / 7
+  - elementId: obj-num-1
+    elementType: text
+    bounds: [64, 160, 56, 32]
+    content:
+      fontSize: 28
+      fontFamily: "MiSans"
+      color: "$primary"
+      bold: true
+      align: [left, middle]
+      text: "01"
+  - elementId: obj-text-1
+    elementType: text
+    bounds: [136, 158, 560, 64]
+    content:
+      fontSize: 20
+      fontFamily: "Microsoft YaHei"
+      color: "$text"
+      lineHeight: 1.4
+      align: [left, middle]
+      text: Explain what a 95% interval does and does not contain.
+  - elementId: obj-num-2
+    elementType: text
+    bounds: [64, 244, 56, 32]
+    content:
+      fontSize: 28
+      fontFamily: "MiSans"
+      color: "$primary"
+      bold: true
+      align: [left, middle]
+      text: "02"
+  - elementId: obj-text-2
+    elementType: text
+    bounds: [136, 242, 560, 64]
+    content:
+      fontSize: 20
+      fontFamily: "Microsoft YaHei"
+      color: "$text"
+      lineHeight: 1.4
+      align: [left, middle]
+      text: Compute the interval from a sample mean and standard error.
+  - elementId: obj-num-3
+    elementType: text
+    bounds: [64, 328, 56, 32]
+    content:
+      fontSize: 28
+      fontFamily: "MiSans"
+      color: "$primary"
+      bold: true
+      align: [left, middle]
+      text: "03"
+  - elementId: obj-text-3
+    elementType: text
+    bounds: [136, 326, 560, 64]
+    content:
+      fontSize: 20
+      fontFamily: "Microsoft YaHei"
+      color: "$text"
+      lineHeight: 1.4
+      align: [left, middle]
+      text: Diagnose a claim that the interval cannot support.
+  - elementId: obj-check-band
+    elementType: shape
+    bounds: [64, 420, 832, 64]
+    shapeName: rect
+    fill: {type: solid, color: "$primarySoft"}
+  - elementId: obj-check-text
+    elementType: text
+    bounds: [88, 432, 784, 40]
+    content:
+      fontSize: 16
+      fontFamily: "Microsoft YaHei"
+      color: "$text"
+      lineHeight: 1.4
+      align: [left, middle]
+      text: "Check: you can state the interval and one claim it rules out, without rereading the slides."
+  - elementId: obj-page
+    elementType: text
+    bounds: [900, 504, 28, 18]
+    content:
+      fontSize: 11
+      fontFamily: "Microsoft YaHei"
+      color: "$muted"
+      align: [right, middle]
+      text: "02"
