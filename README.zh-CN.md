@@ -10,7 +10,9 @@ English: [README.md](README.md)
 
 [线上画廊](https://shingwha.github.io/open-pptd/)（免安装，点开即改）· [30 秒安装](#30-秒上手) · [和 AI 一起用](#和-ai-一起用)
 
-<img src="docs/images/editor.png" width="880" alt="open-pptd 编辑器：青山咖啡经营复盘，左侧画布 + 底部页面缩略条"/>
+<img src="docs/images/editor.png" width="880" alt="open-pptd 编辑器：青山咖啡经营复盘，纸色画布 + 选中操作条 + 底部页面缩略条"/>
+
+<img src="docs/images/gallery.png" width="880" alt="open-pptd 作品画廊：演示与海报分类"/>
 
 </div>
 

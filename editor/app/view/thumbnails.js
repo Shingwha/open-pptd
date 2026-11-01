@@ -22,8 +22,8 @@ import { paintModelPage } from "../paint-page.js";
 
 // Fallback card box: used only when an element cannot be measured (e.g. rendered
 // hidden); the real size is decided by the CSS breakpoint and measured at render.
-const THUMB_W = 140;
-const THUMB_H = 79;
+const THUMB_W = 112;
+const THUMB_H = 63;
 
 export function createThumbnails({ state, api, ops, ui, editable = true, reload }) {
   const bar = ui.dom.pageThumbs;
@@ -37,7 +37,8 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
   let suppressClick = false;
 
   function thumbAt(x, y) {
-    return document.elementFromPoint(x, y)?.closest(".thumb") || null;
+    // Cards sit inside .thumb-item (page number underneath), so hit the item first
+    return document.elementFromPoint(x, y)?.closest(".thumb-item")?.querySelector(".thumb") || null;
   }
 
   /** Drop point: left half of a hit card → insert before it, right half → insert after it. */
@@ -71,14 +72,15 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
     bar.addEventListener("pointerdown", (e) => {
       if (e.button !== 0) return;
       if (e.target.closest("button")) return; // delete button: a normal click
-      const card = e.target.closest(".thumb");
+      const item = e.target.closest(".thumb-item");
+      const card = item?.querySelector(".thumb") || null;
       thumbDrag = {
         x: e.clientX,
         y: e.clientY,
         startScroll: bar.scrollLeft,
         moved: false,
         card,
-        index: card ? [...bar.children].indexOf(card) : -1,
+        index: item ? [...bar.children].indexOf(item) : -1,
         drop: null,
       };
     }, { signal: ac.signal });
@@ -135,11 +137,16 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
     disposeChartInstances(bar);
     bar.innerHTML = "";
     deck.pages.forEach((pg, i) => {
+      // One page = card + page number underneath (the number is outside the card frame)
+      const item = document.createElement("div");
+      item.className = "thumb-item";
       const thumb = document.createElement("div");
       thumb.className = "thumb" + (i === state.currentPage ? " active" : "");
       thumb.dataset.pageIndex = String(i);
       thumb.title = `第 ${i + 1} 页`;
-      bar.appendChild(thumb); // insert before measuring: the card size is decided by the CSS breakpoint and measured at runtime
+      item.appendChild(thumb);
+      // Insert before measuring: the card size is decided by the CSS breakpoint and measured at runtime
+      bar.appendChild(item);
       const mini = document.createElement("div");
       mini.className = "thumb-canvas";
       // Contain the canvas's real ratio into the measured card content box (16:9 fills exactly; a portrait poster
@@ -159,10 +166,11 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
       if (skeleton) skeleton.className = "thumb-skeleton";
       else paintModelPage(mini, pg, deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
 
+      thumb.append(mini, ...(skeleton ? [skeleton] : []));
       const num = document.createElement("span");
       num.className = "thumb-num";
       num.textContent = i + 1;
-      thumb.append(mini, ...(skeleton ? [skeleton] : []), num);
+      item.appendChild(num);
       if (editable) {
         const del = document.createElement("button");
         del.className = "thumb-del";
@@ -201,8 +209,8 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
     if (!state.deck || !bar) return;
     const i = state.deck.pages.indexOf(pg);
     if (i < 0) return; // deleted or deck swapped while loading
-    const thumb = bar.children[i];
-    if (!thumb?.classList.contains("thumb")) return;
+    const thumb = bar.children[i]?.querySelector?.(".thumb");
+    if (!thumb) return;
     disposeChartInstances(thumb);
     thumb.querySelector(".thumb-skeleton")?.remove();
     const mini = thumb.querySelector(".thumb-canvas");

@@ -67,6 +67,7 @@ export function createHomeView({
   let destroyed = false;
   let fileMenu = null;
   let manifestCache = null;
+  let currentEntries = []; // last manifest (empty-state "全部作品" action)
   const textCache = new Map(); // entry.id → { manifestText, pageFiles, manifestUrl }
 
   // --------------------------------------------------------------------------
@@ -132,12 +133,25 @@ export function createHomeView({
     });
   }
 
+  // Empty-state action (new blank / back to all works): one delegation for every render path
+  grid?.addEventListener(
+    "click",
+    (e) => {
+      const btn = e.target.closest("[data-empty-action]");
+      if (!btn) return;
+      e.stopPropagation();
+      if (btn.dataset.emptyAction === "new") onNewBlank();
+      else setTab("ppt", currentEntries);
+    },
+    { signal: ac.signal }
+  );
+
   // Home brand: jump back to the top of the grid (the shell intercepts .brand-home in the editor view)
   root.querySelector(".brand-home")?.addEventListener(
     "click",
     (e) => {
       e.preventDefault();
-      grid?.scrollIntoView({ block: "start", behavior: "smooth" });
+      grid?.scrollIntoView({ block: "start" });
     },
     { signal: ac.signal }
   );
@@ -203,21 +217,41 @@ export function createHomeView({
     { kind: "poster", label: "海报" },
   ];
 
+  /** Empty state: serif title + one line + one action (new blank / back to all). */
+  function emptyHtml({ title, hint, action, label }) {
+    return (
+      `<div class="gallery-empty">` +
+      `<p class="gallery-empty-title">${title}</p>` +
+      `<p class="gallery-empty-hint">${hint}</p>` +
+      `<button type="button" class="btn btn-primary gallery-empty-action" data-empty-action="${action}">${label}</button>` +
+      `</div>`
+    );
+  }
+
   function fillGrid(list) {
     grid.innerHTML = "";
     if (!list.length) {
-      grid.innerHTML =
-        `<div class="gallery-empty">此分类下暂无作品。<br>` +
-        `把项目放进 examples/ 并在 meta.yaml 写 kind: poster 即出现在这里。</div>`;
+      grid.innerHTML = currentEntries.length
+        ? emptyHtml({
+            title: "此分类下暂无作品",
+            hint: "切回「PPT」查看已有作品。",
+            action: "all",
+            label: "查看全部作品",
+          })
+        : emptyHtml({
+            title: "还没有作品",
+            hint: "把 PPTD 项目文件夹（deck.pptd + pages/ + media/）放进 examples/ 即出现在这里。",
+            action: "new",
+            label: "新建空白演示",
+          });
       return;
     }
-    for (const [i, entry] of list.entries()) {
+    for (const entry of list) {
       const card = document.createElement("div");
       card.className = "gallery-card";
-      card.style.setProperty("--card-i", i); // staggered float-in index (gallery animation)
       const thumb = document.createElement("div");
       thumb.className = "gallery-card-cover loading";
-      // The render target canvas sits level with the page-count slot: clearing the canvas on re-render does not take it with it
+      // The render target canvas sits level with the cover: clearing it on re-render keeps the card shell
       const canvas = document.createElement("div");
       canvas.className = "gallery-card-canvas";
       thumb.appendChild(canvas);
@@ -226,8 +260,7 @@ export function createHomeView({
       const tags = (entry.tags || [])
         .map((t) => `<span class="gallery-tag">${escapeHtml(t)}</span>`)
         .join("");
-      // The title/description/tags slots always exist (empty when absent), so card info height is uniform and the grid stays tidy;
-      // the page count rides the title row as plain meta text — it never covers the cover
+      // Title + page count / description / tags (empty slots keep card heights aligned)
       info.innerHTML =
         `<div class="gallery-card-title-row"><span class="gallery-card-title">${escapeHtml(entry.title)}</span><span class="gallery-card-pages">${entry.pages} 页</span></div>` +
         `<div class="gallery-card-desc">${escapeHtml(entry.description || "")}</div>` +
@@ -242,35 +275,14 @@ export function createHomeView({
     }
   }
 
-  /** Align the slider indicator with the active tab (FLIP: jump to the target, compensate the visual offset). */
-  function moveTabIndicator(instant = false) {
-    const active = tabsEl?.querySelector(".gallery-tab.active");
-    const bar = $("gallery-tab-indicator");
-    if (!active || !bar) return;
-    const startLeft = bar.getBoundingClientRect().left; // current visual position (viewport coords)
-    bar.style.transition = "none";
-    bar.style.transform = "";
-    bar.style.left = `${active.offsetLeft}px`;
-    bar.style.width = `${active.offsetWidth}px`;
-    const dx = instant ? 0 : startLeft - bar.getBoundingClientRect().left; // difference in the same coordinate system
-    if (!dx) {
-      bar.style.transition = "";
-      return;
-    }
-    bar.style.transform = `translateX(${dx}px)`;
-    bar.getBoundingClientRect(); // force reflow so the starting offset applies first
-    bar.style.transition = "";
-    bar.style.transform = ""; // transition from dx back to 0, sliding to the target
-  }
-
   function setTab(kind, entries) {
-    tabsEl?.querySelectorAll(".gallery-tab").forEach((b) => b.classList.toggle("active", b.dataset.kind === kind));
-    moveTabIndicator();
-    grid.classList.toggle("poster-grid", kind === "poster");
-    // Defer the grid rebuild by one frame: the slider animation starts on a clean main thread
-    requestAnimationFrame(() => {
-      if (!destroyed) fillGrid(entries.filter((e) => (e.kind || "ppt") === kind));
+    tabsEl?.querySelectorAll(".gallery-tab").forEach((b) => {
+      const on = b.dataset.kind === kind;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
     });
+    grid.classList.toggle("poster-grid", kind === "poster");
+    if (!destroyed) fillGrid(entries.filter((e) => (e.kind || "ppt") === kind));
   }
 
   async function show() {
@@ -290,21 +302,24 @@ export function createHomeView({
 
     const entries = await loadManifest();
     if (destroyed) return;
+    currentEntries = entries;
     if (!entries.length) {
-      grid.innerHTML =
-        `<div class="gallery-empty">examples/ 下暂无作品。<br>` +
-        `把做好的 PPTD 项目文件夹（deck.pptd + pages/ + media/）放进 examples/ 即出现在这里。</div>`;
+      grid.hidden = false;
+      grid.innerHTML = emptyHtml({
+        title: "还没有作品",
+        hint: "把 PPTD 项目文件夹（deck.pptd + pages/ + media/）放进 examples/ 即出现在这里。",
+        action: "new",
+        label: "新建空白演示",
+      });
       return;
     }
 
     if (tabsEl) {
       tabsEl.hidden = false;
-      tabsEl.innerHTML =
-        `<span class="gallery-tab-indicator" id="gallery-tab-indicator"></span>` +
-        TABS.map((t) => {
-          const n = entries.filter((e) => (e.kind || "ppt") === t.kind).length;
-          return `<button class="gallery-tab" data-kind="${t.kind}">${t.label}<span class="cnt">${n}</span></button>`;
-        }).join("");
+      tabsEl.innerHTML = TABS.map((t) => {
+        const n = entries.filter((e) => (e.kind || "ppt") === t.kind).length;
+        return `<button type="button" class="gallery-tab" role="tab" aria-selected="false" data-kind="${t.kind}">${t.label}<span class="cnt">${n}</span></button>`;
+      }).join("");
     }
     tabsEl?.addEventListener(
       "click",
@@ -312,13 +327,11 @@ export function createHomeView({
         const btn = ev.target.closest(".gallery-tab");
         if (btn && !btn.classList.contains("active")) {
           setTab(btn.dataset.kind, entries);
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          window.scrollTo({ top: 0 });
         }
       },
       { signal: ac.signal }
     );
-    window.addEventListener("resize", () => moveTabIndicator(true), { signal: ac.signal });
-    document.fonts?.ready.then(() => !destroyed && moveTabIndicator(true));
     setTab("ppt", entries);
   }
 
@@ -326,7 +339,12 @@ export function createHomeView({
     console.error("画廊加载失败:", err);
     if (!grid || destroyed) return;
     grid.hidden = false;
-    grid.innerHTML = `<div class="gallery-empty">画廊加载失败：${escapeHtml(err.message)}</div>`;
+    grid.innerHTML = emptyHtml({
+      title: "画廊加载失败",
+      hint: escapeHtml(err.message),
+      action: "new",
+      label: "新建空白演示",
+    });
     toast?.show?.(`画廊加载失败: ${err.message}`, "danger");
   });
 

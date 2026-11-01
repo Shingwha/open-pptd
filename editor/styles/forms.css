@@ -1,22 +1,21 @@
 /* ============================================================================
    forms.css — shared form primitives (content editors + Design panel)
    ----------------------------------------------------------------------------
-   The old inspector layout is gone (editor-ux §1/§9); only the field/control
-   language survives: prop groups, full-width fields, two-column numeric cells,
-   the color control with its token popover, checks and hints. Values come from
-   tokens.css only (ui-token-literals gate).
+   Only the field language lives here: hairline-separated groups, a label column,
+   line inputs (1px --line-strong, focus = accent border), the three-in-one color
+   control with its token popover, switches and hints. No filled blocks.
    ============================================================================ */
 
-/* -- Sections: hairline separators, no filled blocks, 12px medium title -- */
+/* -- Sections -- */
 .prop-group {
-  padding: var(--space-3) 14px;
+  padding: var(--space-3) var(--space-6);
   border-top: 1px solid var(--line);
 }
-/* The head above and the panel edge already carry the hairline */
 .prop-group:first-child { border-top: 0; }
 .prop-group-title {
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   color: var(--sub);
   margin-bottom: var(--space-2);
   cursor: pointer;
@@ -24,11 +23,10 @@
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: color var(--dur-fast) var(--ease);
 }
 .prop-group-title:hover { color: var(--ink); }
-/* Collapse chevron: pure CSS (pointing down = expanded), no markup change;
-   a 1px hairline in currentColor so it follows the title's hover */
+/* Collapse chevron: pure CSS, drawn in currentColor */
 .prop-group-title::after {
   content: "";
   width: 6px;
@@ -37,136 +35,193 @@
   border-right: 1px solid currentColor;
   border-bottom: 1px solid currentColor;
   transform: rotate(45deg);
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: transform var(--dur-fast) var(--ease);
 }
 .prop-group.collapsed > :not(.prop-group-title) { display: none; }
 .prop-group.collapsed .prop-group-title::after { transform: rotate(-45deg); }
-/* A block sitting right under the title keeps the same 8px gap as a plain grid */
 .prop-group-title + .prop-checks { margin-top: 0; }
 
-/* -- Three-in-one color control (colorField): swatch button + picker + hex + theme-swatch popover -- */
-.color-field { display: flex; align-items: center; gap: 6px; min-width: 0; position: relative; }
-/* The 20px color chips carry the chip outline (--chip-border), not the input frame */
-.color-swatch-btn {
-  width: 20px; height: 20px; border-radius: var(--radius-sm); padding: 0; cursor: pointer; flex: none;
-  border: 1px solid var(--chip-border);
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-}
-.color-swatch-btn:hover { border-color: var(--sub); }
-.color-swatch-btn:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
-.color-field input[type="color"] {
-  width: 20px; height: 20px; padding: 0; border: 1px solid var(--chip-border);
-  border-radius: var(--radius-sm); background: none; cursor: pointer; flex: none;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-}
-.color-field input[type="color"]:hover { border-color: var(--sub); }
-.color-field input[type="color"]:focus { border-color: var(--sel-ring); }
-.color-hex {
-  flex: 1; min-width: 0; height: var(--control-h); font-size: var(--text-xs); padding: 0 var(--space-2);
-  border: 1px solid var(--line-strong); border-radius: var(--radius);
-  background: var(--panel); color: var(--ink); outline: none; font-family: var(--mono);
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-}
-.color-hex:hover { border-color: var(--sub); }
-.color-hex:focus { border-color: var(--sel-ring); }
-/* Theme-swatch popover: an overlay, so it keeps its light shadow; items use the
-   neutral hover (a color tint would read as a persistent state) */
-.color-pop {
-  position: fixed;
-  z-index: var(--z-toast); /* above the dialog mask (--z-modal) so it can sit over any container */
-  width: 216px;
-  padding: var(--space-2);
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-1);
-}
-/* hidden wins over display:grid (otherwise every popover stays visible) */
-.color-pop[hidden] { display: none; }
-.color-pop-item {
+/* -- Field row: label column + control -- */
+.prop-field {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 5px 7px;
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  background: none;
-  cursor: pointer;
-  text-align: left;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  min-width: 0;
 }
-.color-pop-item:hover { background: var(--hover); }
-.color-pop-item:active { background: var(--active); }
-.color-pop-item:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
-.color-pop-chip { width: 18px; height: 18px; border-radius: var(--radius-sm); border: 1px solid var(--chip-border); flex: none; }
-.color-pop-name { font-size: var(--text-xs); color: var(--ink); }
+.prop-field:last-child { margin-bottom: 0; }
+.prop-label {
+  flex: 0 0 60px;
+  font-size: var(--text-sm);
+  color: var(--sub);
+  min-width: 0;
+}
+.prop-field > .field-input,
+.prop-field > .color-field,
+.prop-field > .prop-grid,
+.prop-field > .btn { flex: 1; min-width: 0; }
 
-/* -- Two-column compact cell (numeric): label on top, aligned column lines -- */
+/* -- Line input: the single control skin for text / number / select / textarea -- */
+.field-input {
+  width: 100%;
+  height: var(--control-h-sm);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  color: var(--ink);
+  font-size: var(--text-md);
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.field-input:hover { border-color: var(--sub); }
+.field-input:focus { border-color: var(--accent); }
+.field-input:disabled { color: var(--faint); background: var(--paper); cursor: not-allowed; }
+textarea.field-input {
+  height: auto;
+  padding: 6px var(--space-2);
+  line-height: var(--leading);
+  resize: vertical;
+}
+
+/* -- Two-column compact cell (numeric): label above -- */
 .prop-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-2) var(--space-3);
 }
 .prop-cell { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
-.prop-cell-label { font-size: var(--text-xs); color: var(--faint); }
+.prop-cell-label { font-size: var(--text-xs); color: var(--sub); }
 
+/* -- Three-in-one color control: swatch button + picker + hex + token popover -- */
+.color-field { display: flex; align-items: center; gap: var(--space-1); min-width: 0; position: relative; }
+.color-swatch-btn {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--chip-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.color-swatch-btn:hover { border-color: var(--sub); }
+.color-swatch-btn:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: 1px; }
+.color-field input[type="color"] {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--chip-border);
+  border-radius: var(--radius-sm);
+  background: none;
+  cursor: pointer;
+}
+.color-field input[type="color"]:hover { border-color: var(--sub); }
+.color-field input[type="color"]:focus { border-color: var(--accent); }
+.color-hex {
+  flex: 1;
+  min-width: 0;
+  height: var(--control-h-sm);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  color: var(--ink);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.color-hex:hover { border-color: var(--sub); }
+.color-hex:focus { border-color: var(--accent); }
+
+/* Token popover over the color control */
+.color-pop {
+  position: fixed;
+  z-index: var(--z-toast);
+  width: 220px;
+  padding: var(--space-2);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+.color-pop[hidden] { display: none; }
+.color-pop-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--dur-fast) var(--ease);
+}
+.color-pop-item:hover { background: var(--hover); }
+.color-pop-item:active { background: var(--active); }
+.color-pop-item:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: -2px; }
+.color-pop-chip {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--chip-border);
+}
+.color-pop-name { font-size: var(--text-xs); color: var(--ink); }
+
+/* -- Checks / switches -- */
 .prop-checks {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--space-4);
   margin-top: var(--space-2);
 }
 .prop-check {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-2);
   font-size: var(--text-sm);
   color: var(--sub);
   cursor: pointer;
   user-select: none;
 }
-/* Native checkbox restyled as a hairline switch (no markup change): a white
-   1px-frame track, the state read from the accent border + knob (no heavy fill) */
 .prop-check input[type="checkbox"] {
   appearance: none;
-  width: 30px;
-  height: 18px;
+  width: 28px;
+  height: 16px;
+  flex: none;
+  position: relative;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-lg);
   background: var(--panel);
-  position: relative;
   cursor: pointer;
-  flex: none;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: border-color var(--dur-fast) var(--ease);
 }
 .prop-check input[type="checkbox"]::before {
   content: "";
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: var(--faint);
+  background: var(--sub);
   transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 .prop-check input[type="checkbox"]:hover { border-color: var(--sub); }
 .prop-check input[type="checkbox"]:checked { border-color: var(--accent); }
 .prop-check input[type="checkbox"]:checked::before { background: var(--accent); transform: translateX(12px); }
-.prop-check input[type="checkbox"]:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
+.prop-check input[type="checkbox"]:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: 1px; }
 
-/* Hint text: flat hairline box, no fill (11px --faint) */
+/* -- Hint text: one quiet line, no filled box -- */
 .prop-hint {
   font-size: var(--text-xs);
-  color: var(--faint);
-  line-height: 1.5;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: var(--space-2) 10px;
-}
-/* Panel-level hint (page setup mode, no element selected) */
-.panel-hint {
-  margin: 0 14px 14px;
+  color: var(--sub);
+  line-height: var(--leading);
+  padding: var(--space-1) 0;
 }

@@ -30,6 +30,7 @@ const IDS = {
   tbStatus: "tb-status",
   statusHint: "status-hint",
   statusDirty: "status-dirty",
+  statusSaved: "status-saved",
   btnReload: "btn-reload",
   btnAdd: "btn-add",
   btnFile: "btn-file",
