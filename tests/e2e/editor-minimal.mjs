@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // tests/e2e/editor-minimal.mjs — minimal editor E2E.
 // Covers selection/drag transform/multi-select, text/table/chart content editors (open + commit),
-// text color (token list + hex), add control (3 items) + Delete, and the Design panel (apply
+// text color (token list + hex), add control (6 items in fixed order) + Delete, and the Design panel (apply
 // theme, custom color token, appearance toggle); legacy entries are gone (#btn-fonts/#btn-theme/
 // #inspector/#quickbar/#add-menu). Depends on local Chrome (CDP 9341); SKIP when missing.
 // Usage: node tests/e2e/editor-minimal.mjs
@@ -171,7 +171,7 @@ try {
   })()`);
   log("图表编辑器打开并切换类型", s.dialog === 1 && s.type === "line" && s.series === 1, JSON.stringify(s));
 
-  // 6) Add control: exactly three items; delete key removes the selection
+  // 6) Add control: exactly six items in fixed order; delete key removes the selection
   s = await evalJs(`(() => {
     const api = window.__pptdEditor;
     document.querySelector('#btn-add').click();
@@ -184,7 +184,11 @@ try {
     const afterDelete = api.state.deck.pages[api.state.currentPage].elements.length;
     return { items, deltaAdd: afterAdd - before, deltaDelete: afterAdd - afterDelete };
   })()`);
-  log("添加菜单仅文字/表格/图表", JSON.stringify(s.items) === JSON.stringify(["text", "table", "chart"]), JSON.stringify(s.items));
+  log(
+    "添加菜单六类且顺序固定",
+    JSON.stringify(s.items) === JSON.stringify(["text", "table", "chart", "shape", "line", "image"]),
+    JSON.stringify(s.items)
+  );
   log("添加 + 删除元素", s.deltaAdd === 1 && s.deltaDelete === 1, JSON.stringify(s));
 
   // 7) Design panel: apply theme, custom color token, appearance
