@@ -95,11 +95,10 @@ try {
     const a = cli(["assets", "list", "--json"]);
     const al = jsonLine("assets list --json 单行", a.stdout);
     step("assets list exit 0", a.status === 0 && !!al?.fonts && !!al?.icons);
-    step("assets list 含 home/themes", typeof al?.home === "string" && !!al?.themes);
+    step("assets list 含 home/fonts/icons", typeof al?.home === "string" && !!al?.fonts && !!al?.icons);
 
-    const t = cli(["assets", "themes", "list", "--json"]);
-    const tl = jsonLine("assets themes list --json 单行", t.stdout);
-    step("assets themes list exit 0 + counts", t.status === 0 && typeof tl?.counts?.builtin === "number");
+    const th = cli(["assets", "themes"]);
+    step("assets themes 已删除：exit 1 + 未知子命令提示", th.status === 1 && /子命令/.test(th.stderr), th.stderr.split(/\r?\n/)[0]);
 
     const f = cli(["assets", "fonts", "list", "--json"]);
     const fl = jsonLine("assets fonts list --json 单行", f.stdout);
@@ -189,6 +188,9 @@ try {
     step("缺失 manifest → ERR_NOT_FOUND + exit 1", r3.status === 1 && d3?.error?.code === "ERR_NOT_FOUND");
     const r4 = cli(["build", join(ROOT, "tests/projects/table/deck.pptd"), "--strict", "--format", "pptx", "-o", join(TMP, "strict.pptx"), "--json"]);
     step("build --strict 遇 warning exit 1", r4.status === 1, `exit=${r4.status} ${r4.stderr.slice(-80)}`);
+    const r5 = cli(["build", manifest, "--format", "pptx", "--theme", "tech", "-o", join(TMP, "theme.pptx"), "--json"]);
+    const d5 = jsonLine("build --theme --json 单行", r5.stdout);
+    step("build --theme 已移除：exit 1 + 错误含已移除", r5.status === 1 && /已移除/.test(d5?.error?.message || ""), JSON.stringify(d5?.error || {}));
   }
 
   console.log("\n=== 6. open 自动识别 / detach / stop / blank ===");
