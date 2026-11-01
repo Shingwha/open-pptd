@@ -1,11 +1,7 @@
-// ============================================================================
 // export/png.js — PNG format router (page selection / scale / naming / report)
-// ----------------------------------------------------------------------------
-// Rasterization is injected (env.renderBackend, RenderBackend contract §6):
-// this module only picks pages, validates scale, names files, writes through the
-// sink and records the report. The same router therefore serves headless today
-// and capture/foreignObject hosts later.
-// ============================================================================
+// Rasterization is injected through env.renderBackend (RenderBackend contract): this
+// module only picks pages, validates scale, names files, writes through the sink and
+// records the report, so headless and capture/foreignObject hosts share one router.
 
 import { deckSize } from "../model/index.js";
 import { ExportError, EXPORT_ERRORS } from "./errors.js";

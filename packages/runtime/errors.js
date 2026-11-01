@@ -1,14 +1,8 @@
-// ============================================================================
-// runtime/errors.js — unified runtime errors (contract: interfaces.md §14)
-// ----------------------------------------------------------------------------
+// runtime/errors.js — unified runtime errors
 // Every public error carries a stable `code` string so JSON output can emit
 // {ok:false,error:{code,message}} without string matching. The classes stay
-// environment-free (no node:/DOM), usable from browser and Node callers.
-//
-//   RevisionConflictError  — write with a stale expectedRevision (never overwrite)
-//   ResourceMissingError   — font/icon/image byte source exhausted
-//   UnsupportedFormatError — image/export/serialization format not supported
-// ============================================================================
+// environment-free (no node:/DOM), usable from browser and Node callers:
+// RevisionConflictError / ResourceMissingError / UnsupportedFormatError.
 
 /** Save conflict: the source changed since the caller read it. */
 export class RevisionConflictError extends Error {

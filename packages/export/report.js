@@ -1,20 +1,9 @@
-// ============================================================================
 // export/report.js — ExportReport/CheckReport helpers and path utilities
-// ----------------------------------------------------------------------------
-// ExportReport (interfaces.md §5, frozen for W3 → W9/W10 reuse):
-//   { ok, format, outPath?, pages?, checked:{fonts,icons,media}, fetched, embedded,
-//     skipped, missing, warnings, errors }
-// Extensions this wave adds (documented, additive):
-//   check?          structured CheckReport (CLI formats warnings from it)
-//   skippedIcons?   icon skips [{iconName, reason}]
-//   unsupported?    runtime/unsupported diagnostics [{kind,ref,format}]
-//   files?          written/artifact output paths (png multi-file)
-//   artifacts?      [{name, bytes}] when no env.sink (in-memory hosts/tests)
-//   bytes?          total bytes written (single artifact convenience)
-//
-// issueLocation/formatIssue mirror the historical CLI wording so `open-pptd check`
-// and the export gate keep byte-identical human output.
-// ============================================================================
+// ExportReport: { ok, format, outPath?, pages?, checked:{fonts,icons,media}, fetched,
+//   embedded, skipped, missing, warnings, errors }, plus additive optional fields:
+//   check? (structured CheckReport), skippedIcons?, unsupported?, files?, artifacts?,
+//   bytes? (total bytes written).
+// issueLocation/formatIssue produce the CLI check wording (identical output in check/export).
 
 /** "page N elementId" prefix used by CLI/check output (either part optional). */
 export function issueLocation(issue) {

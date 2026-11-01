@@ -1,17 +1,9 @@
-// ============================================================================
 // cli/font-file.js — font byte validation shared by readiness and download
-// ----------------------------------------------------------------------------
 // Integrity model (deliberately not "size == registry size"):
-//   · transport: Content-Length vs received bytes (only when the response is not
-//     content-encoded; fetch() transparently decodes gzip/br, so the header then
-//     describes the compressed body and must be ignored)
-//   · format:    sfnt magic (OTTO / 0x00010000 / "true")
-//   · on disk:   atomic writes (tmp/*.part → rename) mean a partial file should
-//     never be visible, so readiness only needs presence + magic
-// The registry `size` is advisory metadata (display/progress). Comparing it for
-// readiness breaks as soon as upstream re-releases a font (same bytes semantics,
-// different length), which made a valid font look "stale" and re-download forever.
-// ============================================================================
+//   transport: Content-Length vs received bytes, only for identity responses (fetch
+//   decodes gzip/br, so the header then describes the compressed body and is ignored).
+//   format: sfnt magic (OTTO / 0x00010000 / "true"). Atomic writes mean readiness only
+//   needs presence + magic; registry `size` is advisory (upstream re-releases change length).
 
 import { closeSync, openSync, readSync } from "node:fs";
 

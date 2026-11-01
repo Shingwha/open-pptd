@@ -1,24 +1,9 @@
-// ============================================================================
 // server/runtime-node.js — Node adapters for ProjectRuntime (Node-only)
-// ----------------------------------------------------------------------------
 // The runtime package is environment-free; all filesystem work lives here:
-//
-//   createDiskProjectSource(manifest)     ProjectSource over a local .pptd project
-//     · readSync()  synchronous read (CLI export/check keep their sync command surface)
-//     · read()      readSync + bytes of every referenced image (for serialize raw)
-//     · readMedia() project-relative PNG/JPEG/GIF bytes (null for missing/unsupported)
-//     · write()     atomic per-file write with revision conflict detection
-//
-//   createFsResourceProvider({baseDir})   ResourceProvider over home/package assets
-//     · fontBytes/fontStatus  user library -> built-in registry -> system -> missing
-//                             (global user library first, D14; no network)
-//     · iconSvg               Font Awesome registry + local SVG library
-//     · imageBytes            project-relative image files
-//     · fontRegistry/iconRegistry getters + fileExists (validation facts)
-//
-// Revision = "<manifest mtimeMs>:<manifest size>" (opaque to callers). The Node
-// provider never fetches from the network: `fetchFonts`/`--fetch` is W6/W3 scope.
-// ============================================================================
+// createDiskProjectSource(manifest) — ProjectSource over a local .pptd project
+//   (readSync/read/readMedia/write; atomic writes, revision = "<mtimeMs>:<size>").
+// createFsResourceProvider({baseDir}) — ResourceProvider over home/package assets
+//   (fonts: user → built-in → system → missing, no network; icons, images, registries, fileExists).
 
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { basename, dirname, join, resolve, sep } from "node:path";
@@ -74,7 +59,7 @@ export function createDiskProjectSource(manifestOrOptions) {
     }
   };
 
-  /** Synchronous manifest + page read (same semantics as the old CLI loadProjectFiles). */
+  /** Synchronous manifest + page read (the CLI's sync command surface). */
   function readSync() {
     const manifestText = readFileSync(manifestPath, "utf8");
     const manifestObj = yaml.load(manifestText);
@@ -175,7 +160,7 @@ export function createFsResourceProvider({ baseDir = ".", fontRegistry = null, i
   // Global user font library (user -> built-in registry -> system); bytes never fetched here.
   const library = fontLibrary || createFileFontLibrary(home ? { home } : {});
 
-  /** Direct deck/project font file references win over library lookups (same roots as before). */
+  /** Direct deck/project font file references win over library lookups. */
   const directFontBytes = async (ref) => {
     if (!ref?.file) return null;
     const p = resolveResourceFile("fonts", ref.file);

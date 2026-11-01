@@ -1,12 +1,8 @@
-// ============================================================================
 // export/bundle.js — project bundle format router (ZipWriter, snapshot | raw)
-// ----------------------------------------------------------------------------
-// snapshot: runtime.reference serialization (model serializeDeck) + project media;
-//           identical to the editor "export project bundle" semantics.
-// raw:      verbatim manifest/page texts + media bytes (Node disk source); the
-//           CLI `export-project` archive mode.
+// snapshot: runtime serialization (model serializeDeck) + project media; identical to
+//           the editor "export project bundle" semantics.
+// raw:      verbatim manifest/page texts + media bytes (Node disk source).
 // This module only packs the FileBundle; page-model logic stays in runtime.
-// ============================================================================
 
 import { ZipWriter, safeFileName } from "../writer/index.js";
 import { serializeProject } from "../runtime/index.js";
@@ -46,7 +42,7 @@ export async function exportBundle(ctx) {
     else if (file.bytes instanceof Uint8Array) zip.add(file.path, file.bytes);
     else throw new ExportError(EXPORT_ERRORS.EXPORT, `bundle 文件缺少内容: ${file.path}`);
   }
-  // Historical CLI warning: referenced images missing on disk are skipped, never fatal.
+  // CLI convention: referenced images missing on disk are skipped, never fatal.
   for (const src of collectImageSrcs(deck.pages)) {
     if (typeof src !== "string" || !src || src.startsWith("data:") || /^https?:/i.test(src)) continue;
     if (!bundled.has(src)) report.warnings.push(`[export-project] 图片缺失，已跳过: ${src}`);

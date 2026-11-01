@@ -1,10 +1,7 @@
-// ============================================================================
 // export/errors.js — ExportService error type and stable codes
-// ----------------------------------------------------------------------------
 // Every failure the service raises (as opposed to a check result in the report)
 // carries a stable `code` so CLI/hosts can emit {ok:false,error:{code,message}}
 // without string matching (same convention as runtime/errors.js).
-// ============================================================================
 
 /** Error codes used by ExportService. */
 export const EXPORT_ERRORS = {

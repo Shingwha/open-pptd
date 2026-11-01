@@ -1,16 +1,9 @@
-// ============================================================================
 // server/font-library.js — Node storage adapter for the global font library
-// ----------------------------------------------------------------------------
-// User fonts: <home>/assets/fonts/user/*.ttf|otf + index.json (default
-// ~/.open-pptd/assets/fonts/user, theme-font.md §6/§8). The pure factory
-// (model/font-library.js) owns resolution/import semantics; this file does:
-//   · index read/write ({version:1, fonts:[FontEntry]}) with atomic writes
-//   · byte copy into the user dir (basename only; traversal-safe; unique names)
-//   · built-in registry + in-package/home bytes (read-only)
-//   · HTTPS font download for importUrl (bounded size/time)
-// The browser editor and the CLI share this same home layout through the server
-// API / provider (D14).
-// ============================================================================
+// User fonts: <home>/assets/fonts/user/*.ttf|otf + index.json (default ~/.open-pptd/...).
+// The pure factory (model/font-library.js) owns resolution/import semantics; this file
+// does the IO: atomic index read/write ({version:1, fonts:[FontEntry]}), traversal-safe
+// byte copy into the user dir, built-in registry + in-package/home byte reads, and a
+// bounded HTTPS download for importUrl. Browser editor and CLI share this home layout.
 
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { join, resolve, sep } from "node:path";

@@ -1,25 +1,9 @@
-// ============================================================================
-// export/index.js — ExportService (contract 3.0: open-pptd/export)
-// ----------------------------------------------------------------------------
-// The single orchestration entry for check / pptx / bundle / png
-// (interfaces.md §5):
-//
-//   exportProject(project, options, env) → ExportReport
-//
-//     options: { format:"check"|"pptx"|"bundle"|"png", outPath?, theme?, check?,
-//                fetchFonts?, offline?, strict?, embedFonts?, fullFonts?,
-//                pages?, scale?, backend?, browserPath?, timeoutMs?,
-//                bundleMode? }
-//     env:     { resources, renderBackend?, sink?, onProgress? }
-//
-// Responsibilities kept here (and only here): checkProject gate, strict policy,
-// resource resolution diagnostics, Report assembly and format routing. Format
-// modules reuse runtime (serialize) and writer (buildPptx/ZipWriter); PNG only
-// rasterizes through the injected RenderBackend.
-//
-// Dual-end package: no node:/DOM. Node adapters (disk source, fs provider,
-// headless backend, file sink) are injected by CLI/server hosts via env.
-// ============================================================================
+// export/index.js — ExportService (Contract 3.0 entry open-pptd/export)
+// Single orchestration entry: exportProject(project, options, env) → ExportReport for
+// check / pptx / bundle / png. options: format, outPath?, theme?, check?, fetchFonts?, offline?,
+// strict?, embedFonts?, fullFonts?, pages?, scale?, backend?, browserPath?, timeoutMs?, bundleMode?;
+// env: resources, renderBackend?, sink?, onProgress?. Kept here: check gate, strict policy,
+// resolve diagnostics, report assembly, format routing. Dual-end: no node:/DOM; adapters injected via env.
 
 import { checkProject, createProject, resolveProject } from "../runtime/index.js";
 import { THEME_PALETTES, mergePaletteColors } from "../model/index.js";
@@ -33,7 +17,7 @@ import { exportPng } from "./png.js";
 export const EXPORT_FORMATS = ["check", "pptx", "bundle", "png"];
 
 /**
- * ExportReport (interfaces.md §5; extensions documented in report.js).
+ * ExportReport (extensions documented in report.js).
  * @typedef {Object} ExportReport
  * @property {boolean} ok
  * @property {"check"|"pptx"|"bundle"|"png"} format
@@ -55,7 +39,7 @@ export const EXPORT_FORMATS = ["check", "pptx", "bundle", "png"];
  */
 
 /**
- * RenderBackend (interfaces.md §6).
+ * RenderBackend contract.
  * @typedef {Object} RenderBackend
  * @property {() => Promise<void>} prepare set viewport/deviceScaleFactor/pixelRatio before the first paint
  * @property {(page:number, opts:{pixelRatio:number}) => Promise<void>} paint 1-based page
@@ -143,7 +127,7 @@ function collectMissing(resolved) {
 /**
  * Export a project.
  * @param {object} projectInput Project | ProjectFiles | Deck
- * @param {object} [options] see module header / interfaces.md §5
+ * @param {object} [options] see the module header
  * @param {object} [env] {resources, renderBackend?, sink?, onProgress?}
  * @returns {Promise<object>} ExportReport (check failures are report.ok=false, not throws)
  */
@@ -182,7 +166,7 @@ export async function exportProject(projectInput, options = {}, env = {}) {
 
   // ---- 1. Check gate (errors block; warnings are soft unless strict) ----
   if (options.check !== false) {
-    // checkLayout:false keeps the historical CLI export gate (schema/resources only,
+    // checkLayout:false keeps the CLI export gate (schema/resources only,
     // no LayoutTree geometry facts); the default full check matches `open-pptd check`.
     const check = checkProject(project, {
       resources,

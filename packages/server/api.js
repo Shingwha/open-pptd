@@ -1,22 +1,9 @@
-// ============================================================================
-// server/api.js — write-back and liveness API
-// ----------------------------------------------------------------------------
-//   POST /api/save  browser save → disk (only with --project mount)
-//   GET  /api/ping  liveness probe (local serve only, 404 on GitHub Pages) — the
-//                   gallery uses it to tell local from online mode
-//
-// /api/save batch semantics (W9, interfaces.md §2/§14):
-//   body { files:[{path,text}|{path,b64}|{path,content}], expectedRevision? }
-//   · all paths are validated before anything is written (traversal → 403)
-//   · the current on-disk revision (manifest + pages) is compared with
-//     expectedRevision; a mismatch returns 409 {ok:false,error:{code:
-//     "ERR_REVISION_CONFLICT",currentRevision}} and never writes
-//   · atomic batch: back up old bytes → write every target through a same-dir
-//     temp file → rename (manifest last); any failure restores the backups /
-//     removes newly created files and returns 500
-//   · success returns {ok:true,count,revision}
-// The legacy single-file body {path,content} is still accepted (no revision).
-// ============================================================================
+// server/api.js — write-back and liveness API (/api/save, /api/ping)
+// POST /api/save writes only with --project mount; GET /api/ping is local-serve only.
+// Batch body: { files:[{path,text}|{path,b64}|{path,content}], expectedRevision? }. Paths
+// are validated before any write (traversal → 403); a stale expectedRevision returns 409
+// ERR_REVISION_CONFLICT without writing. The batch is atomic: backup → same-dir tmp →
+// rename (manifest last), with rollback on failure. Single-file bodies stay accepted.
 
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, join, normalize, sep } from "node:path";

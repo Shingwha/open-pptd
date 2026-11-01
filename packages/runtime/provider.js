@@ -1,17 +1,7 @@
-// ============================================================================
 // runtime/provider.js — ResourceProvider contract, image helpers, memory provider
-// ----------------------------------------------------------------------------
-// ResourceProvider (interfaces.md §3):
-//   fontBytes(ref): Promise<Uint8Array|null>
-//   fontStatus(ref): Promise<"ready"|"system"|"missing"|"fetchable">
-//   iconSvg(name): Promise<string|null>
-//   imageBytes(src): Promise<Uint8Array|null>
-//   inventory?(): Promise<{fonts: object[], icons: object[], themes: object[]}>
-//
 // Core image formats are PNG/JPEG/GIF only (the writer embeds exactly these);
 // WebP/SVG conversion belongs to the skill/agent side, not the core. Missing and
 // unsupported resources resolve to null plus diagnostics in resolveProject.
-// ============================================================================
 
 import { base64ToBytes, encodeUtf8 } from "../model/bytes.js";
 import { UnsupportedFormatError } from "./errors.js";

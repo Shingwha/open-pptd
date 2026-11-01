@@ -1,18 +1,9 @@
-// ============================================================================
-// packages/paths.js — resource and config path resolution (contract 3.0 entry open-pptd/paths)
-// ----------------------------------------------------------------------------
-// Rules (owned by this file; downstream only consumes, never builds dir names itself):
-//   · read three levels: $OPEN_PPTD_HOME → ~/.open-pptd → <package root>/assets (first hit wins)
-//   · write one level: always write home (npm/pnpm install dirs may be read-only;
-//     in-package resources are permanently read-only)
-//   · registry.json is version-coupled with the code → resourceRoots.registry has a single
-//     root (the package root); home never shadows it
-//
-// Node-only module (consumed by CLI / local serve / the downstream Host half), never in the
-// browser path; the browser still requests assets/** site-root-relative, resolved by
-// server/static.js multi-root logic, so the browser branches of font-registry.js / icon-fa.js
-// stay untouched.
-// ============================================================================
+// packages/paths.js — resource and config path resolution (Contract 3.0 entry open-pptd/paths)
+// Rules owned here (downstream only consumes, never rebuilds dir names): read three levels
+// $OPEN_PPTD_HOME → ~/.open-pptd → <package root>/assets (first hit wins); write only to
+// home (install dirs may be read-only); registry.json is version-coupled and resolves from
+// the package root only. Node-only module: browsers request assets/** site-root-relative,
+// resolved by server/static.js multi-root logic.
 
 import { existsSync, mkdirSync, writeFileSync, renameSync, rmSync, statSync, readdirSync } from "node:fs";
 import os from "node:os";
@@ -49,7 +40,7 @@ export const paths = Object.freeze({
   home: openPptdHome(),
   assets: join(openPptdHome(), "assets"),
   fonts: join(openPptdHome(), "assets", "fonts"),
-  // User font library (theme-font.md §8): files + index.json live under fonts/user.
+  // User font library: files + index.json live under fonts/user.
   userFonts: join(openPptdHome(), "assets", "fonts", "user"),
   userFontIndex: join(openPptdHome(), "assets", "fonts", "user", "index.json"),
   icons: join(openPptdHome(), "assets", "icons"),

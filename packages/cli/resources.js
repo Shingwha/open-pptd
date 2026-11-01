@@ -1,14 +1,9 @@
-// ============================================================================
 // cli/resources.js — deck resource requirements + on-demand fetch (Node adapter)
-// ----------------------------------------------------------------------------
 // Shared by `check` (read-only summary) and `build --fetch` (explicit download):
-//   1 collect references  parse deck → font declarations (registry-resolved) / icon refs / media files
-//   2 three-level compare  home/assets → in-package assets → decide ready | fetchable | system | unknown | missing
-//   3 fetch on demand      download only what is missing and has url/mirrors in the registry (cli/download.js)
-//   4 re-check             run step 2 again; list what is still missing
-// No command surface here: `assets sync` is the explicit asset installer, `build --fetch`
-// the per-project font completion; nothing downloads during a plain build/check.
-// ============================================================================
+//   1 collect references  parse deck → font declarations / icon refs / media files
+//   2 three-level compare  home/assets → in-package assets → ready | fetchable | system | missing
+//   3 fetch on demand      only missing fonts with url/mirrors (cli/download.js)
+//   4 re-check. `assets sync` installs assets; nothing downloads during a plain build/check.
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";

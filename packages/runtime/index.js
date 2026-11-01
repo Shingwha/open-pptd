@@ -1,13 +1,8 @@
-// ============================================================================
-// runtime/index.js — packages/runtime public entry (contract 3.0: open-pptd/runtime)
-// ----------------------------------------------------------------------------
-// ProjectRuntime: load/parse/resolve/serialize/check + ProjectSource /
-// ResourceProvider contracts + unified error types. Pure logic only: no node:,
-// no DOM, no sibling package imports except model/measure/layout (dep-graph).
-//
-// Node adapters (disk source, fs/registry provider) live in
+// runtime/index.js — packages/runtime public entry (Contract 3.0 entry open-pptd/runtime)
+// ProjectRuntime: load/parse/resolve/serialize/check + ProjectSource / ResourceProvider
+// contracts + unified error types. Pure logic only: no node:, no DOM, no sibling package
+// imports except model/measure/layout (dep-graph). Node adapters live in
 // packages/server/runtime-node.js so this package stays browser-safe.
-// ============================================================================
 
 // ---- ProjectSource / ProjectFiles and the pure memory source ----
 export {

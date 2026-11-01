@@ -1,14 +1,9 @@
-// ============================================================================
 // export/pptx.js — PPTX format router (writer reuse, no zip/report duplication)
-// ----------------------------------------------------------------------------
-// Builds the deck through packages/writer exactly like the historical CLI path:
-//   · images: resolveProject imageMap / project.media / data: URLs (sync writer loader)
-//   · fonts: deck.fonts + registry hits preloaded through ResourceProvider.fontBytes;
-//     the registry itself is handed to the writer as a data: URL so writers resolve
-//     subset advice/file names without Node fs (browser + Node identical semantics)
-//   · icons: resources.iconRegistry + resources.iconSvg
-// Output naming/default path is the CLI contract (title → safeFileName + .pptx).
-// ============================================================================
+// Builds the deck through packages/writer. Images: resolveProject imageMap / project.media
+// / data: URLs (sync writer loader). Fonts: deck.fonts + registry hits preloaded via
+// ResourceProvider.fontBytes; the registry is handed to the writer as a data: URL so it
+// resolves subset/file names without Node fs (browser + Node identical). Icons:
+// iconRegistry + iconSvg. Output naming/default path is the CLI contract (title + .pptx).
 
 import { buildPptx, magicMatches, imageSize, safeFileName } from "../writer/index.js";
 import { collectFontSpecs } from "../writer/font.js";

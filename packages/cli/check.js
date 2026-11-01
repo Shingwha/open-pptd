@@ -1,14 +1,9 @@
-// ============================================================================
 // cli/check.js — `check`: read-only deck validation + resource summary
-// ----------------------------------------------------------------------------
-// Validation dimensions live in model/validate.js (schema / token / resources /
-// fonts / geometry facts / contrast); orchestration lives in runtime/check.js so
-// CLI/editor/server share one chain: parse → layout → validateDeck.
-// This command never writes, never downloads and never renders:
-//   · checkDeck(manifest)  programmatic entry (regression helpers use it)
-//   · runCheck(args)       CLI entry: --json single line / --strict warnings fail
-// Human text goes to stderr; stdout carries JSON only when --json is passed.
-// ============================================================================
+// Validation dimensions live in model/validate.js (schema / token / resources / fonts /
+// geometry facts / contrast); orchestration lives in runtime/check.js so CLI/editor/server
+// share one chain: parse → layout → validateDeck. This command never writes, downloads or
+// renders. checkDeck(manifest) is the programmatic entry (regression helpers use it);
+// runCheck(args) is the CLI entry (--json single line / --strict warnings fail).
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";

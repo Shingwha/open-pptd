@@ -1,16 +1,8 @@
-// ============================================================================
-// cli/bin.js — CLI assembly root: five commands, no aliases, no compatibility layer
-// ----------------------------------------------------------------------------
-//   open   看/改这份 deck（起本地编辑器；Home/blank/detach/stop）
-//   build  产出文件（pptx/png/bundle，全部先跑 full checkProject）
-//   check  只读体检（schema/资源/几何/对比度 + 资源摘要）
-//   assets 字体/图标/主题库（list/sync/clean/themes/fonts）
-//   doctor 环境/路径/PNG 能力
-//
-// Dispatch only: business logic lives in open.js / build.js / check.js / assets.js /
-// doctor.js. Old 2.x commands are gone: invoking one prints the migration hint to
-// stderr and exits 1 (help lists the five commands only).
-// ============================================================================
+// cli/bin.js — CLI assembly root: five commands, no aliases
+//   open/edit · build (pptx/png/bundle) · check (read-only) · assets (fonts/icons/themes)
+//   · doctor (environment/paths/PNG)
+// Dispatch only: business logic lives in the runX modules. Removed legacy commands print
+// a migration hint to stderr and exit 1; help lists the five commands only.
 
 import { runOpen } from "./open.js";
 import { runBuild } from "./build.js";
@@ -65,7 +57,7 @@ function usage() {
   );
 }
 
-/** Print the migration hint for a removed 2.x command (stderr) and exit 1. */
+/** Print the migration hint for a removed legacy command (stderr) and exit 1. */
 function rejectOldCommand(command) {
   const target = MIGRATION[command];
   if (target) {

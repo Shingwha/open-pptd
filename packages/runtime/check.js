@@ -1,15 +1,9 @@
-// ============================================================================
 // runtime/check.js — pure project validation (checkProject)
-// ----------------------------------------------------------------------------
-// Single validation entry shared by CLI/editor/server (interfaces.md §4):
-//   parse -> layout -> validateDeck, with environment facts injected.
-// It never reads files and never downloads: file existence, font/icon registries
-// come from the caller (or optional ResourceProvider extensions).
-//
-// Default layout: layout(deck, fontMetricsMeasure) — the exact chain the CLI check
-// used before this package existed, so `open-pptd check` output stays byte-identical.
-// Pass { layout: false } to skip layout facts (e.g. a fast structural check).
-// ============================================================================
+// Single validation entry shared by CLI/editor/server: parse -> layout -> validateDeck,
+// with environment facts injected. It never reads files and never downloads: file
+// existence and font/icon registries come from the caller (or optional ResourceProvider
+// extensions). Default layout uses fontMetricsMeasure (the same chain as the CLI check),
+// so `open-pptd check` stays consistent; pass { layout: false } to skip layout facts.
 
 import { layout as layoutDeck } from "../layout/index.js";
 import { fontMetricsMeasure } from "../measure/index.js";

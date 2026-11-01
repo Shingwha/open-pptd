@@ -1,8 +1,9 @@
-// packages/measure/index.js — packages/measure entry (Contract 3.0 entry, open-pptd/measure).
-// The MeasurePort interface plus the default deterministic implementation fontMetricsMeasure
-// (pure functions, runnable on Node/CLI/CI). A browser-side refinement adapter, when needed,
-// lives in the editor layer.
-// Dual-end: this barrel and its transitive closure forbid node:/fs/window./document (dep-graph).
+// measure/index.js — packages/measure package entry (Contract 3.0 entry open-pptd/measure)
+// The MeasurePort interface plus the default deterministic implementation
+// fontMetricsMeasure (pure functions, runnable on Node/CLI/CI). A browser-side refinement
+// adapter, when needed, is implemented in the editor layer.
+// Dual-end pure functions: this barrel and its transitive closure forbid
+// node:/fs/window./document. (enforced by dep-graph).
 
 import { measureTextRuns, measureCell, measureTable, lineHeightMultiplierFor } from "./font-metrics.js";
 

@@ -1,9 +1,6 @@
-// ============================================================================
 // server/static.js — static file serving (MIME table + traversal-safe resolution)
-// ----------------------------------------------------------------------------
-// Zero dependencies (Node built-in fs/path). Both the project root (editor/,
-// assets/, ...) and the optional /project/ virtual mount share this safe resolver.
-// ============================================================================
+// Zero dependencies (Node built-in fs/path). Both the project root (editor/, assets/...)
+// and the optional /project/ virtual mount share this safe resolver.
 
 import { readFileSync, statSync, existsSync } from "node:fs";
 import { join, normalize, sep, extname } from "node:path";
@@ -33,9 +30,9 @@ export const MIME = {
 
 /**
  * Resolve a URL path to a real file under base (traversal-safe). base may be a
- * single root string or a **multi-root array** (tried in order, first hit wins) —
- * this is how home-first / package-fallback works after resources were
- * externalized, with no browser-side change.
+ * single root string or a multi-root array (tried in order, first hit wins), which
+ * is how home-first / package-fallback resource resolution works with no browser-side
+ * change.
  * @param {string|string[]} base root dir (or roots ordered by priority)
  * @param {string} pathname
  * @returns {string|null} absolute path when it exists and is a regular file, else null

@@ -1,23 +1,9 @@
-// ============================================================================
 // cli/assets.js — `assets`: bundled assets, theme library and user font library
-// ----------------------------------------------------------------------------
-//   assets list [--json]
-//   assets sync [all|fonts|icons] [--from <zip>] [--json]
-//   assets clean [--json]
-//   assets themes list|import|export|delete|apply [--json]
-//   assets fonts  list|import|remove [--json]
-//
-// Asset zip sources (GitHub Releases, produced by pack-release):
-//   https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-icons-v<ver>.zip
-//   https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-fonts-v<ver>.zip
-// Missing zip (404) → fall back to the per-file downloader (cli/download.js).
-// Verification: SHA256SUMS when available, otherwise structural (ZIP + extension).
-// **The registry never enters assets/**: any registry.json entry is dropped at extraction.
-// Theme/font library IO lives in the Node adapters (server/theme-store.js,
-// server/font-library.js); this file formats output and, for `themes apply`, does
-// the explicit deck write (atomic, only deck.theme is touched).
-// Human text goes to stderr; --json prints a single line on stdout.
-// ============================================================================
+// Asset zips come from GitHub Releases (pack-release); a missing zip (404) falls back to
+// the per-file downloader (cli/download.js). Verify by SHA256SUMS when available,
+// otherwise structurally. The registry never enters assets/ (registry.json entries are
+// dropped at extraction). `themes apply` writes only deck.theme, atomically. Theme/font
+// IO lives in the server adapters. Human text goes to stderr; --json is one stdout line.
 
 import { existsSync, readFileSync, rmSync, readdirSync } from "node:fs";
 import { join, dirname, basename } from "node:path";

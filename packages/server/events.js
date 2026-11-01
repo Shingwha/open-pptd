@@ -1,11 +1,7 @@
-// ============================================================================
 // server/events.js — SSE change push (/events)
-// ----------------------------------------------------------------------------
-// Project file change → broadcast to every subscribed editor (EventSource).
-// Implementation: the server polls a directory fingerprint (fs.watch is
-// unreliable on container/network mounts) and sends message to all connected
-// clients when the fingerprint changes. Zero dependencies (Node built-ins).
-// ============================================================================
+// The server polls a directory fingerprint (fs.watch is unreliable on container/network
+// mounts) and broadcasts `changed` to every subscribed editor (EventSource).
+// Zero dependencies (Node built-ins).
 
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -18,9 +14,8 @@ const POLL_INTERVAL_MS = 800;
  * excluded so unrelated writes do not trigger a refresh.
  *
  * Intentionally not shared with editor/app/project/handle-io.js#fingerprint: same change
- * semantics, but this one walks Node fs (server-side polling) while that one iterates a
- * browser FileSystemDirectoryHandle. Unifying would force a shared package across the
- * editor→packages boundary for no runtime gain (different APIs, different environments).
+ * semantics, but this one walks Node fs while that one iterates a browser
+ * FileSystemDirectoryHandle (different APIs and environments).
  */
 export function dirFingerprint(root) {
   const parts = [];

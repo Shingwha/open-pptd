@@ -1,13 +1,9 @@
-// ============================================================================
 // cli/doctor.js — `doctor`: environment, paths, libraries and PNG capability
-// ----------------------------------------------------------------------------
-// Absorbs the old `paths` command: one read-only report covers
-//   cli version/root · node · home writability · asset/theme/user-font counts ·
-//   PATH · every path value · Chrome/Edge availability for PNG export.
+// One read-only report: cli version/root · node · home writability · asset/theme/user-font
+// counts · PATH · every path value · Chrome/Edge availability for PNG export.
 // Exit code: critical failures (node < 18, home not writable) → 1; missing PATH /
 // incomplete assets / no browser → 0 with a hint (resources are optional).
 // --json prints a single line on stdout; human output goes to stderr.
-// ============================================================================
 
 import { existsSync, writeFileSync, rmSync, accessSync, constants, readdirSync } from "node:fs";
 import { join, dirname, delimiter } from "node:path";

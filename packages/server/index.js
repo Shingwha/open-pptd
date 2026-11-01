@@ -1,16 +1,9 @@
-// ============================================================================
-// server/index.js — open-pptd local server (assembly root)
-// ----------------------------------------------------------------------------
-// Zero dependencies (Node built-in http). Responsibilities split by file:
-//   static.js    static file serving (MIME + traversal-safe resolution)
-//   api.js       /api/save write-back, /api/ping liveness probe
-//   events.js    /events SSE change push (directory fingerprint polling)
-//   gallery.js   /examples/manifest.json dynamic gallery index
-// Public interface (createServer/startServer signatures, endpoints, SSE protocol)
-// is unchanged from earlier versions.
-// Optional virtual mount: --project <dir> mounts any local project under
-// /project/ for browser preview.
-// ============================================================================
+// server/index.js — open-pptd local server (assembly root; Contract 3.0 entry open-pptd/server)
+// Zero dependencies (Node built-in http). Responsibilities split by file: static.js (file
+// serving), api.js (/api/save, /api/ping), events.js (SSE), gallery.js (examples manifest).
+// Optional virtual mount: --project <dir> mounts any local project under /project/.
+// The barrel surface lets downstream hosts mount the static resolver/sender and the write-back /
+// liveness handlers on their own routes without deep imports into packages/server/*.
 
 import http from "node:http";
 import { existsSync } from "node:fs";
@@ -27,12 +20,11 @@ import { createExportImageHandler } from "./export-image.js";
 import { createSseHub } from "./events.js";
 import { buildManifest } from "./gallery.js";
 
-// Barrel surface (contract 3.0 entry open-pptd/server): downstream hosts mount the
-// static resolver/sender and the write-back / liveness handlers on their own
-// routes without deep imports into packages/server/*.
+// Barrel surface: downstream hosts mount the static resolver/sender and the write-back /
+// liveness handlers on their own routes without deep imports into packages/server/*.
 export { MIME, resolveFile, resolveStaticFile, sendFile } from "./static.js";
 export { handleSave, handlePing } from "./api.js";
-// Theme/font library API + Node stores (W6 additive surface)
+// Theme/font library API + Node stores
 export { handleThemes } from "./themes.js";
 export { handleFonts } from "./fonts.js";
 export { createFileThemeStore, themeStorePaths } from "./theme-store.js";
@@ -52,11 +44,11 @@ export function createServer(options = {}) {
   // liveReload:false is for one-shot render temp servers (no SSE polling, so the
   // directory can be safely removed after export).
   const sse = projectRoot && options.liveReload !== false ? createSseHub(projectRoot) : null;
-  // Image export endpoint (RP-C / M5): capture-first — GET probes the browser,
-  // POST renders headless. The handler shares this module's origin; startServer is
-  // injected here (renderDeck needs a temporary static server).
+  // Image export endpoint: capture-first — GET probes the browser, POST renders
+  // headless. The handler shares this module's origin; startServer is injected here
+  // (renderDeck needs a temporary static server).
   const exportImage = createExportImageHandler({ startServer });
-  // Theme / font library API (W6): stores are cheap closures; inject for tests or
+  // Theme / font library API: stores are cheap closures; inject for tests or
   // pass `false` to disable the endpoints. File IO happens per request.
   const themeStore = options.themeStore === false ? null : (options.themeStore || createFileThemeStore());
   const fontLibrary = options.fontLibrary === false ? null : (options.fontLibrary || createFileFontLibrary());
@@ -94,7 +86,7 @@ export function createServer(options = {}) {
         handlePing(res);
         return;
       }
-      // Image export (capture-first): GET = capability probe, POST = headless render (RP-C / M5)
+      // Image export (capture-first): GET = capability probe, POST = headless render
       if (pathname === "/api/export-image") {
         exportImage(req, res).catch((err) => {
           try {

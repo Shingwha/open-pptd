@@ -1,20 +1,9 @@
-// ============================================================================
-// cli/open.js — `open`: local preview/editor server (the only "serve" replacement)
-// ----------------------------------------------------------------------------
-//   open [dir] [--deck <file>] [--port <n>] [--detach] [--json]
-//        [--open|--no-open] [--stop] [--blank]
-//
-//   · no argument  → Home (gallery)
-//   · <dir>        → deck.pptd or the single *.pptd in that directory (missing /
-//                    multiple manifests fail fast with the candidate list)
-//   · --blank      → blank editor
-//   · --stop       → stop instances of the current project (--all stops every one)
-//
-// Instances are tracked in ~/.open-pptd/state/instances.json
-// ({url,port,pid,project,deck,startedAt}); --stop verifies the pid is alive AND
-// /api/ping answers before killing, so a stale/reused pid is never killed.
-// Human text goes to stderr; --json prints one line {url,port,pid,project,deck}.
-// ============================================================================
+// cli/open.js — `open`: local preview/editor server (the only serve entry)
+// No argument → Home (gallery); <dir> → deck.pptd or the single *.pptd in that dir
+// (missing/multiple manifests fail fast with candidates); --blank → blank editor;
+// --stop stops instances of the current project (--all stops every one).
+// Instances live in ~/.open-pptd/state/instances.json; --stop verifies the pid is
+// alive AND /api/ping answers before killing. Human text → stderr; --json is one line.
 
 import { existsSync, readFileSync, readdirSync, statSync, mkdirSync, writeFileSync, renameSync } from "node:fs";
 import { join, dirname, resolve, basename } from "node:path";

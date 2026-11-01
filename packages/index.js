@@ -1,18 +1,11 @@
-// ============================================================================
-// packages/index.js — open-pptd package root entry (contract entry open-pptd)
-// ----------------------------------------------------------------------------
-// Contract 3.0: the root entry exports **dual-end core** only
-// (model / renderer / writer / runtime / export / paths / config / measure / layout).
-// Node-only faces moved to sub-entries: `open-pptd/server` and `open-pptd/cli`
-// (contract.json + tests/contract/public-api.mjs are the machine-checked source
-// of truth for the export surface).
-//
-// Red line: this file must not import editor/ (dependency direction is editor → packages only, see dep-graph).
-// Browser hosts must import `open-pptd/model` / `open-pptd/renderer` / `open-pptd/writer` /
-// `open-pptd/runtime` / `open-pptd/export` (the root also pulls node:-backed paths/config).
-// ============================================================================
+// packages/index.js — open-pptd package root entry (Contract 3.0 entry open-pptd)
+// Exports the dual-end core only (model / renderer / writer / runtime / export / paths /
+// config / measure / layout); Node-only faces live in the `open-pptd/server` and
+// `open-pptd/cli` sub-entries. contract.json is the machine-checked surface.
+// Must not import editor/ (dependency direction is editor → packages). Browser hosts
+// import the sub-entries, since the root also pulls node:-backed paths/config.
 
-/** Package-level contract version (contract 3.0). Downstream fails fast on it. */
+/** Package-level contract version (currently 3). Downstream fails fast on it. */
 export const CONTRACT_VERSION = 3;
 
 export * from "./model/index.js";
