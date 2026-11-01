@@ -1,5 +1,5 @@
 // ============================================================================
-// app/keyboard.js — global shortcuts (Ctrl+Z / Ctrl+Y / Ctrl+S / Ctrl+A / F5)
+// app/keyboard.js — global shortcuts (Ctrl+Z/Y/S/A, clipboard, F5)
 // ----------------------------------------------------------------------------
 // Element-level keys (Delete/Backspace, arrows, Esc layering) are handled in
 // interaction/canvas.js; this module only owns the app-level shortcuts that must
@@ -7,9 +7,13 @@
 //   Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y  undo / redo
 //   Ctrl+S                          save
 //   Ctrl+A                          select all on the current page
+//   Ctrl+C / Ctrl+X / Ctrl+V        copy / cut / paste (element clipboard)
+//   Ctrl+Shift+V                    paste in place (no offset)
+//   Ctrl+D                          duplicate
 //   F5                              present
-// The old editing shortcuts (Ctrl+C/V/D/G, ] [) went away with the minimal
-// editor (editor-ux §7): no clipboard, duplicate, grouping or layer ordering.
+// Typing targets (input/textarea/select/contenteditable) keep their native
+// clipboard behaviour; present mode and the active-instance rule apply to every
+// shortcut here.
 // ============================================================================
 
 export function bindKeyboard({ state, api, io, present, ui }) {
@@ -20,7 +24,7 @@ export function bindKeyboard({ state, api, io, present, ui }) {
     // While presenting, the present layer owns all keys (page/blackout/exit); editor shortcuts stay quiet
     if (present?.isActive()) return;
     const tag = (e.target.tagName || "").toLowerCase();
-    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if (tag === "input" || tag === "textarea" || tag === "select" || e.target.isContentEditable) return;
     const key = e.key.toLowerCase();
     const mod = e.ctrlKey || e.metaKey;
     if (mod && key === "z" && !e.shiftKey) {
@@ -36,6 +40,18 @@ export function bindKeyboard({ state, api, io, present, ui }) {
       // Select all on the current page
       e.preventDefault();
       api.selectAll();
+    } else if (mod && key === "c") {
+      e.preventDefault();
+      api.copySelected();
+    } else if (mod && key === "x") {
+      e.preventDefault();
+      api.cutSelected();
+    } else if (mod && key === "v") {
+      e.preventDefault();
+      api.pasteClipboard({ inPlace: e.shiftKey });
+    } else if (mod && key === "d") {
+      e.preventDefault();
+      api.duplicateSelected();
     } else if (e.key === "F5") {
       // Present: start a fullscreen show from the current page
       e.preventDefault();
