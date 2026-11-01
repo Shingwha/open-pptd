@@ -1,5 +1,5 @@
 // cli/bin.js — CLI assembly root: five commands, no aliases
-//   open/edit · build (pptx/png/bundle) · check (read-only) · assets (fonts/icons/themes)
+//   open/edit · build (pptx/png/bundle) · check (read-only) · assets (fonts/icons/themes/skill)
 //   · doctor (environment/paths/PNG)
 // Dispatch only: business logic lives in the runX modules. Removed legacy commands print
 // a migration hint to stderr and exit 1; help lists the five commands only.
@@ -50,6 +50,7 @@ function usage() {
       "  open-pptd assets clean [--json]",
       "  open-pptd assets themes list|import|export|delete|apply [--json]",
       "  open-pptd assets fonts list|import|remove [--json]",
+      "  open-pptd assets skill install --dir <skills-dir> [--force] [--json]",
       "  open-pptd doctor [--json]                        环境 / 路径 / 字体图标主题 / PNG 能力",
       "",
       "人类文本走 stderr；--json 时 stdout 只有一行 JSON；退出码 1 = 错误或严格失败。",

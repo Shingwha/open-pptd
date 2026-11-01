@@ -25,14 +25,23 @@ skill/
 
 Choose one source:
 
-1. **Release package** — download `open-pptd-skill-v<ver>.zip` from an
-   open-pptd release, unpack it, and place the top-level `open-pptd/` folder
-   into your agent's skills directory (for example `~/.claude/skills/`,
-   `~/.pi/agent/skills/`, or the directory your tool documents). The release
-   also publishes `SHA256SUMS`; check the download with `sha256sum -c` or
-   `Get-FileHash` before installing.
-2. **Main repository** — copy `skill/` from the open-pptd repository into the
-   same location and rename it to `open-pptd/`.
+1. **CLI (recommended)** — with the `open-pptd` CLI installed:
+
+   ```sh
+   open-pptd assets skill install --dir ~/.claude/skills
+   ```
+
+   `--dir` is your agent's skills directory (`~/.claude/skills` for Claude Code,
+   `~/.pi/agent/skills` for pi, or the directory your tool documents); the
+   command copies this pack to `<dir>/open-pptd`. Add `--force` to replace an
+   existing install and `--json` for a single-line result.
+2. **Release zip** — download `open-pptd-skill.zip` (stable latest name) or a
+   pinned `open-pptd-skill-v<ver>.zip` from an open-pptd release, unpack it, and
+   place the top-level `open-pptd/` folder into your agent's skills directory.
+   The release also publishes `SHA256SUMS`; check the download with
+   `sha256sum -c` or `Get-FileHash` before installing.
+3. **Main repository (source fallback)** — copy `skill/` from the open-pptd
+   repository into the same location and rename it to `open-pptd/`.
 
 The folder name is how most agents address the skill: keep `SKILL.md` at its
 root. Restart the agent session after installing so the skill list refreshes.

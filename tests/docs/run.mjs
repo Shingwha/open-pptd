@@ -27,7 +27,11 @@ const unexpected = docsFiles.filter(
 ok("docs/ 顶层只有 release-workflow.md + images/**", unexpected.length === 0, unexpected.slice(0, 5).join(", "));
 ok("docs/release-workflow.md 存在", existsSync(join(DOCS, "release-workflow.md")));
 const imageFiles = docsFiles.filter((f) => f.startsWith("docs/images/"));
-ok("docs/images/** 保留", imageFiles.length >= 6, `${imageFiles.length} 个文件`);
+ok(
+  "docs/images/ 仅有 editor.png",
+  imageFiles.length === 1 && imageFiles[0] === "docs/images/editor.png",
+  imageFiles.join(", ")
+);
 for (const gone of ["docs/embedding.md", "docs/image-generation.md", "docs/archive", "docs/specs"]) {
   ok(`已删除 ${gone}`, !existsSync(join(ROOT, gone)));
 }
@@ -120,8 +124,8 @@ for (const name of readmes) {
   );
   const imgs = [...text.matchAll(/<img\s+src="([^"]+)"/g)].map((m) => m[1]);
   ok(
-    `${name} 图片仍走 docs/images/**`,
-    imgs.length > 0 && imgs.every((src) => src.startsWith("docs/images/") && existsSync(join(ROOT, src))),
+    `${name} 仅引用 docs/images/editor.png`,
+    imgs.length > 0 && imgs.every((src) => src === "docs/images/editor.png" && existsSync(join(ROOT, src))),
     `${imgs.length} 张`
   );
   ok(
@@ -149,7 +153,7 @@ ok("release-workflow 相对链接可解析", rwBroken.length === 0, rwBroken.joi
 // ------------------------------------------------------------- 5. package.json
 ok("package.json version 为 3.0.0", version === "3.0.0", version);
 ok("package.json 有 test:docs", pkg.scripts?.["test:docs"] === "node tests/docs/run.mjs");
-ok("package.json files 不含 skill", !(pkg.files || []).some((f) => f === "skill" || f.startsWith("skill/")));
+ok("package.json files 含 skill", (pkg.files || []).some((f) => f === "skill" || f.startsWith("skill/")));
 ok("零依赖（无 dependencies/devDependencies）", !pkg.dependencies && !pkg.devDependencies);
 
 // ---------------------------------------------------------------- 6. run-all

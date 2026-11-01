@@ -34,7 +34,7 @@ push tag 后 CI 自动执行：
 | 校验版本 | tag 与 package.json 的 version 必须一致 |
 | 生成公式产物 | `npm run test:fixtures`（`tests/fixtures/formula/mml/` 不入库，KaTeX 本地生成） |
 | 回归测试 | `npm test`（含 `test:docs` 文档门禁与 `test:skill` 技能包回归；与 Deploy Pages 同款守门，任何一步失败都不会发布） |
-| 打包 | `npm run pack` → `dist/`：`open-pptd-v<版本>.zip`（CLI 运行时白名单包）+ `open-pptd-skill-v<版本>.zip`（技能知识包：顶层 `open-pptd/`，含 `SKILL.md`/`README.md`/`references/`/`kits/`，不含测试与媒体）+ `open-pptd-icons-v<版本>.zip` + `open-pptd-fonts-v<版本>.zip`（图标/字体本体仅取本地工作树实际存在的，CI 无本体时自动跳过）+ `install.ps1`/`install.sh`（同步自仓库根）+ `SHA256SUMS`（覆盖全部 zip） |
+| 打包 | `npm run pack` → `dist/`：`open-pptd-v<版本>.zip`（CLI 运行时白名单包，含 `skill/` 知识包）+ `open-pptd-skill-v<版本>.zip` 与稳定别名 `open-pptd-skill.zip`（技能知识包，两者同字节；顶层 `open-pptd/`，含 `SKILL.md`/`README.md`/`references/`/`kits/`，不含测试与媒体）+ `open-pptd-icons-v<版本>.zip` + `open-pptd-fonts-v<版本>.zip`（图标/字体本体仅取本地工作树实际存在的，CI 无本体时自动跳过）+ `install.ps1`/`install.sh`（同步自仓库根）+ `SHA256SUMS`（覆盖全部 zip；skill 版本名与稳定名各一行） |
 | 发布 | 创建 GitHub Release 并上传 `dist/*` 全部资产；notes 优先取 tag 注释，未写则 commit 列表自动生成。用户侧安装走仓库根 install 脚本（raw URL 一键安装），Release zip 是离线/手动安装渠道 |
 
 ## 更新说明（Release Notes）
@@ -88,23 +88,28 @@ git tag -a v3.0.0 -F notes.md --cleanup=verbatim
 
 | 资产 | 内容 |
 |---|---|
-| `open-pptd-v<版本>.zip` | CLI 运行时。白名单单一事实来源是 [`scripts/pack-release.mjs`](../scripts/pack-release.mjs) 顶部的 `WHITELIST`（10 项）：`README.md` / `README.zh-CN.md` / `index.html` / `package.json` / `contract.json` / `bin/` / `packages/` / `editor/` / `assets/fonts/registry.json` / `assets/icons/registry.json` |
-| `open-pptd-skill-v<版本>.zip` | 技能知识包：顶层目录 `open-pptd/`，内容仅 `SKILL.md` / `README.md` / `references/**` / `kits/**`；不含测试、demo、媒体与可执行脚本。可跑 `npm run pack -- --only skill` 单独复验 |
+| `open-pptd-v<版本>.zip` | CLI 运行时。白名单单一事实来源是 [`scripts/pack-release.mjs`](../scripts/pack-release.mjs) 顶部的 `WHITELIST`（11 项）：`README.md` / `README.zh-CN.md` / `index.html` / `package.json` / `contract.json` / `bin/` / `packages/` / `editor/` / `skill/` / `assets/fonts/registry.json` / `assets/icons/registry.json` |
+| `open-pptd-skill-v<版本>.zip` | 技能知识包（固定版本）：顶层目录 `open-pptd/`，内容仅 `SKILL.md` / `README.md` / `references/**` / `kits/**`；不含测试、demo、媒体与可执行脚本。可跑 `npm run pack -- --only skill` 单独复验 |
+| `open-pptd-skill.zip` | 技能知识包稳定别名：与同版本 `open-pptd-skill-v<版本>.zip` 同字节副本，默认与 `--only skill` 都产出；用于 `releases/latest/download/open-pptd-skill.zip` 固定链接 |
 | `open-pptd-icons-v<版本>.zip` | 图标本体（`solid/regular/brands/**/*.svg`，不含 registry.json），本机工作树有本体时才产出 |
 | `open-pptd-fonts-v<版本>.zip` | 字体本体（`*.ttf`，不含 registry.json），本机工作树有本体时才产出 |
 | `install.ps1` / `install.sh` | 仓库根安装脚本副本，可直接从 Release 页面下载 |
 | `SHA256SUMS` | 覆盖本次全部 zip 的 SHA256 清单 |
 
-- **运行时 zip 不含**：tests、docs、examples、.github、scripts、`skill/`、字体与图标本体（registry.json 元数据入包，本体经 `open-pptd assets sync` 或导出前置体检按需获取）
-- **skill zip 单独产出**：技能内容来自主仓 `skill/`（原独立技能仓已归档）；`package.json.files` 不包含 `skill/`，CLI 运行时包保持干净
-- **运行时 zip 不是技能包**：2.0 起运行时 zip 不再「解压到 skills 文件夹」用——它是 **CLI 运行时**，由仓库根的 `install.ps1` / `install.sh` 下载安装（校验 SHA256 → 解压到 `~/.open-pptd/cli/versions/<ver>` → current 指针 → 用户级 PATH）；AI 对话用法使用 Release 中的 `open-pptd-skill-v<版本>.zip`（解压到 agent 的 skills 目录，zip 顶层即 `open-pptd/`），或直接从主仓 `skill/` 拷贝
+- **运行时 zip 不含**：tests、docs、examples、.github、scripts、字体与图标本体（registry.json 元数据入包，本体经 `open-pptd assets sync` 或导出前置体检按需获取）；**含 `skill/`**，因此安装后的 CLI 可直接执行 `assets skill install`
+- **skill zip 单独产出**：技能内容来自主仓 `skill/`（原独立技能仓已归档）；`package.json.files` 与 runtime WHITELIST 均包含 `skill`，CLI 运行时 zip 与 npm 包都自带技能源
+- **技能安装三种渠道（按优先级）**：
+  1. CLI：`open-pptd assets skill install --dir ~/.claude/skills`（pi 用 `~/.pi/agent/skills`；目标为 `<dir>/open-pptd`，非空默认拒绝，`--force` 覆盖，`--json` 输出 `{ok,source,target,files}`）
+  2. Release zip：`releases/latest/download/open-pptd-skill.zip`（稳定名）或 `open-pptd-skill-v<版本>.zip`（固定版本），解压到 agent 的 skills 目录（zip 顶层即 `open-pptd/`）
+  3. 源码回退：从主仓 `cp -r skill <skills-dir>/open-pptd`
+- **运行时 zip 不是技能安装入口**：它是 **CLI 运行时**，由仓库根的 `install.ps1` / `install.sh` 下载安装（校验 SHA256 → 解压到 `~/.open-pptd/cli/versions/<ver>` → current 指针 → 用户级 PATH）；装好后用上面的 CLI 命令安装技能
 - 文件清单取自 `git ls-files`，只收 git 跟踪文件；打包时若工作树有未提交改动，脚本会打警示
 
 要调整发布内容 = 改 `WHITELIST`，然后本地验证：
 
 ```bash
 npm run pack                          # 产物 dist/open-pptd-v<版本>.zip 等（dist/ 不入 git），解压比对即可
-npm run pack -- --only skill          # 只产 skill zip + SHA256SUMS，用于单独复验
+npm run pack -- --only skill          # 只产 skill 版本 zip + 稳定别名 + SHA256SUMS（2 行），用于单独复验
 ```
 
 ## 本地守门命令
@@ -121,4 +126,4 @@ npm run pack -- --only skill          # 只产 skill zip + SHA256SUMS，用于�
 
 - **zip 用户**：到 [Releases](https://github.com/Shingwha/open-pptd/releases) 下载新版本 zip，解压覆盖旧目录
 - **clone 用户**：`git pull`（版本 tag 打在 main 上，随源码一起拉到）
-- **技能用户**：重新下载 `open-pptd-skill-v<版本>.zip` 解压覆盖 skills 目录中的 `open-pptd/`（或重新 `cp -r skill`）
+- **技能用户**：`open-pptd assets skill install --dir <skills-dir> --force`（CLI 升级后重装即可），或重新解压 `open-pptd-skill.zip` / `open-pptd-skill-v<版本>.zip` 覆盖 skills 目录中的 `open-pptd/`（或重新 `cp -r skill`）

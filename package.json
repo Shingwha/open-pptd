@@ -27,6 +27,7 @@
     "bin",
     "packages",
     "editor",
+    "skill",
     "contract.json",
     "index.html",
     "README.md",
