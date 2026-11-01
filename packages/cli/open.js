@@ -287,7 +287,10 @@ async function runForeground({ target, blank, port, json, open }) {
 async function runDetach({ target, blank, port, json, open }) {
   const log = (m) => console.error(m);
   const binPath = join(PKG_ROOT, "bin", "open-pptd.js");
-  const childArgs = [binPath, "open", "--port", String(port)];
+  // The detached child is the long-lived foreground server; only the parent decides
+  // whether to open a browser (--open). Without --no-open the child would apply its
+  // default open policy and pop a second tab for every `open --detach`.
+  const childArgs = [binPath, "open", "--port", String(port), "--no-open"];
   if (target.manifest) childArgs.push("--deck", target.manifest);
   if (blank) childArgs.push("--blank");
   const child = spawn(process.execPath, childArgs, { detached: true, stdio: "ignore", windowsHide: true, cwd: process.cwd() });
