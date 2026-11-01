@@ -33,7 +33,10 @@ export function createLoader({ state, view, ops, images, fontManager, source, ui
     state.dirty = true;
     syncElementId(state.deck);
     images.rebuildImageMap();
-    view.render();
+    // Undo/redo of a content edit only changes the current page: repaint its card.
+    // The thumbnail layer itself falls back to a full rebuild when the page order
+    // changed (undoing a page insert/delete/move), so this stays correct.
+    view.render({ thumbs: "current" });
   }
 
   // Loading

@@ -19,6 +19,43 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
   // Pan slack: how far the canvas can still be nudged when it is smaller than the stage (fit state)
   const PAN_SLACK = 60;
 
+  // Stage box cache. renderCanvas() sets the canvas size and then calls applyScale();
+  // reading stage.clientWidth/clientHeight there forces a synchronous layout on every
+  // render (the dominant cost in the JS profile). The box is measured once and
+  // invalidated whenever the stage size can change: ResizeObserver, window resize,
+  // and the width-follow animation. A cached 0 (hidden mount) is never trusted.
+  let boxW = -1;
+  let boxH = -1;
+  const ac = new AbortController();
+
+  function stageBox() {
+    if (boxW <= 0) {
+      boxW = stage.clientWidth;
+      boxH = stage.clientHeight;
+    }
+    return { w: boxW, h: boxH };
+  }
+
+  function invalidateBox() {
+    boxW = -1;
+    boxH = -1;
+  }
+
+  if (typeof ResizeObserver !== "undefined" && stage) {
+    // Size changes (window resize, Design drawer, host layout) re-fit the transform;
+    // the page DOM is untouched, so no repaint is involved.
+    const ro = new ResizeObserver(() => {
+      invalidateBox();
+      if (canvas && stage.clientWidth > 0) applyScale();
+    });
+    ro.observe(stage);
+    ac.signal.addEventListener("abort", () => ro.disconnect(), { once: true });
+  }
+  if (typeof window !== "undefined") {
+    // Synchronous fallback for the frame between the resize and the observer callback
+    window.addEventListener("resize", invalidateBox, { signal: ac.signal });
+  }
+
   /**
    * Anchor zoom: the content point under anchor (client coords) stays put across
    * the zoom. A pinch uses the midpoint of the two fingers, Ctrl+wheel the cursor
@@ -60,8 +97,9 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
     const [pw, ph] = getSize();
     // Editor/viewer: leave a 64px breathing margin (with a small-stage floor). Embedded
     // previews (gallery covers) fit the host box exactly: padding 0 and no floor.
-    const w = Math.max(fitMinW, stage.clientWidth - fitPadding);
-    const h = Math.max(fitMinH, stage.clientHeight - fitPadding);
+    const { w: sw, h: sh } = stageBox();
+    const w = Math.max(fitMinW, sw - fitPadding);
+    const h = Math.max(fitMinH, sh - fitPadding);
     return Math.min(w / pw, h / ph, 1.2);
   }
 
@@ -71,9 +109,12 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
   // slight ±PAN_SLACK nudge, so the canvas is never dragged out of view
   function applyScale() {
     const [pw, ph] = getSize();
-    const s = fitScale() * zoom;
-    const mx = Math.max(0, (pw * s - stage.clientWidth) / 2 + PAN_SLACK);
-    const my = Math.max(0, (ph * s - stage.clientHeight) / 2 + PAN_SLACK);
+    const { w: sw, h: sh } = stageBox();
+    const w = Math.max(fitMinW, sw - fitPadding);
+    const h = Math.max(fitMinH, sh - fitPadding);
+    const s = Math.min(w / pw, h / ph, 1.2) * zoom;
+    const mx = Math.max(0, (pw * s - sw) / 2 + PAN_SLACK);
+    const my = Math.max(0, (ph * s - sh) / 2 + PAN_SLACK);
     panX = Math.min(mx, Math.max(-mx, panX));
     panY = Math.min(my, Math.max(-my, panY));
     canvas.style.transform = `scale(${s})`;
@@ -87,8 +128,10 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
   let scaleRaf = 0;
   function followStageWidth(duration = 260) {
     cancelAnimationFrame(scaleRaf);
+    invalidateBox(); // the transition is changing the stage box: measure every frame
     const t0 = performance.now();
     const tick = () => {
+      invalidateBox();
       applyScale();
       if (performance.now() - t0 < duration) scaleRaf = requestAnimationFrame(tick);
     };
@@ -105,9 +148,10 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
     zoomIn: () => setZoom(zoom * 1.25),
     zoomOut: () => setZoom(zoom / 1.25),
     getZoom: () => zoom,
-    /** Release: cancel the in-flight width-follow animation (no window-level listeners). */
+    /** Release: cancel the in-flight width-follow animation and size listeners (no leaks). */
     destroy() {
       cancelAnimationFrame(scaleRaf);
+      ac.abort();
     },
   };
 }

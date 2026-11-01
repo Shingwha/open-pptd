@@ -10,10 +10,6 @@ import { createThumbnails } from "./thumbnails.js";
 import { layout } from "../../../packages/layout/index.js";
 import { paintPage } from "../../../packages/renderer/index.js";
 import { paintModelPage } from "../paint-page.js";
-import { createDomMeasure, isDomMeasureAvailable } from "./dom-measure.js";
-
-// MeasurePort for editor layout: the DOM refinement adapter in a browser, otherwise the pure function
-const measurePort = isDomMeasureAvailable() ? createDomMeasure() : undefined;
 
 export function createView({ state, page, api, controller = null, getController = null, ops, ui, editable = true, coords, fitPadding = 64, fitMinW = 320, fitMinH = 200 }) {
   // Editor assembly attaches the selection controller after the view exists (the
@@ -42,8 +38,9 @@ export function createView({ state, page, api, controller = null, getController 
     fitMinW,
     fitMinH,
   });
-  // Thumbnail bar: a page switch/delete needs a full refresh, going back to render() via the reload callback
-  const thumbnails = createThumbnails({ state, api, ops, ui, coords, editable, reload: () => viewObj.render() });
+  // Thumbnail bar: a page switch only moves the active card (reload), a content edit
+  // repaints the current card, and only load/page ops/theme rebuild the whole strip.
+  const thumbnails = createThumbnails({ state, api, ops, ui, coords, editable, reload: () => viewObj.render({ thumbs: "none" }) });
 
   // Method table: render() calls the other render functions bare, while allowing external hooks to be attached on viewObj
   Object.assign(viewObj, {
@@ -63,10 +60,20 @@ export function createView({ state, page, api, controller = null, getController 
     destroy,
   });
 
-  // Full refresh
-  function render() {
+  /**
+   * Full refresh. options.thumbs picks the thumbnail-bar work:
+   *   "all"     rebuild every card — load, page insert/delete/move, theme change, resize (default)
+   *   "current" repaint the current card only — content edits, undo/redo, paste/delete element
+   *   "none"    only move the active card — page switch
+   * The default stays "all" so callers outside the editor layer (resize hooks in
+   * preview.js/editor.js, present.js) keep their previous semantics.
+   */
+  function render(options = {}) {
     if (!state.deck) return; // load failed/incomplete: skip safely (external triggers such as resize)
-    thumbnails.renderThumbnails();
+    const thumbs = options.thumbs || "all";
+    if (thumbs === "all") thumbnails.renderThumbnails();
+    else if (thumbs === "current") thumbnails.refreshCurrent();
+    else if (thumbs === "none") thumbnails.setActive();
     renderCanvas();
     if (editable) updateButtons();
     viewport.renderZoom();
@@ -94,9 +101,10 @@ export function createView({ state, page, api, controller = null, getController 
     viewport.applyScale();
     // transform-origin is center: flex centering + center-anchored scaling is visually symmetric, no margin compensation needed
     const pg = page();
-    // resolve → layout → paint: layout decides geometry once. In the editor,
-    // domMeasure refines the text residual; the same tree feeds the selection box/guides.
-    const tree = layout({ ...state.deck, theme: state.theme ?? state.deck.theme, pages: [pg] }, measurePort);
+    // resolve → layout → paint: layout decides geometry once with the pure
+    // fontMetricsMeasure (the same source used by export/headless), so editor and
+    // exported text geometry agree and no per-text DOM measurement is needed.
+    const tree = layout({ ...state.deck, theme: state.theme ?? state.deck.theme, pages: [pg] });
     paintPage(tree.pages[0], {
       container: canvas,
       page: pg,
@@ -145,8 +153,8 @@ export function createView({ state, page, api, controller = null, getController 
  * Paint surface for the ?shot=1 headless path. Runs the same layout → paintPage
  * channel as the editor preview and nothing else: no viewport fit/zoom/pan (the
  * container is the deck-sized capture surface, so scale stays 1), no thumbnails /
- * chrome / selection box, and no DOM-measure refinement (the golden baseline was
- * produced from pure-function geometry, so pixel stability requires it).
+ * chrome / selection box. Geometry comes from the same pure fontMetricsMeasure the
+ * editor uses, so the golden baseline stays pixel-identical.
  * render(index) paints one page and sizes the container to the deck.
  * @param {object} deps { state, container } container = the paint surface
  */

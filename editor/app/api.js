@@ -18,7 +18,12 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
 
   /** Selection highlight only: no canvas DOM rebuild (avoids breaking dblclick/drag). */
   const lightSelect = () => controller?.refreshSelection();
-  const render = () => view?.render();
+  // Render granularity (see view.render options): "all" rebuilds every thumbnail,
+  // "current" repaints only the current card, "none" just moves the active card.
+  // Content edits / undo / paste / element delete → current; page ops / theme / load
+  // → all; page switch → none.
+  const render = (opts) => view?.render(opts);
+  const renderCurrent = () => view?.render({ thumbs: "current" });
   const repaint = () => view?.renderCanvas();
 
   /**
@@ -45,7 +50,7 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
         return;
       }
       tx = false;
-      render();
+      renderCurrent(); // content edit: only the current page changed
     };
     const common = {
       theme: () => state.theme,
@@ -87,7 +92,7 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
     ops.addElement(el);
     ops.select(el.elementId, "replace");
     if (type === "image") io?.rebuildImageMap();
-    render();
+    renderCurrent(); // the element lands on the current page: one card to repaint
     if (CONTENT_TYPES.has(type) && type !== "text") openContentEditor(el);
     return el.elementId;
   }
@@ -122,7 +127,8 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
 
     // transactions / transform
     beginChange: ops.beginChange,
-    endChange: () => render(),
+    /** End a transaction: content edits repaint the current card unless the caller asks for a full rebuild (theme). */
+    endChange: (opts = { thumbs: "current" }) => render(opts),
     refreshPreview: () => repaint(),
     moveSelected(dx, dy) {
       for (const el of selectedElements()) {
@@ -155,7 +161,7 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
     deleteSelected() {
       ops.beginChange();
       ops.deleteSelected();
-      render();
+      renderCurrent(); // element removed from the current page only
     },
 
     // clipboard (instance-local; deep copies, no system clipboard)
@@ -164,19 +170,19 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
     /** Copy + delete as one undo step; returns the cut count. */
     cutSelected() {
       const count = ops.cutSelected();
-      if (count > 0) render();
+      if (count > 0) renderCurrent();
       return count;
     },
     /** Paste into the current page as one undo step; returns the new element ids. */
     pasteClipboard(opts) {
       const ids = ops.pasteClipboard(opts);
-      if (ids.length > 0) render();
+      if (ids.length > 0) renderCurrent();
       return ids;
     },
     /** Duplicate the selection (+16px) without touching the user clipboard. */
     duplicateSelected() {
       const ids = ops.duplicateSelected();
-      if (ids.length > 0) render();
+      if (ids.length > 0) renderCurrent();
       return ids;
     },
     hasClipboard: () => ops.hasClipboard(),
@@ -237,7 +243,7 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
       const i = Math.max(0, Math.min(state.deck.pages.length - 1, Number(index)));
       state.currentPage = i;
       ops.clearSelection();
-      render();
+      render({ thumbs: "none" }); // page switch: active card moves, no thumbnail rebuild
     },
     nextPage() {
       api.goToPage(state.currentPage + 1);
