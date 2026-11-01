@@ -28,7 +28,6 @@ import { THEME_MODES } from "../theme.js";
 import { SYSTEM_FONTS } from "../app/project/font-manager.js";
 import {
   applyTheme,
-  colorTokenUsage,
   findFont,
   fontFileUrl,
   fetchFontBytes,

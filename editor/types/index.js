@@ -17,16 +17,9 @@ import "./text.js";
 import "./table.js";
 import "./chart.js";
 
-import { allTypes, getType, nextElementId } from "../../packages/model/index.js";
+import { getType, nextElementId } from "../../packages/model/index.js";
 
 export { registerType, getType, allTypes } from "../../packages/model/index.js";
-
-/** Manifest type ids that declare a content editor (contentEditor:true → text/table/chart). */
-export function contentEditorTypeIds() {
-  return allTypes()
-    .filter((t) => t.contentEditor === true)
-    .map((t) => t.id);
-}
 
 /** Types the add menu offers (content editors only, in menu order). */
 export const ADD_TYPE_IDS = Object.freeze(["text", "table", "chart"]);

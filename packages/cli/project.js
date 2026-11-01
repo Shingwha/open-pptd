@@ -8,7 +8,7 @@
 // Runtime owns parsing/resolution; this file only does Node disk IO.
 // ============================================================================
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import * as yaml from "../model/vendor/js-yaml.mjs";
 import { createDiskProjectSource, createFsResourceProvider } from "../server/runtime-node.js";

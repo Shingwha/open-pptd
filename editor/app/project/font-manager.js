@@ -29,24 +29,6 @@ import { safeFileName } from "../../../packages/writer/index.js";
 /** System font pool (design.md §4; fallback options for the element fontFamily dropdown). */
 export const SYSTEM_FONTS = ["Microsoft YaHei", "KaiTi", "SimSun", "SimHei", "FangSong", "YouYuan"];
 
-/**
- * Registry font → fetch bytes + register FontFace (stateless, shared by the
- * gallery and the editor): the local library file wins, the remote source is the
- * fallback. Returns { hit, bytes }; returns null when the registry has no match
- * or the bytes are unavailable (the caller falls back to a system font).
- */
-export async function registerRegistryFontFace(keyOrFamily) {
-  const registry = await loadFontRegistry();
-  const hit = findFont(registry, keyOrFamily);
-  if (!hit) return null;
-  const bytes = await fetchFontBytes(hit);
-  if (!bytes) return null;
-  const face = new FontFace(hit.family, bytes);
-  await face.load();
-  document.fonts.add(face);
-  return { hit, bytes };
-}
-
 export function createFontManager(state, ui) {
   /** FontFace registration: family must match the renderer CSS font-family exactly (parseFontInfo reads the name table). */
   async function registerFace(family, bytes) {
