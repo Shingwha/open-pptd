@@ -1,82 +1,61 @@
 /* ============================================================================
-   primitives.css — component primitive layer (base reset + controls/buttons + fab + zoom + toast/menu + dialogs)
+   primitives.css — base reset, control language, menus, toast, dialogs
+   ----------------------------------------------------------------------------
+   Paper & Ink (3.1 W2): controls are quiet by default (no fill at rest), hover is
+   one neutral --hover wash, and the cinnabar accent is reserved for the current
+   state / primary action / focus ring. Structure comes from 1px hairlines.
+   Heights: --control-h 32 (default) / --control-h-sm 28 (compact) / --control-h-lg 40.
+   Values come from tokens.css only (ui-token-literals gate).
    ============================================================================ */
 
-/* ============================================================================
-   primitives.css — component primitive layer (base reset + controls/buttons + fab + zoom + popovers + dialogs)
-   ============================================================================ */
-
-/* ==== base — global reset (box-sizing / html,body) and touch tuning ==== */
+/* ==== base ==== */
 
 * { box-sizing: border-box; }
 
 html, body {
   margin: 0;
   height: 100%;
-  /* Note: do NOT put overflow: hidden here — the gallery is a document-flow
-     scrolling page; only the editor's .app is an internally scrolling app layout (see .app below) */
-  font-family: var(--font);
+  /* The gallery is a document-flow scrolling page; only the editor's .app is an
+     internally scrolling app layout (see layout.css). */
+  font-family: var(--font-ui);
   font-size: var(--text-md);
+  line-height: var(--leading);
   color: var(--ink);
-  background: var(--bg);
+  background: var(--paper);
   -webkit-font-smoothing: antialiased;
 }
 
-/* Thin scrollbars (native in Chrome 121+/FF, ignored by older browsers):
-   thin and unified site-wide (including the editor's inner scroll areas), paired
-   with the gallery's stable gutter to remove tab-switch jitter */
 html {
   scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar) transparent;
+  scrollbar-color: var(--line-strong) transparent;
 }
 
-button { font-family: inherit; }
-select, input, textarea { font-family: inherit; }
+button,
+select,
+input,
+textarea { font-family: inherit; }
 
-/* ----------------------------------------------------------------------------
-   Touch tuning (global, not breakpoint-scoped): block double-tap zoom, remove the tap highlight
-   ---------------------------------------------------------------------------- */
-button, select, a.btn, .thumb, .add-item {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+a.btn, .thumb, .add-item { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+/* Progressive-loading pulse (gallery cover / canvas mask / thumbnail placeholder):
+   a quiet opacity beat, not a moving gradient. */
+@keyframes pptd-pulse {
+  from { opacity: 0.45; }
+  to { opacity: 1; }
 }
 
-/* ----------------------------------------------------------------------------
-   Skeleton shimmer (shared by gallery covers / the editor canvas mask / thumbnail
-   skeletons; defined in base.css — common styles loaded by both the gallery and
-   editor pages)
-   ---------------------------------------------------------------------------- */
-@keyframes pptd-shimmer {
-  to { background-position: -200% 0; }
-}
+/* ==== controls ==== */
 
-/* ==== controls — unified control language: buttons / icon buttons / dividers ====
-   Control conventions (site-wide, Line pass):
-   - Heights only --control-h(28) / --control-h-lg(32); font sizes only --text-* tokens
-   - Two families: ghost text buttons (.btn: transparent, hover = neutral --hover fill)
-     and framed controls (white + 1px --line-strong, hover border --sub); no colored
-     hover fills — a tint only ever marks a persistent active/selected state
-   - :focus-visible = exactly one 1px solid accent ring, never a glow/ring shadow:
-     framed controls turn the existing 1px border accent (--sel-ring == --accent),
-     unframed controls draw the same ring as outline
-   - Shadows are reserved for floating overlays (dropdowns/dialogs, see tokens.css D1)
-   - All color transitions use --dur-fast var(--ease); no scene transitions
-   ============================================================================ */
-
-/* Buttons: `button` and `<a>` link buttons share one look — inline-flex makes the
-   a's height apply and vertically centers it; removing the underline handles the a
-   default, so no separate a.btn rule is needed.
-   .btn is the ghost text button (Line): no frame, no fill at rest — hover is a
-   neutral gray wash, focus turns the always-present transparent border accent
-   (keeps the 1px ring on the exact control box, no layout shift) */
 .btn {
-  height: var(--control-h-lg);
+  height: var(--control-h);
+  padding: 0 var(--space-3);
   border: 1px solid transparent;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--sub);
-  padding: 0 var(--space-3);
-  border-radius: var(--radius);
   font-size: var(--text-md);
+  font-weight: 400;
   cursor: pointer;
   white-space: nowrap;
   display: inline-flex;
@@ -84,180 +63,151 @@ button, select, a.btn, .thumb, .add-item {
   justify-content: center;
   gap: var(--space-1);
   text-decoration: none;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
 }
 .btn:hover:not(:disabled) { background: var(--hover); color: var(--ink); }
 .btn:active:not(:disabled) { background: var(--active); }
-.btn:focus-visible {
-  outline: none;
-  border-color: var(--sel-ring);
-  color: var(--ink);
-}
-.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: 1px; color: var(--ink); }
+.btn:disabled { color: var(--faint); cursor: not-allowed; }
 
+/* Primary action: the one filled control of a view (accent fill, paper text) */
 .btn-primary {
+  height: var(--control-h-lg);
+  padding: 0 var(--space-4);
   background: var(--accent);
   border-color: var(--accent);
   color: var(--on-accent);
-  font-weight: 600;
+  font-weight: 500;
 }
-.btn-primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--on-accent); }
 .btn-primary:active:not(:disabled) { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: 0.5; }
 
-.btn-sm { height: var(--control-h); padding: 0 var(--space-2); font-size: var(--text-sm); }
+.btn-sm { height: var(--control-h-sm); padding: 0 var(--space-2); font-size: var(--text-sm); }
 
-/* Present button: the one permanently accent-filled control in the chrome (D1/D5) */
-.btn-present {
-  /* Quiet primary: no fill — accent text carries the identity (calmer than a solid block) */
-  color: var(--accent);
-  font-weight: 600;
-}
-.btn-present:hover:not(:disabled) {
-  background: var(--hover);
-  color: var(--accent-hover);
-}
-
-/* Ghost variant of the same family (still used by code that asks for it explicitly) */
 .btn-ghost { color: var(--sub); }
 .btn-ghost:hover:not(:disabled) { background: var(--hover); color: var(--ink); }
 
-/* Destructive action: keeps a 1px frame so it reads as a button next to primaries
-   (focus ring stays the shared 1px accent ring from .btn:focus-visible) */
 .btn-danger { color: var(--danger); border-color: var(--line-strong); background: var(--panel); }
-.btn-danger:hover:not(:disabled) { background: var(--danger-soft); border-color: var(--danger); }
+.btn-danger:hover:not(:disabled) { background: var(--danger-soft); border-color: var(--danger); color: var(--danger); }
 
-/* Pure icon button: no frame, hover shows a circular neutral wash */
+/* Present: the one emphasized action of the editor chrome — ink solid, no icon color */
+.btn-present {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--panel);
+  font-weight: 500;
+}
+.btn-present:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn-present:active:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+/* Pure icon button: no frame at rest, one neutral wash on hover */
 .icon-btn {
-  width: var(--control-h-lg);
-  height: var(--control-h-lg);
+  width: var(--control-h);
+  height: var(--control-h);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
   border: 0;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--sub);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 .icon-btn:hover:not(:disabled) { background: var(--hover); color: var(--ink); }
-.icon-btn:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; color: var(--ink); }
-.icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-/* Link button (the GitHub repo jump in the gallery/editor topbars) */
+.icon-btn:active:not(:disabled) { background: var(--active); }
+.icon-btn:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: 1px; color: var(--ink); }
+.icon-btn:disabled { color: var(--faint); cursor: not-allowed; }
 a.icon-btn { text-decoration: none; color: var(--sub); }
 .icon-btn svg { width: 16px; height: 16px; }
 
-/* Button icon + label pair (label hidden on narrow screens, icon only; one DOM for both ends) */
-.btn-ic {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+.btn-ic { display: inline-flex; align-items: center; justify-content: center; }
 .btn-ic svg { width: 15px; height: 15px; }
 
-.topbar-divider {
-  width: 1px;
-  height: 20px;
-  background: var(--line);
-  margin: 0 3px;
-}
+.topbar-divider { width: 1px; height: 18px; background: var(--line); margin: 0 var(--space-1); }
 
-/* ==== fab — bottom-right add control ==== */
+/* ==== fab — add control (44px ink disc) ==== */
 
-/* ----------------------------------------------------------------------------
-   Bottom-right action stack: the single add control (text / table / chart)
-   ---------------------------------------------------------------------------- */
 .fab-stack {
   position: absolute;
-  right: 22px;
-  bottom: 22px;
+  right: var(--space-6);
+  bottom: var(--space-6);
   z-index: var(--z-dropdown);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
-/* Add: round, icon-only (D5: white ground + 1px line + ink icon;
-   the accent fill is reserved for the open/active state, so no resting shadow) */
 .fab {
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   padding: 0;
-  border: 1px solid var(--line-strong);
+  border: 0;
   border-radius: 50%;
-  background: var(--panel); /* white fill */
-  color: var(--ink); /* ink icon */
+  background: var(--ink);
+  color: var(--panel);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 .fab-ic { width: 20px; height: 20px; }
-.fab:hover { background: var(--hover); border-color: var(--sub); }
-/* Pressing darkens the neutral wash (no shadow, so it is not confused with the persistent .active fill) */
-.fab:active { background: var(--active); }
-.fab:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
-/* Active state (highlight = open): solid accent + white icon; beats .fab:active by order/specificity */
-.fab.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
-}
+.fab:hover { background: var(--accent); color: var(--on-accent); }
+.fab:active { background: var(--accent-hover); }
+.fab:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: 2px; }
+.fab.active { background: var(--accent); color: var(--on-accent); }
 
-/* ==== zoom — thumb-bar zoom group (D2) ==== */
+/* ==== zoom — text/icon group at the right end of the thumbnail bar ==== */
 
-/* Zoom control: an inline group at the right end of the thumb bar. The old canvas
-   overlay (floating card, drag-to-move, localStorage docking) is gone — no
-   background, no shadow, no grab cursor; the hairline that sets it apart from the
-   page strip is the left border of .thumbbar-meta (layout.css). Controls are
-   --control-h(28); the button ids stay the public hook. */
-.zoom-ctl {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
+.zoom-ctl { display: flex; align-items: center; gap: 2px; }
 .zoom-ctl button { cursor: pointer; }
-.zoom-ctl .icon-btn { width: var(--control-h); height: var(--control-h); }
+.zoom-ctl .icon-btn { width: var(--control-h-sm); height: var(--control-h-sm); }
 .zoom-ctl .icon-btn svg { width: 14px; height: 14px; }
 .zoom-label {
-  min-width: 42px;
+  min-width: 44px;
   text-align: center;
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: var(--sub);
   user-select: none;
+  cursor: pointer;
 }
-.zoom-sep { width: 1px; height: 15px; background: var(--line); margin: 0 3px; }
+.zoom-sep { width: 1px; height: 14px; background: var(--line); margin: 0 var(--space-1); }
 
-/* ----------------------------------------------------------------------------
-   Unified toast — white, thin border, no prominent shadow;
-   the type is distinguished by a small dot
-   ---------------------------------------------------------------------------- */
+/* ==== toast — bottom center, panel ground, a status dot carries the type ==== */
+
 .toast-container {
   position: fixed;
-  top: 58px;
-  right: 14px;
+  left: 50%;
+  bottom: var(--space-6);
+  transform: translateX(-50%);
   z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--space-2);
   pointer-events: none;
 }
+/* In the editor the toast floats above the page strip, never over the thumbnails */
+html:has(.thumbbar) .toast-container { bottom: calc(var(--thumbbar-h) + var(--space-4)); }
 .toast {
   display: flex;
   align-items: center;
-  gap: 7px;
-  max-width: 360px;
-  padding: var(--space-2) 13px;
+  gap: var(--space-2);
+  max-width: 420px;
+  padding: var(--space-2) var(--space-3);
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
   font-size: var(--text-sm);
   color: var(--ink);
   opacity: 0;
-  transform: translateY(-6px);
+  transform: translateY(6px);
   transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
 }
 .toast.show { opacity: 1; transform: translateY(0); }
@@ -270,53 +220,50 @@ a.icon-btn { text-decoration: none; color: var(--sub); }
 }
 .toast-success::before { background: var(--success); }
 .toast-danger::before { background: var(--danger); }
-.toast-info::before { background: var(--primary); }
+.toast-info::before { background: var(--accent); }
 
-/* ----------------------------------------------------------------------------
-   Menu primitives (components/menu.js) — context menu / ⋮ overflow menu
-   Values match the design reference (.menu/.mi/.msep/.dis/.k)
----------------------------------------------------------------------------- */
+/* ==== menus (components/menu.js) ==== */
+
 .menu {
   background: var(--panel);
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
-  padding: 4px;
-  min-width: 186px;
+  box-shadow: var(--shadow-pop);
+  padding: var(--space-1);
+  min-width: 188px;
   font-size: var(--text-sm);
 }
 .menu[hidden] { display: none; }
 .mi {
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 26px;
-  padding: 0 8px;
+  gap: var(--space-2);
+  height: 32px;
+  padding: 0 var(--space-2);
   border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--ink);
   white-space: nowrap;
 }
 .mi:hover { background: var(--hover); }
-.mi .k { margin-left: auto; color: var(--faint); font-size: var(--text-xs); font-family: var(--mono); }
+.mi .k { margin-left: auto; color: var(--sub); font-size: var(--text-xs); font-family: var(--font-mono); }
 .mi .mi-ic { width: 14px; height: 14px; color: var(--sub); display: inline-flex; }
 .mi .mi-ic svg { width: 14px; height: 14px; }
-.msep { height: 1px; background: var(--line); margin: 4px 2px; }
-.mi.dis { color: var(--disabled); pointer-events: none; }
-/* Submenu: label + ▸, positioned by components/menu.js (fixed, flips left at the edge) */
+.msep { height: 1px; background: var(--line); margin: var(--space-1) 0; }
+.mi.dis { color: var(--faint); pointer-events: none; }
 .mi.has-sub { position: relative; }
 .menu .submenu { position: fixed; z-index: var(--z-dropdown); }
 
-/* Topbar file menu (toolbar.js bindFileMenu; overlay style like the theme panel) */
+/* File menu: grouped rows, shortcuts right-aligned, danger text for destructive items */
 .file-menu {
   position: fixed;
   z-index: var(--z-dropdown);
-  min-width: 208px;
+  min-width: 220px;
   padding: var(--space-1);
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
   display: none;
   flex-direction: column;
 }
@@ -325,26 +272,31 @@ a.icon-btn { text-decoration: none; color: var(--sub); }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-2) var(--space-3);
-  border: none;
-  border-radius: var(--radius);
+  gap: var(--space-6);
+  min-height: 34px;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
   background: none;
   font-size: var(--text-md);
   color: var(--ink);
   text-align: left;
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 .file-menu-item:hover { background: var(--hover); }
-.file-menu-item:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
-.file-menu-hint { font-size: var(--text-xs); color: var(--sub); flex: none; }
-.file-menu-label { font-size: var(--text-xs); color: var(--sub); padding: var(--space-1) var(--space-3); }
-.file-menu-sep { height: 1px; background: var(--line); margin: var(--space-1) var(--space-2); }
+.file-menu-item:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: -2px; }
+.file-menu-hint { flex: none; font-size: var(--text-xs); color: var(--sub); font-family: var(--font-mono); }
+.file-menu-label {
+  padding: var(--space-1) var(--space-2) 2px;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--sub);
+}
+.file-menu-sep { height: 1px; background: var(--line); margin: var(--space-1) 0; }
 
-/* ----------------------------------------------------------------------------
-
-/* ==== dialogs — dialogs / content editors (table, chart, text; scrollbars) ==== */
+/* ==== dialogs ==== */
 
 .dialog-overlay {
   position: fixed;
@@ -360,7 +312,7 @@ a.icon-btn { text-decoration: none; color: var(--sub); }
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  width: min(680px, 92vw);
+  width: min(560px, 92vw);
   max-height: 86vh;
   display: flex;
   flex-direction: column;
@@ -370,14 +322,19 @@ a.icon-btn { text-decoration: none; color: var(--sub); }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--line);
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6) var(--space-3);
 }
-.dialog-head strong { font-size: var(--text-xl); font-weight: 700; color: var(--ink); }
-.dialog-body { padding: var(--space-4); overflow-y: auto; }
+.dialog-head strong {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  color: var(--ink);
+}
+.dialog-body { padding: var(--space-1) var(--space-6) var(--space-4); overflow-y: auto; }
 .dialog-foot {
-  padding: var(--space-3) var(--space-4);
-  border-top: 1px solid var(--line);
+  padding: var(--space-3) var(--space-6) var(--space-4);
   display: flex;
   justify-content: flex-end;
   gap: var(--space-2);
@@ -386,168 +343,46 @@ a.icon-btn { text-decoration: none; color: var(--sub); }
 /* Restore-local-project card (main.js showRestoreCard) */
 .restore-card { width: min(400px, 92vw); }
 
-/* Export PPTX dialog options (saver.js openExportDialog) */
+/* Export PPTX dialog (saver.js openExportDialog) */
 .export-pptx-opts { display: flex; flex-direction: column; gap: var(--space-2); }
 .export-pptx-scope {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
+  gap: var(--space-1);
+  transition: opacity var(--dur-med) var(--ease);
 }
 .export-pptx-scope.off { opacity: 0.45; pointer-events: none; }
 
-/* Export-image dialog (saver.js openImageExportDialog): page multi-select chips + scale radio chips */
+/* Export-image dialog (saver.js openImageExportDialog) */
 .export-img-opts { display: flex; flex-direction: column; gap: var(--space-2); }
 .export-img-label {
   font-size: var(--text-sm);
-  font-weight: 700;
+  font-weight: 500;
   color: var(--ink);
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
-.export-img-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.export-img-count {
-  font-size: var(--text-sm);
-  color: var(--sub);
-}
-.export-img-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
+.export-img-head { display: flex; align-items: center; gap: var(--space-2); }
+.export-img-count { font-size: var(--text-sm); color: var(--sub); }
+.export-img-chips { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 .export-chip {
+  min-height: var(--control-h-sm);
+  padding: 0 var(--space-2);
   border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
   background: var(--panel);
   color: var(--sub);
-  border-radius: var(--radius-lg);
-  padding: 3px 10px;
   font-size: var(--text-sm);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
 }
 .export-chip:hover { border-color: var(--sub); color: var(--ink); }
 .export-chip.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.export-chip:focus-visible { outline: none; border-color: var(--sel-ring); }
+.export-chip:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: 1px; }
 
-.chart-editor .prop-field { margin-bottom: 10px; }
+/* ==== scrollbars ==== */
 
-/* -- Excel-like data table -- */
-.table-editor { display: flex; flex-direction: column; gap: 10px; }
-.table-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: var(--space-2) 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--bg);
-}
-.table-toolbar .btn { flex: 0 0 auto; }
-.toolbar-sep { width: 1px; height: 18px; background: var(--line-strong); margin: 0 var(--space-1); }
-.table-body { display: flex; gap: 10px; align-items: stretch; }
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-.data-table th, .data-table td {
-  border-bottom: 1px solid var(--line);
-  border-right: 1px solid var(--line);
-  padding: 1px 2px;
-  vertical-align: middle;
-}
-.data-table thead th {
-  background: var(--bg);
-  border-bottom: 1px solid var(--line-strong);
-}
-.data-table tr:last-child td { border-bottom: none; }
-.data-table th:last-child, .data-table td:last-child { border-right: none; }
-
-.data-table input {
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  border: 0;
-  outline: none;
-  background: transparent;
-  padding: var(--space-1) 6px;
-  font: inherit; /* inherit the full td style chain (size/weight/italic) */
-  color: inherit; /* inherit the td text color (light header text / theme color etc. — WYSIWYG) */
-  text-align: inherit; /* inherit the cell alignment */
-}
-.data-table thead input { font-weight: 600; color: var(--primary); }
-.data-table input:focus { background: var(--primary-soft); }
-
-/* -- Excel-style row/column headers (numbers only; click selects a row/column, drag selects several) -- */
-.data-table td.row-head, .data-table th.col-head {
-  width: 18px;
-  min-width: 18px;
-  text-align: center;
-  padding: 0;
-  background: var(--bg);
-  color: var(--faint);
-  font-size: 10px;
-  user-select: none;
-  position: relative;
-  cursor: pointer;
-}
-.data-table th.col-head { border-bottom: 1px solid var(--line-strong); }
-.data-table td.row-head { border-right: 1px solid var(--line-strong); }
-.data-table .head-corner {
-  width: 18px;
-  min-width: 18px;
-  border-right: 1px solid var(--line-strong);
-  border-bottom: 1px solid var(--line-strong);
-  background: var(--bg);
-  padding: 0;
-}
-.data-table td.row-head.head-active, .data-table th.col-head.head-active {
-  background: var(--primary-soft);
-  color: var(--primary);
-  font-weight: 700;
-}
-.data-table td.row-head:hover, .data-table th.col-head:hover { background: var(--primary-soft); }
-
-/* -- Right style panel (declarative fields, same shape as the property panel: prop-group/prop-field/prop-cell) -- */
-.style-panel {
-  width: 244px;
-  flex: none;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: var(--bg);
-  overflow-y: auto;
-  max-height: min(52vh, 480px); /* same height as the grid: content (hint/fields) changes do not move the dialog */
-}
-.style-panel .prop-group:first-child { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
-.style-panel .prop-hint { margin: 10px; }
-
-/* Scrollbars */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: var(--radius); }
+::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: var(--radius-sm); }
 ::-webkit-scrollbar-thumb:hover { background: var(--faint); }
 ::-webkit-scrollbar-track { background: transparent; }
-
-/* ----------------------------------------------------------------------------
-   Tooltip primitive (components/tooltip.js): a shared overlay with a 400ms delay
-   ---------------------------------------------------------------------------- */
-.pptd-tooltip {
-  position: fixed;
-  z-index: var(--z-toast);
-  transform: translateX(-50%);
-  max-width: 240px;
-  padding: 4px 8px;
-  background: var(--panel);
-  color: var(--ink);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
-  font-size: var(--text-xs);
-  line-height: 1.45;
-  white-space: nowrap;
-  pointer-events: none;
-}
-.pptd-tooltip[hidden] { display: none; }

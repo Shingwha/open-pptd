@@ -141,6 +141,7 @@ export function createLiveReload({ state, source, ui, reload, reloadHandle, manu
       if (deploy) hint.textContent = "网页模式"; // full explanation in title (hover)
     }
     dom.statusDirty?.toggleAttribute("hidden", !state.dirty);
+    dom.statusSaved?.toggleAttribute("hidden", !!state.dirty);
     // Refresh button: behavior identical to the bottom-bar era (confirm when dirty, then reload from disk), bound once
     const cluster = dom.tbStatus;
     if (cluster && !cluster.dataset.bound) {

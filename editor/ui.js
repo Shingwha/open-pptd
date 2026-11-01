@@ -39,6 +39,7 @@ export function group(title) {
  * The textarea height follows its content (min one line / max 140px scroll), no manual rows needed. */
 export function textInput(value, onCommit, { rows = 0, placeholder = "", onFocus, onBlur, autoResize = true } = {}) {
   const input = document.createElement(rows ? "textarea" : "input");
+  input.className = "field-input";
   if (rows) {
     input.rows = rows;
     input.placeholder = placeholder;
@@ -64,6 +65,7 @@ export function textInput(value, onCommit, { rows = 0, placeholder = "", onFocus
 export function numInput(value, onCommit, { min = -10000, step = 1, onFocus, onBlur } = {}) {
   const input = document.createElement("input");
   input.type = "number";
+  input.className = "field-input";
   input.value = value;
   input.step = step;
   if (onFocus) input.addEventListener("focus", onFocus);
@@ -205,7 +207,7 @@ export function colorField(value, onCommit, { resolve, swatches = [], onFocus, o
 /** Dropdown select. options = [[value, label], ...]. */
 export function selectInput(options, value, onCommit, { className = "", title = "", onFocus, onBlur } = {}) {
   const sel = document.createElement("select");
-  if (className) sel.className = className;
+  sel.className = "field-input" + (className ? " " + className : "");
   if (title) sel.title = title;
   for (const [v, label] of options) {
     const opt = document.createElement("option");

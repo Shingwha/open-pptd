@@ -1,430 +1,31 @@
 /* ============================================================================
-   panels.css — data panels (gallery + Excel-style data grid)
+   panels.css — add menu, content editors (text / table / chart), Excel grid
+   ----------------------------------------------------------------------------
+   These panels live inside dialogs: hairline separators, white ground, no filled
+   cards. The gallery and the Design drawer have their own sheets (gallery.css /
+   design.css).
    ============================================================================ */
 
-/* ==== gallery — gallery (site root index.html): a document-flow scrolling page sharing brand/button styles with the editor ==== */
-/* Persistent scrollbar gutter: switching tabs no longer reflows page width when a
-   vertical poster page appears/disappears a scrollbar (gallery only; the editor
-   page's html does not scroll and is unaffected) */
-html:has(.gallery-view) {
-  scrollbar-gutter: stable;
+/* Content-editor dialogs carry a grid + a side/under panel: wider than a plain
+   message dialog on desktop only (below 760 they are full-width bottom sheets). */
+@media (min-width: 760px) {
+  .dialog:has(.chart-editor),
+  .dialog:has(.table-editor) { width: min(720px, 92vw); }
 }
 
-.gallery-view {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+/* ==== add control popup (interaction/add-menu.js) ==== */
 
-.gallery-top {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-sticky);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  height: var(--topbar-h);
-  padding: 0 var(--space-5);
-  background: var(--panel);
-  border-bottom: 1px solid var(--line);
-}
-
-.gallery-top-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-#gallery-body {
-  flex: 1;
-  width: 100%;
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 18px var(--space-5) 40px;
-}
-
-/* Single-row toolbar: tabs on the left, run-mode badge on the right (wraps on narrow screens) */
-.gallery-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-3);
-}
-
-/* Run-mode badge: dot + text, no fill (Line); the remote mode keeps its warning color */
-.gallery-mode {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 5px var(--space-3);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-sm);
-  color: var(--accent);
-}
-.gallery-mode .mode-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: currentColor;
-}
-.gallery-mode.remote { color: var(--warning); }
-
-/* Category tabs (PPT / poster): a segmented control — white ground + 1px --line-strong,
-   with an accent slider indicator under the active item (its slide animation is unchanged) */
-.gallery-tabs {
-  display: inline-flex;
-  gap: 4px;
-  padding: 4px;
-  background: var(--panel);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-lg);
-  position: relative;
-}
-.gallery-tab {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: var(--text-sm);
-  color: var(--sub);
-  padding: 5px 18px;
-  /* 8px = container radius (12px) minus its 4px padding: concentric arcs, no bulge */
-  border-radius: var(--radius);
-  position: relative; /* paints the button above the indicator (which precedes it) */
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-}
-.gallery-tab:hover { color: var(--ink); }
-.gallery-tab.active {
-  color: var(--on-accent); /* background supplied by the .gallery-tab-indicator slider */
-}
-.gallery-tab .cnt {
-  margin-left: 5px;
-  font-size: var(--text-xs);
-  color: var(--faint);
-}
-/* Inside the active cell the slider supplies the accent fill, so the count follows the label */
-.gallery-tab.active .cnt { color: inherit; opacity: 0.75; }
-/* Slider indicator: left/width set instantly by JS (not transitioned); the slide
-   is animated via transform: translateX (compositor animation, no dropped frames
-   when the main thread is busy) */
-.gallery-tab-indicator {
-  position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: 4px;
-  width: 0;
-  /* concentric with the 12px container: 12 - 4px inset = 8px */
-  border-radius: var(--radius);
-  background: var(--accent);
-  will-change: transform;
-  transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
-}
-
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 18px;
-  margin-top: 14px;
-}
-/* Poster tab: narrower columns for portrait covers, denser grid */
-.gallery-grid.poster-grid {
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-}
-
-/* Card: white ground + 1px --line, no shadow (D1 leaves shadows to dropdowns/dialogs);
-   hover lifts the border to --line-strong and keeps the 2px rise, never a shadow */
-.gallery-card {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  overflow: hidden;
-  cursor: pointer;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-}
-
-/* [experimental] Staggered card fade-in on tab switch: remove this block plus the
-   --card-i line in gallery.js to drop it. fill-mode backwards releases the style at
-   the end, so it does not disturb the hover transform transition above. */
-@keyframes gallery-card-in {
-  from { opacity: 0; transform: translateY(8px); }
-}
-.gallery-grid > .gallery-card {
-  animation: gallery-card-in 0.32s var(--ease) backwards;
-  animation-delay: calc(var(--card-i, 0) * 25ms);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .gallery-tab-indicator { transition: none; }
-  .gallery-grid > .gallery-card { animation: none; }
-}
-
-.gallery-card:hover {
-  border-color: var(--line-strong);
-  transform: translateY(-2px);
-}
-.gallery-card:active { transform: translateY(0); }
-.gallery-card:focus-visible {
-  /* Framed control rule (W1): one 1px accent ring, drawn by the existing border */
-  outline: none;
-  border-color: var(--sel-ring);
-}
-
-.gallery-card-cover {
-  position: relative;
-  aspect-ratio: 16 / 9; /* PPT fixed frame; poster tab uses 3:4 (rule below), artwork contained and centered */
-  overflow: hidden;
-  background: var(--bg);
-}
-.poster-grid .gallery-card-cover {
-  aspect-ratio: 3 / 4;
-}
-/* Render target: sibling of the page badge so a re-render does not clear the badge */
-.gallery-card-canvas {
-  position: absolute;
-  inset: 0;
-}
-/* Loading shimmer: functional sweep, colors from grayscale tokens (keyframes in base.css) */
-.gallery-card-cover.loading {
-  background:
-    linear-gradient(100deg, var(--bg) 40%, var(--panel) 50%, var(--bg) 60%) 0 0 / 200% 100%;
-  animation: pptd-shimmer 1.2s infinite linear;
-}
-
-.gallery-page {
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform-origin: top left;
-  pointer-events: none;
-}
-
-.gallery-card-err {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--faint);
-  font-size: var(--text-sm);
-}
-
-.gallery-card-info {
-  padding: 10px 12px 11px;
-}
-
-/* Title row: title (ellipsis) left, page count as plain meta text right — the count used to
-   overlay the cover's corner and hid the first-page preview; as row meta it reads at a glance */
-.gallery-card-title-row {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-.gallery-card-title {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-size: var(--text-md);
-  font-weight: 500;
-  line-height: 1.4;
-  /* Single-line ellipsis: titles vary in length; a fixed one-line height keeps cards aligned */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.gallery-card-pages {
-  flex: 0 0 auto;
-  font-size: var(--text-xs);
-  color: var(--sub);
-}
-
-.gallery-card-desc {
-  margin-top: 3px;
-  font-size: var(--text-sm);
-  color: var(--sub);
-  line-height: 1.5;
-  min-height: 1.5em; /* holds one line even without a description, keeping info areas equal */
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.gallery-card-tags {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 6px;
-  margin-top: 7px;
-  height: 20px; /* fixed single row: extra tags are hidden, never grow the card */
-  overflow: hidden;
-}
-
-/* Tag: 11px faint text in a hairline pill, no fill */
-.gallery-tag {
-  font-size: var(--text-xs);
-  color: var(--ink);
-  background: var(--bg);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
-  padding: 1px 7px;
-}
-
-.gallery-empty {
-  margin-top: 30px;
-  padding: 40px;
-  text-align: center;
-  color: var(--sub);
-  background: var(--panel);
-  border: 1px dashed var(--line-strong);
-  border-radius: var(--radius-lg);
-  line-height: 1.8;
-}
-
-/* ==== excel-grid — Excel-style data grid component (shared by the table/chart editors) ==== */
-
-/* ============================================================================
- * Table editor (table-editor.js): selection state / covered cells / style panel
- * ========================================================================== */
-.data-table td.grid-cell { position: relative; }
-.data-table td.grid-cell input { width: 100%; box-sizing: border-box; border: none; outline: none; background: transparent; font: inherit; }
-.data-table td.grid-cell.cell-selected {
-  outline: 2px solid var(--primary);
-  outline-offset: -2px;
-  /* The inset shadow layers over the td's inline background (an inline style beats a
-     class, so background cannot be used here) */
-  box-shadow: inset 0 0 0 999px var(--primary-soft);
-}
-.data-table td.grid-cell.cell-region {
-  box-shadow: inset 0 0 0 999px var(--primary-tint);
-}
-.data-table td.grid-cell.cell-covered { background: repeating-linear-gradient(45deg, var(--bg), var(--bg) 6px, var(--line) 6px, var(--line) 12px); cursor: not-allowed; }
-
-/* -- Chart editor (chart-editor.js): Excel-style data table + declarative style panel -- */
-.chart-editor { display: flex; flex-direction: column; gap: 10px; min-width: 640px; }
-.chart-top { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
-.chart-top .prop-label { font-size: var(--text-sm); color: var(--ink); font-weight: 600; }
-.chart-top select { max-width: 200px; }
-.chart-warn {
-  flex-basis: 100%;
-  background: var(--warning-soft);
-  color: var(--warning);
-  border: 1px solid var(--warning);
-  border-radius: var(--radius-lg);
-  padding: 6px 10px;
-  font-size: var(--text-sm);
-  line-height: 1.6;
-}
-.chart-body { display: flex; gap: 10px; align-items: stretch; }
-.chart-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
-/* Column header (chart: two rows, letter label + column-name input; padding is
-   confined to the content wrap so table headers are unaffected) */
-.excel-grid .chart-col-head {
-  padding: 3px var(--space-1);
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-.excel-grid .col-letter { font-size: 10px; color: var(--faint); text-align: center; }
-.excel-grid .chart-col-head input {
-  width: 100%;
-  box-sizing: border-box;
-  border: none;
-  outline: none;
-  background: transparent;
-  font: inherit;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--primary);
-  text-align: center;
-  padding: 1px 2px;
-  border-radius: var(--radius);
-}
-.excel-grid .chart-col-head input:focus { background: var(--primary-soft); }
-/* Table width = content width (max-content set by the component): spare space when
-   few columns, horizontal scroll when many */
-/* Series list */
-.series-box {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  padding: 10px;
-  background: var(--bg);
-}
-.series-title { font-size: var(--text-sm); font-weight: 700; color: var(--ink); margin-bottom: var(--space-2); }
-.series-list { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: 10px; max-height: 148px; overflow-y: auto; }
-.series-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: var(--space-1) 6px;
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-}
-.series-item:hover { background: var(--primary-soft); }
-.series-item.series-active { background: var(--primary-soft); outline: 1px solid var(--primary); }
-.series-item .color-field { gap: var(--space-1); }
-.series-item .color-swatch-btn { width: 20px; height: 20px; border-radius: var(--radius); }
-.series-item .color-field input[type="color"] { width: 24px; height: 20px; border-radius: var(--radius); }
-.series-item .color-hex { width: 52px; flex: none; padding: 2px var(--space-1); font-size: var(--text-xs); }
-/* Series name/hex inputs: the same line input language as the type dropdown */
-.series-item input {
-  padding: var(--space-1) 6px;
-  font-size: var(--text-sm);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
-  background: var(--panel);
-  color: var(--ink);
-  outline: none;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-}
-.series-item input:hover { border-color: var(--sub); }
-.series-item input:focus-visible { outline: none; border-color: var(--sel-ring); }
-.series-item input[type="text"] { flex: 1; min-width: 60px; }
-/* Series-type dropdown: the shared line input language (white ground, 1px --line-strong,
-   hover --sub, a single 1px accent focus ring from the border) */
-.series-item select {
-  padding: var(--space-1);
-  font-size: var(--text-sm);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
-  background: var(--panel);
-  color: var(--ink);
-  outline: none;
-  max-width: 120px;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-}
-.series-item select:hover { border-color: var(--sub); }
-.series-item select:focus-visible { outline: none; border-color: var(--sel-ring); }
-.series-item .btn-ghost { flex: none; }
-
-/* -- Excel-style data grid component (excel-grid.js, shared by table/chart) -- */
-.excel-grid {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-.excel-grid .table-toolbar { border: none; border-bottom: 1px solid var(--line); border-radius: 0; }
-.excel-grid-scroll {
-  flex: 1 1 auto; /* flex-basis auto: height comes from `height`, not collapsed by flex-basis:0 */
-  min-width: 0;
-  height: min(52vh, 480px); /* fixed height: content scrolls, the panel does not jump on selection changes */
-  overflow: auto;
-}
-
-/* ==== add control — minimal add popup (interaction/add-menu.js) ==== */
 .add-list {
   position: absolute;
-  right: 22px;
-  bottom: 80px;
+  right: var(--space-6);
+  bottom: 76px; /* 24px edge + 44px disc + 8px gap */
   z-index: var(--z-dropdown);
-  min-width: 240px;
+  min-width: 248px;
   padding: var(--space-1);
   background: var(--panel);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -433,102 +34,236 @@ html:has(.gallery-view) {
 .add-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2);
   border: 0;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   background: none;
   color: var(--ink);
   text-align: left;
   cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
 }
 .add-item:hover { background: var(--hover); }
-.add-item:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
-.add-item-ic { width: 20px; height: 20px; flex: none; color: var(--sub); display: inline-flex; }
-.add-item-ic svg { width: 20px; height: 20px; }
+.add-item:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: -2px; }
+.add-item-ic { width: 18px; height: 18px; flex: none; color: var(--sub); display: inline-flex; }
+.add-item-ic svg { width: 18px; height: 18px; }
 .add-item-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.add-item-label { font-size: var(--text-md); font-weight: 600; }
-.add-item-hint { font-size: var(--text-xs); color: var(--faint); }
+.add-item-label { font-size: var(--text-md); font-weight: 500; }
+.add-item-hint { font-size: var(--text-xs); color: var(--sub); }
 
-/* ==== text editor (interaction/text-editor.js) ==== */
-.text-editor { display: flex; flex-direction: column; gap: var(--space-1); min-width: 360px; }
+/* ==== text editor ==== */
 
-/* ==== design panel — theme / fonts / appearance drawer (interaction/design-panel.js) ==== */
-.design-mask { position: fixed; inset: 0; z-index: 90; background: var(--mask); }
-.design-mask[hidden] { display: none; }
-.design-panel {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 95;
-  width: min(420px, 92vw);
+.text-editor { display: flex; flex-direction: column; min-width: 380px; }
+
+/* ==== Excel-style data grid (excel-grid.js; table + chart editors) ==== */
+
+.table-editor { display: flex; flex-direction: column; gap: var(--space-3); }
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background: none;
+}
+.table-toolbar .btn { flex: 0 0 auto; }
+.toolbar-sep { width: 1px; height: 16px; background: var(--line-strong); margin: 0 var(--space-1); }
+.table-body { display: flex; gap: var(--space-4); align-items: flex-start; }
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.data-table th,
+.data-table td {
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  padding: 1px 2px;
+  vertical-align: middle;
+}
+.data-table thead th { background: var(--paper); border-bottom: 1px solid var(--line-strong); }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table th:last-child,
+.data-table td:last-child { border-right: none; }
+
+.data-table input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 0;
+  outline: none;
+  background: transparent;
+  padding: var(--space-1) 6px;
+  font: inherit; /* WYSIWYG: inherit the cell's size/weight/color/alignment */
+  color: inherit;
+  text-align: inherit;
+}
+.data-table thead input { font-weight: 500; color: var(--ink); }
+.data-table input:focus { background: var(--accent-soft); }
+
+/* Excel row/column headers */
+.data-table td.row-head,
+.data-table th.col-head {
+  width: 18px;
+  min-width: 18px;
+  text-align: center;
+  padding: 0;
+  background: var(--paper);
+  color: var(--sub);
+  font-size: 10px;
+  user-select: none;
+  position: relative;
+  cursor: pointer;
+}
+.data-table th.col-head { border-bottom: 1px solid var(--line-strong); }
+.data-table td.row-head { border-right: 1px solid var(--line-strong); }
+.data-table .head-corner {
+  width: 18px;
+  min-width: 18px;
+  border-right: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--paper);
+  padding: 0;
+}
+.data-table td.row-head.head-active,
+.data-table th.col-head.head-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
+.data-table td.row-head:hover,
+.data-table th.col-head:hover { background: var(--accent-soft); }
+
+/* Cell selection: accent outline + inset fill overlay (see the frozen whitelist in
+   tests/regression/ui-token-literals.mjs — the expressions stay verbatim) */
+.data-table td.grid-cell { position: relative; }
+.data-table td.grid-cell input { width: 100%; box-sizing: border-box; border: none; outline: none; background: transparent; font: inherit; }
+.data-table td.grid-cell.cell-selected {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  box-shadow: inset 0 0 0 999px var(--primary-soft);
+}
+.data-table td.grid-cell.cell-region {
+  box-shadow: inset 0 0 0 999px var(--primary-tint);
+}
+.data-table td.grid-cell.cell-covered {
+  background: var(--line);
+  color: var(--faint);
+  cursor: not-allowed;
+}
+
+/* Right style panel (table editor) */
+/* Side rail: a hairline separator, not a card inside the dialog card */
+.style-panel {
+  width: 236px;
+  flex: none;
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--line);
+  overflow-y: auto;
+  max-height: min(52vh, 480px);
+}
+.style-panel .prop-group { padding-left: 0; padding-right: 0; }
+.style-panel .prop-hint { margin: var(--space-2) 0; }
+
+.excel-grid {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  background: var(--panel);
-  border-left: 1px solid var(--line);
-  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
-.design-panel[hidden] { display: none; }
-.design-head { display: flex; align-items: center; justify-content: space-between; height: var(--topbar-h); padding: 0 var(--space-3); border-bottom: 1px solid var(--line); }
-.design-head strong { font-size: var(--text-lg); }
-.design-tabs { display: flex; gap: 2px; padding: var(--space-1) var(--space-2); border-bottom: 1px solid var(--line); }
-.design-tab { flex: 1; height: var(--control-h); border: 1px solid transparent; border-radius: var(--radius); background: none; color: var(--sub); font-size: var(--text-md); cursor: pointer; }
-.design-tab:hover { background: var(--hover); color: var(--ink); }
-.design-tab.active { border-color: var(--line-strong); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-.design-tab:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
-.design-body { flex: 1; min-height: 0; overflow-y: auto; padding: var(--space-2) var(--space-3) var(--space-6); display: flex; flex-direction: column; gap: var(--space-2); }
-.design-sec { display: flex; align-items: baseline; gap: var(--space-2); font-size: var(--text-xs); font-weight: 700; color: var(--faint); margin-top: var(--space-2); }
-.design-current { border: 1px solid var(--line-strong); border-radius: var(--radius-lg); padding: var(--space-2) var(--space-3); }
-.design-current-name { font-size: var(--text-md); font-weight: 600; color: var(--ink); }
-.design-current-detail { font-size: var(--text-xs); color: var(--sub); margin-top: 2px; }
-.design-theme-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
-.design-theme-card { border: 1px solid var(--line-strong); border-radius: var(--radius-lg); padding: 6px; background: var(--panel); }
-.design-theme-card.active { border-color: var(--accent); }
-.design-swatches { display: flex; gap: 3px; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
-.design-swatch { flex: 1; height: 14px; border-radius: var(--radius); }
-.design-theme-name { display: block; width: 100%; margin-top: var(--space-1); padding: 0; border: 0; background: none; color: var(--ink); font-size: var(--text-xs); text-align: left; cursor: pointer; }
-.design-theme-name:hover { color: var(--accent); }
-.design-theme-meta { display: flex; align-items: center; gap: var(--space-1); margin-top: 2px; }
-.design-badge { font-size: 10px; color: var(--faint); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 0 4px; }
-.design-badge.mine { color: var(--accent); border-color: var(--accent); }
-.design-mini-btn { margin-left: auto; padding: 0 6px; height: 20px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: none; color: var(--sub); font-size: 10px; cursor: pointer; }
-.design-mini-btn + .design-mini-btn { margin-left: 2px; }
-.design-mini-btn:hover { border-color: var(--sub); color: var(--ink); }
-.design-mini-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
-.design-actions { display: flex; gap: var(--space-2); }
-.design-actions .btn { flex: 1; }
-.design-tokens { display: flex; flex-direction: column; gap: 2px; }
-.design-token { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
-.design-token-swatch { width: 18px; height: 18px; flex: none; border: 1px solid var(--chip-border); border-radius: var(--radius); }
-.design-token-name { width: 74px; flex: none; font-size: var(--text-xs); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.design-token-picker { width: 30px; height: 22px; flex: none; padding: 0; border: 1px solid var(--line-strong); border-radius: var(--radius); background: none; cursor: pointer; }
-.design-token-hex { flex: 1; min-width: 0; height: 22px; padding: 0 6px; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--panel); color: var(--ink); font-size: var(--text-xs); outline: none; }
-.design-token-hex:focus { border-color: var(--sel-ring); }
-.design-token-del { width: 22px; height: 22px; flex: none; border: 0; border-radius: var(--radius); background: none; color: var(--faint); cursor: pointer; }
-.design-token-del:hover { background: var(--danger-soft); color: var(--danger); }
-.design-add-color { align-self: flex-start; }
-.design-add-form { display: flex; flex-direction: column; gap: var(--space-2); min-width: 320px; }
-.design-input { width: 100%; height: var(--control-h); padding: 0 var(--space-2); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--panel); color: var(--ink); font-size: var(--text-md); outline: none; }
-.design-input:hover { border-color: var(--sub); }
-.design-input:focus { border-color: var(--sel-ring); }
-.design-font-status { display: flex; flex-direction: column; gap: 2px; }
-.design-font-status-row { display: flex; align-items: center; gap: var(--space-2); padding: 4px 0; border-bottom: 1px solid var(--line); }
-.design-font-status-row:last-child { border-bottom: 0; }
-.design-font-family { flex: 1; min-width: 0; font-size: var(--text-sm); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.design-status { flex: none; font-size: 10px; padding: 0 5px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); color: var(--sub); }
-.design-status.ready { color: var(--success); border-color: var(--success); }
-.design-status.missing { color: var(--danger); border-color: var(--danger); }
-.design-font-list { display: flex; flex-direction: column; gap: 2px; margin-top: var(--space-1); }
-.design-font { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--line); }
-.design-font:last-child { border-bottom: 0; }
-.design-font-main { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 6px 0; border: 0; background: none; text-align: left; cursor: pointer; }
-.design-font-preview { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-xl); line-height: 1.3; color: var(--ink); }
-.design-font-info { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
-.design-font-name { font-size: var(--text-md); font-weight: 600; color: var(--ink); }
-.design-font-meta { font-size: var(--text-xs); color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.design-font-import { display: flex; flex-direction: column; gap: var(--space-2); }
-.design-modes { display: flex; gap: var(--space-1); }
-.design-mode-btn { flex: 1; height: var(--control-h); border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--panel); color: var(--sub); font-size: var(--text-sm); cursor: pointer; }
-.design-mode-btn:hover { border-color: var(--sub); color: var(--ink); }
-.design-mode-btn.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.excel-grid .table-toolbar { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; }
+.excel-grid-scroll {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: min(52vh, 480px);
+  overflow: auto;
+}
+
+/* ==== chart editor ==== */
+
+.chart-editor { display: flex; flex-direction: column; gap: var(--space-3); min-width: 640px; }
+.chart-top { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.chart-top .prop-label { flex: none; font-size: var(--text-sm); color: var(--ink); font-weight: 500; }
+.chart-top select { max-width: 200px; }
+.chart-warn {
+  flex-basis: 100%;
+  background: var(--warning-soft);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-sm);
+  padding: 6px var(--space-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading);
+}
+.chart-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+
+/* Column header: letter label + column-name input */
+.excel-grid .chart-col-head {
+  padding: 3px var(--space-1);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.excel-grid .col-letter { font-size: 10px; color: var(--sub); text-align: center; }
+.excel-grid .chart-col-head input {
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--ink);
+  text-align: center;
+  padding: 1px 2px;
+  border-radius: var(--radius-sm);
+}
+.excel-grid .chart-col-head input:focus { background: var(--accent-soft); }
+
+/* Series list */
+.series-box {
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.series-title { font-size: var(--text-sm); font-weight: 500; color: var(--ink); margin-bottom: var(--space-2); }
+.series-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: var(--space-2); max-height: 148px; overflow-y: auto; }
+.series-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 3px var(--space-1);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), outline-color var(--dur-fast) var(--ease);
+}
+.series-item:hover { background: var(--hover); }
+.series-item.series-active { background: var(--accent-soft); outline: 1px solid var(--accent); }
+.series-item .color-field { gap: var(--space-1); }
+.series-item .color-swatch-btn { width: 18px; height: 18px; }
+.series-item .color-field input[type="color"] { width: 22px; height: 18px; }
+.series-item .color-hex { width: 56px; flex: none; }
+.series-item input[type="text"],
+.series-item select {
+  height: var(--control-h-sm);
+  padding: 0 var(--space-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.series-item input[type="text"]:hover,
+.series-item select:hover { border-color: var(--sub); }
+.series-item input[type="text"]:focus,
+.series-item select:focus { border-color: var(--accent); }
+.series-item input[type="text"] { flex: 1; min-width: 60px; }
+.series-item select { max-width: 120px; }
+.series-item .btn-ghost { flex: none; }
