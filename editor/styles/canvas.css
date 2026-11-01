@@ -190,6 +190,41 @@
 }
 .sel-overlay.resizing .sel-size { display: block; }
 
+/* ----------------------------------------------------------------------------
+   Selection action bar (W1; W2 restyles): copy / duplicate / delete, floating
+   above the selection box. interaction/canvas.js owns visibility and position.
+   ---------------------------------------------------------------------------- */
+.sel-actions {
+  position: absolute;
+  z-index: var(--z-dropdown);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  white-space: nowrap;
+}
+.sel-actions[hidden] { display: none; }
+.sel-action {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--sub);
+  cursor: pointer;
+}
+.sel-action:hover { background: var(--hover); color: var(--ink); }
+.sel-action:active { background: var(--active); }
+.sel-action:focus-visible { outline: 1px solid var(--sel-ring); outline-offset: 0; }
+.sel-action svg { width: 16px; height: 16px; }
+
 .canvas {
   position: relative;
   /* Fallback size: renderCanvas overrides it inline from deck.size (posters etc.) */
