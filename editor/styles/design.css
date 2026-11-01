@@ -174,6 +174,7 @@
 
 .design-add-form { display: flex; flex-direction: column; gap: var(--space-2); min-width: 320px; }
 .design-input {
+  flex: none;
   width: 100%;
   height: var(--control-h-sm);
   padding: 0 var(--space-2);
@@ -219,11 +220,12 @@
 .design-status.ready::before { background: var(--success); }
 .design-status.missing::before { background: var(--danger); }
 
-.design-font-list { display: flex; flex-direction: column; margin-top: var(--space-1); }
+.design-font-list { display: flex; flex-direction: column; margin-top: var(--space-2); }
 .design-font {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-height: 38px;
   border-bottom: 1px solid var(--line);
 }
 .design-font:last-child { border-bottom: 0; }
@@ -231,33 +233,67 @@
   flex: 1;
   min-width: 0;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
-  padding: 6px 0;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 7px 0;
   border: 0;
   background: none;
   text-align: left;
   cursor: pointer;
 }
 .design-font-main:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: -2px; }
-.design-font-preview {
+.design-font-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+.design-font-name {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--text-xl);
-  line-height: var(--leading-tight);
+  font-size: var(--text-sm);
+  font-weight: 500;
   color: var(--ink);
 }
-.design-font-info { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
-.design-font-name { font-size: var(--text-md); font-weight: 500; color: var(--ink); }
 .design-font-meta {
-  font-size: var(--text-xs);
-  color: var(--sub);
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 10px;
+  color: var(--sub);
+}
+/* 行内只保留一个短样本；完整大样在列表上方的单一预览条。 */
+.design-font-sample {
+  flex: none;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--sub);
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+.design-font-main:hover .design-font-sample { color: var(--ink); }
+.design-font-preview-box {
+  flex: none;
+  margin: var(--space-2) 0 var(--space-1);
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  overflow: hidden;
+}
+.design-font-preview-text {
+  min-height: 21px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  line-height: 21px;
+  color: var(--ink);
 }
 .design-font-import { display: flex; flex-direction: column; gap: var(--space-2); }
 

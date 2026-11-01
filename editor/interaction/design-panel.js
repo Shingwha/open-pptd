@@ -46,6 +46,7 @@ const STD_LABELS = {
 
 const HEX_RE = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 const FONT_SAMPLE = "永远相信美好的事情即将发生 AaBb 0123";
+const FONT_SAMPLE_SHORT = "Aa 永";
 
 // Instance factory: one panel per editor instance (no module-level singleton)
 /**
@@ -66,6 +67,7 @@ export function createDesignPanel(ui) {
 
   let fonts = { list: [], api: false, loaded: false, loading: null };
   let fontQuery = "";
+  let fontPreviewEl = null;
   const facesRegistered = new Set();
 
   // Panel lifecycle
@@ -499,6 +501,17 @@ export function createDesignPanel(ui) {
         `全局字体库（内置 ${countSource("builtin")} · 我的 ${countSource("user") + countSource("url")}）`
       )
     );
+
+    // 单一预览条：列表行不再重复整句大样；悬停/点击字体时在这里显示完整样本。
+    const previewBox = document.createElement("div");
+    previewBox.className = "design-font-preview-box";
+    fontPreviewEl = document.createElement("div");
+    fontPreviewEl.className = "design-font-preview-text";
+    fontPreviewEl.textContent = FONT_SAMPLE;
+    if (families[0]) fontPreviewEl.style.fontFamily = `"${families[0]}", var(--font)`;
+    previewBox.appendChild(fontPreviewEl);
+    bodyEl.appendChild(previewBox);
+
     bodyEl.appendChild(search);
     const listWrap = document.createElement("div");
     listWrap.className = "design-font-list";
@@ -607,10 +620,8 @@ export function createDesignPanel(ui) {
       const main = document.createElement("button");
       main.type = "button";
       main.className = "design-font-main";
-      main.title = "点击预览";
-      const preview = document.createElement("span");
-      preview.className = "design-font-preview";
-      preview.textContent = FONT_SAMPLE;
+      main.title = [entry.family, entry.license, "悬停/点击预览"].filter(Boolean).join(" · ");
+
       const info = document.createElement("span");
       info.className = "design-font-info";
       const name = document.createElement("span");
@@ -618,12 +629,20 @@ export function createDesignPanel(ui) {
       name.textContent = entry.family;
       const meta = document.createElement("span");
       meta.className = "design-font-meta";
-      meta.textContent = [sourceLabel(entry.source), formatSize(entry.size), entry.license]
-        .filter(Boolean)
-        .join(" · ");
+      meta.textContent = [sourceLabel(entry.source), formatSize(entry.size)].filter(Boolean).join(" · ");
       info.append(name, meta);
-      main.append(preview, info);
-      main.addEventListener("click", () => previewFont(entry, preview));
+
+      // 行内短样本；完整大样由顶部预览条承担，避免每个字体重复一整句。
+      const sample = document.createElement("span");
+      sample.className = "design-font-sample";
+      sample.textContent = FONT_SAMPLE_SHORT;
+      sample.setAttribute("aria-hidden", "true");
+
+      const targets = [name, sample, fontPreviewEl].filter(Boolean);
+      main.append(info, sample);
+      main.addEventListener("mouseenter", () => previewFont(entry, targets, { silent: true }), { once: true });
+      main.addEventListener("focus", () => previewFont(entry, targets, { silent: true }), { once: true });
+      main.addEventListener("click", () => previewFont(entry, targets));
       row.appendChild(main);
 
       if (entry.source === "user" || entry.source === "url") {
@@ -674,7 +693,7 @@ export function createDesignPanel(ui) {
     return null;
   }
 
-  async function previewFont(entry, previewEl) {
+  async function previewFont(entry, targets, { silent = false } = {}) {
     try {
       if (!facesRegistered.has(entry.family)) {
         const bytes = await fontBytes(entry);
@@ -684,9 +703,12 @@ export function createDesignPanel(ui) {
         document.fonts.add(face);
         facesRegistered.add(entry.family);
       }
-      previewEl.style.fontFamily = `"${entry.family}", var(--font)`;
+      for (const el of Array.isArray(targets) ? targets : [targets]) {
+        if (el) el.style.fontFamily = `"${entry.family}", var(--font)`;
+      }
     } catch (err) {
-      ui.toast.show(`字体预览失败: ${err.message}`, "danger");
+      // 悬停预览静默失败；点击仍给出提示，避免一次拖动/扫过就弹一串 toast。
+      if (!silent) ui.toast.show(`字体预览失败: ${err.message}`, "danger");
     }
   }
 
