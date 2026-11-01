@@ -3,8 +3,7 @@
 // deltas). The base style is written once on the container and inherited; span and paragraph
 // inline styles carry only explicit deltas.
 // Defaults: color #000000 / fontSize 18 / fontFamily Microsoft YaHei / lineHeight 1 / align
-// [left, top] — the renderer fills the gaps between browser CSS and these defaults.
-// Formulas (\(...\)) inherit only color / font-size and render natively via KaTeX → MathML.
+// [left, top]. Formulas inherit only color/font-size and render natively via KaTeX → MathML.
 
 import { parseRichText } from "../model/richtext.js";
 import { computeBaseStyle, mergeRunStyle } from "../model/style.js";

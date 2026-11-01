@@ -1,10 +1,9 @@
 // renderer/shell.js — element shell (positioning / markers / transforms shared by all renderers)
-// Each renderer owns "content" only; the shell adds: bounds → position:absolute (svg via
-// width/height + overflow:visible; div via cssText, height:false lets content decide the height);
-// data-element-id / data-element-type markers (selection, dragging and quick-bar lookup all use
-// them — interaction/canvas.js mutates left/top/width/height directly while dragging); rotation
-// /flip transforms (OOXML semantics: flip before rotate, and since the transform list applies
-// right-to-left the scale is written after rotate) and opacity.
+// Each renderer owns "content"; the shell adds: bounds → position:absolute (svg via width/height +
+// overflow:visible; div via cssText, height:false lets content decide the height); data-element-id
+// /type markers (selection, dragging and quick-bar lookup; interaction/canvas.js mutates
+// left/top/width/height directly while dragging); rotation/flip transforms (OOXML: flip before
+// rotate; the list applies right-to-left, so scale comes after rotate) and opacity.
 
 import { colorOr } from "../model/theme.js";
 import { effectiveShadow } from "../model/style-spec.js";
