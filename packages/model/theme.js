@@ -5,27 +5,23 @@
 // Extensions (official editors ignore them): deck.fonts resource table
 // ({key: {family, url/file, subset}}); styles reference theme keys by "$key".
 
-import { DEFAULT_THEME, THEME_PALETTES } from "./theme-presets.js";
+import { DEFAULT_THEME } from "./theme-presets.js";
 import { TABLE_FONT_SIZE } from "./table.js";
 import { parseFontResources } from "./font.js";
-export { DEFAULT_THEME, THEME_PALETTES } from "./theme-presets.js";
+export { DEFAULT_THEME } from "./theme-presets.js";
 
 const HEX_RE = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
 /**
  * Normalize a theme: deep-merge over the default theme.
- * Compatible with legacy string keys: a hit among the built-in presets (THEME_PALETTES,
- * e.g. "tech") takes its colors plus the default textStyles/tableStyles; an unknown key
- * warns and falls back to the default theme, so "theme: blue" cannot quietly become the
- * default palette.
+ * Legacy string themes only warn and fall back to the default theme: 3.2 removed every
+ * color preset, so "theme: tech" must never silently resolve to a different palette.
  */
 export function normalizeTheme(input) {
   const base = JSON.parse(JSON.stringify(DEFAULT_THEME));
   if (!input) return base;
   if (typeof input === "string") {
-    const preset = THEME_PALETTES[input];
-    if (preset) return { ...base, colors: { ...preset.colors } };
-    console.warn(`[theme] 未知配色预设 "${input}"，已回退默认主题（可用: ${Object.keys(THEME_PALETTES).join(" / ")}）`);
+    console.warn(`[theme] 3.2 已移除主题预设 "${input}"，回退默认主题`);
     return base;
   }
   return deepMerge(base, input);
@@ -70,23 +66,6 @@ export function resolveColor(theme, color) {
  */
 export function colorOr(theme, color, fallback = null) {
   return resolveColor(theme, color) || fallback;
-}
-
-/**
- * Apply a color preset: preset keys win, other custom color keys already on the deck
- * are kept. AI-generated decks often define $gold/$paper etc. in theme.colors and
- * pages reference them; replacing the whole set would turn every such reference into
- * an unknown color token falling back to black.
- * @param {object} currentColors existing colors (keys outside the preset are kept)
- * @param {object} presetColors  preset colors (its keys take precedence)
- * @returns {object} the composed new colors
- */
-export function mergePaletteColors(currentColors, presetColors) {
-  const out = { ...(presetColors || {}) };
-  for (const [k, v] of Object.entries(currentColors || {})) {
-    if (!(k in out)) out[k] = v;
-  }
-  return out;
 }
 
 /**

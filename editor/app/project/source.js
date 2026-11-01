@@ -9,7 +9,6 @@ import { commitBaseline } from "../state.js";
 import { fetchProjectTexts } from "./project-cache.js";
 import { readProject, writeFiles, fingerprint, readImageAsDataUrl } from "./handle-io.js";
 import {
-  DEFAULT_THEME,
   base64ToBytes,
   bytesToBase64,
   parseDeck,
@@ -299,7 +298,7 @@ export function memorySource({ files = {}, writable = true } = {}) {
  * Apply a read project to editor state: reset history/selection/pages/image map/
  * id counter and render the statusbar (shared by loadDeck and manual refresh).
  * @param {{ manifestText, pageFiles, manifestPath?, handle?, projectName? }} deckData
- * @param {{ state, ops, images, renderStatusBar, setBrandFile, applyTheme? }} ctx
+ * @param {{ state, ops, images, renderStatusBar, setBrandFile }} ctx
  *        the injected editor context (ops document/selection writes, images.rebuildImageMap / topbar brand / statusbar)
  */
 export function applyDeck(deckData, ctx) {
@@ -311,17 +310,8 @@ export function applyDeck(deckData, ctx) {
   state.projectName = projectName;
   state.revision = revision; // revision the save conflict check is based on (null = unconditional)
   setBrandFile(handle ? projectName : manifestPath);
-  // Theme: prefer loader's applyTheme (stays the single implementation); external callers without that dep use the inline equivalent
-  if (typeof ctx.applyTheme === "function") {
-    ctx.applyTheme(state.deck.theme || DEFAULT_THEME);
-  } else {
-    const themeInput = state.deck.theme || DEFAULT_THEME;
-    state.deck.theme =
-      themeInput && typeof themeInput === "object"
-        ? JSON.parse(JSON.stringify(themeInput))
-        : JSON.parse(JSON.stringify(DEFAULT_THEME));
-    state.theme = resolveTheme(state.deck);
-  }
+  // 主题：直接解析 deck.theme（3.2 不再迁移/规范化旧主题结构，colors 编辑由 loader.applyColors 负责）
+  state.theme = resolveTheme(state.deck);
   state.currentPage = 0;
   ops.clearSelection();
   state.history = createHistory();

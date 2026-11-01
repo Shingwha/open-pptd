@@ -29,14 +29,14 @@ const BARRELS = {
     fns: [
       "parseDeck", "serializeDeck", "createDeck", "createPage", "nextElementId",
       "deckSize", "registerType", "getType", "allTypes",
-      "resolveTheme", "resolveColor", "resolveFont", "mergePaletteColors",
+      "resolveTheme", "resolveColor", "resolveFont",
       "validateDeck", "registerRule", "walkElements", "collectImageSrcs",
       "shapePaths", "shapeMenuIcon",
     ],
     objs: ["chart", "icons", "fonts", "bytes"],
     consts: [
       "PAGE_WIDTH", "PAGE_HEIGHT", "PAGE_TYPES", "SUPPORTED_SHAPES", "ELEMENT_TYPES",
-      "DEFAULT_THEME", "DEFAULT_FONT", "THEME_PALETTES", "PRESET_SHAPES",
+      "DEFAULT_THEME", "DEFAULT_FONT", "PRESET_SHAPES",
     ],
     // namespace spot checks
     namespaceSpot: [

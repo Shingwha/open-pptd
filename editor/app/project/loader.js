@@ -7,16 +7,24 @@
 
 import { applyDeck as applyDeckToState } from "./source.js";
 import { preloadIcons } from "./icons.js";
-import { DEFAULT_THEME, resolveTheme, syncElementId } from "../../../packages/model/index.js";
+import { resolveTheme, syncElementId } from "../../../packages/model/index.js";
 
 export function createLoader({ state, view, ops, images, fontManager, source, ui, connect, renderStatusBar, onDeckChange, onError }) {
   const { dom, toast, dialogs } = ui;
   // Theme and state application
-  function applyTheme(themeInput) {
-    // The official theme is always an object (v1 string-key compatibility is gone); deep-copy isolates the default theme reference
-    state.deck.theme = themeInput && typeof themeInput === "object"
-      ? JSON.parse(JSON.stringify(themeInput))
-      : JSON.parse(JSON.stringify(DEFAULT_THEME));
+  /**
+   * 颜色编辑的唯一写入点：只替换 theme.colors，textStyles / tableStyles 原样保留。
+   * 3.2 起前端不再提供主题/样式切换，字体与表格样式由 deck 作者（AI/文件）维护。
+   */
+  function applyColors(colors) {
+    // 旧 deck 可能把 theme 写成字符串（2.x 预设）：它不是对象，不能参与展开，
+    // 否则会产生数字键污染。颜色写入统一收敛为标准的 {colors} 对象。
+    const current = state.deck.theme;
+    const base = current && typeof current === "object" && !Array.isArray(current) ? current : {};
+    state.deck.theme = {
+      ...base,
+      colors: JSON.parse(JSON.stringify(colors || {})),
+    };
     // A deck-level font declaration overrides the theme font (otherwise the theme default, e.g. Microsoft YaHei)
     state.theme = resolveTheme(state.deck);
   }
@@ -81,7 +89,7 @@ export function createLoader({ state, view, ops, images, fontManager, source, ui
     ops.clearClipboard();
     applyDeckToState(
       { manifestText, pageFiles, manifestPath, handle, projectName, revision },
-      { state, ops, images, renderStatusBar, setBrandFile, applyTheme }
+      { state, ops, images, renderStatusBar, setBrandFile }
     );
     try {
       onDeckChange?.(state.deck);
@@ -209,5 +217,5 @@ export function createLoader({ state, view, ops, images, fontManager, source, ui
     loadDeck(state.manifestPath, { keepPage: true, silent: true }).then(done).catch(fail);
   }
 
-  return { applyTheme, applyHistory, loadDeck, loadDeckFromHandle, loadDeckData, manualReload, setBrandFile };
+  return { applyColors, applyHistory, loadDeck, loadDeckFromHandle, loadDeckData, manualReload, setBrandFile };
 }

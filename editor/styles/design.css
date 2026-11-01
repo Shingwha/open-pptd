@@ -1,6 +1,6 @@
-/* design.css — Design drawer (theme / fonts / appearance)
+/* design.css — Design drawer (colors / fonts / appearance)
  * 420px right drawer on panel ground with a hairline left edge; tabs are text
- * segments with a 2px accent underline; theme cards show six 12px color dots.
+ * segments with a 2px accent underline; color tokens are compact table rows.
  */
 
 .design-mask { position: fixed; inset: 0; z-index: 90; background: var(--mask); }
@@ -94,68 +94,6 @@
 }
 .design-sec:first-child { margin-top: 0; }
 
-.design-current {
-  border-bottom: 1px solid var(--line);
-  padding-bottom: var(--space-3);
-}
-.design-current-name { font-size: var(--text-lg); font-weight: 500; color: var(--ink); }
-.design-current-detail { margin-top: 2px; font-size: var(--text-xs); color: var(--sub); }
-.design-actions { display: flex; gap: var(--space-2); }
-.design-actions .btn { flex: 1; }
-
-/* Theme cards: 2 columns, six 12px dots */
-.design-theme-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-2);
-}
-.design-theme-card {
-  padding: var(--space-2);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--panel);
-  transition: border-color var(--dur-fast) var(--ease);
-}
-.design-theme-card:hover { border-color: var(--line-strong); }
-.design-theme-card.active { border-color: var(--accent); }
-.design-swatches {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: pointer;
-}
-.design-swatch { width: 12px; height: 12px; flex: none; border-radius: 50%; }
-.design-theme-name {
-  display: block;
-  width: 100%;
-  margin-top: var(--space-2);
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--ink);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-}
-.design-theme-name:hover { color: var(--accent); }
-.design-theme-name:focus-visible,
-.design-swatches:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: 2px; }
-.design-theme-meta { display: flex; align-items: center; gap: var(--space-1); margin-top: 2px; }
-
-.design-badge {
-  padding: 0 5px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  font-size: 10px;
-  line-height: 1.6;
-  color: var(--sub);
-}
-.design-badge.mine { color: var(--accent); border-color: var(--accent); }
 .design-mini-btn {
   height: 20px;
   padding: 0 5px;

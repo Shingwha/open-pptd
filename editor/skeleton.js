@@ -101,7 +101,7 @@ export function editorSkeletonHtml() {
     `<span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M3 6a1.5 1.5 0 0 1 1.5-1.5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.2V18a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>` +
     `<span class="btn-label">文件</span>` +
     `</button>` +
-    `<button id="btn-design" class="btn" title="设计：主题 / 字体 / 外观">` +
+    `<button id="btn-design" class="btn" title="设计：颜色 / 字体 / 外观">` +
     `<span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18h1.6a1.6 1.6 0 0 0 0-3.2H12a1.6 1.6 0 0 1 0-3.2h4.4A4.6 4.6 0 0 0 21 10C21 6.1 17 3 12 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7.4" cy="10.6" r="1.1" fill="currentColor"/><circle cx="11.8" cy="7.4" r="1.1" fill="currentColor"/><circle cx="16.4" cy="8.6" r="1.1" fill="currentColor"/></svg></span>` +
     `<span class="btn-label">设计</span>` +
     `</button>` +
