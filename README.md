@@ -98,9 +98,8 @@ your words ──AI (open-pptd skill)──▶ PPTD project (human-readable YAML
 ## Example gallery
 
 <p align="center">
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fqingshan-coffee-review-12p%2Fdeck.pptd"><img src="docs/images/qingshan.png" width="32%" alt="Qingshan Coffee · H1 2026 business review (all 13 chart types)"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbrand-mori-showcase-7p%2Fdeck.pptd"><img src="docs/images/brand-mori.png" width="32%" alt="MORI brand proposal"/></a>
-  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd"><img src="docs/images/business-review.png" width="32%" alt="Yuanchuan Tech · 2025 annual business review"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbrand-mori-showcase-7p%2Fdeck.pptd"><img src="docs/images/brand-mori.png" width="48%" alt="MORI brand proposal"/></a>
+  <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fbusiness-review-7p%2Fdeck.pptd"><img src="docs/images/business-review.png" width="48%" alt="Yuanchuan Tech · 2025 annual business review"/></a>
 </p>
 <p align="center">
   <a href="https://shingwha.github.io/open-pptd/editor/?deck=examples%2Fxiaohongshu-intro-poster%2Fdeck.pptd"><img src="docs/images/xiaohongshu.png" width="27%" alt="open-pptd intro poster (Xiaohongshu)"/></a>

@@ -726,126 +726,6 @@
     }
    ]
   },
-  "examples/qingshan-coffee-review-12p": {
-   "deck": "examples/qingshan-coffee-review-12p/deck.pptd",
-   "pngDir": "examples__qingshan-coffee-review-12p",
-   "pageCount": 12,
-   "sourceHash": "44780e0e245b0bf7a185d9648926e472117fa330864e95093d74ea71df60f2fa",
-   "size": [
-    960,
-    540
-   ],
-   "pages": [
-    {
-     "page": 1,
-     "w": 960,
-     "h": 540,
-     "bytes": 45036,
-     "sha256": "b9dba04dcf5549aa96dc0b5be2369e938e6a1e3d4df3e38046b3b30d2f0fe3be",
-     "dHash": "c202968595069280",
-     "aHash": "ffff18b8f8fdffff"
-    },
-    {
-     "page": 2,
-     "w": 960,
-     "h": 540,
-     "bytes": 55656,
-     "sha256": "dae658975af29b571dd1878e0049f2a608ac9c39e374970d3065c9f61a531176",
-     "dHash": "93aaaa32be9c9ce1",
-     "aHash": "fff7ffff818181ff"
-    },
-    {
-     "page": 3,
-     "w": 960,
-     "h": 540,
-     "bytes": 52187,
-     "sha256": "7b6c98374465511cbca547f4183fd1785c7a814226fa8b97fd9f4a7b17ced646",
-     "dHash": "939034f8c4dc2481",
-     "aHash": "ff07fd8181c16fff"
-    },
-    {
-     "page": 4,
-     "w": 960,
-     "h": 540,
-     "bytes": 75494,
-     "sha256": "e20bbc311b616f1cd23435d77b9584e348cdd8c2cd473f4004de0235c024ef96",
-     "dHash": "93b0c8a8a8a8c881",
-     "aHash": "ff079b8bab8f9fff"
-    },
-    {
-     "page": 5,
-     "w": 960,
-     "h": 540,
-     "bytes": 77884,
-     "sha256": "084d5b9883715243ff7c91df74f375eba3630e31ed3c1c478fbe3c5bb10f0449",
-     "dHash": "9384c48e8e8e84a1",
-     "aHash": "ffff990909098bff"
-    },
-    {
-     "page": 6,
-     "w": 960,
-     "h": 540,
-     "bytes": 46316,
-     "sha256": "f8d47841866ea62a614a48b0bc520141ed72a0e032813c17b1e3bdbc1ffc21de",
-     "dHash": "93b0f8b8b0b0b0a1",
-     "aHash": "ffaf81818183a3ff"
-    },
-    {
-     "page": 7,
-     "w": 960,
-     "h": 540,
-     "bytes": 52949,
-     "sha256": "8b0ad39c848934cacd1457092928b27978373cf3ed4b17842e4864327d9db463",
-     "dHash": "93a01e70c61ca5a1",
-     "aHash": "ff07fdc39ff90fff"
-    },
-    {
-     "page": 8,
-     "w": 960,
-     "h": 540,
-     "bytes": 87183,
-     "sha256": "d36993310df98d63f4bb002c1a6cfba3b49c4a6b8392925a50c39fe5d03f6481",
-     "dHash": "93c08c9c9c8c988d",
-     "aHash": "ff031f313139fbff"
-    },
-    {
-     "page": 9,
-     "w": 960,
-     "h": 540,
-     "bytes": 123649,
-     "sha256": "c923d7fcf42c7c680d3ed36f893e0d2c2015ec86bee4df73b14fb8b498382fad",
-     "dHash": "93a89c88b8846424",
-     "aHash": "ff830303018bffff"
-    },
-    {
-     "page": 10,
-     "w": 960,
-     "h": 540,
-     "bytes": 46787,
-     "sha256": "96bf23b026ca3039a39bb2887617f127045523a89466cabadfb0adfec9b8a53e",
-     "dHash": "9398b4ba63828481",
-     "aHash": "ff03ffe0cf9fffff"
-    },
-    {
-     "page": 11,
-     "w": 960,
-     "h": 540,
-     "bytes": 43564,
-     "sha256": "56814b2cdc1b1fc4b555b1b876d7f94522b1c061c13c314e16d4e018141d6563",
-     "dHash": "93d09080bc962401",
-     "aHash": "ff87ff8fa3bdffff"
-    },
-    {
-     "page": 12,
-     "w": 960,
-     "h": 540,
-     "bytes": 62356,
-     "sha256": "3c40171fb493ee9df27bcdc37232aef676ae981bc000381423815af99d1baefc",
-     "dHash": "93c898989c9c9c81",
-     "aHash": "ff87b3b1b1b1f1ff"
-    }
-   ]
-  },
   "examples/shanmingji-2026-launch": {
    "deck": "examples/shanmingji-2026-launch/deck.pptd",
    "pngDir": "examples__shanmingji-2026-launch",
@@ -1703,7 +1583,7 @@
   }
  },
  "totals": {
-  "projects": 24,
-  "pages": 156
+  "projects": 23,
+  "pages": 144
  }
 }

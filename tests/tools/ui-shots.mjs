@@ -30,7 +30,7 @@ try {
 
 const PORT = 56199;
 const CDP_PORT = 9247;
-const DECK = "examples/qingshan-coffee-review-12p/deck.pptd"; // long real deck: charts, tables, text
+const DECK = "examples/business-review-7p/deck.pptd"; // real deck: charts, tables, text
 
 const server = await startServer({ port: PORT, projectRoot: SKILL });
 const chrome = spawn(CHROME, [
