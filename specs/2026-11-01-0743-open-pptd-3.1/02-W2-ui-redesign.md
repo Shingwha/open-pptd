@@ -36,4 +36,12 @@
 
 ## 前置上下文
 
-待 W1 合并后补：选中操作条 API/DOM、W1 handoff、当前 e2e 端口与截图命令、稳定区、已知坑。
+- 必读顺序：`ref/design-direction.md`（视觉系统全文）→ `ref/interfaces.md` §2–§4 → `handoff/W1-worker.md` → `handoff/W7-worker.md`（最小编辑器 DOM）→ `handoff/W8-worker.md`（单壳/实例）→ 本工单。
+- 基线命令（开工先跑，贴真实输出）：`node tests/tools/dump-formula-mml.mjs`；`node tests/run-all.mjs`（39/39）；`node tests/e2e/{editor-minimal,page-ops,editor-ops,preview-shell,incremental-load}.mjs`；`node tests/e2e/browser-export.mjs`；dep-graph；contract；`golden-diff`。
+- W1 已交付：`#sel-actions`（复制/重复/删除）在 `#canvas-wrap` 内，`.sel-action[data-action]`；Ctrl+C/X/V、Ctrl+Shift+V、Ctrl+D；API copy/cut/paste/duplicate。W2 必须保留这些 DOM/API，只重做样式与定位观感。
+- 现有 e2e 端口：editor-minimal 9341、page-ops 9342、preview-shell 9343、editor-ops 9344、ui-shots 9247；不要并行冲突。
+- 强制 DOM 契约：见 `ref/interfaces.md` §3.1（`[data-element-id]`、`[data-handle]`、`[data-rotate-handle]`、每实例唯一 `#canvas`、`.sel-overlay/.member`、`footer.thumbbar`、`.topbar`、`.brand-home`、`.thumb`、`#page-count` 文本、页面菜单 7 项文案、`#btn-add/#add-list` 三项顺序、`.design-*` 类、`.gallery-view/.gallery-card/.gallery-card-canvas .pptd-preview`、旧 id 不得复活）。
+- 现状可删死规则：`.chart-body`、`.gallery-page`、`.panel-hint`、`.pptd-tooltip`、`.thumb.multi`、`#editor-app`、`#gallery-toolbar`；`tokens.css` 的 legacy 别名只有 `--primary*` 与 `--h-sm` 仍被引用，其余零引用；注释/标题有过期项（`primitives.css` 重复标题/残句、`panels.css` base.css 引用、`tokens.css` BP_NARROW 等）。
+- 截图：`node tests/tools/ui-shots.mjs` 默认输出 `tests/ui-shots-out/`（gitignored），产出 editor.png/editor-addmenu.png/editor-narrow.png/gallery.png/gallery-narrow.png；用新截图替换 `docs/images/editor.png`（README 引用），gallery 截图按需新增并更新 README。
+- 稳定区（勿改）：`packages/**`、`editor/preview.js`、`editor/editor.js`、`editor/main.js` 的行为、`tests/golden/**`、`tests/projects/**`、`tests/contract/**`、`contract.json`、`skill/**`。
+- 已知坑：id 找不到静默失效；`stage.js` FLOATING 需包含新浮层；`.thumb` 尺寸与 `thumbnails.js` 常量耦合；toast 的 `top` 依赖 topbar 高度；900px 断点会隐藏 `.btn-label`；gallery tab 指示器由 JS 写 left/width；封面容器会被 createPreview 整体替换；destroy 必须清空 portal/遮罩/监听。
