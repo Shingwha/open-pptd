@@ -5,10 +5,10 @@
 // late via bind()). Selection writes go through ops; reads go through getSelected /
 // getSelection / getSelectedElements; modules never touch state.selection directly.
 
-import { createElement } from "../types/index.js";
+import { CONTENT_TYPE_IDS, createElement } from "../types/index.js";
 
 /** Content-editor types (single-element editing only). */
-const CONTENT_TYPES = new Set(["text", "table", "chart"]);
+const CONTENT_TYPES = new Set(CONTENT_TYPE_IDS);
 
 export function createEditorApi({ state, page, selected, primarySelectedId, selectedElements, ops, ui }) {
   let controller = null; // canvas interaction controller (interaction/canvas.js)
@@ -74,15 +74,21 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
     }
   }
 
-  /** Add one of the three content elements; table/chart open their editor right away. */
-  function addContent(type) {
-    const el = createElement(type);
+  /**
+   * Add one element of any add-menu type. One undo step; the new element is selected
+   * and rendered. Content types keep their editor behavior (table/chart open the
+   * content editor); shape/line/image stay transform-only. Images rebuild the
+   * preview map so the inline dataURL is immediately addressable.
+   */
+  function addElementOfType(type, variant) {
+    const el = createElement(type, variant);
     if (!el) return null;
     ops.beginChange();
     ops.addElement(el);
     ops.select(el.elementId, "replace");
+    if (type === "image") io?.rebuildImageMap();
     render();
-    if (type !== "text") openContentEditor(el);
+    if (CONTENT_TYPES.has(type) && type !== "text") openContentEditor(el);
     return el.elementId;
   }
 
@@ -189,9 +195,13 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
     openChartEditor: (el) => openContentEditor(el || selectedElements().find((e) => e.elementType === "chart") || null),
 
     // add + page operations
-    addText: () => addContent("text"),
-    addTable: () => addContent("table"),
-    addChart: () => addContent("chart"),
+    addElementOfType,
+    addText: () => addElementOfType("text"),
+    addTable: () => addElementOfType("table"),
+    addChart: () => addElementOfType("chart"),
+    addShape: (name) => addElementOfType("shape", name),
+    addLine: (variant) => addElementOfType("line", variant),
+    addImage: (dataUrl) => addElementOfType("image", dataUrl),
     insertPage(at) {
       ops.beginChange();
       const index = ops.insertPage(at);
