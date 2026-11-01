@@ -8,7 +8,9 @@
 
 [Online gallery](https://shingwha.github.io/open-pptd/) (no install, click & edit) · [30-second setup](#30-second-setup) · [Use it with AI](#use-it-with-ai)
 
-<img src="docs/images/editor.png" width="880" alt="open-pptd editor: Qingshan Coffee business review — canvas on the left, page thumbnail strip at the bottom"/>
+<img src="docs/images/editor.png" width="880" alt="open-pptd editor: Qingshan Coffee business review — paper canvas with the selection action bar, page thumbnails below"/>
+
+<img src="docs/images/gallery.png" width="880" alt="open-pptd Home: work gallery with presentation and poster tabs"/>
 
 </div>
 
