@@ -289,15 +289,6 @@ elements:
       style: "$subtitle"
       align: [center, middle]
       text: "MAISON DE PARFUM"
-  - elementId: cn-line
-    elementType: text
-    bounds: [80, 680, 560, 20]
-    content:
-      fontSize: 12
-      color: "$muted"
-      letterSpacing: 2
-      align: [center, middle]
-      text: "香氛开幕夜 · 限定发布"
   - elementId: info-1
     elementType: text
     bounds: [80, 724, 560, 24]
