@@ -78,5 +78,5 @@
 - ✅ W6（2026-11-01 @ `feat/3.1-w6-perf` → main）：删除编辑器 DOM 度量、缩略图增量/分帧、viewport 缓存；六茶画布 p50 50→12ms，青山切页 176→14ms；perf 3 连跑全达标；全部 e2e、run-all 39/39、golden 156/156。
 - ✅ W7（2026-11-01 @ `feat/3.1-w7-gallery` → main）：删除青山项目/展示图；卡片去描述子标题；Logo 回页首；perf/ui-shots 换远川复盘；golden 23/144。
 - ✅ W8（2026-11-01 @ `feat/3.1-w8-ev` → main）：EV 17 页白色/海军蓝学术风（删 58 装饰）、思源宋体标题；海报删中文副标题；golden rebaseline 23/144；全部 e2e、run-all 39/39、docs 35/35。
-- ⏳ W9（2026-11-01 @ `feat/3.1-w9-academic`）：EV 按 skill academic kit 全量重排（约 14–16 页），后台执行中。
+- ✅ W9（2026-11-01 @ `feat/3.1-w9-academic` → main）：按用户参考图重做蓝色科研竞赛风 15 页；深蓝封面/胶囊标签、蓝色章节条、浅蓝卡片/数据卡/蓝表头；删除章节分隔/目录页；数据/证据/引用保留；golden 23/142。
 - ✅ W10（2026-11-01 @ `feat/3.1-w10-dist` → main）：`assets skill install --dir`；runtime 携带 skill；稳定 `open-pptd-skill.zip`；README 单主图精简；docs 仅 editor.png。
