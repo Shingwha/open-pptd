@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // tests/e2e/editor-minimal.mjs — minimal editor E2E.
 // Covers selection/drag transform/multi-select, text/table/chart content editors (open + commit),
-// text color (token list + hex), add control (6 items in fixed order) + Delete, and the Design panel (apply
-// theme, custom color token, appearance toggle); legacy entries are gone (#btn-fonts/#btn-theme/
+// text color (token list + hex), add control (6 items in fixed order) + Delete, and the Design panel (color
+// tokens only — no theme library, colors-only write, appearance toggle); legacy entries are gone (#btn-fonts/#btn-theme/
 // #inspector/#quickbar/#add-menu). Depends on local Chrome (CDP 9341); SKIP when missing.
 // Usage: node tests/e2e/editor-minimal.mjs
 
@@ -191,19 +191,39 @@ try {
   );
   log("添加 + 删除元素", s.deltaAdd === 1 && s.deltaDelete === 1, JSON.stringify(s));
 
-  // 7) Design panel: apply theme, custom color token, appearance
+  // 7) Design panel: colors tab only (no theme library), colors-only write, custom token, undo
   s = await evalJs(`(async () => {
     document.querySelector('#btn-design').click();
     await new Promise((r) => setTimeout(r, 1000));
+    const tabs = [...document.querySelectorAll('.design-tab')].map((b) => b.textContent);
     const cards = document.querySelectorAll('.design-theme-card').length;
     const tokens = document.querySelectorAll('.design-token').length;
-    const before = window.__pptdEditor.state.deck.theme.colors.primary;
-    document.querySelectorAll('.design-theme-card')[2].querySelector('.design-theme-name').click();
-    const after = window.__pptdEditor.state.deck.theme.colors.primary;
-    return { cards, tokens, before, after, changed: before !== after };
+    const theme = window.__pptdEditor.state.deck.theme;
+    const beforeTs = JSON.stringify(theme?.textStyles ?? null);
+    const beforeTb = JSON.stringify(theme?.tableStyles ?? null);
+    const before = theme?.colors?.primary;
+    const hex = document.querySelector('[data-token="primary"] .design-token-hex');
+    hex.value = '#123456';
+    hex.dispatchEvent(new Event('change', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 300));
+    const afterTheme = window.__pptdEditor.state.deck.theme;
+    return {
+      tabs, cards, tokens,
+      before, after: afterTheme?.colors?.primary,
+      tsSame: JSON.stringify(afterTheme?.textStyles ?? null) === beforeTs,
+      tbSame: JSON.stringify(afterTheme?.tableStyles ?? null) === beforeTb,
+    };
   })()`);
-  log("Design 面板主题库与颜色令牌可见", s.cards >= 10 && s.tokens >= 16, JSON.stringify({ cards: s.cards, tokens: s.tokens }));
-  log("应用主题写入 deck.theme", s.changed === true, JSON.stringify({ before: s.before, after: s.after }));
+  log(
+    "Design 面板为颜色/字体/外观三 tab，无主题卡",
+    ["颜色", "字体", "外观"].every((t) => s.tabs.includes(t)) && s.cards === 0 && s.tokens >= 16,
+    JSON.stringify({ tabs: s.tabs, cards: s.cards, tokens: s.tokens })
+  );
+  log(
+    "颜色编辑只写 theme.colors（textStyles/tableStyles 不变）",
+    s.before !== "#123456" && s.after === "#123456" && s.tsSame === true && s.tbSame === true,
+    JSON.stringify({ before: s.before, after: s.after, tsSame: s.tsSame, tbSame: s.tbSame })
+  );
 
   s = await evalJs(`(async () => {
     const btns = [...document.querySelectorAll('.design-body .btn')];
@@ -225,10 +245,10 @@ try {
 
   s = await evalJs(`(async () => {
     window.__pptdEditor.undo();
-    const restored = window.__pptdEditor.state.deck.theme.colors.gold;
-    const before = window.__pptdEditor.state.deck.theme.colors.primary;
+    const restored = window.__pptdEditor.state.deck.theme?.colors?.gold;
+    const before = window.__pptdEditor.state.deck.theme?.colors?.primary;
     window.__pptdEditor.undo();
-    return { restored, primaryUndone: before !== window.__pptdEditor.state.deck.theme.colors.primary };
+    return { restored, primaryUndone: before !== window.__pptdEditor.state.deck.theme?.colors?.primary };
   })()`);
   log("Design 改动可撤销", s.restored === undefined && s.primaryUndone === true, JSON.stringify(s));
 
@@ -247,26 +267,31 @@ try {
   log("字体库与外观切换", s.fonts > 0 && s.importRow === 1 && s.modes === 3 && s.dark === "dark" && s.light === "light", JSON.stringify(s));
   log("Design 面板关闭", s.closed === true);
 
-  // 8) Static-hosting degradation: no /api → built-in themes/fonts only
+  // 8) Static-hosting degradation: no /api → colors stay editable, built-in fonts only
   s = await evalJs(`(async () => {
     const original = window.fetch;
     window.fetch = (url, opts) => String(url).includes('/api/') ? Promise.reject(new Error('offline')) : original(url, opts);
     document.querySelector('#btn-design').click();
     await new Promise((r) => setTimeout(r, 1200));
+    const tokens = document.querySelectorAll('.design-token').length;
     const cards = document.querySelectorAll('.design-theme-card').length;
     const btnTexts = [...document.querySelectorAll('.design-body .btn')].map((b) => b.textContent);
-    const hintText = [...document.querySelectorAll('.design-body .prop-hint')].map((h) => h.textContent).join(' | ');
     [...document.querySelectorAll('.design-tab')].find((b) => b.dataset.tab === 'fonts').click();
     const fontCount = document.querySelectorAll('.design-font').length;
     const importRows = document.querySelectorAll('.design-font-import').length;
+    const hintText = [...document.querySelectorAll('.design-body .prop-hint')].map((h) => h.textContent).join(' | ');
     document.querySelector('.design-head .btn').click();
     window.fetch = original;
-    return { cards, saveDisabled: btnTexts.some((t) => t.includes('保存当前为主题')), hintText, fontCount, importRows };
+    return {
+      tokens, cards,
+      noThemeActions: !btnTexts.some((t) => t.includes('保存当前为主题') || t.includes('导入')),
+      fontCount, importRows, hintText,
+    };
   })()`);
   log(
-    "无 /api 时仅内置主题/字体并提示",
-    s.cards === 11 && s.fontCount > 0 && s.importRows === 0 && /静态站/.test(s.hintText),
-    JSON.stringify({ cards: s.cards, fontCount: s.fontCount, importRows: s.importRows })
+    "无 /api 时颜色离线可编辑，字体提示静态站",
+    s.tokens >= 16 && s.cards === 0 && s.noThemeActions && s.fontCount > 0 && s.importRows === 0 && /静态站/.test(s.hintText),
+    JSON.stringify({ tokens: s.tokens, cards: s.cards, fontCount: s.fontCount, importRows: s.importRows })
   );
 } catch (err) {
   console.error("测试异常:", err);

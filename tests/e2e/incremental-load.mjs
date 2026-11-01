@@ -37,7 +37,7 @@ rmSync(PROJECT, { recursive: true, force: true });
 mkdirSync(join(PROJECT, "pages"), { recursive: true });
 
 // manifest references 3 pages but only 1 is written first
-writeFileSync(join(PROJECT, "deck.pptd"), "version: v2\ntitle: 增量测试\ntheme: cyan\nsize: [960, 540]\npages:\n  - pages/1.page\n  - pages/2.page\n  - pages/3.page\n");
+writeFileSync(join(PROJECT, "deck.pptd"), "version: v2\ntitle: 增量测试\nsize: [960, 540]\npages:\n  - pages/1.page\n  - pages/2.page\n  - pages/3.page\n");
 const pageYaml = (n) =>
   "pageType: content\nbackground: {type: solid, color: \"#131010\"}\nelements:\n" +
   `  - elementId: t${n}\n    elementType: text\n    bounds: [64, 64, 400, 40]\n` +
