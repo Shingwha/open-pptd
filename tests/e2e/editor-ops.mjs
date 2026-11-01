@@ -66,15 +66,15 @@ writeFileSync(
 );
 
 // ---------------------------------------------------------------------------
-// Boot: local server + headless Chrome + CDP (port 9343, run serially)
+// Boot: local server + headless Chrome + CDP (port 9344, run serially)
 // ---------------------------------------------------------------------------
 const server = await startServer({ port: 0, projectRoot: PROJECT });
 const PORT = server.address().port;
 const URL = `http://127.0.0.1:${PORT}/editor/?deck=project/deck.pptd`;
-const chrome = spawn(CHROME, ["--headless=new", "--disable-gpu", "--no-first-run", "--remote-debugging-port=9343", URL], { stdio: "ignore" });
+const chrome = spawn(CHROME, ["--headless=new", "--disable-gpu", "--no-first-run", "--remote-debugging-port=9344", URL], { stdio: "ignore" });
 let cdp;
 try {
-  cdp = await connectCdp(9343, 15000);
+  cdp = await connectCdp(9344, 15000);
 } catch (err) {
   console.error(`SKIP  Chrome 未能启动（${err.message}）`);
   chrome.kill();
@@ -499,6 +499,30 @@ try {
   log(
     "载入项目清空剪贴板",
     s.before === 1 && s.after === 0 && s.hasClipboard === false && s.pages === 2,
+    JSON.stringify(s)
+  );
+
+  // -------------------------------------------------------------------------
+  // 11) New blank project clears the clipboard too (io.newProject path)
+  // -------------------------------------------------------------------------
+  s = await evalJs(`(async () => {
+    const api = window.__pptdEditor;
+    const page = api.state.deck.pages[api.state.currentPage];
+    api.select(page.elements[0].elementId);
+    api.copySelected();
+    const before = api.getClipboardCount();
+    await window.__pptdIo.newProject({ toast: false });
+    return {
+      before,
+      after: api.getClipboardCount(),
+      hasClipboard: api.hasClipboard(),
+      pasted: api.pasteClipboard().length,
+      pages: api.state.deck.pages.length,
+    };
+  })()`);
+  log(
+    "新建空白项目清空剪贴板（paste 返回空）",
+    s.before === 1 && s.after === 0 && s.hasClipboard === false && s.pasted === 0 && s.pages === 1,
     JSON.stringify(s)
   );
 } catch (err) {
