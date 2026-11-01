@@ -1,0 +1,272 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |-
+  结论：三条回答分别对应问题、方法与证据。贡献是把驾驶行为从离散标签改写为可赋权的连续因子，
+  并打通数据清洗→特征工程→LSTM→实车验证全流程。下一步做高寒/高原/高温与多车型在线验证。
+elements:
+  - elementId: chapter-bar
+    elementType: shape
+    bounds: [0, 0, 960, 56]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+  - elementId: chapter-text
+    elementType: text
+    bounds: [48, 18, 720, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "#FFFFFF"
+      bold: true
+      wrap: false
+      text: '05. 结论 —— 回答与贡献'
+  - elementId: chapter-brand
+    elementType: text
+    bounds: [736, 20, 176, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.8
+      color: "$accent6"
+      align: [right, top]
+      wrap: false
+      text: EV RANGE · 学术报告
+  - elementId: title
+    elementType: text
+    bounds: [48, 70, 864, 34]
+    content:
+      style: "$title"
+      wrap: false
+      text: 驾驶行为量化因子让里程预测从“平均”走向“逐样本”
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 104, 864, 16]
+    content:
+      style: "$caption"
+      fontSize: 9.6
+      wrap: false
+      text: 三条回答分别对应问题、方法与证据
+  - elementId: answer-1-card
+    elementType: shape
+    bounds: [48, 132, 280, 212]
+    shapeName: roundRect
+    adjustments: [9000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
+  - elementId: answer-1-num
+    elementType: text
+    bounds: [66, 148, 60, 28]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 20
+      color: "$primary"
+      bold: true
+      wrap: false
+      text: "01"
+  - elementId: answer-1-title
+    elementType: text
+    bounds: [66, 180, 244, 18]
+    content:
+      style: "$heading"
+      fontSize: 11.5
+      wrap: false
+      text: 问题
+  - elementId: answer-1-text
+    elementType: text
+    bounds: [66, 204, 244, 66]
+    content:
+      style: "$body"
+      fontSize: 9.8
+      lineHeight: 1.55
+      text: 聚类标签粒度粗、现有预测偏差大；Q 为每个短片段提供连续的驾驶行为标签。
+  - elementId: answer-1-stat
+    elementType: text
+    bounds: [66, 276, 244, 30]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 18
+      color: "$primary"
+      bold: true
+      wrap: false
+      text: |-
+        <p><span style="font-size:18px;">3,622</span><span style="font-size:9px;color:$muted;font-family:LXGW Neo XiHei;"> 个驾驶事件</span></p>
+  - elementId: answer-1-ref
+    elementType: text
+    bounds: [66, 316, 244, 14]
+    content:
+      style: "$caption"
+      fontSize: 8
+      wrap: false
+      text: → §1 背景 / §2 指标
+  - elementId: answer-2-card
+    elementType: shape
+    bounds: [344, 132, 280, 212]
+    shapeName: roundRect
+    adjustments: [9000]
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: answer-2-num
+    elementType: text
+    bounds: [362, 148, 60, 28]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 20
+      color: "$primary"
+      bold: true
+      wrap: false
+      text: "02"
+  - elementId: answer-2-title
+    elementType: text
+    bounds: [362, 180, 244, 18]
+    content:
+      style: "$heading"
+      fontSize: 11.5
+      wrap: false
+      text: 方法
+  - elementId: answer-2-text
+    elementType: text
+    bounds: [362, 204, 244, 66]
+    content:
+      style: "$body"
+      fontSize: 9.8
+      lineHeight: 1.55
+      text: 7 项指标经随机森林客观赋权；含 Q 的 LSTM 在四车上 RMSE / MAE 最低，优于 SVR / BP / RNN。
+  - elementId: answer-2-stat
+    elementType: text
+    bounds: [362, 276, 244, 30]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 16
+      color: "$primary"
+      bold: true
+      wrap: false
+      text: |-
+        <p><span style="font-size:16px;">0.017 → 0.005</span><span style="font-size:9px;color:$muted;font-family:LXGW Neo XiHei;"> RMSE</span></p>
+  - elementId: answer-2-ref
+    elementType: text
+    bounds: [362, 316, 244, 14]
+    content:
+      style: "$caption"
+      fontSize: 8
+      wrap: false
+      text: → 表 3 / 表 7
+  - elementId: answer-3-card
+    elementType: shape
+    bounds: [640, 132, 272, 212]
+    shapeName: roundRect
+    adjustments: [9000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
+  - elementId: answer-3-num
+    elementType: text
+    bounds: [658, 148, 60, 28]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 20
+      color: "$primary"
+      bold: true
+      wrap: false
+      text: "03"
+  - elementId: answer-3-title
+    elementType: text
+    bounds: [658, 180, 236, 18]
+    content:
+      style: "$heading"
+      fontSize: 11.5
+      wrap: false
+      text: 证据
+  - elementId: answer-3-text
+    elementType: text
+    bounds: [658, 204, 236, 66]
+    content:
+      style: "$body"
+      fontSize: 9.8
+      lineHeight: 1.55
+      text: 实车单驾驶事件 R² 全部提升，最高 0.9514 → 0.9953；原车仪表偏差更大。
+  - elementId: answer-3-stat
+    elementType: text
+    bounds: [658, 276, 236, 30]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 18
+      color: "$primary"
+      bold: true
+      wrap: false
+      text: |-
+        <p><span style="font-size:18px;">0.9953</span><span style="font-size:9px;color:$muted;font-family:LXGW Neo XiHei;"> 最高 R²</span></p>
+  - elementId: answer-3-ref
+    elementType: text
+    bounds: [658, 316, 236, 14]
+    content:
+      style: "$caption"
+      fontSize: 8
+      wrap: false
+      text: → 表 8 / 图 14
+  - elementId: contribution-card
+    elementType: shape
+    bounds: [48, 360, 864, 92]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: { type: solid, color: "$primaryDeep" }
+    shadow: { blur: 14, color: "#123B7A33", offset: [0, 3] }
+  - elementId: contribution-label
+    elementType: text
+    bounds: [66, 372, 300, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.4
+      color: "$accent6"
+      letterSpacing: 1.8
+      wrap: false
+      text: 贡献 / CONTRIBUTION
+  - elementId: contribution-text
+    elementType: text
+    bounds: [66, 388, 828, 34]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 10.6
+      color: "#FFFFFF"
+      lineHeight: 1.5
+      text: 把驾驶行为从离散标签改写为可赋权的连续因子，打通“数据清洗 → 特征工程 → LSTM → 实车验证”全流程，为续驶里程管理与充电规划提供支持。
+  - elementId: contribution-boundary
+    elementType: text
+    bounds: [66, 426, 828, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.4
+      color: "$accent6"
+      wrap: false
+      text: 边界：单车型、离线数据；外推需更多地区与车型验证。
+  - elementId: next-step
+    elementType: text
+    bounds: [48, 466, 864, 14]
+    content:
+      style: "$caption"
+      fontSize: 8.4
+      wrap: false
+      text: 下一步：高寒 / 高原 / 高温地区车辆适应性优化，更多车型在线验证。
+  - elementId: footer-line
+    elementType: shape
+    bounds: [48, 502, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: footer-left
+    elementType: text
+    bounds: [48, 507, 640, 12]
+    content:
+      style: "$nav"
+      wrap: false
+      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+  - elementId: footer-page
+    elementType: text
+    bounds: [800, 506, 112, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.5
+      color: "$primary"
+      bold: true
+      align: [right, top]
+      wrap: false
+      text: 13 / 15

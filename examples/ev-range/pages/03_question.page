@@ -1,0 +1,239 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |-
+  研究问题：把“驾驶风格”改写为可计算、可检验的变量。
+  主问题：用量化因子 Q 替代聚类标签，能否降低剩余续驶里程预测的 RMSE 与 MAE？
+  H1 含 Q 误差更低；H2 LSTM 在四种算法中最低；H3 单事件验证 R² 高于原车仪表。
+elements:
+  - elementId: chapter-bar
+    elementType: shape
+    bounds: [0, 0, 960, 56]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+  - elementId: chapter-text
+    elementType: text
+    bounds: [48, 18, 640, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "#FFFFFF"
+      bold: true
+      wrap: false
+      text: '01. 研究问题 —— 假设与范围'
+  - elementId: chapter-brand
+    elementType: text
+    bounds: [736, 20, 176, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.8
+      color: "$accent6"
+      align: [right, top]
+      wrap: false
+      text: EV RANGE · 学术报告
+  - elementId: title
+    elementType: text
+    bounds: [48, 70, 864, 34]
+    content:
+      style: "$title"
+      wrap: false
+      text: 一个连续的驾驶行为因子，能否降低逐时刻预测误差？
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 104, 864, 16]
+    content:
+      style: "$caption"
+      fontSize: 9.6
+      wrap: false
+      text: 把“驾驶风格”改写为可计算、可检验的变量，并预先声明可证伪条件
+  - elementId: rq-card
+    elementType: shape
+    bounds: [48, 132, 552, 306]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill: { type: solid, color: "$primaryDeep" }
+    shadow: { blur: 16, color: "#123B7A2E", offset: [0, 4] }
+  - elementId: rq-label
+    elementType: text
+    bounds: [68, 150, 512, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.4
+      color: "$accent6"
+      letterSpacing: 2
+      wrap: false
+      text: RESEARCH QUESTION
+  - elementId: rq-text
+    elementType: text
+    bounds: [68, 172, 512, 56]
+    content:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 16.5
+      color: "#FFFFFF"
+      bold: true
+      lineHeight: 1.5
+      text: 用量化因子 Q 替代聚类标签，能否降低电动汽车剩余续驶里程预测的 RMSE 与 MAE？
+  - elementId: rq-divider
+    elementType: shape
+    bounds: [68, 238, 512, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$accent4" }
+    opacity: 0.45
+  - elementId: scope-label
+    elementType: text
+    bounds: [68, 248, 512, 13]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.2
+      color: "$accent6"
+      letterSpacing: 1.5
+      wrap: false
+      text: 范围 / SCOPE
+  - elementId: scope-text
+    elementType: text
+    bounds: [68, 264, 512, 52]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.8
+      color: "$primaryTint"
+      lineHeight: 1.55
+      text: 4 辆实车 · 3,622 个驾驶事件 · 20 s 短行驶片段；训练集 9:1 时比较 RMSE / MAE，单事件验证比较 R²。
+  - elementId: falsify-label
+    elementType: text
+    bounds: [68, 324, 512, 13]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.2
+      color: "$accent6"
+      letterSpacing: 1.5
+      wrap: false
+      text: 可证伪条件 / FALSIFICATION
+  - elementId: falsify-text
+    elementType: text
+    bounds: [68, 340, 512, 52]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.6
+      color: "$primaryTint"
+      lineHeight: 1.55
+      text: 若含 Q 与不含 Q 的 RMSE / MAE 无系统差异，或 LSTM 未优于 SVR / BP / RNN，则 H1 与 H2 不成立。
+  - elementId: evidence-map
+    elementType: text
+    bounds: [68, 400, 512, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.6
+      color: "$accent6"
+      wrap: false
+      text: 对应证据：表 3 指标 · 表 7 误差 · 表 8 确定系数
+  - elementId: h1-card
+    elementType: shape
+    bounds: [620, 132, 292, 94]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
+  - elementId: h1-label
+    elementType: text
+    bounds: [638, 146, 256, 14]
+    content:
+      style: "$label"
+      fontSize: 9.5
+      wrap: false
+      text: H1 · 特征有效性
+  - elementId: h1-text
+    elementType: text
+    bounds: [638, 166, 256, 48]
+    content:
+      style: "$body"
+      fontSize: 10.2
+      lineHeight: 1.45
+      text: 输入含 Q 的模型，其 RMSE 与 MAE 低于不含 Q 的同类模型。
+  - elementId: h2-card
+    elementType: shape
+    bounds: [620, 236, 292, 94]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: h2-label
+    elementType: text
+    bounds: [638, 250, 256, 14]
+    content:
+      style: "$label"
+      fontSize: 9.5
+      wrap: false
+      text: H2 · 模型优越性
+  - elementId: h2-text
+    elementType: text
+    bounds: [638, 270, 256, 48]
+    content:
+      style: "$body"
+      fontSize: 10.2
+      lineHeight: 1.45
+      text: 在 SVR、BP、RNN、LSTM 四种算法中，LSTM 的预测误差最低。
+  - elementId: h3-card
+    elementType: shape
+    bounds: [620, 340, 292, 94]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
+  - elementId: h3-label
+    elementType: text
+    bounds: [638, 354, 256, 14]
+    content:
+      style: "$label"
+      fontSize: 9.5
+      wrap: false
+      text: H3 · 实车有效性
+  - elementId: h3-text
+    elementType: text
+    bounds: [638, 374, 256, 48]
+    content:
+      style: "$body"
+      fontSize: 10.2
+      lineHeight: 1.45
+      text: 单驾驶事件验证中，含 Q 的 LSTM 其 R² 高于不含 Q 模型与原车仪表。
+  - elementId: takeaway-bar
+    elementType: shape
+    bounds: [48, 452, 864, 28]
+    shapeName: roundRect
+    adjustments: [50000]
+    fill: { type: solid, color: "$primaryDeep" }
+  - elementId: takeaway-text
+    elementType: text
+    bounds: [64, 457, 832, 18]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.6
+      color: "#FFFFFF"
+      align: [center, middle]
+      wrap: false
+      text: 若 H1–H3 成立，驾驶行为差异应成为续驶里程预测的一等输入。
+  - elementId: footer-line
+    elementType: shape
+    bounds: [48, 502, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: footer-left
+    elementType: text
+    bounds: [48, 507, 640, 12]
+    content:
+      style: "$nav"
+      wrap: false
+      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+  - elementId: footer-page
+    elementType: text
+    bounds: [800, 506, 112, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.5
+      color: "$primary"
+      bold: true
+      align: [right, top]
+      wrap: false
+      text: 03 / 15
