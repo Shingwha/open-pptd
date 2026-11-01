@@ -72,4 +72,4 @@
 - ✅ W5（2026-11-01 @ `feat/3.1-w5-add` → main）：添加菜单六类（文字/表格/图表/形状/线条/图片）；形状 187 preset 搜索、线条 3 变体、图片落 media；add-elements 12/12。
 - ✅ 3.1 终验 + 试用反馈：run-all 39/39、全部 e2e、golden 156/156；详见 `handoff/W3.1-lead.md`。未 push/tag/发版。
 - 另修 `open --detach` 子进程重复开浏览器（补 `--no-open`）。
-- W6 性能优化已派工（DOM 度量移除 + 缩略图增量化）。
+- ✅ W6（2026-11-01 @ `feat/3.1-w6-perf` → main）：删除编辑器 DOM 度量、缩略图增量/分帧、viewport 缓存；六茶画布 p50 50→12ms，青山切页 176→14ms；perf 3 连跑全达标；全部 e2e、run-all 39/39、golden 156/156。
