@@ -1,22 +1,9 @@
-// ============================================================================
-// app/project/export-service.js — browser adapter for packages/export
-// ----------------------------------------------------------------------------
-// One adapter for every browser export (interfaces.md §5, work order 09 §P2):
-//   exportPptx({embedFonts, fullFonts})  → ExportService format=pptx
-//   exportBundle()                       → ExportService format=bundle (snapshot)
-//   exportPng({pages, scale, mode})      → ExportService format=png
-//                                          (capture first, foreignObject fallback)
-//
-// It supplies the browser-side ResourceProvider (font library + built-in font
-// registry, icon preload cache + icon registry, editing-session media) and a
-// download sink (downloadBlob/downloadPptx). Page selection, scale validation,
-// naming and reports stay in packages/export; this module only adapts the
-// environment and packages multi-page PNG downloads (zip / individual files).
-//
-// Snapshot semantics: the bundle/PPTX/PNG inputs are the **current editing
-// session** (possibly dirty). DataURL images are rewritten to media/ paths and
-// carried in project.media (the same rule as the old save/export paths).
-// ============================================================================
+// editor/app/project/export-service.js — browser adapter for packages/export
+// One adapter for every browser export: exportPptx (format=pptx), exportBundle
+// (format=bundle, snapshot) and exportPng (format=png, capture first with
+// foreignObject fallback). Supplies the browser ResourceProvider (font library +
+// registries, icon cache, editing-session media) and a download sink; selection,
+// scale validation, naming and reports stay in packages/export.
 
 import {
   base64ToBytes,
@@ -73,7 +60,7 @@ async function fetchBytes(url) {
 }
 
 /**
- * Browser ResourceProvider (interfaces.md §3).
+ * Browser ResourceProvider.
  * Font resolution: editor font library (bytes/url) → built-in registry → system.
  * Icons: preload cache (normalized SVG text) → registry + local/CDN fetch.
  * Images: editing-session media map → remote fetch.
@@ -174,7 +161,7 @@ export function createBrowserResources({ state, project }) {
  * @param {object} state editor state
  * @param {{carryFonts?: boolean}} [options] carryFonts writes library font bytes into
  *        the snapshot (capture backend needs them as project files; bundle must not
- *        carry fonts, per 3.0 non-goal)
+ *        carry fonts)
  */
 export function buildProjectSnapshot(state, { carryFonts = false } = {}) {
   const snapshot = JSON.parse(JSON.stringify(state.deck));

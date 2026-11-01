@@ -1,20 +1,9 @@
-// ============================================================================
-// app/view/thumbnails.js — bottom thumbnail bar: render + page switch (+ edit ops)
-// ----------------------------------------------------------------------------
-// Minimal editor (editor-ux §2/§7):
-//   - click a card switches the current page (single page model; no page
-//     multi-select / batch operations)
-//   - drag-sort (editor only): drag a card (threshold-triggered) → drop line
-//     indicator (.drop-before/.drop-after) → release writes the model via
-//     api.movePage (beginChange snapshot) → Ctrl+Z can undo
-//   - × on a card deletes that page (editor only; at least one page is kept)
-// Preview instances (editable:false) render the same cards without the delete
-// chip and without drag-sort: a preview only navigates.
-// The page menu (insert before/after, move, delete) is bound in app/page-menu.js;
-// the stat text keeps the original "current / total" style. Thumbnail card size
-// keeps the CSS breakpoints (140×79). Pointer wiring is attached once at creation
-// (AbortController lifetime) while renderThumbnails only rebuilds card content.
-// ============================================================================
+// editor/app/view/thumbnails.js — bottom thumbnail bar: render + page switch (+ edit ops)
+// Click switches the current page. Editor instances also get drag-sort (drop line,
+// model written on release via api.movePage) and a per-card delete chip; previews
+// (editable:false) only navigate. Cards are .thumb-item > .thumb + .thumb-num, sized
+// by the CSS breakpoint and measured at render; pointer wiring is attached once
+// (AbortController) while renderThumbnails only rebuilds content.
 
 import { deckSize } from "../../../packages/model/index.js";
 import { disposeChartInstances } from "../../../packages/renderer/index.js";
@@ -30,9 +19,7 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
   const pageCountEl = ui.dom.pageCount;
   const ac = new AbortController(); // lifetime: drag/wheel listeners are unbound once through this
 
-  // --------------------------------------------------------------------------
   // Pointer wiring (drag-sort / horizontal drag-scroll / click switch)
-  // --------------------------------------------------------------------------
   let thumbDrag = null; // { x, y, startScroll, moved, card, index, drop }
   let suppressClick = false;
 
@@ -123,9 +110,7 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
     // menu stays (page ops live in the visible page menu / the ＋ button / the × chip)
   }
 
-  // --------------------------------------------------------------------------
   // Rendering
-  // --------------------------------------------------------------------------
   function renderThumbnails() {
     if (!state.deck) return;
     const deck = state.deck;

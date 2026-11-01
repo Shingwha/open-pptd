@@ -1,19 +1,9 @@
-// ============================================================================
-// app/present.js — present mode (fullscreen show)
-// ----------------------------------------------------------------------------
-// One click to enter a show: a black overlay layer plus the canvas scaled to the
-// deck's real size, reusing renderer/page.js (background/text/shape/chart/table/
-// icon/image, identical to the editor preview).
-//
-// Controls:
-//   ← → / ↑ ↓ / Space / PageUp / PageDown / Home / End   paging
-//   click right 2/3 → next, left 1/3 → previous; wheel pages too
-//   F  toggle browser fullscreen      B  blackout (press again to restore)    Esc  exit
-//
-// Page changes fade in (same cadence as the PPTX fade transition), crossing two
-// double-buffered layers. When live reload (SSE) re-renders the editor, the
-// current show page syncs automatically (present.sync).
-// ============================================================================
+// editor/app/present.js — present mode (fullscreen show)
+// A black overlay with the deck scaled to its real size, painted by the same
+// renderer/page pipeline as the editor preview. Arrow/Space/PageUp/PageDown/Home/End
+// page; clicks on the right two-thirds advance and the left quarter goes back; wheel
+// pages; F toggles fullscreen, B blackout, Esc exits. Page changes cross-fade two
+// layers; present.sync repaints the current page on live reload.
 
 import { ICON_FULLSCREEN } from "../icons.js";
 import { deckSize } from "../../packages/model/index.js";
@@ -46,9 +36,7 @@ export function createPresent({ state, view, ops, ui = null }) {
     return active;
   }
 
-  // --------------------------------------------------------------------------
   // DOM
-  // --------------------------------------------------------------------------
   function buildDOM() {
     root = document.createElement("div");
     root.className = "present";
@@ -86,7 +74,7 @@ export function createPresent({ state, view, ops, ui = null }) {
   }
 
   /** Render a page into a layer (chart instances disposed first, same pipeline as the editor canvas).
-   * Height comes from the layout frame and is never written back to the model (spec 10: the model is never written back). */
+   * Height comes from the layout frame and is never written back to the model. */
   function renderLayer(layer, i) {
     disposeChartInstances(layer);
     layer.innerHTML = "";
@@ -134,9 +122,7 @@ export function createPresent({ state, view, ops, ui = null }) {
     stage.style.transform = `scale(${s})`;
   }
 
-  // --------------------------------------------------------------------------
   // Actions
-  // --------------------------------------------------------------------------
   function next() {
     showSlide(index + 1);
   }
@@ -189,9 +175,7 @@ export function createPresent({ state, view, ops, ui = null }) {
     bumpUI();
   }
 
-  // --------------------------------------------------------------------------
   // Events
-  // --------------------------------------------------------------------------
   function onKey(e) {
     const k = e.key;
     if (k === "Escape") {
@@ -274,9 +258,7 @@ export function createPresent({ state, view, ops, ui = null }) {
     window.removeEventListener("resize", onResize);
   }
 
-  // --------------------------------------------------------------------------
   // Lifecycle
-  // --------------------------------------------------------------------------
   function start() {
     if (active || !state.deck || !count()) return;
     active = true;

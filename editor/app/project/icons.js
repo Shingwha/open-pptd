@@ -1,14 +1,7 @@
-// ============================================================================
-// app/project/icons.js — FA icon preload and on-demand loading (same pattern as images.js imageMap)
-// ----------------------------------------------------------------------------
-// state.iconMap: { [rawIconName]: {inner, w, h} } (the normalizeIconSvg product).
-// The render side (renderer/icon.js, fed through the paint ctx iconMap) and the export
-// side (saver → buildPptx options.iconDefs) share this one cache.
-//
-// 3.0: no module-level icon map. The caller passes its own state.iconMap (each
-// preview/editor instance owns one; gallery covers pass theirs) so two instances
-// never fill each other's cache. Only the registry fetch is shared (read-only).
-// ============================================================================
+// editor/app/project/icons.js — FA icon preload and on-demand loading
+// state.iconMap: { [rawIconName]: {inner, w, h} } is the normalizeIconSvg product
+// shared by the render side (paint ctx iconMap) and export (iconDefs). Each instance
+// owns its map; only the registry fetch is shared (read-only, deduped by raw name).
 
 import { fetchIconSvg, loadIconRegistry, normalizeIconSvg, resolveIconName } from "../../../packages/model/index.js";
 

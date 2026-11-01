@@ -1,20 +1,8 @@
-// ============================================================================
-// app/keyboard.js — global shortcuts (Ctrl+Z/Y/S/A, clipboard, F5)
-// ----------------------------------------------------------------------------
-// Element-level keys (Delete/Backspace, arrows, Esc layering) are handled in
-// interaction/canvas.js; this module only owns the app-level shortcuts that must
-// work regardless of the focused widget:
-//   Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y  undo / redo
-//   Ctrl+S                          save
-//   Ctrl+A                          select all on the current page
-//   Ctrl+C / Ctrl+X / Ctrl+V        copy / cut / paste (element clipboard)
-//   Ctrl+Shift+V                    paste in place (no offset)
-//   Ctrl+D                          duplicate
-//   F5                              present
-// Typing targets (input/textarea/select/contenteditable) keep their native
-// clipboard behaviour; present mode and the active-instance rule apply to every
-// shortcut here.
-// ============================================================================
+// editor/app/keyboard.js — global shortcuts (undo/redo, save, select-all, clipboard, F5)
+// App-level shortcuts that work regardless of the focused widget. Typing targets
+// (input/textarea/select/contenteditable) keep native clipboard behavior; present
+// mode owns all keys while active, and only the last-interacted instance reacts.
+// Element-level keys (Delete/arrows/Esc layering) are handled in interaction/canvas.js.
 
 export function bindKeyboard({ state, api, io, present, ui }) {
   const ac = new AbortController();

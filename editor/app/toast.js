@@ -1,15 +1,7 @@
-// ============================================================================
-// app/toast.js — toast notifications, one layer per instance
-// ----------------------------------------------------------------------------
-// 3.0 componentisation: the toast layer belongs to the instance that created it,
-// so two editors on one page never share (or clear) each other's messages
-// (decisions.md D1). createToast(rootEl) returns:
-//   show(text, type?, duration?)   type: "success" | "danger" | "info"
-//   clear()                        drop the layer + pending timers (destroy)
-// The container is appended to the instance mount point; .toast-container is
-// position:fixed so the anchor does not matter visually, and destroy removes it
-// with the rest of the instance DOM.
-// ============================================================================
+// editor/app/toast.js — toast notifications, one layer per instance
+// createToast(rootEl) returns show(text, type?, duration?) and clear(); each instance
+// owns its layer, so two editors on one page never share or clear each other's
+// messages. .toast-container is fixed, so the mount point anchor does not matter.
 
 export function createToast(rootEl) {
   const host = rootEl || (typeof document !== "undefined" ? document.body : null);
@@ -24,7 +16,7 @@ export function createToast(rootEl) {
     timers.add(id);
   }
 
-  /** Show one toast; stacking/auto-dismiss behaviour is unchanged from 2.x. */
+  /** Show one toast (stacked; auto-dismissed after `duration`). */
   function show(text, type = "info", duration = 3000) {
     if (!host || typeof document === "undefined") return; // Node/SSR: no-op
     if (!container || !container.isConnected) {

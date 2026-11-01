@@ -1,33 +1,9 @@
-// ============================================================================
-// app/api.js — editor operation API (single entry for model ops + render orchestration)
-// ----------------------------------------------------------------------------
-// The canvas controller, thumbnail bar, toolbar and content editors all share
-// this API:
-//   - pure model operations come from ops (app/state.js)
-//   - render orchestration comes from view (app/view/view.js)
-//   - save/export/navigation are delegated to io / present, bound late via bind()
-//
-// Surface (interfaces.md §10.2):
-//   selection/transform select / selectMany / selectAll / clearSelection /
-//     getSelected / getSelection / getSelectedElements / isSelected /
-//     beginChange / endChange / refreshPreview / moveSelected / resizeSelected /
-//     rotateSelected / deleteSelected / undo / redo
-//   clipboard          copySelected / cutSelected / pasteClipboard /
-//                      duplicateSelected / hasClipboard / getClipboardCount
-//   content            openTextEditor / openTableEditor / openChartEditor /
-//                      updateSelected / openEditor (canvas double-click alias)
-//   page ops           addText / addTable / addChart / insertPage / deletePage /
-//                      movePage
-//   save/export        save / exportPptx / exportPng / exportBundle
-//   navigation/view    goToPage / nextPage / prevPage / zoomIn / zoomOut /
-//                      zoomReset / present / reload
-// Removed capabilities (no compat layer): group/ungroup, align/distribute,
-// moveLayer/edge, page duplicate/batch.
-//
-// Selection model: writes go through the ops here; reads go through
-// getSelected / getSelection / getSelectedElements / isSelected. Editor modules
-// must not touch state.selection directly.
-// ============================================================================
+// editor/app/api.js — editor operation API (single entry for model ops + render orchestration)
+// The canvas controller, thumbnail bar, toolbar and content editors share this API:
+// pure model operations from ops (app/state.js), render orchestration from view
+// (app/view/view.js), and save/export/navigation delegated to io / present (bound
+// late via bind()). Selection writes go through ops; reads go through getSelected /
+// getSelection / getSelectedElements; modules never touch state.selection directly.
 
 import { createElement } from "../types/index.js";
 
@@ -115,7 +91,7 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
     page,
     getPage: page,
 
-    // ---- selection (primary + multi-select); reads only, writes go through ops below ----
+    // selection (reads only; writes go through ops below)
     getSelected: primarySelectedId,
     getSelectedElement: selected,
     getSelection: () => [...state.selection],
@@ -138,7 +114,7 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
       if (controller) lightSelect();
     },
 
-    // ---- transactions / transform ----
+    // transactions / transform
     beginChange: ops.beginChange,
     endChange: () => render(),
     refreshPreview: () => repaint(),
@@ -176,7 +152,7 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
       render();
     },
 
-    // ---- clipboard (instance-local; deep copies, no system clipboard) ----
+    // clipboard (instance-local; deep copies, no system clipboard)
     /** Copy the selection; returns the copied count (no deck change, no undo step). */
     copySelected: () => ops.copySelected(),
     /** Copy + delete as one undo step; returns the cut count. */
@@ -206,13 +182,13 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
       io?.applyHistory(state.history.redo());
     },
 
-    // ---- content editing ----
+    // content editing
     openEditor: openContentEditor,
     openTextEditor: (el) => openContentEditor(el || selectedElements()[0] || null),
     openTableEditor: (el) => openContentEditor(el || selectedElements().find((e) => e.elementType === "table") || null),
     openChartEditor: (el) => openContentEditor(el || selectedElements().find((e) => e.elementType === "chart") || null),
 
-    // ---- add + page operations (single page; editor-ux §2) ----
+    // add + page operations
     addText: () => addContent("text"),
     addTable: () => addContent("table"),
     addChart: () => addContent("chart"),
@@ -239,13 +215,13 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
       return ok;
     },
 
-    // ---- save / export ----
+    // save / export
     save: () => io?.saveProject(),
     exportPptx: () => io?.exportPptx(),
     exportPng: () => io?.exportImages(),
     exportBundle: () => io?.exportProjectZip(),
 
-    // ---- navigation / view ----
+    // navigation / view
     goToPage(index) {
       if (!state.deck?.pages?.length) return;
       const i = Math.max(0, Math.min(state.deck.pages.length - 1, Number(index)));

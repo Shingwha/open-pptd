@@ -1,21 +1,9 @@
-// ============================================================================
-// app/project/font-manager.js — editor font library (local files / remote URLs / built-in registry)
-// ----------------------------------------------------------------------------
-// Responsibilities:
-//   - add fonts (<input type=file> bytes / fetch URL / built-in registry) → parseFontInfo
-//     name → FontFace registration (preview takes effect immediately, renderer CSS font-family matches)
-//   - remove / embed checkbox / subset checkbox
-//   - sync to the deck.fonts resource table on save (key = family, with file/url/subset)
-//   - restore from the resource table on load: url fonts are fetched and registered
-//     automatically; file fonts wait for the user to re-pick them
-//   - on export build options.fontFiles from the embed checkboxes
-// The management UI (font library tab) lives in interaction/design-panel.js; this module is data only.
-//
-// PPTD format (see references/pptd.md):
-//   fonts:
-//     <slot-key>: { family: <registry-family>, file: fonts/xxx.ttf, subset: true }   # resource table
-//     title: <slot-key>                                                              # component slot reference
-// ============================================================================
+// editor/app/project/font-manager.js — editor font library (local files / URLs / built-in registry)
+// Adds fonts (local file bytes / fetch URL / built-in registry) and registers FontFace
+// so preview and renderer font-family match; tracks remove/embed/subset; syncs the
+// deck.fonts resource table on save and restores it on load (URL fonts fetched,
+// registry fonts loaded from the bundle, file fonts wait for a re-pick). Data only:
+// the font library UI lives in interaction/design-panel.js.
 
 import {
   fetchFontBytes,
@@ -26,7 +14,7 @@ import {
 } from "../../../packages/model/index.js";
 import { safeFileName } from "../../../packages/writer/index.js";
 
-/** System font pool (design.md §4; fallback options for the element fontFamily dropdown). */
+/** System font pool (fallback options for the element fontFamily dropdown). */
 export const SYSTEM_FONTS = ["Microsoft YaHei", "KaiTi", "SimSun", "SimHei", "FangSong", "YouYuan"];
 
 export function createFontManager(state, ui) {

@@ -1,22 +1,8 @@
-// ============================================================================
-// project-cache.js — cross-session cache of PPTD project texts (Cache API)
-// ----------------------------------------------------------------------------
-// Gallery thumbnails and the editor load the same project (manifest +
-// pages/*.page); these files rarely change after deploy, so they are worth
-// caching across sessions: a second page open hits the cache, opening instantly
-// and dropping dozens of network requests (the gallery even works offline).
-//
-// Cache key = app version + manifest content hash: a release (version change)
-// invalidates everything automatically, so content that updates with the version
-// (e.g. the examples migration) never hits a stale cache; a second open within
-// the same version opens from cache instantly. The version comes from the repo
-// root package.json (relatively locatable under Pages and local serve alike);
-// on failure it degrades to "unknown" (stable key, still cacheable).
-//
-// Local serve (dev mode) sends Cache-Control: no-store for static files, so the
-// browser does not cache and local dev always goes to the network, unaffected by
-// this cache.
-// ============================================================================
+// editor/app/project/project-cache.js — cross-session cache of PPTD project texts (Cache API)
+// Gallery covers and the editor load the same manifest + pages/*.page files, which
+// rarely change after deploy. Cache key = app version + manifest content hash, so a
+// release invalidates everything automatically and a second open hits the cache.
+// Local serve sends Cache-Control: no-store, so dev always goes to the network.
 
 const CACHE_NAME = "open-pptd-projects-v2";
 const KEY_PREFIX = "/__pptd_cache__/proj/"; // pure cache key (fake path, never actually requested)

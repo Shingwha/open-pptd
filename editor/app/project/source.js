@@ -1,24 +1,8 @@
-// ============================================================================
-// app/project/source.js — transport seam (ProjectSource contract + three implementations)
-// ----------------------------------------------------------------------------
-// The editor depends only on this duck-typed interface for "where a project comes
-// from and goes to" (same idea as handle-io.js); no more root-absolute path
-// literals like fetch("/api/save") or new EventSource("/events") — a host
-// (same-origin iframe / IPC / memory) can inject its own implementation.
-//
-// ProjectSource (contract v2):
-//   capabilities: { writable, liveWatch, binary }
-//   read(hint?):  Promise<{ manifestText, pageFiles: Map, media?, missing? }>
-//   write(files): Promise<number>   files: [{ path, text? , bytes? }]
-//   readMedia?(path): Promise<Uint8Array|null>   path is project-relative
-//   watch?(cb, hooks?): () => void  returns an unsubscribe function
-//
-// The engine ships three implementations (httpSource / directoryHandleSource /
-// memorySource).
-//
-// Also exports applyDeck(deckData, ctx): applies a read result to the editor
-// state (loader.js and external assembly share one implementation).
-// ============================================================================
+// editor/app/project/source.js — transport seam (ProjectSource contract + implementations)
+// The editor depends only on this duck-typed interface for "where a project comes from
+// and goes to": capabilities { writable, liveWatch, binary }, read(hint?), write(files),
+// readMedia?(path), watch?(cb, hooks). Ships httpSource / directoryHandleSource /
+// memorySource plus delegatingSource; applyDeck() applies a read result to editor state.
 
 import { createHistory } from "../../interaction/history.js";
 import { commitBaseline } from "../state.js";
@@ -65,16 +49,14 @@ function resolveDeckUrl(deckUrl, base = "") {
   return new URL(deckUrl, EDITOR_BASE).href;
 }
 
-/** Prefix a relative path with base (returned as-is when base is empty, matching the old root-absolute behavior). */
+/** Prefix a relative path with base (returned as-is when base is empty). */
 function withBase(base, path) {
   if (!path) return path;
   if (/^[a-z][a-z0-9+.-]*:/i.test(path)) return path;
   return `${base}${path}`;
 }
 
-// ----------------------------------------------------------------------------
-// Implementation 1: httpSource — the existing serve fetch / SSE mode (parameterized base)
-// ----------------------------------------------------------------------------
+// Implementation 1: httpSource — serve fetch / SSE mode (parameterized base)
 /**
  * @param {{ base?: string, deckUrl?: string }} [opts]
  *   base    site prefix (default "", i.e. the current serve behavior's root-absolute path)
@@ -189,9 +171,7 @@ export function httpSource({ base = "", deckUrl = null } = {}) {
   return api;
 }
 
-// ----------------------------------------------------------------------------
 // Implementation 2: directoryHandleSource — browser File System Access handle mode
-// ----------------------------------------------------------------------------
 /**
  * Wraps editor/app/project/handle-io.js (that file is unchanged; its duck-typed
  * design is already correct). File System Access has no push channel →
@@ -247,9 +227,7 @@ export function directoryHandleSource(handle) {
   return api;
 }
 
-// ----------------------------------------------------------------------------
 // Implementation 3: memorySource — tests and embedding (no IO)
-// ----------------------------------------------------------------------------
 /**
  * @param {{ files?: Record<string, string|Uint8Array>, writable?: boolean }} [opts]
  *   files an in-memory project keyed by path ("deck.pptd" + "pages/*.page" + binary media)
@@ -316,9 +294,7 @@ export function memorySource({ files = {}, writable = true } = {}) {
   return api;
 }
 
-// ----------------------------------------------------------------------------
 // Read result → editor state (shared by loader and external assembly)
-// ----------------------------------------------------------------------------
 /**
  * Apply a read project to editor state: reset history/selection/pages/image map/
  * id counter and render the statusbar (shared by loadDeck and manual refresh).
