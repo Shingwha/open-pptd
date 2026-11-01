@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generated": "2026-11-01T09:28:10.981Z",
+ "generated": "2026-11-01T09:50:23.572Z",
  "scale": 1,
  "renderer": "renderer/headless renderDeck（现役旧管线，spec 09 T2）",
  "hash": {
@@ -331,7 +331,7 @@
    "deck": "examples/ev-range/deck.pptd",
    "pngDir": "examples__ev-range",
    "pageCount": 15,
-   "sourceHash": "cd5833406fc8298ba3c56972cb673081514dc4388a5065457003bcb459368857",
+   "sourceHash": "1b398c8c66a71c7f5cc19ffc433e803dda2a80b89a8a35d7fdc9563043397123",
    "size": [
     960,
     540
@@ -350,107 +350,107 @@
      "page": 2,
      "w": 960,
      "h": 540,
-     "bytes": 105890,
-     "sha256": "42bc72ae49d6032f78b5e3402ba348aa8874f95e6b1df7e677e58391f8a81244",
-     "dHash": "64c89cfa9a24a48e",
+     "bytes": 107960,
+     "sha256": "bfe4f2ef71864a95d49618153c019952e8d4339e2b2d59aa3cdf74d7b7151556",
+     "dHash": "34c89cfa9a24a48e",
      "aHash": "00bfffffffffff00"
     },
     {
      "page": 3,
      "w": 960,
      "h": 540,
-     "bytes": 111850,
-     "sha256": "e35ad3850d51a8005b4775cf90c8de5436d1af4f3e97a44f85bb05c01de8bdbf",
+     "bytes": 113101,
+     "sha256": "9299f6e3a6c274b7d193b240d9da1aec3111a368a508c368358115a85d08295a",
      "dHash": "64b2c0e0e0f0c080",
-     "aHash": "00ff0707070787ff"
+     "aHash": "00ff0707070707ff"
     },
     {
      "page": 4,
      "w": 960,
      "h": 540,
-     "bytes": 118796,
-     "sha256": "029c64657ed08fb4bd6ac9ebb542db448cef6ccc53ec71a2999d75983f8b9319",
-     "dHash": "64b2aaaac0aaea81",
+     "bytes": 120318,
+     "sha256": "278b21aec085d37eb3214f0a92fb7e28a376250466e7d16c1ecc9cb8d57a7ca5",
+     "dHash": "34b2aaaac0aaea81",
      "aHash": "00ffffff0fffffff"
     },
     {
      "page": 5,
      "w": 960,
      "h": 540,
-     "bytes": 87335,
-     "sha256": "704b9163e2c279d08d0b9c874433f90d38e1becb4e3e7af04f3143d3c2fdfb54",
-     "dHash": "24b0b4ba9a8a8a99",
+     "bytes": 89037,
+     "sha256": "036aa53ec55f420dcc10565971b554b1dd50d943f869f9f9dcbb95c49a0fb631",
+     "dHash": "34b0b4ba9a8a8a99",
      "aHash": "00bfe0ffffffffff"
     },
     {
      "page": 6,
      "w": 960,
      "h": 540,
-     "bytes": 133599,
-     "sha256": "09697016ffce8784d164a19c50c513185a4ec8738aecb8cdf1c690ba6eb2c1e9",
-     "dHash": "64b0b09894d0f081",
-     "aHash": "008ffff3bfffffff"
+     "bytes": 135203,
+     "sha256": "5f4abee5120c62e6e38233535739d1e8de6b73423f5b545ba9ee24a1e1381bea",
+     "dHash": "34b0b09894d0f081",
+     "aHash": "008fffa3bfffffff"
     },
     {
      "page": 7,
      "w": 960,
      "h": 540,
-     "bytes": 134878,
-     "sha256": "8869c5fafd197a9819f362db0bcc012c8ba61a35e0d38eebe9ea2f278b5cb1a6",
-     "dHash": "64d0dc948c8c9c81",
-     "aHash": "00dffbf1fbffffff"
+     "bytes": 136696,
+     "sha256": "1cc45e419c8aa9576982edb7fccbd2934c84a6e3ae2efdd95e4c5f7e91e9be3e",
+     "dHash": "34d0dc948c8c9c81",
+     "aHash": "009ffbf1fbffffff"
     },
     {
      "page": 8,
      "w": 960,
      "h": 540,
-     "bytes": 147618,
-     "sha256": "f98aab8741e143fe43ff90754e980b7fcb4879844fc1108eb734106aa81b6c15",
-     "dHash": "64a888ac8c89cc81",
+     "bytes": 149265,
+     "sha256": "18d9040fe4cf9b8ea0a10b9b959c2af94c0342ba580402cdc08fe8a8e8584133",
+     "dHash": "34a888ac8c89cc81",
      "aHash": "00fffffbfbff1fff"
     },
     {
      "page": 9,
      "w": 960,
      "h": 540,
-     "bytes": 102186,
-     "sha256": "b0c46773ebdb1a66f315d7bef110222a53c952fa51a66e26cd23ec129e59074d",
-     "dHash": "64a0e8e0c9a08189",
+     "bytes": 103868,
+     "sha256": "54efc7abcb8cb65a71e0dc1b18dd4697bee5947d329a837d81db3f9bdd184694",
+     "dHash": "34a0e8e0c9a08189",
      "aHash": "00afffefffffffff"
     },
     {
      "page": 10,
      "w": 960,
      "h": 540,
-     "bytes": 92499,
-     "sha256": "452c8b7a423b7674f6ca6470c3344beb73b583da1e469b00bd576e8e9a351e3d",
-     "dHash": "64d0b2ba9ab27a85",
+     "bytes": 94290,
+     "sha256": "6a0ddbecb763e8ab1e7c3e064beadb94072c0e7ef1d1b45ab9bd3b1f18401720",
+     "dHash": "34d0b2ba9ab27a85",
      "aHash": "00ffe1ffffffc0ff"
     },
     {
      "page": 11,
      "w": 960,
      "h": 540,
-     "bytes": 140089,
-     "sha256": "7889bfe688c8f51e5e0bd3690967ccdbb5a40dd1402d5ba9c67003cf97335453",
-     "dHash": "6488baaeaeacba81",
+     "bytes": 141757,
+     "sha256": "fe9447c03f89b294bc85b556b17f92c0a7f707ba0a1fb91d0c22622ae4c42585",
+     "dHash": "3488baaeaeacba81",
      "aHash": "00fff0fffffff0ff"
     },
     {
      "page": 12,
      "w": 960,
      "h": 540,
-     "bytes": 110844,
-     "sha256": "033efdd836778d6f985acdd041f4c3443e843bde596a072775dcc3310d94395b",
-     "dHash": "64d089998989a08d",
+     "bytes": 112267,
+     "sha256": "1363482b8d8aa7c6eb64614ee4d189454158e6181cad68fbbfb8203fa41c3f4a",
+     "dHash": "24d089998989a08d",
      "aHash": "008fffffffbfffff"
     },
     {
      "page": 13,
      "w": 960,
      "h": 540,
-     "bytes": 96701,
-     "sha256": "a21337b1bf45e3ef198bdc7980d66d8515aafae9092aac9a5e4b50a4a0f32f3c",
+     "bytes": 97754,
+     "sha256": "b931bdf32b70c79cf1432c5bfb65228a538d316bfa7ac731020844c7d4d6802b",
      "dHash": "648a61b031f2f281",
      "aHash": "00ffffffff0000ff"
     },
@@ -458,9 +458,9 @@
      "page": 14,
      "w": 960,
      "h": 540,
-     "bytes": 90234,
-     "sha256": "c4f1cd8de39ba0c5188b8910fb6e01c4f4d1171cfbbe517d6df224eba159c59d",
-     "dHash": "648484cc8c848681",
+     "bytes": 91805,
+     "sha256": "8d1ea8355e8e7ab91a4c514726d8eaca843cbad489d57227e49e915572020b7c",
+     "dHash": "248484cc8c848681",
      "aHash": "00ffffffffffffff"
     },
     {
