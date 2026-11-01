@@ -4,7 +4,7 @@
 // and headless instances theme their own subtree only. Keyboard shortcuts act
 // only on the instance mounted or interacted with last.
 //
-// ui = { root, dom, toast, dialogs, themeHost, themeMode, chrome, isActive(),
+// ui = { root, dom, toast, dialogs, events, themeHost, themeMode, chrome, isActive(),
 //        activate(), destroy() }
 
 import { createDom } from "./dom.js";
@@ -41,6 +41,9 @@ export function createUiContext(rootEl, { chrome = "full", theme = null, dialogs
     dom,
     toast,
     dialogs: dialogService,
+    // 实例级事件总线：目前用于 "themechange"（detail.origin: design/history/load/editor），
+    // Design 面板据此同步颜色行；不依赖跨实例的模块级单例。
+    events: new EventTarget(),
     themeHost,
     themeMode,
     chrome,

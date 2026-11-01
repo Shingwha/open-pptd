@@ -123,6 +123,7 @@ export function createIo({ state, view, ops, source, ui, live = true, onSaved, o
     ops.replaceDeck(deck);
     ops.clearClipboard(); // a new blank document starts with an empty element clipboard
     state.theme = resolveTheme(deck);
+    state.themeRevision = (state.themeRevision || 0) + 1; // 新文档：缩略图全量重画
     state.manifestPath = null;
     state.projectHandle = null;
     state.projectName = "";

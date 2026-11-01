@@ -6,6 +6,7 @@
 // getSelection / getSelectedElements; modules never touch state.selection directly.
 
 import { CONTENT_TYPE_IDS, createElement } from "../types/index.js";
+import { setColorToken } from "../../packages/model/index.js";
 
 /** Content-editor types (single-element editing only). */
 const CONTENT_TYPES = new Set(CONTENT_TYPE_IDS);
@@ -130,6 +131,24 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
     /** End a transaction: content edits repaint the current card unless the caller asks for a full rebuild (theme). */
     endChange: (opts = { thumbs: "current" }) => render(opts),
     refreshPreview: () => repaint(),
+    /**
+     * 主题颜色写入（只写 theme.colors）：io.applyColors 负责 revision/事件，
+     * 本层只重画画布；缩略图由 view.render 按 revision 自动全量，或取色器 debounce 显式刷新。
+     */
+    setThemeColors(colors, { origin = "editor" } = {}) {
+      io?.applyColors(colors, { origin });
+      repaint();
+    },
+    /** 写一个颜色 token；非法值抛 ThemeError（由 Design 面板捕获提示）。返回新 theme。 */
+    setThemeColor(key, value) {
+      const deckTheme = state.deck?.theme;
+      const base = deckTheme && typeof deckTheme === "object" && !Array.isArray(deckTheme) ? deckTheme : state.theme || {};
+      const next = setColorToken(base, key, value);
+      api.setThemeColors(next.colors, { origin: "design" });
+      return next;
+    },
+    /** 全量重画缩略图（取色器拖动 debounce 用）。 */
+    refreshThumbnails: () => view?.renderThumbnails(),
     moveSelected(dx, dy) {
       for (const el of selectedElements()) {
         el.bounds[0] += Number(dx) || 0;

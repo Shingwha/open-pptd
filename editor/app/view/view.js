@@ -22,6 +22,8 @@ export function createView({ state, page, api, controller = null, getController 
   // Out-of-bounds hint dedupe (remember the last count per page; the same state does not re-toast)
   const lastOverflow = new Map();
   let overflowDeck = null;
+  // 上次已画缩略图的主题版本：与 state.themeRevision 不一致时强制全量重画（颜色影响所有页）。
+  let paintedThemeRevision = -1;
 
   // Viewport: zoom/pan state and transform application. A zoom change needs a
   // canvas rebuild, while panning only changes the transform — the repaint
@@ -70,7 +72,14 @@ export function createView({ state, page, api, controller = null, getController 
    */
   function render(options = {}) {
     if (!state.deck) return; // load failed/incomplete: skip safely (external triggers such as resize)
-    const thumbs = options.thumbs || "all";
+    let thumbs = options.thumbs || "all";
+    // 主题变化（颜色/样式）：调用方可能只传 "current"，这里按 revision 自动升级为全量；
+    // 普通内容编辑 revision 不变，仍保持 "current" 的轻量更新。
+    const rev = state.themeRevision ?? 0;
+    if (rev !== paintedThemeRevision) {
+      thumbs = "all";
+      paintedThemeRevision = rev;
+    }
     if (thumbs === "all") thumbnails.renderThumbnails();
     else if (thumbs === "current") thumbnails.refreshCurrent();
     else if (thumbs === "none") thumbnails.setActive();
