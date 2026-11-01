@@ -13,12 +13,13 @@ elements:
     fill: { type: solid, color: "$primary" }
   - elementId: chapter-text
     elementType: text
-    bounds: [48, 18, 720, 20]
+    bounds: [48, 14, 720, 28]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 14
+      fontSize: 18
       color: "#FFFFFF"
       bold: true
+      align: [left, middle]
       wrap: false
       text: '05. 结论 —— 依据与参考文献'
   - elementId: chapter-brand

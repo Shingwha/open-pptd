@@ -14,12 +14,13 @@ elements:
     fill: { type: solid, color: "$primary" }
   - elementId: chapter-text
     elementType: text
-    bounds: [48, 18, 720, 20]
+    bounds: [48, 14, 720, 28]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 14
+      fontSize: 18
       color: "#FFFFFF"
       bold: true
+      align: [left, middle]
       wrap: false
       text: '04. 验证与讨论 —— 解释与边界'
   - elementId: chapter-brand

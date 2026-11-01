@@ -14,12 +14,13 @@ elements:
     fill: { type: solid, color: "$primary" }
   - elementId: chapter-text
     elementType: text
-    bounds: [48, 18, 640, 20]
+    bounds: [48, 14, 640, 28]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 14
+      fontSize: 18
       color: "#FFFFFF"
       bold: true
+      align: [left, middle]
       wrap: false
       text: '01. 研究问题 —— 假设与范围'
   - elementId: chapter-brand
