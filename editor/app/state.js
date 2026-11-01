@@ -12,12 +12,14 @@
 //     single derivation is primarySelectedId().
 //   - No grouping: group elements are inert shells (their members are hit and
 //     transformed as ordinary elements), so selection ids are raw element ids.
-//   - No clipboard / duplicate / layer order / arrange: those capabilities were
-//     removed with the old editing UI.
+//   - Clipboard (copy/cut/paste/duplicate, editor-ux §7): an instance-local array
+//     of deep-copied elements. It never references a page and never touches the
+//     system clipboard; pasting assigns fresh ids and inserts into the current
+//     page. Layer order / arrange stay removed.
 // ============================================================================
 
 import { createHistory } from "../interaction/history.js";
-import { createPage } from "../../packages/model/index.js";
+import { createPage, nextElementId } from "../../packages/model/index.js";
 
 /**
  * Record the current deck as the saved baseline (a deep copy) and mark the editor
@@ -41,6 +43,8 @@ export function createEditorState() {
     imageMap: {},
     iconMap: {}, // { [iconName]: {inner,w,h} } (icons.js preload cache, shared by render/export)
     pagesPending: new Set(), // pages not yet ready during progressive load (page object refs; survives delete/reorder)
+    clipboard: [], // deep copies of copied elements (instance-local; no page/store reference)
+    clipboardCascade: 0, // consecutive paste counter: non-in-place paste n gets +16*n (first paste +16)
     fontLibrary: {}, // { [family]: { bytes, source, url, file, subset, embed, size } }
     manifestPath: null, // current project URL (/project/xxx/deck.pptd; a remote URL in deploy mode)
     projectHandle: null, // local project DirectoryHandle (opened via the OS folder picker; IO goes through the handle)
@@ -78,6 +82,28 @@ export function createEditorState() {
     }
     return out;
   };
+
+  /**
+   * Insert fresh copies of `clones` into the current page: each gets a new
+   * elementId and a bounds offset on both axes, then the pasted ids become the
+   * selection. Callers wrap this in one beginChange() (one undo step per paste).
+   */
+  function pasteClones(clones, offset) {
+    if (!Array.isArray(clones) || clones.length === 0) return [];
+    const ids = [];
+    for (const source of clones) {
+      const el = structuredClone(source);
+      el.elementId = nextElementId();
+      if (Array.isArray(el.bounds)) {
+        el.bounds[0] = (Number(el.bounds[0]) || 0) + offset;
+        el.bounds[1] = (Number(el.bounds[1]) || 0) + offset;
+      }
+      page().elements.push(el);
+      ids.push(el.elementId);
+    }
+    ops.selectMany(ids, "replace");
+    return ids;
+  }
 
   /** Pure model operations (rendering is composed by the api layer). */
   const ops = {
@@ -168,6 +194,61 @@ export function createEditorState() {
       if (kept.length === list.length) return;
       page().elements = kept;
       ops.clearSelection();
+    },
+
+    // ---- clipboard (copy / cut / paste / duplicate; editor-ux §7) ----
+    /**
+     * Deep-copy the selected elements into the instance clipboard. The deck is
+     * untouched (no snapshot, no dirty flag); a fresh copy restarts the paste
+     * cascade. Returns the copied element count.
+     */
+    copySelected() {
+      const picked = selectedElements();
+      if (picked.length === 0) return 0; // nothing selected: keep the existing clipboard
+      state.clipboard = structuredClone(picked);
+      state.clipboardCascade = 0;
+      return state.clipboard.length;
+    },
+    /** Copy + delete the selection as one undo step; returns the cut count. */
+    cutSelected() {
+      const count = ops.copySelected();
+      if (count === 0) return 0;
+      ops.beginChange();
+      ops.deleteSelected();
+      return count;
+    },
+    /**
+     * Paste the clipboard into the current page as one undo step. Non-in-place
+     * pastes cascade +16px per paste on both axes (first +16, then +32…);
+     * inPlace (Ctrl+Shift+V) keeps the original bounds and does not advance the
+     * cascade. Returns the new element ids.
+     */
+    pasteClipboard({ inPlace = false } = {}) {
+      if (state.clipboard.length === 0) return [];
+      ops.beginChange();
+      const offset = inPlace ? 0 : 16 * (state.clipboardCascade + 1);
+      if (!inPlace) state.clipboardCascade += 1;
+      return pasteClones(state.clipboard, offset);
+    },
+    /**
+     * Duplicate the selection (+16px, one undo step) from a temporary snapshot:
+     * the user clipboard and its cascade are left untouched.
+     */
+    duplicateSelected() {
+      const picked = selectedElements();
+      if (picked.length === 0) return [];
+      ops.beginChange();
+      return pasteClones(structuredClone(picked), 16);
+    },
+    clearClipboard() {
+      state.clipboard = [];
+      state.clipboardCascade = 0;
+    },
+    hasClipboard() {
+      return state.clipboard.length > 0;
+    },
+    getClipboardCount() {
+      return state.clipboard.length;
     },
 
     // ---- pages (single page operations; editor-ux §2) ----
