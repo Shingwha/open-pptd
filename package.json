@@ -41,7 +41,7 @@
     "test:shapes": "node tests/regression/preset-shapes.mjs",
     "test:isolate": "node tests/tools/isolate.mjs",
     "test:incremental": "node tests/e2e/incremental-load.mjs",
-    "test:editor": "node tests/e2e/editor-minimal.mjs && node tests/e2e/page-ops.mjs && node tests/e2e/editor-ops.mjs && node tests/e2e/feedback-fixes.mjs",
+    "test:editor": "node tests/e2e/editor-minimal.mjs && node tests/e2e/page-ops.mjs && node tests/e2e/editor-ops.mjs && node tests/e2e/feedback-fixes.mjs && node tests/e2e/add-elements.mjs",
     "test:render": "node tests/e2e/render.mjs",
     "test:fixtures": "node tests/tools/dump-formula-mml.mjs",
     "test:skill": "node tests/skill/run.mjs",
