@@ -1,18 +1,9 @@
-// ============================================================================
-// interaction/dialogs/table-editor.js — table grid editor (minimal, editor-ux §4.2)
-// ----------------------------------------------------------------------------
-// Layout:
-//   ┌ toolbar: [↑插行][↓插行][←插列][→插列] | [删除行][删除列] | [合并][拆分] ┐
-//   ├ table area (Excel-style grid: column letters / row numbers / drag select) │
-//   └ style panel (fixed right, only for a single selected cell): 字色 / 填充   ┘
-// Kept: cell text, insert/delete row+column (merge protection), merge/split,
-//       cell text color and cell fill.
-// Removed with 3.0: table style panel (font / size / bold / italic / alignment /
-//       border / textStyle) and the row-height / column-width dialog; row heights
-//       come from measureTable's final values and vertical resize writes rowHeights.
-// The grid reuses renderer/table.js's full style chain (cellFinal/tdCss) for a
-// WYSIWYG cell surface.
-// ============================================================================
+// editor/interaction/dialogs/table-editor.js — table grid editor
+// Layout: toolbar (insert row/column, delete row/column, merge/split) above an
+// Excel-style grid (column letters / row numbers / drag select); a fixed style panel
+// for a single selected cell edits text color and fill. Row heights come from
+// measureTable's final values (vertical resize writes rowHeights); the grid reuses
+// renderer/table.js's style chain (cellFinal/tdCss) for a WYSIWYG cell surface.
 
 import { createExcelGrid } from "../excel-grid.js";
 import {

@@ -1,26 +1,9 @@
-// ============================================================================
-// interaction/design-panel.js — Design drawer (theme library / font library / appearance)
-// ----------------------------------------------------------------------------
-// One topbar entry ("设计", #btn-design) replaces the old 字体/配色 popovers
-// (editor-ux §6, theme-font §7). Loaded lazily by design-panel-lazy.js.
-//
-// Tabs
-//   theme       current theme · built-in + user theme cards (apply / save current /
-//               import / export / delete) · every color token (edit / add / delete,
-//               a referenced token cannot be deleted) · style summary
-//   fonts       deck font status (ready / system / missing) · global library
-//               (built-in + user, search, preview) · local/URL import · delete ·
-//               global embed note
-//   appearance  light / dark / follow system (viewer UI only, never deck.theme)
-//
-// Data sources
-//   themes: /api/themes (local open server); static hosting → built-in themes only
-//   fonts:  /api/fonts   (local open server); static hosting → built-in registry only
-// Applying a theme goes through model applyTheme(current, theme, {deck}) and keeps
-// tokens/styles the deck still references (preserved report). Theme/color edits are
-// undoable (one history step per edit session); library import/delete are global
-// operations outside deck undo (explicit toast).
-// ============================================================================
+// editor/interaction/design-panel.js — Design drawer (theme library / font library / appearance)
+// One topbar entry ("设计", #btn-design), loaded lazily by design-panel-lazy.js.
+// Tabs: theme (current theme, library cards, every color token, style summary),
+// fonts (deck status, global library, import/delete), appearance (light/dark/auto,
+// viewer UI only, never deck.theme). Applying a theme goes through model applyTheme
+// and keeps tokens/styles the deck still references; theme/color edits are undoable.
 
 import * as controls from "../ui.js";
 // Instance services (ui.dialogs / ui.toast) are injected by createDesignPanel;
@@ -42,9 +25,7 @@ import {
 } from "../../packages/model/index.js";
 import { downloadBlob } from "../../packages/writer/index.js";
 
-// ----------------------------------------------------------------------------
 // Constants
-// ----------------------------------------------------------------------------
 const API = { themes: "/api/themes", fonts: "/api/fonts" };
 
 /** Chinese labels for the standard semantic tokens (custom tokens show their key). */
@@ -71,9 +52,7 @@ const CARD_KEYS = ["primary", "accent", "accent3", "accent4", "accent5", "accent
 const HEX_RE = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 const FONT_SAMPLE = "永远相信美好的事情即将发生 AaBb 0123";
 
-// ----------------------------------------------------------------------------
 // Instance factory: one panel per editor instance (no module-level singleton)
-// ----------------------------------------------------------------------------
 /**
  * Build the Design panel service of one editor instance.
  * @param {object} ui instance context (dom / toast / dialogs / isActive)
@@ -94,9 +73,7 @@ export function createDesignPanel(ui) {
   let fontQuery = "";
   const facesRegistered = new Set();
 
-  // ----------------------------------------------------------------------------
   // Panel lifecycle
-  // ----------------------------------------------------------------------------
   /**
    * Open (or focus) the Design drawer.
    * @param {object} opts { state, api, io, themeMode?, tab? }
@@ -202,9 +179,7 @@ export function createDesignPanel(ui) {
     renderBody();
   }
 
-  // ----------------------------------------------------------------------------
   // Data loading (API first; static hosting degrades to built-ins)
-  // ----------------------------------------------------------------------------
   async function apiJson(url, options) {
     const res = await fetch(url, { cache: "no-store", ...options });
     const data = await res.json().catch(() => null);
@@ -279,9 +254,7 @@ export function createDesignPanel(ui) {
     return fonts.loading;
   }
 
-  // ----------------------------------------------------------------------------
   // Theme helpers
-  // ----------------------------------------------------------------------------
   const clone = (v) => (v == null ? v : JSON.parse(JSON.stringify(v)));
   const sameColor = (a, b) => String(a || "").toLowerCase() === String(b || "").toLowerCase();
 
@@ -360,9 +333,7 @@ export function createDesignPanel(ui) {
 
   const safeName = (name) => String(name || "theme").replace(/[\\/:*?"<>|\s]+/g, "-").slice(0, 60) || "theme";
 
-  // ----------------------------------------------------------------------------
   // Render dispatcher
-  // ----------------------------------------------------------------------------
   function renderBody() {
     if (!bodyEl) return;
     const scroll = bodyEl.scrollTop;
@@ -390,9 +361,7 @@ export function createDesignPanel(ui) {
     return d;
   }
 
-  // ----------------------------------------------------------------------------
   // Theme tab
-  // ----------------------------------------------------------------------------
   function renderThemeTab() {
     // -- Current theme --
     const cur = currentThemeLabel();
@@ -753,9 +722,7 @@ export function createDesignPanel(ui) {
     }
   }
 
-  // ----------------------------------------------------------------------------
   // Fonts tab
-  // ----------------------------------------------------------------------------
   function renderFontsTab() {
     // -- Deck font status --
     const families = deckFontFamilies();
@@ -1076,9 +1043,7 @@ export function createDesignPanel(ui) {
     });
   }
 
-  // ----------------------------------------------------------------------------
   // Appearance tab
-  // ----------------------------------------------------------------------------
   function renderAppearanceTab() {
     bodyEl.appendChild(sectionTitle("外观"));
     if (!deps.themeMode) {

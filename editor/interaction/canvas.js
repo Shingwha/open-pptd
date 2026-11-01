@@ -1,22 +1,9 @@
-// ============================================================================
-// interaction/canvas.js — element gesture executor (selection box / drag / resize / rotate / marquee / keyboard nudge)
-// ----------------------------------------------------------------------------
-// Gesture classification and arbitration live in interaction/stage.js (the single
-// router); this module only *executes* element gestures: the router decides the
-// target and calls startGesture / startMarquee, after which this module listens
-// for pointermove/up itself.
-//
-// Selection model:
-//   - A selection is a set (state.selection). The selection box renders in two forms:
-//       single = .el-single 1px solid ring + four .h square corner handles + .rot handle
-//       multi/group = a thin .member border per member + one dashed .mbounds box + corner handles
-//   - Marquee (drag on blank canvas) → dashed .marquee box; on release Shift adds / Ctrl toggles.
-//   - Ctrl-click on an already selected element (no drag) toggles it off.
-//   - Group shells are inert: members are hit and transformed as ordinary elements
-//     (no grouping UI in 3.0).
-//   - Geometry goes through coords.js overlayGeom (model coords → wrap layer); controls
-//     keep a constant on-screen size.
-// ============================================================================
+// editor/interaction/canvas.js — element gesture executor (selection box / drag / resize / rotate / marquee / nudge)
+// Gesture classification and arbitration live in interaction/stage.js; this module
+// executes: the router calls startGesture / startMarquee and this module owns the
+// pointermove/up handling. Selection box: .el-single ring + .h handles + .rot for one
+// element, member borders + dashed .mbounds for multi. Group shells are inert; geometry
+// goes through coords.overlayGeom so controls keep a constant on-screen size.
 
 import { createCoords } from "../coords.js";
 import { ICON_ROTATE } from "../icons.js";
@@ -62,12 +49,9 @@ export function createCanvasController(canvas, opts) {
   const findElement = (id) => elements().find((el) => el.elementId === id);
   const nodeBy = (id) => canvas.querySelector(`[data-element-id="${CSS.escape(id)}"]`);
 
-  // --------------------------------------------------------------------------
-  // Selection action bar (W1): markup in skeleton.js (#sel-actions lives in the
-  // canvas wrap so it follows panning). It exposes copy / duplicate / delete and
-  // is positioned above the selection box; hidden without a selection, while a
-  // content editor is open and while presenting. W2 owns the visual redesign.
-  // --------------------------------------------------------------------------
+  // Selection action bar: markup in skeleton.js (#sel-actions lives in the canvas
+  // wrap so it follows panning); exposes copy / duplicate / delete. Positioned above
+  // the selection box; hidden without a selection, while editing and while presenting.
   let barBound = false;
   function selActionsEl() {
     const bar = wrapLayer.querySelector("#sel-actions");
@@ -197,9 +181,7 @@ export function createCanvasController(canvas, opts) {
     return unionOf(picked);
   }
 
-  // --------------------------------------------------------------------------
   // Selection box
-  // --------------------------------------------------------------------------
   function refreshSelection() {
     if (overlay) overlay.remove();
     overlay = null;
@@ -295,9 +277,7 @@ export function createCanvasController(canvas, opts) {
     overlay?.classList.add("resizing");
   }
 
-  // --------------------------------------------------------------------------
   // Marquee selection: drag on blank canvas
-  // --------------------------------------------------------------------------
   function startMarquee(e) {
     hideSelActions(); // the in-progress marquee owns the canvas; refreshSelection restores it on release
     const cr = canvas.getBoundingClientRect();
@@ -418,11 +398,9 @@ export function createCanvasController(canvas, opts) {
     clearMarqueeVisual();
   }
 
-  // --------------------------------------------------------------------------
   // Drag / resize / rotate (routed in from interaction/stage.js)
   //   mode = "move" | "rotate" | "nw"|"ne"|"sw"|"se"
   //   gopts = { toggleOnTap }
-  // --------------------------------------------------------------------------
   function startGesture(e, mode, id, gopts = {}) {
     const { affected } = selectionUnits();
     const box0 = boxModelBounds();
@@ -483,10 +461,8 @@ export function createCanvasController(canvas, opts) {
     syncSvgSize(node, el.bounds);
   }
 
-  // --------------------------------------------------------------------------
-  // Smart alignment guides (PowerPoint-style red lines): a layer over the canvas
-  // in the un-scaled wrap, so a guide is always 1 screen px at any zoom
-  // --------------------------------------------------------------------------
+  // Smart alignment guides: a layer over the canvas in the un-scaled wrap, so a
+  // guide is always 1 screen px at any zoom
   function guidesLayer() {
     if (!guidesEl) {
       guidesEl = document.createElement("div");
@@ -663,9 +639,7 @@ export function createCanvasController(canvas, opts) {
     if (d.changed) endChange(); // full re-render to calibrate (SVG geometry / chart redraw)
   }
 
-  // --------------------------------------------------------------------------
   // Keyboard: Delete to delete / Esc to unwind layers / arrow-key nudge (1px / Alt 10px / Shift grid snap)
-  // --------------------------------------------------------------------------
   document.addEventListener("keydown", (e) => {
     if (!isActive()) return; // two instances: shortcuts follow the active one
     const tag = (e.target.tagName || "").toLowerCase();

@@ -1,16 +1,10 @@
-// ============================================================================
-// interaction/dialogs/base.js — dialog building blocks (cell inputs / buttons)
-// ----------------------------------------------------------------------------
-// Shared by the chart and table editors. The modal itself is no longer here: 3.0
-// dialogs are per instance (editor/dialogs.js createDialogs), and the content
-// editors receive that service through their open options.
-// ============================================================================
+// editor/interaction/dialogs/base.js — dialog building blocks (cell inputs / buttons)
+// Shared by the chart and table editors. The modal itself lives in the per-instance
+// dialog service (editor/dialogs.js), passed through each editor's open options.
 
 import { button as coreButton } from "../../components/button.js";
 
-// ----------------------------------------------------------------------------
 // Cell interaction (focus-select + Enter moves down one row)
-// ----------------------------------------------------------------------------
 function wireCellNav(input) {
   input.addEventListener("focus", () => input.select());
   input.addEventListener("keydown", (e) => {

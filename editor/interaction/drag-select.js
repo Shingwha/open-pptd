@@ -1,15 +1,8 @@
-// ============================================================================
-// interaction/drag-select.js — Excel-style drag selection (table/chart editors)
-// ----------------------------------------------------------------------------
-// Three modes: whole column (column header) / whole row (row header) / cell region.
-// pointerdown records the anchor, pointermove tracks via elementFromPoint (no DOM
-// rebuild, the callback only toggles highlight classes), and optional edge
-// auto-scroll scrolls while the pointer hugs the container edge (Excel style).
-// Selection shape (matches the table editor): 1×1 cell → {r, c}; otherwise
-// → {r1,c1,r2,c2}. Consumers receive onSelect(sel, kind) where kind is
-// "cell"|"row"|"col" during a drag or "end" at drag end (sel is null then, so the
-// consumer can rebuild button state).
-// ============================================================================
+// editor/interaction/drag-select.js — Excel-style drag selection (table/chart editors)
+// Three modes: whole column (column header), whole row (row header) and cell region.
+// pointermove tracks via elementFromPoint without rebuilding the DOM (the callback
+// toggles highlight classes); edge auto-scroll extends the selection. onSelect()
+// receives {r,c} / {r1,c1,r2,c2} during the drag and (null, "end") at drag end.
 
 /** Selection shape: 1×1 → {r, c} (single cell), otherwise region {r1,c1,r2,c2}. */
 function asSel(a, b) {

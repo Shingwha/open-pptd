@@ -1,13 +1,7 @@
-// ============================================================================
-// interaction/align-guides.js — PowerPoint-style smart alignment (pure math)
-// ----------------------------------------------------------------------------
-// Given the dragged (or resized) rectangle and the candidate targets (other
-// elements' bounds + the page center/edges), find the nearest alignment within
-// a threshold per axis. The caller converts the screen-px threshold to deck px
-// (threshold / scale) and renders the returned guides while the gesture runs.
-//
-// Pure module: no DOM access, importable from Node regression tests.
-// ============================================================================
+// editor/interaction/align-guides.js — PowerPoint-style smart alignment (pure math)
+// Given the dragged/resized rect and candidate targets (other bounds + page
+// center/edges), find the nearest alignment per axis within a threshold. Pure: no
+// DOM, importable from Node regression tests.
 
 export const SNAP_SCREEN_PX = 5; // snap radius in screen px (caller divides by the canvas scale)
 

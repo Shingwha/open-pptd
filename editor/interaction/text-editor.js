@@ -1,16 +1,9 @@
-// ============================================================================
-// interaction/text-editor.js — minimal text content dialog (editor-ux §4.1)
-// ----------------------------------------------------------------------------
-// Double-clicking a text element (or creating one and double-clicking) opens a
-// light dialog. Kept fields: content (raw rich-text DSL / formulas, no WYSIWYG),
-// font (font library / theme / system groups), size, horizontal + vertical
-// alignment, color (every theme token + hex/alpha) and bold / italic.
-// Removed with 3.0: line-height, letter-spacing, margin-top, highlight,
-// text direction, style presets, auto-wrap, font-management entry.
-//
-// Transactions: the first commit snapshots (beginChange); close calls onDone
-// which re-renders and ends the dialog session (one undo step per session).
-// ============================================================================
+// editor/interaction/text-editor.js — minimal text content dialog
+// Double-clicking a text element opens a light dialog. Fields: content (raw rich-text
+// DSL / formulas, no WYSIWYG), font (library / theme / system), size, horizontal +
+// vertical alignment, color (every theme token + hex/alpha) and bold / italic.
+// The first commit snapshots (beginChange); closing calls onDone, so one dialog
+// session is one undo step.
 
 import * as ui from "../ui.js";
 import { themeSwatches } from "./fields.js";
