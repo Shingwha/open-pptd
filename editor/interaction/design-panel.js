@@ -287,7 +287,7 @@ export function createDesignPanel(ui) {
     deps.api.beginChange();
     const result = applyTheme(deps.state.theme, themeFile, { deck: deps.state.deck });
     deps.io.applyTheme(result.theme);
-    deps.api.endChange();
+    deps.api.endChange({ thumbs: "all" }); // theme change repaints every thumbnail
     const kept =
       result.preserved.colors.length + result.preserved.textStyles.length + result.preserved.tableStyles.length;
     const name = typeof themeFile?.name === "string" ? themeFile.name : themeFile?.id || "主题";
@@ -324,7 +324,7 @@ export function createDesignPanel(ui) {
   function endTokenTx() {
     if (!tokenTx) return;
     tokenTx = false;
-    deps.api.endChange();
+    deps.api.endChange({ thumbs: "all" }); // color token write: theme-level, all thumbnails
   }
 
   function download(filename, text) {

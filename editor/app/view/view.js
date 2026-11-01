@@ -38,8 +38,9 @@ export function createView({ state, page, api, controller = null, getController 
     fitMinW,
     fitMinH,
   });
-  // Thumbnail bar: a page switch/delete needs a full refresh, going back to render() via the reload callback
-  const thumbnails = createThumbnails({ state, api, ops, ui, coords, editable, reload: () => viewObj.render() });
+  // Thumbnail bar: a page switch only moves the active card (reload), a content edit
+  // repaints the current card, and only load/page ops/theme rebuild the whole strip.
+  const thumbnails = createThumbnails({ state, api, ops, ui, coords, editable, reload: () => viewObj.render({ thumbs: "none" }) });
 
   // Method table: render() calls the other render functions bare, while allowing external hooks to be attached on viewObj
   Object.assign(viewObj, {
@@ -59,10 +60,20 @@ export function createView({ state, page, api, controller = null, getController 
     destroy,
   });
 
-  // Full refresh
-  function render() {
+  /**
+   * Full refresh. options.thumbs picks the thumbnail-bar work:
+   *   "all"     rebuild every card — load, page insert/delete/move, theme change, resize (default)
+   *   "current" repaint the current card only — content edits, undo/redo, paste/delete element
+   *   "none"    only move the active card — page switch / present exit
+   * The default stays "all" so callers outside the editor layer (resize hooks in
+   * preview.js/editor.js, present.js) keep their previous semantics.
+   */
+  function render(options = {}) {
     if (!state.deck) return; // load failed/incomplete: skip safely (external triggers such as resize)
-    thumbnails.renderThumbnails();
+    const thumbs = options.thumbs || "all";
+    if (thumbs === "all") thumbnails.renderThumbnails();
+    else if (thumbs === "current") thumbnails.refreshCurrent();
+    else if (thumbs === "none") thumbnails.setActive();
     renderCanvas();
     if (editable) updateButtons();
     viewport.renderZoom();

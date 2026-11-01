@@ -4,6 +4,13 @@
 // (editable:false) only navigate. Cards are .thumb-item > .thumb + .thumb-num, sized
 // by the CSS breakpoint and measured at render; pointer wiring is attached once
 // (AbortController) while renderThumbnails only rebuilds content.
+//
+// Incremental updates: a full rebuild (dispose charts + innerHTML = "") runs only on
+// load / page insert/delete/move / theme change. Content edits repaint the current
+// card only (refreshCurrent) and a page switch just moves the active class
+// (setActive). A page-order signature guards the incremental path: if the deck's
+// pages were reordered/replaced (e.g. undoing a page operation), it falls back to a
+// full rebuild so a card never shows another page's content.
 
 import { deckSize } from "../../../packages/model/index.js";
 import { disposeChartInstances } from "../../../packages/renderer/index.js";
@@ -22,6 +29,19 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
   // Pointer wiring (drag-sort / horizontal drag-scroll / click switch)
   let thumbDrag = null; // { x, y, startScroll, moved, card, index, drop }
   let suppressClick = false;
+  // Page-order signature captured by the last full render. A content edit keeps the
+  // element ids, so an unchanged signature means the card indexes still map 1:1 to
+  // deck.pages (a page op / undo of a page op changes it → full rebuild).
+  let renderedSig = null;
+
+  function pagesSignature(deck) {
+    return (deck?.pages || [])
+      .map((pg) => {
+        const els = pg?.elements || [];
+        return `${pg?.pageType || ""}:${els.length}:${els[0]?.elementId || ""}:${els[els.length - 1]?.elementId || ""}`;
+      })
+      .join("~");
+  }
 
   /** A page drag must never select painted thumbnail text (the browser selection is document-wide). */
   function clearSelection() {
@@ -196,6 +216,7 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
     renderStat();
     // Scroll the current page into view automatically (keeps it visible with many pages; visible cards are not force-scrolled)
     bar.querySelector(".thumb.active")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    renderedSig = pagesSignature(deck);
   }
 
   /** Click: switch the current page (single page model). */
@@ -203,6 +224,7 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
     if (suppressClick) return;
     state.currentPage = i;
     ops.clearSelection(); // page switch drops the element selection (single write entry)
+    setActive(i); // the active card follows immediately (reload repaints the canvas)
     reload();
   }
 
@@ -213,29 +235,66 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
     pageCountEl.textContent = `${state.currentPage + 1} / ${total}`;
   }
 
+  /** Page switch: move .thumb.active + page number (no repaint, no bar rebuild). */
+  function setActive(index = state.currentPage) {
+    if (!state.deck) return;
+    if (!bar) {
+      renderStat();
+      return;
+    }
+    const prev = bar.querySelector(".thumb.active");
+    const next = bar.children[index]?.querySelector?.(".thumb") || null;
+    if (prev && prev !== next) prev.classList.remove("active");
+    if (next && !next.classList.contains("active")) {
+      next.classList.add("active");
+      next.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+    if (pageCountEl) pageCountEl.textContent = `${index + 1} / ${state.deck.pages.length}`;
+  }
+
+  /** Repaint one card in place (charts disposed, skeleton swapped out); false when the card is gone. */
+  function paintThumbAt(i) {
+    if (!bar) return false;
+    const pg = state.deck?.pages?.[i];
+    const thumb = bar.children[i]?.querySelector?.(".thumb");
+    if (!pg || !thumb) return false;
+    disposeChartInstances(thumb);
+    thumb.querySelector(".thumb-skeleton")?.remove();
+    const mini = thumb.querySelector(".thumb-canvas");
+    if (!mini) return false;
+    paintModelPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
+    pinDraggable(thumb);
+    return true;
+  }
+
   /** Progressive-load targeted refresh: replace one page's thumbnail once its assets are ready (skeleton → real render). */
   function refreshThumb(pg) {
     if (!state.deck || !bar) return;
     const i = state.deck.pages.indexOf(pg);
     if (i < 0) return; // deleted or deck swapped while loading
-    const thumb = bar.children[i]?.querySelector?.(".thumb");
-    if (!thumb) return;
-    disposeChartInstances(thumb);
-    thumb.querySelector(".thumb-skeleton")?.remove();
-    const mini = thumb.querySelector(".thumb-canvas");
-    if (mini) {
-      paintModelPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
-      pinDraggable(thumb);
+    paintThumbAt(i);
+  }
+
+  /** Content-edit refresh: repaint the current card only; a structural change falls back to a full rebuild. */
+  function refreshCurrent() {
+    if (!state.deck) return;
+    if (!bar || pagesSignature(state.deck) !== renderedSig) {
+      renderThumbnails();
+      return;
     }
+    if (!paintThumbAt(state.currentPage)) renderThumbnails();
   }
 
   return {
     renderThumbnails,
     refreshThumb,
+    refreshCurrent,
+    setActive,
     /** Release: unbind drag/wheel listeners, dispose thumbnail chart instances and clear the bar DOM. */
     destroy() {
       ac.abort();
       thumbDrag = null;
+      renderedSig = null;
       if (bar) {
         disposeChartInstances(bar);
         bar.innerHTML = "";

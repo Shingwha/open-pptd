@@ -136,7 +136,7 @@ export function createIo({ state, view, ops, source, ui, live = true, onSaved, o
     images.rebuildImageMap();
     clearPendingProject();
     clearProjectUrl();
-    view.render();
+    view.render({ thumbs: "all" }); // new document: every card is new
     if (live) liveReload.connectLiveReload(); // blank project: disconnect the old live channel (internally treated as no project)
     try {
       onDeckChange?.(state.deck);
