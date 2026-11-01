@@ -1,15 +1,8 @@
-// ============================================================================
 // writer/font.js — font embedding assembly (deck declarations → fntdata parts + XML registration)
-// ----------------------------------------------------------------------------
-// Flow: collectFontSpecs collects declarations (resource table + inline component slots) →
-// loadFontBytes loads → fontToFntdata (fsType check / subsetting / EOT packaging) → emit fntdata
-// parts + embeddedFontLst XML + font relationships. The 4 registrations happen in parts.js / pptx.js.
-//
-// Font byte sources (both ends):
-//   - options.fontFiles[family]: preload cache (Node export layer / browser editor)
-//   - spec.url: fetch (CDN, needs CORS; Node 18+ global fetch)
-//   - spec.file: preloaded into fontFiles by the caller on Node only (cli/build.js)
-// ============================================================================
+// Flow: collectFontSpecs → loadFontBytes → fontToFntdata (fsType check / subsetting / EOT) →
+// fntdata parts + embeddedFontLst XML + font relationships.
+// Font byte sources: options.fontFiles[family] preload cache, spec.url fetch (needs CORS; Node 18+
+// global fetch), or spec.file preloaded into fontFiles by the caller on Node only (cli/build.js).
 
 import { parseFontInfo, checkEmbeddable, buildEot, subsetTtf } from "../model/font.js";
 import { parseFontResources } from "../model/font.js";
@@ -20,9 +13,8 @@ import { escAttr } from "./xml.js";
  * Collect embedded-font specs from deck.fonts (deduplicated by family):
  *   - font resource table entries (any key other than component slots, with file/url)
  *   - inline component-slot objects ({ family, file/url, subset })
- *   - object entries without file/url ({ family: <registry name> }): marked needRegistry and
- *     resolved by buildEmbeddedFonts through the registry (family/key) — a hit embeds
- *     automatically, a miss is skipped (treated as a system-font declaration)
+ *   - object entries without file/url ({ family: <registry name> }) are marked needRegistry and
+ *     resolved through the registry: a hit embeds, a miss counts as a system-font declaration.
  * Component-slot strings (system font names or resource keys) never produce an embed.
  */
 export function collectFontSpecs(deck) {
@@ -49,14 +41,12 @@ export function collectFontSpecs(deck) {
 
 /**
  * Collect every text character in the deck (for subsetting).
- * Deep-walks whole pages (including notes) instead of enumerating by element type/field — text's
- * content.text, table top-level rows, chart data.cols/rows/title/series, and any future field
- * carrying text are all covered (enumerating by type used to miss table.rows / chart text and
- * subset-missing glyphs fell back per character to Microsoft YaHei).
- * Also collects an ASCII printable baseline: chart value labels / axis ticks are rendered by
- * PowerPoint from number formats without passing through any text field, so an all-Chinese deck's
- * subset would lack numeric punctuation.
- * subsetTtf safely skips characters absent from the font cmap, so over-collecting is harmless (slightly larger size).
+ * Deep-walks whole pages including notes instead of enumerating by element type/field — table
+ * rows, chart data/title/series and any future text-carrying field are covered, so subsetting
+ * does not miss glyphs (a miss falls back per character to another font).
+ * An ASCII printable baseline is included because chart value labels / axis ticks are rendered
+ * from number formats without passing through any text field. subsetTtf skips characters absent
+ * from the font cmap, so over-collecting is harmless.
  */
 export function collectTextChars(deck) {
   const chars = new Set();
@@ -78,9 +68,9 @@ export function collectTextChars(deck) {
 }
 
 /**
- * Load font bytes: fontFiles preload > library file (Node injects fs read / browser fetch) > url (fetch).
+ * Load font bytes: fontFiles preload > library file (Node injects fs read / browser fetch) > url.
  * Returns null on failure.
- * options.fontDir: absolute assets/fonts path (Node side; the caller injects fs.readFileSync)
+ * options.fontDir: absolute assets/fonts path (Node side)
  * options.fs: { readFileSync } Node filesystem (without it, the browser fetches)
  */
 export async function loadFontBytes(spec, options = {}) {
@@ -88,7 +78,7 @@ export async function loadFontBytes(spec, options = {}) {
   if (spec.file) {
     try {
       if (options.fontDir && options.fs?.readFileSync) {
-        // Node: file always refers to a name inside the bundled font library (a registry resolution result; project-local custom fonts are unsupported)
+        // Node: spec.file is always a name inside the bundled font library (project-local custom fonts are unsupported)
         return new Uint8Array(options.fs.readFileSync(joinPath(options.fontDir, spec.file)));
       }
       const res = await fetch(fontFileUrl(spec.file));
@@ -205,7 +195,8 @@ export async function buildEmbeddedFonts(deck, options = {}) {
       continue;
     }
     if (spec.family !== result.info.family) {
-      // A declared family name that differs from the font's registered name (name table ID16 preferred / ID1 fallback) would mismatch when a page references the declared name
+      // A declared family differing from the font's registered name (name table ID16 preferred / ID1
+      // fallback) would not match page fontFamily references
       console.warn(
         `[font] 声明族名「${spec.family}」与字体注册名「${result.info.family}」不一致：` +
         `页面 fontFamily 请引用注册名「${result.info.family}」，否则 PowerPoint 不认嵌入字体`
@@ -215,9 +206,9 @@ export async function buildEmbeddedFonts(deck, options = {}) {
     parts.push({ path: `ppt/fonts/font${n}.fntdata`, bytes: result.bytes });
     rels.push({ id: `rIdFont${n}`, target: `fonts/font${n}.fntdata` });
     // A single-file family = that family's only face → register it into all four style slots (same
-    // rId, zero duplicate bytes). Picking one slot from OS/2 metadata leaves the others absent: on a
-    // viewer without the font, a run with the matching (bold, italic) combination finds no slot and
-    // is silently substituted. Child order is the fixed CT_EmbeddedFontListEntry sequence.
+    // rId, no duplicate bytes). Filling only one slot from OS/2 metadata leaves the others absent:
+    // on a viewer without the font, a run with the matching (bold, italic) combination finds no
+    // slot and is silently substituted. Child order is CT_EmbeddedFontListEntry's fixed sequence.
     lstItems.push(
       `<p:embeddedFont><p:font typeface="${escAttr(result.info.family)}"/>` +
       ["regular", "bold", "italic", "boldItalic"]

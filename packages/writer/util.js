@@ -1,6 +1,4 @@
-// ============================================================================
 // util.js — image size parsing / dataURL decoding (zero dependencies)
-// ============================================================================
 
 import { base64ToBytes, bytesToBase64, encodeUtf8 } from "../model/bytes.js";
 

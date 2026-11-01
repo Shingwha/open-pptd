@@ -1,8 +1,5 @@
-// ============================================================================
 // renderer/headless/browser.js — browser discovery and port helpers (Node-only)
-// ----------------------------------------------------------------------------
 // Same candidate strategy as tests/e2e; the SMOKE_CHROME env var overrides it.
-// ============================================================================
 
 import { existsSync } from "node:fs";
 import { createServer as createNetServer } from "node:net";

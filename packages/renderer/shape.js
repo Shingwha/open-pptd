@@ -1,11 +1,7 @@
-// ============================================================================
 // renderer/shape.js — shape → SVG (preset geometry with multiple paths + custom path)
-// ----------------------------------------------------------------------------
-// Preset geometry: all paths are evaluated from ECMA-376 formulas (main fill + light/dark
-// faces + stroke details), the same source as the prstGeom export. Custom paths
-// (shapeName:"custom"): viewBox + SVG path rendered directly, the same source as the
-// a:custGeom export.
-// ============================================================================
+// Preset geometry paths are evaluated from ECMA-376 formulas (main fill + light/dark faces +
+// stroke details), the same source as the prstGeom export. Custom paths (shapeName:"custom")
+// render viewBox + SVG path directly, the same source as the a:custGeom export.
 
 import { resolveColor, colorOr } from "../model/theme.js";
 import { normalizeFill, dashSpec } from "../model/style-spec.js";
@@ -43,12 +39,11 @@ export function renderShape(theme, el) {
   svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
   svg.setAttribute("preserveAspectRatio", "none");
 
-  // Base fill color: a spec fill is not applied by default (transparent, matching the
-  // writer's no-fill export); no fill → transparent. A gradient becomes an SVG <defs>
-  // gradient (gradient.js) that every fill path references via url(#id), matching the
-  // writer's single a:gradFill export (PowerPoint applies one gradient to the whole preset
-  // geometry, with no light/dark face shading). Gradient coordinate space: preset-geometry
-  // paths are in bounds coordinates; custom paths carry a viewBox scale transform (viewBox coords).
+  // Base fill: a spec fill is not applied by default (transparent, matching the writer's no-fill
+  // export). A gradient becomes an SVG <defs> gradient that every fill path references via
+  // url(#id), matching the writer's single a:gradFill (PowerPoint applies one gradient to the
+  // whole preset geometry with no light/dark face shading). Gradient coordinate space: preset
+  // paths are in bounds coordinates, custom paths carry a viewBox scale transform.
   const solid = solidFill(theme, el.fill);
   const [gw, gh] = el.shapeName === "custom" ? el.viewBox || [w, h] : [w, h];
   const grad = svgGradient(theme, el.fill, gw, gh);
@@ -88,8 +83,7 @@ export function renderShape(theme, el) {
   const strokeWidth = el.border?.width || 1;
   const strokeDash = dashSpec(el.border?.style)?.css || null;
   // Only stroke guide lines / inner lines: with no border nothing is stroked (matching the
-  // writer's a:ln noFill for no border; no longer darkening the fill color to approximate
-  // PowerPoint's lnRef fallback line)
+  // writer's a:ln noFill)
   const strokeFor = (p) => ((p.stroke || p.fill === "none") ? strokeColor : null);
 
   const paths = shapePaths(el.shapeName, w, h, el.adjustments);
@@ -104,9 +98,9 @@ export function renderShape(theme, el) {
     if (p.fill === "none") {
       geom.setAttribute("fill", "none");
     } else if (p.fill && p.fill !== "null") {
-      // Light/dark face: blend the fill toward black/white (preview approximates PowerPoint
-      // shading); nothing is drawn without a fill; gradients are not shaded (matching the
-      // writer's single gradFill)
+      // Light/dark face: blend the fill toward black/white (a preview approximation of
+      // PowerPoint shading); nothing is drawn without a fill and gradients are not shaded
+      // (matching the writer's single gradFill)
       if (!base) {
         geom.setAttribute("fill", "none");
       } else {
@@ -128,7 +122,7 @@ export function renderShape(theme, el) {
   return svg;
 }
 
-/** Shape shadow → SVG drop-shadow (boxShadowCss single source, matching the exported outerShdw defaults). */
+/** Shape shadow → SVG drop-shadow (boxShadowCss, matching the exported outerShdw defaults). */
 function applyShadow(svg, theme, shadow) {
   const sh = boxShadowCss(theme, shadow);
   if (sh) svg.style.filter = `drop-shadow(${sh})`;

@@ -1,20 +1,15 @@
-// ============================================================================
 // writer/chart/image.js — heatmap/sankey image-conversion export (ECharts SSR → vector SVG)
-// ----------------------------------------------------------------------------
-// PowerPoint has no native/extension chart type for these two; per pptd.md §chart ("export as image,
-// treated as Image"), the export SSR-renders an SVG from the same preview model options
-// (chart/option/) and embeds it as image parts: a:blip (PNG placeholder) + svgBlip (real vector)
-// (PowerPoint 2016+/new WPS/LibreOffice show the vector, older versions the placeholder; the data
-// is no longer editable inside the PPT). No new dependency: it reuses packages/vendor/echarts.mjs
-// (the neutral shared vendor area for renderer and writer, built as DOM-free pure ESM).
-// ============================================================================
+// PowerPoint has no native/extension type for these two, so they are exported as images:
+// SSR-render an SVG from the same preview option model, then embed PNG placeholder + svgBlip
+// (2016+/new WPS/LibreOffice show the vector, older versions the PNG; data is no longer editable).
+// Reuses the DOM-free vendor echarts build, so no new dependency.
 
 import * as echarts from "../../vendor/echarts.mjs";
 import { buildChartOption } from "../../model/chart/option/index.js";
 import { colorOr } from "../../model/theme.js";
 import { encodeUtf8 } from "../../model/bytes.js";
 
-/** Chart element → SVG string (the same option single source as the preview; size = bounds pt→px 1:1). */
+/** Chart element → SVG string (same option single source as the preview; size = bounds pt→px 1:1). */
 export function buildChartImageSvg(theme, el) {
   const [, , w, h] = el.bounds;
   const width = Math.max(1, Math.round(w));

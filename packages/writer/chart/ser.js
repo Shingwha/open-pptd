@@ -1,6 +1,4 @@
-// ============================================================================
 // writer/chart/ser.js — per-type c:ser series construction
-// ----------------------------------------------------------------------------
 
 import { el, esc } from "../xml.js";
 import { hexA, colLetter, CHART_DEFAULTS } from "../../model/chart.js";
@@ -52,7 +50,7 @@ export function valRefXml(ch, sheetRange) {
   return el("c:val", {}, numRefXml(sheetRange(ch.col), ch.vals));
 }
 
-/** Shared c:ser prelude: idx/order + series-name tx (strRef), extracted from the 9 constructors.
+/** Shared c:ser prelude: idx/order + series-name tx (strRef).
  * Note: bar passes s._index (the horizontal-bar order fix), others pass the emission index. */
 function serPreludeXml(name, idxVal, nameColIdx) {
   return [el("c:idx", { val: idxVal }), el("c:order", { val: idxVal }), seriesNameXml(name, nameColIdx)];
@@ -85,7 +83,7 @@ export function lineSerXml(theme, s, sheetRange, idx, labels, chs, opts = null) 
   else if (opts?.suppressMarker) kids.push(el("c:marker", {}, el("c:symbol", { val: "none" })));
   if (labels) kids.push(dLblsXml(theme, labels));
   kids.push(catRefXml(chs.cat, sheetRange), valRefXml(chs.val, sheetRange));
-  // Explicit per-series smooth 0/1 (a non-smoothed series without the element would inherit group smooth=1 and be smoothed too)
+  // Explicit per-series smooth 0/1 (a non-smoothed series without the element would inherit group smooth=1)
   kids.push(el("c:smooth", { val: s.smooth ? "1" : "0" }));
   return el("c:ser", {}, kids.join(""));
 }
@@ -100,19 +98,18 @@ export function areaSerXml(theme, s, sheetRange, idx, labels, chs) {
   if (spPr.length) kids.push(el("c:spPr", {}, spPr.join("")));
   if (labels) kids.push(dLblsXml(theme, labels));
   kids.push(catRefXml(chs.cat, sheetRange), valRefXml(chs.val, sheetRange));
-  // Area series smooth like lines: written explicitly (otherwise a smoothed area export would silently drop it)
+  // Area series smooth like lines, written explicitly (a smoothed area would otherwise drop it)
   kids.push(el("c:smooth", { val: s.smooth ? "1" : "0" }));
   return el("c:ser", {}, kids.join(""));
 }
 
 export function scatterSerXml(theme, s, sheetRange, idx, labels, chs) {
   const kids = serPreludeXml(s.name, idx, sheetRange.nameCol(s));
-  // s.color = fill || theme color-cycle default (model-resolved) — write spPr even without a fill, or
-  // PowerPoint will not auto-differentiate series colors for bubbleChart etc. (yielding a single bubble color).
-  // Scatter semantics = markers only, no connecting lines: even though scatterStyle is lineMarker (OOXML
-  // has no pure-scatter value), the native "scatter with markers only" suppresses lines via a ser-level
-  // ln noFill; otherwise lines appear.
-  // CT_ScatterSer allows only one spPr (fill + ln in the same element; two triggers PowerPoint repair).
+  // Write spPr even without a fill, or PowerPoint will not auto-differentiate series colors for
+  // bubbleChart etc. (single bubble color). Scatter semantics = markers only: even though
+  // scatterStyle is lineMarker (OOXML has no pure-scatter value), "markers only" suppresses lines
+  // with a ser-level ln noFill. CT_ScatterSer allows only one spPr (fill + ln in the same element;
+  // two trigger PowerPoint repair).
   const spPrKids = [];
   if (s.color) spPrKids.push(fillXml(theme, s.color));
   spPrKids.push(el("a:ln", {}, el("a:noFill")));

@@ -1,18 +1,9 @@
-// ============================================================================
 // writer/icon.js — icon element export (SVG image embedding, PowerPoint native icon format)
-// ----------------------------------------------------------------------------
-// Matches PowerPoint's native storage for "Insert → Icons":
-//   <p:pic><p:blipFill><a:blip><a:extLst><a:ext uri="{96DAC541-...}">
-//     <asvg:svgBlip ... r:embed="rIdN"/>…<a:stretch><a:fillRect/></a:stretch>
-//   </p:blipFill><p:spPr>…</p:spPr></p:pic>
-// The SVG file is written to ppt/media/*.svg; PowerPoint renders that same SVG with its
-// built-in engine — preview == export.
-//
-// Icon defs are fetched asynchronously (local library/CDN/editor preload), so buildPptx
-// preloads every matched icon through loadIconDefs() (ctx.iconDefs) and slide assembly stays
-// synchronous. Misses (invalid name / not in registry / SVG unavailable) aggregate into
-// onIconSkipped (mirroring onFontSkipped) and the element is skipped.
-// ============================================================================
+// Matches "Insert → Icons" storage: <p:pic><p:blipFill><a:blip><a:extLst><a:ext uri={96DAC541…}>
+// > asvg:svgBlip. The SVG is written to ppt/media/*.svg and PowerPoint renders it with its own
+// engine, so preview == export.
+// Icon defs load asynchronously, so buildPptx preloads every matched icon via loadIconDefs()
+// (ctx.iconDefs) and slide assembly stays synchronous; misses aggregate into onIconSkipped.
 
 import { el, escAttr } from "./xml.js";
 import { encodeUtf8 } from "../model/bytes.js";
@@ -21,7 +12,7 @@ import { walkElements } from "../model/walk.js";
 import { loadIconRegistry, resolveIconName, fetchIconSvg, loadIconSvgNode, normalizeIconSvg } from "../model/icon-fa.js";
 import { iconToSvg, normalizeIconFill } from "../model/icon-svg.js";
 
-/** Official ext uri for the SVG image extension (MS-OI29500 SVG extension). */
+/** ext uri for the SVG image extension (MS-OI29500 SVG extension). */
 const SVG_EXT_URI = "{96DAC541-7B7A-43D3-8B79-37D633B846F1}";
 
 /** The actual drawn rectangle for preserveAspectRatio "meet": the icon centered in bounds at its own aspect ratio. */
@@ -102,7 +93,7 @@ export function iconXml(theme, element, ctx) {
 
   const blipFill = el("p:blipFill", {}, [
     el("a:blip", {}, [
-      // Element-level transparency (official: image transparency = a:alphaModFix inside a:blip, amt in thousandths)
+      // Element-level transparency (a:alphaModFix inside a:blip, amt in thousandths)
       element.opacity != null && element.opacity < 1
         ? el("a:alphaModFix", { amt: Math.round(element.opacity * 100000) })
         : "",
@@ -119,11 +110,10 @@ export function iconXml(theme, element, ctx) {
   ].join(""));
 
   const spPr = el("p:spPr", {}, [
-    // Key: the xfrm uses the "meet"-fitted rectangle (the area the icon actually draws, centered
-    // in bounds at its own aspect ratio) rather than the whole bounds. PowerPoint stretches SVGs
-    // with no explicit size non-uniformly to fill the picture frame (browsers letterbox via
-    // preserveAspectRatio) — baking the ratio into the frame is correct on every PPT version.
-    // Rotation/flip still pivot around the bounds center (the fit rectangle is centered, same center).
+    // The xfrm uses the "meet"-fitted rectangle (the area the icon actually draws, centered at its
+    // own aspect ratio) rather than the whole bounds. PowerPoint stretches SVGs with no explicit
+    // size non-uniformly to fill the frame (browsers letterbox), so baking the ratio into the frame
+    // is correct on every PPT version. Rotation/flip still pivot around the same center.
     buildXfrm(fitRect(element.bounds, def.w, def.h), element.rotation, element.flip),
     el("a:prstGeom", { prst: "rect" }),
   ].join(""));

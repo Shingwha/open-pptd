@@ -1,9 +1,6 @@
-// ============================================================================
 // slide.js — slideN.xml generation (skeleton + element dispatch)
-// ----------------------------------------------------------------------------
-// OOXML generation for each element type lives in its own module (text/shape/line/image/table/chart);
-// this file only owns the spTree skeleton, background, rels, media/chart collection, and dispatch.
-// ============================================================================
+// Per-element OOXML lives in its own module (text/shape/line/image/table/chart); this file
+// owns the spTree skeleton, background, rels, media/chart collection, and dispatch.
 
 import { el, esc, xmlHeader } from "./xml.js";
 import { encodeUtf8 } from "../model/bytes.js";
@@ -16,9 +13,7 @@ import { buildChartImageBytes } from "./chart/image.js";
 import { TINY_PNG } from "./chart/types.js";
 import { getType } from "./types/index.js";
 
-// ----------------------------------------------------------------------------
-// Element → XML (dispatched via the type registry; unregistered types warn and are skipped)
-// ----------------------------------------------------------------------------
+/** Element → XML via the type registry; unregistered types warn and are skipped. */
 export function elementToXml(theme, element, ctx) {
   const def = getType(element.elementType);
   if (def && def.toXml) return def.toXml(theme, element, ctx);
@@ -26,9 +21,6 @@ export function elementToXml(theme, element, ctx) {
   return "";
 }
 
-// ----------------------------------------------------------------------------
-// slideN.xml skeleton
-// ----------------------------------------------------------------------------
 export function buildSlide(theme, page, slideIndex, registry, options = {}) {
   const rels = [{ id: "rId1", type: "slideLayout", target: "../slideLayouts/slideLayout1.xml" }];
   const mediaFiles = []; // { path, bytes }
@@ -39,9 +31,8 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
   let linkCounter = 0;
   let chartCounter = options.chartBase || 0;
 
-  // Speaker notes (official Page.notes) → notesSlideN.xml (generated only when notes exist)
-  // Structure: grpSpPr with xfrm + 3 placeholders (sldImg image / body notes text / sldNum page
-  // number), with an empty bodyPr
+  // Speaker notes → notesSlideN.xml (only when notes exist): grpSpPr with xfrm plus three
+  // placeholders (sldImg / body notes text / sldNum), with an empty bodyPr.
   const notesText = typeof page.notes === "string" ? page.notes.trim() : "";
   let notesXml = null;
   if (notesText) {
@@ -76,7 +67,8 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
   for (const le of options.layoutPage?.elements || []) layoutById.set(le.elementId, le);
 
   const ctx = {
-    // Page size (deck.size): background image cover cropping etc. is computed against the actual page; default 960×540
+    // Page size (deck.size): background image cover cropping is computed against the real
+    // page; default 960×540.
     pageSize: Array.isArray(options.pageSize) ? options.pageSize : [PAGE_WIDTH, PAGE_HEIGHT],
     nextId: () => idCounter++,
     /** LayoutElement for this element (frame/table/text facts), or null for direct callers. */
@@ -106,9 +98,9 @@ export function buildSlide(theme, page, slideIndex, registry, options = {}) {
       rels.push({ id, type: "image", target: `../media/${name}.${ext}` });
       return { id, path, ext };
     },
-    // heatmap/sankey image conversion (route single source chartRouteOf === "image": called
-    // before registerChart, consuming no chart number — Content_Types declares chartN.xml by
-    // consecutive ids, so a gap would declare a missing part)
+    // heatmap/sankey image conversion (chartRouteOf === "image": called before registerChart,
+    // consuming no chart number — Content_Types declares chartN.xml by consecutive ids, so a
+    // gap would declare a missing part)
     collectChartImage(theme, el) {
       if (chartRouteOf(el) !== "image") return null;
       const svgBytes = buildChartImageBytes(theme, el);

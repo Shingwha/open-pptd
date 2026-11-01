@@ -1,11 +1,7 @@
-// ============================================================================
 // renderer/icon.js — icon → SVG (same source as the SVG files exported to PPTX)
-// ----------------------------------------------------------------------------
-// def comes from ctx.iconMap[el.iconName] ({inner,w,h}, preloaded by the app layer —
-// editor icons.js / gallery preload, same pattern as imageMap); unloaded/unknown →
-// dashed placeholder box. The export writes the same inner + fill into ppt/media/*.svg,
-// so PowerPoint renders exactly what the preview shows.
-// ============================================================================
+// def comes from ctx.iconMap[el.iconName] ({inner,w,h}, preloaded by the app layer like imageMap);
+// unloaded/unknown icons get a dashed placeholder box. The export writes the same inner + fill
+// into ppt/media/*.svg, so PowerPoint renders exactly what the preview shows.
 
 import { iconSvgBody, normalizeIconFill } from "../model/icon-svg.js";
 import { createElementShell } from "./shell.js";

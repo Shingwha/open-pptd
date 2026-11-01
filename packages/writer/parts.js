@@ -1,12 +1,8 @@
-// ============================================================================
 // parts.js — PPTX fixed-part generation (Content_Types / rels / docProps /
-//           presentation / slideMaster / slideLayout / theme)
-// ----------------------------------------------------------------------------
-// Key points:
-//   - sldMasterId id=2147483648, sldLayoutId id=2147483649 (must be >= 0x80000000)
-//   - slideMaster rels must include the theme relationship (rId2)
-//   - theme1.xml's clrScheme defines how far "switch theme in PowerPoint after export" reaches
-// ============================================================================
+// presentation / slideMaster / slideLayout / theme)
+// Invariants: sldMasterId id=2147483648 and sldLayoutId id=2147483649 (must be
+// >= 0x80000000); slideMaster rels must include the theme relationship (rId2);
+// theme1.xml's clrScheme bounds how far "switch theme in PowerPoint" reaches.
 
 import { esc, el, xmlHeader, hexToRgbVal } from "./xml.js";
 import { DEFAULT_FONT } from "../model/theme.js";
@@ -21,9 +17,6 @@ export const NS_CONTENT_TYPES = "http://schemas.openxmlformats.org/package/2006/
 // Default = DEFAULT_FONT (official Style Priority default; system-provided, declared but not embedded).
 const F = (fonts) => fonts?.latin || DEFAULT_FONT;
 
-// ----------------------------------------------------------------------------
-// [Content_Types].xml
-// ----------------------------------------------------------------------------
 export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0, chartExIds = [], notesSlides = []) {
   const defaults = [
     el("Default", { Extension: "rels", ContentType: "application/vnd.openxmlformats-package.relationships+xml" }),
@@ -87,9 +80,6 @@ export function buildContentTypes(slideCount, chartCount = 0, fontCount = 0, cha
   );
 }
 
-// ----------------------------------------------------------------------------
-// _rels/.rels
-// ----------------------------------------------------------------------------
 export function buildRootRels() {
   return (
     xmlHeader() +
@@ -101,9 +91,6 @@ export function buildRootRels() {
   );
 }
 
-// ----------------------------------------------------------------------------
-// docProps
-// ----------------------------------------------------------------------------
 export function buildCoreProps(title) {
   const now = new Date().toISOString();
   return (
@@ -144,9 +131,6 @@ export function buildAppPropsV2(slideCount) {
   );
 }
 
-// ----------------------------------------------------------------------------
-// ppt/presentation.xml
-// ----------------------------------------------------------------------------
 export function buildPresentation(title, slideCount, size, fonts, embedded = null, hasNotes = false) {
   const f = F(fonts);
   const [w, h] = size;
@@ -195,11 +179,8 @@ export function buildPresentationRels(slideCount, fontRels = [], hasNotes = fals
   return xmlHeader() + el("Relationships", { xmlns: NS_REL }, rels.join(""));
 }
 
-// ----------------------------------------------------------------------------
-// ppt/notesMasters/notesMaster1.xml (speaker-notes master)
-// bgRef + 6 placeholders (hdr/dt/sldImg/body/ftr/sldNum) + 9-level notesStyle;
-// rels reference a separate theme2.xml (official PowerPoint behavior)
-// ----------------------------------------------------------------------------
+// Speaker-notes master: bgRef + 6 placeholders (hdr/dt/sldImg/body/ftr/sldNum)
+// + 9-level notesStyle; rels reference a separate theme2.xml (PowerPoint behavior).
 export function buildNotesMaster(fonts) {
   const f = F(fonts);
   // notesMaster placeholder shell (an empty body falls back to a default empty paragraph, matching PowerPoint re-save)
@@ -248,9 +229,6 @@ export function buildNotesMasterRels() {
   );
 }
 
-// ----------------------------------------------------------------------------
-// ppt/slideMasters/slideMaster1.xml
-// ----------------------------------------------------------------------------
 export function buildSlideMaster(fonts) {
   const f = F(fonts);
   return (
@@ -284,9 +262,6 @@ export function buildSlideMasterRels() {
   );
 }
 
-// ----------------------------------------------------------------------------
-// ppt/slideLayouts/slideLayout1.xml
-// ----------------------------------------------------------------------------
 export function buildSlideLayout() {
   return (
     xmlHeader() +
@@ -311,11 +286,8 @@ export function buildSlideLayoutRels() {
   );
 }
 
-// ----------------------------------------------------------------------------
-// ppt/theme/theme1.xml
-// ----------------------------------------------------------------------------
-// clrScheme semantic slots: renderer and exporter share the same mapping, and element default
-// colors use schemeClr where possible so the theme can be swapped in PowerPoint after export.
+// clrScheme semantic slots: renderer and exporter share this mapping, and element
+// default colors use schemeClr where possible so the theme can be swapped after export.
 export function themeColorSlots(theme) {
   const c = theme.colors;
   return {

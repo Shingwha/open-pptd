@@ -1,16 +1,9 @@
-// ============================================================================
 // renderer/types/load.js — on-demand render shard loader (by manifest type id)
-// ----------------------------------------------------------------------------
 // Convention: the shard for type id "<id>" is ./<id>.js and registers itself via
-// registerType({ type, render }). A new type therefore only needs
-//   packages/model/types/<id>.js (descriptor) + packages/renderer/types/<id>.js
-// (shard); no edit to the static index is required for lazy consumers.
-//
-// Built-in types are still registered eagerly by types/index.js (sync preview
-// paint); loadType() is for types outside the static closure and for callers
-// that want to defer the renderer fragment (e.g. test/plugin types).
+// registerType({ type, render }), so a new type needs only the model descriptor plus the shard.
+// Built-ins are registered eagerly by types/index.js (sync preview paint); loadType() serves types
+// outside the static closure and callers that defer the fragment (test/plugin types).
 // Composite types (group) have no shard: they resolve to their descriptor.
-// ============================================================================
 
 import { getType } from "../../model/registry.js";
 

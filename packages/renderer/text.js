@@ -1,15 +1,9 @@
-// ============================================================================
 // renderer/text.js — rich text → DOM (same inheritance chain as writer/text.js)
-// ----------------------------------------------------------------------------
-// Chain: content base style → container (root) → paragraph (explicit deltas) → run
-// (explicit deltas). The base style is written once on the container and inherited;
-// span/paragraph inline styles carry only explicit deltas.
-//
-// Official defaults (TextContent): color #000000 / fontSize 18 / fontFamily Microsoft
-// YaHei / lineHeight 1 / align [left, top]. The renderer fills the gaps between
-// browser CSS and these PPT defaults. Formulas (\(...\)) inherit only color / font-size
-// (official spec) and render natively via KaTeX → MathML.
-// ============================================================================
+// Chain: content base style → container (root) → paragraph (explicit deltas) → run (explicit
+// deltas). The base style is written once on the container and inherited; span and paragraph
+// inline styles carry only explicit deltas.
+// Defaults: color #000000 / fontSize 18 / fontFamily Microsoft YaHei / lineHeight 1 / align
+// [left, top]. Formulas inherit only color/font-size and render natively via KaTeX → MathML.
 
 import { parseRichText } from "../model/richtext.js";
 import { computeBaseStyle, mergeRunStyle } from "../model/style.js";
@@ -23,10 +17,9 @@ const DEFAULT_FONT_SIZE = 18;
 const DEFAULT_LINE_HEIGHT = 1;
 
 /**
- * Run layer: effective style = base + paragraph style + run inline (merged by
- * mergeRunStyle, the same chain as writer buildParagraph→buildRun), writing only the
- * explicit deltas relative to the base. Paragraph-level resets (e.g. bold:false to
- * cancel an element bold) also land on the span to block container inheritance.
+ * Run layer: effective style = base + paragraph style + run inline (mergeRunStyle, the same
+ * chain as writer buildParagraph→buildRun), writing only explicit deltas. Paragraph-level
+ * resets (e.g. bold:false to cancel an element bold) land on the span to block inheritance.
  * A formula run → KaTeX MathML.
  */
 export function runSpan(theme, run, base, paraStyle) {
@@ -63,9 +56,8 @@ export function runSpan(theme, run, base, paraStyle) {
 
 /**
  * Formula run → inline span (KaTeX MathML, rendered natively by the browser).
- * Official spec: formulas inherit only color and font-size (already extracted as
- * context values into run.style by the parser). On parse failure, fall back to
- * showing the LaTeX source with a light background.
+ * Formulas inherit only color and font-size (extracted into run.style by the parser).
+ * On parse failure, show the LaTeX source with a light background.
  */
 function formulaSpan(theme, run, base) {
   const node = document.createElement("span");
@@ -130,7 +122,6 @@ function renderTextContent(theme, content) {
   const root = document.createElement("div");
   // overflow:visible — text is never clipped (PowerPoint "do not autofit", see renderText)
   const css = ["width:100%;height:100%;box-sizing:border-box;overflow:visible;white-space:pre-line"];
-  // -- content base style → container layer (once, inherited); fill official defaults when unset --
   css.push(`font-size:${base.fontSize || DEFAULT_FONT_SIZE}px`);
   const color = resolveColor(theme, base.color);
   if (color) css.push(`color:${color}`);
@@ -152,13 +143,13 @@ function renderTextContent(theme, content) {
     css.push(`background:${grad}`);
     css.push("-webkit-background-clip:text;background-clip:text;color:transparent");
   }
-  // Text shadow (boxShadowCss single source: shares offset/blur/color with box-shadow)
+  // Text shadow (boxShadowCss: shares offset/blur/color with box-shadow)
   const shadow = boxShadowCss(theme, base.shadow);
   if (shadow) css.push(`text-shadow:${shadow}`);
-  // Vertical text / no wrap (official textDirection / wrap)
+  // Vertical text / no wrap (textDirection / wrap)
   if (content?.textDirection === "vertical") css.push("writing-mode:vertical-rl;text-orientation:upright");
   if (content?.wrap === false) css.push("white-space:pre;overflow:visible");
-  // Vertical align (official default top; middle/bottom use flex)
+  // Vertical align (default top; middle/bottom use flex)
   const vAlign = Array.isArray(content?.align) ? content.align[1] : "top";
   if (vAlign === "middle" || vAlign === "bottom") {
     css.push("display:flex;flex-direction:column;justify-content:" + (vAlign === "middle" ? "center" : "flex-end"));
@@ -189,10 +180,9 @@ function renderTextContent(theme, content) {
   return root;
 }
 
-/** Text element → positioned DOM (positioning / transforms / markers all go through renderer/shell.js).
- * PowerPoint "do not autofit" semantics: box height is the author's declaration and content
- * overflow stays VISIBLE (both shell and content root use overflow:visible) — never clipped,
- * never repositioned. */
+/** Text element → positioned DOM (positioning / transforms / markers via renderer/shell.js).
+ * PowerPoint "do not autofit": box height is the author's declaration and content overflow stays
+ * VISIBLE (shell and content root both use overflow:visible) — never clipped, never repositioned. */
 export function renderText(theme, el) {
   const box = createElementShell(el);
   box.style.overflow = "visible"; // override shell's default overflow:hidden so overflow text stays visible

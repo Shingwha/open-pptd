@@ -1,17 +1,14 @@
-// ============================================================================
-// writer/image.js — image element export (p:pic, full crop → fit → cropShape pipeline)
-// ----------------------------------------------------------------------------
-// Official render order: crop (srcRect crops the source) → fit (cover/contain/fill) → cropShape
-// (geometric outline crop via spPr). crop and fit are composed on the source rectangle
-// (a:srcRect); cropShape is expressed through spPr's prstGeom/custGeom (official PowerPoint storage).
-// ============================================================================
+// writer/image.js — image element export (p:pic, crop → fit → cropShape pipeline)
+// Render order: crop (srcRect crops the source) → fit (cover/contain/fill) → cropShape
+// (geometric outline via spPr). crop and fit compose on the source rectangle (a:srcRect);
+// cropShape is expressed through spPr's prstGeom/custGeom (PowerPoint's native storage).
 
 import { el, escAttr } from "./xml.js";
 import { buildXfrm, buildFill, buildLn, buildShadow, buildShapeDefGeom } from "./drawing.js";
 
 /**
  * crop (source-rectangle crop, ratios) → final a:srcRect attributes composed with fit.
- * Same semantics as official: crop the source by ratio first, then adapt to bounds by fit mode.
+ * Crop the source by ratio first, then adapt to bounds by fit mode.
  * @param {object} crop {left,top,right,bottom} ratios (default 0; negative = outward transparent margin)
  * @param {"cover"|"contain"|"fill"} fitMode
  * @param {[number,number]} imgSize source image native size

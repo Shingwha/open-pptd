@@ -1,14 +1,8 @@
-// ============================================================================
 // writer/types/load.js — on-demand toXml shard loader (by manifest type id)
-// ----------------------------------------------------------------------------
 // Convention: the shard for type id "<id>" is ./<id>.js and registers itself via
-// registerType({ type, toXml }). A new type therefore only needs
-//   packages/model/types/<id>.js (descriptor) + packages/writer/types/<id>.js
-// (shard); no edit to the static index is required for lazy consumers.
-// Built-in types are still registered eagerly by types/index.js (CLI export);
-// loadType() is for types outside the static closure. Composite types (group)
-// have no shard and no toXml: they resolve to their descriptor and export skips.
-// ============================================================================
+// registerType({ type, toXml }), so a new type needs only the model descriptor plus the shard.
+// Built-ins are registered eagerly by types/index.js; loadType() serves types outside the static
+// closure. Composite types (group) have no shard and no toXml: export skips them.
 
 import { getType } from "../../model/registry.js";
 

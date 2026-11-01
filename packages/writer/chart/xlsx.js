@@ -1,11 +1,7 @@
-// ============================================================================
-// writer/chart/xlsx.js — embedded xlsx worksheet construction (a complete part; missing one file breaks PowerPoint)
-// ----------------------------------------------------------------------------
-// Hard constraints:
-//   - Every part is required (Content_Types/rels/docProps/xl workbook/worksheet/
-//     sharedStrings/styles/theme) — a missing part makes PowerPoint report "data file is corrupt"
-//   - The embedded filename must be ASCII: Microsoft_Excel_SheetN.xlsx (WPS parses it strictly)
-// ============================================================================
+// writer/chart/xlsx.js — embedded xlsx worksheet construction (a complete part; one missing file breaks PowerPoint)
+// Every part is required (Content_Types/rels/docProps/xl workbook/worksheet/sharedStrings/styles/
+// theme) — a missing part makes PowerPoint report "data file is corrupt". The embedded filename
+// must be ASCII: Microsoft_Excel_SheetN.xlsx (WPS parses it strictly).
 
 import { el, esc, xmlHeader } from "../xml.js";
 import { chartDataTable, isNumericColumn, colLetter } from "../../model/chart.js";
@@ -24,20 +20,19 @@ export function buildSheetOrder(el, series, horizontal = false) {
   const cols = el.data?.cols || [];
   const order = [];
   const push = (ci) => { if (ci >= 0 && !order.includes(ci)) order.push(ci); };
-  // 1. Category column (the first series' x/category; horizontal bars = the y channel)
+  // Category column (the first series' x/category; horizontal bars = the y channel)
   const catSeries = series.find((s) => (horizontal ? s._cols.y != null : (s._cols.x != null || s._cols.category != null)));
   if (catSeries) push(horizontal ? catSeries._cols.y : (catSeries._cols.x ?? catSeries._cols.category));
-  // 2. Candlestick column group
+  // Candlestick columns must stay contiguous
   for (const s of series) {
     if (s.type !== "candlestick") continue;
     for (const ch of ["open", "high", "low", "close"]) push(s._cols[ch]);
   }
-  // 3. Other referenced columns
   for (const s of series) {
     if (s.type === "candlestick") continue;
     for (const ch of Object.keys(s._cols)) push(s._cols[ch]);
   }
-  // 4. Unreferenced columns trailing
+  // Unreferenced columns go last
   cols.forEach((_, ci) => push(ci));
   return order;
 }
@@ -45,7 +40,6 @@ export function buildSheetOrder(el, series, horizontal = false) {
 export function buildChartXlsx(chartEl, fonts, sheetOrder) {
   const f = fonts?.latin || DEFAULT_FONT;
   const table = chartDataTable(chartEl); // [header row, data rows...]
-  // Column reorder (candlestick etc.)
   const order = sheetOrder || table[0].map((_, i) => i);
   const reordered = table.map((row) => order.map((ci) => row[ci]));
   const rows = reordered.length;

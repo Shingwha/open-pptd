@@ -1,6 +1,4 @@
-// ============================================================================
 // writer/chart/style.js — shared Chart XML style fragments (series fill/line/text/labels/marker)
-// ----------------------------------------------------------------------------
 
 import { el, escAttr, hexToRgbVal } from "../xml.js";
 import { resolveColor, colorOr, resolveFont } from "../../model/theme.js";
@@ -8,8 +6,8 @@ import { dashSpec } from "../../model/style-spec.js";
 import { parseHexColor, CHART_DEFAULTS } from "../../model/chart.js";
 import { buildFill, buildLn, buildShadow, solidFillResolved } from "../drawing.js";
 
-/** Color → a:srgbClr (HEX6 converted directly; HEX8 splits out an alpha child — parsing has a
- * single implementation in model parseHexColor, shared with cx:dataPt). */
+/** Color → a:srgbClr (HEX6 direct; HEX8 splits out an alpha child — parsing is shared with
+ * cx:dataPt through model parseHexColor). */
 export function srgbClrXml(color) {
   const parsed = parseHexColor(color);
   if (parsed) {
@@ -19,12 +17,11 @@ export function srgbClrXml(color) {
   return el("a:srgbClr", { val: hexToRgbVal(color) });
 }
 
-/** Series fill → a:solidFill (resolveColor first turns $tokens into concrete colors, then go through
- * drawing.js solidFillResolved — the string branch of colorElement/buildFill cannot be used: it maps
- * $text/$bg/$primary/$accent to schemeClr, and HEX8 + explicit alpha means "override" rather than
- * "multiply", see drawing.js solidFillResolved). */
+/** Series fill → a:solidFill (resolveColor first turns $tokens into concrete colors, then
+ * drawing.js solidFillResolved — colorElement/buildFill cannot be used because they map
+ * $text/$bg/$primary/$accent to schemeClr). */
 export function fillXml(theme, color, alpha) {
-  // A gradient object (official series fill supports GradientFill) → buildFill; a string color → solidFill
+  // A gradient object (series fill supports GradientFill) → buildFill; a string color → solidFill
   if (color && typeof color === "object") return buildFill(theme, color);
   return solidFillResolved(colorOr(theme, color, "#000000"), alpha);
 }
@@ -33,7 +30,7 @@ export function fillXml(theme, color, alpha) {
 export function lnXml(theme, color, widthPt = 2, style = "solid") {
   const dash = dashSpec(style)?.ooxml;
   const lnAttrs = { w: Math.round(widthPt * 12700), cap: "flat", cmpd: "sng", algn: "ctr" };
-  // A gradient object (official lineColor/areaColor support GradientFill) → buildFill
+  // A gradient object (lineColor/areaColor support GradientFill) → buildFill
   if (color && typeof color === "object") {
     const kids = [buildFill(theme, color)];
     if (dash) kids.push(el("a:prstDash", { val: dash }));
@@ -66,9 +63,9 @@ export function txPrXml(theme, size = 900, color = "tx1", label = null) {
   );
 }
 
-/** Official dataLabels → c:dLbls (content: value/percentage/category + numberFormat + style).
+/** dataLabels → c:dLbls (content: value/percentage/category + numberFormat + style).
  * pos: label position (OOXML dLblPos, e.g. "outEnd" for pies to match the preview's outside +
- * leader lines; omitted = PowerPoint's per-type default — inside bars/pies bestFit). */
+ * leader lines); omitted = PowerPoint's per-type default (inside bars/pies bestFit). */
 export function dLblsXml(theme, cfg, globalFamily, pos = null) {
   const content = cfg?.content || "value";
   const kids = [];
@@ -91,7 +88,7 @@ export function dLblsXml(theme, cfg, globalFamily, pos = null) {
   return el("c:dLbls", {}, kids.join(""));
 }
 
-/** Series marker (official MarkerConfig → c:marker). */
+/** Series marker (MarkerConfig → c:marker). */
 export function markerXml(theme, marker, color) {
   if (!marker || marker === false) return "";
   const cfg = typeof marker === "object" ? marker : {};
@@ -103,8 +100,8 @@ export function markerXml(theme, marker, color) {
   return el("c:marker", {}, kids.join(""));
 }
 
-/** Chart frame (official Chart.fill/border/shadow → chartSpace spPr) — the classic c: and chartEx cx:
- * spPr are isomorphic and share this single implementation. */
+/** Chart frame (Chart.fill/border/shadow → chartSpace spPr) — classic c: and chartEx cx:
+ * spPr are isomorphic and share this implementation. */
 export function chartSpaceSpPrXml(theme, chartEl, tag = "c") {
   return (chartEl.fill || chartEl.border || chartEl.shadow)
     ? el(`${tag}:spPr`, {}, [

@@ -1,9 +1,6 @@
-// ============================================================================
-// renderer/table.js — table preview (content-height adaptive + official inheritance chain, same source as writer)
-// ----------------------------------------------------------------------------
-// Style priority matches writer/table.js:
-//   cell inline fields > Cell.textStyle ref > position class > bodyStyles > cellStyle > default
-// ============================================================================
+// renderer/table.js — table preview (content-height adaptive, same style chain as the writer)
+// Style priority: cell inline fields > Cell.textStyle ref > position class > bodyStyles >
+// cellStyle > default.
 
 import { resolveColor, colorOr, resolveFont, resolveTableStyle, resolveTableCellStyle, resolveTextStyle, cellTextStyle } from "../model/theme.js";
 import { estimateTableLayout, tableGrid, TABLE_FONT_SIZE, TABLE_CELL_PAD, TABLE_CELL_PAD_X } from "../model/table.js";
@@ -21,7 +18,7 @@ function sideCss(theme, v) {
   return `${v.width ?? 1}px ${style} ${color}`;
 }
 
-/** Expanded grid → final cell style (text-style merge comes from the model single source; a covered slot returns {covered:true}). */
+/** Expanded grid → final cell style (text-style merge from cellTextStyle; a covered slot returns {covered:true}). */
 export function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) {
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
   const fill = cell?.fill ?? s.fill ?? tableFill ?? null;
@@ -37,24 +34,21 @@ export function cellFinal(theme, ts, r, c, rowCount, colCount, cell, tableFill) 
 }
 
 export function renderTable(theme, el) {
-  // Geometry source: when LayoutTree facts exist (el.layout.table injected by paintPage)
-  // use the layout's exact row heights / column widths / total height (the same tree used
-  // by validation and export); otherwise fall back to the model's minimum row-height
-  // estimate (legacy callers that invoke renderTable directly, e.g. editor toolchain).
+  // Geometry source: when LayoutTree facts exist (el.layout.table injected by paintPage) use the
+  // layout's exact row heights / column widths / total height; otherwise fall back to the model's
+  // minimum row-height estimate (callers invoking renderTable directly, e.g. the editor toolchain).
   const lt = el.layout?.table;
   const { rowHeights, columnWidths } = lt
     ? { rowHeights: lt.rowHeights, columnWidths: lt.columnWidths }
     : estimateTableLayout(el);
-  // Total height known (exact layout value) → preset the outer container height and
-  // release overflow: with border-collapse the outer border sits on the table edge
-  // (about 1px outside the box), so height alone + the default overflow:hidden would
-  // clip the last row's bottom border (measured: tests/projects/table#9, second table).
+  // With border-collapse the outer border sits ~1px outside the box, so height alone plus the
+  // default overflow:hidden would clip the last row's bottom border.
   const box = createElementShell(el, { height: false });
   if (lt) {
     box.style.height = `${lt.totalHeight}px`;
     box.style.overflow = "visible";
   }
-  // Official Table.shadow → exported a:tblPr > a:effectLst; preview projects the same source as box-shadow
+  // Table.shadow → the exported a:tblPr > a:effectLst; the preview projects it as box-shadow
   const shadow = boxShadowCss(theme, el.shadow);
   if (shadow) box.style.boxShadow = shadow;
 
@@ -113,7 +107,7 @@ export function renderTable(theme, el) {
 
 /** td inline style (preview; covered slots have no text and skip text styles). */
 export function tdCss(theme, f, covered) {
-  // Fill: FillSpec normalization (string color / solid / gradient, same source as writer buildFill)
+  // Fill: FillSpec normalization (string color / solid / gradient, matching writer buildFill)
   const fillSpec = normalizeFill(f.fill);
   const fillCss = fillSpec
     ? fillSpec.type === "solid"
@@ -139,7 +133,7 @@ export function tdCss(theme, f, covered) {
   if (alignLast) parts.push(`text-align-last:${alignLast}`);
   if (!covered) {
     parts.push(
-      // Bold matches the exported b="1" (700) value (600 was used before, one step lighter than export)
+      // Bold matches the exported b="1" (700) value
       `font-weight:${f.bold ? "bold" : "400"}`,
       f.italic ? "font-style:italic" : "",
       `color:${colorOr(theme, f.color, "#000000")}`,
@@ -160,8 +154,8 @@ export function tdCss(theme, f, covered) {
 /**
  * Cell rich text → DOM (same pipeline as renderer/text.js: parseRichText + runSpan).
  * Formulas \(...\) go through runSpan → formulaSpan for native KaTeX MathML rendering.
- * Text highlight (official CellStyle.backgroundColor, a:highlight semantics): each
- * paragraph wraps its runs in an inline span so the background hugs the text line.
+ * Text highlight (CellStyle.backgroundColor, a:highlight semantics): each paragraph wraps its
+ * runs in an inline span so the background hugs the text line.
  */
 function renderCellContent(theme, text, f) {
   const tree = parseRichText(text || "");
@@ -173,8 +167,8 @@ function renderCellContent(theme, text, f) {
     gradient: null,
   };
   const root = document.createElement("div");
-  // Height is not preset: content decides it, and the td's vertical-align (f.align[1])
-  // centers vertically; height:100% would fill the cell and defeat that alignment
+  // Height is not preset: content decides it and the td's vertical-align centers it;
+  // height:100% would fill the cell and defeat that alignment
   const css = ["width:100%;box-sizing:border-box;overflow:hidden"];
   css.push(`font-size:${f.fontSize}px`);
   const color = resolveColor(theme, f.color);

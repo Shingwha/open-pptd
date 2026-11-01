@@ -1,11 +1,8 @@
-// ============================================================================
 // writer/chartex-style.js — chartEx style parts (styleN.xml / colorsN.xml)
-// ----------------------------------------------------------------------------
 // A chartEx part must carry two relationships, chartStyle + chartColorStyle (rId2/rId3), so
-// PowerPoint can index the default style sheets by styleId/colorId on open.
-// The templates are the official defaults (chart style id="395" + color cycle id="10"), copied
-// byte-for-byte from the reference files (only an XML declaration is added, needed by some parsers).
-// ============================================================================
+// PowerPoint can index the default style sheets by styleId/colorId. The templates are the
+// default chart style id="395" and color cycle id="10", byte-for-byte reference copies plus
+// only an XML declaration.
 
 import { xmlHeader } from "./xml.js";
 import { CHART_DEFAULTS } from "../model/chart.js";
@@ -20,8 +17,8 @@ const DATA_LABEL_SLOT =
   '<cs:dataLabel><cs:lnRef idx="0"/><cs:fillRef idx="0"/><cs:effectRef idx="0"/><cs:fontRef idx="minor"><a:schemeClr val="tx1"><a:lumMod val="65000"/><a:lumOff val="35000"/></a:schemeClr></cs:fontRef><cs:defRPr sz="1197"/></cs:dataLabel>';
 
 /** dataLabel override = { colorHex, fontSize } | null (treemap/sunburst tile labels).
- * The cs:dataLabel slot is PowerPoint's authoritative color source for tile-label text (a
- * cx:dataLabels txPr is ignored) — when labels set color/fontSize, override the default tx1-65% gray. */
+ * cs:dataLabel is PowerPoint's authoritative color source for tile-label text (a cx:dataLabels
+ * txPr is ignored) — when labels set color/fontSize, override the default tx1-65% gray. */
 export function buildChartStyleXml(dataLabel = null) {
   let xml = CHART_STYLE_XML;
   if (dataLabel && (dataLabel.colorHex || dataLabel.fontSize != null)) {

@@ -1,20 +1,9 @@
-// ============================================================================
 // renderer/headless/backend.js — Node/headless RenderBackend factory (Node-only)
-// ----------------------------------------------------------------------------
-// Implements the RenderBackend contract (interfaces.md §6):
-//   prepare() → open the shot session (server + browser + viewport/DPR + page 0 repaint)
-//   paint(page, { pixelRatio }) → switch to a 1-based page and wait for paint-ready
-//   capture() → PNG bytes
-//   dispose() → close browser/profile/server
-//
-// The factory is injected by Node hosts (CLI, server) through
-// ExportService env.renderBackend; packages/export stays environment-free and owns
-// page selection / scale / naming / zip / report, this file only rasterizes.
-//
-// Diagnostics (extra, not part of the contract): `diagnostics()` reports the live
-// device pixel ratio and every chart canvas backing-store ratio so tests can prove
-// the export DPR instead of inferring it from pixels.
-// ============================================================================
+// Implements the RenderBackend contract (typedef in packages/export/index.js): prepare() opens the
+// shot session (server + browser + viewport/DPR + page 0 repaint), paint(page, {pixelRatio})
+// switches to a 1-based page and waits for paint-ready, capture() returns PNG bytes, dispose()
+// closes browser/profile/server; hosts inject the factory via ExportService env.renderBackend
+// (packages/export owns page selection/scale/naming/zip). diagnostics() is extra.
 
 import { openShotSession } from "./shoot.js";
 

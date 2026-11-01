@@ -1,11 +1,7 @@
-// ============================================================================
 // writer/types/index.js — toXml registration entry (static closure)
-// ----------------------------------------------------------------------------
-// Imports every built-in toXml shard (./<id>.js) for side-effect registration, so
-// the export path (writer/slide.js) has dispatch for all manifest types.
-// Non-built-in/lazy types go through types/load.js instead; render / UI fragments
-// are registered separately by renderer/types and editor/types.
-// ============================================================================
+// Imports every built-in toXml shard (./<id>.js) for side-effect registration, so the export
+// path (writer/slide.js) can dispatch all manifest types. Non-built-in/lazy types go through
+// types/load.js; render/UI fragments register separately via renderer/types and editor/types.
 
 import "./text.js";
 import "./shape.js";

@@ -1,27 +1,15 @@
-// ============================================================================
-// renderer/index.js — packages/renderer package barrel (contract-4 entry open-pptd/renderer)
-// ----------------------------------------------------------------------------
-// Re-exports only, zero logic. DOM is renderer's output target (window./document.
-// are allowed here), but node:* / fs must never appear: no Node API may leak into
-// the browser preview pipeline.
-//
-// Hard rule: this barrel and its transitive closure must NOT import ./headless/**
-// (the headless screenshot pipeline is Node-only; importing this entry from a page
-// would drag Node code into the browser).
-// ============================================================================
+// renderer/index.js — packages/renderer package barrel (Contract 3.0 entry open-pptd/renderer)
+// Re-exports only, zero logic. DOM is the output target (window./document. are allowed), but
+// node:* / fs must never appear here: no Node API may leak into the browser preview pipeline.
+// Hard rule: this barrel and its transitive closure must NOT import ./headless/** (Node-only
+// screenshot pipeline; importing it from a page would drag Node code into the browser).
 
-// ---- Page painting (page.js; disposeChartInstances is re-exported by page.js) ----
-// paintPage = the only paint entry of the three-stage pipeline (consumes LayoutTree).
-// Callers run layout(deck) themselves; the 2.x renderPage/autoGrowTexts adapters are gone.
 export { paintPage, disposeChartInstances } from "./page.js";
 
-// ---- Icon thumbnail (icon.js) ----
 export { iconThumb } from "./icon.js";
 
-// ---- Table cell helpers (table.js: reused by editor thumbnails / toolchain) ----
 export { cellFinal, tdCss } from "./table.js";
 
-// ---- Element-renderer namespace (public builders of each render*.js) ----
 import { renderText } from "./text.js";
 import { renderShape } from "./shape.js";
 import { renderLine } from "./line.js";

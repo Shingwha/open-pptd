@@ -1,14 +1,9 @@
-// ============================================================================
 // renderer/page.js — page painting (paintPage consumes LayoutTree)
-// ----------------------------------------------------------------------------
-// Third stage of the three-stage pipeline: resolve → layout → paint.
-//   paintPage(layoutPage, ctx)  ← the only paint entry. All geometry is read from
-//                                 the LayoutTree (position/size from frame; text
-//                                 box height from declared, see withFrame). This
-//                                 file never measures nor writes back to the model.
-// Element → DOM dispatch goes through the type registry (packages/model/registry.js);
-// adding an element type only needs a render fragment under renderer/types/.
-// ============================================================================
+// Third stage of resolve → layout → paint. paintPage(layoutPage, ctx) is the only paint entry:
+// all geometry is read from the LayoutTree (position/size from frame; text box height from
+// declared) and this file never measures nor writes back to the model.
+// Element → DOM dispatch goes through the type registry (model/registry.js); adding an element
+// type only needs a render fragment under renderer/types/.
 
 import { getType } from "./types/index.js";
 import { pageBackground } from "./background.js";
@@ -55,19 +50,14 @@ function renderParseError(container, page) {
 
 /**
  * LayoutElement + element model → paint-view object.
- * Shallow copy only (the model is never written back): bounds come from the layout
- * geometry, the fragment signature stays `render(theme, el, ctx)`, and content/style
- * fields are referenced as-is.
+ * Shallow copy only (the model is never written back): bounds come from the layout geometry,
+ * the fragment signature stays `render(theme, el, ctx)`, and content/style are referenced as-is.
  *
- * Geometry choices:
- * - Table: read frame + layout.table for exact row heights / column widths.
- * - Text: x/y/w from frame, but the box height comes from `declared` (the author
- *   box) — PowerPoint "do not autofit" semantics: overflow stays visible, the box
- *   does not grow with content, and line positions anchor to the author box. Using
- *   frame.h (the grown height) would shift middle/bottom-aligned text down by the
- *   box delta (measured: city-cycling#5 title shifted 17px). Clipping is prevented
- *   by overflow:visible in renderText (see text.js).
- * - Other elements: frame == declared (size passed through).
+ * Geometry: table reads frame + layout.table for exact row heights/column widths. Text takes
+ * x/y/w from frame but h from `declared` (the author box) — PowerPoint "do not autofit" semantics:
+ * overflow stays visible, the box does not grow with content, and lines anchor to the author box.
+ * Using frame.h would shift middle/bottom-aligned text down by the growth delta (measured 17px).
+ * Other elements: frame == declared.
  */
 function withFrame(el, le) {
   const f = le.frame;
@@ -78,11 +68,11 @@ function withFrame(el, le) {
 }
 
 /**
- * Paint one page of the LayoutTree (pure painting: geometry read from the tree, no DOM measuring).
+ * Paint one page of the LayoutTree (pure painting: geometry from the tree, no DOM measuring).
  * @param {object} layoutPage LayoutTree.pages[i] ({ index, elements })
  * @param {object} ctx { container, page, theme, imageMap, iconMap, pixelRatio }
  *  - container canvas container (required)
- *  - page      page model (only background / _parseError / element content are read; geometry always comes from layoutPage)
+ *  - page      page model (only background / _parseError / element content; geometry comes from layoutPage)
  */
 export function paintPage(layoutPage, ctx = {}) {
   const { container, page } = ctx;

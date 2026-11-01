@@ -1,6 +1,4 @@
-// ============================================================================
-// writer/chart/axes.js — axis XML (full official AxisConfig → catAx/valAx; axis-array rules)
-// ----------------------------------------------------------------------------
+// writer/chart/axes.js — axis XML (AxisConfig → catAx/valAx; axis-array rules)
 
 import { el, esc, hexToRgbVal } from "../xml.js";
 import { resolveColor, colorOr, resolveFont } from "../../model/theme.js";
@@ -15,7 +13,7 @@ function axisLnXml(theme, cfg, fallbackColor, fallbackWidth = 0.75) {
   const kids = [el("a:solidFill", {}, srgbClrXml(color))];
   const dash = { dash: "dash", dot: "dot" }[o.style];
   if (dash) kids.push(el("a:prstDash", { val: dash }));
-  // arrow (official axisLine.arrow → headEnd/tailEnd; CT_LineProperties order puts headEnd first)
+  // arrow (axisLine.arrow → headEnd/tailEnd; CT_LineProperties puts headEnd first)
   const arrow = typeof cfg === "object" ? cfg.arrow : null;
   const head = arrow === "start" || arrow === "both" || arrow === true ? "start" : null;
   const tail = arrow === "end" || arrow === "both" || arrow === true ? "end" : null;
@@ -26,8 +24,7 @@ function axisLnXml(theme, cfg, fallbackColor, fallbackWidth = 0.75) {
 }
 
 /** Axis title (string | TitleConfig → c:title; schema position: after axPos).
- * A configured fontFamily takes effect (aligned with chartEx axis-title semantics); when unset it
- * keeps the +mn-lt/+mn-ea theme references unchanged. */
+ * A configured fontFamily takes effect; when unset the +mn-lt/+mn-ea theme references stay. */
 function axisTitleXml(theme, title, chartFontFamily = null) {
   const cfg = typeof title === "string" ? { text: title } : title || null;
   if (!cfg || !cfg.text) return "";
@@ -56,10 +53,10 @@ function axisTitleXml(theme, title, chartFontFamily = null) {
 }
 
 /**
- * Single-axis XML (full official AxisConfig).
+ * Single-axis XML (AxisConfig).
  * @param {object} p {theme, id, crossId, kind: "cat"|"val", pos, cfg, secondary, tickLabels, crosses, fontFamily}
- *   secondary: secondary axis — the category axis gets delete=1 (data is not duplicated; it only pairs the axis); the value axis switches sides
- *   fontFamily: chart.fontFamily (axis-title fontFamily fallback)
+ *   secondary: secondary axis — the category axis gets delete=1 (data is not duplicated; it only
+ *   pairs the axis); the value axis switches sides. fontFamily: chart.fontFamily fallback.
  */
 function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, tickLabels = true, crosses = "autoZero", valNumFmt = null, fontFamily = null }) {
   const show = cfg.show !== false;
@@ -81,8 +78,8 @@ function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, t
     const ln = axisLnXml(theme, gridCfg, theme.colors?.line || "#e5e7eb", 0.5);
     kids.push(el("c:majorGridlines", {}, ln ? el("c:spPr", {}, ln) : ""));
   }
-  // numFmt (value-axis label.numberFormat; with percentStacked the value axis is a 0-1 share, and
-  // the default General would show decimals like 0.2, so 0% matches the preview/native PowerPoint)
+  // numFmt (value-axis label.numberFormat; with percentStacked the value axis is a 0-1 share
+  // where General shows 0.2-style decimals, so 0% matches preview and PowerPoint)
   const numFmt = (kind === "val" && cfg.label && typeof cfg.label === "object" && cfg.label.numberFormat)
     ? cfg.label.numberFormat
     : kind === "val" && valNumFmt ? valNumFmt
@@ -97,9 +94,9 @@ function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, t
   // txPr (label style)
   kids.push(txPrXml(theme, CHART_DEFAULTS.axisSize * 100, "tx1", cfg.label && typeof cfg.label === "object" ? cfg.label : null));
   kids.push(el("c:crossAx", { val: crossId }));
-  // A secondary value axis must use crosses=max (crossing at the category axis maximum makes the side
-  // switch work); autoZero makes PowerPoint cross at category 0, conflicting with axPos and scrambling
-  // the secondary-axis layout (ticks misaligned, line mapping broken)
+  // A secondary value axis must use crosses=max (crossing at the category-axis maximum makes the
+  // side switch work); autoZero crosses at category 0, conflicting with axPos and scrambling the
+  // secondary-axis layout.
   kids.push(el("c:crosses", { val: crosses }));
   if (kind === "val") kids.push(el("c:crossBetween", { val: "between" }));
   else kids.push(el("c:auto", { val: "1" }), el("c:lblAlgn", { val: "ctr" }), el("c:lblOffset", { val: "100" }), el("c:noMultiLvlLbl", { val: "0" }));
@@ -107,7 +104,7 @@ function axisXml(theme, { id, crossId, kind, pos, cfg = {}, secondary = false, t
 }
 
 /**
- * radar axis group (spokeAxis already reduced to two AxisConfigs; radar has no secondary axis, fixed cat(1)+val(2)).
+ * radar axis group (spokeAxis already reduced to two AxisConfigs; no secondary axis, fixed cat(1)+val(2)).
  */
 export function buildRadarAxesXml(theme, catCfg, valCfg, fontFamily = null) {
   return axisXml(theme, { id: 1, crossId: 2, kind: "cat", pos: "b", cfg: catCfg, fontFamily }) +

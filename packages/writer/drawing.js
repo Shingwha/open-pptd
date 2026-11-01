@@ -1,9 +1,6 @@
-// ============================================================================
 // drawing.js — shared OOXML drawing fragments (xfrm / fill / border / shadow)
-// ----------------------------------------------------------------------------
-// Shared by shapes, text borders, image borders and table fills; all driven by the
-// packages/model fill model.
-// ============================================================================
+// Shared by shapes, text borders, image borders and table fills; input comes from the
+// model fill/shadow spec and is normalized by model/style-spec.js.
 
 import { el, hexToRgbVal, angleToOOXML } from "./xml.js";
 import { resolveColor } from "../model/theme.js";
@@ -14,9 +11,8 @@ import { custGeomXml } from "./custgeom.js";
 
 /**
  * Preset geometry → a:prstGeom.
- * Matching PowerPoint storage: with no explicit adjustments, emit an empty avLst (using the
- * preset's built-in defaults); when explicitly set, write gd entries by adjNames (only when
- * element-level adjustments are non-empty).
+ * With no explicit adjustments emit an empty avLst (the preset's built-in defaults);
+ * when set, write gd entries by adjNames.
  */
 export function buildPresetGeom(shapeName, adjustments) {
   const def = SUPPORTED_SHAPES[shapeName];
@@ -43,9 +39,7 @@ export function buildShapeDefGeom(shapeDef) {
   return buildPresetGeom(shapeDef.shapeName, shapeDef.adjustments);
 }
 
-/** Color → OOXML fill element. Theme tokens prefer schemeClr (theme-swappable), others srgbClr.
- * opacity (0~1, optional): text/element transparency — the a:alpha modifier goes inside the
- * color element (official PowerPoint storage). */
+// Theme color keys with a schemeClr slot (theme-swappable); other $keys export concrete values.
 const TOKEN_SLOT = { text: "dk2", bg: "lt2", primary: "accent1", accent: "accent2" };
 
 /** Merge the hex's own alpha with element opacity (0~1) → a:alpha val (1/1000 %). */
@@ -57,6 +51,8 @@ function alphaVal(hex, opacity) {
   return el("a:alpha", { val: Math.round(a * 100000) });
 }
 
+/** Color → OOXML color element. opacity (0~1) writes a:alpha inside the color element
+ * (the structure PowerPoint stores), never around it. */
 export function colorElement(theme, color, opacity) {
   if (color == null) return "";
   if (typeof color === "string" && color.startsWith("$")) {
@@ -73,7 +69,7 @@ export function colorElement(theme, color, opacity) {
 }
 
 /** Color → a full a:solidFill element (required wherever a fill sits: rPr / a:ln / a:outerShdw).
- * With no explicit color but opacity needed, use the default text slot tx1 + a:alpha (official structure). */
+ * With no explicit color but opacity needed, use the default text slot tx1 + a:alpha. */
 export function solidFillElement(theme, color, opacity) {
   let inner;
   if (color == null && opacity != null && opacity < 1) {
@@ -91,9 +87,8 @@ function solidRgb(hex, opacity) {
 
 /**
  * Resolved concrete color (hex/HEX8, no $token) → a:solidFill (chart series colors only; the
- * caller must resolveColor first). Semantic differences from colorElement/alphaVal (keep apart):
- * an explicit alpha writes a:alpha unconditionally (including 100000), and a HEX8's own alpha
- * OVERRIDES the alpha argument.
+ * caller must resolveColor first). Unlike colorElement/alphaVal: an explicit alpha writes
+ * a:alpha unconditionally (including 100000), and a HEX8's own alpha OVERRIDES the argument.
  */
 export function solidFillResolved(hex, alpha = null) {
   let rgb = hex;
@@ -123,10 +118,10 @@ export function buildXfrm(bounds, rotation, flip) {
   return el("a:xfrm", attrs, off + ext);
 }
 
-/** Shadow → a:effectLst, the single implementation (dist/dir/blurRad are computed only here;
- * defaults come from effectiveShadow; offset [x,y] with down positive → dist/dir clockwise,
- * down = 5400000). CT_OuterShadowEffect's child is the color element itself (wrapping it in
- * solidFill triggers repair). */
+/** Shadow → a:effectLst. dist/dir/blurRad are computed only here; defaults come from
+ * effectiveShadow; offset [x,y] with down positive → dist/dir clockwise, down = 5400000.
+ * CT_OuterShadowEffect's child is the color element itself (wrapping it in solidFill
+ * triggers PowerPoint repair). */
 function shadowEffectLst(theme, shadow, baseAttrs, opacity) {
   const eff = effectiveShadow(shadow);
   if (!eff) return "";
@@ -145,10 +140,9 @@ export function shadowElement(theme, shadow) {
 }
 
 /**
- * Fill → OOXML. The input is normalized by normalizeFill (single source in model/style-spec):
+ * Fill → OOXML. The input is normalized by normalizeFill (model/style-spec.js):
  *  - string (hex / $token) / legacy { color } → solid
- *  - { type:"solid", color }
- *  - { type:"gradient", gradientType, stops, angle }
+ *  - { type:"solid", color } · { type:"gradient", gradientType, stops, angle }
  *  - { type:"image", src, fit, crop, opacity } (media registered by the caller)
  * @param {number} [opacity] element-level transparency (0~1): injects a:alpha into solid/gradient colors
  */
@@ -156,11 +150,10 @@ export function buildFill(theme, fill, mediaRef = null, opacity = null) {
   fill = normalizeFill(fill);
   if (!fill) return "";
   if (fill.type === "solid") {
-    // Official SolidFill ({type:"solid", color}) — previously relied on a legacy fill.color compat branch
     return el("a:solidFill", {}, colorElement(theme, fill.color, opacity));
   }
   if (fill.type === "gradient") {
-    // a:gs pos unit = thousandths of a percent (100% = 100000), matching official PowerPoint output
+    // a:gs pos unit = thousandths of a percent (100% = 100000), matching PowerPoint output
     const stops = (fill.stops || []).map((s) =>
       el("a:gs", { pos: Math.round((s.position ?? 0) * 100000) }, colorElement(theme, s.color, opacity))
     ).join("");
@@ -175,7 +168,7 @@ export function buildFill(theme, fill, mediaRef = null, opacity = null) {
   if (fill.type === "image") {
     if (!mediaRef) return "";
     const kids = [el("a:blip", { "r:embed": mediaRef.id })];
-    // Element-level transparency (official: image transparency = a:alphaModFix inside a:blip)
+    // Element-level transparency (image transparency = a:alphaModFix inside a:blip)
     if (fill.opacity != null && fill.opacity < 1) {
       kids.push(el("a:alphaModFix", { amt: Math.round(fill.opacity * 100000) }));
     }
@@ -196,8 +189,7 @@ export function buildFill(theme, fill, mediaRef = null, opacity = null) {
       const mode = fill.fit?.mode || "cover";
       if (mode !== "fill") {
         // cover / contain (a fill context cannot express contain letterboxing, so both map to
-        // proportional cropping = cover): crop the source via srcRect so the target container is
-        // fully covered
+        // proportional cropping = cover): crop the source via srcRect to fill the container
         const size = mediaRef.size;
         const cw = mediaRef.containerW || fill.containerW || 960;
         const ch = mediaRef.containerH || fill.containerH || 540;
@@ -243,7 +235,7 @@ export function buildLn(theme, border, opacity = null) {
 }
 
 /** Shape/table shadow → a:effectLst. shadow: {blur, color, offset:[x,y]}.
- * algn="tl" matches official PowerPoint output (the default algn="b" points the shadow the wrong way). */
+ * algn="tl" matches PowerPoint output (the default algn="b" points the shadow the wrong way). */
 export function buildShadow(theme, shadow, opacity = null) {
   return shadowEffectLst(theme, shadow, { algn: "tl", rotWithShape: 0 }, opacity);
 }

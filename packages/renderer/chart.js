@@ -1,11 +1,7 @@
-// ============================================================================
 // renderer/chart.js — chart preview DOM shell (ECharts instance management)
-// ----------------------------------------------------------------------------
-// Option assembly has a single source in packages/model/chart/option/ (shared with the
-// image export, pure functions); this file only owns the positioned shell, the chart
-// frame style (fill/border/shadow ↔ the exported chartSpace spPr), and the ECharts
-// instance lifecycle.
-// ============================================================================
+// Option assembly lives in model/chart/option/ (shared with the image export, pure functions);
+// this file owns the positioned shell, the frame style (fill/border/shadow ↔ the exported
+// chartSpace spPr) and the ECharts instance lifecycle.
 
 import * as echarts from "../vendor/echarts.mjs";
 import { resolveChartSpec } from "../model/chart/spec.js";
@@ -15,7 +11,7 @@ import { colorOr } from "../model/theme.js";
 import { gradientCss } from "./gradient.js";
 import { createElementShell, boxShadowCss } from "./shell.js";
 
-/** Chart frame (official Chart.fill/border/shadow → container style, corresponding to the writer's chartSpace spPr). */
+/** Chart frame (Chart.fill/border/shadow → container style, matching the writer's chartSpace spPr). */
 function frameStyle(theme, el) {
   const st = {};
   const fill = normalizeFill(el.fill);

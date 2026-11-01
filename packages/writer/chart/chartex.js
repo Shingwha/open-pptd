@@ -1,14 +1,9 @@
-// ============================================================================
-// writer/chart/chartex.js — chartEx extension system (waterfall / treemap / sunburst)
-// PowerPoint 2016+ charts (cx: namespace):
-//   - data: cx:data > cx:strDim (one column per level, lvl from deepest to shallowest) + cx:numDim
-//   - hierarchy: treemap/sunburst use multi-level lvl (a flat table = leaf-path rows);
-//     waterfall marks total rows via cx:subtotals idx (official isTotal semantics)
-//   - series layoutId determines the type (treemap/sunburst/waterfall)
-//   - references: slide graphicData uri=chartex + cx:chart; rels type chartEx;
-//     ContentType application/vnd.ms-office.chartex+xml;
-//     xlsx named Microsoft_Excel_WorksheetN.xlsx
-// ============================================================================
+// writer/chart/chartex.js — chartEx extension system (waterfall / treemap / sunburst), cx: namespace
+// Data: cx:data > cx:strDim (one column per level, lvl deepest→shallowest) + cx:numDim.
+// Hierarchy: treemap/sunburst use multi-level lvl (a flat table holds leaf-path rows); waterfall
+// marks total rows via cx:subtotals idx. Series layoutId determines the type.
+// References: slide graphicData uri=chartex + cx:chart; rels type chartEx; ContentType
+// application/vnd.ms-office.chartex+xml; xlsx named Microsoft_Excel_WorksheetN.xlsx.
 
 import { el, esc, escAttr, xmlHeader, hexToRgbVal } from "../xml.js";
 import { resolveDataLabels, hierarchyColor, parseHexColor, parseHierarchy, resolveTreeLevels, resolveTitleLike, labelColorOn, waterfallColorOf, colLetter, CHART_DEFAULTS } from "../../model/chart.js";
@@ -18,16 +13,15 @@ import { chartSpaceSpPrXml, richCharStyleXml } from "./style.js";
 import { buildChartStyleXml, buildChartColorStyleXml } from "../chartex-style.js";
 
 /** cx character style (size/color/font; the a: segment is isomorphic with the classic c:title
- * rich — the inner character style has a single source, richCharStyleXml). The structure follows
- * the chartex schema. */
+ * rich text, sharing richCharStyleXml). */
 function cxCharStyleXml(theme, { fontSize, color, fontFamily, defaultSize }) {
   const sz = Math.round((fontSize != null ? fontSize : defaultSize) * 100);
   return { sz, inner: richCharStyleXml(theme, { color, fontFamily }) };
 }
 
 /** cx:txPr — passes through dataLabels size/color/font (treemap/sunburst tile labels).
- * Schema (CT_DataLabels sequence): txPr precedes visibility — after it, PowerPoint's lenient parsing
- * would drop it. Omitted when nothing is configured. */
+ * Schema (CT_DataLabels sequence): txPr precedes visibility, or PowerPoint's lenient parsing
+ * drops it. Omitted when nothing is configured. */
 function dataLabelsTxPrXml(theme, labels) {
   if (labels.fontSize == null && !labels.color && !labels.fontFamily) return "";
   const fonts = resolveFont(theme, labels.fontFamily || null);
@@ -48,8 +42,8 @@ function cxRichXml(theme, text, style) {
 
 /** Parent-child table → leaf-path rows ([deepest...shallowest], one column per level, shallow
  * columns padded with the shallowest value).
- *  levels: official Treemap/Sunburst.levels — the displayed level count; anything beyond aggregates
- *  to the boundary level. Node parsing / subtree sums share the preview's ECharts tree (model parseHierarchy). */
+ *  levels: Treemap/Sunburst.levels — the displayed level count; anything beyond aggregates to the
+ *  boundary level. Node parsing / subtree sums share the preview's ECharts tree (parseHierarchy). */
 export function buildHierarchyRows(el, s, maxLevels = null) {
   const { childrenOf, roots, subtreeSum } = parseHierarchy(el, s);
   const paths = [];
@@ -64,7 +58,7 @@ export function buildHierarchyRows(el, s, maxLevels = null) {
   };
   for (const root of roots) walk(root, []);
   const depth = Math.max(0, ...paths.map((x) => x.path.length));
-    // Each row: [leaf(deepest) ... root(shallowest)], shallow positions padded with the shallowest value
+  // Each row: [leaf(deepest) ... root(shallowest)], shallow positions padded with the shallowest value
   const leafRows = paths.map(({ path, value }) => {
     const rev = [...path].reverse();
     while (rev.length < depth) rev.push(rev[rev.length - 1]);
@@ -104,10 +98,8 @@ function cxNumDimXml(dimType, colLetter, values, formatCode, rowCount) {
   return `<cx:numDim type="${dimType}"><cx:f>${f}</cx:f>${lvl}</cx:numDim>`;
 }
 
-/** Per-point color cx:dataPt:
- *  <cx:dataPt idx="N"><cx:spPr><a:solidFill><a:srgbClr …/></a:solidFill></cx:spPr></cx:dataPt>
- *  HEX parsing goes through model parseHexColor (same source as the classic srgbClrXml; HEX8
- *  transparency also applies). */
+/** Per-point color cx:dataPt: <cx:dataPt idx><cx:spPr><a:solidFill><a:srgbClr …/></…>.
+ * HEX parsing goes through parseHexColor (the classic srgbClrXml source; HEX8 alpha applies). */
 function cxDataPtXml(idx, color) {
   const parsed = parseHexColor(color);
   if (!parsed) return "";
@@ -120,11 +112,10 @@ function cxDataPtXml(idx, color) {
 /**
  * treemap/sunburst fill → per-point cx:dataPt colors + per-point label colors. idx = preorder DFS
  * node numbering over the whole tree (root=0, including intermediate nodes; leaves add the
- * preceding subtree of their ancestor chain). Colors follow the official derivation rule
- * (hierarchyColor, same source as the renderer). Labels: when labels.color is unset, dark tiles
- * (decided by labelColorOn) get per-point cx:dataLabel white text — the authoritative cs:dataLabel
- * slot can only hold one color for the whole chart, so progressively darker tiles need per-point
- * overrides (schema CT_DataLabel: idx + txPr).
+ * preceding subtree of their ancestor chain). Colors follow hierarchyColor (same source as the
+ * renderer). Without labels.color, dark tiles (labelColorOn) get per-point white cx:dataLabel text
+ * because the authoritative cs:dataLabel slot holds only one color for the whole chart
+ * (schema CT_DataLabel: idx + txPr).
  */
 function buildTreePointsAndLabels(theme, s, leafRows, labels) {
   if (s.fill == null) return { dataPoints: "", pointLabels: "" };
@@ -187,8 +178,8 @@ function buildTreePointsAndLabels(theme, s, leafRows, labels) {
 }
 
 /** waterfall three-category colors → per-point cx:dataPt colors (chartEx has no per-point border;
- * border is ignored). Even without configured category colors, per-point colors are emitted
- * (waterfallColorOf's default theme palette), matching the preview. */
+ * border is ignored). Even without configured category colors, waterfallColorOf's default theme
+ * palette is emitted, matching the preview. */
 function buildWaterfallDataPoints(theme, s, rows) {
   const isTotalCol = s._cols.isTotal;
   return rows.map((r, i) => {
@@ -199,9 +190,8 @@ function buildWaterfallDataPoints(theme, s, rows) {
 }
 
 /**
- * chartEx parts (waterfall/treemap/sunburst). Input is the spec single source (resolveChartSpec
- * result; semantics — title/legend/hierarchy tree/waterfall categories — all come from model;
- * this function only projects to the cx: dialect).
+ * chartEx parts (waterfall/treemap/sunburst). Input is resolveChartSpec's result — title/legend/
+ * hierarchy tree/waterfall categories all come from the model; this function only projects to cx:.
  * @returns {{chartEx: true, xml, relsXml, xlsx, styleXml, colorsXml}} | null
  */
 export function buildChartExParts(spec, chartIndex) {
@@ -246,18 +236,17 @@ export function buildChartExParts(spec, chartIndex) {
     layoutPr = subIdx.length
       ? `<cx:layoutPr><cx:subtotals>${subIdx.map((i) => `<cx:idx val="${i}"/>`).join("")}</cx:subtotals></cx:layoutPr>`
       : `<cx:layoutPr><cx:aggregation/></cx:layoutPr>`;
-    // schema (CT_DataLabels sequence): txPr precedes visibility (written after it, PowerPoint's
-    // lenient parsing would drop the element)
+    // schema (CT_DataLabels): txPr precedes visibility
     dataLabels = labels
       ? `<cx:dataLabels pos="outEnd"><cx:visibility seriesName="0" categoryName="${labels.content === "category" ? "1" : "0"}" value="${labels.content === "value" ? "1" : "0"}"/></cx:dataLabels>`
       : "";
-    // Three-category colors (official totalBars/increaseBars/decreaseBars → per-point cx:dataPt; even
-    // without configuration, waterfallColorOf's default palette is emitted — leaving it empty would
-    // fall to PowerPoint's default green/blue/orange, mismatching the preview's theme palette)
+    // Three-category colors (totalBars/increaseBars/decreaseBars → per-point cx:dataPt; the default
+    // palette is always emitted — leaving it empty falls to PowerPoint's green/blue/orange,
+    // mismatching the preview's theme palette)
     dataPoints = buildWaterfallDataPoints(theme, s, rows);
   } else {
     // treemap / sunburst: xlsx = [level0(deepest)...levelN-1(root), size]
-    // levels (official): the displayed level count; anything beyond aggregates to the boundary level
+    // levels: displayed level count; anything beyond aggregates to the boundary level
     const maxLevels = resolveTreeLevels(s);
     const { depth, leafRows } = buildHierarchyRows(chartEl, s, maxLevels);
     if (depth === 0) return null;
@@ -276,12 +265,12 @@ export function buildChartExParts(spec, chartIndex) {
       extra: "",
     };
     layoutPr = type === "treemap" ? `<cx:layoutPr><cx:parentLabelLayout val="overlapping"/></cx:layoutPr>` : "";
-    // fill colors (official derivation → per-leaf cx:dataPoint): a single value / 1D array cycles per
-    // root and children step -10 along HSL.L per level; a 2D array is outer-by-root, inner-by-level
+    // fill colors → per-leaf cx:dataPoint: a single value / 1D array cycles per root and children
+    // step -10 along HSL.L per level; a 2D array is outer-by-root, inner-by-level
     const { dataPoints: treePts, pointLabels } = buildTreePointsAndLabels(theme, s, leafRows, labels);
     dataPoints = treePts;
-    // dataLabels (schema order: txPr → visibility → dataLabel*). With labels.color unset, dark tiles
-    // get per-point white text (labelColorOn picks by luminance) and light tiles keep the platform default dark text
+    // dataLabels (schema order: txPr → visibility → dataLabel*). Without labels.color, dark tiles
+    // get per-point white text (labelColorOn picks by luminance); light tiles keep the default dark text
     dataLabels = labels
       ? `<cx:dataLabels pos="${type === "sunburst" ? "ctr" : "inEnd"}">${dataLabelsTxPrXml(theme, labels)}<cx:visibility seriesName="0" categoryName="${labels.content === "category" ? "1" : "0"}" value="${labels.content === "value" ? "1" : "0"}"/>${pointLabels}</cx:dataLabels>`
       : "";
@@ -318,11 +307,10 @@ export function buildChartExParts(spec, chartIndex) {
     legendXml = `<cx:legend pos="${lg.ooxmlPos}" align="ctr" overlay="0">${legendTxPr}</cx:legend>`;
   }
 
-  // Axes (waterfall: category + value). Axis-title mapping: xAxis→category axis, yAxis→value axis,
-  // matching the preview's cartesianAxes; cx:title is written only when there is text (an empty
-  // element leaks the "Axis Title" placeholder). Schema (MS-ODRAWXML CT_Axis): title immediately
-  // follows scaling and precedes gridlines/tickLabels; CT_AxisTitle has no pos/align/overlay
-  // attributes (those make PowerPoint refuse to open), and the platform places it along the axis
+  // Axes (waterfall: category + value). Axis-title mapping: xAxis→category, yAxis→value, matching
+  // the preview's cartesianAxes; cx:title is written only when there is text (an empty element
+  // leaks the "Axis Title" placeholder). Schema (CT_Axis): title follows scaling and precedes
+  // gridlines/tickLabels; CT_AxisTitle has no pos/align/overlay attributes (those block opening).
   let axes = "";
   if (type === "waterfall") {
     // Effective axis-title config (resolveTitleLike, same source as classic axis/chart titles)
@@ -344,12 +332,11 @@ export function buildChartExParts(spec, chartIndex) {
       `<cx:axis id="1"><cx:valScaling/>${cxAxisTitleXml(yCfg)}<cx:majorGridlines/><cx:tickLabels/></cx:axis>`;
   }
 
-  // Series default format override (official structure: cx:fmtOvrs > fmtOvr idx=0 → accent1)
+  // Series default format override (cx:fmtOvrs > fmtOvr idx=0 → accent1)
   const fmtOvrs =
     `<cx:fmtOvrs><cx:fmtOvr idx="0"><cx:spPr><a:solidFill><a:schemeClr val="accent1"/></a:solidFill></cx:spPr></cx:fmtOvr></cx:fmtOvrs>`;
 
-  // Chart frame (official Chart.fill/border/shadow → cx:chartSpace spPr; isomorphic with the classic
-  // c:spPr and sharing chartSpaceSpPrXml)
+  // Chart frame (Chart.fill/border/shadow → cx:chartSpace spPr, isomorphic with classic c:spPr)
   const frameSpPr = chartSpaceSpPrXml(theme, chartEl, "cx");
 
   // Hidden series (waterfall total column: hidden="1" + dataId=1)
@@ -413,9 +400,8 @@ export function buildChartExParts(spec, chartIndex) {
     relsXml,
     xlsx: buildChartExXlsx(chartEl, s, type),
     // Tile-label color source = the chartStyle part's cs:dataLabel slot (PowerPoint's only effective
-    // label-color source). A configured labels.color overrides directly; otherwise the first root's
-    // level-0 tile luminance auto-selects white/default (dark tiles would have unreadable dark text).
-    // Per-point cx:dataLabel is emitted too (see buildTreePointsAndLabels) for renderers supporting it
+    // label-color source); a configured labels.color overrides directly, otherwise the first root's
+    // level-0 tile luminance auto-selects white/default. Per-point cx:dataLabel is emitted too.
     styleXml: buildChartStyleXml(labelSlotFor(theme, s, type, labels)),
     colorsXml: buildChartColorStyleXml(),
   };
@@ -423,8 +409,7 @@ export function buildChartExParts(spec, chartIndex) {
 
 /** treemap/sunburst tile-label slot override; other types return null (keep the default dark text).
  * A configured labels.color overrides directly; otherwise the text color follows the first root's
- * level-0 tile luminance (white for dark tiles, null for light tiles to keep the platform dark text);
- * a configured font size passes through. */
+ * level-0 tile luminance (white for dark tiles, null for light tiles); font size passes through. */
 function labelSlotFor(theme, s, type, labels) {
   if ((type !== "treemap" && type !== "sunburst") || !labels) return null;
   const rootColor = hierarchyColor(theme, s, 0, 0);
