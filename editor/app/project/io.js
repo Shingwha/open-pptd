@@ -129,6 +129,7 @@ export function createIo({ state, view, ops, source, ui, live = true, onSaved, o
     const deck = createDeck({ title: "未命名演示文稿" });
     deck.pages.push(createPage({ pageType: "content" }));
     ops.replaceDeck(deck);
+    ops.clearClipboard(); // a new blank document starts with an empty element clipboard
     state.theme = normalizeTheme(null);
     state.manifestPath = null;
     state.projectHandle = null;

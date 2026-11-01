@@ -84,6 +84,8 @@ export function createLoader({ state, view, ops, images, fontManager, source, ui
    * the OS folder picker), null = URL mode.
    */
   function applyDeck(manifestText, pageFiles, { manifestPath = "", handle = null, projectName = "", revision = null } = {}) {
+    // A new document invalidates the element clipboard (it must not paste across projects)
+    ops.clearClipboard();
     applyDeckToState(
       { manifestText, pageFiles, manifestPath, handle, projectName, revision },
       { state, ops, images, renderStatusBar, setBrandFile, applyTheme }

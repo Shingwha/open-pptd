@@ -23,6 +23,7 @@ const IDS = {
   pageThumbs: "page-thumbs",
   pageCount: "page-count",
   addList: "add-list",
+  selActions: "sel-actions",
   zoomCtl: "zoom-ctl",
   zoomLabel: "zoom-label",
   brandFile: "brand-file",

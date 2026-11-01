@@ -65,6 +65,24 @@ const ADD_CONTROLS =
   `<div id="add-list" class="add-list" hidden></div>`;
 
 /**
+ * Editor-only selection action bar (W1): copy / duplicate / delete. Positioned by
+ * interaction/canvas.js above the selection; hidden without a selection, while a
+ * content editor is open and while presenting. W2 restyles it.
+ */
+const SEL_ACTIONS =
+  `<div id="sel-actions" class="sel-actions" hidden>` +
+  `<button type="button" class="sel-action" data-action="copy" title="复制 (Ctrl+C)" aria-label="复制">` +
+  `<svg viewBox="0 0 24 24"><rect x="6" y="4.5" width="12" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9.5 4.5V3.5h5v1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 10h6M9 14h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>` +
+  `</button>` +
+  `<button type="button" class="sel-action" data-action="duplicate" title="重复 (Ctrl+D)" aria-label="重复">` +
+  `<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M15 9V5.8A1.8 1.8 0 0 0 13.2 4H5.8A1.8 1.8 0 0 0 4 5.8v7.4A1.8 1.8 0 0 0 5.8 15H9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>` +
+  `</button>` +
+  `<button type="button" class="sel-action" data-action="delete" title="删除 (Delete)" aria-label="删除">` +
+  `<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5.2A1.2 1.2 0 0 1 10.2 4h3.6A1.2 1.2 0 0 1 15 5.2V7M6.5 7l.9 12.2A1.6 1.6 0 0 0 9 20.7h6a1.6 1.6 0 0 0 1.6-1.5L17.5 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>` +
+  `</button>` +
+  `</div>`;
+
+/**
  * Full editor shell (the only editing chrome: topbar / workspace / thumbnail bar).
  * @returns {string} HTML to render into the mount point
  */
@@ -109,6 +127,7 @@ export function editorSkeletonHtml() {
     `<div id="canvas-wrap" class="canvas-wrap">` +
     `<div id="canvas" class="canvas"></div>` +
     `<div id="canvas-loading" class="canvas-loading"></div>` +
+    SEL_ACTIONS +
     `</div>` +
     ADD_CONTROLS +
     `</main>` +

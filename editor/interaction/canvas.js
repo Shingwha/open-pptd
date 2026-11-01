@@ -41,6 +41,8 @@ export function createCanvasController(canvas, opts) {
     select,            // (id, mode) => void
     selectMany,        // (ids, mode) => void
     deleteSelected,    // keyboard Delete/Backspace
+    copySelected,      // selection action bar: copy (api clipboard)
+    duplicateSelected, // selection action bar: duplicate
   } = opts;
 
   const { overlayGeom, layoutElementOf } = coords;
@@ -59,6 +61,77 @@ export function createCanvasController(canvas, opts) {
   const elements = () => getPage().elements || [];
   const findElement = (id) => elements().find((el) => el.elementId === id);
   const nodeBy = (id) => canvas.querySelector(`[data-element-id="${CSS.escape(id)}"]`);
+
+  // --------------------------------------------------------------------------
+  // Selection action bar (W1): markup in skeleton.js (#sel-actions lives in the
+  // canvas wrap so it follows panning). It exposes copy / duplicate / delete and
+  // is positioned above the selection box; hidden without a selection, while a
+  // content editor is open and while presenting. W2 owns the visual redesign.
+  // --------------------------------------------------------------------------
+  let barBound = false;
+  function selActionsEl() {
+    const bar = wrapLayer.querySelector("#sel-actions");
+    if (!bar) return null;
+    if (!barBound) {
+      barBound = true;
+      // The bar is floating chrome, not a canvas gesture: stop the event before it
+      // reaches the stage router (which also lists #sel-actions in FLOATING).
+      bar.addEventListener("pointerdown", (e) => e.stopPropagation(), { signal: ac.signal });
+      bar.addEventListener(
+        "click",
+        (e) => {
+          const btn = e.target.closest?.("[data-action]");
+          if (!btn) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const action = btn.dataset.action;
+          if (action === "copy") copySelected?.();
+          else if (action === "duplicate") duplicateSelected?.();
+          else if (action === "delete") deleteSelected?.();
+        },
+        { signal: ac.signal }
+      );
+    }
+    return bar;
+  }
+
+  function hideSelActions() {
+    const bar = selActionsEl();
+    if (bar) bar.hidden = true;
+  }
+
+  /** Place the bar 12px above the selection box; flip below when short of room and clamp into the stage. */
+  function syncSelActions() {
+    const bar = selActionsEl();
+    if (!bar) return;
+    const picked = getSelectedElements ? getSelectedElements() : [];
+    // Content editors are modal dialogs on document.body; only their mask is global.
+    const editing = !!document.querySelector(".dialog-overlay");
+    const presenting = !!canvas.closest(".pptd-presenting-hidden");
+    if (!box || picked.length === 0 || editing || presenting) {
+      bar.hidden = true;
+      return;
+    }
+    bar.hidden = false; // unhide first: offsetWidth/offsetHeight are read synchronously below
+    const stage = canvas.closest(".stage") || wrapLayer.parentElement;
+    const stageRect = stage.getBoundingClientRect();
+    const wrapRect = wrapLayer.getBoundingClientRect();
+    const boxRect = box.getBoundingClientRect();
+    const gap = 8; // minimum distance to the stage edge
+    const margin = 12; // gap to the selection box
+    const w = bar.offsetWidth;
+    const h = bar.offsetHeight;
+    // Wrap-relative coordinates: the wrap carries the pan transform, so panning needs no re-sync
+    let left = boxRect.left - wrapRect.left + boxRect.width / 2 - w / 2;
+    let top = boxRect.top - wrapRect.top - h - margin;
+    const viewLeft = stageRect.left - wrapRect.left;
+    const viewTop = stageRect.top - wrapRect.top;
+    if (top < viewTop + gap) top = boxRect.bottom - wrapRect.top + margin; // no room above: below the selection
+    left = Math.min(Math.max(left, viewLeft + gap), Math.max(viewLeft + gap, viewLeft + stage.clientWidth - gap - w));
+    top = Math.min(Math.max(top, viewTop + gap), Math.max(viewTop + gap, viewTop + stage.clientHeight - gap - h));
+    bar.style.left = `${Math.round(left)}px`;
+    bar.style.top = `${Math.round(top)}px`;
+  }
 
   /** Selection → affected elements (one entry per selected element; group shells are inert). */
   function selectionUnits() {
@@ -134,7 +207,10 @@ export function createCanvasController(canvas, opts) {
     memberNodes = [];
     sizeBadge = null;
     const { picked, members } = selectionUnits();
-    if (picked.length === 0) return;
+    if (picked.length === 0) {
+      hideSelActions();
+      return;
+    }
 
     overlay = document.createElement("div");
     overlay.className = "sel-overlay";
@@ -208,6 +284,7 @@ export function createCanvasController(canvas, opts) {
       node.style.height = `${mg.height}px`;
       node.style.transform = el.rotation ? `rotate(${el.rotation}deg)` : "";
     }
+    syncSelActions();
   }
 
   /** Show W×H (resize) or the angle (rotate) while a gesture is in progress. */
@@ -222,6 +299,7 @@ export function createCanvasController(canvas, opts) {
   // Marquee selection: drag on blank canvas
   // --------------------------------------------------------------------------
   function startMarquee(e) {
+    hideSelActions(); // the in-progress marquee owns the canvas; refreshSelection restores it on release
     const cr = canvas.getBoundingClientRect();
     marquee = {
       cr,
@@ -649,6 +727,7 @@ export function createCanvasController(canvas, opts) {
   function destroy() {
     ac.abort();
     cancelMarquee();
+    hideSelActions();
     window.removeEventListener("pointermove", onDragMove);
     window.removeEventListener("pointerup", onDragEnd);
     window.removeEventListener("pointercancel", onDragEnd);

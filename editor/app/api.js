@@ -12,6 +12,8 @@
 //     getSelected / getSelection / getSelectedElements / isSelected /
 //     beginChange / endChange / refreshPreview / moveSelected / resizeSelected /
 //     rotateSelected / deleteSelected / undo / redo
+//   clipboard          copySelected / cutSelected / pasteClipboard /
+//                      duplicateSelected / hasClipboard / getClipboardCount
 //   content            openTextEditor / openTableEditor / openChartEditor /
 //                      updateSelected / openEditor (canvas double-click alias)
 //   page ops           addText / addTable / addChart / insertPage / deletePage /
@@ -20,7 +22,7 @@
 //   navigation/view    goToPage / nextPage / prevPage / zoomIn / zoomOut /
 //                      zoomReset / present / reload
 // Removed capabilities (no compat layer): group/ungroup, align/distribute,
-// moveLayer/edge, clipboard, duplicate, page duplicate/batch.
+// moveLayer/edge, page duplicate/batch.
 //
 // Selection model: writes go through the ops here; reads go through
 // getSelected / getSelection / getSelectedElements / isSelected. Editor modules
@@ -173,6 +175,30 @@ export function createEditorApi({ state, page, selected, primarySelectedId, sele
       ops.deleteSelected();
       render();
     },
+
+    // ---- clipboard (instance-local; deep copies, no system clipboard) ----
+    /** Copy the selection; returns the copied count (no deck change, no undo step). */
+    copySelected: () => ops.copySelected(),
+    /** Copy + delete as one undo step; returns the cut count. */
+    cutSelected() {
+      const count = ops.cutSelected();
+      if (count > 0) render();
+      return count;
+    },
+    /** Paste into the current page as one undo step; returns the new element ids. */
+    pasteClipboard(opts) {
+      const ids = ops.pasteClipboard(opts);
+      if (ids.length > 0) render();
+      return ids;
+    },
+    /** Duplicate the selection (+16px) without touching the user clipboard. */
+    duplicateSelected() {
+      const ids = ops.duplicateSelected();
+      if (ids.length > 0) render();
+      return ids;
+    },
+    hasClipboard: () => ops.hasClipboard(),
+    getClipboardCount: () => ops.getClipboardCount(),
     undo() {
       io?.applyHistory(state.history.undo(state.deck));
     },
