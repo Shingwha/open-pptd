@@ -6,12 +6,12 @@
 //   1. poster-six-tea-types (1 page, 97 elements): refreshPreview ×10 (p50/p95),
 //      full render (all thumbnails), duplicate+undo ×5, DOM nodes, getBoundingClientRect
 //      calls during a canvas-only refresh (must be 0 after the DOM-measure removal).
-//   2. qingshan-coffee-review-12p (12 pages): page switch (thumbs "none"), full render
+//   2. business-review-7p (7 pages): page switch (thumbs "none"), full render
 //      (thumbs "all"), one content edit (thumbs "current"). A MutationObserver on the
 //      thumbnail strip counts which cards were repainted, proving the incremental path.
 //
 // Thresholds (this machine, headless Chrome, 1440×900): six-tea canvas p50 ≤ 20ms /
-// p95 ≤ 30ms; six-tea full ≤ 60ms; qingshan full ≤ 80ms; qingshan page switch ≤ 40ms.
+// p95 ≤ 30ms; six-tea full ≤ 60ms; business-review full ≤ 40ms; page switch ≤ 30ms.
 // No Chrome → SKIP + exit 0.
 
 import { spawn } from "node:child_process";
@@ -23,7 +23,8 @@ import { connectCdp } from "../../packages/renderer/headless/cdp.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const SIX_TEA = join(ROOT, "examples", "poster-six-tea-types");
-const QINGSHAN = join(ROOT, "examples", "qingshan-coffee-review-12p");
+const BUSINESS_REVIEW = join(ROOT, "examples", "business-review-7p");
+const REVIEW_PAGES = 7;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 let CHROME;
@@ -266,7 +267,7 @@ async function waitPainted(cdp, expected, timeoutMs = 3000) {
 // run
 // ---------------------------------------------------------------------------
 let sixTea = null;
-let qingshan = null;
+let review = null;
 
 try {
   sixTea = await withProject(
@@ -311,15 +312,15 @@ try {
     }
   );
 
-  qingshan = await withProject(
+  review = await withProject(
     {
-      label: "青山咖啡 12 页",
-      root: QINGSHAN,
+      label: "远川经营复盘 7 页",
+      root: BUSINESS_REVIEW,
       port: 9348,
       readyJs: `(() => {
         const api = window.__pptdEditor;
-        return !!api && api.state.deck?.pages?.length === 12 &&
-          document.querySelectorAll("#page-thumbs .thumb").length === 12 &&
+        return !!api && api.state.deck?.pages?.length === ${REVIEW_PAGES} &&
+          document.querySelectorAll("#page-thumbs .thumb").length === ${REVIEW_PAGES} &&
           api.state.pagesPending?.size === 0 &&
           document.fonts?.status === "loaded" &&
           !document.querySelector("#page-thumbs .thumb-canvas:empty");
@@ -335,11 +336,11 @@ try {
       const switchStats = await cdp.evalJs(SNIPPET_STATS);
 
       await cdp.evalJs(SNIPPET_WARM_FULL);
-      await waitPainted(cdp, 12); // let the warmup's deferred batch finish
+      await waitPainted(cdp, REVIEW_PAGES); // let the warmup's deferred batch finish
       await waitQuiet(cdp);
       await cdp.evalJs(SNIPPET_RESET_STATS);
       const full = await cdp.evalJs(SNIPPET_FULL);
-      const fullStats = await waitPainted(cdp, 12);
+      const fullStats = await waitPainted(cdp, REVIEW_PAGES);
       await waitQuiet(cdp);
 
       await cdp.evalJs(SNIPPET_RESET_STATS);
@@ -362,9 +363,9 @@ const canvasP95 = percentile(sixTea.canvas.samples, 95);
 const dupP50 = percentile(sixTea.dupUndo.samples, 50);
 const dupP95 = percentile(sixTea.dupUndo.samples, 95);
 const fullP50 = percentile(sixTea.full.samples, 50);
-const switchP50 = percentile(qingshan.switchRun.samples, 50);
-const switchP95 = percentile(qingshan.switchRun.samples, 95);
-const qFullP50 = percentile(qingshan.full.samples, 50);
+const switchP50 = percentile(review.switchRun.samples, 50);
+const switchP95 = percentile(review.switchRun.samples, 95);
+const reviewFullP50 = percentile(review.full.samples, 50);
 
 console.log("\n=== 六茶海报（1 页 97 元素）===");
 console.log(`refreshPreview ×10      p50 ${fmt(canvasP50)}  p95 ${fmt(canvasP95)}   [${fmtList(sixTea.canvas.samples)}]`);
@@ -376,31 +377,36 @@ console.log(`refreshPreview 内 getBoundingClientRect 调用  ${sixTea.canvas.gb
 console.log(`重画卡片数              refreshPreview ${sixTea.canvasStats.painted} / dup+undo ${sixTea.dupStats.painted} / 全量 ${sixTea.fullStats.painted}`);
 console.log(`元素数（dup+undo 后应回到 ${sixTea.dupUndo.baseline}）  ${sixTea.dupUndo.after}`);
 
-console.log("\n=== 青山咖啡（12 页）===");
-console.log(`切页 ×10                p50 ${fmt(switchP50)}  p95 ${fmt(switchP95)}   [${fmtList(qingshan.switchRun.samples)}]`);
-console.log(`全量渲染（thumbs all）×3 p50 ${fmt(qFullP50)}   [${fmtList(qingshan.full.samples)}]`);
-console.log(`内容编辑 duplicate      ${fmt(qingshan.edit.duplicateMs)}   undo ${fmt(qingshan.edit.undoMs)}`);
-console.log(`缩略图 DOM 节点          ${qingshan.full.nodes}（${qingshan.full.thumbs} 卡）`);
-console.log(`缩略图补齐（含 rAF 分批）  ${qingshan.fullStats.ms}ms`);
+console.log("\n=== 远川经营复盘（7 页）===");
+console.log(`切页 ×10                p50 ${fmt(switchP50)}  p95 ${fmt(switchP95)}   [${fmtList(review.switchRun.samples)}]`);
+console.log(`全量渲染（thumbs all）×3 p50 ${fmt(reviewFullP50)}   [${fmtList(review.full.samples)}]`);
+console.log(`内容编辑 duplicate      ${fmt(review.edit.duplicateMs)}   undo ${fmt(review.edit.undoMs)}`);
+console.log(`缩略图 DOM 节点          ${review.full.nodes}（${review.full.thumbs} 卡）`);
+console.log(`缩略图补齐（含 rAF 分批）  ${review.fullStats.ms}ms`);
 console.log(
-  `重画卡片数              切页 ${qingshan.switchStats.painted} / 全量 ${qingshan.fullStats.painted} / 编辑 ${qingshan.editStats.painted}` +
-    `（新增 .thumb-item 节点 ${qingshan.switchStats.addedThumbs}/${qingshan.fullStats.addedThumbs}/${qingshan.editStats.addedThumbs}）`
+  `重画卡片数              切页 ${review.switchStats.painted} / 全量 ${review.fullStats.painted} / 编辑 ${review.editStats.painted}` +
+    `（新增 .thumb-item 节点 ${review.switchStats.addedThumbs}/${review.fullStats.addedThumbs}/${review.editStats.addedThumbs}）`
 );
 
 console.log("\n=== 阈值 ===");
 check("六茶 refreshPreview p50 ≤ 20ms", canvasP50, canvasP50 <= 20, fmt(canvasP50));
 check("六茶 refreshPreview p95 ≤ 30ms", canvasP95, canvasP95 <= 30, fmt(canvasP95));
 check("六茶全量渲染 ≤ 60ms", fullP50, fullP50 <= 60, fmt(fullP50));
-check("青山全量渲染 ≤ 80ms", qFullP50, qFullP50 <= 80, fmt(qFullP50));
-check("青山切页 ≤ 40ms", switchP50, switchP50 <= 40, fmt(switchP50));
+check("远川复盘全量渲染 ≤ 40ms", reviewFullP50, reviewFullP50 <= 40, fmt(reviewFullP50));
+check("远川复盘切页 ≤ 30ms", switchP50, switchP50 <= 30, fmt(switchP50));
 check("六茶 refreshPreview 无 getBoundingClientRect", sixTea.canvas.gbr, sixTea.canvas.gbr === 0, `${sixTea.canvas.gbr} 次`);
 check("六茶 refreshPreview 不重画缩略图", sixTea.canvasStats.painted, sixTea.canvasStats.painted === 0, `${sixTea.canvasStats.painted} 张`);
 check("六茶 duplicate+undo 只重画当前卡", sixTea.dupStats.painted, sixTea.dupStats.painted === 1, `${sixTea.dupStats.painted} 张`);
 check("六茶全量重建 1 张缩略图", sixTea.fullStats.painted, sixTea.fullStats.painted === sixTea.full.thumbs, `${sixTea.fullStats.painted} 张`);
-check("青山切页不重画缩略图", qingshan.switchStats.painted, qingshan.switchStats.painted === 0, `${qingshan.switchStats.painted} 张`);
-check("青山全量重建 12 张缩略图", qingshan.fullStats.painted, qingshan.fullStats.painted === qingshan.full.thumbs, `${qingshan.fullStats.painted} 张`);
-check("青山内容编辑只重画当前卡", qingshan.editStats.painted, qingshan.editStats.painted === 1, `${qingshan.editStats.painted} 张`);
-check("青山 duplicate+undo 回到基线元素数", qingshan.edit.after, qingshan.edit.after === qingshan.edit.baseline, `${qingshan.edit.after}/${qingshan.edit.baseline}`);
+check("远川复盘切页不重画缩略图", review.switchStats.painted, review.switchStats.painted === 0, `${review.switchStats.painted} 张`);
+check(
+  `远川复盘全量重建 ${REVIEW_PAGES} 张缩略图`,
+  review.fullStats.painted,
+  review.fullStats.painted === review.full.thumbs,
+  `${review.fullStats.painted} 张`
+);
+check("远川复盘内容编辑只重画当前卡", review.editStats.painted, review.editStats.painted === 1, `${review.editStats.painted} 张`);
+check("远川复盘 duplicate+undo 回到基线元素数", review.edit.after, review.edit.after === review.edit.baseline, `${review.edit.after}/${review.edit.baseline}`);
 check("六茶 dup+undo 回到基线元素数", sixTea.dupUndo.after, sixTea.dupUndo.after === sixTea.dupUndo.baseline, `${sixTea.dupUndo.after}/${sixTea.dupUndo.baseline}`);
 
 if (failures.length) {
