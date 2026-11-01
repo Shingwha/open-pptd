@@ -54,4 +54,21 @@
 
 ## 前置上下文
 
-待 W3a 合并后补：行号基线、并行分组、当前 e2e/截图命令、稳定区、已知坑。
+- 必读：`ref/repo-map.md` → `handoff/W3a-a-worker.md`、`W3a-b-worker.md` → 本工单。
+- 基线命令（每路开工先跑，贴真实输出）：`node tests/run-all.mjs`（39/39）；`node tests/regression/dep-graph.mjs`；`node tests/contract/public-api.mjs`。
+- 分支起点 = main `1683d34`（W3a 已合并）；4 路并行，文件不相交：
+  - **A**：`packages/model/**`（排除 `mathml2omml.js`、`vendor/**`、`preset-geometry.data.js`）、`packages/measure/**`、`packages/layout/**`
+  - **B**：`packages/writer/**`、`packages/renderer/**`
+  - **C**：`packages/runtime/**`、`packages/export/**`、`packages/server/**`、`packages/cli/**`、`packages/paths.js`、`packages/config.js`、`packages/index.js`、`packages/*/index.js`
+  - **D**：`editor/**`、`bin/**`
+  - **E（第二批）**：`scripts/**`、`tests/**`（不含 `tests/fixtures/**`、`tests/golden/**`、`tests/projects/**` 的数据文件）
+- 当前注释体量：约 8,488 注释行/44,580 行（19%）；TOP 冗长文件见 survey：`theme-library/theme/table/chartex/text/source/theme.js/canvas/design-panel/main/shoot/icon-fa/view/theme-presets/preview/runtime-source/export-index/font-registry/font.js/paths/runtime-node/writer-font/table/gallery/excel-grid/chart-layout/style-spec/provider`。
+- 规则（逐条执行）：
+  1. 文件头 3–6 行：`<path> — <purpose>` + 必要不变量/约束；删除 `// ====` 长横线、设计推导长文、历史 wave/spec/契约编号复述（`W\d`、`RP-C`、`M[1-6]`、`spec 09`、`editor-ux §`、`D\d+`、`contract [45]`）；barrel 可保留一行 `Contract 3.0 entry`。
+  2. 保留公共/跨模块函数 JSDoc、contract typedef、复杂算法说明（表格度量/rowSpan、布局、zip/OOXML、图表路由、PNG backend、安全/原子写约束）、excel-grid opts 清单。
+  3. 删除逐行复述代码的行内注释与 “step 1/2/3” 叙述；保留非显然的 why/约束单行。
+  4. 不改任何代码/字符串/类型/缩进逻辑；CSS 只改注释不改声明。
+  5. 不用正则批量删可能误伤代码；逐文件处理；每个 .js/.mjs 改完 `node --check`。
+- 允许改：本组文件 + `handoff/W3b-{a,b,c,d,e}-worker.md`。禁止改其他组文件、`contract.json`、`package.json`、`tests/run-all.mjs`、`skill/**`、`tests/golden|fixtures|projects` 数据。
+- 门禁：`git diff -U0` 只含注释行/空行（代码行零变化）；`run-all` 39/39；dep-graph/contract；全组 marker 扫描无历史编号、无 >20 行 banner、无与代码不符的过期说明。
+- 交接：每路 50–70 行 A/B/C；lead 按 A→B→C→D 合并（文件不相交），E 第二批。
