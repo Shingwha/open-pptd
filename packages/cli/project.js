@@ -1,12 +1,9 @@
-// ============================================================================
 // cli/project.js — Node project adapter shared by build / check / resources
-// ----------------------------------------------------------------------------
 // One place that turns a manifest path into the runtime Project + ResourceProvider:
-//   loadProjectFiles(manifest)  sync read (regression helpers keep the historical shape)
+//   loadProjectFiles(manifest)  sync read (regression helpers use this shape)
 //   prepareProject(manifest)    async read with media bytes (export path)
 //   captureSink()               file sink that also keeps the last bytes (tests/CLI)
 // Runtime owns parsing/resolution; this file only does Node disk IO.
-// ============================================================================
 
 import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
@@ -15,7 +12,7 @@ import { createProject } from "../runtime/index.js";
 
 /**
  * Read the manifest plus all page files (shared by regression/layout consumers).
- * Delegates to the runtime disk source; the returned shape is the historical one.
+ * Delegates to the runtime disk source; returns the shape regression helpers expect.
  * @param {string} manifest .pptd file path
  * @returns {{ manifestText: string, manifestObj: object, deckDir: string, pageFiles: Map<string,string> }}
  */

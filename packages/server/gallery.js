@@ -1,20 +1,9 @@
-// ============================================================================
 // server/gallery.js — gallery index scan (YAML via js-yaml, same as model)
-// ----------------------------------------------------------------------------
-// Scans every project folder under examples/ (examples/<id>/deck.pptd + pages/
-// + media/) and builds gallery entries. The same scan serves two consumers:
-//   1. local serve: GET /examples/manifest.json generated on the fly (drop a
-//      folder in and it appears, always up to date)
-//   2. release script `node scripts/gen-gallery-manifest.mjs`: writes the static
-//      examples/manifest.json (for GitHub Pages)
-// Entry facts are extracted from the project itself where possible
-// (title/fonts/pages/size) without requiring extra metadata; an optional
-// examples/<id>/meta.yaml adds description/tags/kind:
-//   title: display title (defaults to deck.title)
-//   description: one-line description
-//   tags: comma-separated tags (scenario/capability, e.g. academic defense, chart, formula)
-//   kind: work type, set explicitly (ppt default / poster); the gallery tabs by it
-// ============================================================================
+// Scans every project folder under examples/ (examples/<id>/deck.pptd + pages/ + media/)
+// and builds gallery entries. The same scan serves the on-the-fly local
+// GET /examples/manifest.json and the static examples/manifest.json written for GitHub
+// Pages. Entry facts come from the project itself (title/fonts/pages/size); an optional
+// examples/<id>/meta.yaml adds description/tags/kind (kind: ppt default | poster).
 
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";

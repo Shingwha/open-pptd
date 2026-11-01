@@ -1,17 +1,9 @@
-// ============================================================================
 // cli/download.js — per-file downloader (fonts / icons), atomic writes to home
-// ----------------------------------------------------------------------------
-// Contract 5 concurrency atomicity:
-//   · write target is home (single write level): `~/.open-pptd/assets/{fonts,icons}`
-//   · write `tmp/<random>.part` first → same-volume `rename()` (paths.atomicWriteFile)
-//   · fonts verify transport completeness (Content-Length) + sfnt magic; the registry
-//     `size` is advisory only (upstream re-releases change otherwise valid bytes);
-//     icons keep the SVG structure check
-//   · concurrency 6, two-stage timeouts (connect 10s / body 60s [fonts] · 30s [icons]) kept
-//
-// This module is the **fallback path** for `assets sync` (when the release zip is
-// missing); human progress goes to stderr so `assets sync --json` keeps stdout clean.
-// ============================================================================
+// Fallback path for `assets sync` when the release zip is missing; human progress goes
+// to stderr so `assets sync --json` keeps stdout clean. Writes target home through
+// paths.atomicWriteFile (tmp/*.part → same-volume rename), so a concurrent reader never
+// sees a partial file. Concurrency 6; two-stage timeouts (connect 10s / body 60s fonts ·
+// 30s icons). Fonts verify Content-Length + sfnt magic; icons check SVG shape.
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";

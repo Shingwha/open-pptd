@@ -1,17 +1,9 @@
-// ============================================================================
 // cli/resource-status.js — resource readiness (three-level read + sfnt header check)
-// ----------------------------------------------------------------------------
-// The "✓/✗" rule:
-//   font ready = the file is found in a candidate root (home → package) **and**
-//   starts with a valid sfnt magic. Atomic downloads (tmp → rename) never expose a
-//   partial file, so a byte-length comparison against the registry is unnecessary
-//   and fragile: the registry `size` is a generation-time snapshot, while upstream
-//   re-releases change the length of an otherwise valid font. Export still parses
-//   the font when embedding, which is the authoritative integrity gate.
-// The registry (registry.json) is always read from the package (version-coupled) and
-// is separate from the bytes dir, so this file reads the registry from PACKAGE_ROOT
-// only; byte existence goes through paths.resolveResourceFile (three-level read).
-// ============================================================================
+// font ready = found in a candidate root (home → package) AND valid sfnt magic. Atomic
+// downloads never expose a partial file, so byte-length comparison is unnecessary/fragile:
+// the registry `size` is a generation-time snapshot, while upstream re-releases change the
+// length of an otherwise valid font (export parses the font when embedding, the final gate).
+// The registry always reads from the package (version-coupled); bytes use the three-level read.
 
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";

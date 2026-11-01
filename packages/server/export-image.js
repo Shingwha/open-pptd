@@ -1,27 +1,9 @@
-// ============================================================================
 // server/export-image.js — image export endpoint (capture backend over ExportService)
-// ----------------------------------------------------------------------------
-//   GET  /api/export-image   capability probe: is a usable Chrome/Edge present
-//                            (404 semantics otherwise)
-//   POST /api/export-image   body = snapshot of the current editing state
-//                            (serialized PPTD files + media/fonts bytes),
-//                            materialized into a temp dir as a complete project,
-//                            then rendered through ExportService format=png with
-//                            the headless RenderBackend; base64 PNGs in JSON.
-//
-// W9: the endpoint keeps its request body / security checks / response shape, but
-// no longer drives shoot.js page-by-page itself — page selection, scale, naming
-// and the report belong to packages/export, rasterization to
-// renderer/headless/backend.js (the same path CLI `render` uses).
-//
-// Design notes:
-//   · Editing-state semantics: the browser serializes the **current editing state**
-//     (possibly with unsaved changes) and sends it, instead of letting the server
-//     read .pptd from disk — consistent with the old foreignObject export (what you
-//     export is what you see).
-//   · All temp files are removed in finally; the body has a size cap; write paths are
-//     traversal-checked; Origin (when present) must be loopback.
-// ============================================================================
+// GET /api/export-image probes for a usable Chrome/Edge; POST takes a snapshot of the
+// current editing state (serialized PPTD files + media/fonts bytes), materializes it as a
+// temp project and renders it through ExportService format=png with the headless
+// RenderBackend, returning base64 PNGs (what you export is what you see, unsaved changes
+// included). Temp files are removed in finally; body capped; paths and Origin checked.
 
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";

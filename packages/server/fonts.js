@@ -1,14 +1,9 @@
-// ============================================================================
 // server/fonts.js — /api/fonts (local global font library API, Node-only)
-// ----------------------------------------------------------------------------
-//   GET    /api/fonts                    list built-in + user fonts
-//   GET    /api/fonts?key=<key>          read one entry (also ?family=)
-//   POST   /api/fonts                    import {base64|url, family, key, file, license, subset}
-//   DELETE /api/fonts?key=<key>          remove a user font (built-ins/system are read-only)
-//
-// Security: loopback-only, JSON body limit, basename/safe-file validation in the
-// library; all errors are JSON {ok:false,error:{code,message}}.
-// ============================================================================
+//   GET    /api/fonts               list built-in + user fonts
+//   GET    /api/fonts?key=<key>     read one entry (also ?family=)
+//   POST   /api/fonts               import {base64|url, family, key, file, license, subset}
+//   DELETE /api/fonts?key=<key>     remove a user font (built-ins/system are read-only)
+// Security: loopback-only, JSON body limit, basename/safe-file validation; errors are JSON.
 
 import { FontLibraryError } from "../model/font-library.js";
 import { createFileFontLibrary } from "./font-library.js";

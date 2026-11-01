@@ -1,14 +1,9 @@
-// ============================================================================
 // cli/build.js — `build`: the only artifact-producing command
-// ----------------------------------------------------------------------------
-// Formats: pptx (default) | png | bundle — all go through ExportService, which
-// runs the full checkProject gate first (errors block, warnings are soft unless
-// --strict) and owns writer/zip/naming. This file is the Node adapter only:
-//   · disk project + fs/registry ResourceProvider + file sink
-//   · headless RenderBackend for png (Chrome/Edge required)
-//   · optional font completion (--fetch) and theme-library snapshots (--theme)
-// Human text goes to stderr; stdout carries a single JSON line only with --json.
-// ============================================================================
+// Formats: pptx (default) | png | bundle — all go through ExportService, which runs the full
+// checkProject gate (errors block, warnings soft unless --strict) and owns writer/zip/naming.
+// This file is the Node adapter only: disk project + fs/registry ResourceProvider + sink,
+// the headless RenderBackend for png, optional font completion (--fetch) and theme snapshots
+// (--theme). Human text goes to stderr; --json emits a single JSON line on stdout.
 
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";

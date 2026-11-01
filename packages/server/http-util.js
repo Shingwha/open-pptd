@@ -1,13 +1,9 @@
-// ============================================================================
 // server/http-util.js — shared Node HTTP helpers for the local API endpoints
-// ----------------------------------------------------------------------------
-// One implementation of the loopback guard, JSON response/error shaping and
-// capped body readers used by /api/{save,export-image,themes,fonts}.
-//
+// One implementation of the loopback guard, JSON response/error shaping and capped body
+// readers used by /api/{save,export-image,themes,fonts}:
 //   sendJson/sendError  JSON responses (no-store; optional extra headers)
 //   readJsonBody        JSON body (drains past the cap so a 413 can still be sent)
 //   readBody            raw UTF-8 body (aborts the request when over the cap)
-// ============================================================================
 
 /** Loopback check for the local-only library APIs. */
 export function isLoopback(req) {
@@ -70,7 +66,7 @@ export function readJsonBody(req, limit) {
 
 /**
  * Read a raw UTF-8 body, aborting the request when over `limit`. `status` (when
- * given) is attached to the rejection so callers can keep their historical codes.
+ * given) is attached to the rejection so callers can keep their status code.
  */
 export function readBody(req, { limit, status } = {}) {
   return new Promise((resolve, reject) => {

@@ -1,16 +1,9 @@
-// ============================================================================
 // server/themes.js — /api/themes (local theme library API, Node-only)
-// ----------------------------------------------------------------------------
-//   GET    /api/themes                 list built-in + user themes
-//   GET    /api/themes?id=<id>         read one theme; &export=1 returns JSON text
-//   POST   /api/themes                 save {theme} | import {action:"import",json}
-//                                      | export {action:"export",id}
-//   PUT    /api/themes?id=<id>         save (id from query when the body has none)
-//   DELETE /api/themes?id=<id>         delete a user theme (built-ins are read-only)
-//
-// Security: loopback-only, JSON body limit, ids validated by the store before any
-// path is built; every error is JSON {ok:false,error:{code,message}}.
-// ============================================================================
+// GET /api/themes lists; GET ?id= reads (&export=1 returns JSON text).
+// POST saves {theme}, imports {action:"import",json} or exports {action:"export",id};
+// PUT saves (id from query when the body has none); DELETE removes a user theme.
+// Built-ins are read-only. Security: loopback-only, JSON body limit, ids validated by
+// the store before any path is built; every error is JSON {ok:false,error:{code,message}}.
 
 import { ThemeError } from "../model/theme-library.js";
 import { createFileThemeStore } from "./theme-store.js";

@@ -1,10 +1,7 @@
-// ============================================================================
 // cli/errors.js — coded CLI errors + stdout JSON helpers
-// ----------------------------------------------------------------------------
 // Every command reports failures (human stderr or `{ok:false,error:{code,message}}`
 // on stdout with --json) and exits non-zero. Codes are stable strings consumed by
 // agents/tests; messages stay human-facing.
-// ============================================================================
 
 /** Coded CLI error. */
 export class CliError extends Error {

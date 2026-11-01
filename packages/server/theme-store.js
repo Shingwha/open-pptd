@@ -1,14 +1,9 @@
-// ============================================================================
 // server/theme-store.js — Node storage adapter for the theme library (Node-only)
-// ----------------------------------------------------------------------------
-// User themes: <home>/themes/<id>.json (default ~/.open-pptd/themes, theme-font.md
-// §8). The pure factory (model/theme-library.js) owns list/read/save/import/export
-// semantics; this file only does file IO:
-//   · file-per-theme JSON, UTF-8, pretty-printed + trailing newline
-//   · atomic write (tmpDir inside the same home, rename on the same volume)
-//   · id validation before touching a path (no separators / `..`)
-//   · corrupt JSON files are skipped by list() and reported as ERR_THEME_STORE on read()
-// ============================================================================
+// User themes: <home>/themes/<id>.json (default ~/.open-pptd/themes). The pure factory
+// (model/theme-library.js) owns list/read/save/import/export semantics; this file only
+// does file IO: one pretty-printed JSON file per theme, atomic write (same-volume
+// rename), id validation before touching a path (no separators / `..`), and corrupt
+// JSON files are skipped by list() and reported as ERR_THEME_STORE on read().
 
 import { existsSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
