@@ -47,8 +47,10 @@ Install the skill into your agent's skills directory (`~/.claude/skills` for Cla
 open-pptd assets skill install --dir ~/.claude/skills
 
 # B. Release zip: stable latest name (or a pinned open-pptd-skill-v3.0.0.zip)
+curl -L -o open-pptd-skill.zip https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-skill.zip
 unzip open-pptd-skill.zip -d <skills-dir>
-# PowerShell: Expand-Archive open-pptd-skill.zip -DestinationPath <skills-dir>
+# PowerShell: Invoke-WebRequest https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-skill.zip -OutFile open-pptd-skill.zip
+#             Expand-Archive open-pptd-skill.zip -DestinationPath <skills-dir>
 
 # C. Source fallback: copy skill/ from this repository
 cp -r skill <skills-dir>/open-pptd

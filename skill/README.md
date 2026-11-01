@@ -35,9 +35,16 @@ Choose one source:
    `~/.pi/agent/skills` for pi, or the directory your tool documents); the
    command copies this pack to `<dir>/open-pptd`. Add `--force` to replace an
    existing install and `--json` for a single-line result.
-2. **Release zip** — download `open-pptd-skill.zip` (stable latest name) or a
-   pinned `open-pptd-skill-v<ver>.zip` from an open-pptd release, unpack it, and
-   place the top-level `open-pptd/` folder into your agent's skills directory.
+2. **Release zip** — download the stable latest package (or a pinned
+   `open-pptd-skill-v<ver>.zip`), unpack it, and place the top-level `open-pptd/`
+   folder into your agent's skills directory:
+
+   ```sh
+   curl -L -o open-pptd-skill.zip \
+     https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-skill.zip
+   unzip open-pptd-skill.zip -d ~/.claude/skills
+   ```
+
    The release also publishes `SHA256SUMS`; check the download with
    `sha256sum -c` or `Get-FileHash` before installing.
 3. **Main repository (source fallback)** — copy `skill/` from the open-pptd

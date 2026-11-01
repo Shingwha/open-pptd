@@ -47,8 +47,10 @@ open-pptd doctor                            # 环境自检
 open-pptd assets skill install --dir ~/.claude/skills
 
 # B. Release zip：稳定名（或固定版本 open-pptd-skill-v3.0.0.zip）
+curl -L -o open-pptd-skill.zip https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-skill.zip
 unzip open-pptd-skill.zip -d <技能目录>
-# PowerShell: Expand-Archive open-pptd-skill.zip -DestinationPath <技能目录>
+# PowerShell: Invoke-WebRequest https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-skill.zip -OutFile open-pptd-skill.zip
+#             Expand-Archive open-pptd-skill.zip -DestinationPath <技能目录>
 
 # C. 源码回退：从本仓库复制 skill/
 cp -r skill <技能目录>/open-pptd
