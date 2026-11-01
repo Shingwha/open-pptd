@@ -64,7 +64,7 @@ export function createView({ state, page, api, controller = null, getController 
    * Full refresh. options.thumbs picks the thumbnail-bar work:
    *   "all"     rebuild every card — load, page insert/delete/move, theme change, resize (default)
    *   "current" repaint the current card only — content edits, undo/redo, paste/delete element
-   *   "none"    only move the active card — page switch / present exit
+   *   "none"    only move the active card — page switch
    * The default stays "all" so callers outside the editor layer (resize hooks in
    * preview.js/editor.js, present.js) keep their previous semantics.
    */

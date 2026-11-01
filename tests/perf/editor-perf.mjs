@@ -341,7 +341,7 @@ console.log(`缩略图 DOM 节点          ${qingshan.full.nodes}（${qingshan.f
 console.log(`缩略图补齐（含 rAF 分批）  ${qingshan.fullStats.ms}ms`);
 console.log(
   `重画卡片数              切页 ${qingshan.switchStats.painted} / 全量 ${qingshan.fullStats.painted} / 编辑 ${qingshan.editStats.painted}` +
-    `（新增 .thumb 节点 ${qingshan.switchStats.addedThumbs}/${qingshan.fullStats.addedThumbs}/${qingshan.editStats.addedThumbs}）`
+    `（新增 .thumb-item 节点 ${qingshan.switchStats.addedThumbs}/${qingshan.fullStats.addedThumbs}/${qingshan.editStats.addedThumbs}）`
 );
 
 console.log("\n=== 阈值 ===");
