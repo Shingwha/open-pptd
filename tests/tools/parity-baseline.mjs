@@ -20,11 +20,10 @@
 // ============================================================================
 
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { inflateSync } from "node:zlib";
 
 import { findBrowser } from "../../packages/renderer/headless/browser.js";
 import { renderDeck } from "../../packages/renderer/headless/shoot.js";
@@ -32,6 +31,7 @@ import { startServer } from "../../packages/server/index.js";
 import { parseDeck, yaml } from "../../packages/model/index.js";
 import { measureTable } from "../../packages/measure/index.js";
 import { layout } from "../../packages/layout/index.js";
+import { chartRegionSample } from "./golden-lib.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const CHART = join(ROOT, "tests/projects/chart/deck.pptd");
@@ -58,98 +58,6 @@ try {
 } catch (err) {
   console.log(`SKIP  ${err.message}`);
   process.exit(0);
-}
-
-// ---------------------------------------------------------------------------
-// Minimal PNG reader for the chart-region sample (8-bit, non-interlaced).
-// Palette/16-bit/Adam7 are reported as unsupported instead of guessed.
-// ---------------------------------------------------------------------------
-const CHANNELS = { 0: 1, 2: 3, 4: 2, 6: 4 };
-
-function paeth(a, b, c) {
-  const p = a + b - c;
-  const pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
-  if (pa <= pb && pa <= pc) return a;
-  if (pb <= pc) return b;
-  return c;
-}
-
-function decodePng(buf) {
-  let pos = 8;
-  let width = 0, height = 0, bitDepth = 0, colorType = 0, interlace = 0;
-  const idat = [];
-  while (pos + 8 <= buf.length) {
-    const len = buf.readUInt32BE(pos);
-    const type = buf.toString("latin1", pos + 4, pos + 8);
-    const data = buf.subarray(pos + 8, pos + 8 + len);
-    if (type === "IHDR") {
-      width = data.readUInt32BE(0);
-      height = data.readUInt32BE(4);
-      bitDepth = data[8];
-      colorType = data[9];
-      interlace = data[12];
-    } else if (type === "IDAT") {
-      idat.push(data);
-    } else if (type === "IEND") {
-      break;
-    }
-    pos += 12 + len;
-  }
-  const channels = CHANNELS[colorType];
-  if (bitDepth !== 8 || interlace !== 0 || !channels) return null;
-  const raw = inflateSync(Buffer.concat(idat));
-  const stride = width * channels;
-  const pixels = Buffer.alloc(stride * height);
-  let p = 0;
-  for (let y = 0; y < height; y++) {
-    const filter = raw[p++];
-    const row = y * stride;
-    const prev = row - stride;
-    for (let x = 0; x < stride; x++) {
-      const a = x >= channels ? pixels[row + x - channels] : 0;
-      const b = y > 0 ? pixels[prev + x] : 0;
-      const c = y > 0 && x >= channels ? pixels[prev + x - channels] : 0;
-      const v = raw[p + x];
-      let out;
-      switch (filter) {
-        case 0: out = v; break;
-        case 1: out = v + a; break;
-        case 2: out = v + b; break;
-        case 3: out = v + ((a + b) >> 1); break;
-        case 4: out = v + paeth(a, b, c); break;
-        default: return null;
-      }
-      pixels[row + x] = out & 0xff;
-    }
-    p += stride;
-  }
-  return { width, height, channels, pixels };
-}
-
-/** Coarse chart-region sample: central band, every 4px, quantized color count + non-white ratio. */
-function chartRegionSample(buf) {
-  const img = decodePng(buf);
-  if (!img) return { supported: false };
-  const { width, height, channels, pixels } = img;
-  const x0 = Math.floor(width * 0.10), x1 = Math.floor(width * 0.90);
-  const y0 = Math.floor(height * 0.20), y1 = Math.floor(height * 0.95);
-  const colors = new Set();
-  let sampled = 0, nonWhite = 0;
-  for (let y = y0; y < y1; y += 4) {
-    for (let x = x0; x < x1; x += 4) {
-      const i = (y * width + x) * channels;
-      const r = pixels[i], g = channels <= 2 ? pixels[i] : pixels[i + 1], b = channels <= 2 ? pixels[i] : pixels[i + 2];
-      colors.add(((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4));
-      sampled++;
-      if (!(r > 245 && g > 245 && b > 245)) nonWhite++;
-    }
-  }
-  return {
-    supported: true,
-    region: { x: [x0, x1], y: [y0, y1], step: 4 },
-    distinctColors: colors.size,
-    nonWhiteRatio: Number((nonWhite / sampled).toFixed(4)),
-  };
 }
 
 // ---- 1. Chart PNG baseline (full-deck render, then pick pages 1/2) ----

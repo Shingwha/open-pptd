@@ -26,38 +26,11 @@ import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { readZipEntries } from "../lib/unzip.js";
 
 const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const REFS = ["format", "elements", "charts", "design", "quality", "shapes", "images"];
 const KITS = ["academic", "business-review", "consulting-report", "brand-proposal", "lecture", "poster"];
-
-/** Read entry names from a zip's central directory (no dependencies). */
-export function readZipEntries(buf) {
-  const EOCD = 0x06054b50;
-  let eocd = -1;
-  for (let i = buf.length - 22; i >= Math.max(0, buf.length - 65558); i--) {
-    if (buf.readUInt32LE(i) === EOCD) {
-      eocd = i;
-      break;
-    }
-  }
-  if (eocd < 0) throw new Error("EOCD not found");
-  const count = buf.readUInt16LE(eocd + 10);
-  const cdOffset = buf.readUInt32LE(eocd + 16);
-  const entries = [];
-  let p = cdOffset;
-  for (let i = 0; i < count; i++) {
-    if (buf.readUInt32LE(p) !== 0x02014b50) throw new Error(`bad central header at ${p}`);
-    const nameLen = buf.readUInt16LE(p + 28);
-    const extraLen = buf.readUInt16LE(p + 30);
-    const commentLen = buf.readUInt16LE(p + 32);
-    const size = buf.readUInt32LE(p + 24);
-    const method = buf.readUInt16LE(p + 10);
-    entries.push({ name: buf.toString("utf8", p + 46, p + 46 + nameLen), size, method });
-    p += 46 + nameLen + extraLen + commentLen;
-  }
-  return entries;
-}
 
 function sha256(file) {
   return createHash("sha256").update(readFileSync(file)).digest("hex");

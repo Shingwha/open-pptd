@@ -12,8 +12,12 @@ import { createHash } from "node:crypto";
 
 const PNG_SIG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 
+/** Bytes per pixel for the 8-bit, non-interlaced color types this decoder supports. */
+export const PNG_CHANNELS = { 0: 1, 2: 3, 4: 2, 6: 4 };
+
 /**
- * Decode a PNG (8-bit RGB/RGBA, non-interlaced) → { width, height, channels, data }.
+ * Decode a PNG (8-bit gray/RGB/gray+alpha/RGBA, non-interlaced)
+ * → { width, height, channels, data }.
  * @param {Buffer|Uint8Array} buf
  */
 export function decodePng(buf) {
@@ -43,7 +47,7 @@ export function decodePng(buf) {
   }
   if (bitDepth !== 8) throw new Error(`仅支持 8-bit PNG（实际 ${bitDepth}）`);
   if (interlace !== 0) throw new Error("不支持隔行 PNG");
-  const channels = colorType === 2 ? 3 : colorType === 6 ? 4 : colorType === 0 ? 1 : null;
+  const channels = PNG_CHANNELS[colorType] || null;
   if (!channels) throw new Error(`不支持的 PNG colorType ${colorType}`);
 
   const raw = inflateSync(Buffer.from(concat(idat)));
@@ -75,7 +79,8 @@ export function decodePng(buf) {
   return { width, height, channels, data: out };
 }
 
-function paeth(a, b, c) {
+/** PNG Paeth predictor (filter type 4). */
+export function paeth(a, b, c) {
   const p = a + b - c;
   const pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
   if (pa <= pb && pa <= pc) return a;
@@ -92,6 +97,69 @@ function concat(arrs) {
   let p = 0;
   for (const a of arrs) { out.set(a, p); p += a.length; }
   return out;
+}
+
+/**
+ * Coarse chart-region sample shared by export/parity tests: central band
+ * (x 10–90%, y 20–95%), every 4th pixel, quantized color count + non-white ratio.
+ * Unsupported PNG formats report { supported: false } instead of guessing.
+ */
+export function chartRegionSample(buf) {
+  let img;
+  try {
+    img = decodePng(buf);
+  } catch {
+    return { supported: false };
+  }
+  const { width, height, channels, data } = img;
+  const x0 = Math.floor(width * 0.10), x1 = Math.floor(width * 0.90);
+  const y0 = Math.floor(height * 0.20), y1 = Math.floor(height * 0.95);
+  const colors = new Set();
+  let sampled = 0, nonWhite = 0;
+  for (let y = y0; y < y1; y += 4) {
+    for (let x = x0; x < x1; x += 4) {
+      const i = (y * width + x) * channels;
+      const r = data[i], g = channels <= 2 ? data[i] : data[i + 1], b = channels <= 2 ? data[i] : data[i + 2];
+      colors.add(((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4));
+      sampled++;
+      if (!(r > 245 && g > 245 && b > 245)) nonWhite++;
+    }
+  }
+  return {
+    supported: true,
+    region: { x: [x0, x1], y: [y0, y1], step: 4 },
+    distinctColors: colors.size,
+    nonWhiteRatio: Number((nonWhite / sampled).toFixed(4)),
+  };
+}
+
+/**
+ * Mean luminance gradient in the chart region (sharpness; per device pixel).
+ * Returns 0 when the PNG format is unsupported.
+ */
+export function edgeEnergy(buf) {
+  let img;
+  try {
+    img = decodePng(buf);
+  } catch {
+    return 0;
+  }
+  const { width, height, channels, data } = img;
+  const x0 = Math.floor(width * 0.10), x1 = Math.floor(width * 0.90);
+  const y0 = Math.floor(height * 0.20), y1 = Math.floor(height * 0.95);
+  const lum = (x, y) => {
+    const i = (y * width + x) * channels;
+    const r = data[i], g = channels <= 2 ? data[i] : data[i + 1], b = channels <= 2 ? data[i] : data[i + 2];
+    return 0.299 * r + 0.587 * g + 0.114 * b;
+  };
+  let sum = 0, n = 0;
+  for (let y = y0 + 1; y < y1 - 1; y += 2) {
+    for (let x = x0 + 1; x < x1 - 1; x += 2) {
+      sum += (Math.abs(lum(x + 1, y) - lum(x - 1, y)) + Math.abs(lum(x, y + 1) - lum(x, y - 1))) / 2;
+      n++;
+    }
+  }
+  return n ? Number((sum / n).toFixed(3)) : 0;
 }
 
 /** Grayscale + box downscale: img → a tw×th grayscale matrix (0..255). */

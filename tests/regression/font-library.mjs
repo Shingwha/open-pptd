@@ -15,8 +15,7 @@
 //   · global subset metadata, built-in read-only, invalid payloads/URLs
 // ============================================================================
 
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   FontLibraryError,
@@ -25,31 +24,13 @@ import {
 } from "../../packages/model/index.js";
 import { createFileFontLibrary, fontLibraryPaths, mergeUserFonts, userFontReady } from "../../packages/server/font-library.js";
 import { createFsResourceProvider } from "../../packages/server/runtime-node.js";
-
-const results = [];
-function check(name, pass, detail = "") {
-  results.push({ name, pass });
-  console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? `  ${detail}` : ""}`);
-}
-function checkEq(name, actual, expected) {
-  const ok = JSON.stringify(actual) === JSON.stringify(expected);
-  check(name, ok, ok ? "" : `实际=${JSON.stringify(actual)} 期望=${JSON.stringify(expected)}`);
-}
-async function throwsCode(name, fn, code) {
-  try {
-    await fn();
-    check(name, false, "未抛出");
-  } catch (err) {
-    check(name, err?.code === code, `${err?.code || err?.name}: ${err?.message}`);
-  }
-}
+import { check, checkEq, throwsCode, results, withTempDir } from "../lib/test-utils.js";
 
 // Minimal sfnt-ish payload (TrueType magic); parseFontInfo throws, so importFile
 // takes the explicit family. Tests never need real 8 MB fonts.
 const FONT = new Uint8Array([0x00, 0x01, 0x00, 0x00, 1, 2, 3, 4, 5, 6, 7, 8]);
 const FONT2 = new Uint8Array([0x4f, 0x54, 0x54, 0x4f, 9, 9, 9, 9]); // "OTTO"
 
-const home = mkdtempSync(join(tmpdir(), "open-pptd-font-test-"));
 function memLibrary() {
   const user = [];
   const bytes = new Map();
@@ -69,7 +50,7 @@ function memLibrary() {
   });
 }
 
-try {
+await withTempDir("open-pptd-font-test-", async (home) => {
   console.log("== 1. 内置 registry 列表 ==");
   const lib = createFileFontLibrary({ home });
   {
@@ -213,9 +194,7 @@ try {
     const err = new FontLibraryError("ERR_FONT_INVALID", "x");
     check("FontLibraryError 带 code", err.code === "ERR_FONT_INVALID" && err instanceof Error);
   }
-} finally {
-  rmSync(home, { recursive: true, force: true });
-}
+});
 
 const failed = results.filter((r) => !r.pass);
 console.log(`\n结果: ${results.length - failed.length}/${results.length} 通过${failed.length ? " ❌" : " ✅"}`);

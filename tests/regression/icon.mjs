@@ -13,7 +13,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadIconRegistry, resolveIconName, normalizeIconSvg, STYLE_DIRS } from "../../packages/model/icon-fa.js";
+import { resolveIconName, normalizeIconSvg, STYLE_DIRS } from "../../packages/model/icon-fa.js";
 import { iconSvgBody, iconToSvg, normalizeIconFill } from "../../packages/model/icon-svg.js";
 import { loadIconDefs } from "../../packages/writer/icon.js";
 import { buildPptx } from "../../packages/writer/pptx.js";

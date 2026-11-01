@@ -1,49 +1,74 @@
 // ============================================================================
 // tests/lib/unzip.js — minimal ZIP reader (test-only, zero dependencies)
 // ----------------------------------------------------------------------------
-// Pairs with the writer's ZipWriter (store, no compression): parses EOCD +
-// Central Directory and reads entries by name. Used by tests/ to inspect the
-// package structure emitted by buildPptx.
+// Parses EOCD + Central Directory and reads entries by name. Stored (method 0)
+// and deflated (method 8) entries are supported, so the same reader serves the
+// writer's store-only PPTX output and release zip packages. Used by tests/ to
+// inspect package structure; `readZipEntries` exposes metadata only.
 // ============================================================================
 
+import { inflateRawSync } from "node:zlib";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-/** Read all ZIP entries → [{ name, data }] (binary-safe). */
-export function readZip(bytes) {
-  // EOCD: last 22 bytes + comment (scan backwards for the PK\x05\x06 signature)
-  let eocd = -1;
-  for (let i = bytes.length - 22; i >= 0 && eocd < 0; i--) {
-    if (bytes[i] === 0x50 && bytes[i + 1] === 0x4b && bytes[i + 2] === 0x05 && bytes[i + 3] === 0x06) {
-      eocd = i;
-    }
+const EOCD_SIG = 0x06054b50;
+const CENTRAL_SIG = 0x02014b50;
+
+function asBytes(bytes) {
+  return bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+}
+
+/** Locate the End Of Central Directory record (last 22 bytes + optional comment). */
+function findEocd(dv, length) {
+  const first = Math.max(0, length - 22 - 0xffff);
+  for (let i = length - 22; i >= first; i--) {
+    if (dv.getUint32(i, true) === EOCD_SIG) return i;
   }
-  if (eocd < 0) throw new Error("不是有效的 ZIP（未找到 EOCD）");
-  const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  throw new Error("不是有效的 ZIP（未找到 EOCD）");
+}
+
+/** Read every central-directory entry → [{ name, size, compSize, method, localOff }]. */
+export function readZipEntries(bytes) {
+  const b = asBytes(bytes);
+  const dv = new DataView(b.buffer, b.byteOffset, b.byteLength);
+  const eocd = findEocd(dv, b.length);
   const entryCount = dv.getUint16(eocd + 10, true);
   const cdOffset = dv.getUint32(eocd + 16, true);
 
   const entries = [];
   let off = cdOffset;
   for (let i = 0; i < entryCount; i++) {
-    if (bytes[off] !== 0x50 || bytes[off + 1] !== 0x4b || bytes[off + 2] !== 0x01 || bytes[off + 3] !== 0x02) {
-      throw new Error("Central Directory 解析失败");
-    }
+    if (dv.getUint32(off, true) !== CENTRAL_SIG) throw new Error("Central Directory 解析失败");
     const method = dv.getUint16(off + 10, true);
-    if (method !== 0) throw new Error(`条目使用了压缩（method=${method}），测试仅支持 store`);
     const compSize = dv.getUint32(off + 20, true);
+    const size = dv.getUint32(off + 24, true);
     const nameLen = dv.getUint16(off + 28, true);
     const extraLen = dv.getUint16(off + 30, true);
     const commentLen = dv.getUint16(off + 32, true);
     const localOff = dv.getUint32(off + 42, true);
-    const name = Buffer.from(bytes.subarray(off + 46, off + 46 + nameLen)).toString("utf8");
+    const name = Buffer.from(b.subarray(off + 46, off + 46 + nameLen)).toString("utf8");
+    entries.push({ name, size, compSize, method, localOff });
+    off += 46 + nameLen + extraLen + commentLen;
+  }
+  return entries;
+}
 
+/** Read all ZIP entries → [{ name, data }] (binary-safe, store + deflate). */
+export function readZip(bytes) {
+  const b = asBytes(bytes);
+  const dv = new DataView(b.buffer, b.byteOffset, b.byteLength);
+  const entries = [];
+  for (const entry of readZipEntries(b)) {
+    const { localOff, compSize, method } = entry;
     const nameLenL = dv.getUint16(localOff + 26, true);
     const extraLenL = dv.getUint16(localOff + 28, true);
     const dataStart = localOff + 30 + nameLenL + extraLenL;
-    entries.push({ name, data: bytes.subarray(dataStart, dataStart + compSize) });
-
-    off += 46 + nameLen + extraLen + commentLen;
+    const raw = b.subarray(dataStart, dataStart + compSize);
+    let data;
+    if (method === 0) data = raw;
+    else if (method === 8) data = new Uint8Array(inflateRawSync(raw));
+    else throw new Error(`不支持的 ZIP 压缩方式（method=${method}），测试仅支持 store/deflate`);
+    entries.push({ name: entry.name, data });
   }
   return entries;
 }

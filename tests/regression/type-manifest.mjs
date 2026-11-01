@@ -33,7 +33,7 @@ import { buildOptionFromSpec } from "../../packages/model/chart/option/index.js"
 // Real render function for the lazy-text test (importing the module registers nothing).
 import { renderText } from "../../packages/renderer/text.js";
 // Shard loaders only: importing them registers nothing by itself.
-import { loadType as loadRenderType, loadTypes as loadRenderTypes } from "../../packages/renderer/types/load.js";
+import { loadType as loadRenderType } from "../../packages/renderer/types/load.js";
 import { loadType as loadXmlType } from "../../packages/writer/types/load.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
