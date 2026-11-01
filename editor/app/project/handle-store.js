@@ -1,12 +1,7 @@
-// ============================================================================
-// app/project/handle-store.js — recent projects (IndexedDB-persisted handles)
-// ----------------------------------------------------------------------------
-// FileSystemHandle is structured-cloneable, so storing it in IndexedDB gives
-// "recent projects" (the standard approach, as in vscode.dev). Handle grants
-// expire per session: on restore the caller runs ensurePermission inside a user
-// gesture (see handle-io.js). Cap is 8 entries, deduplicated by handle and moved
-// to the top.
-// ============================================================================
+// editor/app/project/handle-store.js — recent projects (IndexedDB-persisted handles)
+// FileSystemHandle is structured-cloneable, so IndexedDB stores the handle itself (the
+// standard approach, as in vscode.dev). Grants expire per session; callers run
+// ensurePermission inside a user gesture. Cap is 8 entries, deduplicated and promoted.
 
 const DB_NAME = "open-pptd-projects";
 const STORE = "recent";
@@ -88,12 +83,9 @@ export async function removeRecent(id) {
   }
 }
 
-// ----------------------------------------------------------------------------
 // Session-restore marker: sessionStorage holds the recent entry id (the handle
 // itself is not stringifiable; it lives in IDB). The editor uses it on refresh /
-// gallery jump to reopen the last project (no prompt while the grant holds,
-// otherwise the restore card appears).
-// ----------------------------------------------------------------------------
+// gallery jump to reopen the last project while the grant holds.
 const PENDING_KEY = "pptd-pending-project";
 
 export function setPendingProject(id) {

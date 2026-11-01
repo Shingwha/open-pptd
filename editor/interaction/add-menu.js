@@ -1,14 +1,8 @@
-// ============================================================================
-// interaction/add-menu.js — minimal add control (text / table / chart)
-// ----------------------------------------------------------------------------
-// The 3.0 editor adds only content-editable elements (editor-ux §5): no shapes,
-// lines, images, icons or recent-items catalog. Each entry creates the element
-// through its type shard; text is selected for immediate editing, table/chart
-// open their content editor right away (handled by the api).
-//
-// The menu itself is a tiny anchored popup (#add-list) toggled by #btn-add:
-// outside pointerdown / Esc close it. No registry-driven tabs, no localStorage.
-// ============================================================================
+// editor/interaction/add-menu.js — minimal add control (text / table / chart)
+// The editor adds only content-editable elements: each entry creates the element
+// through its type shard; text is selected for immediate editing, table/chart open
+// their content editor right away. The popup (#add-list) is toggled by #btn-add and
+// closes on outside pointerdown / Esc.
 
 import { getType, ADD_TYPE_IDS } from "../types/index.js";
 

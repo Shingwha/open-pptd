@@ -1,11 +1,7 @@
-// ============================================================================
-// app/paint-page.js — model page → layout → paintPage convenience adapter
-// ----------------------------------------------------------------------------
-// The 2.x renderer.renderPage adapter was removed in 3.0; editor call sites that
-// paint one model page (headless shot, thumbnails, present mode, browser PNG
-// backend) share this small wrapper instead of duplicating the two-stage call.
-// Geometry comes from layout (single source of truth); the model is never written.
-// ============================================================================
+// editor/app/paint-page.js — model page → layout → paintPage convenience adapter
+// Editor call sites that paint one model page (headless shot, thumbnails, present
+// mode, browser PNG backend) share this wrapper instead of duplicating the two-stage
+// call. Geometry comes from layout; the model is never written.
 
 import { layout } from "../../packages/layout/index.js";
 import { paintPage } from "../../packages/renderer/index.js";

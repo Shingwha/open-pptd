@@ -1,13 +1,7 @@
-// ============================================================================
-// interaction/design-panel-lazy.js — lazy Design panel entry, one per instance
-// ----------------------------------------------------------------------------
-// The Design panel (theme library / font library / appearance) is a large,
-// browser-only module. It is imported on first use so the editor boot, the
-// headless paint path and the e2e render path never load it (W7 gate).
-// This tiny module is the only static reference: it keeps the dynamic import and
-// the per-instance service handle (createDesignPanel lazily builds the closure
-// with its own panel DOM/state), so two editors never share one drawer.
-// ============================================================================
+// editor/interaction/design-panel-lazy.js — lazy Design panel entry, one per instance
+// design-panel.js is large and browser-only, so it is imported on first use: editor
+// boot, headless paint and e2e render never load it. This is the only static
+// reference; the per-instance service keeps two editors from sharing a drawer.
 
 /**
  * Build the lazy Design panel service of one instance.

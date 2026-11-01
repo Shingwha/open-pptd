@@ -1,10 +1,6 @@
-// ============================================================================
-// types/table.js — table element UI boundary (label + create)
-// ----------------------------------------------------------------------------
-// The table content editor lives in interaction/dialogs/table-editor.js (grid,
-// insert/delete, merge/split, cell text/color/fill). No style panel / row-height
-// dialog in 3.0 (editor-ux §4.2).
-// ============================================================================
+// editor/types/table.js — table element UI boundary (label + create)
+// The content editor lives in interaction/dialogs/table-editor.js (grid, insert/delete,
+// merge/split, cell text/color/fill); there is no style panel or row-height dialog.
 
 import { svgIcon } from "../ui.js";
 import { nextElementId, registerType } from "../../packages/model/index.js";

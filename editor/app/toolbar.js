@@ -1,10 +1,6 @@
-// ============================================================================
-// app/toolbar.js — binding for the topbar / add control / thumbnail-bar buttons
-// ----------------------------------------------------------------------------
-// The topbar keeps only the minimal editor surface (editor-ux §7):
-//   file menu · design · present · undo/redo · reload · add · page menu · zoom
-// The add menu itself lives in interaction/add-menu.js (three content types).
-// ============================================================================
+// editor/app/toolbar.js — binding for the topbar / add control / thumbnail-bar buttons
+// Covers file menu, design, present, undo/redo, add, page menu and zoom. The add menu
+// itself lives in interaction/add-menu.js (three content types).
 
 import { createFileMenu } from "./file-menu.js";
 import { bindPageMenu } from "./page-menu.js";
@@ -18,9 +14,7 @@ export function bindToolbar({ state, api, view, io, present, themeMode = null, u
   const disposers = []; // destroy set for child bindings (menus/popovers)
   let mainMenu = null;
 
-  // --------------------------------------------------------------------------
   // File menu (shared shell app/file-menu.js; editor content: new/open/recent/save/export)
-  // --------------------------------------------------------------------------
   function bindFileMenu() {
     /** Unsaved-changes confirmation before switching/opening a project (hosts can override dialogs). */
     const confirmDiscard = async () =>
@@ -64,9 +58,7 @@ export function bindToolbar({ state, api, view, io, present, themeMode = null, u
     });
   }
 
-  // --------------------------------------------------------------------------
   // Topbar buttons
-  // --------------------------------------------------------------------------
   function bindTopbar() {
     const clickEls = []; // elements given an onclick, cleared together on destroy
     const dblEls = []; // elements given an ondblclick, cleared together on destroy
@@ -102,9 +94,7 @@ export function bindToolbar({ state, api, view, io, present, themeMode = null, u
     };
   }
 
-  // --------------------------------------------------------------------------
   // Add control (three content types) + page menu + Design panel (lazy)
-  // --------------------------------------------------------------------------
   function bindAddMenuUI() {
     const h = bindAddMenu({
       fab: dom.btnAdd,

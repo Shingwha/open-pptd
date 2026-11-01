@@ -1,19 +1,9 @@
-// ============================================================================
-// app/project/live-reload.js — live reload (push / fingerprint polling) + topbar status indicator
-// ----------------------------------------------------------------------------
-// Two project sources, one promise — the editor auto-reloads after external file
-// changes (keeping the current page), skips and warns when there are unsaved
-// changes, and the saving side suppresses the refresh loop via suppressRefreshes:
-//   - source.capabilities.liveWatch is true: subscribe to source.watch() (SSE push
-//     in HTTP mode; in deploy mode (no /events) httpSource gives up internally,
-//     matching the existing "web mode" behavior)
-//   - otherwise (local handle project): poll the manifest+pages fingerprint
-//     (source.fingerprint, same semantics as handle-io.fingerprint / server dirFingerprint)
-// This module no longer contains a new EventSource("/events") literal: the push
-// channel is provided by the source. Dependency injection: source (transport),
-// reload (URL-mode refresh), reloadHandle (handle-mode refresh), manualReload
-// (topbar "live" marker click = manual reload from disk, confirmed when dirty).
-// ============================================================================
+// editor/app/project/live-reload.js — live reload (push / fingerprint polling) + status indicator
+// The editor auto-reloads after external file changes (keeping the current page) and
+// skips while dirty; a save briefly suppresses the refresh loop. Sources with
+// liveWatch subscribe to source.watch() (SSE); handle projects poll the manifest+page
+// fingerprint. The topbar cluster shows the dirty/saved state and binds the Refresh
+// button (manual reload from disk).
 
 import { fingerprint } from "./handle-io.js";
 
@@ -43,7 +33,7 @@ export function createLiveReload({ state, source, ui, reload, reloadHandle, manu
     connectWatch();
   }
 
-  // ---------------------------------------------------------------- handle polling
+  // Handle polling
   function startPolling() {
     const handle = state.projectHandle;
     if (pollTimer && polledHandle === handle) return; // same project: idempotent
@@ -90,7 +80,7 @@ export function createLiveReload({ state, source, ui, reload, reloadHandle, manu
     polledHandle = null;
   }
 
-  // ---------------------------------------------------------------- push (URL mode)
+  // Push (URL mode)
   function connectWatch() {
     if (!state.manifestPath || unwatch) return;
     if (!source?.watch || source.capabilities?.liveWatch === false) return; // no push channel: disabled

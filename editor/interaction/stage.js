@@ -1,24 +1,9 @@
-// ============================================================================
-// interaction/stage.js — stage gesture router (single entry / state arbitration)
-// ----------------------------------------------------------------------------
-// All pointer / wheel gestures are classified and arbitrated here; execution of
-// element gestures is delegated to interaction/canvas.js (selection box / drag /
-// resize / rotate). The sole owner of viewport state (zoom/pan) is
-// app/view/viewport.js — this module only calls panBy / setZoom / zoomReset.
-//
-// Routing rules (pointerdown on #stage, capture phase, before inner controls):
-//   1. floating controls (zoom bar / button rows / add popup …) → pass through
-//   2. space held / middle mouse button  → pan (anywhere, including over elements)
-//   3. selection-box handle (resize/rotate/move) → element gesture
-//   4. element body                      → select + move gesture
-//   5. blank area (inside or outside canvas) → travel ≤4px = click to deselect,
-//                                              >4px = pan
-//   6. a second pointer lands            → pinch zoom (terminates any in-flight
-//                                          gesture; anchor = midpoint of the two)
-// Wheel: Ctrl/⌘ = anchored zoom, otherwise pan (passes through on overlays so
-// native scrolling keeps working).
-// Double-click: element → open its editor; blank → reset the fitted view.
-// ============================================================================
+// editor/interaction/stage.js — stage gesture router (single entry / state arbitration)
+// All pointer/wheel gestures are classified here; element gestures are delegated to
+// interaction/canvas.js, viewport state to app/view/viewport.js. Routing on
+// pointerdown (capture): floating controls pass through, space/middle pans, handles
+// start resize/rotate, element bodies select + move, blank area marquees (≤4px is a
+// deselect click), a second pointer pinches. Ctrl/⌘+wheel zooms, dblclick edits.
 
 export function createStageController(stage, opts) {
   const {
@@ -64,9 +49,7 @@ export function createStageController(stage, opts) {
     { passive: false }
   );
 
-  // --------------------------------------------------------------------------
   // Space hand tool (desktop): while space is held, dragging anywhere pans
-  // --------------------------------------------------------------------------
   let spacePan = false;
   const isTyping = (e) => {
     const tag = (e.target.tagName || "").toLowerCase();
@@ -86,9 +69,7 @@ export function createStageController(stage, opts) {
     stage.classList.remove("space-pan");
   });
 
-  // --------------------------------------------------------------------------
   // Gesture state machine: pointers (active pointers) / tapPan (blank press) / pinch
-  // --------------------------------------------------------------------------
   const pointers = new Map();
   let tapPan = null;
   let pinch = null;
@@ -222,9 +203,7 @@ export function createStageController(stage, opts) {
     stage.classList.remove("panning", "space-pan");
   });
 
-  // --------------------------------------------------------------------------
   // Wheel: Ctrl/⌘ = anchored zoom (blocking browser page zoom), otherwise pan
-  // --------------------------------------------------------------------------
   on(
     stage,
     "wheel",
@@ -241,9 +220,7 @@ export function createStageController(stage, opts) {
     { passive: false }
   );
 
-  // --------------------------------------------------------------------------
   // Double-click: element → open its editor; blank → reset the fitted view (zoom and pan)
-  // --------------------------------------------------------------------------
   on(
     stage,
     "dblclick",

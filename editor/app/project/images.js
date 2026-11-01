@@ -1,18 +1,8 @@
-// ============================================================================
-// app/project/images.js — image resources: preload / map rebuild / dataURL persistence
-// ----------------------------------------------------------------------------
-// Project-relative image paths are preloaded into dataURLs in imageMap, shared by
-// preview rendering (img.src = map[el.src]) and export (buildPptx goes through
-// imageMap). Inline dataURL images need no preload; on save they are written out
-// as media/ files and el.src is rewritten.
-//
-// Media IO has a single seam (readMediaBytes): the injected ProjectSource owns the
-// bytes whenever it advertises capabilities.binary + readMedia (httpSource resolves
-// the relative URL, directoryHandleSource goes through the file handle, memorySource
-// reads memory); otherwise the path is fetched over plain HTTP — the deploy/static
-// path where a project ships its media next to deck.pptd. Callers pass the source and
-// this module never inspects the handle-vs-URL mode itself.
-// ============================================================================
+// editor/app/project/images.js — image resources: preload / map rebuild / dataURL persistence
+// Project-relative paths are preloaded as dataURLs into imageMap (shared by preview
+// rendering and export); inline dataURLs are written out as media/ files on save.
+// readMediaBytes is the single media seam: a source advertising binary + readMedia
+// yields the bytes, otherwise the path is fetched over HTTP next to deck.pptd.
 
 import { bytesToBase64, walkElements } from "../../../packages/model/index.js";
 import { dataUrlOf, decodeDataUrl, extToMime } from "../../../packages/writer/index.js";
@@ -31,7 +21,7 @@ function decodeDataUrlInfo(dataUrl) {
 
 /**
  * Core image → media/ file entry ({path, b64}) collection (shared by save-write,
- * zip packaging and project export; see #7 merge):
+ * zip packaging and project export):
  *   - inline dataURL: written as media/<elementId>.<ext> and el.src rewritten
  *   - relative-path reference (persisted by an earlier save / shipped with the
  *     project): bytes are filled from the dataURL in imageMap — keeps zip

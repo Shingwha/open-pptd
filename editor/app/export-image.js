@@ -1,13 +1,7 @@
-// ============================================================================
-// app/export-image.js — PNG export UI adapter (backend lives in ExportService)
-// ----------------------------------------------------------------------------
-// The rasterization used to live here (capture-first + foreignObject fallback +
-// per-element audit). W9 moved it behind the shared RenderBackend/ExportService
-// path (editor/app/render-backend-browser.js + packages/export); this module now
-// only drives the UI: progress toast, result download summary and the
-// "elements that could not be embedded" warning. Page selection, scale, naming,
-// zip packaging and reporting are handled by the export service.
-// ============================================================================
+// editor/app/export-image.js — PNG export UI adapter (backend lives in ExportService)
+// Only drives the UI: progress toast, result download summary and the warning for
+// elements that could not be embedded. Page selection, scale, naming, zip packaging
+// and reporting are handled by the export service (packages/export).
 
 /** Byte count → human-readable (MB to one decimal / KB rounded by default). */
 export function formatBytes(n, { kbDigits = 0 } = {}) {

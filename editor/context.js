@@ -1,32 +1,11 @@
-// ============================================================================
 // editor/context.js — per-instance UI context (dom / toast / dialogs / theme)
-// ----------------------------------------------------------------------------
-// 3.0 componentisation (decisions.md D1): every service that used to be a
-// module-level singleton is created per instance and passed down as one context
-// object. Modules receive it as `ui` (or as an explicit factory argument) and
-// NEVER import the singletons.
+// Every service is created per instance and passed down as `ui`; modules never
+// import module-level singletons. `chrome: "full"` themes the document, embedded
+// and headless instances theme their own subtree only. Keyboard shortcuts act
+// only on the instance mounted or interacted with last.
 //
-//   ui = {
-//     root,        mount point (the instance owns everything inside it)
-//     dom,         createDom(root) scoped element registry
-//     toast,       createToast(root)
-//     dialogs,     createDialogs(override)
-//     themeHost,   element that carries data-pptd-theme / inline token overrides
-//     themeMode,   bindThemeMode handle (full chrome without a host mode) or null
-//     chrome,      "full" | "embedded"
-//     isActive(),  is this the instance keyboard/gesture shortcuts should act on?
-//     activate(),  claim the active slot (pointerdown/focusin inside the root)
-//     destroy()    idempotent teardown of every context-level service
-//   }
-//
-// Theme scope: chrome "full" themes the document element (one viewer palette per
-// page, matching the 2.x standalone behaviour); embedded previews and the headless
-// surface theme their own subtree only, so a cover grid never repaints the page.
-//
-// Active instance: keyboard shortcuts of a preview/editor only act on the instance
-// the user last interacted with (two editors on one page do not both react to one
-// Ctrl+Z). The registry is process-level by nature — it only arbitrates WHO acts.
-// ============================================================================
+// ui = { root, dom, toast, dialogs, themeHost, themeMode, chrome, isActive(),
+//        activate(), destroy() }
 
 import { createDom } from "./dom.js";
 import { createToast } from "./app/toast.js";

@@ -1,19 +1,8 @@
-// ============================================================================
-// app/project/saver.js — saving and exporting
-// ----------------------------------------------------------------------------
-// Save project (single entry saveProject): writes always go through the injected
-// ProjectSource (app/project/source.js); this module no longer contains a
-// fetch("/api/save") literal:
-//   - source.capabilities.writable === false → degrade straight to "download project zip"
-//   - write() throws (no /api/save endpoint in deploy mode) → degrade to zip too (behavior kept)
-//   - a write-back failure for a local handle project → explicit error (no silent degrade, behavior kept)
-//   - revision conflict (ERR_REVISION_CONFLICT) → explicit 覆盖 / 重新加载 / 取消 dialog
-// Export (PPTX / bundle / PNG) is delegated to the browser ExportService adapter
-// (./export-service.js): no zip/preflight/report logic remains in this module.
-// Dependency injection: images (dataURL image persistence), fontManager, source
-// (transport), onSaved (suppress the SSE refresh loop after a successful save),
-// renderStatusBar, reload (conflict "重新加载"), onError.
-// ============================================================================
+// editor/app/project/saver.js — saving and exporting
+// Save always goes through the injected ProjectSource. Non-writable sources or a
+// missing /api/save endpoint degrade to "download project zip"; a local-handle write
+// failure is an explicit error; a revision conflict offers overwrite / reload / cancel.
+// PPTX / bundle / PNG export is delegated to the browser ExportService adapter.
 
 import { commitBaseline } from "../state.js";
 import { createImageExporter, formatBytes } from "../export-image.js";
@@ -39,9 +28,7 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
   const exportService = createBrowserExportService({ state, fontManager });
   const baseNameOf = (path) => String(path || "").split(/[\\/]/).pop() || "export.bin";
   const reportError = (report, fallback) => new Error(report?.errors?.join("；") || fallback);
-  // --------------------------------------------------------------------------
   // Export (PPTX dialog / project zip direct; entry points in the topbar File menu)
-  // --------------------------------------------------------------------------
   /** Export PPTX dialog: font-embed checkbox (on by default) + embed scope (subset/full) + font-manager entry. */
   function openExportDialog() {
     const wrap = document.createElement("div");
@@ -144,15 +131,10 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
   }
 
   /**
-   * Export the project bundle (zip): deck.pptd + pages/ + media/, named the same
-   * as CLI export-project. Semantics note (v3 #6): the difference from CLI
-   * `export-project` is intentional — the CLI packages disk files as-is (keeping
-   * comments/formatting, reflecting disk state); the browser exports the
-   * **current editing session** (possibly with unsaved changes), which must be
-   * re-serialized from the model, so comments/raw formatting are not preserved.
-   * "Disk as-is" is the CLI's job, "editing-session snapshot" the browser's; the
-   * two no longer align implementations. Packaging itself now lives in
-   * packages/export (bundle format), not here.
+   * Export the project bundle (zip): deck.pptd + pages/ + media/, re-serialized from
+   * the current editing session (so comments/raw formatting are not preserved — the
+   * CLI's export-project packages disk files as-is instead). Packaging lives in
+   * packages/export.
    */
   async function doExportZip() {
     try {
@@ -171,9 +153,7 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
     openExportDialog();
   }
 
-  // --------------------------------------------------------------------------
   // Save project
-  // --------------------------------------------------------------------------
   /** Write through the source, updating the editor revision on success. */
   async function writeSources(sources, { skipRevision = false } = {}) {
     const expectedRevision = skipRevision ? undefined : state.revision ?? undefined;

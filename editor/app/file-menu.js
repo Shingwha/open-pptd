@@ -1,13 +1,7 @@
-// ============================================================================
-// app/file-menu.js — "File" dropdown shell (shared by the gallery and the editor)
-// ----------------------------------------------------------------------------
-// Desktop-app mental model: file operations live in a File menu. The gallery
-// (as the start page) puts "open editor / open / recent" there; the editor adds
-// new/save/export — same shell, content rendered per context. The shell owns the
-// popover open/close (positioning / outside-click close / resize repositioning
-// all go through popover.js), the item builders (item/sep/label) and the
-// "recently opened" section (IndexedDB handle list).
-// ============================================================================
+// editor/app/file-menu.js — "File" dropdown shell (shared by the gallery and the editor)
+// Desktop-app file operations: the gallery puts "open editor / open / recent" there,
+// the editor adds new/save/export. The shell owns the popover open/close (positioning
+// and outside-click via popover.js), the item builders and the recent section.
 
 import { listRecent } from "./project/handle-store.js";
 import { menuLabel } from "../components/menu.js";

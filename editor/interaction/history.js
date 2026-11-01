@@ -1,15 +1,7 @@
-// ============================================================================
-// interaction/history.js — undo/redo (undo chain + redo chain)
-// ----------------------------------------------------------------------------
-// Semantics:
-//   - snapshot is called *before* a change; the pre-change state is pushed onto
-//     the undo chain (a restorable point);
-//   - undo(current) pushes the current state onto the redo chain and returns to
-//     the most recent restorable point;
-//   - redo() pops the redo chain and restores it; a new operation (snapshot)
-//     clears the redo chain.
-// This makes the first change undoable and keeps undo/redo strictly paired.
-// ============================================================================
+// editor/interaction/history.js — undo/redo (undo chain + redo chain)
+// snapshot() runs before a change and pushes the pre-change state; undo(current)
+// pushes the current state onto the redo chain and returns the latest restorable
+// point; redo() pops it. A new snapshot clears the redo branch.
 
 export function createHistory(cap = 60) {
   let undoStack = [];

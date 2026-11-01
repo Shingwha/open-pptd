@@ -1,28 +1,8 @@
-// ============================================================================
-// main.js — single application shell (Home ⇄ Editor) + host boot seam
-// ----------------------------------------------------------------------------
-// /editor/ is the ONE app shell (3.0 single shell, decisions.md D1):
-//   ?shot=1            headless screenshot driver (app/shot.js; no shell)
-//   ?deck=<project>    Editor view for that project
-//   ?blank=1           Editor view, blank deck (shell navigation: new blank)
-//   otherwise          Home view (gallery grid)
-// Routing is in-page: history.pushState + popstate, so Home ↔ Editor keeps the
-// same page and the same file menu / theme mode. The root index.html redirects
-// here (query/hash preserved), so the old second gallery page is gone.
-//
-// Host boot seam (unchanged contract): a same-origin host may inject boot
-// parameters through the query string (highest priority) or window.__PPTD_BOOT__
-// (an inline script before this module runs):
-//   ?base=   / __PPTD_BOOT__.base     site prefix for httpSource (default "")
-//   ?chrome= / __PPTD_BOOT__.chrome   "full" | "embedded" (other values ignored + warning)
-//   __PPTD_BOOT__.theme               { tokens?, mode? } → editor theme injection
-//
-// Public contract (zero behavior change; consumers: tests/e2e/*, headless shoot):
-//   window.__pptdEditor = editor.editor   editor operation facade (editor view only)
-//   window.__pptdIo     = editor.io      project IO (e2e calls saveProject())
-//   window.__pptdShot                    shot mode only (set by app/shot.js)
-//   window.__pptdTheme  = { apply(opts), reset() }   host theme injection
-// ============================================================================
+// editor/main.js — single application shell (Home ⇄ Editor) + host boot seam
+// Routes in-page with history.pushState: ?shot=1 headless driver, ?deck=<project>
+// editor, ?blank=1 blank editor, otherwise Home. Host boot parameters come from the
+// query string or window.__PPTD_BOOT__ (base / chrome / theme). Public hooks:
+// window.__pptdEditor, __pptdIo, __pptdShot, __pptdTheme.
 
 import { createEditor } from "./editor.js";
 import { createHomeView } from "./gallery.js";
@@ -53,10 +33,7 @@ const themeMode = bindThemeMode();
 // Shell mount point (editor/index.html provides only this container)
 const root = document.getElementById("pptd-root") || document.body;
 
-// ----------------------------------------------------------------------------
-// Host boot seam: query string > window.__PPTD_BOOT__ (both optional; see the
-// file header for the parameter table)
-// ----------------------------------------------------------------------------
+// Host boot seam: query string > window.__PPTD_BOOT__ (both optional).
 /** chrome presets a host may select through the boot seam. */
 const BOOT_CHROME_VALUES = ["full", "embedded"];
 
@@ -89,12 +66,10 @@ function readBootParams(params) {
 
 let bootParams = { base: null, chrome: null, theme: null };
 
-// ----------------------------------------------------------------------------
 // Host theme hook (postMessage protocol): the embedding host sends
 // { type: "pptd:theme", tokens, mode } from window.parent at the same origin.
 // window.__pptdTheme exposes the same implementation for direct same-origin calls
 // and tests. Every application undoes the previous one first (last host wins).
-// ----------------------------------------------------------------------------
 let restoreHostTheme = null;
 
 /** Apply a host theme payload on the document root. */
@@ -126,9 +101,7 @@ function notifyHostReady() {
   if (window.parent !== window) window.parent.postMessage({ type: "pptd:ready" }, location.origin);
 }
 
-// ----------------------------------------------------------------------------
 // Shell routing: Home (gallery) ⇄ Editor, in-page via History API
-// ----------------------------------------------------------------------------
 let current = null; // { kind: "home"|"editor", destroy() }
 
 function deckUrlOf(params) {
@@ -175,9 +148,7 @@ async function route() {
   return mountHome();
 }
 
-// ----------------------------------------------------------------------------
 // Editor view
-// ----------------------------------------------------------------------------
 async function mountEditor(deckUrl) {
   if (!(await leaveCurrent())) return; // dirty cancel: keep the current editor
   const ed = createEditor(root, {
@@ -199,7 +170,7 @@ async function mountEditor(deckUrl) {
     return;
   }
   // Local project opened from Home (picker / recent): reopen it while the grant holds.
-  // No session-restore card in 3.0: an expired grant asks the user to reopen from File.
+  // An expired grant asks the user to reopen from File.
   if (await consumePendingProject(ed)) return;
   shellToast.show("已新建空白演示", "info");
 }
@@ -230,9 +201,7 @@ async function consumePendingProject(ed) {
   }
 }
 
-// ----------------------------------------------------------------------------
 // Home view
-// ----------------------------------------------------------------------------
 async function mountHome() {
   if (!(await leaveCurrent())) return;
   const view = createHomeView({
@@ -274,9 +243,7 @@ function openRecent(entry) {
   navigate({ blank: "1" });
 }
 
-// ----------------------------------------------------------------------------
 // Boot
-// ----------------------------------------------------------------------------
 async function boot() {
   const params = new URLSearchParams(location.search);
   if (params.get("shot") === "1") {

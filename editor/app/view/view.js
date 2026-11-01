@@ -1,22 +1,9 @@
-// ============================================================================
-// app/view/view.js — render orchestration (canvas / thumbnail bar / button state)
-// ----------------------------------------------------------------------------
-// Every entry that "paints the model onto the screen" is centralized here: render()
-// is a full refresh, while renderCanvas / renderThumbnails / updateButtons can be
-// called individually (progressive loading, window resize, etc.). Viewport
-// (zoom/pan) and the thumbnail bar are separate concerns split into viewport.js /
-// thumbnails.js, each owning their state and DOM wiring; this file only orchestrates
-// and rebuilds the canvas.
-//
-// Two assemblies share this module (3.0 componentisation, decisions.md D1):
-//   createView({ ..., editable })    preview (editable:false, no selection
-//                                    controller) and editor (editable:true)
-//   createPageView({ state, container })  the headless paint surface: one page
-//                                    painted at deck size, scale 1 (render e2e /
-//                                    golden output must stay pixel-identical)
-// The instance context (ui) supplies dom/toast; coords carries the per-instance
-// LayoutTree slot shared with the selection overlay.
-// ============================================================================
+// editor/app/view/view.js — render orchestration (canvas / thumbnail bar / buttons)
+// Full refresh is render(); renderCanvas / renderThumbnails / updateButtons can be
+// called individually. Viewport (zoom/pan) and thumbnails are split into
+// viewport.js / thumbnails.js. Two assemblies share this module: createView (preview
+// editable:false, editor editable:true) and createPageView (headless paint surface:
+// one page at deck size, scale 1, pixel-stable golden output).
 
 import { createViewport, deckSize } from "./viewport.js";
 import { createThumbnails } from "./thumbnails.js";
@@ -25,7 +12,7 @@ import { paintPage } from "../../../packages/renderer/index.js";
 import { paintModelPage } from "../paint-page.js";
 import { createDomMeasure, isDomMeasureAvailable } from "./dom-measure.js";
 
-// MeasurePort for editor layout: the DOM refinement adapter (M6) in a browser, otherwise the pure function
+// MeasurePort for editor layout: the DOM refinement adapter in a browser, otherwise the pure function
 const measurePort = isDomMeasureAvailable() ? createDomMeasure() : undefined;
 
 export function createView({ state, page, api, controller = null, getController = null, ops, ui, editable = true, coords, fitPadding = 64, fitMinW = 320, fitMinH = 200 }) {
@@ -76,9 +63,7 @@ export function createView({ state, page, api, controller = null, getController 
     destroy,
   });
 
-  // --------------------------------------------------------------------------
   // Full refresh
-  // --------------------------------------------------------------------------
   function render() {
     if (!state.deck) return; // load failed/incomplete: skip safely (external triggers such as resize)
     thumbnails.renderThumbnails();
@@ -89,19 +74,15 @@ export function createView({ state, page, api, controller = null, getController 
     viewObj.afterRender?.();
   }
 
-  // --------------------------------------------------------------------------
-  // Progressive loading: targeted refresh once a single page's assets are ready
-  // (that page's thumbnail skeleton → real render; the current page also redoes the canvas)
-  // --------------------------------------------------------------------------
+  // Progressive loading: once one page's assets are ready, refresh that page's
+  // thumbnail and, when it is the current page, the canvas.
   function refreshPage(pg) {
     if (!state.deck) return;
     thumbnails.refreshThumb(pg);
     if (state.deck.pages[state.currentPage] === pg) renderCanvas();
   }
 
-  // --------------------------------------------------------------------------
   // Canvas
-  // --------------------------------------------------------------------------
   function renderCanvas() {
     if (!state.deck) return;
     const canvas = dom.canvas;
@@ -113,9 +94,8 @@ export function createView({ state, page, api, controller = null, getController 
     viewport.applyScale();
     // transform-origin is center: flex centering + center-anchored scaling is visually symmetric, no margin compensation needed
     const pg = page();
-    // resolve → layout → paint: geometry facts are decided once in layout (RP-C / M6).
-    // In the editor, domMeasure refines the text residual (the result only feeds layout, not the model);
-    // the same LayoutTree is handed to the selection box/guides (coords.setLayoutPage), so paint and the selection box no longer compute separately.
+    // resolve → layout → paint: layout decides geometry once. In the editor,
+    // domMeasure refines the text residual; the same tree feeds the selection box/guides.
     const tree = layout({ ...state.deck, theme: state.theme ?? state.deck.theme, pages: [pg] }, measurePort);
     paintPage(tree.pages[0], {
       container: canvas,
@@ -145,9 +125,7 @@ export function createView({ state, page, api, controller = null, getController 
     lastOverflow.set(pageIndex, count);
   }
 
-  // --------------------------------------------------------------------------
   // Button state (editor only; the preview skeleton has no undo/redo buttons)
-  // --------------------------------------------------------------------------
   function updateButtons() {
     if (dom.btnUndo) dom.btnUndo.disabled = !state.history.canUndo();
     if (dom.btnRedo) dom.btnRedo.disabled = !state.history.canRedo();
@@ -162,28 +140,14 @@ export function createView({ state, page, api, controller = null, getController 
   return viewObj;
 }
 
-// ============================================================================
-// Headless / static paint surface
-// ============================================================================
 /**
- * Paint surface for the non-interactive preview assembly (the ?shot=1 headless
- * path). It runs the SAME paint channel as the editor preview — layout → paintPage
- * (paintModelPage) with the same imageMap / iconMap / theme / fonts — and
- * nothing else. Everything the interactive view adds is deliberately absent:
- *   · no viewport fit/zoom/pan transform: the container is the deck-sized
- *     screenshot surface, so the scale must stay 1 (the editor's fit scale
- *     depends on the stage box and would shrink the capture);
- *   · no thumbnails / chrome / selection box;
- *   · no DOM-measure refinement. The editor geometry is max(pure, DOM); the
- *     golden baseline was produced from the pure-function geometry, so the
- *     headless assembly must stay on it (pixel stability is the gate here).
- *
- * render(index) paints one page of the loaded deck into the container and sizes
- * it to the deck (any canvas ratio); index defaults to state.currentPage so the
- * loader's progressive render calls work unchanged.
- *
- * @param {object} deps { state, container } container = the paint surface (the
- *   shot assembly passes its mount point).
+ * Paint surface for the ?shot=1 headless path. Runs the same layout → paintPage
+ * channel as the editor preview and nothing else: no viewport fit/zoom/pan (the
+ * container is the deck-sized capture surface, so scale stays 1), no thumbnails /
+ * chrome / selection box, and no DOM-measure refinement (the golden baseline was
+ * produced from pure-function geometry, so pixel stability requires it).
+ * render(index) paints one page and sizes the container to the deck.
+ * @param {object} deps { state, container } container = the paint surface
  */
 export function createPageView({ state, container }) {
   function render(index = state.currentPage) {

@@ -1,11 +1,7 @@
-// ============================================================================
-// app/view/viewport.js — canvas viewport: zoom/pan state + transform application
-// ----------------------------------------------------------------------------
-// Touch pinch / Ctrl+wheel / the zoom control / dragging outside the canvas to pan
-// (interaction/stage.js) all enter through setZoom / panBy here; the pan amount is
-// applied to canvas-wrap (screen pixels) and does not affect element hit-testing
-// or export. 1 = fit to viewport.
-// ============================================================================
+// editor/app/view/viewport.js — canvas viewport: zoom/pan state + transform application
+// Pinch / Ctrl+wheel / the zoom control / stage panning all enter through
+// setZoom / panBy; the pan is applied to canvas-wrap in screen pixels and never
+// affects hit-testing or export. zoom 1 = fit to viewport.
 
 import { deckSize as deckSizeOf } from "../../../packages/model/index.js";
 
@@ -85,11 +81,9 @@ export function createViewport({ stage, canvas, wrap, zoomLabel, controller, rep
     controller?.setScale(s);
   }
 
-  // Recompute the scale every frame while the panel width animates:
-  // collapsing/expanding on desktop changes .inspector width via CSS and the stage
-  // widens with it; computing once at the animation start would detach the canvas
-  // size from the stage (a visual jump). Each frame only updates the transform, no
-  // page DOM rebuild, so the cost is negligible.
+  // Recompute the scale every frame while a width transition animates: the Design
+  // drawer changes the stage width via CSS, and computing once at the start would
+  // detach the canvas size from the stage. Each frame only updates the transform.
   let scaleRaf = 0;
   function followStageWidth(duration = 260) {
     cancelAnimationFrame(scaleRaf);

@@ -1,14 +1,11 @@
-/* ============================================================================
-   primitives.css — base reset, control language, menus, toast, dialogs
-   ----------------------------------------------------------------------------
-   Paper & Ink (3.1 W2): controls are quiet by default (no fill at rest), hover is
-   one neutral --hover wash, and the cinnabar accent is reserved for the current
-   state / primary action / focus ring. Structure comes from 1px hairlines.
-   Heights: --control-h 32 (default) / --control-h-sm 28 (compact) / --control-h-lg 40.
-   Values come from tokens.css only (ui-token-literals gate).
-   ============================================================================ */
+/* primitives.css — base reset, control language, menus, toast, dialogs
+ * Controls are quiet by default (no fill at rest), hover is one neutral --hover wash,
+ * and the cinnabar accent is reserved for the current state / primary action / focus
+ * ring. Structure comes from 1px hairlines. Heights: --control-h 32 / -sm 28 / -lg 40.
+ * Values come from tokens.css only (ui-token-literals gate).
+ */
 
-/* ==== base ==== */
+/* base */
 
 * { box-sizing: border-box; }
 
@@ -45,7 +42,7 @@ a.btn, .thumb, .add-item { touch-action: manipulation; -webkit-tap-highlight-col
   to { opacity: 1; }
 }
 
-/* ==== controls ==== */
+/* controls */
 
 .btn {
   height: var(--control-h);
@@ -129,7 +126,7 @@ a.icon-btn { text-decoration: none; color: var(--sub); }
 
 .topbar-divider { width: 1px; height: 18px; background: var(--line); margin: 0 var(--space-1); }
 
-/* ==== fab — add control (44px ink disc) ==== */
+/* fab — add control (44px ink disc) */
 
 .fab-stack {
   position: absolute;
@@ -161,7 +158,7 @@ a.icon-btn { text-decoration: none; color: var(--sub); }
 .fab:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: 2px; }
 .fab.active { background: var(--accent); color: var(--on-accent); }
 
-/* ==== zoom — text/icon group at the right end of the thumbnail bar ==== */
+/* zoom — text/icon group at the right end of the thumbnail bar */
 
 .zoom-ctl { display: flex; align-items: center; gap: 2px; }
 .zoom-ctl button { cursor: pointer; }
@@ -178,7 +175,7 @@ a.icon-btn { text-decoration: none; color: var(--sub); }
 }
 .zoom-sep { width: 1px; height: 14px; background: var(--line); margin: 0 var(--space-1); }
 
-/* ==== toast — bottom center, panel ground, a status dot carries the type ==== */
+/* toast — bottom center, panel ground, a status dot carries the type */
 
 .toast-container {
   position: fixed;
@@ -222,7 +219,7 @@ html:has(.thumbbar) .toast-container { bottom: calc(var(--thumbbar-h) + var(--sp
 .toast-danger::before { background: var(--danger); }
 .toast-info::before { background: var(--accent); }
 
-/* ==== menus (components/menu.js) ==== */
+/* menus (components/menu.js) */
 
 .menu {
   background: var(--panel);
@@ -296,7 +293,7 @@ html:has(.thumbbar) .toast-container { bottom: calc(var(--thumbbar-h) + var(--sp
 }
 .file-menu-sep { height: 1px; background: var(--line); margin: var(--space-1) 0; }
 
-/* ==== dialogs ==== */
+/* dialogs */
 
 .dialog-overlay {
   position: fixed;
@@ -380,7 +377,7 @@ html:has(.thumbbar) .toast-container { bottom: calc(var(--thumbbar-h) + var(--sp
 .export-chip.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .export-chip:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: 1px; }
 
-/* ==== scrollbars ==== */
+/* scrollbars */
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: var(--radius-sm); }

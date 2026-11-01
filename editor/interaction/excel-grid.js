@@ -1,20 +1,9 @@
-// ============================================================================
-// interaction/excel-grid.js — Excel-style data grid component (table/chart editors)
-// ----------------------------------------------------------------------------
-// Modelled on the table editor's grid, parameterizing the differences (merged
-// cells / column widths / column-header content / extra toolbar buttons / cell
-// styles). Table and chart share one DOM structure, selection model and interaction:
-//   - toolbar: ↑insert row ↓insert row ←insert col →insert col | delete row delete col [+ consumer extras]
-//   - grid: colgroup (fixed 18px row-header column + data column widths) + letter
-//     column headers + numeric row headers + input cells
-//   - selection: single cell {r,c} / region {r1,c1,r2,c2} (same semantics as the
-//     table editor); dragging selects whole rows/columns/regions (shared
-//     interaction/drag-select.js, including edge auto-scroll)
-// Insert/delete go through callbacks so the consumer mutates the model (it may
-// return an error string to reject, e.g. the table's merge protection); the
-// component owns the new selection and rebuild. External hooks such as style
-// panels run through afterRender / onSelect.
-// ============================================================================
+// editor/interaction/excel-grid.js — Excel-style data grid component (table/chart editors)
+// Table and chart share one DOM structure, selection model and interaction: toolbar
+// row insert/delete, colgroup + letter/number headers + input cells, single-cell /
+// region selection with drag-select and edge auto-scroll. Insert/delete go through
+// callbacks so the consumer mutates the model (an error string rejects, e.g. merge
+// protection); hooks afterRender / onSelect carry style panels and button state.
 
 import { button, buildCellInput } from "./dialogs/base.js";
 import { bindExcelDragSelect } from "./drag-select.js";

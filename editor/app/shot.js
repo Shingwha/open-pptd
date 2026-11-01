@@ -1,22 +1,9 @@
-// ============================================================================
-// app/shot.js — headless screenshot driver (?shot=1, used by `open-pptd build --format png`)
-// ----------------------------------------------------------------------------
-// No assembly of its own: it mounts createPreview in the headless paint mode on a
-// fixed, deck-sized #shot-root surface. State, project IO (load / fonts / images /
-// live channel) and the paint channel (layout → paintPage + the same
-// imageMap / iconMap / theme / font files as the editor preview) are therefore the
-// shared preview code path, not a parallel one (spec 22 S5, 3.0 D1).
-//
-// The driver only owns the CDP-facing contract:
-//   window.__pptdShot = { count, goto(index), width, height }
-//   window.pptdReady("ready")   = current page painted and stable, ready to shoot
-//                                 (injected via CDP Runtime.addBinding; skipped outside CDP)
-//   window.pptdReady("error")   = initialization failed
-//   document.title === "PPTD_READY" / "PPTD_ERROR" is kept as an observable (manual/walkthrough use)
-// ?shot=1 semantics are unchanged: .shot-mode on <html> (zero chrome, no
-// transitions) and a bare body-level #shot-root (the shell skeleton is not rendered).
-// This module is not loaded when the editor is opened normally (no ?shot=1).
-// ============================================================================
+// editor/app/shot.js — headless screenshot driver (?shot=1, `open-pptd build --format png`)
+// Mounts createPreview in headless paint mode on a fixed deck-sized #shot-root, so
+// state, project IO and paint (layout → paintPage) are the shared preview path, not a
+// parallel one. Owns the CDP contract: window.__pptdShot = { count, goto, width,
+// height }, window.pptdReady("ready"|"error"), and document.title PPTD_READY/ERROR.
+// ?shot=1 adds .shot-mode and renders no shell; normal editor loads never import it.
 
 import { createPreview } from "../preview.js";
 import { httpSource } from "./project/source.js";

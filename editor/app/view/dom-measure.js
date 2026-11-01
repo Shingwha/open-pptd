@@ -1,28 +1,10 @@
-// ============================================================================
-// app/view/dom-measure.js — browser offscreen batch-measure adapter (RP-C / M6 wiring)
-// ----------------------------------------------------------------------------
-// The implementation lives on the **editor side** and is wired into canvas layout
-// (packages/measure stays pure and DOM-free, so the adapter lives in the editor
-// layer; the interface matches MeasurePort). The editor-only adapter is also the
-// single such implementation — packages/measure ships no adapter stub.
-//
-// Purpose: measure text runs once with offscreen DOM to refine the pure-function
-// residual of fontMetricsMeasure.
-//   · Results only feed layout (frame/overflow), **never the model** (the third of
-//     the three iron rules: "the model is never written back").
-//   · Conservative composition: take max(pure-function estimate, DOM measurement) —
-//     the pure function carries a safety margin (better too tall than too short) and
-//     DOM only makes up for its underestimate; never let a DOM measurement shrink an
-//     already-decided height (which would give the editor and headless
-//     thumbnails/golden baselines two different geometries).
-//   · Runs containing formulas use the pure function directly (formula layout needs
-//     KaTeX, which offscreen DOM cannot reproduce equivalently).
-//   · When fonts are not ready (document.fonts still loading), fall back to the pure
-//     function to avoid measuring with fallback fonts.
-//   · Tables still go through the pure function: measureTable is implemented there
-//     (exact table row heights were single-sourced in RP-B), and this adapter does
-//     not copy packages/model/table.js internals.
-// ============================================================================
+// editor/app/view/dom-measure.js — browser offscreen batch-measure adapter
+// Wired into canvas layout as the MeasurePort refinement (packages/measure stays pure
+// and DOM-free, so the adapter lives in the editor layer). It measures text runs in
+// an offscreen host to refine fontMetricsMeasure and composes conservatively:
+// max(pure estimate, DOM), so a DOM measurement never shrinks a decided height.
+// Formulas and tables use the pure function; while fonts are still loading it falls
+// back too, keeping editor and headless/golden geometry compatible.
 
 import { fontMetricsMeasure, familiesOf } from "../../../packages/measure/index.js";
 

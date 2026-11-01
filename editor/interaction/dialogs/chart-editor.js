@@ -1,14 +1,8 @@
-// ============================================================================
 // editor/interaction/dialogs/chart-editor.js — chart content editor (minimal)
-// ----------------------------------------------------------------------------
-// Kept (editor-ux §4.3): Excel-style data grid, column rename (encode remap),
-// chart type switch (semantic remap + coexistence warnings), series add/remove,
-// value-column selection, series name, series color.
-// Removed with 3.0: chart / data-label / axis / legend / series style panels,
-// bubble size, line styles, smooth, stack and every other advanced option.
-// Chart size/position stay on the canvas (charts resize but never rotate);
-// export routing is unchanged (CHART_META.route).
-// ============================================================================
+// Fields: Excel-style data grid, column rename (encode remap), chart type switch
+// (semantic remap + coexistence warnings), series add/remove, value-column selection,
+// series name and series color. Size/position stay on the canvas (charts resize but
+// never rotate); export routing goes through CHART_META.route.
 
 import { button } from "./base.js";
 import { createExcelGrid } from "../excel-grid.js";

@@ -1,29 +1,9 @@
-// ============================================================================
-// app/render-backend-browser.js — browser RenderBackend (foreignObject + capture)
-// ----------------------------------------------------------------------------
-// Implements the RenderBackend contract (interfaces.md §6) for the browser:
-//
-//   createBrowserRenderBackend({ width, height, scale, target, state })
-//     prepare() → wait for document fonts
-//     paint(page,{pixelRatio}) → render page offscreen + foreignObject → canvas
-//     capture() → PNG bytes (Uint8Array)
-//     dispose() → remove the offscreen nodes / dispose chart instances
-//
-//   createCaptureRenderBackend({ scale, target, state, pages })
-//     prepare() → POST the editing-session snapshot to /api/export-image once
-//     paint(page) → select the page, capture() → that page's PNG bytes
-//
-// Both backends are rasterizers only: page selection, scale validation, naming,
-// zip and reporting live in packages/export (ExportService). The canvas never
-// paints an extra background, so the alpha channel of the rendered page survives
-// (the page background itself is drawn by the renderer).
-//
-// Browser security constraints kept from the old export-image path:
-//   1. the SVG is loaded as a data: URL (a blob: URL taints the canvas)
-//   2. foreignObject must not contain <img> (bitmaps become div+background:url)
-//   3. no http reference may remain (images/backgrounds → data URLs); elements
-//      that cannot be embedded are dropped and reported per element
-// ============================================================================
+// editor/app/render-backend-browser.js — browser RenderBackend (foreignObject + capture)
+// Implements the RenderBackend contract: createBrowserRenderBackend (offscreen DOM →
+// foreignObject → canvas → PNG) and createCaptureRenderBackend (POST the editing
+// snapshot to /api/export-image). Rasterizers only; selection/scale/naming/zip live in
+// packages/export. The canvas adds no background, so alpha survives. Security: data:
+// SVG URL (blob: taints the canvas), no <img> inside foreignObject, no http references.
 
 import { base64ToBytes, bytesToBase64, deckSize, resolveTheme } from "../../packages/model/index.js";
 import { disposeChartInstances } from "../../packages/renderer/index.js";
@@ -112,7 +92,7 @@ export function createBrowserRenderBackend({ width = null, height = null, scale 
     return node?.closest?.("[data-element-id]")?.dataset?.elementId || null;
   }
 
-  /** Self-contained resources + per-element audit (same rules as the old export-image path). */
+  /** Self-contained resources + per-element audit (each unembeddable node is dropped and reported). */
   async function embedResources(container) {
     const dropped = [];
     for (const node of [...container.querySelectorAll("video,iframe,object,embed,audio")]) {

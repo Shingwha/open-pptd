@@ -1,15 +1,9 @@
-// ============================================================================
-// app/project/loader.js — loading and state application (thin adapter over the transport seam)
-// ----------------------------------------------------------------------------
-// No longer fetches on its own: everything is read through the injected
-// ProjectSource (app/project/source.js) —
-//   loadDeck(url)          via source.read(url) (HTTP / a custom host impl)
-//   loadDeckFromHandle(h)  via source.readFromHandle(h) (File System Access handle)
-// State application is centralized in source.js applyDeck (exported, reused by createEditor).
-// Dependency injection: images (image map rebuild), fontManager (resource-table
-// font restore), source (transport), connect (subscribe live reload once ready),
-// renderStatusBar (refresh the statusbar after load).
-// ============================================================================
+// editor/app/project/loader.js — loading and state application (thin transport adapter)
+// Reads only through the injected ProjectSource: loadDeck(url) via source.read(),
+// loadDeckFromHandle(h) via source.readFromHandle(), loadDeckData() for an
+// already-read project. State application is centralized in source.js applyDeck().
+// finishLoad() is progressive: current page first, remaining pages promoted one by
+// one, fonts restored in parallel, then a full re-render.
 
 import { applyDeck as applyDeckToState } from "./source.js";
 import { preloadIcons } from "./icons.js";
@@ -17,9 +11,7 @@ import { DEFAULT_THEME, resolveTheme, syncElementId } from "../../../packages/mo
 
 export function createLoader({ state, view, ops, images, fontManager, source, ui, connect, renderStatusBar, onDeckChange, onError }) {
   const { dom, toast, dialogs } = ui;
-  // --------------------------------------------------------------------------
   // Theme and state application
-  // --------------------------------------------------------------------------
   function applyTheme(themeInput) {
     // The official theme is always an object (v1 string-key compatibility is gone); deep-copy isolates the default theme reference
     state.deck.theme = themeInput && typeof themeInput === "object"
@@ -44,13 +36,11 @@ export function createLoader({ state, view, ops, images, fontManager, source, ui
     view.render();
   }
 
-  // --------------------------------------------------------------------------
   // Loading
-  // --------------------------------------------------------------------------
   /**
-   * Project file label for the topbar (D4): the last path segment — the project
-   * FILE name such as "deck.pptd" — with any query/hash dropped, so a "?deck="
-   * URL and a Windows path both reduce to the file name.
+   * Project file label for the topbar: the last path segment — the project FILE name
+   * such as "deck.pptd" — with any query/hash dropped, so a "?deck=" URL and a
+   * Windows path both reduce to the file name.
    */
   function brandLabel(text) {
     const path = String(text).split(/[?#]/)[0];
@@ -68,7 +58,7 @@ export function createLoader({ state, view, ops, images, fontManager, source, ui
     if (!el) return; // embedded/headless skeleton has no brand label
     if (text) {
       el.textContent = brandLabel(text);
-      el.title = text; // full path/URL of the project (D4)
+      el.title = text; // full path/URL of the project
       el.classList.remove("unnamed");
     } else {
       el.textContent = "未命名";

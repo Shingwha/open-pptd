@@ -1,20 +1,11 @@
-/* ============================================================================
-   present.css — presentation and screenshot modes (present + shot)
-   ============================================================================ */
-
-/* ==== present — presentation mode ==== */
-
-/* ============================================================================
-   Presentation mode (app/present.js)
-   ----------------------------------------------------------------------------
-   Black backdrop: the slide is scaled to fit the viewport and centered; the bottom
-   bar auto-hides without interaction; on B blackout the slide fades out while the
-   bar can still be summoned (move the mouse).
-   Note: the black backdrop and rgba white are inherent projection colors and use no
-   UI tokens; only layers/sizes go through tokens.
-   ============================================================================ */
+/* present.css — presentation and screenshot modes (present + shot)
+ * Black backdrop: the slide scales to fit the viewport and centers; the bottom bar
+ * auto-hides without interaction. On B blackout the slide fades out while the bar can
+ * still be summoned. The black backdrop and rgba white are inherent projection colors,
+ * not UI tokens; only layers/sizes go through tokens.
+ */
 body.presenting { user-select: none; }
-/* Hide the presenting instance only (3.0: several instances can share a page) */
+/* Hide only the presenting instance (several instances may share a page) */
 .pptd-presenting-hidden { visibility: hidden; }
 
 .present {
@@ -155,9 +146,7 @@ body.presenting { user-select: none; }
   transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
 }
 
-/* ==== shot — headless screenshot mode (?shot=1) ==== */
-
-/* ---------- Headless screenshot mode (?shot=1, used by open-pptd render) ---------- */
+/* shot — headless screenshot mode (?shot=1, used by open-pptd build --format png) */
 .shot-mode,
 .shot-mode body {
   margin: 0;

@@ -1,22 +1,9 @@
-// ============================================================================
-// app/state.js — editor state + pure model operations (no DOM)
-// ----------------------------------------------------------------------------
-// Two responsibilities only: hold the state, and offer pure model mutations
-// (snapshot/selection/delete/page operations). Composite operations that also
-// need to re-render are wrapped by the api layer.
-//
-// Selection model (minimal editor, editor-ux §3):
-//   - state.selection: Set<string> — element id set (ordered, last = "most
-//     recently selected"). Every write goes through ops (select/selectMany/
-//     selectAll/clearSelection); every read goes through the api surface, whose
-//     single derivation is primarySelectedId().
-//   - No grouping: group elements are inert shells (their members are hit and
-//     transformed as ordinary elements), so selection ids are raw element ids.
-//   - Clipboard (copy/cut/paste/duplicate, editor-ux §7): an instance-local array
-//     of deep-copied elements. It never references a page and never touches the
-//     system clipboard; pasting assigns fresh ids and inserts into the current
-//     page. Layer order / arrange stay removed.
-// ============================================================================
+// editor/app/state.js — editor state + pure model operations (no DOM)
+// Holds the deck state and offers pure mutations (snapshot / selection / delete /
+// page / clipboard). Composite operations that also re-render are wrapped by api.
+// Selection writes go through ops and reads through the api's primarySelectedId();
+// groups are inert shells, so selection ids are raw element ids. The clipboard is an
+// instance-local array of deep copies: no page reference, no system clipboard.
 
 import { createHistory } from "../interaction/history.js";
 import { createPage, nextElementId } from "../../packages/model/index.js";
@@ -122,7 +109,7 @@ export function createEditorState() {
       state.dirty = JSON.stringify(state.deck) !== JSON.stringify(state.savedDeck);
     },
 
-    // ---- selection ----
+    // selection
     /** Select. mode: "replace" (default) | "add" (Shift) | "toggle" (Ctrl). */
     select(id, mode = "replace") {
       if (id == null) {
@@ -174,7 +161,7 @@ export function createEditorState() {
       return state.selection.has(id);
     },
 
-    // ---- mutations ----
+    // mutations
     /** Append an element to the current page (add menu / type pickers). Selecting it is a separate op. */
     addElement(el) {
       page().elements.push(el);
@@ -196,7 +183,7 @@ export function createEditorState() {
       ops.clearSelection();
     },
 
-    // ---- clipboard (copy / cut / paste / duplicate; editor-ux §7) ----
+    // clipboard (copy / cut / paste / duplicate)
     /**
      * Deep-copy the selected elements into the instance clipboard. The deck is
      * untouched (no snapshot, no dirty flag); a fresh copy restarts the paste
@@ -251,7 +238,7 @@ export function createEditorState() {
       return state.clipboard.length;
     },
 
-    // ---- pages (single page operations; editor-ux §2) ----
+    // pages
     /** Insert a blank page at `at` (clamped) and switch to it; returns the new index. */
     insertPage(at) {
       const list = state.deck.pages;

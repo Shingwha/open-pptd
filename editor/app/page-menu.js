@@ -1,15 +1,7 @@
-// ============================================================================
-// app/page-menu.js — visible page menu (editor-ux §2)
-// ----------------------------------------------------------------------------
-// One entry in the thumbnail bar (#btn-page-menu) opens a menu that operates on
-// the CURRENT page only:
-//   insert before / insert after · move one page forward/backward ·
-//   move to first/last · delete current page
-// Every action goes through api.insertPage / movePage / deletePage, i.e. one
-// beginChange snapshot + full render, so Ctrl+Z restores it. The ＋ button
-// (app/toolbar.js) is the fast path for "insert after the current page".
-// Drag-sort in the thumbnail bar stays as the long-distance shortcut.
-// ============================================================================
+// editor/app/page-menu.js — visible page menu in the thumbnail bar (#btn-page-menu)
+// Operates on the current page: insert before/after, move forward/backward/first/last,
+// delete. Every action goes through api.insertPage / movePage / deletePage (one
+// beginChange snapshot + full render, so Ctrl+Z restores it).
 
 import { menuItem, menuSeparator, openMenuAt } from "../components/menu.js";
 

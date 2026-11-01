@@ -1,12 +1,10 @@
-/* ============================================================================
-   forms.css — shared form primitives (content editors + Design panel)
-   ----------------------------------------------------------------------------
-   Only the field language lives here: hairline-separated groups, a label column,
-   line inputs (1px --line-strong, focus = accent border), the three-in-one color
-   control with its token popover, switches and hints. No filled blocks.
-   ============================================================================ */
+/* forms.css — shared form primitives (content editors + Design panel)
+ * Hairline-separated groups, a label column, line inputs (1px --line-strong, focus =
+ * accent border), the three-in-one color control with its token popover, switches and
+ * hints. No filled blocks.
+ */
 
-/* -- Sections -- */
+/* Sections */
 .prop-group {
   padding: var(--space-3) var(--space-6);
   border-top: 1px solid var(--line);

@@ -1,22 +1,9 @@
-// ============================================================================
-// editor/skeleton.js — instance skeletons (createPreview / createEditor own their DOM)
-// ----------------------------------------------------------------------------
-// 3.0 makes the editor a self-contained component (decisions.md D1): the host page
-// only provides an empty mount point, and createPreview/createEditor render their
-// own skeleton into it. This module is the single copy of that markup:
-//   editorSkeletonHtml()          full editor shell (topbar / stage / thumbnail bar)
-//   previewSkeletonHtml(opts)     preview shell: "full" = view chrome + page bar,
-//                                 "embedded" = canvas surface only (covers / embeds)
-//   homeSkeletonHtml()            Home (gallery) shell of the single-page app
-//
-// The ids are the DOM contract used by the view modules through createDom(rootEl);
-// keep them in sync with editor/dom.js.
-//
-// A preview skeleton is a subset of the editor one: createEditor renders the editor
-// skeleton and runs the same preview core against it (the extra editing regions are
-// simply ignored by the preview core). The reverse is not true, which is why the
-// two live here rather than being derived from one template.
-// ============================================================================
+// editor/skeleton.js — instance skeletons rendered into the mount point
+// Single copy of the markup: editorSkeletonHtml() (full editor shell),
+// previewSkeletonHtml(opts) ("full" chrome or embedded canvas), homeSkeletonHtml().
+// Ids are the DOM contract consumed through createDom(rootEl); keep them in sync
+// with editor/dom.js. A preview skeleton is a subset of the editor one, so the
+// editor renders its own shell and runs the preview core against it.
 
 /** GitHub repository badge slot (full chrome only; injectIcons fills the slot). */
 const GITHUB_LINK =
@@ -65,9 +52,9 @@ const ADD_CONTROLS =
   `<div id="add-list" class="add-list" hidden></div>`;
 
 /**
- * Editor-only selection action bar (W1): copy / duplicate / delete. Positioned by
+ * Editor-only selection action bar: copy / duplicate / delete. Positioned by
  * interaction/canvas.js above the selection; hidden without a selection, while a
- * content editor is open and while presenting. W2 restyles it.
+ * content editor is open and while presenting.
  */
 const SEL_ACTIONS =
   `<div id="sel-actions" class="sel-actions" hidden>` +

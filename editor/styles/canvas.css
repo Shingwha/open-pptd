@@ -1,9 +1,7 @@
-/* ============================================================================
-   canvas.css — paper desk, white sheet, selection overlay, status, loading
-   ----------------------------------------------------------------------------
-   The desk is warm paper with no grid or decoration; the deck sheet is white with
-   the light two-step shadow from tokens.css. Selection uses the cinnabar accent.
-   ============================================================================ */
+/* canvas.css — paper desk, white sheet, selection overlay, status, loading
+ * The desk is warm paper with no grid; the deck sheet is white with the light
+ * two-step shadow from tokens.css. Selection uses the cinnabar accent.
+ */
 
 .stage {
   position: relative;
@@ -19,12 +17,11 @@
 
 .canvas-wrap { position: relative; }
 
-/* ==== deck paint surfaces: deck content never inherits UI tokens ====
-   Deck elements without an explicit font/color carry no inline value and would inherit
-   body (--font-ui / --ink); a UI palette change then alters the rasterized deck
-   (golden-drift text#2–8 / business-review#4 came from the inherited ink). Every
-   surface that paints deck content pins the 3.0 font stack and default ink; inline
-   theme font/color values still win over these declarations. */
+/* deck paint surfaces: deck content never inherits UI tokens
+ * Deck elements without an explicit font/color would inherit body (--font-ui /
+ * --ink), so a UI palette change would alter the rasterized deck. Every surface that
+ * paints deck content pins --font-deck and --ink-deck; inline theme values still win.
+ */
 .canvas,
 .thumb .thumb-canvas,
 .pptd-preview[data-chrome="embedded"],
@@ -45,7 +42,7 @@
 .stage.space-pan.panning,
 .stage.space-pan.panning * { cursor: grabbing !important; }
 
-/* ==== selection ==== */
+/* selection */
 
 .sel-overlay {
   position: absolute;
@@ -168,7 +165,7 @@
 }
 .sel-overlay.resizing .sel-size { display: block; }
 
-/* ==== selection action bar (W1; restyled) ==== */
+/* selection action bar */
 
 .sel-actions {
   position: absolute;
@@ -203,7 +200,7 @@
 .sel-action[data-action="delete"]:hover { color: var(--danger); }
 .sel-action svg { width: 16px; height: 16px; }
 
-/* ==== the sheet ==== */
+/* the sheet */
 
 .canvas {
   position: relative;
@@ -216,7 +213,7 @@
   touch-action: none;
 }
 
-/* ==== topbar status cluster ==== */
+/* topbar status cluster */
 
 .tb-status {
   display: flex;
@@ -258,7 +255,7 @@
 .status-btn:hover { background: var(--hover); color: var(--ink); }
 .status-btn:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: 1px; }
 
-/* ==== page parse failure ==== */
+/* page parse failure */
 
 .page-error {
   position: absolute;
@@ -275,7 +272,7 @@
   white-space: pre-line;
 }
 
-/* ==== progressive loading mask ==== */
+/* progressive loading mask */
 
 .canvas-loading {
   position: absolute;
@@ -285,7 +282,7 @@
   animation: pptd-pulse 1.2s ease-in-out infinite alternate;
 }
 
-/* ==== smart alignment guides: 1px accent dashes ==== */
+/* smart alignment guides: 1px accent dashes */
 
 .align-guides {
   position: absolute;

@@ -1,16 +1,8 @@
-// ============================================================================
-// app/project/io.js — project-mode assembly root (load / save / export / images / live reload)
-// ----------------------------------------------------------------------------
-// The project source is unified behind one ProjectSource facade (injected by the
-// createEditor / shot assembly):
-//   - the injected source (httpSource by default; a host impl when embedded) owns
-//     URL project reads/writes
-//   - local folder projects (File System Access handles) are owned by
-//     directoryHandleSource, and delegatingSource routes between the two
-//     automatically based on state.projectHandle
-// loader / saver / live-reload only know this facade and no longer fetch
-// themselves. The editor shell (main/toolbar/keyboard/api/shot) is unaware of it.
-// ============================================================================
+// editor/app/project/io.js — project-mode assembly root (load / save / export / images / live reload)
+// The project source is one ProjectSource facade: the injected source owns URL
+// projects, directoryHandleSource owns local folder handles, and delegatingSource
+// routes between them from state.projectHandle. loader / saver / live-reload only
+// know this facade; the editor shell is unaware of it.
 
 import { createFontManager } from "./font-manager.js";
 import { createImageStore } from "./images.js";

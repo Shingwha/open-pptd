@@ -1,14 +1,8 @@
-// ============================================================================
-// app/project/handle-io.js — local project handle IO (File System Access API)
-// ----------------------------------------------------------------------------
-// "Open local project" brings up the OS folder picker via showDirectoryPicker();
-// once a DirectoryHandle is in hand the browser reads/writes the project files
-// directly, with no disk path involved (web pages cannot obtain absolute paths —
-// that is the browser security model; the handle is the grant). Recent-project
-// handle persistence lives in handle-store.js (IndexedDB). Every function only
-// depends on the handle interface (getFileHandle/getDirectoryHandle/getFile/
-// createWritable/queryPermission), so Node tests can cover it with a mock handle.
-// ============================================================================
+// editor/app/project/handle-io.js — local project handle IO (File System Access API)
+// A DirectoryHandle is the grant: web pages cannot obtain absolute disk paths, so the
+// browser reads/writes project files through the handle. handle-store.js persists
+// handles for the recent list. Every function depends only on the handle interface,
+// so Node tests can use a mock handle.
 
 import { base64ToBytes, yaml } from "../../../packages/model/index.js";
 import { dataUrlOf } from "../../../packages/writer/index.js";
@@ -102,7 +96,7 @@ async function removeFileAt(dirHandle, relPath) {
 
 /**
  * Batch-write files ({path, content|b64}, subdirectories auto-created) → write count.
- * Atomic batch semantics (W9): every target is backed up first; a failure while
+ * Atomic batch semantics: every target is backed up first; a failure while
  * writing rolls the already written files (including the failing one) back to
  * their old bytes and removes files that did not exist before.
  */
