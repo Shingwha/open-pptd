@@ -28,6 +28,8 @@
 | W2 | UI 整体重构 | 新设计令牌/布局/组件；编辑器 + 画廊；深浅色/响应式 | W1 | tokens/skeleton/styles/design-panel/gallery/file-menu；截图 | 全量 39/39；全部 e2e 全过；golden 零漂移（渲染管线不变） |
 | W3a | 代码去重/删死代码 | 安全合并 + 零引用删除 + 未用 import | W2 | packages/editor/tests 的定向文件 | 全量 39/39；e2e；contract/dep-graph |
 | W3b | 注释/文档整理 | 压缩 banner、去历史/spec 编号复述、保留公共 JSDoc/算法 | W3a | 全仓非公式、非 vendor 的 .js/.mjs | 全量 39/39；diff 仅注释；contract/dep-graph |
+| W4 | 试用反馈修复 | 画廊静态 / 越界提示 / Logo / 缩略图选中 | 3.1 | editor preview/view/skeleton/thumbnails/styles；feedback-fixes e2e | 全量 39/39；全部 e2e；golden 156/156 |
+| W5 | 恢复添加元素 | 形状/线条/图片 + 6 项添加菜单 | W4 | editor types/add-menu/api/toolbar/styles；add-elements e2e | 全量 39/39；全部 e2e；golden 156/156；图片落盘 |
 
 > W3b 可按**文件不相交**并行 3–4 个 worker；合并顺序固定，lead 逐个门禁后合并。
 
