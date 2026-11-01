@@ -16,8 +16,7 @@
 //   · custom colors: listColorTokens / colorTokenUsage / set / remove guard
 // ============================================================================
 
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   BUILTIN_THEMES,
@@ -25,7 +24,6 @@ import {
   THEME_PALETTES,
   applyTheme,
   colorTokenUsage,
-  createThemeStore,
   isBuiltinThemeId,
   listBuiltinThemes,
   listColorTokens,
@@ -34,27 +32,9 @@ import {
   setColorToken,
 } from "../../packages/model/index.js";
 import { createFileThemeStore } from "../../packages/server/theme-store.js";
+import { check, checkEq, throwsCode, results, withTempDir } from "../lib/test-utils.js";
 
-const results = [];
-function check(name, pass, detail = "") {
-  results.push({ name, pass });
-  console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? `  ${detail}` : ""}`);
-}
-function checkEq(name, actual, expected) {
-  const ok = JSON.stringify(actual) === JSON.stringify(expected);
-  check(name, ok, ok ? "" : `实际=${JSON.stringify(actual)} 期望=${JSON.stringify(expected)}`);
-}
-async function throwsCode(name, fn, code) {
-  try {
-    await fn();
-    check(name, false, "未抛出");
-  } catch (err) {
-    check(name, err?.code === code, `${err?.code || err?.name}: ${err?.message}`);
-  }
-}
-
-const home = mkdtempSync(join(tmpdir(), "open-pptd-theme-test-"));
-try {
+await withTempDir("open-pptd-theme-test-", async (home) => {
   console.log("== 1. 内置主题快照 ==");
   {
     checkEq("内置主题数量（默认 + 10 palette）", BUILTIN_THEMES.length, 11);
@@ -243,9 +223,7 @@ try {
     const missing = removeColorToken(theme, "nope");
     check("删除不存在的 token 不报错", missing.blocked === false && missing.usage === 0);
   }
-} finally {
-  rmSync(home, { recursive: true, force: true });
-}
+});
 
 const failed = results.filter((r) => !r.pass);
 console.log(`\n结果: ${results.length - failed.length}/${results.length} 通过${failed.length ? " ❌" : " ✅"}`);

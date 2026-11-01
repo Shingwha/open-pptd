@@ -46,6 +46,7 @@ import { parseDeck } from "../../packages/model/pptd-io.js";
 import { validateDeck } from "../../packages/model/validate.js";
 import { layout } from "../../packages/layout/index.js";
 import { fontMetricsMeasure } from "../../packages/measure/index.js";
+import { check, checkEq, results } from "../lib/test-utils.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -54,15 +55,6 @@ const PNG_B64 =
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 const PNG = new Uint8Array(Buffer.from(PNG_B64, "base64"));
 
-const results = [];
-function check(name, pass, detail = "") {
-  results.push({ name, pass, detail });
-  console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? `  ${detail}` : ""}`);
-}
-function checkEq(name, actual, expected) {
-  const ok = JSON.stringify(actual) === JSON.stringify(expected);
-  check(name, ok, ok ? "" : `实际=${JSON.stringify(actual)} 期望=${JSON.stringify(expected)}`);
-}
 async function throws(name, fn, predicate) {
   try {
     await fn();

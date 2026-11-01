@@ -17,33 +17,15 @@
 // Usage: node tests/docs/run.mjs (npm run test:docs)
 // ============================================================================
 
-import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { dirname, join, resolve, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { check as ok, results, walk } from "../lib/test-utils.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const SELF = "tests/docs/run.mjs";
 const DOCS = join(ROOT, "docs");
-
-let pass = 0;
-let fail = 0;
-function ok(name, cond, detail = "") {
-  if (cond) {
-    pass++;
-    console.log(`PASS  ${name}${detail ? "  " + detail : ""}`);
-  } else {
-    fail++;
-    console.log(`FAIL  ${name}${detail ? "  " + detail : ""}`);
-  }
-}
-
-function walk(dir) {
-  return readdirSync(dir).flatMap((name) => {
-    const p = join(dir, name);
-    return statSync(p).isDirectory() ? walk(p) : [p];
-  });
-}
 
 function rel(p) {
   return relative(ROOT, p).split(sep).join("/");
@@ -186,5 +168,6 @@ ok("零依赖（无 dependencies/devDependencies）", !pkg.dependencies && !pkg.
 const runAll = readFileSync(join(ROOT, "tests/run-all.mjs"), "utf8");
 ok("run-all 注册 docs 检查", runAll.includes("tests/docs/run.mjs"));
 
-console.log(`\n结果: ${pass}/${pass + fail} 通过${fail ? " ❌" : " ✅"}`);
-process.exit(fail ? 1 : 0);
+const failed = results.filter((r) => !r.pass).length;
+console.log(`\n结果: ${results.length - failed}/${results.length} 通过${failed ? " ❌" : " ✅"}`);
+process.exit(failed ? 1 : 0);

@@ -31,29 +31,11 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { load as loadYaml } from "../../packages/model/vendor/js-yaml.mjs";
 import { skillZipTests } from "./zip.mjs";
+import { check as ok, results, walk } from "../lib/test-utils.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const SKILL = join(ROOT, "skill");
 const BIN = join(ROOT, "bin", "open-pptd.js");
-
-let pass = 0;
-let fail = 0;
-function ok(name, cond, detail = "") {
-  if (cond) {
-    pass++;
-    console.log(`PASS  ${name}${detail ? "  " + detail : ""}`);
-  } else {
-    fail++;
-    console.log(`FAIL  ${name}${detail ? "  " + detail : ""}`);
-  }
-}
-
-function walk(dir) {
-  return readdirSync(dir).flatMap((name) => {
-    const p = join(dir, name);
-    return statSync(p).isDirectory() ? walk(p) : [p];
-  });
-}
 
 function rel(p) {
   return relative(ROOT, p).split(sep).join("/");
@@ -355,5 +337,6 @@ for (const tmp of temps) rmSync(tmp, { recursive: true, force: true });
 // ------------------------------------------------- 4. release skill zip
 skillZipTests(ok, { root: ROOT });
 
-console.log(`\n结果: ${pass}/${pass + fail} 通过${fail === 0 ? " ✅" : " ❌"}（warnings recorded: ${warningTotal}）`);
-process.exit(fail === 0 ? 0 : 1);
+const failed = results.filter((r) => !r.pass).length;
+console.log(`\n结果: ${results.length - failed}/${results.length} 通过${failed === 0 ? " ✅" : " ❌"}（warnings recorded: ${warningTotal}）`);
+process.exit(failed === 0 ? 0 : 1);
