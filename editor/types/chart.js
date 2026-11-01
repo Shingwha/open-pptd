@@ -1,10 +1,6 @@
-// ============================================================================
-// types/chart.js — chart element UI boundary (label + create)
-// ----------------------------------------------------------------------------
+// editor/types/chart.js — chart element UI boundary (label + create)
 // One add-menu entry creates a bar chart; the chart editor switches the type and
-// remaps the encode keys (editor-ux §4.3). Style/axis/label panels are gone in
-// 3.0: only data, type, series and series color are editable.
-// ============================================================================
+// remaps encode keys. Only data, type, series and series color are editable.
 
 import { svgIcon } from "../ui.js";
 import { CHART_META, nextElementId, registerType } from "../../packages/model/index.js";

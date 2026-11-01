@@ -1,17 +1,9 @@
-// ============================================================================
-// popover.js — generic anchored popover (positioning + outside-click close + Esc + resize reposition)
-// ----------------------------------------------------------------------------
-// The shared shell for the file menu / color popover / font popover / theme-color
-// popover (ui.js colorField). This module only owns "positioning and global close
-// listeners"; open/close state stays with the caller (.open class or hidden attr,
-// wired via the isOpen/close callbacks), and the anchor click toggle logic also
-// stays with the caller (each has its own toggle/rebuild differences).
-// Positioning: fixed, `gap` below the anchor; with flip, it pops upward when there
-// is not enough room below but enough above; horizontally clamped into the viewport
-// (8px margin). The caller calls position() once the popover is visible
-// (offsetWidth/Height need visibility to measure; hidden state uses the width/height
-// fallbacks).
-// ============================================================================
+// editor/popover.js — generic anchored popover (positioning + outside-click close + Esc)
+// Shared shell for the file menu and the color/font popovers. This module owns only
+// positioning and global close listeners; open/close state stays with the caller
+// (isOpen/close callbacks), and the anchor click toggle stays with the caller.
+// Positioning is fixed, `gap` below the anchor, optional upward flip and an 8px
+// viewport clamp; hidden-state width/height are fallbacks for measurement.
 
 /**
  * Bind an anchored popover.

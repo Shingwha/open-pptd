@@ -1,11 +1,6 @@
-// ============================================================================
-// coords.js — model / node coordinate conversion (shared by the selection box and overlays)
-// ----------------------------------------------------------------------------
-// The canvas (#canvas) scales around its center as transform-origin, so the visual
-// position of model (0,0) differs from canvas-wrap (0,0); "model coords →
-// screen/layer coords" used to be reimplemented at several sites — this is the only
-// implementation.
-// ============================================================================
+// editor/coords.js — model / node coordinate conversion (selection box and overlays)
+// The canvas scales around its center, so the visual position of model (0,0) differs
+// from wrap (0,0); overlayGeom() is the only implementation of that conversion.
 
 /**
  * Model bounds → wrap-layer visual geometry.
@@ -37,17 +32,11 @@ export function relRect(rect, base) {
   };
 }
 
-// ----------------------------------------------------------------------------
-// LayoutTree for the current page (RP-C / M6): the single geometric source of
-// layout facts. Written by view.js on every canvas paint (paint and the selection
-// box read the same tree, so they cannot compute separately); the selection
-// box/alignment guides read frames from it instead of measuring the DOM
-// (offsetHeight) or recomputing el.bounds. Group shells are not in the LayoutTree
-// (layout skips them), so callers fall back when they are missing.
-//
-// 3.0: the tree is per instance (createCoords), not a module-level slot — two
-// previews/editors on one page each publish their own page geometry.
-// ----------------------------------------------------------------------------
+// LayoutTree for the current page: the single geometric source of layout facts.
+// Written by view.js on every canvas paint; the selection box and alignment guides
+// read frames from it instead of measuring the DOM or recomputing el.bounds. Group
+// shells are not in the tree (layout skips them), so callers fall back when missing.
+// Per instance (createCoords): two editors on one page each publish their own geometry.
 /**
  * Build the coordinate helpers of one instance.
  * @param {{overlayGeom: Function, relRect: Function}} [base] pure conversions (default: the module functions)

@@ -1,22 +1,9 @@
-// ============================================================================
-// gallery.js — Home view (gallery grid) of the single application shell
-// ----------------------------------------------------------------------------
-// 3.0 single shell (editor-ux §7, decisions.md D1): /editor/ without ?deck= is
-// Home; with ?deck= it is the editor. Home is a view of that shell, not a second
-// HTML page: createHomeView renders the Home skeleton into the shell mount point
-// and returns a destroy handle.
-//
-// Cover pipeline: every card lazily loads its project texts (Cache API across
-// sessions, app/project/project-cache.js) and mounts a real createPreview as an
-// embedded instance — the same load → layout → paint path as the editor, no
-// parallel renderer and no separate gallery loader. Previews run with live:false
-// (a cover grid must not open one SSE channel per card).
-//
-// Navigation out of Home is delegated to the shell (onOpenDeck / onNewBlank /
-// onOpenLocal / onOpenRecent), so Home ↔ Editor is one route table in main.js and
-// both views share the same file menu component (app/file-menu.js) and theme mode
-// binding.
-// ============================================================================
+// editor/gallery.js — Home view (gallery grid) of the single application shell
+// /editor/ without ?deck= is Home; with ?deck= it is the editor. createHomeView
+// renders the Home skeleton into the shell mount point and returns a destroy handle.
+// Every card lazily loads its project texts and mounts a real createPreview as an
+// embedded instance (live:false — a cover grid must not open one SSE channel per
+// card). Navigation out is delegated to the shell's route table (main.js).
 
 import { fetchProjectTexts } from "./app/project/project-cache.js";
 import { createFileMenu } from "./app/file-menu.js";

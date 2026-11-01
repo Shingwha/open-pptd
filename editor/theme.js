@@ -1,29 +1,9 @@
-// ============================================================================
-// editor/theme.js — theme token injection (contract 3)
-// ----------------------------------------------------------------------------
-// defaultTokens(mode) reads the built-in light/dark palette out of
-// editor/styles/tokens.css at runtime (that sheet is the single source of the
-// values; this module holds no color literal) and applyThemeTokens(rootEl,
-// { tokens, mode }) injects tokens into any mount point.
-//
-// Usage (host / same-origin iframe embedding):
-//   const restore = applyThemeTokens(document.body, { mode: "dark" });
-//   // or override a single token
-//   const restore2 = applyThemeTokens(rootEl, { tokens: { "--accent": "#7c3aed" } });
-//   restore();  // idempotent restore (drops the attribute and inline overrides)
-//
-// Implementation: mode lands on rootEl's data-pptd-theme attribute (the
-// [data-pptd-theme="dark"] block in tokens.css overrides the :root light defaults,
-// and custom properties inherit naturally); tokens land on rootEl's inline style
-// (higher priority than the stylesheet, for hosts mapping their --dsw-* over).
-//
-// The canonical token names are the semantic ones (--bg/--panel/--line/--ink/
-// --radius/--text-*/--shadow-*/--control-h/--dur-*) plus the --accent family;
-// the U1 names (--r-*/--f-*/--sh-*/--h-*/--n-*/--t-*) and the older --primary*
-// family are aliases kept in the legacy block at the tail of tokens.css. A host
-// overriding an alias is not overriding the canonical token, so new integrations
-// should override the canonical names (--accent / --sel-ring etc.).
-// ============================================================================
+// editor/theme.js — theme token injection + tri-state mode binding
+// defaultTokens(mode) reads the built-in palette from editor/styles/tokens.css at
+// runtime (the sheet is the single source of values); applyThemeTokens(rootEl,
+// {tokens, mode}) injects into a mount point and returns an idempotent restore.
+// Under standalone serve, bindThemeMode persists light/dark/auto in localStorage and
+// follows prefers-color-scheme; a host injection wins over the built-in palette.
 
 /**
  * Token names the engine supports (mirrors editor/styles/tokens.css).
@@ -44,26 +24,18 @@ export const TOKENS = [
   "--mask", "--chip-border",
   // thumbnail-bar hover label
   "--thumb-chip-bg", "--thumb-chip-ink", "--thumb-num-bg", "--thumb-num-ink",
-  // shadows (legacy names: kept so host overrides by the old names keep working)
+  // shadow names (canonical --shadow-*; --sh-* kept in the probe list for hosts)
   "--sh-pop", "--sh-modal",
-  // legacy aliases (old hosts overriding by the old names still work)
+  // legacy names retained in the probe list; only those still declared in
+  // tokens.css resolve to a value, so new integrations should use canonical names
   "--primary", "--primary-strong", "--primary-soft", "--primary-tint", "--scrollbar",
   "--shadow-sm", "--shadow-md", "--shadow-lg", "--shadow-sheet",
 ];
 
-// ----------------------------------------------------------------------------
-// Value source: tokens.css (probe read)
-// ----------------------------------------------------------------------------
-// defaultTokens() mounts a hidden probe element, stamps data-pptd-theme="light"
-// | "dark" on it and reads the resolved custom properties with getComputedStyle
-// (var() references are substituted at computed-value time, so aliases resolve
-// too). tokens.css declares the light palette on ":root, [data-pptd-theme=
-// "light"]" and the dark palette on [data-pptd-theme="dark"], so the probe needs
-// nothing from the surrounding page.
-//
-// Degradation: without a DOM (Node, SSR) there is no stylesheet to read, and
-// this module deliberately keeps no copy of the values, so an empty record is
-// returned. The tables only exist in tokens.css.
+// Value source: tokens.css. defaultTokens() mounts a hidden probe carrying
+// data-pptd-theme and reads the resolved custom properties, so aliases resolve too.
+// Without a DOM (Node/SSR) there is no stylesheet to read and this module keeps no
+// copy of the values, so an empty record is returned.
 
 /** Mount the hidden probe element, read the mode's tokens, remove the probe. */
 function probeTokens(mode) {
@@ -125,19 +97,10 @@ export function applyThemeTokens(rootEl, { tokens, mode } = {}) {
   };
 }
 
-// ----------------------------------------------------------------------------
-// Tri-state theme mode (B3: light / dark / follow system)
-// ----------------------------------------------------------------------------
-// Under standalone serve / GitHub Pages (layer one, "built-in palette") the editor
-// manages it itself:
-//   - the choice persists in localStorage (key pptd.themeMode)
-//   - "auto" reads prefers-color-scheme live and listens for its changes
-//   - the effective value lands on document.documentElement's data-pptd-theme
-//     (the dark-palette selector in tokens.css)
-// It does not start when embedded in a host (layer two, "host override"): the host
-// injects via applyThemeTokens(rootEl,{mode}), and the injection wins over the
-// built-in palette (see createEditor's handling of options.theme.mode).
-// ----------------------------------------------------------------------------
+// Tri-state theme mode: the choice persists in localStorage (pptd.themeMode),
+// "auto" resolves prefers-color-scheme live, and the effective value lands on
+// documentElement's data-pptd-theme. Embedded hosts inject a mode instead, which
+// wins over the built-in palette.
 
 /** Theme-mode localStorage key (persisted in the standalone serve case). */
 export const THEME_MODE_KEY = "pptd.themeMode";

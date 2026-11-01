@@ -1,10 +1,7 @@
-// ============================================================================
-// components/menu.js — Menu primitive (submenu / shortcut hints / icon slot)
-// ----------------------------------------------------------------------------
-// Shell .menu / item .mi / separator .msep / disabled .dis, matching design
-// §03 context-menu form. Also compatible with the existing file-menu .file-menu*
-// styles (menu() accepts a className).
-// ============================================================================
+// editor/components/menu.js — Menu primitive (submenu / shortcut hints / icon slot)
+// Classes: .menu / .mi / .msep / .dis; menu() accepts a className so the file menu
+// can reuse its .file-menu styles. openMenuAt() is the shared pointer-position popup
+// for context menus and the thumbnail-bar menu.
 
 /** Menu container. className defaults to .menu; the file menu passes "file-menu". */
 export function menu({ className = "menu", id = "" } = {}) {
@@ -98,9 +95,7 @@ export function menuLabel(text) {
   return l;
 }
 
-// ----------------------------------------------------------------------------
-// Pointer-position popup menu (context menu / thumbnail-bar menu share one open/close and positioning path)
-// ----------------------------------------------------------------------------
+// Pointer-position popup menu (context menu / thumbnail-bar menu share one path)
 let activePopup = null;
 
 /** Close the active popup menu (no-op when none). */

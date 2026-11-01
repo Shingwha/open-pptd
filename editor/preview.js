@@ -1,29 +1,9 @@
-// ============================================================================
 // editor/preview.js — createPreview: load / layout / paint / navigate / present
-// ----------------------------------------------------------------------------
-// 3.0 splits the old monolithic editor into two components (decisions.md D1):
-//   createPreview  read-only viewer used by gallery covers, host embeds, headless
-//                  PNG export and the editor's own canvas pipeline
-//   createEditor   the preview core + the editing layer (selection / content /
-//                  page ops / undo / Design / save)
-//
-//   createPreview(rootEl, { source, deck?, deckUrl?, theme?, chrome?, on? })
-//     → { ready, destroy, view, io, state, goToPage, nextPage, prevPage,
-//         zoomIn, zoomOut, zoomReset, present, reload }
-//
-// Self-contained: the skeleton (editor/skeleton.js) is rendered into rootEl, and
-// dom / toast / dialogs / theme / present are instance services (editor/context.js).
-// destroy() is idempotent and removes the DOM, listeners, live channel and chart
-// instances of this instance only.
-//
-// chrome: "full"     viewer chrome — brand / present / page bar / zoom / count
-//         "embedded" canvas surface only (covers, iframes, host layouts)
-//
-// Internal options (not part of the public contract):
-//   headless   paint surface mode (shot.js): no skeleton, no chrome bindings;
-//              the mount point itself is the deck-sized page surface
-//   live       false disables the live-reload channel (gallery covers)
-// ============================================================================
+// Read-only viewer over the shared core (gallery covers, host embeds, headless PNG
+// export, editor canvas). Per-instance skeleton/services; destroy() removes only
+// this instance's DOM, listeners, live channel and charts.
+// chrome: "full" (viewer chrome) | "embedded" (canvas only).
+// Internal options: headless (bare deck-sized surface), live:false.
 
 import { createEditorState } from "./app/state.js";
 import { createEditorApi } from "./app/api.js";
@@ -77,7 +57,7 @@ export function previewHandle(core) {
   };
 }
 
-/** chrome accepts exactly the two 3.0 presets (no "shot" / object spec compat layer). */
+/** chrome accepts exactly the two presets. */
 export function normalizeChrome(value, caller = "createEditor") {
   if (value == null) return "full";
   if (value === "full" || value === "embedded") return value;

@@ -1,14 +1,8 @@
-// ============================================================================
-// icons.js — centralized inline SVG icons
-// ----------------------------------------------------------------------------
-// The single source for inline icons shared by the editor and the gallery:
-//   - svgIcon(inner): stroked icon shell (shared by the type-registry menu icons; re-exported by ui.js)
-//   - named icon constants: whole SVG snippets reused across files (GitHub badge / rotate handle / fullscreen)
-//   - injectIcons(): at startup replaces the <span class="icon-slot" data-icon="…">
-//     placeholders in the HTML with the real SVG (icons are maintained once, no inlining in HTML)
-// The per-type menu icons of the type registry (types/*.js) stay declared next to
-// their registration, wrapped by svgIcon.
-// ============================================================================
+// editor/icons.js — centralized inline SVG icons
+// svgIcon() is the stroked icon shell shared by menu icons (types/*.js declares its
+// own next to the registration; ui.js re-exports it). Named constants are whole
+// snippets reused across files; injectIcons() replaces .icon-slot[data-icon]
+// placeholders at startup.
 
 /** Stroked icon shell (inherits currentColor). */
 export function svgIcon(inner) {

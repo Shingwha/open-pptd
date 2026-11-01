@@ -1,10 +1,6 @@
-// ============================================================================
-// ui.js — shared form controls (content editors / Design panel)
-// ----------------------------------------------------------------------------
-// Interaction convention: controls support an { onBlur } hook, which callers use to
-// implement the "first commit → beginChange snapshot / blur → endChange re-render"
-// transaction mode; controls that need no transaction pass no hook.
-// ============================================================================
+// editor/ui.js — shared form controls (content editors / Design panel)
+// Controls take an optional { onBlur } hook; callers use it for the "first commit →
+// beginChange snapshot / blur → endChange re-render" transaction mode.
 
 // svgIcon moved to icons.js (the single inline-icon source); re-exported here so existing import paths stay valid
 export { svgIcon } from "./icons.js";
@@ -80,9 +76,8 @@ export function numInput(value, onCommit, { min = -10000, step = 1, onFocus, onB
 /**
  * Color picker.
  * value may be a hex or a theme token ($primary etc.); opts.resolve(value) → a
- * concrete hex, used to fill in the input's current value (otherwise a token always
- * shows the default black and the user never sees the real color). Only #RRGGBB is
- * accepted for the fill; anything else is left alone (keeping the browser default).
+ * concrete hex fills in the current value, otherwise a token would always show black.
+ * Only #RRGGBB is accepted for the fill; anything else keeps the browser default.
  */
 export function colorInput(value, onCommit, { className = "", title = "", resolve, onFocus, onBlur } = {}) {
   const input = document.createElement("input");

@@ -1,19 +1,9 @@
-// ============================================================================
-// components/button.js — Button primitive (3 sizes × 4 variants + icon)
-// ----------------------------------------------------------------------------
-// The only button construction point site-wide: shared by the property panel /
-// dialogs / topbar / toolbar, replacing scattered .btn / .icon-btn /
-// .status-btn / .thumb-add duplicates (styles centralized in the .btn system in
-// editor/styles/primitives.css).
-//
-// Usage:
-//   button("Cancel")                                  // default
-//   button("Export", { variant: "primary", size: "sm" })
-//   button("", { icon: "<svg…>", variant: "ghost", size: "icon", title: "Undo" })
-//   button("Delete", { variant: "danger", onClick: fn })
-//
-// className can override everything (compatible with existing calls: className:"btn btn-sm").
-// ============================================================================
+// editor/components/button.js — Button primitive (3 sizes × 4 variants + icon)
+// The only button construction point site-wide: shared by the property panel,
+// dialogs, topbar and toolbar. className overrides everything, so older
+// className:"btn btn-sm" call sites keep working; styles live in primitives.css.
+// Usage: button("Export", { variant: "primary", size: "sm" })
+//        button("", { icon: svg, variant: "ghost", size: "icon", title: "Undo" })
 
 const VARIANTS = { default: "", primary: "btn-primary", ghost: "btn-ghost", danger: "btn-danger" };
 const SIZES = { default: "", sm: "btn-sm", lg: "btn-lg", icon: "icon-btn" };
@@ -34,7 +24,7 @@ export function btnClass({ variant = "default", size = "default", className = ""
  *   size?           "default"|"sm"|"lg"|"icon"
  *   icon?           SVG string (placed before the text)
  *   title?          hover tooltip (defaults to label)
- *   className?      full class override (compatible with old calls)
+ *   className?      full class override (wins over variant/size)
  *   active?         append .on (toggle state)
  *   preventDefault? default true: prevent default on mousedown (avoids textarea blur)
  *   disabled?

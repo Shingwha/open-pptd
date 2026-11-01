@@ -1,10 +1,6 @@
-// ============================================================================
-// types/text.js — text element UI boundary (label + create)
-// ----------------------------------------------------------------------------
-// Render/toXml come from packages/renderer/types + packages/writer/types. The
-// content editor lives in interaction/text-editor.js (opened by double-click or
-// the add menu after creation); there is no properties panel in 3.0.
-// ============================================================================
+// editor/types/text.js — text element UI boundary (label + create)
+// Render/toXml come from the renderer/writer type shards; the content editor lives in
+// interaction/text-editor.js (opened by double-click or after creation).
 
 import { svgIcon } from "../ui.js";
 import { nextElementId, registerType } from "../../packages/model/index.js";

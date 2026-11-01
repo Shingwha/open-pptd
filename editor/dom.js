@@ -1,18 +1,8 @@
-// ============================================================================
-// dom.js — skeleton element registry, scoped to one instance mount point
-// ----------------------------------------------------------------------------
-// Editor modules never call document.getElementById/querySelector for skeleton
-// elements; they read dom.<name> (or dom.query(selector) for regions without an
-// id) from the instance context created by createPreview/createEditor.
-//
-// Scope: createDom(rootEl) resolves every lookup inside rootEl ONLY. There is no
-// document fallback and no module-level singleton (3.0 componentisation,
-// decisions.md D1): two instances mounted side by side each get their own
-// registry, and a missing element is a genuine null rather than a silent reach
-// into another instance's skeleton.
-// Lookups are lazy (first access) and cached: the skeleton is authored once per
-// instance (editor/skeleton.js) and never replaced while the instance lives.
-// ============================================================================
+// editor/dom.js — skeleton element registry, scoped to one instance mount point
+// Lookups resolve inside rootEl only (no document fallback): two instances mounted
+// side by side each get their own registry, and a missing element is a genuine
+// null. Lazy and cached; the skeleton is authored once per instance
+// (editor/skeleton.js) and never replaced while the instance lives.
 
 /** Property name → skeleton element id (the id contract; mirrors editor/skeleton.js). */
 const IDS = {

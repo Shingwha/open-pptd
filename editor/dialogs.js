@@ -1,22 +1,9 @@
-// ============================================================================
 // editor/dialogs.js — host-overridable dialog service, one per instance
-// ----------------------------------------------------------------------------
-// The "host-hostile calls" inside editor/ (native alert/confirm) and every modal
-// built by the content editors / Design panel go through this service:
-//   dialogs.alert(msg)            notice
-//   dialogs.confirm(msg)          confirm → boolean or Promise<boolean> (callers await)
-//   dialogs.showDialog(...)       modal (title + body + footer), tracked per instance
-//   dialogs.closeAll()            close every modal this instance opened (destroy)
-//
-// createDialogs(override) builds one instance-scoped service:
-//   - override (createEditor options.dialogs) replaces native alert/confirm wholesale
-//     (embedding hosts swap in self-drawn dialogs, avoiding iframes needing
-//     allow-modals and a visual mismatch)
-//   - the open-modal registry is per service, so destroying one editor never closes
-//     another instance's modal
-//   - defaultDialogs (native window.alert/confirm) is exported for hosts that want
-//     to wrap the default behaviour
-// ============================================================================
+// Native alert/confirm and every modal built by the content editors / Design panel go
+// through this service: alert(msg), confirm(msg), showDialog(...), closeAll().
+// createDialogs(override) replaces the native dialogs wholesale (embedding hosts
+// swap in self-drawn ones) and keeps an open-modal registry per instance, so
+// destroying one editor never closes another instance's modal.
 
 /** Default implementation: native dialogs (the only place window.alert/confirm is allowed). */
 export const defaultDialogs = {

@@ -1,24 +1,10 @@
-// ============================================================================
 // editor/editor.js — createEditor: the editing layer on the shared preview core
-// ----------------------------------------------------------------------------
-// 3.0 componentisation (decisions.md D1): createEditor does not assemble a second
-// pipeline — it builds the preview core (load / layout / paint / live reload /
-// present / theme) and attaches the editing layer on top:
-//   selection + transform (interaction/canvas.js + stage.js)
-//   content editors (text / table / chart, lazy)
-//   page operations, undo/redo, Design panel, save/export
-//
-//   createEditor(rootEl, { source, deck?, deckUrl?, theme?, chrome?, dialogs?, on? })
-//     → { ready, destroy, preview, editor, io, state }  (contract 3.0 §10.1)
-//
-// Self-contained: the editor skeleton (editor/skeleton.js) is rendered into
-// rootEl; every service is per instance. chrome is "full" | "embedded" — the old
-// "shot" / interactive:false / locale entry points are gone (headless PNG export
-// uses createPreview directly).
-//
-// destroy() is idempotent and tears down the editing bindings first, then the
-// shared preview core (DOM / listeners / live channel / charts / dialogs / toasts).
-// ============================================================================
+// createEditor(rootEl, { source, deck?, deckUrl?, theme?, chrome?, dialogs?, on? })
+//   → { ready, destroy, preview, editor, io, state }
+// Builds the preview core (load / layout / paint / live reload / present / theme)
+// and attaches selection + transform, lazy content editors, page ops, undo/redo,
+// the Design panel and save/export. Every service is per instance; destroy() is
+// idempotent and tears down the editing bindings before the core.
 
 import { createCanvasController } from "./interaction/canvas.js";
 import { createStageController } from "./interaction/stage.js";
@@ -61,9 +47,7 @@ export function createEditor(rootEl, options = {}) {
   const disposers = [];
   let destroyed = false;
 
-  // --------------------------------------------------------------------------
   // Selection / transform layer
-  // --------------------------------------------------------------------------
   const controller = createCanvasController(dom.canvas, {
     ...api,
     coords,
@@ -92,9 +76,7 @@ export function createEditor(rootEl, options = {}) {
   });
   disposers.push(() => stage.destroy?.());
 
-  // --------------------------------------------------------------------------
   // Public events (dirty / selectionChange) + per-render hooks
-  // --------------------------------------------------------------------------
   let lastDirty = null;
   let lastSelected = null;
   const emitEvents = () => {
@@ -124,9 +106,7 @@ export function createEditor(rootEl, options = {}) {
     emitEvents();
   };
 
-  // --------------------------------------------------------------------------
   // Toolbar / keyboard / resize / live channel
-  // --------------------------------------------------------------------------
   const toolbar = bindToolbar({ state, api, view, io, present: core.present, themeMode: ui.themeMode, ui });
   disposers.push(() => toolbar.destroy?.());
   const keyboard = bindKeyboard({ state, api, io, present: core.present, ui });
@@ -180,9 +160,7 @@ export function createEditor(rootEl, options = {}) {
     return hidden;
   }
 
-  // --------------------------------------------------------------------------
   // destroy (idempotent): editing bindings first, then the shared core
-  // --------------------------------------------------------------------------
   function destroy() {
     if (destroyed) return;
     destroyed = true;
@@ -199,7 +177,7 @@ export function createEditor(rootEl, options = {}) {
     core.destroy();
   }
 
-  // public shape (interfaces.md §10.1): preview = read-only handle, editor = the api surface.
+  // public shape: preview = read-only handle, editor = the api surface.
   // The nested preview's destroy delegates to the editor teardown (one instance, one destroy).
   const preview = previewHandle(core);
   preview.destroy = destroy;
