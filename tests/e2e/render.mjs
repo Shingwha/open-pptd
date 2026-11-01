@@ -9,13 +9,13 @@
 //   3. The process can exit naturally (event loop drains after renderDeck returns, no leaked handles/timers)
 // ============================================================================
 
-import { readFileSync, existsSync, readdirSync, rmSync, statSync } from "node:fs";
-import { inflateSync } from "node:zlib";
+import { readFileSync, readdirSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { renderDeck } from "../../packages/renderer/headless/shoot.js";
 import { findBrowser } from "../../packages/renderer/headless/browser.js";
 import { startServer } from "../../packages/server/index.js";
+import { decodePng, PNG_CHANNELS } from "../tools/golden-lib.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SKILL = join(__dirname, "../..");
@@ -27,78 +27,6 @@ const results = [];
 function record(name, ok, detail = "") {
   results.push({ name, ok });
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}${detail ? "  " + detail : ""}`);
-}
-
-// ---------------------------------------------------------------------------
-// Minimal PNG decode helpers (zero dependencies).
-// A PNG's IDAT payload is zlib-compressed scanlines; each scanline is one filter
-// byte (0=None/1=Sub/2=Up/3=Average/4=Paeth) followed by raw bytes. The filter byte
-// MUST be undone before the bytes mean anything as pixels — reading IDAT directly as
-// RGBA smears the Sub/Up/Paeth residuals and collapses flat regions to a handful of
-// "colors".
-// Decoder scope: 8-bit, non-interlaced colorType 0/2/4/6 (grey / RGB / grey+alpha /
-// RGBA). Palette (3), 16-bit and Adam7 need tables/extra passes this smoke test does
-// not need — the caller reports those as SKIP instead of guessing.
-// ---------------------------------------------------------------------------
-const CHANNELS_BY_COLOR_TYPE = { 0: 1, 2: 3, 4: 2, 6: 4 };
-
-function paethPredictor(a, b, c) {
-  const p = a + b - c;
-  const pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
-  if (pa <= pb && pa <= pc) return a;
-  if (pb <= pc) return b;
-  return c;
-}
-
-/** Undo PNG scanline filtering → a packed byte buffer (width*height*bpp). */
-function unfilterScanlines(raw, width, height, bpp) {
-  const stride = width * bpp;
-  const out = Buffer.alloc(stride * height);
-  let pos = 0;
-  for (let y = 0; y < height; y++) {
-    const filter = raw[pos++];
-    const rowStart = y * stride;
-    const prevStart = rowStart - stride;
-    for (let x = 0; x < stride; x++) {
-      const a = x >= bpp ? out[rowStart + x - bpp] : 0;
-      const b = y > 0 ? out[prevStart + x] : 0;
-      const c = y > 0 && x >= bpp ? out[prevStart + x - bpp] : 0;
-      const v = raw[pos + x];
-      let r;
-      switch (filter) {
-        case 0: r = v; break;
-        case 1: r = v + a; break;
-        case 2: r = v + b; break;
-        case 3: r = v + ((a + b) >> 1); break;
-        case 4: r = v + paethPredictor(a, b, c); break;
-        default: throw new Error(`unknown PNG filter type ${filter} on row ${y}`);
-      }
-      out[rowStart + x] = r & 0xff;
-    }
-    pos += stride;
-  }
-  return out;
-}
-
-/** Concatenate the IDAT payload(s) of a PNG byte buffer. */
-function concatIdat(buf) {
-  const idat = [];
-  let pos = 8;
-  while (pos + 12 <= buf.length) {
-    const len = buf.readUInt32BE(pos);
-    const type = buf.toString("ascii", pos + 4, pos + 8);
-    if (type === "IDAT") idat.push(buf.subarray(pos + 8, pos + 8 + len));
-    if (type === "IEND") break;
-    pos += 12 + len;
-  }
-  return Buffer.concat(idat);
-}
-
-/** Read an (r,g,b) triple for pixel (x,y) out of an unfiltered 8-bit buffer. */
-function pixelRgb(pixels, x, y, stride, channels) {
-  const i = y * stride + x * channels;
-  if (channels <= 2) return [pixels[i], pixels[i], pixels[i]]; // grey / grey+alpha
-  return [pixels[i], pixels[i + 1], pixels[i + 2]];
 }
 
 // No browser → clear message and exit (matches the other tests/e2e)
@@ -182,17 +110,16 @@ record("scale=2 输出 1920×1080", sw === 1920 && sh === 1080, `${sw}x${sh}`);
 const bitDepth = sb[24];
 const colorType = sb[25];
 const interlace = sb[28];
-const channels = CHANNELS_BY_COLOR_TYPE[colorType];
-if (bitDepth === 8 && interlace === 0 && channels) {
-  const raw = inflateSync(concatIdat(sb));
-  const pixels = unfilterScanlines(raw, sw, sh, channels);
+if (bitDepth === 8 && interlace === 0 && PNG_CHANNELS[colorType]) {
+  const { channels, data } = decodePng(sb);
   const stride = sw * channels;
   const colors = new Set();
   // Sample the bottom-right quarter densely enough to catch anti-aliased text/edges
   // (a sparse grid lands only on flat fills and undercounts).
   for (let y = Math.floor(sh / 2); y < sh; y += 8) {
     for (let x = Math.floor(sw / 2); x < sw; x += 8) {
-      const [r, g, b] = pixelRgb(pixels, x, y, stride, channels);
+      const i = y * stride + x * channels;
+      const r = data[i], g = channels <= 2 ? data[i] : data[i + 1], b = channels <= 2 ? data[i] : data[i + 2];
       colors.add((r >> 4) << 8 | (g >> 4) << 4 | (b >> 4));
     }
   }
