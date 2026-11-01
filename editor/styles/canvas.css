@@ -19,6 +19,21 @@
 
 .canvas-wrap { position: relative; }
 
+/* ==== deck paint surfaces: deck content never inherits UI tokens ====
+   Deck elements without an explicit font/color carry no inline value and would inherit
+   body (--font-ui / --ink); a UI palette change then alters the rasterized deck
+   (golden-drift text#2–8 / business-review#4 came from the inherited ink). Every
+   surface that paints deck content pins the 3.0 font stack and default ink; inline
+   theme font/color values still win over these declarations. */
+.canvas,
+.thumb .thumb-canvas,
+.pptd-preview[data-chrome="embedded"],
+.present-stage,
+#shot-root {
+  font-family: var(--font-deck);
+  color: var(--ink-deck);
+}
+
 /* Panning / space-hand cursors */
 .stage.panning,
 .stage.panning * {

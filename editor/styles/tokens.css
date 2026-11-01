@@ -26,6 +26,12 @@
   --font-ui: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-display: "Iowan Old Style", "Palatino Linotype", Georgia, "Songti SC", "Noto Serif SC", serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Deck paint stack: the 3.0 default (Microsoft YaHei first). Deck pages whose theme
+     declares no fontFamily inherit this stack, so the UI font must never reach them. */
+  --font-deck: "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Deck default text color (3.0 value): colorless deck text inherits it, so the UI
+     ink palette can change without touching rendering (golden text#2–8). */
+  --ink-deck: #1c2532;
   /* Font scale — 11/12/13/14/16/20/28/44 */
   --text-xs: 11px;
   --text-sm: 12px;
