@@ -1,10 +1,11 @@
 // editor/app/toolbar.js — binding for the topbar / add control / thumbnail-bar buttons
 // Covers file menu, design, present, undo/redo, add, page menu and zoom. The add menu
-// itself lives in interaction/add-menu.js (three content types).
+// itself lives in interaction/add-menu.js (six types; shape/line expand variants).
 
 import { createFileMenu } from "./file-menu.js";
 import { bindPageMenu } from "./page-menu.js";
 import { bindAddMenu } from "../interaction/add-menu.js";
+import { pickLocalImage } from "../types/image.js";
 import { createDesignPanelService } from "../interaction/design-panel-lazy.js";
 import { removeRecent } from "./project/handle-store.js";
 
@@ -94,15 +95,14 @@ export function bindToolbar({ state, api, view, io, present, themeMode = null, u
     };
   }
 
-  // Add control (three content types) + page menu + Design panel (lazy)
+  // Add control (six add-menu types) + page menu + Design panel (lazy)
   function bindAddMenuUI() {
     const h = bindAddMenu({
       fab: dom.btnAdd,
       menu: dom.addList,
-      onAdd: (type) => {
-        if (type === "text") api.addText();
-        else if (type === "table") api.addTable();
-        else if (type === "chart") api.addChart();
+      onAdd: (type, variant) => {
+        if (type === "image") pickLocalImage({ api, ui });
+        else api.addElementOfType(type, variant);
       },
     });
     if (h?.destroy) disposers.push(h.destroy);
