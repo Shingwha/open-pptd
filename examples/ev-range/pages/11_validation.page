@@ -1,0 +1,231 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |-
+  实车验证：每辆车取一个较长驾驶事件作预测数据。图 14 为四车不同模型预测对比。
+  确定系数 R² 按 T/CSAE 172-2021 评价；含 Q 的 LSTM 四车 R² 均提升，最高 0.9953。
+elements:
+  - elementId: chapter-bar
+    elementType: shape
+    bounds: [0, 0, 960, 56]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+  - elementId: chapter-text
+    elementType: text
+    bounds: [48, 18, 720, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "#FFFFFF"
+      bold: true
+      wrap: false
+      text: '04. 验证与讨论 —— 实车单驾驶事件'
+  - elementId: chapter-brand
+    elementType: text
+    bounds: [736, 20, 176, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.8
+      color: "$accent6"
+      align: [right, top]
+      wrap: false
+      text: EV RANGE · 学术报告
+  - elementId: title
+    elementType: text
+    bounds: [48, 70, 864, 34]
+    content:
+      style: "$title"
+      wrap: false
+      text: 四辆车 R² 全部提升，最高 0.9953
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 104, 864, 16]
+    content:
+      style: "$caption"
+      fontSize: 9.6
+      wrap: false
+      text: 每辆车取一个较长驾驶事件；按 T/CSAE 172-2021 确定系数法评价
+  - elementId: fig-a-card
+    elementType: shape
+    bounds: [48, 132, 202, 126]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 8, color: "#1F5FBF12", offset: [0, 2] }
+  - elementId: fig-a
+    elementType: image
+    bounds: [52, 136, 194, 118]
+    src: media/fig14a.jpg
+    fit: { mode: contain }
+  - elementId: fig-b-card
+    elementType: shape
+    bounds: [258, 132, 202, 126]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 8, color: "#1F5FBF12", offset: [0, 2] }
+  - elementId: fig-b
+    elementType: image
+    bounds: [262, 136, 194, 118]
+    src: media/fig14b.jpg
+    fit: { mode: contain }
+  - elementId: fig-c-card
+    elementType: shape
+    bounds: [48, 266, 202, 126]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 8, color: "#1F5FBF12", offset: [0, 2] }
+  - elementId: fig-c
+    elementType: image
+    bounds: [52, 270, 194, 118]
+    src: media/fig14c.jpg
+    fit: { mode: contain }
+  - elementId: fig-d-card
+    elementType: shape
+    bounds: [258, 266, 202, 126]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 8, color: "#1F5FBF12", offset: [0, 2] }
+  - elementId: fig-d
+    elementType: image
+    bounds: [262, 270, 194, 118]
+    src: media/fig14d.jpg
+    fit: { mode: contain }
+  - elementId: fig-caption
+    elementType: text
+    bounds: [48, 398, 412, 30]
+    content:
+      style: "$caption"
+      fontSize: 8.2
+      text: |-
+        <p><span style="color:$accent;font-weight:bold;">图 14</span>　四辆车不同模型剩余续驶里程预测结果，(a)–(d) 对应 1–4 号车；图例 LSTM 含 Q 为含驾驶行为量化因子的模型。</p>
+  - elementId: fig-reading
+    elementType: text
+    bounds: [48, 432, 412, 32]
+    content:
+      style: "$body"
+      fontSize: 9.2
+      lineHeight: 1.45
+      text: 含 Q 的 LSTM 预测值与真实值误差更小、线性拟合度更高，优于不含 Q 模型与原车仪表预测。
+  - elementId: table-card
+    elementType: shape
+    bounds: [476, 132, 436, 206]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 12, color: "#1F5FBF14", offset: [0, 3] }
+  - elementId: table-caption
+    elementType: text
+    bounds: [492, 144, 404, 16]
+    content:
+      style: "$caption"
+      fontSize: 8.4
+      wrap: false
+      text: |-
+        <p><span style="color:$accent;font-weight:bold;">表 8（摘）</span>　单驾驶事件预测的确定系数</p>
+  - elementId: table-8
+    elementType: table
+    bounds: [492, 164, 404, 165]
+    columnWidths: [0.25, 0.375, 0.375]
+    rowHeights: [0.2, 0.2, 0.2, 0.2, 0.2]
+    style: "$blue"
+    rows:
+      - - text: 车辆
+        - text: LSTM 不含Q
+        - text: LSTM 含Q
+      - - text: 1号
+        - text: "0.9514"
+        - text: |-
+            <p><span style="color:$primary;font-weight:bold;">0.9756</span></p>
+      - - text: 2号
+        - text: "0.9644"
+        - text: |-
+            <p><span style="color:$primary;font-weight:bold;">0.9946</span></p>
+      - - text: 3号
+        - text: "0.9814"
+        - text: |-
+            <p><span style="color:$primary;font-weight:bold;">0.9953</span></p>
+      - - text: 4号
+        - text: "0.9531"
+        - text: |-
+            <p><span style="color:$primary;font-weight:bold;">0.9680</span></p>
+  - elementId: table-source
+    elementType: text
+    bounds: [492, 330, 404, 10]
+    content:
+      style: "$caption"
+      fontSize: 7.2
+      align: [right, top]
+      wrap: false
+      text: 数据来源：原文表 8；R² 按 T/CSAE 172-2021 计算
+  - elementId: formula-card
+    elementType: shape
+    bounds: [476, 350, 436, 64]
+    shapeName: roundRect
+    adjustments: [12000]
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: formula
+    elementType: text
+    bounds: [492, 358, 404, 26]
+    content:
+      fontSize: 11.5
+      color: "$text"
+      align: [center, middle]
+      text: |-
+        <p>\(R^2 = 1 - \frac{\sum (y_i - \hat{y}_i)^2}{\sum (y_i - \bar{y})^2}\)</p>
+  - elementId: formula-note
+    elementType: text
+    bounds: [492, 386, 404, 22]
+    content:
+      style: "$caption"
+      fontSize: 7.6
+      align: [center, top]
+      text: R² 越接近 1，预测偏差越小、准确度越高。
+  - elementId: conclusion-card
+    elementType: shape
+    bounds: [476, 426, 436, 38]
+    shapeName: roundRect
+    adjustments: [18000]
+    fill: { type: solid, color: "$primaryDeep" }
+  - elementId: conclusion-text
+    elementType: text
+    bounds: [492, 432, 404, 24]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.2
+      color: "#FFFFFF"
+      align: [center, middle]
+      wrap: false
+      text: 四车 R² 全部高于不含 Q 模型；3 号车最高 0.9953。
+  - elementId: footer-line
+    elementType: shape
+    bounds: [48, 502, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: footer-left
+    elementType: text
+    bounds: [48, 507, 640, 12]
+    content:
+      style: "$nav"
+      wrap: false
+      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+  - elementId: footer-page
+    elementType: text
+    bounds: [800, 506, 112, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.5
+      color: "$primary"
+      bold: true
+      align: [right, top]
+      wrap: false
+      text: 11 / 15

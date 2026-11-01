@@ -1,99 +1,176 @@
 pageType: cover
 background:
-  type: solid
-  color: "$bg"
-notes: |
-  封面：论文题目、作者与机构信息。说明论文发表于《新能源车辆工程学报》，
-  研究聚焦"用量化因子代替聚类标签刻画驾驶行为，提升电动汽车剩余续驶里程预测精度"。
+  type: gradient
+  gradientType: linear
+  angle: 135
+  stops:
+    - { position: 0, color: "#0E2E5F" }
+    - { position: 0.55, color: "#1F5FBF" }
+    - { position: 1, color: "#3E7BD6" }
+notes: |-
+  封面：深蓝渐变底、白色思源宋体大标题、白色描边胶囊标签。
+  报告论文发表于《新能源车辆工程学报》，研究聚焦"用量化因子代替聚类标签刻画驾驶行为，
+  提升电动汽车剩余续驶里程预测精度"。
 elements:
-  - elementId: journal
+  - elementId: brand-left
     elementType: text
-    bounds: [60, 44, 840, 16]
+    bounds: [48, 30, 420, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$accent6"
+      letterSpacing: 2
+      wrap: false
+      text: 学术论文报告 · 新能源车辆工程
+  - elementId: brand-right
+    elementType: text
+    bounds: [712, 30, 200, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "#FFFFFF"
+      letterSpacing: 1.5
+      align: [right, top]
+      wrap: false
+      text: EV RANGE · 学术报告
+  - elementId: top-rule
+    elementType: shape
+    bounds: [48, 58, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$accent4" }
+    opacity: 0.38
+  - elementId: kicker
+    elementType: text
+    bounds: [140, 116, 680, 18]
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10
-      color: "$muted"
-      letterSpacing: 1
+      color: "$accent6"
+      letterSpacing: 3
+      align: [center, top]
       wrap: false
-      text: |
-        《新能源车辆工程学报》 · 网络版发表 2024-11-08 · DOI: 10.12345/NEVE-2024-0128
+      text: 2024 · 新能源汽车能量管理
   - elementId: title
     elementType: text
-    bounds: [60, 148, 840, 110]
+    bounds: [110, 146, 740, 114]
     content:
       fontFamily: "Source Han Serif CN"
-      fontSize: 34
-      color: "$primary"
+      fontSize: 39
+      color: "#FFFFFF"
+      bold: true
       lineHeight: 1.3
-      text: |
-        <p>基于驾驶行为量化因子的</p>
+      align: [center, top]
+      text: |-
+        <p>基于驾驶行为量化特征的</p>
         <p>电动汽车剩余续驶里程预测</p>
-  - elementId: title-bar
-    elementType: shape
-    bounds: [60, 284, 54, 1]
-    shapeName: rect
-    fill: { type: solid, color: "$accent" }
   - elementId: title-en
     elementType: text
-    bounds: [60, 302, 780, 40]
+    bounds: [120, 268, 720, 36]
     content:
       fontFamily: "Times New Roman"
       fontSize: 11
-      color: "$muted"
+      color: "$primaryTint"
       italic: true
-      lineHeight: 1.45
-      text: |
+      lineHeight: 1.5
+      align: [center, top]
+      text: |-
         Prediction of electric vehicle remaining driving range based on quantitative driving behavior characteristics
-  - elementId: authors
+  - elementId: pill-1
+    elementType: shape
+    bounds: [182, 330, 176, 32]
+    shapeName: roundRect
+    adjustments: [50000]
+    border: { style: solid, width: 1, color: "#FFFFFF" }
+  - elementId: pill-1-text
     elementType: text
-    bounds: [60, 362, 840, 22]
+    bounds: [182, 337, 176, 20]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 14
-      color: "$text"
+      fontSize: 9.5
+      color: "#FFFFFF"
+      align: [center, middle]
       wrap: false
-      text: |
+      text: |-
+        <p><strong>作者</strong>　陈默 等</p>
+  - elementId: pill-2
+    elementType: shape
+    bounds: [366, 330, 200, 32]
+    shapeName: roundRect
+    adjustments: [50000]
+    border: { style: solid, width: 1, color: "#FFFFFF" }
+  - elementId: pill-2-text
+    elementType: text
+    bounds: [366, 337, 200, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      color: "#FFFFFF"
+      align: [center, middle]
+      wrap: false
+      text: |-
+        <p><strong>方向</strong>　新能源车辆工程</p>
+  - elementId: pill-3
+    elementType: shape
+    bounds: [574, 330, 204, 32]
+    shapeName: roundRect
+    adjustments: [50000]
+    border: { style: solid, width: 1, color: "#FFFFFF" }
+  - elementId: pill-3-text
+    elementType: text
+    bounds: [574, 337, 204, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      color: "#FFFFFF"
+      align: [center, middle]
+      wrap: false
+      text: |-
+        <p><strong>模型</strong>　随机森林 + LSTM</p>
+  - elementId: authors
+    elementType: text
+    bounds: [120, 398, 720, 22]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 13
+      color: "#FFFFFF"
+      align: [center, top]
+      wrap: false
+      text: |-
         <p>陈默<sup>1</sup>　周远航<sup>1</sup>　林晚晴<sup>1</sup>　郑国栋<sup>2,3</sup>　许诺<sup>2,3</sup>　沈既明<sup>1,3*</sup></p>
   - elementId: affiliation
     elementType: text
-    bounds: [60, 390, 840, 36]
+    bounds: [120, 426, 720, 38]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 10
-      color: "$muted"
-      lineHeight: 1.6
-      text: |
+      fontSize: 9.2
+      color: "$primaryTint"
+      lineHeight: 1.65
+      align: [center, top]
+      text: |-
         <p>1. 麓山理工大学车辆工程学院，长沙 410082　2. 青川大学汽车学院，成都 610065</p>
         <p>3. 湘江云驰新能源汽车有限公司，长沙 410082　* 通讯作者：shenjm_2024@163.com</p>
+  - elementId: bottom-rule
+    elementType: shape
+    bounds: [48, 486, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$accent4" }
+    opacity: 0.32
   - elementId: funding
     elementType: text
-    bounds: [60, 452, 560, 16]
+    bounds: [48, 494, 620, 14]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$muted"
+      fontSize: 8.2
+      color: "$accent6"
       wrap: false
-      text: |
-        国家自然科学基金（52275123）· 湖南省重点研发计划（2024GK4021）
+      text: 国家自然科学基金（52275123）· 湖南省重点研发计划（2024GK4021）
   - elementId: keywords
     elementType: text
-    bounds: [560, 452, 340, 16]
+    bounds: [712, 494, 200, 14]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$muted"
+      fontSize: 8.2
+      color: "$accent6"
       align: [right, top]
       wrap: false
-      text: |
-        电动汽车 · 剩余续驶里程 · 驾驶行为 · 量化因子 · LSTM
-  - elementId: bottom-band-text
-    elementType: text
-    bounds: [60, 514, 840, 18]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 11
-      color: "$muted"
-      letterSpacing: 3
-      wrap: false
-      text: |
-        数据驱动 · 特征工程 · 长短期记忆网络 · 实车验证
+      text: 电动汽车 · 驾驶行为 · 量化因子 · LSTM

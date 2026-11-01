@@ -1,0 +1,321 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |-
+  数据来源与处理流程：GB/T32960 监控平台数据、3δ 清洗、驾驶事件与 20 s 短片段划分。
+  四条流水线卡片说明采集—清洗—事件—片段；下方表 2 给出四辆车数据分布，图 1/2 为示意图。
+elements:
+  - elementId: chapter-bar
+    elementType: shape
+    bounds: [0, 0, 960, 56]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+  - elementId: chapter-text
+    elementType: text
+    bounds: [48, 18, 700, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "#FFFFFF"
+      bold: true
+      wrap: false
+      text: '02. 数据与方法 —— 从报文到片段'
+  - elementId: chapter-brand
+    elementType: text
+    bounds: [736, 20, 176, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.8
+      color: "$accent6"
+      align: [right, top]
+      wrap: false
+      text: EV RANGE · 学术报告
+  - elementId: title
+    elementType: text
+    bounds: [48, 70, 864, 34]
+    content:
+      style: "$title"
+      wrap: false
+      text: 2,030 万条报文，清洗为 3,622 个可建模的驾驶事件
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 104, 864, 16]
+    content:
+      style: "$caption"
+      fontSize: 9.6
+      wrap: false
+      text: GB/T 32960 · 1 Hz · 4 辆实车 · NEDC 310 km / 31 kWh / 1125 kg · 2022.10–2023.04
+  - elementId: step-1
+    elementType: shape
+    bounds: [48, 132, 198, 104]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: step-1-num
+    elementType: text
+    bounds: [62, 144, 40, 14]
+    content:
+      style: "$label"
+      fontSize: 8.4
+      wrap: false
+      text: 01
+  - elementId: step-1-title
+    elementType: text
+    bounds: [62, 160, 170, 18]
+    content:
+      style: "$heading"
+      fontSize: 11
+      wrap: false
+      text: 采集
+  - elementId: step-1-text
+    elementType: text
+    bounds: [62, 180, 170, 48]
+    content:
+      style: "$body"
+      fontSize: 8.9
+      lineHeight: 1.45
+      text: 车企监控平台按 GB/T 32960 上传，频率提升至 1 Hz，导出 20,300,600 条原始报文。
+  - elementId: arrow-1
+    elementType: line
+    bounds: [246, 178, 24, 12]
+    viewBox: [24, 12]
+    points: "0,6 22,6"
+    curve: sharp
+    arrow: [null, arrow]
+    border: { style: solid, width: 1.2, color: "$accent" }
+  - elementId: step-2
+    elementType: shape
+    bounds: [270, 132, 198, 104]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: step-2-num
+    elementType: text
+    bounds: [284, 144, 40, 14]
+    content:
+      style: "$label"
+      fontSize: 8.4
+      wrap: false
+      text: 02
+  - elementId: step-2-title
+    elementType: text
+    bounds: [284, 160, 170, 18]
+    content:
+      style: "$heading"
+      fontSize: 11
+      wrap: false
+      text: 清洗
+  - elementId: step-2-text
+    elementType: text
+    bounds: [284, 180, 170, 48]
+    content:
+      style: "$body"
+      fontSize: 8.9
+      lineHeight: 1.45
+      text: 3δ 法则剔除异常值；分段线性插值填补缺失；重复值删除后原位插值。
+  - elementId: arrow-2
+    elementType: line
+    bounds: [468, 178, 24, 12]
+    viewBox: [24, 12]
+    points: "0,6 22,6"
+    curve: sharp
+    arrow: [null, arrow]
+    border: { style: solid, width: 1.2, color: "$accent" }
+  - elementId: step-3
+    elementType: shape
+    bounds: [492, 132, 198, 104]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: step-3-num
+    elementType: text
+    bounds: [506, 144, 40, 14]
+    content:
+      style: "$label"
+      fontSize: 8.4
+      wrap: false
+      text: 03
+  - elementId: step-3-title
+    elementType: text
+    bounds: [506, 160, 170, 18]
+    content:
+      style: "$heading"
+      fontSize: 11
+      wrap: false
+      text: 事件划分
+  - elementId: step-3-text
+    elementType: text
+    bounds: [506, 180, 170, 48]
+    content:
+      style: "$body"
+      fontSize: 8.9
+      lineHeight: 1.45
+      text: 按“启动—熄火”切分驾驶事件，得到 3,622 个事件；有效数据 6,845,881 条。
+  - elementId: arrow-3
+    elementType: line
+    bounds: [690, 178, 24, 12]
+    viewBox: [24, 12]
+    points: "0,6 22,6"
+    curve: sharp
+    arrow: [null, arrow]
+    border: { style: solid, width: 1.2, color: "$accent" }
+  - elementId: step-4
+    elementType: shape
+    bounds: [714, 132, 198, 104]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: step-4-num
+    elementType: text
+    bounds: [728, 144, 40, 14]
+    content:
+      style: "$label"
+      fontSize: 8.4
+      wrap: false
+      text: 04
+  - elementId: step-4-title
+    elementType: text
+    bounds: [728, 160, 170, 18]
+    content:
+      style: "$heading"
+      fontSize: 11
+      wrap: false
+      text: 片段划分
+  - elementId: step-4-text
+    elementType: text
+    bounds: [728, 180, 170, 48]
+    content:
+      style: "$body"
+      fontSize: 8.9
+      lineHeight: 1.45
+      text: 每事件切为 20 s 短行驶片段；不足 20 s 的尾段忽略（车速与能耗低）。
+  - elementId: table-card
+    elementType: shape
+    bounds: [48, 248, 444, 222]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
+  - elementId: table-caption
+    elementType: text
+    bounds: [64, 258, 412, 16]
+    content:
+      style: "$caption"
+      fontSize: 8.6
+      wrap: false
+      text: |-
+        <p><span style="color:$accent;font-weight:bold;">表 2</span>　四辆车的数据量分布</p>
+  - elementId: table-2
+    elementType: table
+    bounds: [64, 278, 412, 160]
+    columnWidths: [0.22, 0.28, 0.28, 0.22]
+    rowHeights: [0.2, 0.2, 0.2, 0.2, 0.2]
+    style: "$blue"
+    rows:
+      - - text: 车辆代号
+        - text: 数据量
+        - text: 有效数据量
+        - text: 驾驶事件数
+      - - text: 1号
+        - text: 9,112,639
+        - text: 3,010,923
+        - text: 1,478
+      - - text: 2号
+        - text: 4,002,778
+        - text: 1,452,644
+        - text: 884
+      - - text: 3号
+        - text: 5,562,996
+        - text: 1,995,433
+        - text: 925
+      - - text: 4号
+        - text: 1,622,187
+        - text: 386,881
+        - text: 335
+  - elementId: table-source
+    elementType: text
+    bounds: [64, 444, 412, 12]
+    content:
+      style: "$caption"
+      fontSize: 7.4
+      align: [right, top]
+      wrap: false
+      text: 数据来源：某车企新能源汽车监控平台（GB/T 32960）
+  - elementId: fig-1-card
+    elementType: shape
+    bounds: [512, 248, 200, 166]
+    shapeName: roundRect
+    adjustments: [9000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
+  - elementId: fig-1
+    elementType: image
+    bounds: [516, 252, 192, 134]
+    src: media/fig01_event.jpg
+    fit: { mode: contain }
+  - elementId: fig-1-caption
+    elementType: text
+    bounds: [512, 420, 200, 20]
+    content:
+      style: "$caption"
+      fontSize: 8
+      text: |-
+        <p><span style="color:$accent;font-weight:bold;">图 1</span>　单个驾驶事件示意图</p>
+  - elementId: fig-2-card
+    elementType: shape
+    bounds: [728, 248, 184, 166]
+    shapeName: roundRect
+    adjustments: [9000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
+  - elementId: fig-2
+    elementType: image
+    bounds: [732, 252, 176, 134]
+    src: media/fig02_segments.jpg
+    fit: { mode: contain }
+  - elementId: fig-2-caption
+    elementType: text
+    bounds: [728, 420, 184, 20]
+    content:
+      style: "$caption"
+      fontSize: 8
+      text: |-
+        <p><span style="color:$accent;font-weight:bold;">图 2</span>　短行驶片段划分示意图</p>
+  - elementId: reading
+    elementType: text
+    bounds: [512, 446, 400, 22]
+    content:
+      style: "$caption"
+      fontSize: 8.6
+      text: 事件是行为单元，20 s 片段是建模样本。
+  - elementId: footer-line
+    elementType: shape
+    bounds: [48, 502, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: footer-left
+    elementType: text
+    bounds: [48, 507, 640, 12]
+    content:
+      style: "$nav"
+      wrap: false
+      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+  - elementId: footer-page
+    elementType: text
+    bounds: [800, 506, 112, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.5
+      color: "$primary"
+      bold: true
+      align: [right, top]
+      wrap: false
+      text: 04 / 15

@@ -1,0 +1,216 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |-
+  讨论：提升来自逐样本的驾驶强度，而不是更复杂的网络。
+  替代解释：网络容量、数据划分、原车仪表线性映射、四种算法共享输入与划分。
+  局限：单车型、南方地域、离线数据、单事件验证，各自给出偏差方向。
+elements:
+  - elementId: chapter-bar
+    elementType: shape
+    bounds: [0, 0, 960, 56]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+  - elementId: chapter-text
+    elementType: text
+    bounds: [48, 18, 720, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "#FFFFFF"
+      bold: true
+      wrap: false
+      text: '04. 验证与讨论 —— 解释与边界'
+  - elementId: chapter-brand
+    elementType: text
+    bounds: [736, 20, 176, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.8
+      color: "$accent6"
+      align: [right, top]
+      wrap: false
+      text: EV RANGE · 学术报告
+  - elementId: title
+    elementType: text
+    bounds: [48, 70, 864, 34]
+    content:
+      style: "$title"
+      wrap: false
+      text: 提升来自逐样本的驾驶强度，而不是更复杂的网络
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 104, 864, 16]
+    content:
+      style: "$caption"
+      fontSize: 9.6
+      wrap: false
+      text: 同一 SOC 下，驾驶行为差异被 Q 显式带入模型
+  - elementId: interp-card
+    elementType: shape
+    bounds: [48, 132, 420, 138]
+    shapeName: roundRect
+    adjustments: [9000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
+  - elementId: interp-label
+    elementType: text
+    bounds: [66, 146, 384, 14]
+    content:
+      style: "$label"
+      fontSize: 8.4
+      letterSpacing: 1.5
+      wrap: false
+      text: 解释 / INTERPRETATION
+  - elementId: interp-text
+    elementType: text
+    bounds: [66, 166, 384, 96]
+    content:
+      style: "$body"
+      fontSize: 9.2
+      lineHeight: 1.55
+      text: |-
+        <p>Q 把“同一 SOC、同一温度下为何能耗不同”编码为连续变量；随机森林权重显示高速时长占比、车速均值、急加速时长最重要，与能耗机理一致。</p>
+        <p style="margin-top:5px"><strong>证据</strong>：含 Q 的 LSTM 四车 RMSE / MAE 最低（表 7），单事件 R² 全部提升（表 8）。</p>
+        <p style="margin-top:5px"><strong>→ 增益应归因于特征，而非模型复杂度。</strong></p>
+  - elementId: rival-card
+    elementType: shape
+    bounds: [48, 282, 420, 182]
+    shapeName: roundRect
+    adjustments: [9000]
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: rival-label
+    elementType: text
+    bounds: [66, 296, 384, 14]
+    content:
+      style: "$label"
+      fontSize: 8.4
+      letterSpacing: 1.5
+      wrap: false
+      text: 替代解释与排除
+  - elementId: rival-text
+    elementType: text
+    bounds: [66, 316, 384, 140]
+    content:
+      style: "$body"
+      fontSize: 8.9
+      lineHeight: 1.5
+      text: |-
+        <p><strong>网络容量</strong>：同输入下 SVR / BP / RNN 仍以 LSTM 误差最低。</p>
+        <p style="margin-top:3px"><strong>数据划分</strong>：7:3 / 8:2 / 9:1 三种比例，不随机抽样。</p>
+        <p style="margin-top:3px"><strong>仪表对照</strong>：原车仪表仅按 SOC 近似线性映射。</p>
+        <p style="margin-top:3px"><strong>实现一致性</strong>：四种算法共享同一输入与划分，差异来自模型结构。</p>
+        <p style="margin-top:3px"><strong>基线完整性</strong>：同时对比原车仪表与不含 Q 模型。</p>
+  - elementId: limit-card
+    elementType: shape
+    bounds: [492, 132, 420, 332]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 12, color: "#1F5FBF14", offset: [0, 3] }
+  - elementId: limit-label
+    elementType: text
+    bounds: [510, 146, 384, 14]
+    content:
+      style: "$label"
+      fontSize: 8.4
+      letterSpacing: 1.5
+      wrap: false
+      text: 局限与偏差方向 / LIMITATIONS
+  - elementId: limit-intro
+    elementType: text
+    bounds: [510, 166, 384, 22]
+    content:
+      style: "$body"
+      fontSize: 9
+      text: 以下局限不改变方向性结论，但限制其外推范围。
+  - elementId: limit-1
+    elementType: text
+    bounds: [510, 190, 384, 38]
+    content:
+      style: "$body"
+      fontSize: 8.7
+      lineHeight: 1.45
+      text: |-
+        <p><strong>单车型</strong>　仅 NEDC 310 km 一款车</p>
+        <p style="color:$muted">→ 其他车型的泛化方向未知。</p>
+  - elementId: limit-2
+    elementType: text
+    bounds: [510, 232, 384, 38]
+    content:
+      style: "$body"
+      fontSize: 8.7
+      lineHeight: 1.45
+      text: |-
+        <p><strong>地域</strong>　车辆均在南方运行</p>
+        <p style="color:$muted">→ 高寒、高原、高温场景未覆盖。</p>
+  - elementId: limit-3
+    elementType: text
+    bounds: [510, 274, 384, 38]
+    content:
+      style: "$body"
+      fontSize: 8.7
+      lineHeight: 1.45
+      text: |-
+        <p><strong>数据</strong>　离线历史报文</p>
+        <p style="color:$muted">→ 在线实时预测的延迟未评估。</p>
+  - elementId: limit-4
+    elementType: text
+    bounds: [510, 316, 384, 38]
+    content:
+      style: "$body"
+      fontSize: 8.7
+      lineHeight: 1.45
+      text: |-
+        <p><strong>证据</strong>　每车仅一个驾驶事件</p>
+        <p style="color:$muted">→ 统计功效有限，R² 可能偏乐观。</p>
+  - elementId: limit-5
+    elementType: text
+    bounds: [510, 358, 384, 38]
+    content:
+      style: "$body"
+      fontSize: 8.7
+      lineHeight: 1.45
+      text: |-
+        <p><strong>样本</strong>　4 辆车非随机抽取</p>
+        <p style="color:$muted">→ 代表性有限，组均值可能偏移。</p>
+  - elementId: limit-divider
+    elementType: shape
+    bounds: [510, 400, 384, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: limit-next
+    elementType: text
+    bounds: [510, 408, 384, 48]
+    content:
+      style: "$caption"
+      fontSize: 8.2
+      lineHeight: 1.45
+      text: 下一步：选取高寒、高原、高温地区车辆开展适应性优化，并推广到更多车型进行在线验证。
+  - elementId: footer-line
+    elementType: shape
+    bounds: [48, 502, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: footer-left
+    elementType: text
+    bounds: [48, 507, 640, 12]
+    content:
+      style: "$nav"
+      wrap: false
+      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+  - elementId: footer-page
+    elementType: text
+    bounds: [800, 506, 112, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.5
+      color: "$primary"
+      bold: true
+      align: [right, top]
+      wrap: false
+      text: 12 / 15

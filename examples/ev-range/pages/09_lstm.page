@@ -1,0 +1,150 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |-
+  LSTM 模型：图 13 为内部节点结构；输入 x_t = {SOC, Q, T_e, P_l, C}，输出剩余续驶里程。
+  三门结构选择性保留序列信息，缓解长序列梯度消失与爆炸。
+elements:
+  - elementId: chapter-bar
+    elementType: shape
+    bounds: [0, 0, 960, 56]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+  - elementId: chapter-text
+    elementType: text
+    bounds: [48, 18, 720, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "#FFFFFF"
+      bold: true
+      wrap: false
+      text: '03. 预测模型 —— LSTM 结构与输入'
+  - elementId: chapter-brand
+    elementType: text
+    bounds: [736, 20, 176, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.8
+      color: "$accent6"
+      align: [right, top]
+      wrap: false
+      text: EV RANGE · 学术报告
+  - elementId: title
+    elementType: text
+    bounds: [48, 70, 864, 34]
+    content:
+      style: "$title"
+      wrap: false
+      text: 三门结构把 SOC、Q 与工况映射为逐时刻里程
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 104, 864, 16]
+    content:
+      style: "$caption"
+      fontSize: 9.6
+      wrap: false
+      text: 遗忘门筛选历史，输入门写入当前，输出门给出预测
+  - elementId: fig-card
+    elementType: shape
+    bounds: [48, 132, 864, 208]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 12, color: "#1F5FBF14", offset: [0, 3] }
+  - elementId: fig-13
+    elementType: image
+    bounds: [52, 136, 856, 176]
+    src: media/fig13_lstm.jpg
+    fit: { mode: contain }
+  - elementId: fig-caption
+    elementType: text
+    bounds: [64, 316, 832, 20]
+    content:
+      style: "$caption"
+      fontSize: 8.2
+      text: |-
+        <p><span style="color:$accent;font-weight:bold;">图 13</span>　LSTM 神经网络内部节点结构：遗忘门、输入门、输出门与细胞状态的时序传递</p>
+  - elementId: input-card
+    elementType: shape
+    bounds: [48, 352, 420, 112]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: input-label
+    elementType: text
+    bounds: [64, 362, 388, 14]
+    content:
+      style: "$label"
+      fontSize: 8.6
+      wrap: false
+      text: t 时刻模型输入
+  - elementId: input-formula
+    elementType: text
+    bounds: [64, 380, 388, 28]
+    content:
+      fontSize: 13
+      color: "$text"
+      text: |-
+        <p>\(x_t = \{\mathrm{SOC},\ Q,\ T_e,\ P_l,\ C\}\)</p>
+  - elementId: input-note
+    elementType: text
+    bounds: [64, 412, 388, 44]
+    content:
+      style: "$caption"
+      fontSize: 8.2
+      lineHeight: 1.45
+      text: 依次为电池荷电状态、驾驶行为量化因子、环境温度、电器用电负荷率、速度工况；三门结构缓解长序列梯度消失与爆炸。
+  - elementId: gates-card
+    elementType: shape
+    bounds: [492, 352, 420, 112]
+    shapeName: roundRect
+    adjustments: [10000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 8, color: "#1F5FBF12", offset: [0, 2] }
+  - elementId: gates-label
+    elementType: text
+    bounds: [508, 362, 388, 14]
+    content:
+      style: "$label"
+      fontSize: 8.6
+      wrap: false
+      text: 门控与状态更新
+  - elementId: gates-text
+    elementType: text
+    bounds: [508, 382, 388, 74]
+    content:
+      fontSize: 9.6
+      color: "$text"
+      lineHeight: 1.75
+      text: |-
+        <p>遗忘门　\(f_t = \sigma\left(W_f [h_{t-1}, x_t] + b_f\right)\)</p>
+        <p>细胞态　\(C_t = f_t C_{t-1} + i_t g_t\)</p>
+        <p>输出门　\(h_t = o_t \otimes \tanh(C_t)\)</p>
+  - elementId: footer-line
+    elementType: shape
+    bounds: [48, 502, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: footer-left
+    elementType: text
+    bounds: [48, 507, 640, 12]
+    content:
+      style: "$nav"
+      wrap: false
+      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+  - elementId: footer-page
+    elementType: text
+    bounds: [800, 506, 112, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.5
+      color: "$primary"
+      bold: true
+      align: [right, top]
+      wrap: false
+      text: 09 / 15

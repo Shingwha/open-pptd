@@ -6,110 +6,169 @@ fonts:
   霞鹜新晰黑: { family: "LXGW Neo XiHei" }
 theme:
   colors:
-    primary: "#1F4E79"
-    accent: "#2E6F9E"
-    bg: "#F7F9FC"
-    text: "#1B2733"
-    muted: "#5F6F80"
-    line: "#D5DEE8"
+    primary: "#1F5FBF"
+    primaryDeep: "#123B7A"
+    accent: "#2F80ED"
+    bg: "#FFFFFF"
+    text: "#1B2A3A"
+    muted: "#5F7186"
+    line: "#D6E4F7"
     success: "#2F6B57"
-    warning: "#8A6D3B"
-    danger: "#A14B43"
-    primarySoft: "#EAF1F8"
-    primaryTint: "#D8E4EF"
-    primaryDeep: "#12324F"
-    accent3: "#4E7FA8"
-    accent4: "#7FA3C0"
-    accent5: "#335F82"
-    accent6: "#8AA9C2"
+    warning: "#C98A2B"
+    danger: "#B54A3F"
+    primarySoft: "#EAF2FF"
+    primaryTint: "#D6E6FB"
+    accent3: "#5B9BF5"
+    accent4: "#8FBDFA"
+    accent5: "#2A5FA8"
+    accent6: "#BFD8F7"
   textStyles:
+    display:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 40
+      color: "#FFFFFF"
+      bold: true
+      lineHeight: 1.3
     title:
       fontFamily: "Source Han Serif CN"
-      fontSize: 24
-      color: "$primary"
+      fontSize: 23
+      color: "$primaryDeep"
+      bold: true
       lineHeight: 1.25
-    subtitle:
+    heading:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 13
-      color: "$muted"
-      lineHeight: 1.5
+      fontSize: 12.5
+      color: "$primary"
+      bold: true
+      lineHeight: 1.35
     body:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 13
+      fontSize: 11
       color: "$text"
-      lineHeight: 1.5
+      lineHeight: 1.55
     caption:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
+      fontSize: 8.8
       color: "$muted"
-      lineHeight: 1.35
+      lineHeight: 1.4
+    label:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9
+      color: "$primary"
+      letterSpacing: 1
+      lineHeight: 1.3
     kicker:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10
       color: "$accent"
       letterSpacing: 2
-      lineHeight: 1.2
-    quote:
+      lineHeight: 1.3
+    stat:
+      fontFamily: "Source Han Serif CN"
+      fontSize: 27
+      color: "$primary"
+      bold: true
+      lineHeight: 1.15
+    nav:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 13
+      fontSize: 8.5
       color: "$muted"
-      italic: true
-      lineHeight: 1.5
+      lineHeight: 1.2
+    coverLabel:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.5
+      color: "$primaryTint"
+      letterSpacing: 1.5
+      lineHeight: 1.3
   tableStyles:
-    threeline:
+    blue:
       cellStyle:
-        fontSize: 12
+        fontSize: 10
         fontFamily: "LXGW Neo XiHei"
         color: "$text"
         align: [center, middle]
         fill: { type: solid, color: "#FFFFFF" }
-        border: null
+        border: [null, null, { style: solid, width: 0.75, color: "$line" }, null]
         lineHeight: 1.3
-      firstRowStyle:
-        bold: true
-        color: "$primary"
-        border:
-          - { style: solid, width: 2, color: "$primary" }
-          - null
-          - { style: solid, width: 1, color: "$primary" }
-          - null
-      lastRowStyle:
-        border:
-          - null
-          - null
-          - { style: solid, width: 2, color: "$primary" }
-          - null
-      rowOverColumn: true
-    default:
-      cellStyle:
-        fontSize: 11
-        color: "$text"
-        fill: { type: solid, color: "#FFFFFF" }
-        border: { style: solid, width: 1, color: "$line" }
-        align: [center, middle]
       firstRowStyle:
         fill: { type: solid, color: "$primary" }
         color: "#FFFFFF"
         bold: true
+        fontSize: 10
+        border: null
       bodyStyles:
-        - { fill: { type: solid, color: "$primarySoft" } }
         - { fill: { type: solid, color: "#FFFFFF" } }
+        - { fill: { type: solid, color: "#F6FAFF" } }
+      lastRowStyle:
+        border:
+          - null
+          - null
+          - { style: solid, width: 1, color: "$primary" }
+          - null
+      rowOverColumn: true
+    formula:
+      cellStyle:
+        fontSize: 8.2
+        fontFamily: "LXGW Neo XiHei"
+        color: "$text"
+        align: [center, middle]
+        fill: { type: solid, color: "#FFFFFF" }
+        border: [null, null, { style: solid, width: 0.75, color: "$line" }, null]
+        lineHeight: 1.15
+      firstRowStyle:
+        fill: { type: solid, color: "$primary" }
+        color: "#FFFFFF"
+        bold: true
+        fontSize: 8.2
+        border: null
+      bodyStyles:
+        - { fill: { type: solid, color: "#FFFFFF" } }
+        - { fill: { type: solid, color: "#F6FAFF" } }
+      lastRowStyle:
+        border:
+          - null
+          - null
+          - { style: solid, width: 1, color: "$primary" }
+          - null
+      rowOverColumn: true
+    blueCompact:
+      cellStyle:
+        fontSize: 9
+        fontFamily: "LXGW Neo XiHei"
+        color: "$text"
+        align: [center, middle]
+        fill: { type: solid, color: "#FFFFFF" }
+        border: [null, null, { style: solid, width: 0.75, color: "$line" }, null]
+        lineHeight: 1.25
+      firstRowStyle:
+        fill: { type: solid, color: "$primary" }
+        color: "#FFFFFF"
+        bold: true
+        fontSize: 8.8
+        border: null
+      bodyStyles:
+        - { fill: { type: solid, color: "#FFFFFF" } }
+        - { fill: { type: solid, color: "#F6FAFF" } }
+      lastRowStyle:
+        border:
+          - null
+          - null
+          - { style: solid, width: 1, color: "$primary" }
+          - null
       rowOverColumn: true
 pages:
   - pages/01_cover.page
-  - pages/02_overview.page
-  - pages/03_toc.page
-  - pages/04_divider1.page
-  - pages/05_data.page
-  - pages/06_divider2.page
-  - pages/07_indicators.page
-  - pages/08_thresholds.page
-  - pages/09_rf.page
-  - pages/10_factor.page
-  - pages/11_divider3.page
-  - pages/12_lstm.page
-  - pages/13_training.page
-  - pages/14_divider4.page
-  - pages/15_validation.page
-  - pages/16_conclusion.page
-  - pages/17_end.page
+  - pages/02_background.page
+  - pages/03_question.page
+  - pages/04_data.page
+  - pages/05_indicators.page
+  - pages/06_thresholds.page
+  - pages/07_rf.page
+  - pages/08_factor.page
+  - pages/09_lstm.page
+  - pages/10_training.page
+  - pages/11_validation.page
+  - pages/12_discussion.page
+  - pages/13_conclusion.page
+  - pages/14_references.page
+  - pages/15_final.page

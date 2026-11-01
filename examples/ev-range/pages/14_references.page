@@ -1,0 +1,194 @@
+pageType: content
+background:
+  type: solid
+  color: "$bg"
+notes: |-
+  参考文献与依据：只列正文实际使用的来源与标准——原文、GB/T 32960、T/CSAE 172-2021 与车企平台数据。
+  每条注明正文使用位置；完整参考文献见原文，本页不重复未在正文出现的条目。
+elements:
+  - elementId: chapter-bar
+    elementType: shape
+    bounds: [0, 0, 960, 56]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+  - elementId: chapter-text
+    elementType: text
+    bounds: [48, 18, 720, 20]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 14
+      color: "#FFFFFF"
+      bold: true
+      wrap: false
+      text: '05. 结论 —— 依据与参考文献'
+  - elementId: chapter-brand
+    elementType: text
+    bounds: [736, 20, 176, 16]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.8
+      color: "$accent6"
+      align: [right, top]
+      wrap: false
+      text: EV RANGE · 学术报告
+  - elementId: title
+    elementType: text
+    bounds: [48, 70, 864, 34]
+    content:
+      style: "$title"
+      wrap: false
+      text: 本文依据
+  - elementId: subtitle
+    elementType: text
+    bounds: [48, 104, 864, 16]
+    content:
+      style: "$caption"
+      fontSize: 9.6
+      wrap: false
+      text: 只列出文中实际引用的来源与标准，每条注明使用位置
+  - elementId: ref-card
+    elementType: shape
+    bounds: [48, 132, 560, 332]
+    shapeName: roundRect
+    adjustments: [8000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
+  - elementId: ref-label
+    elementType: text
+    bounds: [66, 146, 524, 14]
+    content:
+      style: "$label"
+      fontSize: 8.4
+      letterSpacing: 1.5
+      wrap: false
+      text: 来源与标准 / SOURCES
+  - elementId: ref-1
+    elementType: text
+    bounds: [66, 168, 524, 56]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.8
+      color: "$text"
+      lineHeight: 1.55
+      text: |-
+        <p><span style="color:$primary;font-weight:bold;">[1]</span> 陈默, 周远航, 林晚晴, 等. 基于驾驶行为量化特征的电动汽车剩余续驶里程预测[J]. 新能源车辆工程学报, 2024. DOI: 10.12345/NEVE-2024-0128. <span style="color:$muted;">（全文依据）</span></p>
+  - elementId: ref-2
+    elementType: text
+    bounds: [66, 232, 524, 52]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.8
+      color: "$text"
+      lineHeight: 1.55
+      text: |-
+        <p><span style="color:$primary;font-weight:bold;">[2]</span> GB/T 32960. 电动汽车远程服务与管理系统技术规范[S]. <span style="color:$muted;">（§2.1 数据采集与 1 Hz 上传）</span></p>
+  - elementId: ref-3
+    elementType: text
+    bounds: [66, 296, 524, 52]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.8
+      color: "$text"
+      lineHeight: 1.55
+      text: |-
+        <p><span style="color:$primary;font-weight:bold;">[3]</span> T/CSAE 172-2021. 确定系数法[S]. <span style="color:$muted;">（§4.3 R² 准确度评价）</span></p>
+  - elementId: ref-4
+    elementType: text
+    bounds: [66, 360, 524, 56]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.8
+      color: "$text"
+      lineHeight: 1.55
+      text: |-
+        <p><span style="color:$primary;font-weight:bold;">[4]</span> 某新能源车企监控平台. 4 辆电动汽车历史行驶数据（2022.10–2023.04）[DB]. <span style="color:$muted;">（§2.1 原始报文 20,300,600 条）</span></p>
+  - elementId: ref-note
+    elementType: text
+    bounds: [66, 420, 524, 44]
+    content:
+      style: "$caption"
+      fontSize: 8.2
+      lineHeight: 1.5
+      text: 本页不重复未在正文出现的条目；正文图表编号与表 2、3、4、7、8，图 1、2、4、9、10、12、13、14 一一对应。
+  - elementId: index-card
+    elementType: shape
+    bounds: [624, 132, 288, 198]
+    shapeName: roundRect
+    adjustments: [9000]
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: index-label
+    elementType: text
+    bounds: [642, 146, 252, 14]
+    content:
+      style: "$label"
+      fontSize: 8.4
+      letterSpacing: 1.5
+      wrap: false
+      text: 图表索引
+  - elementId: index-text
+    elementType: text
+    bounds: [642, 168, 252, 152]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 9.2
+      color: "$text"
+      lineHeight: 1.85
+      text: |-
+        <p><strong>图</strong>　1 驾驶事件　2 片段划分</p>
+        <p>　　　4 百分位线　9 随机森林</p>
+        <p>　　　10 权重　12 Q–能耗</p>
+        <p>　　　13 LSTM 结构　14 实车验证</p>
+        <p style="margin-top:5px"><strong>表</strong>　2 数据分布　3 指标</p>
+        <p>　　　4 聚类中心　7 误差</p>
+        <p>　　　8 确定系数</p>
+  - elementId: data-card
+    elementType: shape
+    bounds: [624, 344, 288, 120]
+    shapeName: roundRect
+    adjustments: [9000]
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: data-label
+    elementType: text
+    bounds: [642, 356, 252, 14]
+    content:
+      style: "$label"
+      fontSize: 8.4
+      letterSpacing: 1.5
+      wrap: false
+      text: 数据与代码可用性
+  - elementId: data-text
+    elementType: text
+    bounds: [642, 376, 252, 78]
+    content:
+      style: "$body"
+      fontSize: 8.5
+      lineHeight: 1.5
+      text: |-
+        <p>数据受车企平台授权限制，未公开；模型结构、训练设置与完整算法对比见原文第 3 节。</p>
+        <p style="margin-top:4px">引用格式：GB/T 7714；图表编号沿用原文，便于对照。</p>
+  - elementId: footer-line
+    elementType: shape
+    bounds: [48, 502, 864, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: footer-left
+    elementType: text
+    bounds: [48, 507, 640, 12]
+    content:
+      style: "$nav"
+      wrap: false
+      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+  - elementId: footer-page
+    elementType: text
+    bounds: [800, 506, 112, 14]
+    content:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 8.5
+      color: "$primary"
+      bold: true
+      align: [right, top]
+      wrap: false
+      text: 14 / 15
