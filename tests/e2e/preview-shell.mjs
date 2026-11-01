@@ -86,6 +86,48 @@ try {
   log("无 ?deck= 时 /editor/ 为 Home", s.home && s.cards > 0 && s.editorHook === "undefined", JSON.stringify(s));
   log("旧独立画廊页已移除（#gallery-view / window.__pptdEditor）", !s.oldGalleryId && s.ioHook === "undefined");
 
+  s = await evalJs(`(() => {
+    const tabs = [...document.querySelectorAll('.gallery-tab')];
+    const prompt = document.querySelector('#gallery-guide-prompt')?.textContent || '';
+    return {
+      kinds: tabs.map((b) => b.dataset.kind).join(','),
+      active: document.querySelector('.gallery-tab.active')?.dataset.kind,
+      cards: document.querySelectorAll('.gallery-card').length,
+      allCount: Number(document.querySelector('.gallery-tab[data-kind="all"] .cnt')?.textContent),
+      guide: document.querySelector('.gallery-guide summary')?.textContent,
+      noDirectNew: !document.querySelector('#btn-new-blank'),
+      promptValid: prompt.includes('Windows (PowerShell):') && prompt.includes('macOS/Linux:') &&
+        prompt.includes('open-pptd assets skill install --dir') && !/[\u4e00-\u9fff]/.test(prompt) && !prompt.includes('open-pptd doctor'),
+    };
+  })()`);
+  log(
+    "主页默认全部、筛选及精简英文安装 Prompt",
+    s.kinds === "all,ppt,poster" && s.active === "all" && s.cards === s.allCount && s.guide === "使用说明" && s.noDirectNew && s.promptValid,
+    JSON.stringify(s)
+  );
+
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+  await wait(300);
+  s = await evalJs(`(() => {
+    const guide = document.querySelector('.gallery-guide');
+    guide.querySelector('summary').click();
+    const panel = guide.querySelector('.gallery-guide-panel').getBoundingClientRect();
+    const actions = document.querySelector('.gallery-top-actions').getBoundingClientRect();
+    const columns = getComputedStyle(document.querySelector('.gallery-grid')).gridTemplateColumns.split(' ').filter(Boolean).length;
+    const snapshot = {
+      columns,
+      open: guide.open,
+      panelInside: panel.left >= 0 && panel.right <= innerWidth && panel.top >= 0 && panel.bottom <= innerHeight,
+      actionsInside: actions.left >= 0 && actions.right <= innerWidth,
+      width: innerWidth,
+    };
+    guide.querySelector('summary').click();
+    return snapshot;
+  })()`);
+  log("390px 移动端单列、导航及说明面板无越界", s.columns === 1 && s.open && s.panelInside && s.actionsInside && s.width === 390, JSON.stringify(s));
+  await cdp.send("Emulation.clearDeviceMetricsOverride");
+  await wait(300);
+
   s = await evalJs(`fetch('/').then((r) => r.text()).then((t) => ({
     redirect: /location\\.replace\\(\"\\.\\/editor\\/\"/.test(t),
     noGallerySkeleton: !/gallery-grid/.test(t),

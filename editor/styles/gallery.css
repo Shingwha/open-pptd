@@ -15,22 +15,65 @@ html:has(.gallery-view) {
   background: var(--paper);
 }
 
-/* top row: wordmark + file / GitHub */
+/* top row: the same centered alignment spine as the work grid */
 
 .gallery-top {
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
+  height: var(--gallery-top-h);
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+.gallery-top-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  height: var(--gallery-top-h);
-  padding: 0 var(--topbar-pad);
-  background: var(--paper);
-  border-bottom: 1px solid var(--line);
+  width: 100%;
+  max-width: 1240px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 var(--content-pad);
 }
-.gallery-top-actions { display: flex; align-items: center; gap: var(--space-1); }
+.gallery-top-actions { display: flex; align-items: center; gap: var(--space-2); }
+.gallery-top-actions .gallery-mode { margin-right: var(--space-2); }
+
+.gallery-guide { position: relative; }
+.gallery-guide > summary { list-style: none; user-select: none; }
+.gallery-guide > summary::-webkit-details-marker { display: none; }
+.gallery-guide[open] > summary { background: var(--hover); color: var(--accent); }
+.gallery-guide-panel {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: var(--z-dropdown);
+  width: min(430px, calc(100vw - 32px));
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow-pop);
+}
+.gallery-guide-title { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 500; }
+.gallery-guide-note { margin: var(--space-2) 0 0; font-size: var(--text-xs); color: var(--sub); }
+.gallery-guide-panel pre {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  line-height: var(--leading);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.gallery-guide-actions { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-top: var(--space-3); }
+.gallery-guide-github { border-color: var(--line-strong); color: var(--ink); }
 
 /* masthead */
 
@@ -39,16 +82,10 @@ html:has(.gallery-view) {
   width: 100%;
   max-width: 1240px;
   margin: 0 auto;
-  padding: var(--space-12) var(--content-pad) var(--space-12);
+  padding: var(--space-8) var(--content-pad) var(--space-12);
 }
 
-.gallery-masthead {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-8);
-  margin-bottom: var(--space-12);
-}
+.gallery-masthead { margin-bottom: var(--space-8); }
 .gallery-masthead-copy { min-width: 0; }
 .gallery-title {
   margin: 0;
@@ -67,13 +104,11 @@ html:has(.gallery-view) {
   color: var(--sub);
 }
 
-.gallery-masthead-tools {
-  flex: none;
+.gallery-toolbar {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-3);
-  padding-bottom: var(--space-1);
+  align-items: center;
+  min-height: 40px;
+  margin-bottom: var(--space-6);
 }
 
 /* filter tabs: text + 2px underline */
@@ -90,7 +125,7 @@ html:has(.gallery-view) {
   transition: color var(--dur-fast) var(--ease);
 }
 .gallery-tab:hover { color: var(--ink); }
-.gallery-tab.active { color: var(--ink); }
+.gallery-tab.active { color: var(--ink); font-weight: 600; }
 .gallery-tab.active::after {
   content: "";
   position: absolute;
@@ -178,17 +213,18 @@ html:has(.gallery-view) {
 /* card meta: title · page count / tags — two tight lines, no description slot */
 
 .gallery-card-info { padding-top: var(--space-2); }
-.gallery-card-title-row { display: flex; align-items: baseline; gap: var(--space-2); }
+.gallery-card-title-row { display: flex; align-items: flex-start; gap: var(--space-2); }
 .gallery-card-title {
   flex: 1 1 auto;
   min-width: 0;
-  font-size: var(--text-lg);
-  font-weight: 500;
-  line-height: var(--leading-tight);
-  color: var(--ink);
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: var(--leading);
+  color: var(--ink);
 }
 .gallery-card-pages {
   flex: 0 0 auto;

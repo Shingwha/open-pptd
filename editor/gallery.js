@@ -120,6 +120,24 @@ export function createHomeView({
     });
   }
 
+  const copyGuideBtn = $("btn-copy-guide");
+  copyGuideBtn?.addEventListener(
+    "click",
+    async () => {
+      try {
+        await navigator.clipboard.writeText($("gallery-guide-prompt").textContent.trim());
+        copyGuideBtn.textContent = "已复制";
+      } catch {
+        copyGuideBtn.textContent = "请手动复制";
+        toast?.show?.("复制失败，请手动选择 Prompt 文本", "danger");
+      }
+      setTimeout(() => {
+        if (!destroyed) copyGuideBtn.textContent = "复制 Prompt";
+      }, 1500);
+    },
+    { signal: ac.signal }
+  );
+
   // Empty-state action (new blank / back to all works): one delegation for every render path
   grid?.addEventListener(
     "click",
@@ -128,7 +146,7 @@ export function createHomeView({
       if (!btn) return;
       e.stopPropagation();
       if (btn.dataset.emptyAction === "new") onNewBlank();
-      else setTab("ppt", currentEntries);
+      else setTab("all", currentEntries);
     },
     { signal: ac.signal }
   );
@@ -201,6 +219,7 @@ export function createHomeView({
   // Grid + tabs
   // --------------------------------------------------------------------------
   const TABS = [
+    { kind: "all", label: "全部" },
     { kind: "ppt", label: "PPT" },
     { kind: "poster", label: "海报" },
   ];
@@ -222,7 +241,7 @@ export function createHomeView({
       grid.innerHTML = currentEntries.length
         ? emptyHtml({
             title: "此分类下暂无作品",
-            hint: "切回「PPT」查看已有作品。",
+            hint: "切回「全部」查看已有作品。",
             action: "all",
             label: "查看全部作品",
           })
@@ -237,6 +256,9 @@ export function createHomeView({
     for (const entry of list) {
       const card = document.createElement("div");
       card.className = "gallery-card";
+      card.tabIndex = 0;
+      card.setAttribute("role", "button");
+      card.setAttribute("aria-label", `打开作品：${entry.title}`);
       const thumb = document.createElement("div");
       thumb.className = "gallery-card-cover loading";
       // The render target canvas sits level with the cover: clearing it on re-render keeps the card shell
@@ -254,7 +276,13 @@ export function createHomeView({
         `<div class="gallery-card-tags">${tags}</div>`;
       card.appendChild(thumb);
       card.appendChild(info);
-      card.addEventListener("click", () => onOpenDeck(entry.deck));
+      const open = () => onOpenDeck(entry.deck);
+      card.addEventListener("click", open);
+      card.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        open();
+      });
       grid.appendChild(card);
       entryByCanvas.set(canvas, entry);
       previewObserver.observe(canvas);
@@ -269,7 +297,7 @@ export function createHomeView({
       b.setAttribute("aria-selected", on ? "true" : "false");
     });
     grid.classList.toggle("poster-grid", kind === "poster");
-    if (!destroyed) fillGrid(entries.filter((e) => (e.kind || "ppt") === kind));
+    if (!destroyed) fillGrid(kind === "all" ? entries : entries.filter((e) => (e.kind || "ppt") === kind));
   }
 
   async function show() {
@@ -304,7 +332,7 @@ export function createHomeView({
     if (tabsEl) {
       tabsEl.hidden = false;
       tabsEl.innerHTML = TABS.map((t) => {
-        const n = entries.filter((e) => (e.kind || "ppt") === t.kind).length;
+        const n = t.kind === "all" ? entries.length : entries.filter((e) => (e.kind || "ppt") === t.kind).length;
         return `<button type="button" class="gallery-tab" role="tab" aria-selected="false" data-kind="${t.kind}">${t.label}<span class="cnt">${n}</span></button>`;
       }).join("");
     }
@@ -312,14 +340,11 @@ export function createHomeView({
       "click",
       (ev) => {
         const btn = ev.target.closest(".gallery-tab");
-        if (btn && !btn.classList.contains("active")) {
-          setTab(btn.dataset.kind, entries);
-          window.scrollTo({ top: 0 });
-        }
+        if (btn && !btn.classList.contains("active")) setTab(btn.dataset.kind, entries);
       },
       { signal: ac.signal }
     );
-    setTab("ppt", entries);
+    setTab("all", entries);
   }
 
   show().catch((err) => {

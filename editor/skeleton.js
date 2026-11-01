@@ -176,28 +176,43 @@ export function previewSkeletonHtml({ chrome = "full" } = {}) {
 export function homeSkeletonHtml() {
   return (
     `<div class="gallery-view" id="home-view">` +
-    // top row: wordmark + file / GitHub (thin hairline, no color block)
     `<header class="gallery-top">` +
+    `<div class="gallery-top-inner">` +
     `<div class="brand"><a class="brand-home" href="./" title="刷新作品画廊">OPEN PPTD</a></div>` +
     `<div class="gallery-top-actions">` +
+    `<div id="gallery-mode" class="gallery-mode" hidden></div>` +
+    `<details class="gallery-guide">` +
+    `<summary class="btn" title="安装与使用说明">` +
+    `<span class="btn-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v6M12 7.5v.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>` +
+    `<span class="btn-label">使用说明</span>` +
+    `</summary>` +
+    `<div class="gallery-guide-panel">` +
+    `<strong class="gallery-guide-title">让 AI 帮你安装</strong>` +
+    `<p class="gallery-guide-note">复制这段 Prompt，发给你的 AI。</p>` +
+    `<pre id="gallery-guide-prompt">Install open-pptd and its Skill on my device. Detect my OS and current AI tool's skills directory, then execute the commands directly. Windows (PowerShell): irm https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.ps1 | iex. macOS/Linux: curl -fsSL https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.sh | sh. Then run open-pptd assets skill install --dir [actual skills directory], using the detected path.</pre>` +
+    `<div class="gallery-guide-actions">` +
+    `<button id="btn-copy-guide" class="btn btn-primary btn-sm" type="button">复制 Prompt</button>` +
+    `<a class="btn btn-sm gallery-guide-github" href="https://github.com/Shingwha/open-pptd" target="_blank" rel="noopener">GitHub 仓库 ↗</a>` +
+    `</div>` +
+    `</div>` +
+    `</details>` +
     `<button id="btn-file" class="btn" title="文件：新建 / 打开本地项目 / 最近打开">` +
     `<span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M3 6a1.5 1.5 0 0 1 1.5-1.5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.2V18a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>` +
     `<span class="btn-label">文件</span>` +
     `</button>` +
     GITHUB_LINK +
     `</div>` +
+    `</div>` +
     `</header>` +
-    // masthead: serif statement (left) + text filter tabs and run mode (right)
     `<div class="gallery-main">` +
     `<section class="gallery-masthead">` +
     `<div class="gallery-masthead-copy">` +
     `<h1 class="gallery-title">Presentations,<br>not templates.</h1>` +
-    `<p class="gallery-sub">用内容驱动的版式，生成可编辑的演示与海报。</p>` +
+    `<p class="gallery-sub">输入内容，生成可编辑的 PPT 与海报。</p>` +
     `</div>` +
-    `<div class="gallery-masthead-tools">` +
+    `</section>` +
+    `<section class="gallery-toolbar" aria-label="作品筛选">` +
     `<div id="gallery-tabs" class="gallery-tabs" role="tablist" hidden></div>` +
-    `<div id="gallery-mode" class="gallery-mode" hidden></div>` +
-    `</div>` +
     `</section>` +
     `<div id="gallery-grid" class="gallery-grid" hidden></div>` +
     `</div>` +
