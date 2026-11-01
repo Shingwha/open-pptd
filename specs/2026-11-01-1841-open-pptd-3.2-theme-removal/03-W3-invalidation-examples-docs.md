@@ -2,6 +2,7 @@
 
 > 分支 `feat/3.2-w3-invalidation-examples-docs`（W2 合并后由 lead 创建）。
 > 前置：W1（`04c3f29`）、W2（`c65cd04`）已合并；main 上 run-all 38/38、editor-minimal 21/21、incremental 5/5、golden 142/142。
+> 状态：✅ 2026-11-01，`45a2a5d`；终验见 `00-overview.md` 状态行。
 > 最高约束：不动 deck theme 结构；不碰 model/CLI/server/export；只修颜色失效、EV 渐变、文档与现有测试。
 
 ## 目标
