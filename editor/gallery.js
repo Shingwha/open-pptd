@@ -133,12 +133,13 @@ export function createHomeView({
     { signal: ac.signal }
   );
 
-  // Home brand: jump back to the top of the grid (the shell intercepts .brand-home in the editor view)
+  // Home brand: jump back to the very top of the page (masthead included), not just the
+  // grid top. The shell intercepts .brand-home in the editor view, so this is Home-only.
   root.querySelector(".brand-home")?.addEventListener(
     "click",
     (e) => {
       e.preventDefault();
-      grid?.scrollIntoView({ block: "start" });
+      window.scrollTo({ top: 0 });
     },
     { signal: ac.signal }
   );
@@ -247,10 +248,9 @@ export function createHomeView({
       const tags = (entry.tags || [])
         .map((t) => `<span class="gallery-tag">${escapeHtml(t)}</span>`)
         .join("");
-      // Title + page count / description / tags (empty slots keep card heights aligned)
+      // Title + page count / tags (the cover carries the visual, the meta line the facts)
       info.innerHTML =
         `<div class="gallery-card-title-row"><span class="gallery-card-title">${escapeHtml(entry.title)}</span><span class="gallery-card-pages">${entry.pages} 页</span></div>` +
-        `<div class="gallery-card-desc">${escapeHtml(entry.description || "")}</div>` +
         `<div class="gallery-card-tags">${tags}</div>`;
       card.appendChild(thumb);
       card.appendChild(info);
