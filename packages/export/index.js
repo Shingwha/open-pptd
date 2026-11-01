@@ -1,12 +1,11 @@
 // export/index.js — ExportService (Contract 3.0 entry open-pptd/export)
 // Single orchestration entry: exportProject(project, options, env) → ExportReport for
-// check / pptx / bundle / png. options: format, outPath?, theme?, check?, fetchFonts?, offline?,
+// check / pptx / bundle / png. options: format, outPath?, check?, fetchFonts?, offline?,
 // strict?, embedFonts?, fullFonts?, pages?, scale?, backend?, browserPath?, timeoutMs?, bundleMode?;
 // env: resources, renderBackend?, sink?, onProgress?. Kept here: check gate, strict policy,
 // resolve diagnostics, report assembly, format routing. Dual-end: no node:/DOM; adapters injected via env.
 
 import { checkProject, createProject, resolveProject } from "../runtime/index.js";
-import { THEME_PALETTES, mergePaletteColors } from "../model/index.js";
 import { ExportError, EXPORT_ERRORS } from "./errors.js";
 import { createReport, formatIssue } from "./report.js";
 import { exportPptx } from "./pptx.js";
@@ -87,27 +86,6 @@ function asProject(input) {
   throw new TypeError("exportProject 需要 Project、ProjectFiles 或 Deck");
 }
 
-/** Apply an explicit theme override (preset key merged like the CLI --theme, or a snapshot). */
-function applyThemeOverride(deck, theme) {
-  if (typeof theme === "string") {
-    const preset = THEME_PALETTES[theme];
-    if (!preset) {
-      throw new ExportError(
-        EXPORT_ERRORS.INVALID_OPTION,
-        `未知配色预设 "${theme}"，可用: ${Object.keys(THEME_PALETTES).join(" / ")}`
-      );
-    }
-    return {
-      ...deck,
-      theme: { ...(deck.theme || {}), colors: mergePaletteColors(deck.theme?.colors, preset.colors) },
-    };
-  }
-  if (theme && typeof theme === "object") {
-    return { ...deck, theme: { ...(deck.theme || {}), ...theme } };
-  }
-  throw new ExportError(EXPORT_ERRORS.INVALID_OPTION, "theme 需要预设名或主题快照对象");
-}
-
 function countChecked(resolved) {
   return {
     fonts: Object.keys(resolved.fontStatus || {}).length,
@@ -132,6 +110,9 @@ function collectMissing(resolved) {
  * @returns {Promise<object>} ExportReport (check failures are report.ok=false, not throws)
  */
 export async function exportProject(projectInput, options = {}, env = {}) {
+  if (options.theme != null) {
+    throw new ExportError(EXPORT_ERRORS.INVALID_OPTION, "theme 覆盖已移除（主题库已删除）");
+  }
   const format = options.format || "check";
   if (!EXPORT_FORMATS.includes(format)) {
     throw new ExportError(
@@ -146,12 +127,8 @@ export async function exportProject(projectInput, options = {}, env = {}) {
       `${format} 导出需要 env.resources（ResourceProvider）`
     );
   }
-  let project = asProject(projectInput);
-  let deck = project.deck;
-  if (options.theme) {
-    deck = applyThemeOverride(deck, options.theme);
-    project = { ...project, deck };
-  }
+  const project = asProject(projectInput);
+  const deck = project.deck;
 
   const report = createReport(format);
 

@@ -1,21 +1,18 @@
-// cli/assets.js — `assets`: bundled assets, theme library and user font library
+// cli/assets.js — `assets`: bundled assets and user font library
 // Asset zips come from GitHub Releases (pack-release); a missing zip (404) falls back to
 // the per-file downloader (cli/download.js). Verify by SHA256SUMS when available,
 // otherwise structurally. The registry never enters assets/ (registry.json entries are
-// dropped at extraction). `themes apply` writes only deck.theme, atomically. Theme/font
-// IO lives in the server adapters. Human text goes to stderr; --json is one stdout line.
+// dropped at extraction). Font IO lives in the server adapters. Human text goes to
+// stderr; --json is one stdout line.
 
 import { existsSync, readFileSync, rmSync, readdirSync, mkdirSync, copyFileSync } from "node:fs";
-import { join, dirname, basename, resolve } from "node:path";
+import { join, basename, resolve } from "node:path";
 import { homedir } from "node:os";
 import { createHash } from "node:crypto";
 import { inflateRawSync } from "node:zlib";
-import * as yaml from "../model/vendor/js-yaml.mjs";
-import { applyTheme } from "../model/theme-library.js";
 import { paths, PACKAGE_ROOT, ensureHome, atomicWriteFile, dirSize, isRegistryPath, resolveResourceFile } from "../paths.js";
 import { readFontRegistry, readIconRegistry, fontReadyInfo, iconReadyInfo, packageVersion } from "./resource-status.js";
 import { downloadFonts, downloadIcons } from "./download.js";
-import { createFileThemeStore } from "../server/theme-store.js";
 import { createFileFontLibrary, fontLibraryPaths } from "../server/font-library.js";
 import { CliError, jsonLine } from "./errors.js";
 
@@ -176,7 +173,7 @@ function positionals(args) {
       continue;
     }
     if (a === "-") {
-      out.push(a); // themes import - reads stdin
+      out.push(a); // fonts import - reads stdin
       continue;
     }
     if (a.startsWith("-")) continue;
@@ -207,14 +204,7 @@ async function collectListFacts() {
   const iconReg = readIconRegistry();
   const f = fontReadyInfo(fontReg);
   const ic = iconReadyInfo(iconReg);
-  let themes = { builtin: 0, user: 0 };
   let userFonts = 0;
-  try {
-    const list = await createFileThemeStore().list();
-    themes = { builtin: list.filter((t) => t.builtin).length, user: list.filter((t) => !t.builtin).length };
-  } catch (err) {
-    human(`⚠ 主题库读取失败: ${err.message}`);
-  }
   try {
     const fonts = await createFileFontLibrary().list();
     userFonts = fonts.filter((x) => x.source === "user" || x.source === "url").length;
@@ -226,7 +216,6 @@ async function collectListFacts() {
     home: paths.home,
     fonts: { ready: f.ready, total: f.total, bytes: dirSize(paths.fonts), dir: paths.fonts },
     icons: { ready: ic.ready, total: ic.total, bytes: dirSize(paths.icons), dir: paths.icons },
-    themes: { ...themes, dir: paths.themes },
     userFonts: { count: userFonts, dir: paths.userFonts },
     registry: { fontsVersion: fontReg.version, faVersion: iconReg.faVersion, readonly: true },
   };
@@ -243,7 +232,6 @@ async function assetsList(args) {
   human(`  home        ${facts.home}`);
   human(`  fonts       ${facts.fonts.ready} / ${facts.fonts.total} 就绪 · ${(facts.fonts.bytes / 1024 / 1024).toFixed(1)} MB（${facts.fonts.dir}）`);
   human(`  icons       ${facts.icons.ready} / ${facts.icons.total} 就绪 · ${(facts.icons.bytes / 1024 / 1024).toFixed(2)} MB（${facts.icons.dir}）`);
-  human(`  themes      ${facts.themes.builtin} 内置 · ${facts.themes.user} 我的（${facts.themes.dir}）`);
   human(`  user fonts  ${facts.userFonts.count} 种（${facts.userFonts.dir}）`);
   human(`  registry    包内只读（fonts v${facts.registry.fontsVersion} · FA ${facts.registry.faVersion}），永不被 home 遮蔽`);
   human("\n  安装：node bin/open-pptd.js assets sync [icons|fonts|all]    离线：--from <zip>");
@@ -324,152 +312,6 @@ function assetsClean(args) {
   if (json) jsonLine({ ok: true, cleaned });
   else human("（cache/ 与 tmp/ 可整目录安全删除；assets/ 与 config.json 未动）");
   return true;
-}
-
-// ---------------------------------------------------------------------------
-// themes
-// ---------------------------------------------------------------------------
-const CARD_KEYS = ["primary", "accent", "accent3", "accent4", "accent5", "accent6"];
-
-function printPreserved(preserved) {
-  human(`  保留：颜色 ${preserved.colors.length} · 文字样式 ${preserved.textStyles.length} · 表格样式 ${preserved.tableStyles.length}`);
-  if (preserved.colors.length) human(`  颜色令牌：${preserved.colors.join(", ")}`);
-  if (preserved.textStyles.length) human(`  文字样式：${preserved.textStyles.join(", ")}`);
-  if (preserved.tableStyles.length) human(`  表格样式：${preserved.tableStyles.join(", ")}`);
-}
-
-function loadDeckForTheme(manifestPath) {
-  const manifest = yaml.load(readFileSync(manifestPath, "utf8"));
-  const baseDir = dirname(manifestPath);
-  const pages = [];
-  for (const rel of manifest?.pages || []) {
-    const p = join(baseDir, String(rel));
-    if (!existsSync(p)) continue;
-    try {
-      pages.push(yaml.load(readFileSync(p, "utf8")));
-    } catch {
-      /* one unreadable page should not block a theme preview */
-    }
-  }
-  return { ...(manifest && typeof manifest === "object" ? manifest : {}), pages };
-}
-
-/** Replace the top-level `theme:` block in a manifest text (all other lines untouched). */
-export function replaceThemeBlock(text, theme) {
-  const eol = text.includes("\r\n") ? "\r\n" : "\n";
-  const lines = text.split(/\r?\n/);
-  const block = yaml.dump({ theme }).replace(/\n$/, "").split("\n");
-  const start = lines.findIndex((l) => /^theme\s*:/.test(l));
-  if (start >= 0) {
-    let end = start + 1;
-    while (end < lines.length && !/^[A-Za-z_][\w-]*\s*:/.test(lines[end])) end++;
-    lines.splice(start, end - start, ...block);
-  } else {
-    const pagesIdx = lines.findIndex((l) => /^pages\s*:/.test(l));
-    if (pagesIdx >= 0) lines.splice(pagesIdx, 0, ...block, "");
-    else {
-      if (lines.length && lines[lines.length - 1] !== "") lines.push("");
-      lines.push(...block);
-    }
-  }
-  return lines.join(eol) + eol;
-}
-
-function writeDeckTheme(deckPath, theme) {
-  const text = readFileSync(deckPath, "utf8");
-  atomicWriteFile(deckPath, replaceThemeBlock(text, theme), { tmpDir: dirname(deckPath) });
-}
-
-async function assetsThemes(args) {
-  const sub = args[0];
-  const rest = args.slice(1);
-  const json = rest.includes("--json");
-  try {
-    if (sub === "list") {
-      const store = createFileThemeStore();
-      const themes = await store.list();
-      const builtin = themes.filter((t) => t.builtin).length;
-      if (json) {
-        jsonLine({ ok: true, themes, counts: { builtin, user: themes.length - builtin } });
-        return true;
-      }
-      human(`open-pptd 主题库（${builtin} 内置 · ${themes.length - builtin} 我的）\n`);
-      for (const t of themes) {
-        const swatches = CARD_KEYS.map((k) => t.colors?.[k]).filter(Boolean).join(" ");
-        human(`  ${t.builtin ? "[内置]" : "[我的]"} ${t.id.padEnd(30)} ${String(t.name).padEnd(12)} ${swatches}`);
-      }
-      human(`\n  路径：${paths.themes}`);
-      return true;
-    }
-
-    if (sub === "import") {
-      const file = positional(rest) || flagValue(rest, "--from");
-      if (!file) throw new CliError("ERR_USAGE", "用法: assets themes import <file.json|->");
-      const text = file === "-" ? readFileSync(0, "utf8") : readFileSync(file, "utf8");
-      const theme = await createFileThemeStore().import(text);
-      if (json) jsonLine({ ok: true, theme });
-      else human(`✓ 已导入主题「${theme.name}」→ ${theme.id}（${paths.themes}）`);
-      return true;
-    }
-
-    if (sub === "export") {
-      const pos = positionals(rest);
-      const id = pos[0];
-      if (!id) throw new CliError("ERR_USAGE", "用法: assets themes export <id> <file.json>");
-      const text = await createFileThemeStore().export(id);
-      const out = pos[1] || flagValue(rest, "-o") || flagValue(rest, "--out");
-      if (out) {
-        atomicWriteFile(out, text);
-        if (json) jsonLine({ ok: true, id, out });
-        else human(`✓ 已导出主题 ${id} → ${out}`);
-      } else if (json) {
-        jsonLine({ ok: true, id, json: text });
-      } else {
-        process.stdout.write(text);
-      }
-      return true;
-    }
-
-    if (sub === "delete") {
-      const id = positional(rest);
-      if (!id) throw new CliError("ERR_USAGE", "用法: assets themes delete <id>");
-      await createFileThemeStore().remove(id);
-      if (json) jsonLine({ ok: true, id });
-      else human(`✓ 已删除用户主题 ${id}`);
-      return true;
-    }
-
-    if (sub === "apply") {
-      const pos = positionals(rest);
-      const id = pos[0];
-      const deckPath = pos[1] || flagValue(rest, "--deck");
-      const dryRun = rest.includes("--dry-run");
-      if (!id) throw new CliError("ERR_USAGE", "用法: assets themes apply <id> <deck.pptd> [--dry-run] [--json]");
-      if (!deckPath) throw new CliError("ERR_USAGE", "assets themes apply 需要 deck.pptd（写 deck.theme）");
-      if (!existsSync(deckPath)) throw new CliError("ERR_NOT_FOUND", `deck 不存在: ${deckPath}`);
-      const themeFile = await createFileThemeStore().read(id);
-      if (!themeFile) throw new CliError("ERR_THEME_NOT_FOUND", `主题不存在: ${id}`);
-      const deck = loadDeckForTheme(deckPath);
-      const result = applyTheme(deck?.theme || {}, themeFile, { deck });
-      if (!dryRun) writeDeckTheme(deckPath, result.theme);
-      if (json) {
-        jsonLine({ ok: true, id, deck: deckPath, dryRun, written: !dryRun, preserved: result.preserved, theme: result.theme });
-      } else {
-        human(`主题「${themeFile.name}」${dryRun ? "预演（未写入）" : "已写入"} ${deckPath}`);
-        printPreserved(result.preserved);
-        if (dryRun) human("  --dry-run：deck 未修改；去掉该参数即原子写入 deck.theme");
-        else human("  deck.theme 已替换（其余字段/citation 引用保持不变）");
-      }
-      return true;
-    }
-
-    return false;
-  } catch (err) {
-    if (json) jsonLine({ ok: false, error: { code: err?.code || "ERR_THEME", message: err?.message || String(err) } });
-    else human(`✗ ${err?.message || err}`);
-    process.exitCode = 1;
-    return true;
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -643,7 +485,6 @@ export async function runAssets(args) {
   if (sub === "list") return assetsList(args.slice(1));
   if (sub === "sync") return assetsSync(args.slice(1));
   if (sub === "clean") return assetsClean(args.slice(1));
-  if (sub === "themes") return assetsThemes(args.slice(1));
   if (sub === "fonts") return assetsFonts(args.slice(1));
   if (sub === "skill") return assetsSkill(args.slice(1));
   return false;

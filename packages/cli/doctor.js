@@ -1,16 +1,15 @@
 // cli/doctor.js — `doctor`: environment, paths, libraries and PNG capability
-// One read-only report: cli version/root · node · home writability · asset/theme/user-font
+// One read-only report: cli version/root · node · home writability · asset/user-font
 // counts · PATH · every path value · Chrome/Edge availability for PNG export.
 // Exit code: critical failures (node < 18, home not writable) → 1; missing PATH /
 // incomplete assets / no browser → 0 with a hint (resources are optional).
 // --json prints a single line on stdout; human output goes to stderr.
 
-import { existsSync, writeFileSync, rmSync, accessSync, constants, readdirSync } from "node:fs";
+import { existsSync, writeFileSync, rmSync, accessSync, constants } from "node:fs";
 import { join, dirname, delimiter } from "node:path";
 import { paths, resourceRoots, resolveCliRoot, contractRoot } from "../paths.js";
 import { readFontRegistry, readIconRegistry, fontReadyInfo, iconReadyInfo, packageVersion } from "./resource-status.js";
 import { readConfig } from "../config.js";
-import { listBuiltinThemes, BUILTIN_THEME_PREFIX } from "../model/theme-library.js";
 import { readUserFontEntries } from "../server/font-library.js";
 import { findBrowser } from "../renderer/headless/browser.js";
 import { jsonLine } from "./errors.js";
@@ -54,16 +53,6 @@ function onPath(dir) {
     .some((e) => e && norm(e) === target);
 }
 
-/** User theme count (file-per-theme JSON in home/themes; built-ins are code constants). */
-function userThemeCount() {
-  try {
-    if (!existsSync(paths.themes)) return 0;
-    return readdirSync(paths.themes).filter((n) => n.endsWith(".json")).length;
-  } catch {
-    return 0;
-  }
-}
-
 /** PNG capability: Chrome/Edge discovery (no launch). */
 function pngCapability() {
   try {
@@ -81,7 +70,6 @@ export function collectDoctorFacts() {
   const f = fontReadyInfo(fontReg);
   const ic = iconReadyInfo(iconReg);
   const userFonts = readUserFontEntries().length;
-  const builtin = listBuiltinThemes().length;
   const nodeMajor = Number(process.versions.node.split(".")[0]);
   const homeWritable = isWritable(paths.home);
   const cliRoot = resolveCliRoot() || contractRoot();
@@ -99,7 +87,6 @@ export function collectDoctorFacts() {
     assets: {
       fonts: { ready: f.ready, total: f.total, user: userFonts },
       icons: { ready: ic.ready, total: ic.total },
-      themes: { builtin, user: userThemeCount(), userPrefix: BUILTIN_THEME_PREFIX },
     },
     path: { onPath: onPath(join(paths.cli, "bin")), dir: join(paths.cli, "bin") },
     paths: {
@@ -109,7 +96,6 @@ export function collectDoctorFacts() {
       fonts: paths.fonts,
       userFonts: paths.userFonts,
       icons: paths.icons,
-      themes: paths.themes,
       cli: paths.cli,
       cliCurrent: paths.cliCurrent,
       config: paths.config,
@@ -143,8 +129,7 @@ export function runDoctor(args) {
     log(`  home     ${facts.home.path}  ${facts.home.writable ? "✓ 可写" : "✗ 不可写（EACCES/EPERM）"}`);
     log(
       `  assets   字体 ${facts.assets.fonts.ready}/${facts.assets.fonts.total}（用户 ${facts.assets.fonts.user}）` +
-        ` · 图标 ${facts.assets.icons.ready}/${facts.assets.icons.total}` +
-        ` · 主题 ${facts.assets.themes.builtin} 内置/${facts.assets.themes.user} 我的`
+        ` · 图标 ${facts.assets.icons.ready}/${facts.assets.icons.total}`
     );
     log(`  png      ${facts.png.available ? "✓ " + facts.png.browser : "✗ 未找到 Chrome/Edge（--browser 可指定）"}`);
     log(`  path     ${facts.path.onPath ? "✓ 已在 PATH" : "✗ 不在 PATH（新开终端或手工加入）"}  ${facts.path.dir}`);
