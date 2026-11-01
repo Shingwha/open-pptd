@@ -1,21 +1,9 @@
-// ============================================================================
 // writer/table.js — table export (p:graphicFrame + a:tbl, natively editable)
-// ----------------------------------------------------------------------------
-// Style consumption follows the official inheritance chain exactly (Style Priority, table cells):
-//   rich-text tags > span inline > paragraph > cell inline fields > Cell.textStyle ref >
-//   position class (rowOverColumn arbitration) > bodyStyles loop > cellStyle base > default
-//
-// Merged cells (PowerPoint native structure):
-//   - rowSpan/colSpan are attributes of <a:tc> (not tcPr!)
-//   - covered positions are NOT omitted: emit an empty placeholder <a:tc vMerge="1"> (covered by
-//     a row merge) or hMerge="1" (covered by a column merge); diagonal covers write both
-//   - each row's tc count must equal the gridCol count (full grid)
-//   The PPTD YAML omission rules are expanded by tableGrid (packages/model/table.js)
-//
-// Border: CT_TableCellProperties' lnL/lnR/lnT/lnB carry CT_LineProperties directly
-//   (the w/cap/cmpd/algn attributes live on lnL; a:ln cannot wrap it)
-// Align: cell.align > class align > official default [center, middle]
-// ============================================================================
+// Merged cells follow PowerPoint's native structure: rowSpan/colSpan are attributes of
+// <a:tc> (not tcPr), covered positions are NOT omitted but emit an empty placeholder
+// <a:tc vMerge="1"> / hMerge="1" (both for diagonal covers), and every row's tc count must
+// equal the gridCol count. Style/border/align inheritance matches the preview
+// (model/theme.js, model/table.js).
 
 import { el, escAttr } from "./xml.js";
 import { buildParagraph } from "./text.js";
@@ -26,7 +14,8 @@ import { borderSides, dashSpec, normalizeFill, ooxmlAnchor } from "../model/styl
 import { colorElement, buildFill, buildShadow } from "./drawing.js";
 
 /**
- * Single-side border XML: <a:lnX w cap cmpd algn> (CT_LineProperties carried directly on the line element).
+ * Single-side border XML: <a:lnX w cap cmpd algn> (CT_TableCellProperties' ln* carry
+ * CT_LineProperties directly; w/cap/cmpd/algn live on the line element and a:ln cannot wrap it).
  * Child order (CT_LineProperties schema): fill group → prstDash → headEnd/tailEnd.
  * No border → an empty <a:lnX/> (matching PowerPoint re-save behavior).
  */
@@ -43,18 +32,17 @@ export function tableXml(theme, tableEl, ctx) {
   const [x, y, w] = tableEl.bounds;
   const ts = resolveTableStyle(theme, tableEl.style);
   const rows = Array.isArray(tableEl.rows) ? tableEl.rows : [];
-  // Height single source (D6): consume the LayoutTree facts computed once by buildPptx
+  // Height single source: consume the LayoutTree facts computed once by buildPptx
   // (ctx.layoutOf). The writer never re-measures tables — row heights, column ratios and
-  // the graphic-frame height all come from the same Tree the preview paints.
-  // Direct callers without a layout page (internal tests/legacy) fall back to the model's
-  // minimum estimate; that path is not used by buildPptx.
+  // the graphic-frame height all come from the same tree the preview paints.
+  // Direct callers without a layout page (internal tests) fall back to the model estimate.
   const facts = ctx?.layoutOf?.(tableEl)?.table;
   const { rowHeights, columnWidths } = facts || estimateTableLayout(tableEl);
   const totalHeight = facts ? facts.totalHeight : rowHeights.reduce((a, b) => a + b, 0);
   const colWs = columnWidths;
   const rowCount = rows.length;
   const colCount = colWs.length;
-  // PPTD omitted-style rows → full grid (covered slots emit vMerge/hMerge placeholders)
+  // Cell omitted-style rows → full grid (covered slots emit vMerge/hMerge placeholders)
   const { grid } = tableGrid(rows, colCount);
 
   const gridCols = colWs
@@ -74,10 +62,10 @@ export function tableXml(theme, tableEl, ctx) {
     .join("");
 
   const tbl = el("a:tbl", {}, [
-    // Reference the blank table style defined in theme1.xml (no border/fill, does not override
-    // hand-drawn content) so PowerPoint has a style to follow and cell-level ln borders render.
-    // Official Table.shadow → a:tblPr > a:effectLst; ORDER: effectLst before tableStyleId
-    // (writing them reversed triggers PowerPoint repair)
+    // Reference the blank table style defined in theme1.xml (no border/fill, so it does not
+    // override hand-drawn content) — PowerPoint needs a style to follow for cell ln borders.
+    // Table.shadow → a:tblPr > a:effectLst; effectLst must precede tableStyleId (reversed
+    // order triggers PowerPoint repair).
     el("a:tblPr", { firstRow: "0", bandRow: "0", horzBanding: "0" },
       (tableEl.shadow ? buildShadow(theme, tableEl.shadow) : "") +
       el("a:tableStyleId", {}, "{00000000-0000-0000-0000-000000000000}")),
@@ -108,19 +96,19 @@ function tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, cell, cellAlign
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
   const kids = [];
   // Strict OOXML order: lnL/lnR/lnT/lnB must precede the fill inside tcPr, or PowerPoint ignores
-  // the borders. Border resolution (borderSides built-in defaults): the whole chain unset
-  // (undefined) → document default 1px black; explicit null → all four sides cleared; an array
-  // [top/bottom, left/right] or [top,right,bottom,left]; a single Border → all four sides alike
+  // the borders. Border resolution (borderSides defaults): whole chain unset (undefined) →
+  // document default 1px black; explicit null → all four sides cleared; an array
+  // [top/bottom, left/right] or [top,right,bottom,left]; a single Border → all four sides alike.
   const borders = borderSides(cell?.border ?? s.border);
-  // XML side names map directly to named sides (array indices must not be wired straight to lnL/lnR/lnT/lnB, which rotated every border)
+  // Side names map directly to named sides; array indices do not correspond to lnL/lnR/lnT/lnB order.
   for (const [side, b] of [["a:lnL", borders.left], ["a:lnR", borders.right], ["a:lnT", borders.top], ["a:lnB", borders.bottom]]) {
     kids.push(lnSide(theme, side, b));
   }
-  // Fill: cell inline > class style > cellStyle > Table.fill > transparent (normalizeFill single source)
+  // Fill: cell inline > class style > cellStyle > Table.fill > transparent
   const fill = normalizeFill(cell?.fill ?? s.fill ?? tableFill ?? null);
   if (fill) kids.push(buildFill(theme, fill));
   const align = cellAlign ?? s.align ?? ["center", "middle"];
-  // Padding uses the same constants as the preview (model/table.js, pt → EMU); hardcoding 3.6pt/0 drifted from the preview's 9/5px
+  // Padding uses the same constants as the preview (model/table.js, pt → EMU).
   const attrs = {
     marL: TABLE_CELL_PAD_X * 12700,
     marR: TABLE_CELL_PAD_X * 12700,
@@ -132,12 +120,12 @@ function tcPrXml(theme, r, c, ts, rowCount, colCount, tableFill, cell, cellAlign
 }
 
 function tcXml(theme, cell, r, c, ts, rowCount, colCount, tableFill) {
-  // Cell text-style merge → model single source cellTextStyle (same implementation as the preview's cellFinal)
+  // Cell text-style merge → cellTextStyle (same implementation as the preview's cellFinal)
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
   const text = cell?.text ?? "";
   const tree = parseRichText(text);
 
-  // Text base (align: cell.align > class align > official default [center, middle])
+  // Text base (align: cell.align > class align > default [center, middle])
   const base = cellTextStyle(theme, ts, r, c, rowCount, colCount, cell);
   const align = cell?.align ?? s.align ?? ["center", "middle"];
   base.textAlign = align[0];

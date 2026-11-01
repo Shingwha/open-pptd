@@ -1,11 +1,7 @@
-// ============================================================================
 // pptx.js — buildPptx(deck) main entry (browser + Node)
-// ----------------------------------------------------------------------------
-// Input: the unified data model deck (see packages/model/model.js + packages/model/theme.js)
-// Output: Uint8Array (a complete PPTX package)
-// Images: options.imageMap = { [src]: dataUrl } (browser preload cache)
-//         options.root = project root (Node reads files by relative path)
-// ============================================================================
+// Input: unified data model deck (packages/model/model.js + theme.js); output: Uint8Array
+// of a complete PPTX package. Images come from options.imageMap = { [src]: dataUrl }
+// (browser preload cache) or options.root = project root (Node reads files by path).
 
 import { resolveTheme } from "../model/theme.js";
 import { deckSize } from "../model/model.js";
@@ -72,8 +68,8 @@ export async function buildPptx(deck, options = {}) {
   const slideCount = pages.length;
   if (slideCount === 0) throw new Error("deck 没有页面，无法导出");
 
-  // Single layout pass for the whole deck (D6): every element's geometry fact (table
-  // totalHeight in particular) is computed once here and handed to the toXml shards
+  // Single layout pass for the whole deck: each element's geometry fact (table
+  // totalHeight in particular) is computed once here and passed to the toXml shards
   // through ctx; the writer never re-measures tables.
   const tree = layout({ ...deck, theme });
 
@@ -129,7 +125,6 @@ export async function buildPptx(deck, options = {}) {
     .filter((n) => n > 0);
   const hasNotes = notesSlides.length > 0;
 
-  // 1. Fixed parts
   zip.add("[Content_Types].xml", buildContentTypes(slideCount, chartTotal, embeddedFonts.parts.length, chartExIds, notesSlides));
   zip.add("_rels/.rels", buildRootRels());
   zip.add("docProps/core.xml", buildCoreProps(deck.title || "未命名演示文稿"));
@@ -148,12 +143,12 @@ export async function buildPptx(deck, options = {}) {
     zip.add("ppt/notesMasters/_rels/notesMaster1.xml.rels", buildNotesMasterRels());
   }
 
-  // 1.5 Font parts
+  // Font parts (fntdata payloads)
   for (const part of embeddedFonts.parts) {
     zip.add(part.path, part.bytes);
   }
 
-  // 2. Per-page slide + media + charts (media names are globally unique across pages to avoid collisions)
+  // Media names are globally unique across pages to avoid collisions.
   let mediaBase = 0;
   pages.forEach((page, i) => {
     const result = buildSlide(theme, page, i + 1, registry, {

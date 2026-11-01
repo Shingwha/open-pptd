@@ -1,10 +1,6 @@
-// ============================================================================
 // zip.js — minimal ZIP writer (zero dependencies, store method / no compression)
-// ----------------------------------------------------------------------------
 // PPTX accepts method 0 (stored), so no compression library is needed. CRC32 uses the
-// standard lookup table. Filenames are always UTF-8 encoded (flag bit 11 set; encodeUtf8
-// has a single source in model/bytes.js).
-// ============================================================================
+// standard lookup table. Filenames are always UTF-8 encoded (flag bit 11 set).
 
 import { encodeUtf8 } from "../model/bytes.js";
 

@@ -1,9 +1,6 @@
-// ============================================================================
 // text.js — rich-text tree → OOXML a:p serialization (shared by text, table cells, chart text)
-// ----------------------------------------------------------------------------
-// Inheritance chain (PPTD spec): inline run style > paragraph style > content field > $style > default.
-// Fonts are uniformly resolved by resolveFont to {latin, ea}; color tokens → schemeClr (theme-swappable).
-// ============================================================================
+// Inheritance chain: inline run style > paragraph style > content field > $style > default.
+// Fonts resolve through resolveFont to {latin, ea}; color tokens → schemeClr (theme-swappable).
 
 import { esc, escAttr, el } from "./xml.js";
 import { parseRichText } from "../model/richtext.js";
@@ -19,17 +16,12 @@ const M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math";
 const A14_NS = "http://schemas.microsoft.com/office/drawing/2010/main";
 const MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006";
 
-// Math-region fonts (PowerPoint native formula storage: every m:r's a:rPr declares Cambria
-// Math explicitly — without it PowerPoint falls back to the paragraph/cell font, which is why
-// table formula subscripts turned Microsoft YaHei. Only typeface is declared (rendering depends
-// only on typeface; panose and other font metadata are PowerPoint's own bookkeeping))
+// Math-region fonts: every m:r's a:rPr must declare Cambria Math explicitly — without it
+// PowerPoint falls back to the paragraph/cell font (table formula subscripts turned YaHei).
 const MATH_FONT = '<a:latin typeface="Cambria Math"/><a:ea typeface="Cambria Math"/>';
 
-// -- Line-spacing compensation: font single-line-height factor (the base of PowerPoint's
-// spcPct, see paragraphProps) --
-// Single source: the factor is always derived from the measure metrics table
-// (lineHeightMultiplierFor, same table and same ladder as layout/preview: registered-font
-// measurement → system-font constant → 1.2 fallback), with no separate table for export.
+// Line-spacing compensation factor: always derived from the measure metrics table
+// (lineHeightMultiplierFor, same ladder as layout/preview), with no separate export table.
 
 /** Paragraph font → single-line-height factor (derived from the same measure metrics table). */
 function lineFactorOf(theme, fontFamily) {
@@ -54,15 +46,14 @@ function runAttrs(s) {
 function runXml(theme, s, hrefId) {
   const attrs = runAttrs(s);
   const kids = [];
-  // OOXML CT_TextCharacterProperties child order (strict schema; out-of-order triggers repair):
+  // CT_TextCharacterProperties child order is strict (out-of-order triggers repair):
   //   fill group (solidFill/gradFill) → effectLst → highlight → latin/ea/cs → hlinkClick
-  // Text gradient takes precedence over solid (official TextContent.gradient applies to the glyphs)
+  // A text gradient takes precedence over solid (it applies to the glyphs).
   const fill =
     s.gradient && s.gradient.type === "gradient" && Array.isArray(s.gradient.stops)
       ? buildFill(theme, s.gradient)
       : solidFillElement(theme, s.color, s.opacity);
   if (fill) kids.push(fill);
-  // Text shadow (official TextContent.shadow)
   const shdw = shadowElement(theme, s.shadow);
   if (shdw) kids.push(shdw);
   if (s.backgroundColor) {
@@ -81,7 +72,8 @@ function runXml(theme, s, hrefId) {
 
 /** Build a single run (with style). hrefId is registered externally and passed in. */
 export function buildRun(theme, run, baseStyle, registerLink) {
-  // Effective style = base (with paragraph merged in) + run inline, the same mergeRunStyle chain as the renderer's runSpan
+  // Effective style = base (paragraph merged in) + run inline, the same mergeRunStyle chain
+  // the renderer's runSpan uses.
   const style = mergeRunStyle(baseStyle, null, run.style);
   let hrefId = null;
   if (run.href && registerLink) {
@@ -109,11 +101,10 @@ function paragraphProps(style, factor) {
   const kids = [];
   // Line spacing maps PPTD field semantics to native PowerPoint spacing types: lineHeightPx
   // (fixed px) → a:spcPts ("Exactly"), lineHeight (multiple) → a:spcPct ("Multiple").
-  // The two "multiple" bases differ: PPTD/CSS uses font size (renderer line-height:N = size × N)
-  // while spcPct uses the font's natural single-line height (OS/2 metrics: YaHei 1.32, SimSun
-  // 1.00, Calibri 1.22). Exporting N×100% directly makes PowerPoint 20~30% looser than the
-  // preview, so the multiple is divided by the font factor as compensation (source: lineFactorOf).
-  // Spacing is written even without an explicit value (default 1 = official default lineHeight 1).
+  // spcPct is relative to the font's natural single-line height (OS/2 metrics: YaHei 1.32,
+  // SimSun 1.00, Calibri 1.22) while PPTD/CSS multiples are relative to font size, so divide
+  // by the font factor or PowerPoint runs 20~30% looser than the preview.
+  // Spacing is always written (default 1 = PowerPoint's default lineHeight 1).
   if (style.lineHeightPx) {
     kids.push(el("a:lnSpc", {}, el("a:spcPts", { val: Math.round(style.lineHeightPx * 100) })));
   } else {
@@ -166,20 +157,16 @@ export function buildParagraph(theme, para, base, registerLink, options = {}) {
 }
 
 /** Inject style into every m:r of the OMML (a:rPr > solidFill / sz / Cambria Math, PowerPoint's
- * native run-property style). Supports theme tokens ($primary etc.) and hex, wired to theme swaps.
- * Formulas inherit only color/font-size; opacity (0~1, optional) = text transparency, with
- * a:alpha inside the color element (official structure).
- * Also completes PowerPoint's native formula storage:
- *   - every m:r declares Cambria Math explicitly (otherwise PowerPoint falls back to the
- *     paragraph/cell font, turning table formula subscripts into Microsoft YaHei)
- *   - m:nor (\text{} plain-text runs) get an explicit non-italic i="0"
- *   - structural elements (sub/sup/limit/nary/delimiter…) get m:ctrlPr (control properties that
- *     PowerPoint always fills in on re-save)
- *   - m:grow "1/0" → "on/off" (PowerPoint's stored values; mathml2omml matches the official XSLT bytes, emitting 1/0) */
+ * native run-property style). Supports theme tokens ($primary etc.) and hex.
+ * Formulas inherit only color/font-size; opacity (0~1, optional) is text transparency, with
+ * a:alpha inside the color element.
+ * Also completes native formula storage: every m:r declares Cambria Math, m:nor (\text{} runs)
+ * gets an explicit i="0", structural elements (sSub/sup/limit/nary/delimiter…) get m:ctrlPr, and
+ * m:grow "1/0" becomes "on/off" (mathml2omml matches the official XSLT bytes, emitting 1/0). */
 function injectRunStyle(omml, { color, fontSize, opacity } = {}, theme) {
   let fill = "";
   if (color) {
-    // OOXML color values must not carry a # prefix (#1565C0 → 1565C0); tokens are resolved by resolveColor
+    // OOXML color values must not carry a # prefix (#1565C0 → 1565C0); tokens are resolved first.
     const resolved = resolveColor(theme, color);
     const hex = resolved ? String(resolved).replace(/^#/, "").toUpperCase() : "";
     if (/^[0-9A-F]{6}$/.test(hex)) {
@@ -193,16 +180,15 @@ function injectRunStyle(omml, { color, fontSize, opacity } = {}, theme) {
   if (!fill && opacity != null && opacity < 1) {
     fill = `<a:solidFill><a:schemeClr val="tx1"><a:alpha val="${Math.round(opacity * 100000)}"/></a:schemeClr></a:solidFill>`;
   }
-  // Inside m:r, insert a:rPr after the rPr (if any) and before m:t; with no rPr, right after <m:r>.
-  // Note: do not return early when there is no fill/sz — the Cambria Math declaration must always
-  // be injected, or a formula run lacking a typeface falls back to the paragraph font (YaHei)
+  // Inside m:r, insert a:rPr after m:rPr (if any) and before m:t. Never return early when there
+  // is no fill/sz: the Cambria Math declaration must always be injected, or a run lacking a
+  // typeface falls back to the paragraph font.
   let out = omml.replace(/<m:r>(?:(<m:rPr>[\s\S]*?<\/m:rPr>))?(?=<m:t>([^<]*)<\/m:t>)/g, (_m, rpr, text) => {
-    // Explicit italic/upright declaration (PowerPoint's native storage; always written on re-save/edit):
+    // Explicit italic/upright declaration (PowerPoint's native storage):
     //   - no m:rPr and pure letters (math variables like P/a/x) → i="1"
     //   - m:nor (\text{} plain text) → i="0"
-    //   - everything else (mixed number/operator runs, \mathrm style runs) → no i, letting
-    //     PowerPoint's math engine decide per character (matching re-save and avoiding merged
-    //     runs like Q= / i=1 being italicized wholesale)
+    //   - anything else (mixed number/operator runs, \mathrm runs) → no i, letting the math
+    //     engine decide per character (matches re-save; avoids italicizing Q= / i=1 wholesale)
     const italic = !rpr
       ? /^[A-Za-z]+$/.test(text)
         ? ' i="1"'
@@ -213,9 +199,9 @@ function injectRunStyle(omml, { color, fontSize, opacity } = {}, theme) {
     const rPr = `<a:rPr${szAttr}${italic}>${fill}${MATH_FONT}</a:rPr>`;
     return rpr ? `<m:r>${rpr}${rPr}` : `<m:r>${rPr}`;
   });
-  // Structural ctrlPr (PowerPoint native formula storage: m:sSubPr/m:naryPr/... contain m:ctrlPr):
-  // an existing Pr (naryPr/radPr/accPr/dPr/...) gets it appended inside; otherwise (sSub/sSup/limLow/...)
-  // it is created
+  // Structural ctrlPr (native formula storage: m:sSubPr/m:naryPr/... contain m:ctrlPr): an
+  // existing Pr (naryPr/radPr/accPr/dPr/...) gets it appended; otherwise (sSub/sSup/limLow/...)
+  // it is created.
   const ctrlPr = `<m:ctrlPr><a:rPr${szAttr}>${fill}${MATH_FONT}</a:rPr></m:ctrlPr>`;
   const ctrlStructs = [
     ["m:sSub", "m:sSubPr"],
@@ -242,7 +228,7 @@ function injectRunStyle(omml, { color, fontSize, opacity } = {}, theme) {
       out = out.replace(new RegExp(`<${tag}(?=[\\s>])`, "g"), `<${tag}><${prTag}>${ctrlPr}</${prTag}`);
     }
   }
-  // m:grow value normalization (mathml2omml emits 1/0 to match the official XSLT bytes; PowerPoint stores on/off)
+  // m:grow value normalization (mathml2omml emits 1/0 to match the XSLT bytes; PowerPoint stores on/off)
   out = out
     .replace(/<m:grow m:val="1"\/>/g, '<m:grow m:val="on"/>')
     .replace(/<m:grow m:val="0"\/>/g, '<m:grow m:val="off"/>');
@@ -251,8 +237,8 @@ function injectRunStyle(omml, { color, fontSize, opacity } = {}, theme) {
 
 /**
  * Inline formula run → a14:m wrapper (PowerPoint native inline formula storage).
- * Official spec: formulas inherit only color and font-size; on parse failure/fallback they degrade
- * to the LaTeX source text.
+ * Formulas inherit only color and font-size; on parse failure/fallback they degrade to the
+ * LaTeX source text.
  */
 function buildFormulaRun(theme, run, baseStyle, { paraAlone = false, textAlign = null, fallback = false } = {}) {
   const color = run.style?.color || baseStyle.color;
@@ -278,12 +264,10 @@ function buildFormulaRun(theme, run, baseStyle, { paraAlone = false, textAlign =
   return `<a14:m xmlns:a14="${A14_NS}">${styled}</a14:m>`;
 }
 
-/** Text box → p:sp XML; when formulas are present, wrap in mc:AlternateContent per PowerPoint's
- * native structure (Choice = formula version, Fallback = a legacy Office-compatible version with
- * formulas degraded to LaTeX source text).
- * spPr matches a native PowerPoint text box: xfrm + prstGeom rect + noFill (CT_ShapeProperties
- * requires geometry; without it some Office implementations apply default fill/border, producing
- * unexplained color blocks on exported text boxes).
+/** Text box → p:sp XML; with formulas present, wrap in mc:AlternateContent (native structure:
+ * Choice = formula version, Fallback = legacy Office copy with formulas degraded to LaTeX).
+ * spPr matches a native PowerPoint text box: xfrm + prstGeom rect + noFill — CT_ShapeProperties
+ * requires geometry, or some Office builds apply a default fill/border and paint color blocks.
  */
 export function textXml(theme, element, ctx) {
   const b = element.bounds;
@@ -301,7 +285,7 @@ export function textXml(theme, element, ctx) {
       el("p:spPr", {}, spPr),
       el("p:txBody", {}, inner),
     ].join(""));
-  // Element-level transparency (official Text.opacity) → run-level fill a:alpha (PowerPoint storage)
+  // Element-level transparency → run-level fill a:alpha (PowerPoint storage)
   const body = buildTextBody(theme, element.content, ctx.registerLink, { opacity: element.opacity });
   if (body.includes("<a14:m")) {
     const fallbackBody = buildTextBody(theme, element.content, ctx.registerLink, { formulaFallback: true, opacity: element.opacity });
@@ -321,18 +305,16 @@ export function textXml(theme, element, ctx) {
 export function buildTextBody(theme, content, registerLink, options = {}) {
   const tree = parseRichText(content?.text || "");
   const base = computeBaseStyle(theme, content);
-  // Element-level transparency (official Text.opacity) → a:alpha inside every run's fill color
   if (options.opacity != null) base.opacity = options.opacity;
   const bodyAttrs = { lIns: 0, tIns: 0, rIns: 0, bIns: 0, wrap: "square" };
   if (content?.wrap === false) bodyAttrs.wrap = "none";
   if (content?.textDirection === "vertical") bodyAttrs.vert = "eaVert";
-  // Vertical align (official default [left, top] → anchor "t")
+  // Vertical align (default [left, top] → anchor "t")
   const v = Array.isArray(content?.align) ? content.align[1] : "top";
   bodyAttrs.anchor = ooxmlAnchor(v) || "t";
-  // Autofit: spAutoFit (PowerPoint's native text-box default, matching the editor's "box grows
-  // with content"). The editor syncs the bounds height to the content height after rendering, so
-  // the exported box height = content height: opening the PPT neither shrinks nor clips text, and
-  // PowerPoint re-adapts on edit.
+  // spAutoFit is PowerPoint's native text-box default, matching the editor's "box grows with
+  // content": the editor syncs bounds height to content height after rendering, so the exported
+  // box neither shrinks nor clips text and PowerPoint re-adapts on edit.
   const paras = tree.paragraphs
     .map((p) => buildParagraph(theme, p, base, registerLink, options))
     .join("");

@@ -1,12 +1,9 @@
-// ============================================================================
 // writer/line.js — line element export
-// ----------------------------------------------------------------------------
 // Straight line (2 points): p:cxnSp + prstGeom straightConnector1 + xfrm rotation.
 // Curve (multiple points): p:sp + a:custGeom (viewBox coordinate system, moveTo + lnTo/cubicBezTo).
-//   WARNING: do not use cxnSp + custGeom — PowerPoint declares the file corrupt and refuses to
-//   open it (error 0x80070570); PowerPoint's own freeform/curved connectors are p:sp + custGeom.
-// curve: sharp/round = polyline (lnTo every point), smooth = bezier (endpoint anchors + middle control points).
-// ============================================================================
+// WARNING: never use cxnSp + custGeom — PowerPoint declares the file corrupt and refuses to
+// open it (0x80070570); PowerPoint's own freeform/curved connectors are p:sp + custGeom.
+// curve: sharp/round = polyline (lnTo every point), smooth = bezier (endpoint anchors + controls).
 
 import { el, escAttr, angleToOOXML } from "./xml.js";
 import { buildFill, buildXfrm } from "./drawing.js";
@@ -19,17 +16,15 @@ export function lineXml(theme, element, ctx) {
   const b = element.bounds;
   const pts = parsePoints(element.points, element.viewBox || [1, 1], b);
   if (!pts || pts.length < 2) return "";
-  // Relative to the bounds origin (the custGeom coordinate system is the viewBox, stretched to bounds)
+  // Relative to the bounds origin (the custGeom space is the viewBox, stretched to bounds)
   const rel = pts.map(([px, py]) => [px - b[0], py - b[1]]);
   const curve = element.curve || "round";
   const [vw, vh] = element.viewBox || [1, 1];
-  // Map curve path points into the viewBox coordinate system (xfrm ext = bounds size; the viewBox space stretches to bounds)
+  // xfrm ext = bounds size, so the viewBox space stretches onto the bounds
   const toVb = ([px, py]) => [(px / b[2]) * vw, (py / b[3]) * vh];
 
   let geom;
   if (rel.length > 2) {
-    // Curve: custGeom (viewBox coordinate system, stretched to bounds)
-    // smooth = bezier (endpoint anchors + middle control points); sharp/round = polyline through every point
     const relVb = rel.map(toVb);
     let d;
     if (curve === "smooth") {
@@ -61,11 +56,9 @@ export function lineXml(theme, element, ctx) {
       "<a:noFill/>",
     ].join("");
   } else {
-    // Straight line: straightConnector1 + rotation (start→end)
-    // off is derived backwards from absolute coordinates: rotation center = off + (len/2, 0) and
-    // the segment endpoints must land exactly on P0/P1. Center c = (off.x + len/2, off.y),
-    // endpoints = c ± (len/2·cosθ, len/2·sinθ) (clockwise, y down)
-    // → off = (P0.x − len/2·(1−cosθ), P0.y + len/2·sinθ)
+    // Straight line: off is derived backwards so the rotated segment lands exactly on P0/P1.
+    // Rotation center = off + (len/2, 0), endpoints = c ± (len/2·cosθ, len/2·sinθ) (clockwise,
+    // y down) → off = (P0.x − len/2·(1−cosθ), P0.y + len/2·sinθ)
     const [x1, y1] = rel[0];
     const [x2, y2] = rel[1];
     const dx = x2 - x1;
@@ -94,8 +87,7 @@ export function lineXml(theme, element, ctx) {
   const dash = dashSpec(border.style)?.ooxml;
   if (dash) lnKids.push(el("a:prstDash", { val: dash }));
   // Join matches the preview's stroke-linejoin (round = rounded, otherwise miter). The OOXML
-  // default is round, so a multi-point sharp polyline without an explicit miter would be drawn
-  // rounded by PowerPoint (preview ≠ export)
+  // default is round, so a sharp polyline without an explicit miter would export rounded.
   if (rel.length > 2) lnKids.push(curve === "round" ? el("a:round") : el("a:miter"));
   if (element.arrow) {
     const [start, end] = element.arrow;
@@ -104,7 +96,6 @@ export function lineXml(theme, element, ctx) {
   }
   const ln = el("a:ln", { w: Math.round((border.width ?? 1) * 12700), cap: "flat", cmpd: "sng", algn: "ctr" }, lnKids.join(""));
   if (rel.length > 2) {
-    // Multi-point curve → p:sp + custGeom (cxnSp + custGeom would be declared corrupt and refused)
     return el("p:sp", {}, [
       el("p:nvSpPr", {}, [
         el("p:cNvPr", { id: ctx.nextId(), name: escAttr(element.elementId) }),

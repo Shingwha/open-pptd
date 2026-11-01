@@ -1,9 +1,6 @@
-// ============================================================================
 // xml.js — XML generation helpers
-// ----------------------------------------------------------------------------
-// esc/escAttr escaping has a single repository-wide implementation (packages/model/escape.js;
-// a third copy is forbidden), so this re-export keeps writer-side import paths stable.
-// ============================================================================
+// esc/escAttr have a single repository-wide implementation (model/escape.js); this
+// re-export only keeps writer-side import paths stable.
 
 import { esc, escAttr } from "../model/escape.js";
 
