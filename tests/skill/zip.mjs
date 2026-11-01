@@ -1,18 +1,9 @@
-// ============================================================================
-// tests/skill/zip.mjs — release skill zip contract
-// ----------------------------------------------------------------------------
-// Runs `node scripts/pack-release.mjs --only skill` and asserts that
-// dist/open-pptd-skill-v<version>.zip:
-//   1. exits 0 and the zip exists
-//   2. every entry sits under the single top-level `open-pptd/`
-//   3. contains SKILL.md, README.md, the 7 references, kits/README.md,
-//      kit.md + theme.md for all 6 kits, and ≥1 fragment per kit
-//   4. contains no tests/, demo/, media, executable scripts, or binary assets
-//   5. SHA256SUMS lists the zip and the recorded hash matches the file
-// Generated dist artifacts are removed afterwards (pre-existing files are kept).
-// Usable standalone or imported by tests/skill/run.mjs via skillZipTests().
-// Usage: node tests/skill/zip.mjs
-// ============================================================================
+// tests/skill/zip.mjs — release skill zip contract (usage: node tests/skill/zip.mjs).
+// Runs `scripts/pack-release.mjs --only skill`: every entry sits under one top-level open-pptd/;
+// it contains SKILL.md, README.md, the 7 references, kits/README.md, kit.md + theme.md for all
+// 6 kits and ≥1 fragment each, with no tests/demo/media/scripts/binary assets; SHA256SUMS lists
+// the zip and the hash matches. Generated dist artifacts are removed afterwards (pre-existing
+// files kept). Standalone or imported by tests/skill/run.mjs via skillZipTests().
 
 import {
   existsSync,

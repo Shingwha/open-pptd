@@ -1,18 +1,9 @@
-// ============================================================================
-// tests/skill/run.mjs — skill knowledge-pack lint + kit fragment assembly
-// ----------------------------------------------------------------------------
-// Asserts:
-//   1. SKILL.md frontmatter, 8–12 KB size, internal links, 3.0-only commands
-//   2. references/ structure and kits/{kit.md,theme.md,pages,fragments}
-//   3. no complete deck / calibration demo / executable scripts in skill/
-//   4. every kit fragment is parseable single-page YAML with owned bounds,
-//      unique element ids, no missing media, and registry-known fonts
-//   5. each kit's fragments assemble into a temp project, then `check` and
-//      `build --format pptx` report 0 errors (warnings are recorded only)
-//   6. no links into the main repo docs/ tree
-//   7. the release skill zip (tests/skill/zip.mjs): entries, SHA256SUMS
-// Usage: node tests/skill/run.mjs
-// ============================================================================
+// tests/skill/run.mjs — skill knowledge-pack lint + kit fragment assembly (usage: node tests/skill/run.mjs).
+// 1. SKILL.md frontmatter, 8–12 KB size, internal links, current command surface only.
+// 2. references/ structure and kits/{kit.md,theme.md,pages,fragments}.
+// 3. No complete deck / calibration demo / executable scripts; no main-repo docs/ links.
+// 4. Fragments are single-page YAML with owned bounds, unique ids, no media, known fonts;
+//    kits assemble into temp projects that check/build clean; release zip entries and SHA256SUMS.
 
 import {
   readFileSync,
@@ -65,7 +56,7 @@ for (const file of mdFiles) {
 }
 ok("markdown 内部链接可解析", broken.length === 0, broken.slice(0, 3).join("; "));
 
-// 3.0 command surface only: no `open-pptd <2.x command>`.
+// Command surface: no removed command (`open-pptd <old command>`).
 const oldCmd = /\bopen-pptd\s+(serve|export|export-project|render|ensure|paths|gallery|fonts|icons)\b/i;
 const oldHits = allSkillFiles.filter((f) => oldCmd.test(readFileSync(f, "utf8"))).map(rel);
 ok("无 2.x 命令", oldHits.length === 0, oldHits.slice(0, 3).join(", "));

@@ -1,16 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// page-ops.mjs — single-page operations E2E (W7 acceptance, editor-ux §2)
-// ----------------------------------------------------------------------------
-// Covers the 3.0 page model (no page multi-select / batch / duplicate):
-//   · ＋ inserts after the current page and switches to it
-//   · visible page menu: insert before, move forward/backward, delete
-//   · api.insertPage / deletePage / movePage with undo and current-page following
-//   · thumbnail bar drag-sort reorders the model (undoable)
-//   · at least one page always survives; deleting down to one disables the menu item
-// Depends on a local Chrome (CDP). A missing browser prints SKIP and exits 0.
-// Usage: node tests/e2e/page-ops.mjs
-// ============================================================================
+// tests/e2e/page-ops.mjs — single-page operations E2E (usage: node tests/e2e/page-ops.mjs).
+// Covers the page model (no multi-select/batch/duplicate): + inserts after the current page and
+// switches to it, the visible page menu (insert before, move forward/backward, delete), the
+// insertPage/deletePage/movePage API with undo and current-page following, thumbnail drag-sort
+// (undoable), and at least one page always surviving (delete item disabled at one page).
+// Depends on local Chrome (CDP 9342); missing browser prints SKIP and exits 0.
 
 import { spawn } from "node:child_process";
 import { writeFileSync, rmSync, mkdirSync, mkdtempSync } from "node:fs";
@@ -34,9 +28,7 @@ function log(name, pass, detail = "") {
   console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? "  " + detail : ""}`);
 }
 
-// ---------------------------------------------------------------------------
-// Temporary project: 3 pages, title marker on each page
-// ---------------------------------------------------------------------------
+// Temporary project: 3 pages, title marker on each page.
 const PROJECT = mkdtempSync(join(tmpdir(), "pptd-page-ops-"));
 mkdirSync(join(PROJECT, "pages"), { recursive: true });
 writeFileSync(
@@ -84,16 +76,12 @@ const snapshot = () =>
 try {
   await wait(3500);
 
-  // -------------------------------------------------------------------------
-  // 0) Initial state
-  // -------------------------------------------------------------------------
+  // 0) Initial state.
   let s = await snapshot();
   log("初始 3 页 / 3 缩略图", s.n === 3 && s.thumbs === 3 && s.cur === 0, JSON.stringify(s));
   log("页码状态条为 1 / 3", s.count.trim() === "1 / 3", JSON.stringify({ count: s.count }));
 
-  // -------------------------------------------------------------------------
-  // 1) ＋ inserts after the current page and switches to it
-  // -------------------------------------------------------------------------
+  // 1) + inserts after the current page and switches to it.
   s = await evalJs(`(() => {
     const api = window.__pptdEditor;
     document.querySelector('#btn-add-page').click();
@@ -109,9 +97,7 @@ try {
   s = await evalJs(`(() => { window.__pptdEditor.undo(); return window.__pptdEditor.state.deck.pages.length; })()`);
   log("插入可撤销", s === 3, JSON.stringify({ pages: s }));
 
-  // -------------------------------------------------------------------------
-  // 2) Visible page menu: insert before / move / delete
-  // -------------------------------------------------------------------------
+  // 2) Visible page menu: insert before / move / delete.
   s = await evalJs(`(async () => {
     const api = window.__pptdEditor;
     api.goToPage(0);
@@ -145,9 +131,7 @@ try {
   s = await evalJs(`(() => { window.__pptdEditor.undo(); return window.__pptdEditor.state.deck.pages.map((p)=>p.elements?.[0]?.content?.text); })()`);
   log("移动可撤销", JSON.stringify(s) === JSON.stringify(["第1页", "第2页", "第3页"]), JSON.stringify(s));
 
-  // -------------------------------------------------------------------------
-  // 3) api.movePage: current page follows the moved page; undo restores
-  // -------------------------------------------------------------------------
+  // 3) api.movePage: current page follows the moved page; undo restores.
   s = await evalJs(`(() => {
     const api = window.__pptdEditor;
     api.goToPage(0);
@@ -159,9 +143,7 @@ try {
   s = await evalJs(`(() => { window.__pptdEditor.undo(); return window.__pptdEditor.state.deck.pages.map((p)=>p.elements?.[0]?.content?.text); })()`);
   log("movePage 可撤销", JSON.stringify(s) === JSON.stringify(["第1页", "第2页", "第3页"]), JSON.stringify(s));
 
-  // -------------------------------------------------------------------------
-  // 4) Drag-sort in the thumbnail bar (pointer events; drop on the last card's right half)
-  // -------------------------------------------------------------------------
+  // 4) Drag-sort in the thumbnail bar (pointer events; drop on the last card's right half).
   s = await evalJs(`(async () => {
     const api = window.__pptdEditor;
     api.goToPage(0);
@@ -182,9 +164,7 @@ try {
   s = await evalJs(`(() => { window.__pptdEditor.undo(); return window.__pptdEditor.state.deck.pages.map((p)=>p.elements?.[0]?.content?.text); })()`);
   log("拖拽排序可撤销", JSON.stringify(s) === JSON.stringify(["第1页", "第2页", "第3页"]), JSON.stringify(s));
 
-  // -------------------------------------------------------------------------
-  // 5) Delete: current page follows; at least one page survives; menu item disabled
-  // -------------------------------------------------------------------------
+  // 5) Delete: current page follows; at least one page survives; menu item disabled.
   s = await evalJs(`(() => {
     const api = window.__pptdEditor;
     api.goToPage(2);

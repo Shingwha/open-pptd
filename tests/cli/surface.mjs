@@ -1,17 +1,9 @@
-// ============================================================================
-// tests/cli/surface.mjs — CLI 3.0 surface contract (5 commands, no aliases)
-// ----------------------------------------------------------------------------
-// Asserts:
-//   1. --help lists exactly open/build/check/assets/doctor (no old command lines)
-//   2. every removed 2.x command exits 1 with a migration hint and no stdout
-//   3. doctor / assets --json are single-line parseable JSON
-//   4. check is read-only: --json shape, human text on stderr, --strict fails on warnings
-//   5. build: pptx / bundle (snapshot+raw) / png artifacts in a temp project;
-//      invalid options and a missing browser return ERR_* JSON (png SKIP without Chrome)
-//   6. open: fail-fast on 0/2 manifests; --detach --json URL; --stop leaves no instance;
-//      --blank returns ?blank=1
+// tests/cli/surface.mjs — CLI surface contract (5 commands, no aliases).
+// 1. --help lists only open/build/check/assets/doctor; removed commands exit 1 with a hint.
+// 2. doctor / assets --json are single-line parseable JSON.
+// 3. check is read-only (--json shape, human text on stderr, --strict fails on warnings).
+// 4. build pptx/bundle/png and open detach/stop/blank work; invalid options/missing browser → ERR_* JSON.
 // Usage: node tests/cli/surface.mjs (non-zero exit = surface broken)
-// ============================================================================
 
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync, readFileSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -74,7 +66,6 @@ function rememberInstances() {
 }
 
 try {
-  // -------------------------------------------------------------------------
   console.log("=== 1. help（只 5 命令）===");
   {
     const r = cli(["--help"]);
@@ -86,7 +77,6 @@ try {
     step("help 不含旧命令", oldMentions.length === 0, oldMentions.join(","));
   }
 
-  // -------------------------------------------------------------------------
   console.log("\n=== 2. 旧命令非零 + 迁移提示 ===");
   for (const cmd of OLD) {
     const r = cli([cmd]);
@@ -95,7 +85,6 @@ try {
     step(`${cmd}: stdout 为空`, r.stdout === "");
   }
 
-  // -------------------------------------------------------------------------
   console.log("\n=== 3. doctor / assets JSON 单行 ===");
   {
     const r = cli(["doctor", "--json"]);
@@ -117,7 +106,6 @@ try {
     step("assets fonts list exit 0 + counts", f.status === 0 && typeof fl?.counts?.builtin === "number");
   }
 
-  // -------------------------------------------------------------------------
   console.log("\n=== 4. check 只读 / JSON / strict ===");
   {
     const table = join(ROOT, "tests/projects/table/deck.pptd");
@@ -136,7 +124,6 @@ try {
     step("check --strict 遇 warning exit 1", s.status === 1 && sd?.ok === false);
   }
 
-  // -------------------------------------------------------------------------
   console.log("\n=== 5. build 三格式 + 错误码 ===");
   const project = join(TMP, "proj");
   mkdirSync(join(project, "pages"), { recursive: true });
@@ -204,7 +191,6 @@ try {
     step("build --strict 遇 warning exit 1", r4.status === 1, `exit=${r4.status} ${r4.stderr.slice(-80)}`);
   }
 
-  // -------------------------------------------------------------------------
   console.log("\n=== 6. open 自动识别 / detach / stop / blank ===");
   {
     const empty = join(TMP, "empty");

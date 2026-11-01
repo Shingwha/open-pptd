@@ -1,24 +1,9 @@
-// ============================================================================
-// tests/contract/public-api.mjs — package-level public contract test (contract 3.0)
-// ----------------------------------------------------------------------------
-// Asserts:
-//   1. Every export name of the barrels is present (model / renderer / writer / runtime /
-//      export / server / cli); Node-only faces are sub-entries only;
-//   2. CONTRACT_VERSION === 3 and matches contract.json's contractVersion; the root entry
-//      exports the dual-end core and does NOT re-export server/cli;
-//   3. contract.json parses; entries correspond one-to-one with the package.json exports entries
-//      (both directions, guards against drift); `./internal/*` is gone; files exist;
-//   4. the dual-end barrels (model/renderer/writer/runtime/export) import statically and their
-//      sources contain no Node/DOM globals (browser safety constraint, complementing dep-graph);
-//   5. the W1.5 flat re-export list (editor consumption surface) and the editor entry
-//      (open-pptd/editor): the editor barrel depends on the DOM and cannot be imported statically in
-//      Node, so it is checked textually (after stripping comments, the re-export statement must
-//      appear) plus the source files and their export names must exist;
-//   6. the W-E host boot seam in editor/main.js (browser-only → textual as well): boot parameters
-//      (?base= / ?chrome= / window.__PPTD_BOOT__) and the postMessage protocol
-//      (pptd:theme / pptd:ready / window.__pptdTheme).
-// Usage: node tests/contract/public-api.mjs (non-zero exit = contract broken)
-// ============================================================================
+// tests/contract/public-api.mjs — package-level public contract test (usage: node tests/contract/public-api.mjs; non-zero exit = contract broken).
+// 1. Every barrel export name is present (model/renderer/writer/runtime/export/server/cli).
+// 2. CONTRACT_VERSION === 3 matches contract.json; the root exports the dual-end core only.
+// 3. contract.json entries ↔ package.json exports are one-to-one; ./internal/* is gone.
+// 4. Dual-end barrels have no Node/DOM globals; the editor entry and host boot seam are textual.
+// 5. Flat re-exports, paths/config, and the measure/layout entries exist.
 
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
@@ -38,9 +23,7 @@ const skipTo = (name, detail) => {
   console.log(`SKIP ${name}${detail ? " — " + detail : ""}`);
 };
 
-// ---------------------------------------------------------------------------
-// spec 01 T1 frozen export list (three classes: functions / namespace objects / constants)
-// ---------------------------------------------------------------------------
+// Frozen export list (three classes: functions / namespace objects / constants).
 const BARRELS = {
   "packages/model/index.js": {
     fns: [
@@ -55,7 +38,7 @@ const BARRELS = {
       "PAGE_WIDTH", "PAGE_HEIGHT", "PAGE_TYPES", "SUPPORTED_SHAPES", "ELEMENT_TYPES",
       "DEFAULT_THEME", "DEFAULT_FONT", "THEME_PALETTES", "PRESET_SHAPES",
     ],
-    // namespace spot checks (explicitly named by spec 01 T1)
+    // namespace spot checks
     namespaceSpot: [
       ["chart", "CHART_META"], ["chart", "buildChartOption"], ["chart", "resolveChartSpec"],
       ["icons", "loadIconRegistry"], ["fonts", "loadFontRegistry"], ["bytes", "encodeUtf8"],
@@ -103,7 +86,7 @@ const BARRELS = {
     namespaceSpot: [],
   },
   "packages/cli/index.js": {
-    // Contract 3.0: exactly the five command entry points (bin.js dispatches to the same functions)
+    // Exactly the five command entry points (bin.js dispatches to the same functions)
     fns: ["runOpen", "runBuild", "runCheck", "runAssets", "runDoctor"],
     objs: [],
     consts: [],
@@ -111,7 +94,7 @@ const BARRELS = {
   },
 };
 
-// Dual-end barrels: the source must contain no Node-only source or DOM global (contract 3.0)
+// Dual-end barrels: the source must contain no Node-only source or DOM global.
 const DUAL_END = [
   "packages/model/index.js",
   "packages/renderer/index.js",
@@ -128,7 +111,7 @@ const PURITY_PATTERNS = [
   [/\bheadless\//, "headless/ 引用"],
 ];
 
-// W1.5 flat re-export list (editor consumption surface; only existence is asserted, types follow the source)
+// Flat re-export list (editor consumption surface; only existence is asserted, types follow the source).
 const FLAT = {
   "packages/model/index.js": [
     "syncElementId", "normalizeTheme", "resolveTableStyle", "themeChartPalette",
@@ -145,7 +128,7 @@ const FLAT = {
   "packages/writer/index.js": ["imageSize", "decodeDataUrl", "extToMime", "dataUrlOf", "safeFileName"],
 };
 
-// editor entry (the public face of contracts 1/2/3; DOM-dependent, checked textually)
+// Editor entry (DOM-dependent, checked textually).
 const EDITOR_ENTRY = {
   barrel: "editor/index.js",
   exports: [
@@ -160,7 +143,7 @@ const EDITOR_ENTRY = {
   },
 };
 
-// W-E host boot seam in editor/main.js (browser-only file, checked textually after comment stripping)
+// Host boot seam in editor/main.js (browser-only file, checked textually after comment stripping).
 const EDITOR_MAIN = {
   file: "editor/main.js",
   patterns: [
@@ -173,7 +156,6 @@ const EDITOR_MAIN = {
   ],
 };
 
-// ---------------------------------------------------------------------------
 async function checkBarrel(rel, spec) {
   const abs = join(ROOT, rel);
   if (!existsSync(abs)) return bad(`${rel} 存在`, "文件缺失");
@@ -198,7 +180,6 @@ async function checkBarrel(rel, spec) {
   if (spec.namespaceSpot.length) ok(`${rel} 命名空间抽查 ${spec.namespaceSpot.length} 项`);
 }
 
-// ---------------------------------------------------------------------------
 async function main() {
   console.log("=== 1. barrel 导出名与类型 ===");
   for (const [rel, spec] of Object.entries(BARRELS)) await checkBarrel(rel, spec);
@@ -239,7 +220,7 @@ async function main() {
   else bad("contract.json contractVersion", `${contract.contractVersion} ≠ ${rootMod.CONTRACT_VERSION}`);
 
   // Both directions: every entries key has a matching exports item; every non-metadata
-  // exports item appears in entries. Contract 3.0 has no escape hatch (./internal/* removed).
+  // exports item appears in entries (./internal/* removed).
   const META_SUBPATHS = new Set([".", "./editor/index.html", "./package.json"]);
   if (pkg.exports?.["./internal/*"] !== undefined) bad("./internal/* 已删除", `仍存在: ${pkg.exports["./internal/*"]}`);
   else ok("./internal/* 已删除");
@@ -302,7 +283,7 @@ async function main() {
       else ok(`${src} 导出名齐全`);
     }
   }
-  // W-E host boot seam: the textual names downstream hosts and the W1/W2 tests rely on
+  // Host boot seam: the textual names downstream hosts rely on.
   {
     const p = join(ROOT, EDITOR_MAIN.file);
     if (!existsSync(p)) bad(`${EDITOR_MAIN.file} 存在`, "文件缺失");

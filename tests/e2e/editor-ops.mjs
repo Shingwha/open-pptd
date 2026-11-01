@@ -1,21 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// editor-ops.mjs — editor element operations E2E (3.1 W1)
-// ----------------------------------------------------------------------------
-// Covers the element operations restored in 3.1 (interfaces.md §1–§3):
-//   · multi-select + the visible selection action bar (copy / duplicate / delete)
-//   · Ctrl+C / Ctrl+V: new ids, +16px offset, pasted selection, undo
-//   · action bar copy / duplicate behave like the keyboard shortcuts
-//   · cut → cross-page paste → undo twice restores both pages
-//   · consecutive pastes cascade +16 / +32
-//   · Ctrl+Shift+V pastes in place (offset 0)
-//   · input / contenteditable focus keeps native clipboard behaviour
-//   · delete button removes the selection, undo restores it
-//   · two instances: A's clipboard never leaks into B (and vice versa)
-// Depends on a local Chrome (CDP); SMOKE_CHROME can point at its path. A missing
-// browser prints SKIP and exits 0 (the gate is optional off a desktop machine).
-// Usage: node tests/e2e/editor-ops.mjs
-// ============================================================================
+// tests/e2e/editor-ops.mjs — editor element operations E2E.
+// Covers multi-select + the selection action bar (copy/duplicate/delete), Ctrl+C/V with new
+// ids and +16px cascade, action-bar parity, cut → cross-page paste (undo restores both),
+// Ctrl+Shift+V in place, input/contenteditable focus keeping native clipboard behavior,
+// delete + undo, and two-instance clipboard isolation.
+// Depends on local Chrome (CDP 9344); SKIP when missing. Usage: node tests/e2e/editor-ops.mjs
 
 import { spawn } from "node:child_process";
 import { writeFileSync, rmSync, mkdirSync, mkdtempSync } from "node:fs";
@@ -25,9 +14,7 @@ import { startServer } from "../../packages/server/index.js";
 import { findBrowser } from "../../packages/renderer/headless/browser.js";
 import { connectCdp } from "../../packages/renderer/headless/cdp.js";
 
-// ---------------------------------------------------------------------------
 // Browser dependency: missing Chrome = SKIP (exit 0)
-// ---------------------------------------------------------------------------
 let CHROME;
 try {
   CHROME = findBrowser();
@@ -42,9 +29,7 @@ function log(name, pass, detail = "") {
   console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? "  " + detail : ""}`);
 }
 
-// ---------------------------------------------------------------------------
 // Temporary project: page 1 with two text elements, page 2 with one
-// ---------------------------------------------------------------------------
 const PROJECT = mkdtempSync(join(tmpdir(), "pptd-editor-ops-"));
 mkdirSync(join(PROJECT, "pages"), { recursive: true });
 writeFileSync(
@@ -65,9 +50,7 @@ writeFileSync(
   "pageType: content\nbackground: {type: solid, color: \"#ffffff\"}\nelements:\n" + textYaml("t3", 60, "第二页")
 );
 
-// ---------------------------------------------------------------------------
 // Boot: local server + headless Chrome + CDP (port 9344, run serially)
-// ---------------------------------------------------------------------------
 const server = await startServer({ port: 0, projectRoot: PROJECT });
 const PORT = server.address().port;
 const URL = `http://127.0.0.1:${PORT}/editor/?deck=project/deck.pptd`;
@@ -93,9 +76,7 @@ try {
       `new KeyboardEvent('keydown', { key, ctrlKey: true, bubbles: true, cancelable: true, ...opts })); true`
   );
 
-  // -------------------------------------------------------------------------
   // 1) Multi-select → action bar visible (3 buttons) + positioning
-  // -------------------------------------------------------------------------
   let s = await evalJs(`(() => {
     const api = window.__pptdEditor;
     const page = api.state.deck.pages[0];
@@ -156,9 +137,7 @@ try {
     JSON.stringify(s)
   );
 
-  // -------------------------------------------------------------------------
   // 2) Ctrl+C → Ctrl+V: +2 elements, unique new ids, +16px, pasted selected, undo
-  // -------------------------------------------------------------------------
   s = await evalJs(`(() => {
     const api = window.__pptdEditor;
     const page = api.state.deck.pages[0];
@@ -200,9 +179,7 @@ try {
   })()`);
   log("粘贴可撤销（元素数恢复、选择清空）", s.elements === 2 && s.selection === 0, JSON.stringify(s));
 
-  // -------------------------------------------------------------------------
   // 3) Action bar copy + duplicate behave like the keyboard shortcuts
-  // -------------------------------------------------------------------------
   s = await evalJs(`(() => {
     const api = window.__pptdEditor;
     const page = () => api.state.deck.pages[0];
@@ -234,9 +211,7 @@ try {
   );
   log("重复不覆盖用户剪贴板", s.clipAfterDuplicate === 1, JSON.stringify({ clipAfterDuplicate: s.clipAfterDuplicate }));
 
-  // -------------------------------------------------------------------------
   // 4) Cut → paste on page 2 → undo twice restores both pages
-  // -------------------------------------------------------------------------
   s = await evalJs(`(() => {
     const api = window.__pptdEditor;
     const page1 = api.state.deck.pages[0];
@@ -294,9 +269,7 @@ try {
     JSON.stringify(s)
   );
 
-  // -------------------------------------------------------------------------
   // 5) Consecutive pastes cascade +16 / +32
-  // -------------------------------------------------------------------------
   s = await evalJs(`(() => {
     const api = window.__pptdEditor;
     const page = () => api.state.deck.pages[1];
@@ -323,9 +296,7 @@ try {
     JSON.stringify(s)
   );
 
-  // -------------------------------------------------------------------------
   // 6) Ctrl+Shift+V pastes in place (offset 0), cascade untouched
-  // -------------------------------------------------------------------------
   s = await evalJs(`(() => {
     const api = window.__pptdEditor;
     const page = () => api.state.deck.pages[1];
@@ -351,9 +322,7 @@ try {
     JSON.stringify(s)
   );
 
-  // -------------------------------------------------------------------------
   // 7) Input / contenteditable focus: native clipboard, no editor action
-  // -------------------------------------------------------------------------
   s = await evalJs(`(() => {
     const api = window.__pptdEditor;
     const page = () => api.state.deck.pages[api.state.currentPage];
@@ -386,9 +355,7 @@ try {
     JSON.stringify({ before: s.before, after: s.after, clipBefore: s.clipBefore, clipAfter: s.clipAfter })
   );
 
-  // -------------------------------------------------------------------------
   // 8) Delete button removes the selection, undo restores it
-  // -------------------------------------------------------------------------
   s = await evalJs(`(() => {
     const api = window.__pptdEditor;
     const page = () => api.state.deck.pages[1];
@@ -411,9 +378,7 @@ try {
     JSON.stringify(s)
   );
 
-  // -------------------------------------------------------------------------
   // 9) Two instances: A's clipboard never leaks into B (and vice versa)
-  // -------------------------------------------------------------------------
   s = await evalJs(`(async () => {
     const { createEditor } = await import('./editor.js');
     const { memorySource } = await import('./app/project/source.js');
@@ -479,9 +444,7 @@ try {
   );
   log("第二实例 destroy 清空自身 DOM，A 仍可用", s.bEmpty === true && s.aStillWorks === true, JSON.stringify({ bEmpty: s.bEmpty, aStillWorks: s.aStillWorks }));
 
-  // -------------------------------------------------------------------------
   // 10) Loading a project clears the clipboard (no cross-project paste)
-  // -------------------------------------------------------------------------
   s = await evalJs(`(async () => {
     const api = window.__pptdEditor;
     const page = api.state.deck.pages[api.state.currentPage];
@@ -502,9 +465,7 @@ try {
     JSON.stringify(s)
   );
 
-  // -------------------------------------------------------------------------
   // 11) New blank project clears the clipboard too (io.newProject path)
-  // -------------------------------------------------------------------------
   s = await evalJs(`(async () => {
     const api = window.__pptdEditor;
     const page = api.state.deck.pages[api.state.currentPage];

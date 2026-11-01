@@ -1,21 +1,9 @@
-// ============================================================================
-// tests/docs/run.mjs — documentation gate (docs tree + references + README)
-// ----------------------------------------------------------------------------
-// Asserts:
-//   1. docs/ contains only release-workflow.md and images/** (no embedding,
-//      image-generation, archive, DSH or old spec docs)
-//   2. no tracked/untracked text file references deleted docs (docs/embedding,
-//      docs/image-generation, docs/archive, docs/specs, dsh-theme, dshSource);
-//      CHANGELOG history and the active specs/ tree are exempt
-//   3. README.md / README.zh-CN.md: version matches package.json, five commands,
-//      skill zip / repo skill install, no external clone, no old command usage,
-//      only docs/release-workflow.md is linked, docs/images/** still resolves
-//   4. docs/release-workflow.md covers the skill zip, assets, test:docs/test:skill
-//   5. package.json: version 3.0.0, test:docs script, files excludes skill/,
-//      zero dependencies
-//   6. tests/run-all.mjs registers this suite
-// Usage: node tests/docs/run.mjs (npm run test:docs)
-// ============================================================================
+// tests/docs/run.mjs — documentation gate (docs tree + references + README); npm run test:docs.
+// 1. docs/ contains only release-workflow.md and images/**; deleted docs stay deleted.
+// 2. No tracked text file references deleted docs/DSH paths (CHANGELOG/specs exempt).
+// 3. READMEs match package.json version, list the five commands, document skill zip/repo
+//    install, avoid old command usage, and link only docs/release-workflow.md.
+// 4. release-workflow and package.json metadata are intact; run-all registers this suite.
 
 import { readFileSync, existsSync } from "node:fs";
 import { execSync } from "node:child_process";
