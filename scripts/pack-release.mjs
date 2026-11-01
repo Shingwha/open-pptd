@@ -40,7 +40,7 @@ import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { deflateRawSync } from "node:zlib";
-import { crc32 } from "../packages/writer/zip.js";
+import { crc32, dosDateTime } from "../packages/writer/zip.js";
 import { encodeUtf8 } from "../packages/model/bytes.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -98,14 +98,6 @@ const files = tracked.map((rel) => {
 });
 
 // ---- Minimal deflate zip writer (layout identical to packages/writer/zip.js) ----
-function dosDateTime(date) {
-  const year = Math.max(date.getFullYear(), 1980); // DOS time starts at 1980
-  return {
-    time: (date.getHours() << 11) | (date.getMinutes() << 5) | (date.getSeconds() >> 1),
-    date: ((year - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(),
-  };
-}
-
 function buildZip(entries) {
   const chunks = [];
   const central = [];

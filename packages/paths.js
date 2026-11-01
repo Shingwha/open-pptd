@@ -149,21 +149,6 @@ export function atomicWriteFile(destPath, bytes, { tmpDir = paths.tmp } = {}) {
   throw lastErr;
 }
 
-/** Clean leftover .part files in tmp/ (crash residue); returns the count removed. */
-export function cleanTempParts() {
-  let n = 0;
-  try {
-    if (existsSync(paths.tmp)) {
-      for (const f of readdirSync(paths.tmp)) {
-        if (f.endsWith(".part")) {
-          try { rmSync(join(paths.tmp, f), { force: true }); n++; } catch { /* ignore */ }
-        }
-      }
-    }
-  } catch { /* tmp unreadable → skip */ }
-  return n;
-}
-
 /**
  * CLI runtime root lookup (downstream reuses the same engine-locating logic; PATH is not searched):
  *   `OPEN_PPTD_CLI` → `~/.open-pptd/cli/current` → null

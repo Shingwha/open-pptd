@@ -126,9 +126,11 @@ export class ZipWriter {
   }
 }
 
-function dosDateTime(date) {
+/** JS Date → DOS date/time pair (2-second resolution; years before 1980 clamp to 1980). */
+export function dosDateTime(date) {
+  const year = Math.max(date.getFullYear(), 1980);
   return {
     time: (date.getHours() << 11) | (date.getMinutes() << 5) | (date.getSeconds() >> 1),
-    date: ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(),
+    date: ((year - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(),
   };
 }

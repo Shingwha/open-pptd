@@ -63,16 +63,3 @@ export function button(label, opts = {}) {
   if (onClick) b.addEventListener("click", onClick);
   return b;
 }
-
-/** Icon-only button (no text, square hit area). */
-export function iconButton(iconSvg, opts = {}) {
-  return button("", { ...opts, icon: iconSvg, size: opts.size || "icon" });
-}
-
-/** A row of buttons (horizontal, for toolbars/action rows). */
-export function buttonRow(children, { className = "prop-actions" } = {}) {
-  const row = document.createElement("div");
-  row.className = className;
-  for (const c of children) if (c) row.appendChild(c);
-  return row;
-}

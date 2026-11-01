@@ -136,24 +136,6 @@ export function fontToFntdata(bytes, chars, wantSubset) {
   return { bytes: buildEot(bytes, info, 0), subset: false, info };
 }
 
-/** skipped reason → user-facing message. */
-export function skipReasonText(r) {
-  switch (r.reason) {
-    case "not-in-registry":
-      return `「${r.family}」未命中内置字体库且无 url，视为系统字体声明（不嵌入）；如需嵌入，请运行 open-pptd assets list 核对注册名`;
-    case "registry-unavailable":
-      return `「${r.family}」无法解析（字体注册表不可用），未嵌入`;
-    case "file-missing":
-      return `「${r.family}」字体库文件缺失，未嵌入 → 可运行 node bin/open-pptd.js fonts download ${r.family} 补下载`;
-    case "fetch-failed":
-      return `「${r.family}」网络字体拉取失败，未嵌入（检查 url 是否可达/CORS）`;
-    case "restricted":
-      return `「${r.family}」嵌入权限受限（fsType Restricted），未嵌入`;
-    default:
-      return `「${r.family}」嵌入失败（${r.detail || r.reason}），未嵌入`;
-  }
-}
-
 /**
  * Assemble embedded fonts: collect → load → validate → subset/EOT → parts + XML fragments.
  * @param {object} options embedFonts=false skips embedding (declarations kept, this export only);

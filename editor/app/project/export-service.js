@@ -22,10 +22,8 @@ import {
   base64ToBytes,
   findFont,
   fetchFontBytes,
-  fetchIconSvg,
   loadFontRegistry,
   loadIconRegistry,
-  resolveIconName,
 } from "../../../packages/model/index.js";
 import { exportProject } from "../../../packages/export/index.js";
 import {
@@ -35,6 +33,7 @@ import {
   probeCapture,
 } from "../render-backend-browser.js";
 import { ZipWriter, downloadBlob, downloadPptx, safeFileName } from "../../../packages/writer/index.js";
+import { ensureIcon } from "./icons.js";
 import { mediaFilesOfDeck } from "./images.js";
 
 /** MIME by export artifact name (PPTX vs project/image zip). */
@@ -151,19 +150,11 @@ export function createBrowserResources({ state, project }) {
     },
 
     async iconSvg(name) {
-      const cached = state.iconMap?.[name];
-      if (cached?.inner) {
-        const vx = cached.vx ?? 0;
-        const vy = cached.vy ?? 0;
-        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vx} ${vy} ${cached.w} ${cached.h}">${cached.inner}</svg>`;
-      }
-      if (!iconRegistry) {
-        await iconRegistryLoaded;
-      }
-      if (!iconRegistry) return null;
-      const hit = resolveIconName(name, iconRegistry);
-      if (!hit) return null;
-      return fetchIconSvg(hit, iconRegistry);
+      const def = await ensureIcon(name, state.iconMap || {});
+      if (!def) return null;
+      const vx = def.vx ?? 0;
+      const vy = def.vy ?? 0;
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vx} ${vy} ${def.w} ${def.h}">${def.inner}</svg>`;
     },
 
     async imageBytes(src) {

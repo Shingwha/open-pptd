@@ -40,7 +40,7 @@ import { extToMime } from "../../../packages/writer/index.js";
 const EDITOR_BASE = new URL("../../", import.meta.url).href;
 
 /** Revision domain used by HTTP/handle saves: manifest + page texts (no media). */
-function revisionOfSourceFiles(files) {
+export function revisionOfSourceFiles(files) {
   let manifestText = "";
   const pageFiles = new Map();
   for (const f of files || []) {

@@ -20,14 +20,14 @@
 // provider never fetches from the network: `fetchFonts`/`--fetch` is W6/W3 scope.
 // ============================================================================
 
-import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { basename, dirname, join, resolve, sep } from "node:path";
 import * as yaml from "../model/vendor/js-yaml.mjs";
 import { collectImageSrcs } from "../model/walk.js";
 import { resolveIconName } from "../model/icon-fa.js";
 import { assertRevision } from "../runtime/index.js";
 import { IMAGE_EXTS, imageExtOf } from "../runtime/provider.js";
-import { FONT_REGISTRY_DIR, ICON_REGISTRY_DIR, paths, resolveResourceFile } from "../paths.js";
+import { FONT_REGISTRY_DIR, ICON_REGISTRY_DIR, atomicWriteFile, paths, resolveResourceFile } from "../paths.js";
 import { createFileFontLibrary, mergeUserFonts } from "./font-library.js";
 
 /** Project-relative path -> absolute path, refusing escapes from the project dir. */
@@ -51,13 +51,6 @@ function readProjectFile(baseDir, rel) {
   } catch {
     return null;
   }
-}
-
-function writeAtomic(abs, data) {
-  mkdirSync(dirname(abs), { recursive: true });
-  const tmp = `${abs}.${process.pid.toString(36)}${Date.now().toString(36)}.tmp`;
-  writeFileSync(tmp, data);
-  renameSync(tmp, abs);
 }
 
 /**
@@ -91,6 +84,7 @@ export function createDiskProjectSource(manifestOrOptions) {
     }
     return {
       manifestText,
+      manifestObj,
       pageFiles,
       media: new Map(),
       manifestPath,
@@ -142,8 +136,8 @@ export function createDiskProjectSource(manifestOrOptions) {
         if (!file || typeof file.path !== "string" || !file.path) throw new TypeError("SourceFile.path 必须是非空字符串");
         const abs = safeProjectPath(baseDir, file.path);
         if (!abs) throw new Error(`拒绝写入项目目录之外: ${file.path}`);
-        if (file.bytes instanceof Uint8Array) writeAtomic(abs, file.bytes);
-        else if (typeof file.text === "string") writeAtomic(abs, file.text);
+        if (file.bytes instanceof Uint8Array) atomicWriteFile(abs, file.bytes, { tmpDir: dirname(abs) });
+        else if (typeof file.text === "string") atomicWriteFile(abs, file.text, { tmpDir: dirname(abs) });
         else throw new TypeError(`SourceFile ${file.path} 需要 text 或 bytes`);
       }
       return files.length;

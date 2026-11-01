@@ -13,23 +13,12 @@
 import { fetchIconSvg, loadIconRegistry, normalizeIconSvg, resolveIconName } from "../../../packages/model/index.js";
 
 let registryPromise = null;
-let registrySync = null; // synchronous snapshot once getIconRegistry resolves
 const pending = new Map(); // raw → Promise (dedupes concurrent requests)
 
-/** Registry (singleton promise; a synchronous snapshot is available once it resolves). */
+/** Registry (singleton promise). */
 export function getIconRegistry() {
-  if (!registryPromise) {
-    registryPromise = loadIconRegistry().then((reg) => {
-      registrySync = reg;
-      return reg;
-    });
-  }
+  if (!registryPromise) registryPromise = loadIconRegistry();
   return registryPromise;
-}
-
-/** Synchronous registry snapshot (the object once loaded, null before; for best-effort cases like props hints). */
-export function getIconRegistrySync() {
-  return registrySync;
 }
 
 /** Fetch a single icon into `map` (a cache hit returns immediately; failure logs console.warn and returns null). */
@@ -68,32 +57,4 @@ export async function preloadIcons(pages, map) {
   };
   for (const page of pages) for (const el of page?.elements || []) walk(el);
   await Promise.all([...names].map((raw) => ensureIcon(raw, map)));
-}
-
-/**
- * Icon catalog query (shared by the picker dialog and the add panel): keyword +
- * category filter, expanded by style (far and fas listed as two selectable
- * entries). q matches name/label/aliases/search terms.
- * @returns {{entries: Array<{raw,name,prefix,label}>, total: number}} total is the icon count after filtering (before expansion)
- */
-export function queryIconEntries(registry, { q = "", cat = null, cap = Infinity } = {}) {
-  const kw = String(q || "").trim().toLowerCase();
-  const match = (e) => {
-    if (!kw) return true;
-    return (
-      e.name.includes(kw) ||
-      (e.label && String(e.label).toLowerCase().includes(kw)) ||
-      (e.aliases || []).some((a) => a.includes(kw)) ||
-      (e.terms || []).some((t) => String(t).toLowerCase().includes(kw))
-    );
-  };
-  const icons = registry.icons.filter((i) => (!cat || i.cat === cat) && match(i));
-  const entries = [];
-  for (const e of icons) {
-    for (const prefix of e.styles) {
-      entries.push({ raw: `${prefix}:${e.name}`, name: e.name, prefix, label: e.label || e.name });
-      if (entries.length >= cap) return { entries, total: icons.length };
-    }
-  }
-  return { entries, total: icons.length };
 }

@@ -6,6 +6,8 @@
 // editors receive that service through their open options.
 // ============================================================================
 
+import { button as coreButton } from "../../components/button.js";
+
 // ----------------------------------------------------------------------------
 // Cell interaction (focus-select + Enter moves down one row)
 // ----------------------------------------------------------------------------
@@ -41,12 +43,9 @@ export function buildCellInput(value, placeholder, onCommit) {
   return input;
 }
 
-/** Small button. */
+/** Small button (the shared Button primitive, minus the default title/mousedown policy). */
 export function button(text, onClick) {
-  const b = document.createElement("button");
-  b.type = "button";
-  b.className = "btn btn-sm";
-  b.textContent = text;
-  b.addEventListener("click", onClick);
+  const b = coreButton(text, { className: "btn btn-sm", onClick, preventDefault: false });
+  b.removeAttribute("title");
   return b;
 }
