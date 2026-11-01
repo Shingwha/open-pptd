@@ -10,7 +10,6 @@
 
 import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import * as yaml from "../model/vendor/js-yaml.mjs";
 import { createDiskProjectSource, createFsResourceProvider } from "../server/runtime-node.js";
 import { createProject } from "../runtime/index.js";
 
@@ -24,7 +23,7 @@ export function loadProjectFiles(manifest) {
   const files = createDiskProjectSource(manifest).readSync();
   return {
     manifestText: files.manifestText,
-    manifestObj: yaml.load(files.manifestText),
+    manifestObj: files.manifestObj,
     deckDir: dirname(manifest),
     pageFiles: files.pageFiles,
   };
