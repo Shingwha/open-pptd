@@ -5,13 +5,14 @@
 // dropped at extraction). `themes apply` writes only deck.theme, atomically. Theme/font
 // IO lives in the server adapters. Human text goes to stderr; --json is one stdout line.
 
-import { existsSync, readFileSync, rmSync, readdirSync } from "node:fs";
-import { join, dirname, basename } from "node:path";
+import { existsSync, readFileSync, rmSync, readdirSync, mkdirSync, copyFileSync } from "node:fs";
+import { join, dirname, basename, resolve } from "node:path";
+import { homedir } from "node:os";
 import { createHash } from "node:crypto";
 import { inflateRawSync } from "node:zlib";
 import * as yaml from "../model/vendor/js-yaml.mjs";
 import { applyTheme } from "../model/theme-library.js";
-import { paths, ensureHome, atomicWriteFile, dirSize, isRegistryPath, resolveResourceFile } from "../paths.js";
+import { paths, PACKAGE_ROOT, ensureHome, atomicWriteFile, dirSize, isRegistryPath, resolveResourceFile } from "../paths.js";
 import { readFontRegistry, readIconRegistry, fontReadyInfo, iconReadyInfo, packageVersion } from "./resource-status.js";
 import { downloadFonts, downloadIcons } from "./download.js";
 import { createFileThemeStore } from "../server/theme-store.js";
@@ -568,6 +569,74 @@ async function assetsFonts(args) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// skill (knowledge pack install)
+// ---------------------------------------------------------------------------
+/** Expand a leading `~` / `~/` / `~\` to the user's home directory. */
+function expandHome(p) {
+  if (p === "~") return homedir();
+  if (p.startsWith("~/") || p.startsWith("~\\")) return join(homedir(), p.slice(2));
+  return p;
+}
+
+/** Recursive copy (files only); returns the number of files copied. */
+function copyTree(src, dest) {
+  let files = 0;
+  mkdirSync(dest, { recursive: true });
+  for (const ent of readdirSync(src, { withFileTypes: true })) {
+    const from = join(src, ent.name);
+    const to = join(dest, ent.name);
+    if (ent.isDirectory()) files += copyTree(from, to);
+    else if (ent.isFile()) {
+      copyFileSync(from, to);
+      files += 1;
+    }
+  }
+  return files;
+}
+
+/**
+ * `assets skill install --dir <skills-dir> [--force] [--json]`
+ * Copies the bundled knowledge pack (`<PACKAGE_ROOT>/skill`) to `<skills-dir>/open-pptd`.
+ * `--dir` is required; an existing non-empty target is refused (ERR_SKILL_EXISTS) unless
+ * --force removes it first. No network, no user-home asset reads, no skill content edits.
+ */
+async function assetsSkill(args) {
+  const sub = args[0];
+  const rest = args.slice(1);
+  const json = rest.includes("--json");
+  try {
+    if (sub !== "install") throw new CliError("ERR_USAGE", "用法: assets skill install --dir <skills-dir> [--force] [--json]");
+    const dirArg = flagValue(rest, "--dir");
+    if (!dirArg || dirArg.startsWith("--")) {
+      throw new CliError(
+        "ERR_USAGE",
+        "assets skill install 需要 --dir <skills-dir>（Claude Code: ~/.claude/skills，pi: ~/.pi/agent/skills；其他工具按其配置）"
+      );
+    }
+    const source = join(PACKAGE_ROOT, "skill");
+    if (!existsSync(source)) throw new CliError("ERR_SKILL_NOT_FOUND", `skill 源目录不存在: ${source}`);
+    const target = resolve(expandHome(dirArg), "open-pptd");
+    const force = rest.includes("--force");
+    if (existsSync(target) && readdirSync(target).length > 0 && !force) {
+      throw new CliError("ERR_SKILL_EXISTS", `目标已存在且非空: ${target}（覆盖请加 --force）`);
+    }
+    if (force && existsSync(target)) rmSync(target, { recursive: true, force: true });
+    const files = copyTree(source, target);
+    if (json) jsonLine({ ok: true, source, target, files });
+    else {
+      human(`✓ 已安装 skill → ${target}（${files} 个文件）`);
+      human("  重启 agent 会话后技能列表才会刷新");
+    }
+    return true;
+  } catch (err) {
+    if (json) jsonLine({ ok: false, error: { code: err?.code || "ERR_SKILL", message: err?.message || String(err) } });
+    else human(`✗ ${err?.message || err}`);
+    process.exitCode = 1;
+    return true;
+  }
+}
+
 /** assets subcommand entry. Returns false for an unknown subcommand (bin prints usage). */
 export async function runAssets(args) {
   const sub = args[0] || "list";
@@ -576,5 +645,6 @@ export async function runAssets(args) {
   if (sub === "clean") return assetsClean(args.slice(1));
   if (sub === "themes") return assetsThemes(args.slice(1));
   if (sub === "fonts") return assetsFonts(args.slice(1));
+  if (sub === "skill") return assetsSkill(args.slice(1));
   return false;
 }
