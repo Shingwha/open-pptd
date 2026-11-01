@@ -93,7 +93,7 @@ export function decodeImageDataUrl(dataUrl) {
  * @property {(ref: FontRef) => Promise<"ready"|"system"|"missing"|"fetchable">} fontStatus
  * @property {(name: string) => Promise<string|null>} iconSvg
  * @property {(src: string) => Promise<Uint8Array|null>} imageBytes
- * @property {() => Promise<{fonts: object[], icons: object[], themes: object[]}>} [inventory]
+ * @property {() => Promise<{fonts: object[], icons: object[]}>} [inventory]
  */
 
 function entryBytes(value) {
@@ -160,7 +160,6 @@ export function memoryProvider({ fonts = {}, icons = {}, images = {}, fontRegist
       return {
         fonts: Object.entries(fonts).map(([family, value]) => ({ family, status: entryStatus(value) })),
         icons: Object.keys(icons).map((name) => ({ name })),
-        themes: [],
       };
     },
   };

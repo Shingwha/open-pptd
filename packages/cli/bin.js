@@ -1,5 +1,5 @@
 // cli/bin.js — CLI assembly root: five commands, no aliases
-//   open/edit · build (pptx/png/bundle) · check (read-only) · assets (fonts/icons/themes/skill)
+//   open/edit · build (pptx/png/bundle) · check (read-only) · assets (fonts/icons/skill)
 //   · doctor (environment/paths/PNG)
 // Dispatch only: business logic lives in the runX modules. Removed legacy commands print
 // a migration hint to stderr and exit 1; help lists the five commands only.
@@ -41,17 +41,16 @@ function usage() {
       "      打开编辑器：无参数 = Home（画廊）；<dir> 自动识别唯一 .pptd；--blank 空白。",
       "      --detach 后台；--json 单行 {url,port,pid,project,deck}；--stop 停止当前项目实例（--all 全部）。",
       "  open-pptd build <manifest> --format pptx|png|bundle [-o <path>] [--fetch|--offline] [--strict] [--json]",
-      "      pptx: [--theme <id>] [--no-embed-fonts] [--full-fonts]",
+      "      pptx: [--no-embed-fonts] [--full-fonts]",
       "      png:  [--page <n|all>] [--scale <1|2|3>] [--browser <path>] [--timeout <ms>]",
       "      bundle: [--raw]",
       "      所有格式先跑完整 checkProject；error 阻断，warning 软失败，--strict 阻断；默认不下载。",
       "  open-pptd check <manifest> [--json] [--strict]   只读体检；--strict 警告也失败",
       "  open-pptd assets list|sync [all|fonts|icons] [--from <zip>] [--json]",
       "  open-pptd assets clean [--json]",
-      "  open-pptd assets themes list|import|export|delete|apply [--json]",
       "  open-pptd assets fonts list|import|remove [--json]",
       "  open-pptd assets skill install --dir <skills-dir> [--force] [--json]",
-      "  open-pptd doctor [--json]                        环境 / 路径 / 字体图标主题 / PNG 能力",
+      "  open-pptd doctor [--json]                        环境 / 路径 / 字体图标 / PNG 能力",
       "",
       "人类文本走 stderr；--json 时 stdout 只有一行 JSON；退出码 1 = 错误或严格失败。",
     ].join("\n")

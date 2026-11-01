@@ -248,7 +248,6 @@ export function createFsResourceProvider({ baseDir = ".", fontRegistry = null, i
           subset: f.subset,
         })),
         icons: (icons().icons || []).map((i) => ({ name: i.name, styles: i.styles })),
-        themes: [],
       };
     },
   };

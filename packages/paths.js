@@ -44,7 +44,6 @@ export const paths = Object.freeze({
   userFonts: join(openPptdHome(), "assets", "fonts", "user"),
   userFontIndex: join(openPptdHome(), "assets", "fonts", "user", "index.json"),
   icons: join(openPptdHome(), "assets", "icons"),
-  themes: join(openPptdHome(), "themes"),
   cli: join(openPptdHome(), "cli"),
   cliCurrent: join(openPptdHome(), "cli", "current"),
   config: join(openPptdHome(), "config.json"),
@@ -70,7 +69,7 @@ export const resourceRoots = Object.freeze({
  * @returns {string} home path
  */
 export function ensureHome() {
-  const dirs = [paths.home, paths.assets, paths.fonts, paths.userFonts, paths.icons, paths.themes, paths.cli, paths.state, paths.cache, paths.tmp];
+  const dirs = [paths.home, paths.assets, paths.fonts, paths.userFonts, paths.icons, paths.cli, paths.state, paths.cache, paths.tmp];
   try {
     for (const d of dirs) mkdirSync(d, { recursive: true });
   } catch (err) {
