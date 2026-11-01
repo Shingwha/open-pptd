@@ -1,0 +1,252 @@
+/* ============================================================================
+   gallery.css — Home: masthead, filter tabs, work grid, empty states
+   ----------------------------------------------------------------------------
+   Editorial Home (Paper & Ink §6): the wordmark and the big serif statement carry
+   the page; work covers are the only imagery. Tabs are text with an accent
+   underline, never pills. Cards have no frame — the cover itself is the 6px card.
+   ============================================================================ */
+
+html:has(.gallery-view) {
+  scrollbar-gutter: stable;
+}
+
+.gallery-view {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+}
+
+/* ==== top row: wordmark + file / GitHub ==== */
+
+.gallery-top {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  height: var(--gallery-top-h);
+  padding: 0 var(--topbar-pad);
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+.gallery-top-actions { display: flex; align-items: center; gap: var(--space-1); }
+
+/* ==== masthead ==== */
+
+.gallery-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--content-pad) var(--space-12);
+}
+
+.gallery-masthead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-8);
+  margin-bottom: var(--space-12);
+}
+.gallery-masthead-copy { min-width: 0; }
+.gallery-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(34px, 4.2vw, 52px);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.gallery-sub {
+  margin: var(--space-4) 0 0;
+  max-width: 44ch;
+  font-size: var(--text-lg);
+  line-height: var(--leading);
+  color: var(--sub);
+}
+
+.gallery-masthead-tools {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-3);
+  padding-bottom: var(--space-1);
+}
+
+/* ==== filter tabs: text + 2px underline ==== */
+
+.gallery-tabs { display: flex; gap: var(--space-6); }
+.gallery-tab {
+  position: relative;
+  padding: 0 0 var(--space-2);
+  border: 0;
+  background: none;
+  color: var(--sub);
+  font-size: var(--text-lg);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease);
+}
+.gallery-tab:hover { color: var(--ink); }
+.gallery-tab.active { color: var(--ink); }
+.gallery-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--accent);
+}
+.gallery-tab:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: 2px; }
+.gallery-tab .cnt {
+  margin-left: 6px;
+  font-size: var(--text-xs);
+  color: var(--sub);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Run mode: dot + short label, no fill */
+.gallery-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-xs);
+  color: var(--sub);
+}
+.gallery-mode .mode-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--success);
+}
+.gallery-mode.remote .mode-dot { background: var(--warning); }
+
+/* ==== work grid: 3 / 2 / 1 columns ==== */
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-6);
+}
+
+.gallery-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease);
+}
+.gallery-card:hover { transform: translateY(-2px); }
+.gallery-card:active { transform: translateY(0); }
+
+.gallery-card-cover {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--canvas);
+  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.poster-grid .gallery-card-cover { aspect-ratio: 3 / 4; }
+.gallery-card:hover .gallery-card-cover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-pop);
+}
+.gallery-card:focus-visible { outline: 2px solid var(--sel-ring); outline-offset: 2px; }
+
+/* Render target: sibling of the badge slot so re-renders keep the badge */
+.gallery-card-canvas { position: absolute; inset: 0; }
+
+.gallery-card-cover.loading {
+  background: var(--line);
+  animation: pptd-pulse 1.2s ease-in-out infinite alternate;
+}
+
+.gallery-card-err {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--sub);
+  font-size: var(--text-sm);
+}
+
+/* ==== card meta: title · page count / description / tags ==== */
+
+.gallery-card-info { padding-top: var(--space-3); }
+.gallery-card-title-row { display: flex; align-items: baseline; gap: var(--space-2); }
+.gallery-card-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--text-lg);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gallery-card-pages {
+  flex: 0 0 auto;
+  font-size: var(--text-xs);
+  color: var(--sub);
+  font-variant-numeric: tabular-nums;
+}
+.gallery-card-desc {
+  margin-top: 4px;
+  font-size: var(--text-sm);
+  line-height: var(--leading);
+  color: var(--sub);
+  min-height: calc(1em * 1.5);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.gallery-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  margin-top: var(--space-2);
+  max-height: 1.4em;
+  overflow: hidden;
+  font-size: var(--text-xs);
+  color: var(--sub);
+}
+/* Tags are plain text joined by a middot, not pills */
+.gallery-tag { font-size: var(--text-xs); color: var(--sub); white-space: nowrap; }
+.gallery-tag + .gallery-tag::before { content: "·"; padding: 0 6px; color: var(--sub); }
+
+/* ==== empty state: serif title + one line + action ==== */
+
+.gallery-grid > .gallery-empty { grid-column: 1 / -1; }
+.gallery-empty {
+  max-width: 520px;
+  margin: var(--space-12) auto;
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.gallery-empty-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  color: var(--ink);
+}
+.gallery-empty-hint {
+  margin: var(--space-3) 0 var(--space-6);
+  font-size: var(--text-sm);
+  line-height: var(--leading);
+  color: var(--sub);
+}
+.gallery-empty-action { min-width: 168px; }
