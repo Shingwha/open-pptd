@@ -99,19 +99,11 @@ if ! command -v node >/dev/null 2>&1; then
 fi
 good "node $(node --version)"
 
-# ---- (3) Idempotency probe ----
-if [ "$FORCE" = 0 ]; then
-  if [ -n "$VERSION" ] && [ "$INSTALLED" = "$VERSION" ]; then
-    good "already installed: v$INSTALLED ($VERSIONS_DIR/$VERSION); nothing to do"
-    say "  next: open-pptd doctor"
-    exit 0
-  fi
-  if [ -z "$VERSION" ] && [ -n "$INSTALLED" ]; then
-    good "already installed: v$INSTALLED ($CURRENT_PTR)"
-    say "  next: open-pptd doctor"
-    say "  (to upgrade/reinstall latest: re-run with --force)"
-    exit 0
-  fi
+# ---- (3) Pinned-version idempotency probe ----
+if [ "$FORCE" = 0 ] && [ -n "$VERSION" ] && [ "$INSTALLED" = "$VERSION" ]; then
+  good "already installed: v$INSTALLED ($VERSIONS_DIR/$VERSION); nothing to do"
+  say "  next: open-pptd doctor"
+  exit 0
 fi
 
 # ---- (4) Resolve version (prefer SHA256SUMS, fall back to GitHub API) ----
@@ -132,6 +124,12 @@ if [ -z "$VERSION" ]; then
 fi
 [ -n "$VERSION" ] || die "cannot resolve latest version (both SHA256SUMS and GitHub API failed)"
 printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || die "invalid version: $VERSION (expected x.y.z)"
+
+if [ "$FORCE" = 0 ] && [ -n "$INSTALLED" ] && [ "$INSTALLED" = "$VERSION" ]; then
+  good "already installed: v$INSTALLED ($CURRENT_PTR); already current"
+  say "  next: open-pptd doctor"
+  exit 0
+fi
 
 RUNTIME_ZIP="open-pptd-v$VERSION.zip"
 # Tag-pinned URL: works for both `latest` and a pinned version.

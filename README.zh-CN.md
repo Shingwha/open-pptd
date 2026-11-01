@@ -28,7 +28,7 @@ irm https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.ps1 | iex
 curl -fsSL https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.sh | sh
 ```
 
-装到 `~/.open-pptd` 并写入用户级 PATH（不需要管理员）。不装也行：clone 本仓库后跑 `node bin/open-pptd.js …` 效果相同。
+装到 `~/.open-pptd` 并写入用户级 PATH（不需要管理员）。重复运行安装器会升级旧版本，已是最新则不做改动；仅在需要强制重装时使用 Windows 的 `-Force` 或 macOS/Linux 的 `--force`。不装也行：clone 本仓库后跑 `node bin/open-pptd.js …` 效果相同。
 
 ```sh
 open-pptd open <项目目录> --detach --json   # 浏览器打开编辑器，改文件实时刷新
@@ -40,7 +40,13 @@ open-pptd doctor                            # 环境自检
 
 ## 和 AI 一起用
 
-把技能包装进 agent 的技能目录（Claude Code 为 `~/.claude/skills`，pi 为 `~/.pi/agent/skills`，其他工具按其配置），然后直接描述你要的演示或海报。三种来源，按优先级：
+复制下面的 Prompt，安装或升级应用和 Skill：
+
+```text
+Install or upgrade open-pptd and its Skill on my device. Detect my OS and current AI tool's skills directory, then execute the commands directly. To install or upgrade the CLI, use Windows (PowerShell): irm https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.ps1 | iex; macOS/Linux: curl -fsSL https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.sh | sh. After that, run open-pptd assets skill install --dir [actual skills directory], using the detected path.
+```
+
+如果只想手动安装 Skill，使用 agent 的技能目录（Claude Code 为 `~/.claude/skills`，pi 为 `~/.pi/agent/skills`，其他工具按其配置）。三种来源，按优先级：
 
 ```sh
 # A. CLI 安装（推荐；--force 覆盖已有安装）
@@ -55,8 +61,6 @@ unzip open-pptd-skill.zip -d <技能目录>
 # C. 源码回退：从本仓库复制 skill/
 cp -r skill <技能目录>/open-pptd
 ```
-
-原独立 `open-pptd-skill` 仓库已归档；本仓库的 `skill/` 是方法论的唯一来源。
 
 AI 会交付**两样东西**：可编辑的 PPTD 项目目录（manifest + pages + media）和可直接发送的 `.pptx`（字体已嵌入，PowerPoint 打开零修复）。
 

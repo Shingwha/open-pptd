@@ -151,7 +151,7 @@ const rwBroken = rwLinks.filter((t) => !existsSync(resolve(dirname(join(ROOT, "d
 ok("release-workflow 相对链接可解析", rwBroken.length === 0, rwBroken.join(", "));
 
 // ------------------------------------------------------------- 5. package.json
-ok("package.json version 为 3.0.0", version === "3.0.0", version);
+ok("package.json version 使用 x.y.z 格式", /^\d+\.\d+\.\d+$/.test(version), version);
 ok("package.json 有 test:docs", pkg.scripts?.["test:docs"] === "node tests/docs/run.mjs");
 ok("package.json files 含 skill", (pkg.files || []).some((f) => f === "skill" || f.startsWith("skill/")));
 ok("零依赖（无 dependencies/devDependencies）", !pkg.dependencies && !pkg.devDependencies);

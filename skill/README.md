@@ -74,10 +74,3 @@ starts a detached preview, fills pages, runs `check`, and exports a PPTX.
   project. Run `node tests/skill/run.mjs` from the main repository after edits.
 - Do not add complete decks, calibration demos, executable scripts, generated
   media, or duplicated format tables to this directory.
-
-## Archive note
-
-The former standalone `open-pptd-skill` repository is archived. This `skill/`
-directory in the open-pptd repository is the single source. The old clone URL
-is no longer maintained; update bookmarks to the main repository or the release
-zip. Do not mirror or double-write content back to the archive.

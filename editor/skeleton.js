@@ -189,7 +189,7 @@ export function homeSkeletonHtml() {
     `<div class="gallery-guide-panel">` +
     `<strong class="gallery-guide-title">让 AI 帮你安装</strong>` +
     `<p class="gallery-guide-note">复制这段 Prompt，发给你的 AI。</p>` +
-    `<pre id="gallery-guide-prompt">Install open-pptd and its Skill on my device. Detect my OS and current AI tool's skills directory, then execute the commands directly. Windows (PowerShell): irm https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.ps1 | iex. macOS/Linux: curl -fsSL https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.sh | sh. Then run open-pptd assets skill install --dir [actual skills directory], using the detected path.</pre>` +
+    `<pre id="gallery-guide-prompt">Install or upgrade open-pptd and its Skill on my device. Detect my OS and current AI tool's skills directory, then execute the commands directly. To install or upgrade the CLI, use Windows (PowerShell): irm https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.ps1 | iex; macOS/Linux: curl -fsSL https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.sh | sh. After that, run open-pptd assets skill install --dir [actual skills directory], using the detected path.</pre>` +
     `<div class="gallery-guide-actions">` +
     `<button id="btn-copy-guide" class="btn btn-primary btn-sm" type="button">复制 Prompt</button>` +
     `<a class="btn btn-sm gallery-guide-github" href="https://github.com/Shingwha/open-pptd" target="_blank" rel="noopener">GitHub 仓库 ↗</a>` +

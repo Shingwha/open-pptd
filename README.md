@@ -28,7 +28,7 @@ irm https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.ps1 | iex
 curl -fsSL https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.sh | sh
 ```
 
-This installs into `~/.open-pptd` and adds a user-level PATH entry (no admin needed). Or skip installing: clone this repo and run `node bin/open-pptd.js …`.
+This installs into `~/.open-pptd` and adds a user-level PATH entry (no admin needed). Re-running the installer upgrades an older CLI and is a no-op when it is already current; use `-Force` on Windows or `--force` on macOS/Linux only for a forced reinstall. Or skip installing: clone this repo and run `node bin/open-pptd.js …`.
 
 ```sh
 open-pptd open <project-dir> --detach --json   # editor in the browser, edits refresh live
@@ -40,7 +40,13 @@ open-pptd doctor                               # environment self-check
 
 ## Use it with AI
 
-Install the skill into your agent's skills directory (`~/.claude/skills` for Claude Code, `~/.pi/agent/skills` for pi, or the directory your tool documents), then just describe the deck. Three sources, in order of preference:
+Copy this prompt to install or upgrade the app and its Skill:
+
+```text
+Install or upgrade open-pptd and its Skill on my device. Detect my OS and current AI tool's skills directory, then execute the commands directly. To install or upgrade the CLI, use Windows (PowerShell): irm https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.ps1 | iex; macOS/Linux: curl -fsSL https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.sh | sh. After that, run open-pptd assets skill install --dir [actual skills directory], using the detected path.
+```
+
+For a manual Skill-only install, use your agent's skills directory (`~/.claude/skills` for Claude Code, `~/.pi/agent/skills` for pi, or the directory your tool documents). Three sources, in order of preference:
 
 ```sh
 # A. CLI install (recommended; --force replaces an existing install)
@@ -55,8 +61,6 @@ unzip open-pptd-skill.zip -d <skills-dir>
 # C. Source fallback: copy skill/ from this repository
 cp -r skill <skills-dir>/open-pptd
 ```
-
-The former standalone `open-pptd-skill` repository is archived; `skill/` in this repository is the single source.
 
 The AI delivers **two things**: an editable PPTD project directory (manifest + pages + media) and a ready-to-send `.pptx` (fonts embedded, opens in PowerPoint without repair).
 

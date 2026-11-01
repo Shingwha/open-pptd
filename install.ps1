@@ -96,19 +96,11 @@ if (-not $node) { Die "node not found. Install Node.js >= 18 and put it on PATH;
 $nodeVer = (& node --version) 2>$null
 Good "node $nodeVer ($($node.Source))"
 
-# ---- (3) Idempotency probe ----
-if (-not $Force) {
-  if ($Version -and $Installed -eq $Version) {
-    Good "already installed: v$Installed ($VersionsDir\$Version); nothing to do"
-    Say "  next: open-pptd doctor"
-    exit 0
-  }
-  if (-not $Version -and $Installed) {
-    Good "already installed: v$Installed ($CurrentPtr)"
-    Say "  next: open-pptd doctor"
-    Say "  (to upgrade/reinstall latest: re-run with -Force)"
-    exit 0
-  }
+# ---- (3) Pinned-version idempotency probe ----
+if (-not $Force -and $Version -and $Installed -eq $Version) {
+  Good "already installed: v$Installed ($VersionsDir\$Version); nothing to do"
+  Say "  next: open-pptd doctor"
+  exit 0
 }
 
 # ---- (4) Resolve version (prefer SHA256SUMS, fall back to GitHub API) ----
@@ -133,6 +125,12 @@ if (-not $Version) {
   }
 }
 if ($Version -notmatch "^\d+\.\d+\.\d+$") { Die "invalid version: $Version (expected x.y.z)" }
+
+if (-not $Force -and $Installed -and $Installed -eq $Version) {
+  Good "already installed: v$Installed ($CurrentPtr); already current"
+  Say "  next: open-pptd doctor"
+  exit 0
+}
 $RuntimeZip = "open-pptd-v$Version.zip"
 # Tag-pinned URL: works for both `latest` and a pinned version (latest/download only serves the newest).
 $RuntimeUrl = "$GhBase/releases/download/v$Version/$RuntimeZip"

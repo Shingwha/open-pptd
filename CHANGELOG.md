@@ -1,6 +1,6 @@
 # Changelog
 
-## 未发布 · 3.2
+## 3.0.0
 
 主题库下线（breaking）：颜色编辑保留，主题切换能力删除。
 
@@ -13,7 +13,7 @@
 - EV 示例封面/尾页渐变改为 `$primaryDeep` / `$primary` / `$accent3` token；EV golden rebaseline。
 - CLI：`assets` 只剩 fonts / icons / skill；`build --theme` 显式报错“已移除”（`ERR_INVALID_OPTION`）。
 
-## 3.0.0（开发中）
+### 契约、CLI 与编辑器（breaking）
 
 破坏性接口收口：契约 3.0 + CLI 5 命令 + 最小编辑器 + skill 入主仓。零 npm 依赖、零构建保持不变；
 不提供 2.x 兼容层（旧命令/旧公共 API/深路径/`./internal/*` 全部删除，旧 deck 数据仍可读）。
@@ -105,7 +105,7 @@
 - 原独立 `open-pptd-skill` 仓库归档；`npm run test:skill` 对 SKILL/refs/kits 做 lint 与逐 kit
   `check` + `build` 回归，并校验 release skill zip 的条目与 SHA256。
 - 发布产物新增 `open-pptd-skill-v<版本>.zip`（顶层 `open-pptd/`，不含测试/媒体/脚本）；
-  `package.json.files` 不包含 `skill/`，CLI 运行时包保持干净。
+  `package.json.files` 与运行时白名单均包含 `skill/`，安装后的 CLI 可直接安装技能。
 
 ### 文档与发布
 
