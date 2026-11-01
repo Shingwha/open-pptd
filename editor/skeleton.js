@@ -45,7 +45,7 @@ const PRESENT_BUTTON =
 /** Editor-only add control (3 content types) + its anchored popup, inside the stage. */
 const ADD_CONTROLS =
   `<div class="fab-stack">` +
-  `<button id="btn-add" class="fab" title="添加元素（文字 / 表格 / 图表）">` +
+  `<button id="btn-add" class="fab" title="添加元素（文字 / 表格 / 图表 / 形状 / 线条 / 图片）">` +
   `<svg viewBox="0 0 24 24" class="fab-ic"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>` +
   `</button>` +
   `</div>` +

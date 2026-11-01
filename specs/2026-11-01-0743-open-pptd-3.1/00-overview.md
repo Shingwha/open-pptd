@@ -66,4 +66,7 @@
 - ✅ W1（2026-11-01 @ `feat/3.1-w1-editor-ops` → main `483e57e`）：复制/剪切/粘贴/重复 + 选中操作条；editor-ops 22/22；全量 39/39；golden 零漂移。
 - ✅ W2（2026-11-01 @ `feat/3.1-w2-ui` → main `35a7e23`）：Paper & Ink 视觉系统；编辑器/画廊重做；浅深/响应式；deck 绘制面固定字体与墨色。全部 e2e 通过；run-all 39/39；golden 156/156。
 - ✅ W3a（2026-11-01 @ `feat/3.1-w3a-{prod,tests}` → main）：生产去重 23 文件、测试工具去重 17 文件；run-all 39/39、全部 e2e、golden 156/156。
-- W3b 详单已补 `## 前置上下文`，可派工（注释整理，公式/vendor 排除）。
+- ✅ W3b（2026-11-01 @ `feat/3.1-w3b-{a..e}` → main）：注释行 8,488 → 5,997（−29.3%）；公式/vendor 零 diff；全量门禁绿。
+- ✅ W4（2026-11-01 @ `feat/3.1-w4-feedback` → main）：画廊封面静态、越界提示仅编辑器、字标 OPEN PPTD、缩略图不再选中内容；feedback-fixes 21/21。
+- ✅ W5（2026-11-01 @ `feat/3.1-w5-add` → main）：添加菜单六类（文字/表格/图表/形状/线条/图片）；形状 187 preset 搜索、线条 3 变体、图片落 media；add-elements 12/12。
+- ✅ 3.1 终验 + 试用反馈：run-all 39/39、全部 e2e、golden 156/156；详见 `handoff/W3.1-lead.md`。未 push/tag/发版。
