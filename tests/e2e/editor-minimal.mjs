@@ -2,7 +2,8 @@
 // tests/e2e/editor-minimal.mjs — minimal editor E2E.
 // Covers selection/drag transform/multi-select, text/table/chart content editors (open + commit),
 // text color (token list + hex), add control (6 items in fixed order) + Delete, and the Design panel (color
-// tokens only — no theme library, colors-only write, appearance toggle); legacy entries are gone (#btn-fonts/#btn-theme/
+// tokens only — no theme library, colors-only write, live picker + 100ms thumbnail invalidation,
+// undo restores canvas/all thumbnails/panel hex, appearance toggle); legacy entries are gone (#btn-fonts/#btn-theme/
 // #inspector/#quickbar/#add-menu). Depends on local Chrome (CDP 9341); SKIP when missing.
 // Usage: node tests/e2e/editor-minimal.mjs
 
@@ -29,7 +30,8 @@ function log(name, pass, detail = "") {
   console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? "  " + detail : ""}`);
 }
 
-// Temporary project: 2 pages, each with one text element
+// Temporary project: 2 pages, each with one text element and one $primary shape
+// (the shape makes a primary-color edit affect both pages, so thumbnail invalidation is observable)
 const PROJECT = mkdtempSync(join(tmpdir(), "pptd-editor-minimal-"));
 mkdirSync(join(PROJECT, "pages"), { recursive: true });
 writeFileSync(
@@ -39,7 +41,9 @@ writeFileSync(
 const pageYaml = (n) =>
   "pageType: content\nbackground: {type: solid, color: \"#ffffff\"}\nelements:\n" +
   `  - elementId: t${n}\n    elementType: text\n    bounds: [80, 60, 360, 48]\n` +
-  `    content: {fontSize: 24, color: "#1f2937", align: [left, middle], text: '第${n}页'}\n`;
+  `    content: {fontSize: 24, color: "#1f2937", align: [left, middle], text: '第${n}页'}\n` +
+  `  - elementId: p${n}\n    elementType: shape\n    bounds: [80, 480, 120, 12]\n` +
+  `    shapeName: rect\n    fill: {type: solid, color: "$primary"}\n`;
 writeFileSync(join(PROJECT, "pages", "1.page"), pageYaml(1));
 writeFileSync(join(PROJECT, "pages", "2.page"), pageYaml(2));
 
@@ -191,27 +195,55 @@ try {
   );
   log("添加 + 删除元素", s.deltaAdd === 1 && s.deltaDelete === 1, JSON.stringify(s));
 
-  // 7) Design panel: colors tab only (no theme library), colors-only write, custom token, undo
+  // 7) Design panel: colors tab only (no theme library), colors-only write, live picker,
+  //    thumbnail invalidation, undo restore (canvas + every thumbnail + panel hex), custom token
   s = await evalJs(`(async () => {
+    const api = window.__pptdEditor;
+    // ECharts 每次重绘生成 ec_/zr_ + 时间戳的实例 id：归一化后再比内容，避免误判“未恢复”
+    const hash = (str) => {
+      const s = String(str).replace(/(ec|zr)_\\d+/g, "$1_id");
+      let h = 0;
+      for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+      return h;
+    };
+    const thumbHashes = () => [...document.querySelectorAll('.thumb-canvas')].map((el) => hash(el.innerHTML));
     document.querySelector('#btn-design').click();
     await new Promise((r) => setTimeout(r, 1000));
     const tabs = [...document.querySelectorAll('.design-tab')].map((b) => b.textContent);
     const cards = document.querySelectorAll('.design-theme-card').length;
     const tokens = document.querySelectorAll('.design-token').length;
-    const theme = window.__pptdEditor.state.deck.theme;
+    const theme = api.state.deck.theme;
     const beforeTs = JSON.stringify(theme?.textStyles ?? null);
     const beforeTb = JSON.stringify(theme?.tableStyles ?? null);
     const before = theme?.colors?.primary;
-    const hex = document.querySelector('[data-token="primary"] .design-token-hex');
-    hex.value = '#123456';
-    hex.dispatchEvent(new Event('change', { bubbles: true }));
+    const originalPrimary = api.state.theme.colors.primary;
+    const canvasEl = document.querySelector('#canvas');
+    const canvas0 = hash(canvasEl.innerHTML);
+    const thumb0 = thumbHashes();
+    const hexBefore = document.querySelector('[data-token="primary"] .design-token-hex').value;
+    const picker = document.querySelector('[data-token="primary"] .design-token-picker');
+    picker.value = '#654321';
+    picker.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 130));
+    const canvasChanged = hash(canvasEl.innerHTML) !== canvas0;
+    const thumb1 = thumbHashes();
+    const thumbsChanged = thumb1.length === thumb0.length && thumb1.every((h, i) => h !== thumb0[i]);
+    const live = api.state.deck.theme?.colors?.primary;
+    picker.dispatchEvent(new Event('change', { bubbles: true }));
+    api.undo();
     await new Promise((r) => setTimeout(r, 300));
-    const afterTheme = window.__pptdEditor.state.deck.theme;
+    const canvasRestored = hash(document.querySelector('#canvas').innerHTML) === canvas0;
+    const thumb2 = thumbHashes();
     return {
-      tabs, cards, tokens,
-      before, after: afterTheme?.colors?.primary,
-      tsSame: JSON.stringify(afterTheme?.textStyles ?? null) === beforeTs,
-      tbSame: JSON.stringify(afterTheme?.tableStyles ?? null) === beforeTb,
+      tabs, cards, tokens, before, originalPrimary, hexBefore, live,
+      canvasChanged, thumbsChanged,
+      canvasRestored,
+      thumbsRestored: thumb2.length === thumb0.length && thumb2.every((h, i) => h === thumb0[i]),
+      thumbsCount: thumb0.length,
+      afterUndo: api.state.theme?.colors?.primary,
+      hexAfter: document.querySelector('[data-token="primary"] .design-token-hex')?.value,
+      tsSame: JSON.stringify(api.state.deck.theme?.textStyles ?? null) === beforeTs,
+      tbSame: JSON.stringify(api.state.deck.theme?.tableStyles ?? null) === beforeTb,
     };
   })()`);
   log(
@@ -219,6 +251,30 @@ try {
     ["颜色", "字体", "外观"].every((t) => s.tabs.includes(t)) && s.cards === 0 && s.tokens >= 16,
     JSON.stringify({ tabs: s.tabs, cards: s.cards, tokens: s.tokens })
   );
+  log(
+    "取色器 input 后画布实时、全部缩略图 100ms 内更新",
+    s.canvasChanged === true && s.thumbsChanged === true && String(s.live).toLowerCase() === "#654321" && s.thumbsCount === 2,
+    JSON.stringify({ canvasChanged: s.canvasChanged, thumbsChanged: s.thumbsChanged, thumbs: s.thumbsCount, live: s.live })
+  );
+  log(
+    "撤销后颜色 / 全部缩略图 / Design hex 同步恢复",
+    s.afterUndo === s.originalPrimary && s.canvasRestored === true && s.thumbsRestored === true && s.hexAfter === s.hexBefore,
+    JSON.stringify({ afterUndo: s.afterUndo, original: s.originalPrimary, canvasRestored: s.canvasRestored, thumbsRestored: s.thumbsRestored, hexAfter: s.hexAfter, hexBefore: s.hexBefore })
+  );
+
+  s = await evalJs(`(async () => {
+    const theme = window.__pptdEditor.state.deck.theme;
+    const hex = document.querySelector('[data-token="primary"] .design-token-hex');
+    hex.value = '#123456';
+    hex.dispatchEvent(new Event('change', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 300));
+    const afterTheme = window.__pptdEditor.state.deck.theme;
+    return {
+      before: theme?.colors?.primary, after: afterTheme?.colors?.primary,
+      tsSame: JSON.stringify(afterTheme?.textStyles ?? null) === JSON.stringify(theme?.textStyles ?? null),
+      tbSame: JSON.stringify(afterTheme?.tableStyles ?? null) === JSON.stringify(theme?.tableStyles ?? null),
+    };
+  })()`);
   log(
     "颜色编辑只写 theme.colors（textStyles/tableStyles 不变）",
     s.before !== "#123456" && s.after === "#123456" && s.tsSame === true && s.tbSame === true,
@@ -244,13 +300,15 @@ try {
   log("自定义颜色 token 添加", s.color === "#ffcc00" && s.rows >= 17, JSON.stringify(s));
 
   s = await evalJs(`(async () => {
-    window.__pptdEditor.undo();
-    const restored = window.__pptdEditor.state.deck.theme?.colors?.gold;
-    const before = window.__pptdEditor.state.deck.theme?.colors?.primary;
-    window.__pptdEditor.undo();
-    return { restored, primaryUndone: before !== window.__pptdEditor.state.deck.theme?.colors?.primary };
+    const api = window.__pptdEditor;
+    api.undo(); // 只撤销 gold 添加（实时取色已在上面单独撤销）
+    await new Promise((r) => setTimeout(r, 300));
+    return {
+      restored: api.state.deck.theme?.colors?.gold,
+      primaryKept: api.state.deck.theme?.colors?.primary,
+    };
   })()`);
-  log("Design 改动可撤销", s.restored === undefined && s.primaryUndone === true, JSON.stringify(s));
+  log("自定义颜色 token 可撤销（已提交的颜色不受影响）", s.restored === undefined && s.primaryKept === "#123456", JSON.stringify(s));
 
   s = await evalJs(`(() => {
     [...document.querySelectorAll('.design-tab')].find((b) => b.dataset.tab === 'fonts').click();
