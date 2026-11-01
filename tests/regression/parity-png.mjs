@@ -1,18 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// tests/regression/parity-png.mjs — PNG scale/backend parity (W9)
-// ----------------------------------------------------------------------------
-// Renders the chart project's first two pages through the shared ExportService +
-// Node/headless RenderBackend at scale 1/2/3 and asserts structural facts:
-//   · report pages/artifacts, non-empty PNGs, exact pixel dimensions (960×540 ×N)
-//   · chart-region density (non-white ratio / distinct colors) does not collapse
-//   · sharpness (mean edge energy per device pixel) at 2x/3x is at least 85% of 1x
-//     (the 2.x page-1 chart blur bug would fail this)
-//   · pages 1 and 2 produce different images
-// A missing Chrome/Edge prints SKIP and exits 0 (browser gate is optional).
-//
+// tests/regression/parity-png.mjs — PNG scale/backend parity.
+// Renders the chart project's first two pages through the shared ExportService + Node/headless
+// RenderBackend at scale 1/2/3: report pages/artifacts, exact 960×540 ×N dimensions, chart-region
+// density stable, edge energy at 2x/3x ≥ 85% of 1x (per CSS pixel), and pages 1 and 2 differ.
+// A missing Chrome/Edge prints SKIP and exits 0.
 // Usage: node tests/regression/parity-png.mjs
-// ============================================================================
 
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -78,8 +70,7 @@ try {
       const energy = edgeEnergy(bytes);
       const key = `p${page}`;
       metrics[key] ||= {};
-      // Energy is sampled every 2 device pixels; ×scale maps it back to CSS-pixel
-      // density (same normalization as the W3 export parity evidence).
+      // Energy is sampled every 2 device pixels; ×scale maps it back to CSS-pixel density.
       metrics[key][scale] = { energy, normalized: Number((energy * scale).toFixed(3)), ...sample };
     }
   }

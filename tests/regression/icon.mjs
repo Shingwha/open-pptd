@@ -1,14 +1,9 @@
-// ============================================================================
-// tests/regression/icon.mjs — icon regression (Font Awesome Free, SVG embedding, preview == export)
-// ----------------------------------------------------------------------------
-// Data: tests/fixtures/icons/<style>/*.svg (vendored FA SVGs, git-tracked, offline-deterministic);
-//       resolution reads assets/icons/registry.json (metadata is committed).
-// Covers: resolution (three prefixes / aliases / removed bs:), SVG normalization (strip
-//         comments / currentColor), fill injection (solid/HEX8/linear/radial/three-stop
-//         gradient), wide viewBox, export structure (media count / official svgBlip ext /
-//         rels / Content_Types), unknown-icon skip aggregation.
+// tests/regression/icon.mjs — icon regression (Font Awesome Free, SVG embedding, preview == export).
+// Data: tests/fixtures/icons/<style>/*.svg (vendored, git-tracked, offline-deterministic);
+// resolution reads assets/icons/registry.json. Covers resolution (prefixes/aliases/removed bs:),
+// SVG normalization, fill injection (solid/HEX8/linear/radial), wide viewBox, export structure
+// (media/svgBlip/rels/Content_Types), and unknown-icon skip aggregation.
 // Usage: node tests/regression/icon.mjs
-// ============================================================================
 
 import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";

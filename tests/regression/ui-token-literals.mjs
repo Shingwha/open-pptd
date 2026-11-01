@@ -1,20 +1,9 @@
-// ============================================================================
-// tests/regression/ui-token-literals.mjs — UI literal-token gate (Line pass, spec 05 T2)
-// ----------------------------------------------------------------------------
-// Static scan of editor/styles/*.css, enforcing the "values only live in tokens.css" rule
-// (the Line design pass token rules; historical design in git history):
-//   1. Color literals (#hex3/4/6/8, rgb()/rgba(), hsl()/hsla()) may only appear in
-//      tokens.css. present.css is exempt as a whole file (the projection surface paints
-//      on arbitrary media); commented-out text does not count (comments quote values).
-//   2. Every box-shadow declaration outside tokens.css must reference a --shadow-* token.
-//      The frozen whitelist below holds the only non-projection use in the repo (an inset
-//      fill overlay in the data grid, a file this wave does not own); the assertion fails
-//      both when a new violation appears and when a whitelist entry goes stale, so the
-//      exemption count can only shrink.
-//   3. Sanity: tokens.css is part of the scan and declares the four shadow steps — a moved
-//      directory or renamed sheet must break this gate loudly instead of scanning nothing.
-// Usage: node tests/regression/ui-token-literals.mjs (prints file:line, non-zero exit on failure)
-// ============================================================================
+// tests/regression/ui-token-literals.mjs — UI literal-token gate (usage: node tests/regression/ui-token-literals.mjs).
+// Static scan of editor/styles/*.css enforcing "values only live in tokens.css":
+// 1. Color literals (#hex3/4/6/8, rgb()/rgba(), hsl()/hsla()) only in tokens.css; present.css is exempt as a whole file, comments do not count.
+// 2. Every box-shadow outside tokens.css must reference a --shadow-* token; the frozen
+//    whitelist holds the data-grid inset-fill exceptions and fails when stale.
+// 3. Sanity: tokens.css is scanned and declares the four shadow steps.
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname, resolve, relative, sep } from "node:path";

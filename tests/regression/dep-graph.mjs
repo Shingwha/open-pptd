@@ -1,36 +1,9 @@
-// ============================================================================
-// tests/regression/dep-graph.mjs — dependency direction + environment globals static scan (v3 P0, CI-enforced)
-// ----------------------------------------------------------------------------
-// Scans every .js/.mjs under packages/ and editor/ for imports and source, asserting:
-//   1. packages/model must not import any sibling package (another directory under packages/);
-//   2. the allowed cross-package import edge table (three-stage render pipeline + contract 3.0
-//      runtime/export; Node-only server/cli are leaves and are not in the table):
-//        writer   → model | vendor | measure | layout
-//        renderer → model | vendor | layout
-//        layout   → model | measure
-//        measure  → model
-//        runtime  → model | measure | layout
-//        export   → runtime | model | measure | layout | writer
-//      Any other cross-package direction is a violation. The table includes vendor (the neutral
-//      shared vendor area, e.g. echarts.mjs); "exists means checked": a missing target package
-//      directory is not an error (the edge table lands first, packages follow).
-//   3. editor/ must not import packages/server or packages/cli (built at P1; the rule is written early);
-//   4. environment globals (vendor/ subdirectories exempt):
-//      - packages/model, packages/writer: forbid window./document./require(/bare fs./node: sources
-//        (dual-end packages: the Node CLI path must not carry browser globals and the browser path
-//        must not carry Node globals);
-//      - packages/renderer (outside headless): DOM is its output target (v3 §3 "renderer still emits
-//        DOM"), so window./document. are allowed; require(/bare fs./node: sources stay forbidden to
-//        keep Node APIs out of the browser preview path.
-//      - packages/measure, packages/layout (new pipeline packages): dual-end pure functions with no
-//        headless exemption — forbid window./document./require(/bare fs./node: (same tier as model/writer).
-//      - packages/renderer/headless/: Node-only subdirectory (headless screenshot path), exempt from
-//        environment-global and node: import checks, but still bound by the import graph rules (must
-//        not import editor/).
-//   5. package barrels (packages/index.js and packages/*/index.js) must not import editor/
-//      (spec 01 T5: the package entry is the "contract 4" public face; dependencies only flow editor → packages).
-// Usage: node tests/regression/dep-graph.mjs (prints offending file and line, non-zero exit on failure)
-// ============================================================================
+// tests/regression/dep-graph.mjs — dependency direction + environment globals static scan.
+// CI-enforced; prints offending file:line and exits non-zero on failure. Scans packages/ and
+// editor/: model imports no sibling; other cross-package edges are limited to ALLOWED_CROSS
+// (writer→model|vendor|measure|layout, renderer→model|vendor|layout, layout→model|measure,
+// measure→model, runtime→model|measure|layout, export→runtime|model|measure|layout|writer).
+// editor imports only package entries (never server/cli); dual-end packages forbid window/document/require(/bare fs./node: (renderer may use DOM; headless/vendor exempt).
 
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname, resolve, relative, sep } from "node:path";
@@ -71,8 +44,8 @@ const inHeadless = (r) => r.startsWith("packages/renderer/headless/"); // Node-o
 // Dual-end packages (run in both browser and Node, must stay environment-pure); server/cli are
 // Node-only and are not bound by the environment-global / node: source rules
 const DUAL_END_PKGS = new Set(["model", "writer", "renderer", "measure", "layout", "runtime", "export"]);
-// Allowed cross-package import edges (spec 09 T0/T5 target state; model is handled separately as "no sibling imports";
-// 3.0 runtime/export edges per specs/2026-10-31-2102-open-pptd-3.0/ref/interfaces.md §1.1)
+// Allowed cross-package import edges ("exists means checked": a missing target package directory
+// is not an error). model is handled separately as "no sibling imports".
 const ALLOWED_CROSS = {
   writer: ["model", "vendor", "measure", "layout"],
   renderer: ["model", "vendor", "layout"],
@@ -171,13 +144,13 @@ for (const abs of files) {
       if (pkg === "model" && targetPkg && targetPkg !== "model") {
         violations.push(`${r}:${line}  model 不得 import 兄弟包 packages/${targetPkg}（${source}）`);
       } else if (ALLOWED_CROSS[pkg] && targetPkg && targetPkg !== pkg && !ALLOWED_CROSS[pkg].includes(targetPkg) && !allowlisted(r, lineText, line, source)) {
-        // Cross-package edge table (spec 09 T0/T5): any direction outside the allowed set is a violation
+        // Cross-package edge table: any direction outside the allowed set is a violation
         violations.push(`${r}:${line}  packages/${pkg} 只允许 import ${ALLOWED_CROSS[pkg].map((t) => t === "vendor" ? "../vendor" : "../" + t).join(" / ")}（实际指向 packages/${targetPkg}：${source}）`);
       } else if (!pkg && r.startsWith("editor/") && (targetRel.startsWith("packages/server/") || targetRel.startsWith("packages/cli/") || targetRel === "packages/server" || targetRel === "packages/cli")) {
         violations.push(`${r}:${line}  editor 不得 import packages/server、packages/cli（${source}）`);
       }
-      // Rule 6 (spec W1.5): editor may only consume the engine through package entries
-      // (packages/<pkg>/index.js); deep paths are not guaranteed stable since contract 4 (removed in 3.0)
+      // Editor may only consume the engine through package entries (packages/<pkg>/index.js);
+      // deep paths are not guaranteed stable.
       if (!pkg && r.startsWith("editor/") && targetRel.startsWith("packages/")) {
         const m = targetRel.match(/^packages\/([^/]+)\/(.+)$/);
         if (m && m[2] !== "index.js") {
@@ -189,8 +162,8 @@ for (const abs of files) {
         violations.push(`${r}:${line}  packages/${pkg} 不得 import editor/（${source}）`);
       }
     } else {
-      // Non-relative sources are only checked for dual-end packages (model/writer/renderer; server/cli are
-      // Node-only and legitimately use node:): node: is always forbidden (non-vendor, non-headless); a bare
+      // Non-relative sources are only checked for dual-end packages (server/cli are Node-only and
+      // legitimately use node:): node: is always forbidden (non-vendor, non-headless); a bare
       // source (Node builtin / third party) is allowed only when registered in the allowlist
       if (DUAL_END_PKGS.has(pkg) && !inVendor(r) && !inHeadless(r)) {
         if (source.startsWith("node:")) {
@@ -218,10 +191,8 @@ for (const abs of files) {
   }
 }
 
-// ---- Extra rule 5: package barrels must not import editor/ (purely additive, spec 01 T5) ----
-// The existing branch (files under packages/ must not import editor/) already covers the same
-// violation; this asserts it once more explicitly for package entries (the public contract face,
-// worth making separately visible): a hit reports one line per rule.
+// Extra rule: package barrels must not import editor/. The packages/ branch above already covers
+// the same violation; this reports it separately for package entries (the public contract face).
 const BARREL_RE = /^packages\/(?:index\.js|[^/]+\/index\.js)$/;
 const barrels = files.filter((abs) => BARREL_RE.test(rel(abs)));
 for (const abs of barrels) {

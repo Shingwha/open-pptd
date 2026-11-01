@@ -1,19 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// tests/regression/save-atomic.mjs — atomic save + revision conflicts (W9)
-// ----------------------------------------------------------------------------
-// Covers the W9 save contract (interfaces.md §2/§14, work order 09 §P1):
-//   1. server /api/save: stale expectedRevision → 409 ERR_REVISION_CONFLICT with
-//      currentRevision; success returns the new revision; nothing is written on 409
-//   2. server atomic batch: a rename failure mid-batch restores already written
-//      files and never half-writes the manifest (manifest is renamed last)
-//   3. editor memorySource: conflict + success revision updates
-//   4. editor directoryHandleSource: conflict + success revision updates
-//   5. handle-io.writeFiles: a failing write rolls the written prefix back
-//
-// Pure Node (mock File System Access handles); self-running:
-//   node tests/regression/save-atomic.mjs
-// ============================================================================
+// tests/regression/save-atomic.mjs — atomic save + revision conflicts.
+// 1. server /api/save: stale expectedRevision → 409 ERR_REVISION_CONFLICT with currentRevision;
+//    success returns the new revision; nothing is written on 409.
+// 2. server atomic batch: a rename failure restores written files, never half-writes the manifest.
+// 3. memorySource / directoryHandleSource revision updates; writeFiles rolls back the written prefix.
+// Pure Node (mock File System Access handles); run: node tests/regression/save-atomic.mjs
 
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -29,9 +20,7 @@ function check(name, pass, detail = "") {
 
 const tmpRoot = mkdtempSync(join(tmpdir(), "pptd-save-atomic-"));
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+// Helpers.
 function diskProject(dir, { title = "初始", page = "pageType: content\nelements: []\n" } = {}) {
   mkdirSync(join(dir, "pages"), { recursive: true });
   writeFileSync(
@@ -55,9 +44,7 @@ function diskRevision(dir) {
   return projectRevision({ manifestText, pageFiles });
 }
 
-// ---------------------------------------------------------------------------
-// 1+2) server /api/save: 409 + atomic rollback + success revision
-// ---------------------------------------------------------------------------
+// 1+2) server /api/save: 409 + atomic rollback + success revision.
 {
   const dir = join(tmpRoot, "server");
   diskProject(dir);
@@ -154,9 +141,7 @@ function readdirNames(dir) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// 3) editor memorySource: conflict + success revision
-// ---------------------------------------------------------------------------
+// 3) editor memorySource: conflict + success revision.
 {
   const { memorySource } = await import("../../editor/app/project/source.js");
   const source = memorySource({
@@ -191,9 +176,7 @@ function readdirNames(dir) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// 4+5) directoryHandleSource + handle-io.writeFiles (mock File System Access)
-// ---------------------------------------------------------------------------
+// 4+5) directoryHandleSource + handle-io.writeFiles (mock File System Access).
 const notFound = () => Object.assign(new Error("NotFoundError"), { name: "NotFoundError", code: 8 });
 
 class MockFile {

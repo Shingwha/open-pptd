@@ -1,12 +1,7 @@
-// ============================================================================
-// tests/regression/layout.mjs — layout package regression (spec 09 T4 / M2 acceptance)
-// ----------------------------------------------------------------------------
-// 1. LayoutTree shape: pageSize/pages/elements/frame/text/table/overflow
-// 2. Text growth, table growth, chart size passthrough, group shell skipped
-// 3. overflow facts: out of canvas + grown content pushing elements below (overlap)
-// 4. Determinism: two layout calls on the same deck agree (snapshot-safe)
-// 5. Full examples sweep: per-page element count matches the "non-group-shell" count
-// ============================================================================
+// tests/regression/layout.mjs — layout package regression.
+// Covers LayoutTree shape, text/table growth, chart size passthrough, group-shell skipping,
+// overflow facts (out of canvas + grown content overlap), determinism, MeasurePort injection,
+// and a full examples sweep (page/element counts).
 
 import { readdirSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";

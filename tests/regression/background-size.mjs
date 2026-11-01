@@ -1,11 +1,7 @@
-// ============================================================================
-// tests/regression/background-size.mjs — background cover crop follows deck.size
-// ----------------------------------------------------------------------------
-// The background cover crop (a:srcRect) must be computed from the live page size:
-// pageSize flows from buildPptx along deck.size into buildSlide → backgroundXml.
-// Case: a 1000×1000 square image on a [1200,600] (2:1) page crops 25% off the top
-// and bottom (t/b=25000). A hard-coded 960×540 page would yield 21875 instead.
-// ============================================================================
+// tests/regression/background-size.mjs — background cover crop follows deck.size.
+// The a:srcRect cover crop must be computed from the live page size (pageSize flows from
+// buildPptx along deck.size into buildSlide → backgroundXml). A 1000×1000 image on a
+// [1200,600] page crops 25% off top/bottom (t/b=25000); hard-coded 960×540 yields 21875.
 
 import { buildSlide } from "../../packages/writer/slide.js";
 

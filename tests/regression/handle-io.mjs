@@ -1,15 +1,8 @@
 #!/usr/bin/env node
-// ============================================================================
-// handle-io.mjs — local project handle read/write regression (pure Node, mock handles)
-// ----------------------------------------------------------------------------
-// Every handle-io.js function depends only on the handle interface
-// (getFileHandle/getDirectoryHandle/getFile/createWritable), so an in-memory mock
-// covers it fully:
-//   1. readProject: manifest + pages, missing-page tolerance, error when deck.pptd is absent
-//   2. hasDeck light check
-//   3. writeFiles: text / nested directories / base64 media write-back
-//   4. fingerprint: stable, changes after a write (basis for the live-refresh poll)
-// ============================================================================
+// tests/regression/handle-io.mjs — local project handle read/write regression (pure Node, mock handles).
+// Every handle-io.js function depends only on the handle interface (getFileHandle/getDirectoryHandle/
+// getFile/createWritable), so an in-memory mock covers it: readProject (missing-page tolerance,
+// absent deck.pptd error), hasDeck, writeFiles (text/nested/base64), and fingerprint stability.
 
 import { readProject, hasDeck, writeFiles, fingerprint } from "../../editor/app/project/handle-io.js";
 
@@ -19,7 +12,7 @@ function log(name, pass, detail = "") {
   console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? "  " + detail : ""}`);
 }
 
-// ---------------------------------------------------------------- in-memory mock handles
+// In-memory mock handles.
 const notFound = () => Object.assign(new Error("NotFoundError"), { name: "NotFoundError", code: 8 });
 
 class MockFile {
@@ -93,7 +86,7 @@ function makeProject({ extraManifestPages = [] } = {}) {
   return dir;
 }
 
-// ---------------------------------------------------------------- 1) readProject
+// 1) readProject.
 {
   const dir = makeProject();
   const { manifestText, pageTexts, missing } = await readProject(dir);
@@ -115,7 +108,7 @@ function makeProject({ extraManifestPages = [] } = {}) {
   log("hasDeck 轻校验", (await hasDeck(dir)) === true && (await hasDeck(empty)) === false);
 }
 
-// ---------------------------------------------------------------- 2) writeFiles
+// 2) writeFiles.
 {
   const dir = makeProject();
   const b64 = btoa("hello"); // mimics persistDataUrlImages' {path, b64}
@@ -129,7 +122,7 @@ function makeProject({ extraManifestPages = [] } = {}) {
   log("writeFiles 写回（文本/嵌套/base64）", count === 3 && (await manifest.text()).includes("改后") && (await imgFile.text()) === "hello");
 }
 
-// ---------------------------------------------------------------- 3) fingerprint
+// 3) fingerprint.
 {
   const dir = makeProject();
   const fp1 = await fingerprint(dir);

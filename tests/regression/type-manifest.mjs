@@ -1,21 +1,9 @@
-// ============================================================================
-// tests/regression/type-manifest.mjs — TypeManifest + lazy shard regression (W4)
-// ----------------------------------------------------------------------------
-// 1. ELEMENT_TYPES === manifest ids (order included); descriptor fields complete;
-//    group composite; contentEditor only text/table/chart; no descriptor imports
-//    style-spec (cycle guard).
-// 2. Every built-in type: schema hook validates (valid passes / missing field
-//    reports schema-type), render shard registered and paints (DOM stub; chart
-//    uses the pure option builder — the ECharts canvas path is covered by
-//    tests/e2e/render.mjs), toXml shard registered and buildPptx succeeds.
-// 3. A new test type (descriptor + dynamic render/toXml shard via types/load.js)
-//    validates/renders/exports without editing the static shard indexes.
-// 4. Lazy boundary: importing the renderer shard loader registers no writer
-//    toXml; composite types load no shard; static import closures keep
-//    renderer ⊅ writer and writer/export ⊅ editor.
-// 5. Unknown types still fail validation; group shells pass and layout skips them.
-// Usage: node tests/regression/type-manifest.mjs (non-zero exit = contract broken)
-// ============================================================================
+// tests/regression/type-manifest.mjs — TypeManifest + lazy shard regression (usage: node tests/regression/type-manifest.mjs).
+// 1. ELEMENT_TYPES === manifest ids (order included), complete descriptors, group composite,
+//    contentEditor only text/table/chart, no descriptor imports style-spec (cycle guard).
+// 2. Every built-in type validates, renders (DOM stub; chart via pure option builder), exports;
+//    a new test type needs only a descriptor + dynamic shards.
+// 3. Lazy boundary: shard loaders register nothing until loadType; static closures keep renderer ⊅ writer and writer/export/model ⊅ editor/sibling packages.
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
@@ -44,9 +32,7 @@ const check = (name, cond, detail = "") => {
 };
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-// ---------------------------------------------------------------------------
-// 0. Lazy boundary: registry is seeded from the manifest, no shard is loaded yet
-// ---------------------------------------------------------------------------
+// 0. Lazy boundary: registry is seeded from the manifest, no shard is loaded yet.
 check("registry 仅含 manifest 元数据（尚未加载分片）", typeof getType("text").render === "undefined" && typeof getType("text").toXml === "undefined");
 let textShaderSpec = null;
 await loadRenderType("text", async (spec) => {
@@ -72,9 +58,7 @@ const rejects = async (fn) => {
 check("未定义类型拒绝懒加载", await rejects(() => loadRenderType("widget")));
 check("非法 id 拒绝懒加载（路径穿越防护）", await rejects(() => loadRenderType("../evil")));
 
-// ---------------------------------------------------------------------------
-// 1. Manifest: ELEMENT_TYPES / descriptor completeness / composite / contentEditor
-// ---------------------------------------------------------------------------
+// 1. Manifest: ELEMENT_TYPES / descriptor completeness / composite / contentEditor.
 check("ELEMENT_TYPES === TYPE_IDS（顺序不变）", same(ELEMENT_TYPES, TYPE_IDS) && same(TYPE_IDS, ["text", "shape", "line", "image", "icon", "table", "chart", "group"]));
 check("typeIds() === manifest ids", same(typeIds(), TYPE_IDS));
 check("allTypes() 由 manifest 初始化", TYPE_IDS.every((id) => allTypes().some((t) => t.id === id)));
@@ -103,9 +87,7 @@ const descriptorFiles = readdirSync(typeDir).filter((f) => f.endsWith(".js"));
 const cycleHits = descriptorFiles.filter((f) => /from\s+["'][^"']*style-spec\.js["']/.test(readFileSync(join(typeDir, f), "utf8")));
 check("descriptor 不 import style-spec（防循环）", cycleHits.length === 0, cycleHits.join(","));
 
-// ---------------------------------------------------------------------------
-// 2. Built-in types: validate / render / toXml smoke
-// ---------------------------------------------------------------------------
+// 2. Built-in types: validate / render / toXml smoke.
 const PNG_1X1 = Uint8Array.from(Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
   "base64"
@@ -207,9 +189,7 @@ const lt = layout(validDeck);
 check("layout 跳过 group 壳、成员独立", lt.pages[0].elements.length === 7 && !lt.pages[0].elements.some((e) => e.elementType === "group"));
 check("layoutKey text/table 命中本地 hook", lt.pages[0].elements.find((e) => e.elementId === "t1").text != null && lt.pages[0].elements.find((e) => e.elementId === "b1").table != null);
 
-// ---------------------------------------------------------------------------
-// 3. New type: descriptor + dynamic shards only (no static index edit)
-// ---------------------------------------------------------------------------
+// 3. New type: descriptor + dynamic shards only (no static index edit).
 const demoDesc = defineMeta({
   id: "demo",
   label: "演示类型",
@@ -244,9 +224,7 @@ const demoBytes = await buildPptx(demoDeck, { iconRegistry: {} });
 check("新类型可导出（descriptor + 分片即可）", demoBytes[0] === 0x50 && demoXmlCalls === 1);
 check("ELEMENT_TYPES 仍是内置 8 类（manifest 常量不漂移）", ELEMENT_TYPES.length === 8 && !ELEMENT_TYPES.includes("demo"));
 
-// ---------------------------------------------------------------------------
-// 4. Static import closure boundaries (source scan)
-// ---------------------------------------------------------------------------
+// 4. Static import closure boundaries (source scan).
 function stripComments(src) {
   return src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
 }
@@ -285,8 +263,6 @@ const modelSiblings = modelClosure.filter((p) => {
 });
 check("model 静态闭包不 import 兄弟包", modelSiblings.length === 0, modelSiblings.join(","));
 
-// ---------------------------------------------------------------------------
-// 5. Summary
-// ---------------------------------------------------------------------------
+// 5. Summary.
 console.log(`\n结果: ${ok ? "TypeManifest 契约通过 ✅" : "TypeManifest 契约失败 ❌"}`);
 process.exit(ok ? 0 : 1);
