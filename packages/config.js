@@ -1,13 +1,8 @@
-// ============================================================================
-// packages/config.js — user-level config (contract 5)
-// ----------------------------------------------------------------------------
-//   config.json lives in `paths.home`, with a `version` field (users may edit it).
-//   readConfig()  default merge + per-version migration (missing version → 1)
-//   writeConfig() shallow merge write-back, **keeping unknown keys**, atomic (tmp → rename)
-//
-// The read-three/write-one rule applies to config too: config is read/written in home
-// only; the package never contains user config.
-// ============================================================================
+// packages/config.js — user-level config (Contract 3.0 entry open-pptd/config)
+// config.json lives in `paths.home` and carries a `version` field users may edit.
+// readConfig() merges defaults per version (missing version → 1); writeConfig() is a
+// shallow merge write-back that keeps unknown keys and is atomic (tmp → rename).
+// Config is read and written in home only; the package never contains user config.
 
 import { readFileSync, mkdirSync, writeFileSync, renameSync, rmSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -19,7 +14,7 @@ export const CONFIG_VERSION = 1;
 /** Default config (register new keys here; downstream reads on demand, unknown keys are preserved). */
 export const DEFAULT_CONFIG = Object.freeze({
   version: CONFIG_VERSION,
-  // Whether an export preflight auto-fetches missing fonts by default. The 3.0 CLI never reads
+  // Whether an export preflight auto-fetches missing fonts by default. The CLI never reads
   // this: downloads are explicit (`build --fetch` / `assets sync`), so CI/agent envs never
   // trigger tens of MB of downloads.
   autoFetch: false,

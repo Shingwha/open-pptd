@@ -1,27 +1,9 @@
-// ============================================================================
-// layout/index.js — layout stage
-// ----------------------------------------------------------------------------
-// layout(deck, measure?) → LayoutTree
-//
-// LayoutTree is "the final geometry fact of every element" — a pure data tree parallel to Deck:
-//   { pageSize: {w,h}, pages: [ { index, elements: [LayoutElement] } ] }
-//   LayoutElement = {
-//     elementId, elementType,
-//     declared: {x,y,w,h},          // author declaration (el.bounds; the model is never written back)
-//     frame:    {x,y,w,h},          // layout fact (text: max(declared, content); table: totalHeight)
-//     grown: boolean,               // frame.h > declared.h (tables shrink to content per D6)
-//     text?:  { lines, contentHeight },
-//     table?: { columnWidths, rowHeights, totalHeight },
-//     overflow: { x, y, page, overlaps: [{elementId, rect}] },
-//   }
-//
+// layout/index.js — layout stage (Contract 3.0 entry open-pptd/layout): layout(deck, measure?) → LayoutTree
+// LayoutTree is the final geometry fact of every element (pure data, parallel to Deck):
+//   { pageSize: {w,h}, pages: [{ index, elements: [LayoutElement] }] } where LayoutElement
+//   = { elementId, elementType, declared, frame, grown, text?, table?, overflow }
 // Invariants: no measurement after layout (paint only reads this tree); the model is never
-// written back (el.bounds is read-only); MeasurePort defaults to a deterministic pure function.
-// Group shells are skipped and each member laid out individually (members already live in
-// page.elements; paintPage renders nothing for shells with the same semantics).
-// Chart size passes through (single-sourced in model/chart/layout.js).
-// Dual-end pure functions: this file forbids node:/fs/window./document. (enforced by dep-graph).
-// ============================================================================
+// written back; group shells are skipped; chart size passes through (model/chart/layout.js).
 
 import { deckSize } from "../model/model.js";
 import { normalizeTheme, resolveTheme, resolveFont } from "../model/theme.js";
@@ -67,7 +49,7 @@ function layoutText(theme, el, measure) {
 
 /**
  * Table element → { frame, table }.
- * D6: totalHeight is the single height fact — frame.h is exactly totalHeight (the declared
+ * totalHeight is the single height fact — frame.h is exactly totalHeight (the declared
  * bounds.h only seeds the rowHeights ratio estimate inside measureTable, never clips or pads).
  */
 function layoutTable(theme, el, measure) {
@@ -111,7 +93,7 @@ export function layout(deck, measure = fontMetricsMeasure) {
   // Table cell styles inherit the full chain (default textStyles lineHeight etc. + deck.fonts
   // resource keys). The preview/writer hand layout a resolveTheme output already; a bare deck
   // theme (CLI check, validation, tests) is resolved here so table facts agree everywhere.
-  // Resolved lazily: decks without tables keep the previous cost/behavior.
+  // Resolved lazily so decks without tables skip the extra resolve.
   let tableTheme = null;
   const themeForTable = () => (tableTheme ||= theme && theme.fontResources ? theme : resolveTheme(deck));
   const [W, H] = deckSize(deck);

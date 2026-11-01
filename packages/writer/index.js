@@ -1,10 +1,7 @@
-// ============================================================================
-// writer/index.js — packages/writer package barrel (contract-4 entry open-pptd/writer)
-// ----------------------------------------------------------------------------
+// writer/index.js — packages/writer package barrel (Contract 3.0 entry open-pptd/writer)
 // Re-exports only, zero logic. Dual-end package (browser download / Node CLI export), so
-// node:* / fs must never appear. Note: the document. usage in pptx.js is registered in the
-// dep-graph ALLOWLIST (browser download helper only).
-// ============================================================================
+// node:* / fs must never appear. The document. usage in pptx.js is a browser-only download
+// helper registered in the dep-graph allowlist.
 
 // ---- PPTX assembly and download (pptx.js) ----
 export { buildPptx, downloadPptx, downloadBlob, magicMatches } from "./pptx.js";
