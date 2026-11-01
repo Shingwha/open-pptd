@@ -54,7 +54,8 @@
 
 ## 5. 门禁
 
-- 每波：`node tests/run-all.mjs`（当前 39 项）、`dep-graph`、`contract`；e2e 按波次全跑（render/editor-minimal/page-ops/preview-shell/browser-export/incremental + 新套件）；`golden-diff` 零漂移（W2 也不得改渲染）。
+- 每波：`node tests/run-all.mjs`（当前 39 项）、`dep-graph`、`contract`；e2e 按波次全跑（render/editor-minimal/page-ops/preview-shell/browser-export/incremental + 已有套件）；`golden-diff` 零漂移（W2 也不得改渲染）。
+- **测试克制（2026-11-01 用户要求）**：非必要不新增测试；优先更新现有套件或手工抽验。只有行为无法由现有门禁覆盖、且回归成本明显时才新增最小测试；不为一次性内容/视觉改动新增套件。
 - W2：桌面 1440×900 + 窄屏 480×840 截图；浅色/深色各一张；对比度抽验。
 - W3a：删/并后 contract/dep-graph 绿；e2e 全过；无行为 diff（导出字节允许时间戳差异，按结构事实验收）。
 - W3b：`git diff` 只含注释行；逐组跑全量。
