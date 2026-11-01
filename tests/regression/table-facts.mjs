@@ -1,20 +1,9 @@
-// ============================================================================
-// tests/regression/table-facts.mjs — TableFacts single-height regression (W5)
-// ----------------------------------------------------------------------------
-// 1. Style awareness: cellTextStyle fontSize 10/11/13 + theme table styles drive
-//    measureTable row heights (default 13 is not hardcoded over the theme).
-// 2. rowSpan 2/3: required height split as q=floor(deficit/span) with the first
-//    `rem` rows taking +1; span total >= required, padding counted once.
-// 3. rowHeights lifecycle: normalizeRowHeights (length mismatch → null) and
-//    adjustRowHeightsForRowChange (insert/delete keeps length + sum 1).
-// 4. Schema: length mismatch is a warning (not an error) and surface text carries
-//    the actual/expected counts.
-// 5. frame == box == a:ext cy == totalHeight: layout frame, writer XML (rowSpan
-//    facts, not re-measured), renderer box source.
-// 6. Writer consumes ctx facts: a synthetic facts object with impossible heights
-//    lands in the XML verbatim (no measureTable call).
+// tests/regression/table-facts.mjs — TableFacts single-height regression.
+// 1. Style awareness: cellTextStyle fontSize 10/11/13 + theme table styles drive row heights.
+// 2. rowSpan 2/3: required height split as q=floor(deficit/span), first `rem` rows take +1.
+// 3. rowHeights lifecycle (normalize/adjust), schema length-mismatch warning, and
+//    frame == box == a:ext cy == totalHeight; the writer consumes ctx facts verbatim.
 // Run: node tests/regression/table-facts.mjs
-// ============================================================================
 
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -40,9 +29,7 @@ const check = (name, cond, detail = "") => {
 const sum = (list) => list.reduce((a, b) => a + b, 0);
 const approx = (a, b, eps = 1e-9) => Math.abs(a - b) <= eps;
 
-// ---------------------------------------------------------------------------
-// 1. Style awareness
-// ---------------------------------------------------------------------------
+// 1. Style awareness.
 console.log("=== 1. 样式感知（cellTextStyle fontSize / theme） ===");
 const long = "这是一个用于表格样式感知测试的较长单元格文本，需要在较窄列中换行多次。";
 const styleTheme = {
@@ -90,9 +77,7 @@ const spacingB = measureTable(styleTable("$s13", { text: long, letterSpacing: 6 
 check("letterSpacing 参与换行/高度", spacingB > spacingA, `${spacingB} > ${spacingA}`);
 check("裸字体表仍可作为第二参数（兼容）", measureTable(styleTable(undefined), defaultMetricsTable).rowHeights[0] === noTheme13);
 
-// ---------------------------------------------------------------------------
-// 2. rowSpan 2 / 3 + integer remainder
-// ---------------------------------------------------------------------------
+// 2. rowSpan 2/3 + integer remainder.
 console.log("\n=== 2. rowSpan 补差（平均 + 余数） ===");
 // The merged cell is 120px wide; its required height must exceed the sum of the span's
 // minimum floors, and the deficit must not divide evenly by the span so the remainder
@@ -137,9 +122,7 @@ const nonSpanText = "普通单元格的内容只影响自己这一行，不应�
 const noSpan = measureTable({ rows: [[{ text: nonSpanText }, { text: "右" }], [{ text: "x" }], [{ text: "y" }]], columnWidths: [0.5, 0.5], bounds: [0, 0, 240, 60] });
 check("非跨行单元格按自身行取 max（不摊分）", noSpan.rowHeights[0] === measureCell({ text: nonSpanText }, 120) && noSpan.rowHeights[1] === 26, `${JSON.stringify(noSpan.rowHeights)}`);
 
-// ---------------------------------------------------------------------------
-// 3. rowHeights lifecycle
-// ---------------------------------------------------------------------------
+// 3. rowHeights lifecycle.
 console.log("\n=== 3. rowHeights 长度 / 插入删除 ===");
 const threeRows = { rows: [[{ text: "a" }], [{ text: "b" }], [{ text: "c" }]], rowHeights: [0.5, 0.25, 0.25], columnWidths: [1] };
 check("normalizeRowHeights 长度一致 → 归一数组", JSON.stringify(normalizeRowHeights(threeRows)) === JSON.stringify([0.5, 0.25, 0.25]));
@@ -157,9 +140,7 @@ check("输入长度与 rows 不一致 → null（不猜）", adjustRowHeightsFor
 const roundTrip = adjustRowHeightsForRowChange(adjustRowHeightsForRowChange([1 / 3, 2 / 3], 2, 0, 2), 4, 1, -2);
 check("插入 2 再删除 2 → 长度回到 2 且和 = 1", roundTrip && roundTrip.length === 2 && approx(sum(roundTrip), 1), JSON.stringify(roundTrip));
 
-// ---------------------------------------------------------------------------
-// 4. Schema warning (not error)
-// ---------------------------------------------------------------------------
+// 4. Schema warning (not error).
 console.log("\n=== 4. table schema：rowHeights 长度 warning ===");
 const schemaDeck = {
   version: "v2",
@@ -180,9 +161,7 @@ check("warning 消息写明实际/期望", rowHeightWarnings[0] && rowHeightWarn
 const validDeck = { ...schemaDeck, pages: [{ elements: [{ ...schemaDeck.pages[0].elements[0], rowHeights: [1 / 3, 1 / 3, 1 / 3] }] }] };
 check("长度一致时不产生 rowHeights warning", validateDeck(validDeck).warnings.filter((w) => /rowHeights/.test(w.message)).length === 0);
 
-// ---------------------------------------------------------------------------
-// 5. frame == writer a:ext cy == totalHeight; renderer box source
-// ---------------------------------------------------------------------------
+// 5. frame == writer a:ext cy == totalHeight; renderer box source.
 console.log("\n=== 5. frame / a:ext cy / totalHeight 一致 ===");
 const deck = {
   version: "v2",
@@ -213,9 +192,7 @@ check("renderer box 高 = layout facts.totalHeight（源码）", /box\.style\.he
 const paintSrc = readFileSync(join(ROOT, "packages/renderer/page.js"), "utf8");
 check("paintPage 把 table frame.h 交给 renderer（源码）", /bounds:\s*\[f\.x, f\.y, f\.w, h\]/.test(paintSrc) && /if \(le\.table\) view\.layout = le/.test(paintSrc));
 
-// ---------------------------------------------------------------------------
-// 6. Writer consumes ctx facts (no measureTable)
-// ---------------------------------------------------------------------------
+// 6. Writer consumes ctx facts (no measureTable).
 console.log("\n=== 6. writer 只吃 ctx facts ===");
 const writerSrc = readFileSync(join(ROOT, "packages/writer/table.js"), "utf8");
 check("writer/table.js 不含 measureTable（源码）", !/measureTable/.test(writerSrc));

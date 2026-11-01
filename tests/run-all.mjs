@@ -1,14 +1,9 @@
-// ============================================================================
-// tests/run-all.mjs — one-shot regression (export every component project + all suites)
-// ----------------------------------------------------------------------------
-// Usage: node tests/run-all.mjs (npm test)
-// Covers:
-//   1. Export every component project under tests/projects/ → tests/projects/<name>/out/check-<name>.pptx
-//      (projects are auto-discovered: adding one only needs deck.pptd + pages/, no edit here)
-//   2. Run in-package reference integrity on each artifact (tests/regression/package-integrity.mjs)
-//   3. Every automated suite under tests/contract/ and tests/regression/ (see the suites list below)
-// Adding a regression: drop <name>.mjs into tests/regression/ and add one line to suites.
-// ============================================================================
+// tests/run-all.mjs — one-shot regression (export every component project + all suites).
+// Usage: node tests/run-all.mjs (npm test); add a regression by dropping <name>.mjs into tests/regression/ and adding one line to suites.
+// 1. Export every tests/projects/ component project to its own out/check-<name>.pptx
+//    (projects are auto-discovered: deck.pptd + pages/ need no edit here).
+// 2. Run in-package reference integrity on each artifact, then every suite under
+//    tests/contract/ and tests/regression/.
 
 import { readFileSync, mkdirSync, existsSync, statSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -23,8 +18,7 @@ function record(name, ok, detail = "") {
   console.log(`${ok ? "✓" : "✗"} ${name}${detail ? " — " + detail : ""}`);
 }
 
-// 1. Export every component project
-//    (contract 3.0: `build --format pptx` is the only artifact command)
+// 1. Export every component project (`build --format pptx` is the only artifact command).
 const projectsDir = resolve("tests/projects");
 const projects = readdirSync(projectsDir)
   .filter((name) => statSync(join(projectsDir, name)).isDirectory() && existsSync(join(projectsDir, name, "deck.pptd")))
@@ -51,8 +45,8 @@ for (const name of projects) {
 
 // 2. Automated suites (tests/contract/ + tests/regression/)
 const suites = [
-  // Package-level public contract (tests/contract/, contract 4): barrel export surface,
-  // CONTRACT_VERSION, contract.json ↔ package.json exports drift, editor/main.js boot seam.
+  // Package-level public contract: barrel export surface, CONTRACT_VERSION,
+  // contract.json ↔ package.json exports drift, editor/main.js boot seam.
   // Fast and artifact-free — run before the regression suites so interface breakage is visible first.
   ["包级公开契约（contract 3.0）", "node tests/contract/public-api.mjs"],
   ["CLI 命令面（5 命令）", "node tests/cli/surface.mjs"],
@@ -82,8 +76,8 @@ const suites = [
   ["资源路径解析（契约 5）", "node tests/regression/resource-paths.mjs"],
   ["排版度量（measure）", "node tests/regression/measure.mjs"],
   ["布局与越界事实（layout）", "node tests/regression/layout.mjs"],
-  // UI literal gate (spec 2026-09-30-ui-redesign-line T2): color literals only in tokens.css,
-  // box-shadow only through var(--shadow-*); frozen whitelist for the data-grid inset fills
+  // UI literal gate: color literals only in tokens.css, box-shadow only through var(--shadow-*);
+  // frozen whitelist for the data-grid inset fills.
   ["UI 令牌字面量门禁", "node tests/regression/ui-token-literals.mjs"],
   ["智能参考线吸附（align-guides）", "node tests/regression/align-guides.mjs"],
 ];

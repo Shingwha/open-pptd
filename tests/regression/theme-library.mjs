@@ -1,20 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// tests/regression/theme-library.mjs — theme library + applyTheme regression (W6)
-// ----------------------------------------------------------------------------
-// Self-running (lead wires it into tests/run-all.mjs after merge):
-//   node tests/regression/theme-library.mjs
-//
-// Coverage (work order #9):
-//   · built-in snapshots: default + 10 palettes, stable ids, complete styles,
-//     read-only/frozen, list returns mutable copies
-//   · ThemeStore CRUD on a temp home: save/read/remove/import/export, builtin
-//     read-only, duplicate import id, invalid JSON/version/colors, safe ids,
-//     corrupt user files skipped, atomic writes (no .part residue)
-//   · applyTheme: replace + keep referenced tokens/styles, drop unreferenced,
-//     preserved report, no-deck replacement, style-internal color refs, undo
-//   · custom colors: listColorTokens / colorTokenUsage / set / remove guard
-// ============================================================================
+// tests/regression/theme-library.mjs — theme library + applyTheme regression.
+// Covers built-in snapshots (default + 10 palettes, frozen, mutable list copies), ThemeStore
+// CRUD on a temp home (atomic writes, duplicates, invalid payloads, safe ids, corrupt files),
+// applyTheme (replace + keep referenced tokens/styles, preserved report, style-internal refs,
+// undo by re-applying a snapshot), and custom color tokens (list/usage/set/remove guard).
+// Run: node tests/regression/theme-library.mjs
 
 import { existsSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

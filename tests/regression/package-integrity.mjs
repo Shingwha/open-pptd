@@ -1,11 +1,7 @@
-// ============================================================================
-// tests/regression/package-integrity.mjs — PPTX in-package reference integrity
-// ----------------------------------------------------------------------------
-// The top cause of PowerPoint's "repair" prompt: missing rels/rId references,
-// a rels Target part that does not exist, an extension not declared in
-// [Content_Types], or a hyperlink without TargetMode.
+// tests/regression/package-integrity.mjs — PPTX in-package reference integrity.
+// The top cause of PowerPoint's "repair" prompt: missing rels/rId references, a rels Target part
+// that does not exist, an extension not declared in [Content_Types], or a hyperlink without TargetMode.
 // Usage: node tests/regression/package-integrity.mjs <out.pptx> [slideCount]
-// ============================================================================
 
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";

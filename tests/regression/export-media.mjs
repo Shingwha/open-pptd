@@ -1,14 +1,9 @@
 #!/usr/bin/env node
-// ============================================================================
-// export-media.mjs — project package image integrity regression
-// ----------------------------------------------------------------------------
-// After a project has been saved once, image elements reference media/ relative
-// paths (not data:). Export zip / deploy zip must therefore complete the bytes from
-// the imageMap's dataURL, otherwise media/ is missing from the package.
-// Covers:
+// tests/regression/export-media.mjs — project package image integrity regression.
+// After a project has been saved once, image elements reference media/ relative paths (not data:),
+// so export/deploy zips must complete the bytes from the imageMap's dataURL. Covers:
 //   1. mediaFilesOfDeck (export / zip): both embedded dataURL and persisted relative paths emit a file
 //   2. persistDataUrlImages (save / zip save): same, plus rewriting embedded src and updating the map
-// ============================================================================
 
 import { mediaFilesOfDeck, createImageStore } from "../../editor/app/project/images.js";
 

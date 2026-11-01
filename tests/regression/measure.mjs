@@ -1,17 +1,9 @@
-// ============================================================================
-// tests/regression/measure.mjs — measure package regression (spec 09 T3 / M1 acceptance)
-// ----------------------------------------------------------------------------
-// 1. Pure-function determinism / monotonicity / metrics-table ladder / formula
-//    closed form / line-height factor API (always runs)
-// 2. Cross-check against real DOM: start a headless browser once, compare the pure
-//    estimate for 20 representative texts against scrollHeight, print the error
-//    distribution, and assert P95(|relative error|) ≤ 8%; table cell height error ≤ 4px.
-// No browser → the DOM cross-check prints SKIP (the pure-function part still runs).
-// CI environments skip it too: runners alias the baseline font (Microsoft YaHei) through
-// fontconfig and render in a fallback, which is not comparable to the font-metrics-driven
-// estimate. The cross-check therefore runs on developer machines that have the real font
-// (locally verified: P95 ≈ 6%).
-// ============================================================================
+// tests/regression/measure.mjs — measure package regression (run: node tests/regression/measure.mjs).
+// 1. Pure functions: determinism/monotonicity, metrics-table ladder and fallback diagnostics,
+//    formula height and table measurement (always runs).
+// 2. DOM cross-check: one headless browser, 20 representative texts vs offsetHeight, asserting
+//    P95(|relative error|) ≤ 8% and table cell error ≤ 4px.
+// No browser or CI (fontconfig aliasing makes renders incomparable) → SKIP the DOM part.
 
 import { spawn } from "node:child_process";
 import { measureTextRuns, measureCell, measureTable, lineHeightMultiplierFor, createMetricsTable } from "../../packages/measure/index.js";
@@ -24,9 +16,7 @@ const check = (name, cond, detail = "") => {
   if (!cond) ok = false;
 };
 
-// ---------------------------------------------------------------------------
-// 1. Pure functions
-// ---------------------------------------------------------------------------
+// 1. Pure functions.
 console.log("=== 1. 纯函数确定性 ===");
 const tr = () => measureTextRuns([{ text: "这是一段用于测量换行高度的中文文本，需要足够长以触发多行显示。" }], { fontSize: 18, lineHeight: 1, fontFamily: "Microsoft YaHei" }, 300);
 const a1 = JSON.stringify(tr()), a2 = JSON.stringify(tr()), a3 = JSON.stringify(tr());
@@ -54,9 +44,7 @@ check("measureTable 返回列宽/行高/总高", Array.isArray(tbl.rowHeights) &
 const tall = measureTable({ rows: [[{ text: "非常长的中文内容需要换很多行来显示，用于验证行高确实被内容撑开而不是只取最小行高。" }]], bounds: [0, 0, 120, 50] });
 check("长内容撑开行高（> 最小 30）", tall.rowHeights[0] > 30, `${tall.rowHeights[0]}`);
 
-// ---------------------------------------------------------------------------
-// 2. DOM cross-check
-// ---------------------------------------------------------------------------
+// 2. DOM cross-check.
 console.log("\n=== 4. 与 DOM 实测对拍 ===");
 let browser;
 try {

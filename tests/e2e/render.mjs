@@ -1,13 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// tests/e2e/render.mjs — render smoke test (headless per-page PNG)
-// ----------------------------------------------------------------------------
-// Usage: node tests/e2e/render.mjs   (needs a local Chrome/Edge; SMOKE_CHROME can point at its path)
-// Covers:
-//   1. Full-page render of tests/projects/chart (all chart types) → PNG count, size, non-empty
-//   2. Single-page render (--page semantics) → exactly 1 file, correctly named
-//   3. The process can exit naturally (event loop drains after renderDeck returns, no leaked handles/timers)
-// ============================================================================
+// tests/e2e/render.mjs — render smoke test (headless per-page PNG).
+// 1. Full-page render of tests/projects/chart (all chart types): PNG count, size 960×540, non-empty.
+// 2. Single-page render (--page semantics): exactly 1 correctly named file.
+// 3. scale=2 output stays 1920×1080 with content in the bottom-right quarter.
+// 4. The process exits naturally (no leaked timers after renderDeck returns).
+// Needs local Chrome/Edge (SMOKE_CHROME may point at it). Usage: node tests/e2e/render.mjs
 
 import { readFileSync, readdirSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -39,7 +36,7 @@ try {
 
 rmSync(OUT, { recursive: true, force: true });
 
-// ---- 1. Full-page render ----
+// 1. Full-page render.
 const pageCount = readdirSync(join(CHART_PROJECT, "pages")).filter((f) => f.endsWith(".page")).length;
 const t0 = Date.now();
 const { files, count } = await renderDeck({
@@ -71,7 +68,7 @@ for (const f of files) {
 record("全部 PNG 尺寸 960×540", dimsOk);
 record("全部 PNG 非空（>5KB）", nonEmptyOk);
 
-// ---- 2. Single-page render (--page semantics) ----
+// 2. Single-page render (--page semantics).
 rmSync(OUT, { recursive: true, force: true });
 const single = await renderDeck({
   manifest: MANIFEST,
@@ -89,8 +86,8 @@ record(
   singleFiles.join(",")
 );
 
-// ---- 2.5 scale>1: the viewport stays canvas-sized, only the output resolution scales
-//      (guards against content shrinking into the top-left with a white margin) ----
+// 2.5 scale>1: the viewport stays canvas-sized, only the output resolution scales
+//     (guards against content shrinking into the top-left with a white margin).
 rmSync(OUT, { recursive: true, force: true });
 const scaled = await renderDeck({
   manifest: MANIFEST,
@@ -132,7 +129,7 @@ if (bitDepth === 8 && interlace === 0 && PNG_CHANNELS[colorType]) {
 }
 rmSync(OUT, { recursive: true, force: true });
 
-// ---- 3. The process can exit naturally: check for leaked timers (500ms after renderDeck returns) ----
+// 3. The process can exit naturally: check for leaked timers (500ms after renderDeck returns).
 await new Promise((r) => setTimeout(r, 500));
 // Node internal API: count active timers (0 = no leak)
 const timers = process._getActiveHandles().filter((h) => h.constructor.name === "Timeout").length;

@@ -1,26 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// tests/tools/ui-shots.mjs — editor / gallery UI screenshot walkthrough (not a test, no PASS/FAIL)
-// ----------------------------------------------------------------------------
+// tests/tools/ui-shots.mjs — editor / gallery UI screenshot walkthrough (not a test, no PASS/FAIL).
+// Drives local Chrome/Edge over CDP to capture key UI states (editor selection/menus/design drawer/
+// dialogs, narrow layouts, gallery tabs/dark) into tests/ui-shots-out (or --out <dir>).
+// Uses fixed CDP port 9247 — do not run in parallel with other CDP tests.
+// Depends on a local Chrome/Edge (SMOKE_CHROME may point at its path).
 // Usage: node tests/tools/ui-shots.mjs [--out <dir>]
-// Drives a local Chrome/Edge over CDP to capture the key UI states for visual review:
-//   editor           editor at 1440×900 (one element selected → selection frame + action bar)
-//   editor-dark      the same in the dark palette
-//   editor-file      File menu expanded (grouped rows, right-aligned shortcuts)
-//   editor-addmenu   add-element popover expanded
-//   editor-design    Design drawer open (theme tab)
-//   editor-design-colors  same drawer scrolled to the color-token table
-//   editor-design-fonts   same drawer, font tab
-//   editor-dialog    table editor dialog at 1440×900 (grid + side panel)
-//   editor-narrow    narrow 480×840 (icon-only topbar, mini page cards)
-//   editor-dialog-narrow  table editor dialog at 480×840 (bottom-sheet form)
-//   gallery          Home at 1440×900 (masthead + 3-column work grid)
-//   gallery-poster   Home with the poster tab active (3:4 covers, 3 columns)
-//   gallery-dark     Home in the dark palette
-//   gallery-narrow   Home at 480×840 (single column)
-// Depends on a local Chrome/Edge (SMOKE_CHROME can point at its path).
-// docs/images/editor.png is taken from editor.png; gallery.png from gallery.png.
-// ============================================================================
 
 import { spawn } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -82,7 +66,7 @@ const clearToasts = () => evalJs(`(() => {
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 try {
-  // —— editor: one element selected (selection frame + selection action bar) ——
+  // editor: one element selected (selection frame + selection action bar)
   await viewport(1440, 900);
   await go(`http://127.0.0.1:${PORT}/editor/?deck=${DECK}`);
   await evalJs(`(() => {
@@ -103,7 +87,7 @@ try {
   await theme("light");
   await wait(300);
 
-  // —— add-element popover ——
+  // add-element popover
   await evalJs(`(() => { document.querySelector("#btn-add")?.click(); return true; })()`);
   await wait(400);
   await shot("editor-addmenu");
@@ -113,7 +97,7 @@ try {
   })()`);
   await wait(300);
 
-  // —— File menu ——
+  // File menu
   await evalJs(`(() => { document.querySelector("#btn-file")?.click(); return true; })()`);
   await wait(500);
   await shot("editor-file");
@@ -123,7 +107,7 @@ try {
   })()`);
   await wait(300);
 
-  // —— Design drawer (theme tab) ——
+  // Design drawer (theme tab)
   await evalJs(`(() => { document.querySelector("#btn-design")?.click(); return true; })()`);
   await wait(1000);
   await shot("editor-design");
@@ -138,7 +122,7 @@ try {
   await evalJs(`(() => { document.querySelector('.design-head .btn')?.click(); return true; })()`);
   await wait(300);
 
-  // —— Table editor dialog at 1440 (grid + side panel), then undo the added table ——
+  // Table editor dialog at 1440 (grid + side panel), then undo the added table
   await evalJs(`(() => { document.querySelector("#btn-add")?.click(); return true; })()`);
   await wait(300);
   await evalJs(`(() => { document.querySelector('#add-list .add-item[data-add-type="table"]')?.click(); return true; })()`);
@@ -149,12 +133,12 @@ try {
   await evalJs(`(() => { window.__pptdEditor?.undo(); return true; })()`);
   await wait(400);
 
-  // —— narrow responsive ——
+  // narrow responsive
   await viewport(480, 840);
   await wait(700);
   await shot("editor-narrow");
 
-  // —— Dialog at 480 (bottom sheet): add a table, capture, close ——
+  // Dialog at 480 (bottom sheet): add a table, capture, close
   await evalJs(`(() => { document.querySelector("#btn-add")?.click(); return true; })()`);
   await wait(300);
   await evalJs(`(() => { document.querySelector('#add-list .add-item[data-add-type="table"]')?.click(); return true; })()`);
@@ -163,7 +147,7 @@ try {
   await evalJs(`(() => { document.querySelector(".dialog-head .btn")?.click(); return true; })()`);
   await wait(300);
 
-  // —— Home: masthead + work grid ——
+  // Home: masthead + work grid
   await viewport(1440, 900);
   await go(`http://127.0.0.1:${PORT}/`);
   await wait(1200);
@@ -189,7 +173,7 @@ try {
   await evalJs(`(() => { document.querySelector('.gallery-tab[data-kind="ppt"]')?.click(); return true; })()`);
   await wait(600);
 
-  // —— Home narrow ——
+  // Home narrow
   await viewport(480, 840);
   await wait(700);
   await clearToasts();

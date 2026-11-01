@@ -1,17 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// incremental-load.mjs — "show every page that exists" progressive-load E2E
-// ----------------------------------------------------------------------------
+// tests/e2e/incremental-load.mjs — "show every page that exists" progressive-load E2E.
+// Verifies the experience while an agent is writing a project: manifest references N pages but
+// only one exists (show existing + missing-page toast), SSE auto-refresh adds pages, all pages
+// shown, and a malformed page becomes an error placeholder without affecting the others.
+// Depends on local Chrome (CDP 9241); SMOKE_CHROME can point at it.
 // Usage: node tests/e2e/incremental-load.mjs [--project <dir>] (temp dir by default)
-// Verifies the experience while an agent is writing a project:
-//   1. manifest references N pages but only 1 is written → the editor shows the
-//      existing page (no total failure) and a toast notes the missing pages
-//   2. Write one more page → SSE auto-refresh → page count +1
-//   3. All pages written → everything shown
-//   4. A page file is malformed (YAML syntax error) → an error placeholder page is
-//      shown and the other pages are unaffected
-// Depends on a local Chrome (CDP); SMOKE_CHROME can point at its path.
-// ============================================================================
 
 import { spawn } from "node:child_process";
 import { writeFileSync, rmSync, mkdirSync, mkdtempSync } from "node:fs";

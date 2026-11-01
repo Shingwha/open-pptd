@@ -1,23 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// tests/export/run.mjs — ExportService self-test
-// ----------------------------------------------------------------------------
-// Self-running (lead wires it into tests/run-all.mjs after merge):
-//   node tests/export/run.mjs
-//
-// Coverage:
-//   1. report shape + check format (frozen ExportReport fields)
-//   2. pptx: chart projector bytes (837227) + PK signature + sink write
-//   3. bundle snapshot (runtime serializeDeck) / raw (verbatim disk texts)
-//   4. bundle raw on an in-memory project → ERR_BUNDLE_RAW; snapshot without sink → artifacts
-//   5. check gate: invalid deck blocks (report.ok=false, no artifact); strict blocks warnings
-//   6. PNG errors: no renderBackend → ERR_NO_RENDER_BACKEND; failing backend (fake, no
-//      Chrome needed) → ERR_RENDER_BACKEND and pptx/bundle remain usable
-//   7. PNG with the Node/headless backend: full-deck 24 pages at scale1, single-page
-//      --page 2..8 parity against the full-deck page hashes (the 2.x race captured page 1)
-//   8. PNG scale2: 1920×1080, chart-region sampling vs tests/fixtures/parity/baseline.json
-//      (nonWhiteRatio/richness), plus backend diagnostics proving chart canvases are 2×
-// ============================================================================
+// tests/export/run.mjs — ExportService self-test (run: node tests/export/run.mjs).
+// 1. Report shape + check format (frozen ExportReport fields).
+// 2. pptx: chart projector bytes (837227), PK signature, sink write.
+// 3. bundle snapshot/raw; in-memory raw → ERR_BUNDLE_RAW.
+// 4. check gate (invalid deck, strict warnings); PNG error branches (missing/failing backend).
+// 5. PNG headless: full deck 24 pages, single-page 2..8 parity, scale2 metrics/DPR diagnostics.
 
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -43,9 +30,7 @@ const TMP = join(tmpdir(), `pptd-export-test-${process.pid}`);
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const pngDims = (bytes) => ({ width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) });
 
-// ---------------------------------------------------------------------------
 // Helpers
-// ---------------------------------------------------------------------------
 async function diskProject(rel) {
   const manifestPath = join(ROOT, rel);
   const files = await createDiskProjectSource(manifestPath).read();
@@ -91,9 +76,7 @@ async function expectThrow(fn) {
   }
 }
 
-// ---------------------------------------------------------------------------
 // 1) Report shape + check
-// ---------------------------------------------------------------------------
 mkdirSync(TMP, { recursive: true });
 const { project: chart, resources, manifestPath } = await diskProject("tests/projects/chart/deck.pptd");
 const REPORT_KEYS = [
@@ -111,9 +94,7 @@ const REPORT_KEYS = [
   check("check: no artifact keys", report.outPath == null && report.artifacts == null);
 }
 
-// ---------------------------------------------------------------------------
 // 2) PPTX
-// ---------------------------------------------------------------------------
 let pptxBytes = null;
 {
   const out = join(TMP, "chart.pptx");
@@ -130,16 +111,14 @@ let pptxBytes = null;
   const mem = memSink();
   const memReport = await exportProject(chart, { format: "pptx", outPath: join(TMP, "mem.pptx"), checkLayout: false }, { resources, sink: mem.sink });
   const sinkBytes = mem.files.get(join(TMP, "mem.pptx"));
-  // Repeated in-process exports differ in zip/XML timestamps (W2 note), so only the
+  // Repeated in-process exports differ in zip/XML timestamps, so only the
   // first export of a fresh CLI process is pinned to the 837227-byte fixture.
   check("pptx: sink captured bytes", sinkBytes?.length > 800000 && Buffer.from(sinkBytes).toString("latin1", 0, 2) === "PK", `bytes=${sinkBytes?.length}`);
   check("pptx: sink report.outPath", memReport.outPath === join(TMP, "mem.pptx"));
   rmSync(join(TMP, "mem.pptx"), { force: true });
 }
 
-// ---------------------------------------------------------------------------
 // 3) Bundle snapshot / raw
-// ---------------------------------------------------------------------------
 {
   const snapOut = join(TMP, "snap.zip");
   const snap = await exportProject(chart, { format: "bundle", bundleMode: "snapshot", outPath: snapOut, checkLayout: false }, { resources, ...diskSink() });
@@ -164,9 +143,7 @@ let pptxBytes = null;
   );
 }
 
-// ---------------------------------------------------------------------------
 // 4) In-memory project: raw rejected, snapshot returned as artifact
-// ---------------------------------------------------------------------------
 {
   const memProject = { manifestName: "deck.pptd", manifestPath: "", baseDir: "", pageFiles: new Map(), media: new Map(), deck: chart.deck };
   const err = await expectThrow(() => exportProject(memProject, { format: "bundle", bundleMode: "raw" }, { resources }));
@@ -177,9 +154,7 @@ let pptxBytes = null;
   checkEq("bundle snapshot: artifact PK", Buffer.from(snap.artifacts[0].bytes).toString("latin1", 0, 2), "PK");
 }
 
-// ---------------------------------------------------------------------------
 // 5) Check gate + strict
-// ---------------------------------------------------------------------------
 {
   const badDeck = {
     version: "v2",
@@ -198,9 +173,7 @@ let pptxBytes = null;
   check("strict: warnings block", strict.ok === false && strict.errors.some((e) => e.startsWith("strict")));
 }
 
-// ---------------------------------------------------------------------------
 // 6) PNG error branches (fake backend: also covers the no-Chrome path on CI)
-// ---------------------------------------------------------------------------
 {
   const noBackend = await expectThrow(() => exportProject(chart, { format: "png", pages: [1] }, { resources }));
   check("png: missing backend clear error", noBackend instanceof ExportError && noBackend.code === EXPORT_ERRORS.NO_RENDER_BACKEND, noBackend?.code);
@@ -238,9 +211,7 @@ let pptxBytes = null;
   rmSync(join(TMP, "after-fail.pptx"), { force: true });
 }
 
-// ---------------------------------------------------------------------------
 // 7) PNG with the real headless backend (skip on machines without Chrome)
-// ---------------------------------------------------------------------------
 let hasBrowser = true;
 try {
   findBrowser();
@@ -305,10 +276,8 @@ if (hasBrowser) {
     `      scale2 baseline p1=${b1.chartRegion.distinctColors}/${b1.chartRegion.nonWhiteRatio} ` +
       `p2=${b2.chartRegion.distinctColors}/${b2.chartRegion.nonWhiteRatio} | actual p1=${m1.distinctColors}/${m1.nonWhiteRatio} p2=${m2.distinctColors}/${m2.nonWhiteRatio}`
   );
-  // The 2.x baseline was captured with a 1× chart canvas stretched to 2×; upscaling
-  // adds interpolated shades, so distinctColors is a blur proxy and naturally drops
-  // once charts are rasterized at 2×. Content coverage must hold (±5%), and the 2×
-  // output must stay at least as rich as the crisp scale-1 baseline.
+  // distinctColors is a blur proxy (upscaling adds interpolated shades), so content coverage
+  // must hold (±5%) and the 2× output must stay at least as rich as the crisp scale-1 baseline.
   check("scale2: p1 nonWhiteRatio >= baseline-5%", m1.supported && m1.nonWhiteRatio >= b1.chartRegion.nonWhiteRatio * 0.95, `actual=${m1.nonWhiteRatio} baseline=${b1.chartRegion.nonWhiteRatio}`);
   check("scale2: p2 nonWhiteRatio >= baseline-5%", m2.supported && m2.nonWhiteRatio >= b2.chartRegion.nonWhiteRatio * 0.95, `actual=${m2.nonWhiteRatio} baseline=${b2.chartRegion.nonWhiteRatio}`);
   check("scale2: p1 colors >= scale1 baseline", m1.supported && m1.distinctColors >= b1s.chartRegion.distinctColors, `actual=${m1.distinctColors} scale1=${b1s.chartRegion.distinctColors}`);
@@ -338,9 +307,7 @@ if (hasBrowser) {
   }
 }
 
-// ---------------------------------------------------------------------------
 // Summary
-// ---------------------------------------------------------------------------
 rmSync(TMP, { recursive: true, force: true });
 const failed = results.filter((r) => !r.pass);
 console.log(`\nexport: ${results.length - failed.length}/${results.length} 通过${failed.length ? " ❌" : " ✅"}`);

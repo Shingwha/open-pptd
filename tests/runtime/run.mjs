@@ -1,22 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// tests/runtime/run.mjs — ProjectRuntime + Node adapters self-test
-// ----------------------------------------------------------------------------
-// Self-running (lead wires it into tests/run-all.mjs after merge):
-//   node tests/runtime/run.mjs
-//
-// Coverage:
-//   1. memorySource: manifest/page/media/revision/capabilities, watch, write
-//   2. loadProject/parseProject/createProject: hint passthrough, ProjectFiles normalize
-//   3. serializeProject: snapshot round-trip, raw original texts, media bytes
-//   4. revision conflict: stale expectedRevision -> RevisionConflictError
-//   5. errors: codes/fields for RevisionConflictError/ResourceMissingError/UnsupportedFormatError
-//   6. resolveProject: theme/imageMap (file + data URL)/iconMap/fontStatus/missing/unsupported
-//   7. checkProject: disk table project parity with the pre-runtime validate chain and checkDeck,
-//      CLI check output parity, memory project errors/warnings, layout:false fast path
-//   8. Node disk source: tests/projects/text + tests/projects/image (media, unsupported ext)
-//   9. CLI loadProjectFiles delegation shape
-// ============================================================================
+// tests/runtime/run.mjs — ProjectRuntime + Node adapters self-test (run: node tests/runtime/run.mjs).
+// 1. memorySource: manifest/page/media/revision/capabilities, watch, write.
+// 2. loadProject/parseProject/createProject normalization and hint passthrough.
+// 3. serializeProject snapshot round-trip / raw original texts / media bytes.
+// 4. revision conflict + error types; resolveProject theme/imageMap/iconMap/fontStatus.
+// 5. checkProject parity with the CLI chain; Node disk source and loadProjectFiles delegation.
 
 import { existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -315,8 +303,8 @@ elements:
   checkEq("checkDeck == checkProject", cliReport.warnings, report.warnings);
   checkEq("checkDeck perPage parity", [...cliReport.perPage.keys()], [...report.perPage.keys()]);
 
-  // CLI command output baseline: contract 3.0 keeps the same issue lines/counts, but human
-  // text goes to stderr (stdout is reserved for --json single-line output).
+  // CLI command output baseline: issue lines/counts stay the same, but human text goes to
+  // stderr (stdout is reserved for --json single-line output).
   const cli = spawnSync(process.execPath, [join(ROOT, "bin/open-pptd.js"), "check", tableManifest], {
     cwd: ROOT,
     encoding: "utf8",

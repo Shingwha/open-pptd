@@ -1,19 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// tests/regression/font-library.mjs — global font library regression (W6)
-// ----------------------------------------------------------------------------
-// Self-running (lead wires it into tests/run-all.mjs after merge):
-//   node tests/regression/font-library.mjs
-//
-// No real font bytes are required: imports use a minimal sfnt header plus an
-// explicit family. Coverage (work order #9):
-//   · user library on a temp home: importFile/importUrl/list/read/remove,
-//     index.json shape, atomic writes, duplicate keys/files, safe names
-//   · resolve order: user -> built-in registry -> system -> missing
-//   · provider integration: createFsResourceProvider fontBytes/fontStatus
-//     (user/ready, builtin/ready+fetchable, system, missing) and byte equality
-//   · global subset metadata, built-in read-only, invalid payloads/URLs
-// ============================================================================
+// tests/regression/font-library.mjs — global font library regression.
+// No real font bytes are needed: imports use a minimal sfnt header plus an explicit family.
+// Covers user import/list/read/remove with atomic index writes and safe names, resolve order
+// (user → built-in registry → system → missing), ResourceProvider fontBytes/fontStatus, global
+// subset metadata, built-in read-only, and invalid payloads/URLs.
+// Run: node tests/regression/font-library.mjs
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

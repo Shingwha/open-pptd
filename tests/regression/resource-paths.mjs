@@ -1,17 +1,9 @@
-// ============================================================================
-// tests/regression/resource-paths.mjs — contract 5 resource resolution long-term guard
-// ----------------------------------------------------------------------------
-// Asserts:
-//   1. OPEN_PPTD_HOME override works; resourceRoots order = home → package; registry has a single root (package)
-//   2. Three-tier resolution order (home hit wins; fall back to package when home misses)
-//   3. registry.json is never shadowed by home (a stale registry in home does not affect behavior)
-//   4. ensureHome() is re-entrant; read-only commands do not create home
-//   5. Atomic download: concurrent writes to one target leave no .part residue, content intact
-//   6. Browser-side resource URL construction unchanged (source-level assertions on font-registry.js / icon-fa.js)
-//   7. assets --from offline import (store + deflate); the registry never lands in assets/
-//   8. open --stop does not kill a stale/foreign pid
+// tests/regression/resource-paths.mjs — resource resolution long-term guard.
+// Asserts OPEN_PPTD_HOME override and root order (home → package, registry package-only),
+// three-tier resolution, registry never shadowed by home, ensureHome re-entrancy and read-only
+// no-migration, atomic concurrent writes (no .part residue), browser URL construction unchanged
+// (source-level), assets --from offline import, and open --stop refusing foreign pids.
 // Usage: node tests/regression/resource-paths.mjs (non-zero exit = contract broken)
-// ============================================================================
 
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -44,7 +36,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const cli = (args, env = {}) => spawnSync(process.execPath, [P("bin/open-pptd.js"), ...args], { cwd: ROOT, env: { ...process.env, OPEN_PPTD_HOME: HOME, ...env }, encoding: "utf8" });
 
 try {
-  // 1. Environment override + root order -------------------------------------
+  // 1. Environment override + root order.
   console.log("=== 1. OPEN_PPTD_HOME 与根顺序 ===");
   step("openPptdHome() 取 OPEN_PPTD_HOME", openPptdHome() === HOME, `${openPptdHome()} ≠ ${HOME}`);
   step("paths.home 指向临时目录", paths.home === HOME);
@@ -61,7 +53,7 @@ try {
     step("子进程 OPEN_PPTD_HOME 覆盖生效", r.stdout.trim() === join(HOME, "child"), r.stdout.trim());
   }
 
-  // 2. Three-tier resolution order -------------------------------------------
+  // 2. Three-tier resolution order.
   console.log("\n=== 2. 三级解析顺序 ===");
   mkdirSync(paths.fonts, { recursive: true });
   writeFileSync(join(paths.fonts, "HomeFont.ttf"), "HOME");
@@ -81,7 +73,7 @@ try {
     rmSync(b, { recursive: true, force: true });
   }
 
-  // 3. registry always read from package (home does not shadow) ---------------
+  // 3. registry always read from package (home does not shadow).
   console.log("\n=== 3. registry 恒读包内（home 不遮蔽）===");
   mkdirSync(paths.fonts, { recursive: true });
   mkdirSync(paths.icons, { recursive: true });
@@ -108,7 +100,7 @@ try {
   step("缺失资源 404", (await get("/assets/fonts/NoSuchFont-xyz.ttf")).status === 404);
   await new Promise((r) => srv.close(r));
 
-  // 4. ensureHome re-entrant + read-only commands do not create home ----------
+  // 4. ensureHome re-entrant + read-only commands do not create home.
   console.log("\n=== 4. ensureHome 可重入 / 只读零迁移 ===");
   ensureHome();
   ensureHome();
@@ -122,7 +114,7 @@ try {
     step("只读命令不创建 home", !existsSync(ghost));
   }
 
-  // 5. Atomic download: concurrent writes leave no .part residue ------------
+  // 5. Atomic download: concurrent writes leave no .part residue.
   console.log("\n=== 5. 原子下载（并发无半截文件）===");
   {
     const dest = join(paths.fonts, "Concurrent.ttf");
@@ -139,7 +131,7 @@ try {
     step("tmp/ 无 .part 残留", parts.length === 0, parts.join(","));
   }
 
-  // 6. Browser branch unchanged (source-level assertions) --------------------
+  // 6. Browser branch unchanged (source-level assertions).
   console.log("\n=== 6. 浏览器分支零改动 ===");
   {
     const fr = readFileSync(P("packages/model/font-registry.js"), "utf8");
@@ -163,7 +155,7 @@ try {
     step("fontFileUrl 产出 assets/fonts 相对 URL", u.endsWith("assets/fonts/%E5%BE%97%E6%84%8F%E9%BB%91.ttf"), u);
   }
 
-  // 7. assets --from offline import (store + deflate) ------------------------
+  // 7. assets --from offline import (store + deflate).
   console.log("\n=== 7. assets --from 离线导入 ===");
   {
     const zipBuf = (entries, deflate) => buildZip(entries, deflate);
@@ -180,7 +172,7 @@ try {
     step("注册表永不进 assets/", !existsSync(join(paths.icons, "registry.json")) || readFileSync(join(paths.icons, "registry.json"), "utf8") === '{"EXPIRED":true}');
   }
 
-  // 8. open --stop does not kill the wrong process -----------------------------
+  // 8. open --stop does not kill the wrong process.
   console.log("\n=== 8. open --stop 陈旧/外来 pid ===");
   {
     // Foreign live process: write its pid to the instance table → --stop must refuse and not kill it
@@ -211,9 +203,7 @@ try {
 console.log(`\n结果: ${fail === 0 ? "resource-paths 全部通过 ✅" : `resource-paths 失败 ❌（${fail} 处）`}`);
 process.exit(fail ? 1 : 0);
 
-// ---------------------------------------------------------------------------
-// Minimal ZIP builder (store / deflate), test-only
-// ---------------------------------------------------------------------------
+// Minimal ZIP builder (store / deflate), test-only.
 function buildZip(entries, deflate) {
   const crcTable = (() => {
     const t = [];

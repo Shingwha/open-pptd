@@ -1,20 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// browser-export.mjs — browser save + ExportService export E2E (W9)
-// ----------------------------------------------------------------------------
-// Real Chrome + local serve, real downloads:
-//   1. save: add text → save → disk updated, source revision changes
-//   2. revision conflict: external edit → save → 覆盖/重新加载/取消 dialog →
-//      overwrite writes the editor version; revision follows the server
-//   3. PPTX export through the browser ExportService adapter (packages/export) →
-//      package-integrity passes (structure, not bytes)
-//   4. project bundle: expected entries (deck + 2 pages)
-//   5. PNG foreignObject fallback at scale 2: 2-page zip, 1920×1080 each, RGBA
-//      (IHDR color type 6 → the canvas did not flatten alpha)
-// A missing Chrome prints SKIP and exits 0.
-//
-// Usage: node tests/e2e/browser-export.mjs
-// ============================================================================
+// tests/e2e/browser-export.mjs — browser save + ExportService export E2E (real Chrome, real downloads).
+// 1. save: add text → disk updated, source revision changes.
+// 2. revision conflict: external edit → save → overwrite/reload/cancel dialog; overwrite wins.
+// 3. PPTX export through the browser ExportService adapter; package-integrity passes.
+// 4. project bundle entries; 5. PNG foreignObject fallback at scale 2 (RGBA, 1920×1080).
+// A missing Chrome prints SKIP and exits 0. Usage: node tests/e2e/browser-export.mjs
 
 import { spawn } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -148,9 +138,7 @@ try {
   }
   await wait(3500);
 
-  // -------------------------------------------------------------------------
   // 0) load + revision
-  // -------------------------------------------------------------------------
   let s = await evalJs(`(() => ({
     pages: window.__pptdEditor?.state?.deck?.pages?.length,
     revision: window.__pptdIo?.source?.lastRevision,
@@ -160,9 +148,7 @@ try {
   const revisionBefore = s.revision;
   const pageBefore = readFileSync(join(PROJECT, "pages", "1.page"), "utf8");
 
-  // -------------------------------------------------------------------------
   // 1) save: add text → revision changes on disk
-  // -------------------------------------------------------------------------
   await evalJs(`window.__pptdEditor.addText()`);
   await evalJs(`window.__pptdIo.saveProject()`);
   const saved = await sleepUntil(() => {
@@ -180,9 +166,7 @@ try {
   );
   const savedPage = readFileSync(join(PROJECT, "pages", "1.page"), "utf8");
 
-  // -------------------------------------------------------------------------
   // 2) conflict → overwrite
-  // -------------------------------------------------------------------------
   writeFileSync(join(PROJECT, "pages", "1.page"), `# external edit\n${savedPage}`);
   // Do not await: saveProject stays pending while the conflict dialog is open.
   await evalJs(`void window.__pptdIo.saveProject(); true`);
@@ -201,9 +185,7 @@ try {
   }, 10000);
   log("覆盖保存写入编辑器版本", clicked === true && !!overwritten);
 
-  // -------------------------------------------------------------------------
   // 3) PPTX via ExportService
-  // -------------------------------------------------------------------------
   const pptxBefore = listDownloads();
   await evalJs(`window.__pptdIo.exportPptx()`);
   const opened = await sleepUntil(async () => (await dialogText()).includes("导出 PPTX"), 5000);
@@ -220,9 +202,7 @@ try {
     log("浏览器 PPTX 包一致性（与 CLI 同结构门禁）", code === 0, code === 0 ? "" : stdout.slice(-300));
   }
 
-  // -------------------------------------------------------------------------
   // 4) project bundle
-  // -------------------------------------------------------------------------
   const zipBefore = listDownloads();
   await evalJs(`window.__pptdIo.exportProjectZip()`);
   const bundle = await waitDownload(".zip", zipBefore);
@@ -238,9 +218,7 @@ try {
     JSON.stringify(bundleEntries)
   );
 
-  // -------------------------------------------------------------------------
   // 5) PNG foreignObject fallback, scale 2, 2 pages zip
-  // -------------------------------------------------------------------------
   const pngZipBefore = listDownloads();
   await evalJs(`window.__pptdForceImageFallback = true; window.__pptdIo.exportImages()`);
   const imgDialog = await sleepUntil(async () => (await dialogText()).includes("导出图片"), 5000);
@@ -266,12 +244,10 @@ try {
     log("foreignObject PNG 保留 alpha 通道（color type 6）", dims.length === 2 && dims.every((d) => d.colorType === 6), JSON.stringify(dims.map((d) => d.colorType)));
   }
 
-  // -------------------------------------------------------------------------
   // 6) PNG capture path (server /api/export-image → headless backend)
   //    Chrome blocks a 4th automatic download in one tab, so this path is asserted
   //    on the in-page ExportImageResult bytes (the zip packaging itself is already
   //    covered by the foreignObject step).
-  // -------------------------------------------------------------------------
   await evalJs(`window.__pptdForceImageFallback = false; window.__pptdIo.exportImages()`);
   await sleepUntil(async () => (await dialogText()).includes("导出图片"), 5000);
   await clickDialogButton("全选");

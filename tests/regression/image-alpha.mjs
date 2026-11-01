@@ -1,19 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// tests/regression/image-alpha.mjs — transparent PNG alpha preservation (W9)
-// ----------------------------------------------------------------------------
-// The 3.0 rule: PPTX media bytes are the original image bytes (no canvas
-// flattening, no re-encode), so a transparent PNG stays transparent inside the
-// package. This test:
-//   1. builds a temp project with a 1×1 RGBA PNG (IHDR color type 6) as media
-//   2. exports through ExportService format=pptx (the same path CLI/browser use)
-//   3. unzips the package and asserts the media part exists and is byte-identical
-//      to the input (which also proves the alpha channel survived)
-//   4. asserts the original PNG IHDR color type is 6 (alpha present)
-//
-// Pure Node, no Chrome:
-//   node tests/regression/image-alpha.mjs
-// ============================================================================
+// tests/regression/image-alpha.mjs — transparent PNG alpha preservation.
+// PPTX media bytes are the original image bytes (no canvas flattening, no re-encode), so a
+// transparent PNG stays transparent inside the package. Builds a temp project with a 1×1 RGBA
+// PNG, exports via ExportService format=pptx (the CLI/browser path), unzips, and asserts the
+// media part is byte-identical and still IHDR color type 6. Pure Node, no Chrome.
+// Run: node tests/regression/image-alpha.mjs
 
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

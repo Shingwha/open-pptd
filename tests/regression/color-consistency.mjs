@@ -1,13 +1,8 @@
-// ============================================================================
-// tests/regression/color-consistency.mjs — preview vs export color consistency
-// ----------------------------------------------------------------------------
-// The editor preview resolves colors to hex (resolveColor); the export emits
-// schemeClr / srgbClr (colorElement). The two must agree, otherwise "web color ≠
-// PowerPoint color". This suite walks every color field of a test project
-// (element/background/textStyles "$" tokens and raw hex), resolves each through the
-// preview and the export pipelines, and compares the final value (alpha included).
+// tests/regression/color-consistency.mjs — preview vs export color consistency.
+// The editor preview resolves colors to hex (resolveColor); export emits schemeClr / srgbClr
+// (colorElement). Walks every color field of a test project ("$" tokens and raw hex), resolves
+// through both pipelines, and compares the final value including alpha.
 // Usage: node tests/regression/color-consistency.mjs [project dir, default tests/projects/text]
-// ============================================================================
 
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
@@ -89,8 +84,8 @@ for (const rel of deck.pages || []) {
 for (const [k, v] of Object.entries(deck.theme?.textStyles || {})) walkColor(v, `theme.textStyles.${k}`);
 for (const [k, v] of Object.entries(deck.theme?.colors || {})) walkColor(v, `theme.colors.${k}`);
 
-// —— buildFill official SolidFill regression: every {type:"solid", color} fill must
-//    return a solidFill (table fills / page backgrounds depend on it) ——
+// buildFill official SolidFill regression: every {type:"solid", color} fill must return a
+// solidFill (table fills / page backgrounds depend on it).
 {
   const { buildFill } = await import("../../packages/writer/drawing.js");
   const cases = [

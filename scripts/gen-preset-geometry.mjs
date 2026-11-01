@@ -1,19 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// gen-preset-geometry.mjs — generate preset shape geometry from the ECMA-376 spec
-// ----------------------------------------------------------------------------
-// Input: presetShapeDefinitions.xml shipped with the ECMA-376 Part 1 spec
-//   (official download: https://ecma-international.org/publications-and-standards/standards/ecma-376/
-//    → ECMA-376-1_5th_edition_december_2016.zip → OfficeOpenXML-DrawingMLGeometries.zip)
-// Output: packages/model/preset-geometry.data.js (geometry data + labels + categories; formulas/paths transcribed verbatim)
+// scripts/gen-preset-geometry.mjs — generate packages/model/preset-geometry.data.js from ECMA-376.
+// Input: presetShapeDefinitions.xml (ECMA-376 Part 1 5th ed., OfficeOpenXML-DrawingMLGeometries.zip).
+// Covers all 187 preset shapes and every path command (moveTo/lnTo/cubicBezTo/quadBezTo/arcTo/close);
+// shapes may have multiple paths (fill outline + lighten/darken faces + fill="none" stroke details).
+// upArrow is absent from the spec file and is derived by vertically mirroring downArrow.
 // Usage: node scripts/gen-preset-geometry.mjs <presetShapeDefinitions.xml>
-// ----------------------------------------------------------------------------
-// Covers all 187 preset shapes (ECMA-376 appendix) and every path command:
-//   moveTo / lnTo / cubicBezTo / quadBezTo / arcTo / close
-// Each shape may have multiple paths (fill outline + lighten/darken faces + fill="none" stroke details),
-// the same source as PowerPoint rendering; upArrow is absent from the spec file and is derived by
-// vertically mirroring downArrow.
-// ============================================================================
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -21,9 +12,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-// ---------------------------------------------------------------------------
-// Labels and menu categories (177 shapes from references/shapes.md + 10 connectors)
-// ---------------------------------------------------------------------------
+// Labels and menu categories (177 shapes + 10 connectors).
 const LABELS = {
   // basic shapes
   rect: "矩形", roundRect: "圆角矩形", ellipse: "椭圆", triangle: "三角形",
@@ -303,9 +292,6 @@ function deriveUpArrow() {
   return { ...down, paths, _derived: "downArrow(y镜像)" };
 }
 
-// ---------------------------------------------------------------------------
-// Generate
-// ---------------------------------------------------------------------------
 const allNames = [...new Set(src.match(/\n  <(\w+)>/g).map((m) => /<(\w+)>/.exec(m)[1]))];
 const out = {};
 for (const name of allNames) {

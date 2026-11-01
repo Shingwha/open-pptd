@@ -1,14 +1,9 @@
 #!/usr/bin/env node
-// ============================================================================
-// font-file.mjs — font byte validation (transport + sfnt header) regression
-// ----------------------------------------------------------------------------
-// Guards the downloader/readiness contract: a font is usable when its bytes arrive
-// complete and start with a valid sfnt header. The registry `size` is advisory
-// metadata only — comparing it forever made a valid font look "stale" after an
-// upstream re-release (Hedvig Letters Sans: registry 80700 vs upstream 80828).
-//
+// tests/regression/font-file.mjs — font byte validation (transport + sfnt header).
+// A font is usable when its bytes arrive complete and start with a valid sfnt header.
+// Registry `size` is advisory only: comparing it forever marked valid fonts "stale"
+// after an upstream re-release (Hedvig Letters Sans: registry 80700 vs upstream 80828).
 // Usage: node tests/regression/font-file.mjs
-// ============================================================================
 
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";

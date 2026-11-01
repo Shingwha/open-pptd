@@ -1,12 +1,7 @@
 #!/usr/bin/env node
-// ============================================================================
-// scripts/gen-gallery-manifest.mjs — write the static gallery index for Pages
-// ----------------------------------------------------------------------------
-// Release/build helper (not a user command): scans examples/ with the same
-// server/gallery.js scanner the local Home uses, then writes
-// examples/manifest.json for the static GitHub Pages deployment.
+// scripts/gen-gallery-manifest.mjs — write examples/manifest.json for the static Pages build.
+// Scans examples/ with the same server/gallery.js scanner the local Home uses.
 // Usage: node scripts/gen-gallery-manifest.mjs [examplesDir]
-// ============================================================================
 
 import { writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";

@@ -1,11 +1,7 @@
-// ============================================================================
-// tests/regression/theme-presets.mjs — theme preset consistency regression
-// ----------------------------------------------------------------------------
-// Guards the authoritative preset data in packages/model/theme-presets.js
-// (17 keys per preset, valid hex, default == first preset) plus normalizeTheme
-// string-preset resolution and the chart series-color cycle.
-// Usage: node tests/regression/theme-presets.mjs
-// ============================================================================
+// tests/regression/theme-presets.mjs — theme preset consistency regression.
+// Guards the authoritative preset data in packages/model/theme-presets.js (16 color keys,
+// valid hex, default == first preset), normalizeTheme string-preset resolution, and the
+// chart series-color cycle. Usage: node tests/regression/theme-presets.mjs
 
 import { DEFAULT_THEME, THEME_PALETTES } from "../../packages/model/theme-presets.js";
 import { normalizeTheme, themeChartPalette } from "../../packages/model/theme.js";

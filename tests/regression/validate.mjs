@@ -1,10 +1,7 @@
-// ============================================================================
-// tests/regression/validate.mjs — validator regression (model/validate.js + check command + export gate)
-// ----------------------------------------------------------------------------
-// 1. Every gallery project under examples/: 0 errors (warnings allowed by design)
-// 2. Synthetic bad deck: schema errors must be caught (unknown type / negative size / missing required field)
-// 3. Export gate: a bad deck must be blocked by the build pipeline
-// ============================================================================
+// tests/regression/validate.mjs — validator regression (model/validate.js + check command + export gate).
+// 1. Every gallery project under examples/: 0 errors (warnings allowed by design).
+// 2. Synthetic bad decks: schema errors are caught and the export gate blocks them.
+// 3. Geometry facts: layout overflow/overlap warnings only when a layout tree is supplied.
 
 import { readdirSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -18,7 +15,7 @@ function check(name, cond, detail = "") {
   if (!cond) ok = false;
 }
 
-// ---- 1. full examples sweep: 0 errors ----
+// 1. full examples sweep: 0 errors.
 const examplesDir = resolve("examples");
 const decks = readdirSync(examplesDir, { withFileTypes: true })
   .filter((d) => d.isDirectory() && existsSync(join(examplesDir, d.name, "deck.pptd")))
@@ -31,7 +28,7 @@ for (const manifest of decks) {
 }
 check(`examples 全量校验 0 error（${clean}/${decks.length}）`, clean === decks.length);
 
-// ---- 2. synthetic bad deck: each error class must be hit ----
+// 2. synthetic bad deck: each error class must be hit.
 const badDeck = {
   version: "v2",
   title: "bad",
@@ -56,7 +53,7 @@ check("负宽高被抓", errsFor("b").some((e) => e.rule === "schema"));
 check("text 缺 content 被抓", errsFor("c").some((e) => e.rule === "schema-type"));
 check("shape 缺 shapeName 被抓", errsFor("d").some((e) => e.rule === "schema-type"));
 
-// ---- 3. good deck: 0 errors (incl. YAML leniency for numeric text) ----
+// 3. good deck: 0 errors (incl. YAML leniency for numeric text).
 const goodDeck = {
   version: "v2",
   title: "ok",
@@ -67,7 +64,7 @@ const goodDeck = {
 };
 check("数字 content.text 不误报（YAML 01/2024 → number）", validateDeck(goodDeck).errors.length === 0);
 
-// ---- 4. export gate: a bad deck written to disk must fail export ----
+// 4. export gate: a bad deck written to disk must fail export.
 import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 const dir = mkdtempSync(join(tmpdir(), "pptd-validate-"));
@@ -83,9 +80,8 @@ try {
 rmSync(dir, { recursive: true, force: true });
 check("导出闸门阻断坏 deck", blocked);
 
-// ---- 5. geometry facts (LayoutTree overflow): passing layout reports out-of-canvas/overlap
-//         precisely (the old "text overflows 2× box height" heuristic was removed; this now
-//         consumes the deterministic layout fact) ----
+// 5. geometry facts (LayoutTree overflow): passing layout reports out-of-canvas/overlap
+//    precisely from the deterministic layout facts.
 import { layout } from "../../packages/layout/index.js";
 
 const geoDeck = {

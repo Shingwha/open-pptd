@@ -1,12 +1,7 @@
-// ============================================================================
-// tests/tools/isolate.mjs — per-component / per-page isolated export (locate the source of PowerPoint's "repair" prompt)
-// ----------------------------------------------------------------------------
-// Idea: export each page of every component project under tests/projects/
-// (text/shape/line/image/icon/table/chart...) as its own standalone PPTX
-// (iso-<project>-NN.pptx). Opening them one by one in PowerPoint: whichever file
-// triggers "repair" points at the component on that project page.
-// Usage: node tests/tools/isolate.mjs [output dir]
-// ============================================================================
+// tests/tools/isolate.mjs — per-component / per-page isolated export (locate PowerPoint "repair" sources).
+// Exports each page of every tests/projects/ component project as a standalone PPTX
+// (iso-<project>-NN.pptx); the first file that triggers "repair" in PowerPoint points at the
+// problematic component. Usage: node tests/tools/isolate.mjs [output dir]
 
 import { readFileSync, readdirSync, mkdirSync, writeFileSync, existsSync, statSync } from "node:fs";
 import { join, resolve, extname } from "node:path";

@@ -1,15 +1,9 @@
-// ============================================================================
-// tests/regression/line.mjs — line export regression (multi-point curve xfrm + smooth last anchor)
-// ----------------------------------------------------------------------------
-// Covers:
-//   1. smoothSegments pure function (n=3..8, including the n ≡ 2 (mod 3) lone last-anchor case)
-//   2. Multi-point curves (smooth/sharp/round) must emit a:xfrm (off/ext = bounds);
-//      a missing xfrm makes the line invisible / breaks the whole page in PowerPoint
-//   3. smooth curve at n=5 must not drop the last anchor (it used to be silently dropped,
-//      leaving the curve headless)
-//   4. 2-point straight lines still use straightConnector1 + rotation (no regression)
+// tests/regression/line.mjs — line export regression (multi-point curve xfrm + smooth last anchor).
+// Covers smoothSegments (n=3..8, including the n ≡ 2 (mod 3) lone last-anchor case), multi-point
+// curves (smooth/sharp/round) emitting a:xfrm from bounds (a missing xfrm breaks the page in
+// PowerPoint), the n=5 last anchor no longer being dropped, and 2-point straight lines still
+// using straightConnector1 + rotation.
 // Usage: node tests/regression/line.mjs
-// ============================================================================
 
 import { smoothSegments } from "../../packages/model/geometry.js";
 import { lineXml } from "../../packages/writer/line.js";

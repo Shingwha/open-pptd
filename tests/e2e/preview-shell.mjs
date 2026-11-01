@@ -1,21 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// preview-shell.mjs — createPreview / createEditor / single shell E2E (W8)
-// ----------------------------------------------------------------------------
-// Covers the 3.0 component contract (interfaces.md §10.1, decisions.md D1):
-//   · two createEditor instances mounted at once: isolated state/DOM/services
-//   · destroy() idempotent and instance-scoped (the sibling keeps rendering)
-//   · createPreview embedded (cover surface), full (viewer chrome) and headless
-//     (deck-sized paint surface used by the PNG export path)
-//   · chrome "full" / "embedded" presets
-//   · single shell: /editor/ = Home, card → Editor (?deck=), brand → Home,
-//     File → new blank editor (?blank=1)
-//   · removed entry points: chrome:"shot" throws; the old gallery page id and
-//     the root gallery skeleton are gone (the site root redirects into /editor/)
-// Depends on a local Chrome (CDP); SMOKE_CHROME can point at its path. A missing
-// browser prints SKIP and exits 0 (the gate is optional off a desktop machine).
+// tests/e2e/preview-shell.mjs — createPreview / createEditor / single shell E2E.
+// Covers two createEditor instances mounted at once (isolated state/DOM/services), idempotent
+// instance-scoped destroy(), createPreview embedded/full/headless, and single-shell navigation
+// (/editor/ Home, card → Editor ?deck=, brand → Home, File → ?blank=1); chrome:"shot" is gone.
+// Depends on local Chrome (CDP 9343); missing browser prints SKIP and exits 0.
 // Usage: node tests/e2e/preview-shell.mjs
-// ============================================================================
 
 import { spawn } from "node:child_process";
 import { writeFileSync, rmSync, mkdirSync, mkdtempSync } from "node:fs";
@@ -25,9 +14,7 @@ import { startServer } from "../../packages/server/index.js";
 import { findBrowser } from "../../packages/renderer/headless/browser.js";
 import { connectCdp } from "../../packages/renderer/headless/cdp.js";
 
-// ---------------------------------------------------------------------------
-// Browser dependency: missing Chrome = SKIP (exit 0)
-// ---------------------------------------------------------------------------
+// Browser dependency: missing Chrome = SKIP (exit 0).
 let CHROME;
 try {
   CHROME = findBrowser();
@@ -42,10 +29,8 @@ function log(name, pass, detail = "") {
   console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? "  " + detail : ""}`);
 }
 
-// ---------------------------------------------------------------------------
-// Temporary project (used by the shell's ?deck= route) + page fixtures for the
-// two in-page instances (memorySource, no disk IO)
-// ---------------------------------------------------------------------------
+// Temporary project (used by the shell's ?deck= route) + page fixtures for the two in-page
+// instances (memorySource, no disk IO).
 const PROJECT = mkdtempSync(join(tmpdir(), "pptd-preview-shell-"));
 mkdirSync(join(PROJECT, "pages"), { recursive: true });
 writeFileSync(
@@ -89,9 +74,7 @@ await cdp.send("Runtime.enable");
 try {
   await wait(3500);
 
-  // -------------------------------------------------------------------------
-  // 0) Single shell starts at Home; old second page is gone; root redirects
-  // -------------------------------------------------------------------------
+  // 0) Single shell starts at Home; old second page is gone; root redirects.
   let s = await evalJs(`(() => ({
     home: !!document.querySelector('.gallery-view'),
     oldGalleryId: !!document.querySelector('#gallery-view'),
@@ -115,9 +98,7 @@ try {
   }))()`);
   log("画廊封面由 createPreview(embedded) 绘制", s.covers > 0 && s.painted > 0, JSON.stringify(s));
 
-  // -------------------------------------------------------------------------
-  // 1) Two createEditor instances side by side (memorySource, embedded chrome)
-  // -------------------------------------------------------------------------
+  // 1) Two createEditor instances side by side (memorySource, embedded chrome).
   s = await evalJs(`(async () => {
     const { createEditor } = await import('./editor.js');
     const { memorySource } = await import('./app/project/source.js');
@@ -173,9 +154,7 @@ try {
   })()`);
   log("模型隔离（改 A 不动 B）", s.aText === "改动A" && s.bText === "实例B" && !s.sameDeck, JSON.stringify(s));
 
-  // -------------------------------------------------------------------------
-  // 2) destroy: idempotent + instance-scoped
-  // -------------------------------------------------------------------------
+  // 2) destroy: idempotent + instance-scoped.
   s = await evalJs(`(() => {
     const A = document.querySelector('#inst-a');
     const B = document.querySelector('#inst-b');
@@ -199,9 +178,7 @@ try {
   log("destroy 幂等且清空自身 DOM", s.aEmpty && s.bEmpty, JSON.stringify(s));
   log("destroy A 不影响 B（B 继续绘制 / 编辑）", s.bStillMounted && s.bPainted && s.bPages === 1 && s.bElements === 2, JSON.stringify(s));
 
-  // -------------------------------------------------------------------------
-  // 3) createPreview: embedded / full / headless
-  // -------------------------------------------------------------------------
+  // 3) createPreview: embedded / full / headless.
   s = await evalJs(`(async () => {
     const { createPreview } = await import('./preview.js');
     const { memorySource } = await import('./app/project/source.js');
@@ -260,9 +237,7 @@ try {
   })()`);
   log("preview destroy 幂等且清空各自容器", s.embEmpty && s.fullEmpty && s.headEmpty, JSON.stringify(s));
 
-  // -------------------------------------------------------------------------
-  // 4) Removed entries: chrome "shot" throws (headless goes through createPreview)
-  // -------------------------------------------------------------------------
+  // 4) Removed entries: chrome "shot" throws (headless goes through createPreview).
   s = await evalJs(`(async () => {
     const { createEditor } = await import('./editor.js');
     const { memorySource } = await import('./app/project/source.js');
@@ -276,9 +251,7 @@ try {
   })()`);
   log("旧入口 chrome:\"shot\" 已删除（明确报错）", /chrome/.test(s.shotError) && /full/.test(s.shotError), JSON.stringify(s.shotError));
 
-  // -------------------------------------------------------------------------
-  // 5) Single shell navigation: Home → Editor (?deck=) → Home → blank editor
-  // -------------------------------------------------------------------------
+  // 5) Single shell navigation: Home → Editor (?deck=) → Home → blank editor.
   s = await evalJs(`(() => {
     const card = document.querySelector('.gallery-card');
     if (!card) return { clicked: false };
@@ -327,9 +300,7 @@ try {
   })()`);
   log("Home 文件菜单新建空白进入 Editor（?blank=1，1 页）", s.found && s.search.includes("blank=1") && s.pages === 1 && s.homeGone, JSON.stringify(s));
 
-  // -------------------------------------------------------------------------
-  // 6) Real browser navigation through the site root: / → /editor/ + ?deck=
-  // -------------------------------------------------------------------------
+  // 6) Real browser navigation through the site root: / → /editor/ + ?deck=.
   await cdp.send("Page.navigate", { url: `http://127.0.0.1:${PORT}/?deck=project/deck.pptd` });
   await wait(4500);
   s = await evalJs(`(() => ({

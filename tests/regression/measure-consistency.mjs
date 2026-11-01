@@ -1,19 +1,9 @@
-// ============================================================================
-// tests/regression/measure-consistency.mjs — one measure across frames/box/cy
-// ----------------------------------------------------------------------------
-// 1. Package entry: fontMetricsMeasure.measureTable/measureCell are the same
-//    functions exported by measure/index.js (one implementation, no adapter).
-// 2. Sweep every table in tests/projects/table + examples:
-//      layout.frame.h === facts.totalHeight === sum(facts.rowHeights)
-//      rowHeights are integers; measureTable(el,{theme}) reproduces layout facts
-//      (layout is style-aware and uses the deck theme).
-// 3. Table project export: for every table page, writer a:ext cy and a:tr h are
-//    exactly the layout facts (px→EMU) — writer and preview consume the same tree.
-// 4. Source boundaries: writer never calls measureTable; renderer reads
-//    el.layout.table; table editor calls measureTable(el,{theme}); buildPptx runs
-//    layout exactly once.
-// Run: node tests/regression/measure-consistency.mjs
-// ============================================================================
+// tests/regression/measure-consistency.mjs — one measure across frames/box/cy (run: node tests/regression/measure-consistency.mjs).
+// 1. fontMetricsMeasure.measureTable/measureCell are the same functions exported by measure/index.js.
+// 2. Every project table: layout.frame.h === facts.totalHeight === sum(rowHeights), integer row
+//    heights, and direct measureTable(el,{theme}) reproduces the layout facts.
+// 3. Table export: writer a:ext cy and a:tr h match facts; source boundaries hold (writer never
+//    calls measureTable, renderer reads el.layout.table, buildPptx lays out exactly once).
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -40,16 +30,12 @@ const factsOf = (le) => le.table && {
 };
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-// ---------------------------------------------------------------------------
-// 1. One measure implementation
-// ---------------------------------------------------------------------------
+// 1. One measure implementation.
 console.log("=== 1. MeasurePort 唯一实现 ===");
 check("fontMetricsMeasure.measureTable === measure/index export", fontMetricsMeasure.measureTable === measureTable);
 check("fontMetricsMeasure.measureCell === measure/index export", fontMetricsMeasure.measureCell === measureCell);
 
-// ---------------------------------------------------------------------------
-// 2. Layout facts vs direct measure over all projects
-// ---------------------------------------------------------------------------
+// 2. Layout facts vs direct measure over all projects.
 console.log("\n=== 2. layout facts == measureTable（全项目表格） ===");
 const projectDirs = [];
 for (const src of ["tests/projects", "examples"]) {
@@ -106,9 +92,7 @@ const d1 = measureTable(tableProject.pages[0].elements.find((e) => e.elementType
 const d2 = measureTable(tableProject.pages[0].elements.find((e) => e.elementType === "table"), { theme: tableProject.theme });
 check("measureTable 重复调用确定", same(d1, d2), JSON.stringify(d1.rowHeights));
 
-// ---------------------------------------------------------------------------
-// 3. buildPptx: writer a:ext cy / a:tr h == layout facts (table project)
-// ---------------------------------------------------------------------------
+// 3. buildPptx: writer a:ext cy / a:tr h == layout facts (table project).
 console.log("\n=== 3. PPTX 与 layout facts 逐表对照（tests/projects/table） ===");
 const pptx = await buildPptx(tableProject, { iconRegistry: {} });
 const tableProjectTables = tableTree.pages.reduce((n, p) => n + p.elements.filter((e) => e.elementType === "table").length, 0);
@@ -146,9 +130,7 @@ for (let pi = 0; pi < tableTree.pages.length; pi++) {
 }
 check(`PPTX ${xmlTables} 个表格：a:ext cy / a:tr h == facts（px→EMU 后一致）`, xmlMismatch === 0 && xmlTables === tableProjectTables && xmlTables > 0, xmlMismatch ? xmlDetails.slice(0, 3).join(" | ") : `pages=${tableTree.pages.length}`);
 
-// ---------------------------------------------------------------------------
-// 4. Source boundaries (one layout pass; writer/renderer/editor consumption)
-// ---------------------------------------------------------------------------
+// 4. Source boundaries (one layout pass; writer/renderer/editor consumption).
 console.log("\n=== 4. 源码边界 ===");
 const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
 const pptxSrc = read("packages/writer/pptx.js");
