@@ -1,11 +1,8 @@
-// ============================================================================
 // renderer/headless/cdp.js — CDP client (Node-only)
-// ----------------------------------------------------------------------------
-// Minimal Chrome DevTools Protocol client over MiniWebSocket: method calls (id pairing),
-// event dispatch, a Runtime.evaluate helper, /json target discovery, and render-ready
-// signalling (Runtime.addBinding event push, no polling). http.get uses no keep-alive by
-// default, so the connection closes once the response is read and handles stay controllable.
-// ============================================================================
+// Minimal Chrome DevTools Protocol client over MiniWebSocket: method calls (id pairing), event
+// dispatch, Runtime.evaluate, /json target discovery, and render-ready signalling
+// (Runtime.addBinding event push, no polling). http.get uses no keep-alive by default, so the
+// connection closes after each response and handles stay controllable.
 
 import { get as httpGet } from "node:http";
 import { MiniWebSocket } from "./ws.js";
@@ -17,7 +14,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export function withTimeout(promise, ms, label) {
   return new Promise((resolve, reject) => {
-    // Must clearTimeout when the promise settles, otherwise the timer stays on the event loop and blocks process exit
+    // clearTimeout on settle, or the timer stays on the event loop and blocks process exit
     const timer = setTimeout(() => reject(new Error(`${label}超时（${ms}ms）`)), ms);
     promise.then(
       (v) => {
@@ -132,9 +129,9 @@ export async function connectCdp(dbgPort, timeoutMs) {
 
 /**
  * Register the render-ready binding (the shot page calls back after paint, replacing
- * document.title polling). MUST be called before Page.navigate: the binding is injected
- * before the document scripts, so the bindingCalled for the first paint is not lost
- * (otherwise it would require a second probe).
+ * document.title polling). MUST run before Page.navigate: the binding is injected before the
+ * document scripts, so the first paint's bindingCalled is not lost (otherwise a second probe
+ * would be needed).
  */
 export async function enableReady(cdp) {
   await cdp.send("Runtime.enable");

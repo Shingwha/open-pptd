@@ -1,24 +1,19 @@
-// ============================================================================
 // renderer/shell.js — element shell (positioning / markers / transforms shared by all renderers)
-// ----------------------------------------------------------------------------
-// Each element renderer only owns "content"; the positioning shell is created here:
-//   - bounds → position:absolute (svg via width/height attributes + overflow:visible;
-//     div via cssText, where height:false lets content decide the height, e.g. tables)
-//   - data-element-id / data-element-type markers (selection / dragging / quick-bar
-//     lookup all hit these; interaction/canvas.js mutates left/top/width/height
-//     directly while dragging, so this shell is the shared contract between both sides)
-//   - rotation / flip transforms (OOXML semantics: flip before rotate → the transform
-//     list applies right-to-left, so scale is written after rotate) and opacity
-// ============================================================================
+// Each renderer owns "content" only; the shell adds: bounds → position:absolute (svg via
+// width/height + overflow:visible; div via cssText, height:false lets content decide the height);
+// data-element-id / data-element-type markers (selection, dragging and quick-bar lookup all use
+// them — interaction/canvas.js mutates left/top/width/height directly while dragging); rotation
+// /flip transforms (OOXML semantics: flip before rotate, and since the transform list applies
+// right-to-left the scale is written after rotate) and opacity.
 
 import { colorOr } from "../model/theme.js";
 import { effectiveShadow } from "../model/style-spec.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
-/** ShadowSpec → CSS shadow value; null when there is no shadow (shared by images /
- * chart frames / tables; defaults come from the effectiveShadow single source, matching
- * the exported outerShdw). The caller decides text-shadow vs box-shadow. */
+/** ShadowSpec → CSS shadow value; null when there is no shadow (shared by images / chart
+ * frames / tables; defaults come from effectiveShadow, matching the exported outerShdw).
+ * The caller decides text-shadow vs box-shadow. */
 export function boxShadowCss(theme, shadow) {
   const eff = effectiveShadow(shadow);
   if (!eff) return null;

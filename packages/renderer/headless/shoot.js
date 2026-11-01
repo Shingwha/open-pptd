@@ -1,24 +1,9 @@
-// ============================================================================
 // renderer/headless/shoot.js — headless render orchestration (build --format png, Node-only)
-// ----------------------------------------------------------------------------
-// Flow: a temporary static server + local headless Chrome/Edge + CDP screenshots, emitting
-// one PNG per page through the same render pipeline as the editor preview
-// (editor/?shot=1 → renderer/page.js, same font files and imageMap). No browser window,
-// no user interaction.
-//
-// startServer is injected by the caller (packages/server) to keep renderer → server free of
-// a reverse dependency (direction: model ← renderer ← cli/server, see tests/regression/dep-graph.mjs).
-//
-// Framebuffer / DPR invariants (W3, decisions D10):
-//   · deviceScaleFactor = scale is applied BEFORE navigation, so the page's first paint
-//     (and ECharts' module-level devicePixelRatio snapshot) is already at the export DPR;
-//   · after navigation the viewport is corrected to the deck size (same scale) and page 0
-//     is repainted — a metrics change alone leaves a stale surface / old-DPR chart canvas;
-//   · every page switch waits for the page's own paint-complete signal (pptdReady, fired
-//     after fonts + image decode + double rAF) before the screenshot is requested;
-//   · the one-shot render server runs with liveReload:false: the SSE "ready" push would
-//     otherwise reload the project and repaint page 0 while the driver is switching pages.
-// ============================================================================
+// Temp static server + headless Chrome/Edge + CDP screenshots emit one PNG per page via the
+// editor's paint pipeline (editor/?shot=1 → renderer/page.js); startServer is injected by the
+// caller (packages/server) to avoid a reverse dependency. DPR: deviceScaleFactor is set before
+// navigation (ECharts snapshots it at load), then the viewport is corrected to deck size with
+// page 0 repainted, and each switch waits for pptdReady; the server runs liveReload:false.
 
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync, rmSync, readdirSync, statSync, mkdtempSync } from "node:fs";
@@ -45,7 +30,7 @@ export function resolveShotManifest(manifest) {
   return resolve(manifestPath);
 }
 
-/** Validate/parse the CLI page/scale options with the historical messages. */
+/** Validate/parse the CLI page/scale options (messages are part of the CLI output). */
 function normalizePage(page) {
   const pageSpec = page === "all" ? "all" : Number(page);
   if (pageSpec !== "all" && (!Number.isInteger(pageSpec) || pageSpec < 1)) {

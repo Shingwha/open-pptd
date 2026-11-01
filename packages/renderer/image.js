@@ -1,11 +1,7 @@
-// ============================================================================
-// renderer/image.js — image element → DOM (full crop → fit → cropShape pipeline + border/shadow)
-// ----------------------------------------------------------------------------
-// Official render order: crop (object-view-box: crop the source, then object-fit) → fit
-// (object-fit: cover/contain/fill) → cropShape (clip-path by shape outline).
-// object-view-box requires Chrome 104+; when unsupported it degrades to an approximate
-// clip-path (crop-only scenarios).
-// ============================================================================
+// renderer/image.js — image element → DOM (crop → fit → cropShape pipeline + border/shadow)
+// Render order: crop (object-view-box crops the source, then object-fit) → fit (object-fit:
+// cover/contain/fill) → cropShape (clip-path by shape outline). object-view-box needs Chrome
+// 104+; when unsupported it degrades to an approximate clip-path (crop-only scenarios).
 
 import { colorOr } from "../model/theme.js";
 import { scaleSvgPath } from "../model/svg-path.js";
@@ -22,7 +18,7 @@ export function renderImage(theme, el, ctx = {}) {
   const map = ctx.imageMap || {};
   img.src = map[el.src] || el.src;
   img.style.cssText = `width:100%;height:100%;display:block;object-fit:${el.fit?.mode || "cover"};`;
-  // crop: crop the source first, then fit (official order). object-view-box percentages are relative to the source image
+  // crop: crop the source first, then fit. object-view-box percentages are relative to the source image
   const crop = el.crop;
   if (crop && (crop.left || crop.top || crop.right || crop.bottom)) {
     const inset = `inset(${(crop.top || 0) * 100}% ${(crop.right || 0) * 100}% ${(crop.bottom || 0) * 100}% ${(crop.left || 0) * 100}%)`;

@@ -1,6 +1,4 @@
-// ============================================================================
 // renderer/background.js — page background → DOM (solid / gradient / image)
-// ============================================================================
 
 import { colorOr } from "../model/theme.js";
 import { normalizeFill } from "../model/style-spec.js";
@@ -14,7 +12,7 @@ export function pageBackground(theme, background) {
     node.style.background = "#ffffff";
     return node;
   }
-  // FillSpec normalization (normalizeFill tolerates strings / legacy {color}, consistent with writer buildFill)
+  // FillSpec normalization (normalizeFill tolerates strings / legacy {color}, matching writer buildFill)
   const fill = normalizeFill(background);
   if (fill?.type === "solid") {
     node.style.background = colorOr(theme, fill.color, "#ffffff");
@@ -22,7 +20,8 @@ export function pageBackground(theme, background) {
     // linear / radial (gradient.js handles the angle conversion); an invalid gradient falls back to white
     node.style.background = gradientCss(theme, fill) || "#ffffff";
   } else if (fill?.type === "image") {
-    // contain letterboxes and centers on a white base (same semantics as the export's white p:bg + centered contain underlay image)
+    // contain letterboxes and centers on a white base (same semantics as the export's white p:bg
+    // plus centered contain underlay image)
     node.style.backgroundColor = "#ffffff";
     node.style.backgroundImage = `url(${fill.src})`;
     node.style.backgroundSize = fill.fit?.mode || "cover";

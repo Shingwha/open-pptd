@@ -1,10 +1,7 @@
-// ============================================================================
 // renderer/line.js — line → SVG (straight / polyline sharp·round / bezier smooth + arrowheads)
-// ----------------------------------------------------------------------------
-// Official semantics: the first and last of `points` are waypoints, the middle ones are
-// bezier control points (smooth); sharp = straight-segment polyline, round = rounded-join
-// polyline, smooth = bezier curve. With exactly 2 points all three are equivalent (a line).
-// ============================================================================
+// The first and last of `points` are waypoints, the middle ones are bezier control points:
+// sharp = straight-segment polyline, round = rounded-join polyline, smooth = bezier curve.
+// With exactly 2 points all three are equivalent (a line).
 
 import { colorOr } from "../model/theme.js";
 import { dashSpec, ooxmlArrow } from "../model/style-spec.js";
@@ -29,12 +26,11 @@ export function renderLine(theme, el) {
   const dash = dashSpec(el.border?.style)?.css || null;
   const curve = el.curve || "round";
 
-  // Curves (multiple points) use path; a straight line uses line
   let shape;
   if (rel.length > 2) {
     shape = document.createElementNS(SVG_NS, "path");
     if (curve === "smooth") {
-      // Bezier: first/last are waypoints, middle ones are control points (segmentation is shared with the writer via smoothSegments; the last anchor is always reached)
+      // Bezier: segmentation is shared with the writer via smoothSegments; the last anchor is always reached
       let d = `M ${x1} ${y1}`;
       for (const s of smoothSegments(rel)) {
         if (s.cmd === "Q") {
@@ -79,9 +75,8 @@ export function renderLine(theme, el) {
   return svg;
 }
 
-/** Arrowhead SVG (triangle/stealth/diamond polygons + oval ellipse), named and oriented
- * the same as the export's a:headEnd/tailEnd four types (tip on the endpoint, along the
- * endpoint tangent). */
+/** Arrowhead SVG (triangle/stealth/diamond polygons + oval ellipse), named and oriented like
+ * the export's a:headEnd/tailEnd (tip on the endpoint, along the endpoint tangent). */
 function arrowHead(kind, x, y, angle, color, size) {
   if (kind === "oval") {
     const node = document.createElementNS(SVG_NS, "ellipse");

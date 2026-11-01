@@ -1,14 +1,9 @@
-// ============================================================================
 // renderer/headless/ws.js — MiniWebSocket (Node-only)
-// ----------------------------------------------------------------------------
-// Minimal RFC6455 client covering only what CDP needs: text frame send/receive,
-// ping→pong, close; client frames must be masked.
-//
-// Why hand-rolled: do NOT use Node's global WebSocket / fetch — the built-in undici
-// connection may not release its socket handle after the remote (headless browser)
-// exits, keeping the Node process alive (still reproducible on Node 24). net.connect
-// gives fully controllable handles.
-// ============================================================================
+// Minimal RFC6455 client covering only what CDP needs: text frame send/receive, ping→pong,
+// close; client frames must be masked.
+// Why hand-rolled: do NOT use Node's global WebSocket / fetch — the built-in undici connection
+// may not release its socket handle after the remote (headless browser) exits, keeping the Node
+// process alive (reproducible on Node 24). net.connect gives fully controllable handles.
 
 import { connect as netConnect } from "node:net";
 import { randomBytes, createHash } from "node:crypto";
