@@ -2,8 +2,8 @@
 // Formats: pptx (default) | png | bundle — all go through ExportService, which runs the full
 // checkProject gate (errors block, warnings soft unless --strict) and owns writer/zip/naming.
 // This file is the Node adapter only: disk project + fs/registry ResourceProvider + sink,
-// the headless RenderBackend for png, optional font completion (--fetch) and theme snapshots
-// (--theme). Human text goes to stderr; --json emits a single JSON line on stdout.
+// the headless RenderBackend for png and optional font completion (--fetch). Human text goes
+// to stderr; --json emits a single JSON line on stdout.
 
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
@@ -12,14 +12,12 @@ import { exportProject as runExport } from "../export/index.js";
 import { safeFileName } from "../writer/index.js";
 import { createHeadlessRenderBackend } from "../renderer/headless/backend.js";
 import { findBrowser } from "../renderer/headless/browser.js";
-import { createFileThemeStore } from "../server/theme-store.js";
-import { applyTheme } from "../model/theme-library.js";
 import { prepareProject, captureSink } from "./project.js";
 import { collectRequirements, checkResources, ensureResources } from "./resources.js";
 import { CliError, reportError } from "./errors.js";
 
 const FORMATS = ["pptx", "png", "bundle"];
-const VALUED = new Set(["-o", "--out", "--format", "--theme", "--page", "--scale", "--browser", "--timeout"]);
+const VALUED = new Set(["-o", "--out", "--format", "--page", "--scale", "--browser", "--timeout"]);
 
 /** Option parser: positional / flags / valued options (supports --key=value). */
 export function parseArgs(args) {
@@ -67,7 +65,6 @@ function defaultOutPath(project, format) {
  * @param {string} options.manifest
  * @param {"pptx"|"png"|"bundle"} [options.format]
  * @param {string} [options.outPath]
- * @param {string} [options.theme] theme-library id (snapshot applied for this build only)
  * @param {boolean} [options.embedFonts]
  * @param {boolean} [options.fullFonts]
  * @param {string|number} [options.pages]
@@ -79,13 +76,12 @@ function defaultOutPath(project, format) {
  * @param {boolean} [options.strict]
  * @param {boolean} [options.raw] bundle raw mode
  * @param {(line:string)=>void} [options.log] human progress sink
- * @returns {Promise<object>} { report, project, requirements, summary, fetched, themeOverride }
+ * @returns {Promise<object>} { report, project, requirements, summary, fetched }
  */
 export async function buildDeck(options = {}) {
   const {
     manifest,
     format = "pptx",
-    theme = null,
     embedFonts = true,
     fullFonts = false,
     pages = "all",
@@ -135,17 +131,6 @@ export async function buildDeck(options = {}) {
   }
   const summary = checkResources(requirements);
 
-  // 2. Theme-library snapshot (applied to this build only; the project is never modified).
-  let themeOverride = null;
-  let themeSnapshot = null;
-  if (theme) {
-    const file = await createFileThemeStore().read(theme);
-    if (!file) throw new CliError("ERR_THEME_NOT_FOUND", `主题不存在: ${theme}（assets themes list 查看）`);
-    themeSnapshot = applyTheme(project.deck?.theme || {}, file, { deck: project.deck }).theme;
-    themeOverride = theme;
-    log(`▸ 主题覆盖（仅本次构建，不改项目）：${theme}`);
-  }
-
   // 3. Export through the shared service (full checkProject by default).
   const outPath = options.outPath ? resolve(options.outPath) : defaultOutPath(project, format);
   const { sink } = captureSink();
@@ -174,7 +159,6 @@ export async function buildDeck(options = {}) {
       outPath,
       strict,
       offline,
-      ...(themeSnapshot ? { theme: themeSnapshot } : {}),
       ...(format === "pptx" ? { embedFonts, fullFonts } : {}),
       ...(format === "png" ? { pages, scale: Number(scale), browserPath, timeoutMs: Number(timeoutMs) } : {}),
       ...(format === "bundle" ? { bundleMode: raw ? "raw" : "snapshot" } : {}),
@@ -190,11 +174,11 @@ export async function buildDeck(options = {}) {
     throw err;
   }
 
-  return { report, project, requirements, summary, fetched, themeOverride, outPath, format, scale: Number(scale) };
+  return { report, project, requirements, summary, fetched, outPath, format, scale: Number(scale) };
 }
 
 /** Human summary lines for a successful build. */
-function printHuman({ report, project, summary, fetched, themeOverride }, format) {
+function printHuman({ report, project, summary, fetched }, format) {
   const log = (m) => console.error(m);
   log(
     `资源检查：字体 ${summary.fonts.ready}/${summary.checked.fonts} · 图标 ${summary.icons.known}/${summary.checked.icons} · 媒体 ${summary.media.ready}/${summary.checked.media}` +
@@ -204,7 +188,6 @@ function printHuman({ report, project, summary, fetched, themeOverride }, format
   for (const s of report.skipped || []) log(`⚠ 字体未嵌入：${s.family}（${s.reason || "无本地字节"}）`);
   for (const s of report.skippedIcons || []) log(`⚠ 图标未导出：${s.iconName}（${s.reason}）`);
   if (fetched.length) log(`✓ 已补齐字体：${fetched.map((f) => f.family).join("、")}`);
-  if (themeOverride) log(`主题覆盖：${themeOverride}（未改项目）`);
   if (format === "pptx") log(`✓ 已导出 PPTX → ${report.outPath}（${Math.round(report.bytes / 1024)}KB，${project.deck.pages.length} 页）`);
   else if (format === "bundle") log(`✓ 已导出项目包 → ${report.outPath}（${Math.round(report.bytes / 1024)}KB）`);
   else log(`✓ 渲染完成，共 ${report.files.length} 张图片 → ${report.outPath}`);
@@ -212,7 +195,7 @@ function printHuman({ report, project, summary, fetched, themeOverride }, format
 
 /** JSON payload for build --json (single line). */
 function buildJson(result, format) {
-  const { report, project, summary, fetched, themeOverride } = result;
+  const { report, project, summary, fetched } = result;
   return {
     ok: true,
     format,
@@ -225,7 +208,6 @@ function buildJson(result, format) {
     warnings: report.warnings || [],
     pages: project.deck?.pages?.length || 0,
     ...(format === "png" ? { renderedPages: report.pages || [], scale: result.scale || undefined } : {}),
-    ...(themeOverride ? { themeOverride } : {}),
   };
 }
 
@@ -237,6 +219,10 @@ export async function runBuild(args) {
   const log = (m) => console.error(m);
   const emitError = (err) => reportError(err, { json, log });
 
+  if (args.some((a) => a === "--theme" || a.startsWith("--theme="))) {
+    return emitError(new CliError("ERR_INVALID_OPTION", "build --theme 已移除：颜色请直接修改 deck.theme.colors"));
+  }
+
   if (!manifest) return emitError(new CliError("ERR_USAGE", "用法: open-pptd build <manifest> [--format pptx|png|bundle] [-o <path>] [--fetch|--offline] [--strict] [--json]"));
 
   const format = value(values, "--format") || "pptx";
@@ -245,14 +231,13 @@ export async function runBuild(args) {
     if (flags.has("--fetch") && flags.has("--offline")) throw new CliError("ERR_INVALID_OPTION", "--fetch 与 --offline 互斥");
     if (format === "pptx" && flags.has("--raw")) throw new CliError("ERR_INVALID_OPTION", "--raw 仅用于 --format bundle");
     if (format === "bundle" && (values.has("--page") || values.has("--scale"))) throw new CliError("ERR_INVALID_OPTION", "--page/--scale 仅用于 --format png");
-    if (format !== "pptx" && (values.has("--theme") || flags.has("--no-embed-fonts") || flags.has("--full-fonts"))) {
-      throw new CliError("ERR_INVALID_OPTION", "--theme/--no-embed-fonts/--full-fonts 仅用于 --format pptx");
+    if (format !== "pptx" && (flags.has("--no-embed-fonts") || flags.has("--full-fonts"))) {
+      throw new CliError("ERR_INVALID_OPTION", "--no-embed-fonts/--full-fonts 仅用于 --format pptx");
     }
     const result = await buildDeck({
       manifest,
       format,
       outPath: value(values, "-o", "--out"),
-      theme: value(values, "--theme"),
       embedFonts: !flags.has("--no-embed-fonts"),
       fullFonts: flags.has("--full-fonts"),
       pages: value(values, "--page") ?? "all",
