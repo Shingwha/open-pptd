@@ -1,27 +1,8 @@
-// ============================================================================
-// layout/index.js — layout stage
-// ----------------------------------------------------------------------------
-// layout(deck, measure?) → LayoutTree
-//
-// LayoutTree is "the final geometry fact of every element" — a pure data tree parallel to Deck:
-//   { pageSize: {w,h}, pages: [ { index, elements: [LayoutElement] } ] }
-//   LayoutElement = {
-//     elementId, elementType,
-//     declared: {x,y,w,h},          // author declaration (el.bounds; the model is never written back)
-//     frame:    {x,y,w,h},          // layout fact (text: max(declared, content); table: totalHeight)
-//     grown: boolean,               // frame.h > declared.h (tables shrink to content per D6)
-//     text?:  { lines, contentHeight },
-//     table?: { columnWidths, rowHeights, totalHeight },
-//     overflow: { x, y, page, overlaps: [{elementId, rect}] },
-//   }
-//
-// Invariants: no measurement after layout (paint only reads this tree); the model is never
-// written back (el.bounds is read-only); MeasurePort defaults to a deterministic pure function.
-// Group shells are skipped and each member laid out individually (members already live in
-// page.elements; paintPage renders nothing for shells with the same semantics).
-// Chart size passes through (single-sourced in model/chart/layout.js).
-// Dual-end pure functions: this file forbids node:/fs/window./document. (enforced by dep-graph).
-// ============================================================================
+// packages/layout/index.js — layout stage: layout(deck, measure?) -> LayoutTree.
+// Invariants: no measurement after layout (paint only reads the tree); el.bounds is never
+// written back; MeasurePort defaults to a deterministic pure function. Group shells are
+// skipped and members laid out individually; chart size passes through (single-sourced in
+// model/chart/layout.js). Dual-end: this file forbids node:/fs/window./document (dep-graph).
 
 import { deckSize } from "../model/model.js";
 import { normalizeTheme, resolveTheme, resolveFont } from "../model/theme.js";
@@ -67,7 +48,7 @@ function layoutText(theme, el, measure) {
 
 /**
  * Table element → { frame, table }.
- * D6: totalHeight is the single height fact — frame.h is exactly totalHeight (the declared
+ * totalHeight is the single height fact: frame.h is exactly totalHeight (the declared
  * bounds.h only seeds the rowHeights ratio estimate inside measureTable, never clips or pads).
  */
 function layoutTable(theme, el, measure) {
@@ -101,6 +82,14 @@ function intersection(a, b) {
 }
 
 /**
+ * LayoutTree is the final geometry fact of every element, a pure data tree parallel to Deck:
+ *   { pageSize: {w,h}, pages: [{ index, elements: [LayoutElement] }] }
+ *   LayoutElement = { elementId, elementType, declared:{x,y,w,h}, frame:{x,y,w,h}, grown,
+ *     text?: {lines, contentHeight}, table?: {columnWidths, rowHeights, totalHeight},
+ *     overflow: {x, y, page, overlaps:[{elementId, rect}]} }
+ * declared is the author declaration (el.bounds); frame is the layout fact (text:
+ * max(declared, content); table: totalHeight); grown = frame.h > declared.h.
+ *
  * Lay out the whole deck.
  * @param {object} deck parsed (or already resolved) deck; theme is normalized internally if needed
  * @param {typeof fontMetricsMeasure} [measure] MeasurePort (defaults to the deterministic pure-function implementation)

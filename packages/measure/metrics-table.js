@@ -1,10 +1,7 @@
-// ============================================================================
-// measure/metrics-table.js — font metrics table reader (backed by metrics-data.json)
-// ----------------------------------------------------------------------------
-// Pure functions, dual-end (no fs/window/document). Lookup chain (fallback ladder):
-//   built-in table (family/key/alias normalized) → system font constants → 1.2 final fallback (records diagnostics)
-// Exposes createMetricsTable(data?) plus the default singleton (loaded from the package's metrics-data.json).
-// ============================================================================
+// packages/measure/metrics-table.js — font metrics table reader (backed by metrics-data.json).
+// Pure functions, dual-end (no fs/window/document). Lookup: built-in table (family/key/alias
+// normalized) -> system font constants -> 1.2 final fallback with diagnostics.
+// Exposes createMetricsTable(data?) plus the default singleton.
 
 import data from "./metrics-data.json" with { type: "json" };
 
