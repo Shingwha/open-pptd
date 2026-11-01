@@ -13,10 +13,10 @@ elements:
     fill: { type: solid, color: "$primary" }
   - elementId: chapter-text
     elementType: text
-    bounds: [48, 14, 720, 28]
+    bounds: [48, 11, 720, 34]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 18
+      fontSize: 24
       color: "#FFFFFF"
       bold: true
       align: [left, middle]
