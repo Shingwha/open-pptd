@@ -54,4 +54,15 @@
 
 ## 前置上下文
 
-待 W2 合并后补：W2 handoff、当前行号/文件、并行分组、稳定区、已知坑。
+- 必读顺序：`ref/repo-map.md` → `handoff/W1-worker.md`、`handoff/W2-worker.md` → 本工单 → `specs/2026-10-31-2102-open-pptd-3.0/handoff/W9-worker.md`（revision/导出）与 `W10-worker.md`（CLI/契约）。
+- 基线命令（两路各自开工先跑，贴真实输出）：`node tests/tools/dump-formula-mml.mjs`；`node tests/run-all.mjs`（39/39）；`node tests/e2e/{editor-minimal,page-ops,editor-ops,preview-shell}.mjs`；`node tests/regression/dep-graph.mjs`；`node tests/contract/public-api.mjs`；`node tests/tools/golden-diff.mjs`（156/156）。
+- 两路并行、文件不相交：
+  - **A 生产代码**：packages/{paths.js,writer/font.js,writer/zip.js,server/**,cli/project.js,cli/check.js}、scripts/pack-release.mjs、editor/app/project/{source,saver,export-service,icons,font-manager}.js、editor/app/export-image.js、editor/interaction/{design-panel,dialogs/base}.js、editor/components/button.js、editor/interaction/fields.js、editor/types/index.js。
+  - **B 测试工具**：tests/lib/**、tests/tools/{golden-lib,parity-baseline}.mjs、tests/export/run.mjs、tests/regression/{parity-png,font-library,theme-library}.mjs、tests/runtime/run.mjs、tests/docs/run.mjs、tests/skill/{run,zip}.mjs、tests/e2e/render.mjs。
+- 具体候选（按 survey，行号以当前 main 为准，动手前重新 grep）：
+  - A 零引用：`paths.cleanTempParts`、`writer/font.skipReasonText`、`font-manager.registerRegistryFontFace`、`icons.getIconRegistrySync/queryIconEntries`、`components/button.{iconButton,buttonRow}`、`fields.{fieldHandlers,renderGroup}`、`types/index.contentEditorTypeIds`；未用 import（`cli/project.js` readFileSync、`design-panel.js` colorTokenUsage）。
+  - A 合并：`source/saver` 的 `revisionOfSourceFiles` 逐字重复 → 留一份；`saver/export-image/design-panel` 的字节格式化 → 一份；`saver` 内 chip 构造重复 3 次 → 抽一份；`server/{themes,fonts}` 的 readJsonBody/sendJson/sendError/isLoopback → 新 `server/http-util.js`；`server/{api,export-image}` 的 readBody/JSON responder（语义不变才合并）；`server/runtime-node.writeAtomic` → `paths.atomicWriteFile`；`cli/project` 二次 yaml.load / `cli/check` 复用 `prepareProject`（形状允许才做）；`pack-release` 复用 `writer/zip.dosDateTime`（导出该函数）；`dialogs/base` 按钮复用 `components/button`；`design-panel` 下载复用 writer `downloadBlob`；`export-service` 图标解析复用 `icons.ensureIcon`。
+  - B：ZIP 读取统一到 `tests/lib/unzip.js`（支持 store+deflate）；PNG 解码/paeth/chartRegion/edgeEnergy 统一到 `tests/tools/golden-lib.mjs` 并被 export/parity/render/parity-baseline 复用；`tests/lib/test-utils.js`（check/checkEq/throwsCode/withTempDir/walk）替换最重复的 5–8 个套件；删未用 import。
+- 排除（后移）：`memorySource` 两份统一、sfnt 解析（model vs script）、字体就绪模型（cli vs provider）、Node host env 装配、scale/页码校验下沉、`types/load.js`/`adjustRowHeightsForRowChange`（规格 API 保留）、跨层 MIME 表统一。
+- 红线：不改公共合同导出（contract 39/39 为证）；不删除仍被 barrel/测试/e2e/字符串引用的符号；不改行为；不新增依赖；不碰 golden/projects/fixtures/contract.json/run-all。
+- 两路各自写 `handoff/W3a-a-worker.md` / `handoff/W3a-b-worker.md`（A/B/C，50–70 行），lead 按 A→B 合并。
