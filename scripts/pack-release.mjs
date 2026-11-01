@@ -3,6 +3,8 @@
 // File lists come from git ls-files restricted to WHITELIST; the zip layout matches packages/writer/zip.js
 // (reusing crc32/dosDateTime, deflate with store fallback). Asset zips are built only from bodies present
 // in the working tree and are skipped with a warning when missing (CI-safe).
+// The skill pack is written twice: open-pptd-skill-v<ver>.zip plus the stable open-pptd-skill.zip alias
+// (same bytes) so the latest-download URL never changes; SHA256SUMS lists both.
 // Usage: npm run pack [-- --only skill]; tests/skill/zip.mjs uses --only skill.
 
 import { execSync } from "node:child_process";
@@ -26,6 +28,7 @@ const WHITELIST = [
   "bin",
   "editor",
   "packages",
+  "skill",
   "assets/fonts/registry.json",
   "assets/icons/registry.json",
 ];
@@ -213,6 +216,12 @@ function packSkill() {
   writeFileSync(outPath, buildZip(entries));
   produced.push(outPath);
   logZip(outPath, entries.length, entries.reduce((s, e) => s + e.data.length, 0));
+  // Stable alias for the latest-download URL: identical bytes, produced by the default run
+  // and by `--only skill` alike; SHA256SUMS lists both names.
+  const stablePath = path.join(outDir, "open-pptd-skill.zip");
+  copyFileSync(outPath, stablePath);
+  produced.push(stablePath);
+  console.log(`✓ ${stablePath}（与版本 zip 同字节副本，latest 稳定链接）`);
 }
 
 // 3) Asset zips: bodies present in the working tree; missing bodies are skipped (no failure).

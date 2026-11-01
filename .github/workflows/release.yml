@@ -3,10 +3,13 @@
 #   - push v* 形如 v1.0.1 的 tag 自动触发（版本号必须与 package.json 一致）
 #   - 任何一步失败都不会发布（坏提交不会进 release）
 #   - 产物: dist/ 全部资产一起上传 —— open-pptd-v<ver>.zip（CLI 运行时，顶层目录
-#     open-pptd/）、open-pptd-skill-v<ver>.zip（技能知识包，顶层目录 open-pptd/，
-#     含 SKILL.md + README.md + references/ + kits/）、open-pptd-icons-v<ver>.zip、
+#     open-pptd/，含 skill/ 知识包）、open-pptd-skill-v<ver>.zip + open-pptd-skill.zip
+#     （技能知识包，顶层目录 open-pptd/，含 SKILL.md + README.md + references/ + kits/；
+#     稳定名与版本 zip 同字节，供 latest/download 固定链接）、open-pptd-icons-v<ver>.zip、
 #     open-pptd-fonts-v<ver>.zip（后两者以本地工作树实际存在的本体为准，CI 无本体时
-#     自动跳过）、install.ps1/install.sh、SHA256SUMS（覆盖全部 zip）
+#     自动跳过）、install.ps1/install.sh、SHA256SUMS（覆盖全部 zip，skill 两名两行）
+#   - 技能安装渠道：open-pptd assets skill install --dir ~/.claude/skills（或
+#     ~/.pi/agent/skills）；离线用 release 的 open-pptd-skill.zip；主仓 skill/ 为源码回退
 # ============================================================================
 name: Release
 
@@ -48,13 +51,15 @@ jobs:
         run: npm test
 
       # ④ 按白名单打包 CLI 运行时 + 技能知识包 → dist/open-pptd-v<version>.zip、
-      #    dist/open-pptd-skill-v<version>.zip（缺图标/字体本体时对应资产包自动跳过）
+      #    dist/open-pptd-skill-v<version>.zip 与稳定别名 dist/open-pptd-skill.zip
+      #    （缺图标/字体本体时对应资产包自动跳过）
       - name: 打包
         run: |
           npm run pack
           VERSION=$(node -p "JSON.parse(require('fs').readFileSync('package.json','utf8')).version")
           test -f "dist/open-pptd-v${VERSION}.zip" || { echo "✗ 缺少运行时 zip"; exit 1; }
           test -f "dist/open-pptd-skill-v${VERSION}.zip" || { echo "✗ 缺少 skill zip"; exit 1; }
+          test -f "dist/open-pptd-skill.zip" || { echo "✗ 缺少 skill 稳定别名"; exit 1; }
 
       # ⑤ 创建 Release 并附上 zip；notes 优先取带注释 tag（-a）的注释内容（发版时手写的
       #    更新说明），轻量 tag 未写注释则退回 commit 列表自动生成
