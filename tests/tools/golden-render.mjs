@@ -1,20 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// tests/tools/golden-render.mjs — golden baseline generation (spec 09 T2)
-// ----------------------------------------------------------------------------
-// Uses the live pipeline (renderer/headless renderDeck + local Chrome/Edge) to render
-// every page of all examples (15) and tests/projects (9) to PNG:
-//   tests/golden/png/<source>__<name>/deck-NN.png   (gitignored, not committed)
-//   tests/golden/manifest.json                       (per-page dHash/aHash + size +
-//                                                     source deck hash, committed)
-// Only the perceptual hashes + metadata are committed; the PNG bodies are large and gitignored.
-//
-// Usage:
-//   node tests/tools/golden-render.mjs               # rebuild the whole baseline
-//   node tests/tools/golden-render.mjs --filter chart  # rebuild matching projects only (careful: replaces a baseline subset)
-// Depends on a local Chrome/Edge (SMOKE_CHROME can point at it); web fonts are fetched as needed
-// (same as CLI render).
-// ============================================================================
+// tests/tools/golden-render.mjs — golden baseline generation.
+// Renders every page of examples/ (15) and tests/projects/ (9) through renderDeck + local
+// Chrome/Edge into tests/golden/png/<source>__<name>/deck-NN.png (gitignored) and writes
+// tests/golden/manifest.json (per-page dHash/aHash + size + source deck hash, committed).
+// Usage: node tests/tools/golden-render.mjs [--filter <project>]; --filter merges a subset but
+// replaces that subset's baseline. Requires a local Chrome/Edge (SMOKE_CHROME may point at it).
 
 import { mkdirSync, writeFileSync, existsSync, rmSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -29,7 +19,7 @@ const filterIdx = process.argv.indexOf("--filter");
 const FILTER = filterIdx > 0 ? process.argv[filterIdx + 1] : null;
 
 /**
- * Sanity gate (D8): every rendered page must be a non-empty PNG at exactly the deck's
+ * Sanity gate: every rendered page must be a non-empty PNG at exactly the deck's
  * declared size and must contain at least one non-white pixel. A failure aborts the
  * rebaseline before manifest.json is written — a broken render must never become a
  * golden baseline.

@@ -1,9 +1,5 @@
-// ============================================================================
-// tests/lib/test-utils.js — shared test assertions, temp dirs and tree walk
-// ----------------------------------------------------------------------------
-// One suite runs per process (run-all spawns each script), so a module-level
-// results array is enough. Suites print their own summary from `results`.
-// ============================================================================
+// tests/lib/test-utils.js — shared assertions, temp dirs and tree walk for test suites.
+// One suite runs per process (run-all spawns each script), so a module-level results array suffices.
 
 import { mkdtempSync, readdirSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";

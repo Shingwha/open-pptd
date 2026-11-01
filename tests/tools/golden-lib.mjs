@@ -1,11 +1,7 @@
-// ============================================================================
-// tests/tools/golden-lib.mjs — golden baseline shared lib (PNG decode + perceptual hash)
-// ----------------------------------------------------------------------------
-// Zero dependencies: PNG decoding uses node:zlib inflate + per-row unfiltering
-// (IHDR/IDAT/IEND, 8-bit colorType 2/6, non-interlaced). dHash (9×8 adjacent
-// difference) + aHash (8×8 mean) are 64 bits each. Shared by golden-render.mjs
-// (writes the baseline) and golden-diff.mjs (compares).
-// ============================================================================
+// tests/tools/golden-lib.mjs — golden baseline shared lib (PNG decode + perceptual hash).
+// Zero dependencies: node:zlib inflate + per-row unfiltering (IHDR/IDAT/IEND, 8-bit,
+// colorType 0/2/4/6, non-interlaced); dHash (9×8) and aHash (8×8) are 64 bits each.
+// Shared by golden-render.mjs (writes the baseline) and golden-diff.mjs (compares).
 
 import { inflateSync, deflateSync } from "node:zlib";
 import { createHash } from "node:crypto";
@@ -248,9 +244,7 @@ export function imageFingerprint(buf) {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Minimal PNG encoder (only to persist drift visualizations to tests/golden/out/, filter 0 + deflate)
-// ---------------------------------------------------------------------------
+// Minimal PNG encoder (only to persist drift visualizations to tests/golden/out/, filter 0 + deflate).
 const CRC_TABLE = (() => {
   const t = new Uint32Array(256);
   for (let n = 0; n < 256; n++) {

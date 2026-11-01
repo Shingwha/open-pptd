@@ -1,34 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// scripts/gen-font-metrics.mjs — one-off font metric table build (spec 09 T1 / plan §3.1)
-// ----------------------------------------------------------------------------
-// For the 27 built-in fonts in the registry, measure OS/2 + hhea + cmap + hmtx from
-// the bytes present on this machine and emit `packages/measure/metrics-data.json`
-// (committed) for consumption by the packages/measure pure functions.
-//
-// Output fields (per font):
-//   lineFactor  single-spacing factor = (usWinAscent + usWinDescent) / unitsPerEm
-//               (same formula as model/font.js#fontLineFactor — the writer spcPct
-//                compensation derives from the same table)
-//   ascent/descent/lineGap  em fractions (OS/2 usWin and sTypo/hhea lineGap)
-//   cjkWidth/latinWidth     width-class weighted advance (sample mean advance / em) — for greedy line breaking
-//   category/weight/italic/upem
-//   estimated   true = not measured (a locally missing font falls back to system-font
-//               constants, or is the system-font constant itself)
-//   source      "embedded" | "system-constant"
-//
-// Font byte sources (read-only):
-//   1. --fonts <dir>          explicit font dir
-//   2. $OPEN_PPTD_FONT_DIR    env var
-//   3. <repo>/assets/fonts    in-package font dir (default)
-//   Registry fonts missing locally (~11/27) are **not downloaded**; they fall back to
-//   system-font constants (Microsoft YaHei by default) and are marked estimated:true.
-//
-// Usage:
-//   node scripts/gen-font-metrics.mjs
-//   node scripts/gen-font-metrics.mjs --fonts "C:/path/to/assets/fonts"
-// Zero dependencies, zero build.
-// ============================================================================
+// scripts/gen-font-metrics.mjs — rebuild packages/measure/metrics-data.json from local font bytes.
+// Output per font: lineFactor ((usWinAscent + usWinDescent) / unitsPerEm), ascent/descent/lineGap,
+// cjkWidth/latinWidth (sample mean advance / em), category/weight/italic/upem, estimated/source.
+// Font bytes come from --fonts <dir>, $OPEN_PPTD_FONT_DIR, then assets/fonts; registry fonts
+// missing locally are not downloaded, they fall back to system-font constants (estimated:true).
+// Usage: node scripts/gen-font-metrics.mjs [--fonts <dir>]. Zero dependencies.
 
 import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
@@ -38,9 +14,7 @@ import { parseFontInfo, fontLineFactor, fontKey } from "../packages/model/font.j
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "packages", "measure", "metrics-data.json");
 
-// ---------------------------------------------------------------------------
-// Font directory resolution
-// ---------------------------------------------------------------------------
+// Font directory resolution.
 const argIdx = process.argv.indexOf("--fonts");
 const cliFonts = argIdx > 0 ? process.argv[argIdx + 1] : null;
 const FONT_DIRS = [cliFonts, process.env.OPEN_PPTD_FONT_DIR, join(ROOT, "assets", "fonts")].filter(Boolean);
@@ -61,9 +35,7 @@ function findFontFile(file) {
   return null;
 }
 
-// ---------------------------------------------------------------------------
-// Minimal sfnt parsing (self-contained; does not reuse or alter model/font.js internals)
-// ---------------------------------------------------------------------------
+// Minimal sfnt parsing; self-contained and does not reuse model/font.js internals.
 const dvOf = (b, off = 0, len = b.length - off) => new DataView(b.buffer, b.byteOffset + off, len);
 const u16 = (b, o) => dvOf(b, o).getUint16(0, false);
 const i16 = (b, o) => dvOf(b, o).getInt16(0, false);
@@ -135,9 +107,7 @@ function makeAdvanceReader(buf, tables) {
   return { upem, adv, em: (g) => adv(g) / upem };
 }
 
-// ---------------------------------------------------------------------------
-// Sample strings (width-class weighting)
-// ---------------------------------------------------------------------------
+// Sample strings for width-class weighting.
 const CJK_SAMPLE = "永中文国体的人一二三四五六七八九十";
 const LATIN_SAMPLE = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
@@ -152,10 +122,7 @@ function avgEm(sample, cmap, reader) {
   return n ? sum / n : null;
 }
 
-// ---------------------------------------------------------------------------
-// System-font constants (publicly known single-spacing factors, plan §3.1;
-// YaHei 1.32 / SimSun 1.00 / Calibri 1.22)
-// ---------------------------------------------------------------------------
+// Publicly known single-spacing factors (YaHei 1.32 / SimSun 1.00 / Calibri 1.22).
 const SYSTEM_CONSTANTS = {
   "Microsoft YaHei": { lineFactor: 1.32, cjkWidth: 1.0, latinWidth: 0.52, ascent: 1.06, descent: 0.26, lineGap: 0 },
   SimSun: { lineFactor: 1.0, cjkWidth: 1.0, latinWidth: 0.5, ascent: 0.86, descent: 0.14, lineGap: 0 },
@@ -172,9 +139,6 @@ const SYSTEM_CONSTANTS = {
 };
 const DEFAULT_FALLBACK_FAMILY = "Microsoft YaHei"; // default fallback constant (preferred for CJK body text)
 
-// ---------------------------------------------------------------------------
-// Main flow
-// ---------------------------------------------------------------------------
 const registryPath = join(ROOT, "assets", "fonts", "registry.json");
 if (!existsSync(registryPath)) {
   console.error(`✗ 找不到字体注册表: ${registryPath}`);

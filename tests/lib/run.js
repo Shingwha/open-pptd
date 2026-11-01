@@ -1,6 +1,4 @@
-// ============================================================================
-// tests/lib/run.js — subprocess helper for the regression runner
-// ============================================================================
+// tests/lib/run.js — subprocess helper for the regression runner.
 
 import { spawn } from "node:child_process";
 import { resolve } from "node:path";

@@ -1,22 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// tests/tools/golden-diff.mjs — golden baseline drift comparison (spec 09 T2 / M3 gate)
-// ----------------------------------------------------------------------------
-// Re-renders the current code through exactly the golden-render flow → compares each page
-// fingerprint against tests/golden/manifest.json → reports "match / drift" lists. Drifted
-// pages write the current image and a pixel-diff image to tests/golden/out/ for Read review.
-//
-// Verdict: dHash hamming distance > TOL or aHash > TOL → drift; when the hashes are equal it
-// also compares sha256 to record "byte-identical / perceptually identical". Known behavior-change
-// pages are registered with --whitelist <file> (a JSON string array: "project/key" or
-// "project/key#page"); registered entries count as "known drift" and are not failures.
-//
-// Usage:
-//   node tests/tools/golden-diff.mjs
-//   node tests/tools/golden-diff.mjs --whitelist tests/golden/whitelist.json
-//   node tests/tools/golden-diff.mjs --filter table     # compare only matching projects
-// Exit code: 0 = no unregistered drift; 1 = unregistered drift (or a missing baseline).
-// ============================================================================
+// tests/tools/golden-diff.mjs — golden baseline drift comparison.
+// Re-renders the current code through the golden-render flow and compares each page
+// fingerprint against tests/golden/manifest.json, writing current/diff PNGs to tests/golden/out/.
+// Verdict: dHash or aHash hamming > TOL (2) → drift; equal hashes also compare sha256 to report
+// byte-identical vs perceptually identical. --whitelist registers known changes (not failures).
+// Usage: node tests/tools/golden-diff.mjs [--whitelist <json>] [--filter <project>]; exit 1 on unregistered drift.
 
 import { readFileSync, existsSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";

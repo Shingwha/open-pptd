@@ -1,38 +1,9 @@
 #!/usr/bin/env node
-// ============================================================================
-// pack-release.mjs — package the runtime and the skill knowledge pack as release zips
-// ----------------------------------------------------------------------------
-// Artifacts (dist/):
-//   open-pptd-v<version>.zip         runtime (top-level dir open-pptd/)
-//   open-pptd-skill-v<version>.zip   skill knowledge pack (top-level dir open-pptd/:
-//                                    SKILL.md + README.md + references/** + kits/**)
-//   open-pptd-icons-v<version>.zip   full icons (solid/regular/brands/*.svg, no registry.json)
-//   open-pptd-fonts-v<version>.zip   full fonts (*.ttf, no registry.json)
-//   install.ps1 / install.sh         copies of the install scripts (directly downloadable from the release page)
-//   SHA256SUMS                       covers all of the above zips
-//
-// Usage: npm run pack                 # everything (runtime + skill + assets + install scripts)
-//        npm run pack -- --only skill # skill zip only (tests/skill/zip.mjs uses this)
-//
-// The whitelist is the single source of truth for runtime release contents: tests/, docs/,
-// examples/, .github/, scripts/, icon source files and .gitignore never enter the package;
-// font files themselves do not enter the package (about 155MB; fetched on demand via CLI after
-// install). The skill knowledge pack ships from the same repository: skill/{SKILL.md,README.md,
-// references/**,kits/**} only — never tests, demos, generated media, or executable scripts.
-// contract.json is included (contract manifest, read by repo 3 and the contract tests).
-//
-// Resource bodies (assets/fonts/*.ttf, assets/icons/{solid,regular,brands}/*.svg) are not
-// committed to git, so asset zips are based on **files actually present in the local working
-// tree**: when a body is missing (e.g. CI) the corresponding zip is skipped with a clear
-// warning, never failing (on CI, producing the runtime zip + SHA256SUMS is a valid artifact).
-//
-// The file list comes from git ls-files (git-tracked files only; untracked local junk won't leak in).
-// The zip container is built in-house: same layout as packages/writer/zip.js (reusing its crc32),
-// with deflate compression; already-compressed content (e.g. minified js) falls back to store to
-// avoid negative gains.
-//
-// Usage: npm run pack
-// ============================================================================
+// scripts/pack-release.mjs — build release zips into dist/ (runtime, skill, icons, fonts, install scripts, SHA256SUMS).
+// File lists come from git ls-files restricted to WHITELIST; the zip layout matches packages/writer/zip.js
+// (reusing crc32/dosDateTime, deflate with store fallback). Asset zips are built only from bodies present
+// in the working tree and are skipped with a warning when missing (CI-safe).
+// Usage: npm run pack [-- --only skill]; tests/skill/zip.mjs uses --only skill.
 
 import { execSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
@@ -45,7 +16,7 @@ import { encodeUtf8 } from "../packages/model/bytes.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-// ---- Whitelist: files/dirs included in the release zip ----
+// Whitelist: the single source of truth for runtime release contents.
 const WHITELIST = [
   "README.md",
   "README.zh-CN.md",
@@ -76,10 +47,8 @@ try {
   /* skip when git is unavailable */
 }
 
-// ---- Collect files (restricted to whitelist paths) ----
-// git ls-files --cached --others: tracked + untracked-but-not-ignored working-tree files (new
-// dirs from a refactor not yet git-added still enter the package; files deleted from the working
-// tree are dropped by existsSync)
+// Collect files (restricted to whitelist paths): git ls-files --cached --others lists tracked
+// and untracked-but-not-ignored working-tree files; entries deleted on disk are dropped below.
 const tracked = execSync(`git ls-files --cached --others --exclude-standard -- ${WHITELIST.join(" ")}`, { cwd: ROOT, encoding: "utf8" })
   .split("\n")
   .map((s) => s.trim())
@@ -97,7 +66,7 @@ const files = tracked.map((rel) => {
   return { name: `open-pptd/${rel}`, data: readFileSync(abs), mtime: statSync(abs).mtime };
 });
 
-// ---- Minimal deflate zip writer (layout identical to packages/writer/zip.js) ----
+// Minimal deflate zip writer; layout identical to packages/writer/zip.js.
 function buildZip(entries) {
   const chunks = [];
   const central = [];
@@ -179,8 +148,7 @@ function buildZip(entries) {
   return Buffer.concat(chunks);
 }
 
-// --only skill: produce just the skill knowledge-pack zip (tests/skill/zip.mjs runs this).
-// Without --only, every artifact below is produced as before, now including the skill zip.
+// --only skill: produce just the skill knowledge-pack zip.
 const ONLY = (() => {
   const i = process.argv.indexOf("--only");
   if (i === -1) return null;
@@ -206,7 +174,7 @@ function logZip(outPath, count, raw) {
   console.log(`  ${count} 个文件，${mb(raw)}MB → 压缩后 ${mb(statSync(outPath).size)}MB`);
 }
 
-// ---- 1) Runtime zip (whitelist ∪ contract.json) ----
+// 1) Runtime zip (whitelist files).
 function packRuntime() {
   const runtimePath = path.join(outDir, `open-pptd-v${version}.zip`);
   writeFileSync(runtimePath, buildZip(files));
@@ -214,9 +182,9 @@ function packRuntime() {
   logZip(runtimePath, files.length, files.reduce((s, f) => s + f.data.length, 0));
 }
 
-// ---- 2) Skill knowledge-pack zip: skill/{SKILL.md,README.md,references/**,kits/**} ----
-// Top level is open-pptd/ so unzipping into an agent's skills directory works directly.
-// Tests, demos, generated media, and executable scripts never enter this zip.
+// 2) Skill knowledge-pack zip: skill/{SKILL.md,README.md,references/**,kits/**}. Top level is
+// open-pptd/ so unzipping into an agent's skills directory works directly; tests, demos,
+// generated media, and executable scripts never enter this zip.
 function collectSkillFiles() {
   const skillRoot = path.join(ROOT, "skill");
   const allowed = (rel) =>
@@ -247,7 +215,7 @@ function packSkill() {
   logZip(outPath, entries.length, entries.reduce((s, e) => s + e.data.length, 0));
 }
 
-// ---- 3) Asset zips: based on bodies actually present in the local working tree; skip when missing (no failure) ----
+// 3) Asset zips: bodies present in the working tree; missing bodies are skipped (no failure).
 function walkFiles(dir) {
   const out = [];
   if (!existsSync(dir)) return out;
@@ -298,7 +266,7 @@ function packAssetZips() {
   return { iconCount: iconEntries.length, fontCount: fontEntries.length };
 }
 
-// ---- 4) Install-script copies (directly downloadable from the release page) ----
+// 4) Install-script copies (directly downloadable from the release page).
 function packInstallScripts() {
   for (const s of ["install.ps1", "install.sh"]) {
     const src = path.join(ROOT, s);
@@ -311,7 +279,7 @@ function packInstallScripts() {
   }
 }
 
-// ---- 5) SHA256SUMS (covering all produced zips) ----
+// 5) SHA256SUMS covering all produced zips.
 function writeSums() {
   const sumsLines = produced
     .map((p) => path.basename(p))

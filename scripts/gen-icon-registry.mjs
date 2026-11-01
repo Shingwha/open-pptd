@@ -1,15 +1,8 @@
-// ============================================================================
-// gen-icon-registry.mjs — generate assets/icons/registry.json from Font Awesome Free metadata
-// ----------------------------------------------------------------------------
-// Data sources (fetched once from CDN; jsDelivr primary + unpkg mirror):
-//   metadata/icon-families.json — per icon: label / aliases.names / search.terms /
-//     svgs.classic.<style>.{viewBox,width,height} / familyStylesByLicense (free filter)
-//   metadata/categories.yml     — official categories (id → {label, icons[]})
-// Output registry.json: { version, faVersion, license, prefixes, cats, icons:[…] }
-//   icons entries {name, w, h, styles(prefix array), aliases?, terms?, label?, cat?}
-// SVGs are not committed (.gitignore policy as for fonts); `open-pptd assets sync icons` fetches them.
+// scripts/gen-icon-registry.mjs — generate assets/icons/registry.json from Font Awesome Free metadata.
+// Sources (jsDelivr primary, unpkg mirror): metadata/icon-families.json (label/aliases/terms/svgs)
+// and metadata/categories.yml. Output: { version, faVersion, license, prefixes, cats, icons }.
+// SVGs are not committed; `open-pptd assets sync icons` fetches them.
 // Regenerate: node scripts/gen-icon-registry.mjs [--fa 7.3.1]
-// ============================================================================
 
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";

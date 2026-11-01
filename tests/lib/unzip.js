@@ -1,11 +1,7 @@
-// ============================================================================
-// tests/lib/unzip.js — minimal ZIP reader (test-only, zero dependencies)
-// ----------------------------------------------------------------------------
-// Parses EOCD + Central Directory and reads entries by name. Stored (method 0)
-// and deflated (method 8) entries are supported, so the same reader serves the
-// writer's store-only PPTX output and release zip packages. Used by tests/ to
-// inspect package structure; `readZipEntries` exposes metadata only.
-// ============================================================================
+// tests/lib/unzip.js — minimal ZIP reader (test-only, zero dependencies).
+// Parses EOCD + Central Directory and reads entries by name; supports stored (method 0) and
+// deflated (method 8) entries, serving both the writer store-only PPTX output and release zips.
+// readZipEntries exposes metadata only; readZip/readText/unzip materialize data.
 
 import { inflateRawSync } from "node:zlib";
 import { writeFileSync, mkdirSync } from "node:fs";

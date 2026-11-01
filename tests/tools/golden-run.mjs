@@ -1,14 +1,7 @@
-// ============================================================================
-// tests/tools/golden-run.mjs — golden baseline shared runner (discovery / render / fingerprint)
-// ----------------------------------------------------------------------------
-// Shared by golden-render.mjs (writes the baseline) and golden-diff.mjs (compares) so the two
-// cannot drift apart.
-//   discoverProjects()            discover examples/* and tests/projects/* (with deck.pptd)
-//   renderProject(entry, pngDir)  render every page to PNG via the live pipeline (renderDeck + headless CDP)
-//   deckSourceHash(entry)         whole-project source hash (deck + pages, excluding out/)
-//   pageFingerprint(pngPath)      → { dHash, aHash, w, h, bytes, sha256 }
-// Only imports renderer/headless, never modifies it (boundary: calling is allowed, editing its files is not).
-// ============================================================================
+// tests/tools/golden-run.mjs — golden baseline shared runner (discovery / render / fingerprint).
+// Shared by golden-render.mjs and golden-diff.mjs so the two cannot drift apart:
+//   discoverProjects() / renderProject(entry, pngDir) / deckSourceHash(entry) / pageFingerprint(pngPath).
+// Only imports renderer/headless and never modifies it (calling is allowed, editing its files is not).
 
 import { existsSync, readdirSync, statSync, readFileSync } from "node:fs";
 import { join, resolve, relative, sep } from "node:path";

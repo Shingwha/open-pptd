@@ -1,23 +1,10 @@
 #!/usr/bin/env node
-// ============================================================================
-// tests/tools/parity-baseline.mjs — record the parity baseline (no assertions)
-// ----------------------------------------------------------------------------
-// Purpose: capture the 2.x numbers W3/W5 will gate against, without changing
-// render/measure behavior:
-//   · chart pages 1/2 at scale 1/2 (PNG size/hash + a coarse chart-region sample)
-//   · table totalHeight/rowHeights/columnWidths (measureTable + layout facts)
-//   · text frame heights for the text-heavy project (layout facts)
-//
-// Writes tests/fixtures/parity/baseline.json; PNGs go to a temp dir and are
-// never committed. No Chrome/Edge → print SKIP and exit 0.
-//
-// Note: 2.x single-page render (`--page n`, n>1) races with page switching and
-// often captures page 1, so this script renders the whole deck once per scale
-// and picks pages 1/2 from the stable full-deck output. W3 fixes the single-page
-// path and can tighten this to a gate.
-//
-// Usage: node tests/tools/parity-baseline.mjs
-// ============================================================================
+// tests/tools/parity-baseline.mjs — record the parity baseline (no assertions).
+// Captures chart pages 1/2 at scale 1/2 (PNG size/hash + coarse chart-region sample), table
+// totalHeight/rowHeights/columnWidths, and text frame heights. Writes
+// tests/fixtures/parity/baseline.json; PNGs go to a temp dir and are never committed.
+// Uses a full-deck render because single-page `--page n` (n>1) can capture page 1.
+// No Chrome/Edge → print SKIP and exit 0. Usage: node tests/tools/parity-baseline.mjs
 
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -51,7 +38,7 @@ function loadProject(manifest) {
   return { manifestText, pageFiles };
 }
 
-// ---- 0. Environment: no browser → SKIP (exit 0) ----
+// 0. Environment: no browser → SKIP (exit 0).
 let browserPath;
 try {
   browserPath = findBrowser(null);
@@ -60,7 +47,7 @@ try {
   process.exit(0);
 }
 
-// ---- 1. Chart PNG baseline (full-deck render, then pick pages 1/2) ----
+// 1. Chart PNG baseline (full-deck render, then pick pages 1/2).
 const tmp = join(tmpdir(), `pptd-parity-${process.pid}`);
 const renders = [];
 for (const scale of SCALES) {
@@ -91,7 +78,7 @@ for (const scale of SCALES) {
 }
 rmSync(tmp, { recursive: true, force: true });
 
-// ---- 2. Table facts (measureTable on the parsed model) ----
+// 2. Table facts (measureTable on the parsed model).
 const TABLE_PROJECTS = ["tests/projects/table", "examples/business-review-7p"];
 const tables = [];
 for (const project of TABLE_PROJECTS) {
@@ -114,7 +101,7 @@ for (const project of TABLE_PROJECTS) {
   });
 }
 
-// ---- 3. Text frame facts (layout output for the text-heavy project) ----
+// 3. Text frame facts (layout output for the text-heavy project).
 const textProject = "tests/projects/text";
 const { manifestText, pageFiles } = loadProject(join(ROOT, textProject, "deck.pptd"));
 const textDeck = parseDeck(manifestText, pageFiles);
@@ -138,7 +125,7 @@ tree.pages.forEach((pg, index) => {
   }
 });
 
-// ---- 4. Write baseline.json (deterministic: no timestamps/paths) ----
+// 4. Write baseline.json (deterministic: no timestamps/paths).
 const baseline = {
   version: 1,
   generator: "tests/tools/parity-baseline.mjs",
