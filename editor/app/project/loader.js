@@ -17,8 +17,12 @@ export function createLoader({ state, view, ops, images, fontManager, source, ui
    * 3.2 起前端不再提供主题/样式切换，字体与表格样式由 deck 作者（AI/文件）维护。
    */
   function applyColors(colors) {
+    // 旧 deck 可能把 theme 写成字符串（2.x 预设）：它不是对象，不能参与展开，
+    // 否则会产生数字键污染。颜色写入统一收敛为标准的 {colors} 对象。
+    const current = state.deck.theme;
+    const base = current && typeof current === "object" && !Array.isArray(current) ? current : {};
     state.deck.theme = {
-      ...(state.deck.theme || {}),
+      ...base,
       colors: JSON.parse(JSON.stringify(colors || {})),
     };
     // A deck-level font declaration overrides the theme font (otherwise the theme default, e.g. Microsoft YaHei)

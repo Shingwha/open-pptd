@@ -61,8 +61,10 @@ colorTokenUsage(deck, token) -> number // 支持 "$token" 前缀；页面背景 
 - 偏差：editor-minimal §7 从“点主题卡”改为 hex 改 primary；撤销断言用 optional chaining
   （fixture 原本无 theme，二次撤销回到 theme=null）。§8 改为“颜色离线可编辑 + 字体静态站提示”，
   删除 cards==11 断言。`.design-mini-btn` 保留（字体状态行仍在用）。
-- W3 接续点：`loader.applyColors` 当前无 `origin`/`themeRevision`/`themechange`；`applyHistory`
-  仍是 `resolveTheme` + `view.render({ thumbs: "current" })`；design-panel 未订阅 `ui.events`；
-  取色器 `input` 同步写 + 立即 `endChange({thumbs:"all"})`，无 100ms 缩略图 debounce。
-  W3 需按 `ref/interfaces.md` §3 扩展 `applyColors(colors, { origin })`、`themeRevision++`、
-  `view.render` 强制 `thumbs:"all"`、`setThemeColor(s)`/`refreshThumbnails`。
+## D. Lead 收口（W2 合并前）
+
+- 删除 W1 遗留的 `packages/server/theme-store.js`（已无引用；`http-util.js` 注释同步去掉 themes）。
+- `loader.applyColors` / `design-panel.writeToken` / `color-tokens.setColorToken|removeColorToken`
+  增加旧字符串 theme 守卫：非对象 theme 按空对象处理，避免对象展开/属性写入污染或抛错。
+- 收口后复跑：run-all 38/38、editor-minimal 21/21、incremental-load 5/5、golden-diff 142/142。
+- W3 接续点不变（见 C 节最后一条）。

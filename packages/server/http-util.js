@@ -1,6 +1,6 @@
 // server/http-util.js — shared Node HTTP helpers for the local API endpoints
 // One implementation of the loopback guard, JSON response/error shaping and capped body
-// readers used by /api/{save,export-image,themes,fonts}:
+// readers used by /api/{save,export-image,fonts}:
 //   sendJson/sendError  JSON responses (no-store; optional extra headers)
 //   readJsonBody        JSON body (drains past the cap so a 413 can still be sent)
 //   readBody            raw UTF-8 body (aborts the request when over the cap)

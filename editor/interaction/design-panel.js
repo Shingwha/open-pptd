@@ -235,8 +235,14 @@ export function createDesignPanel(ui) {
    */
   function writeToken(key, value) {
     let next;
+    // 旧 deck 的 theme 可能是字符串预设：不能传给 setColorToken；
+    // 此时以已解析的 theme（含默认样式）为基底，写回时仍只取 colors。
+    const current = deps.state.deck.theme;
+    const base = current && typeof current === "object" && !Array.isArray(current)
+      ? current
+      : deps.state.theme;
     try {
-      next = setColorToken(deps.state.deck.theme || deps.state.theme, key, value);
+      next = setColorToken(base, key, value);
     } catch (err) {
       ui.dialogs.alert(err.message);
       return false;

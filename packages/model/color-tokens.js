@@ -32,6 +32,11 @@ function clone(value) {
   return value == null ? value : JSON.parse(JSON.stringify(value));
 }
 
+/** theme 必须是对象；旧 2.x 的字符串预设按空 theme 处理，由 normalizeTheme 回退默认。 */
+function asTheme(theme) {
+  return theme && typeof theme === "object" && !Array.isArray(theme) ? theme : {};
+}
+
 /**
  * 统计 deck 中某个颜色令牌的 `$token` 引用数（未引用为 0）。
  * 扫描页面背景与元素子树（含表格行、图表系列等数组）；`extra` 负载忽略，与 validate.js 一致。
@@ -101,7 +106,7 @@ export function setColorToken(theme, key, value) {
   if (typeof value !== "string" || !HEX_RE.test(value)) {
     throw new ThemeError("ERR_THEME_INVALID", `颜色值不合法: ${value}（需 #RRGGBB 或 #RRGGBBAA）`);
   }
-  const out = clone(theme || {});
+  const out = clone(asTheme(theme));
   out.colors = { ...(out.colors || {}), [key]: value };
   return out;
 }
@@ -116,7 +121,7 @@ export function setColorToken(theme, key, value) {
  */
 export function removeColorToken(theme, key, { deck = null } = {}) {
   const usage = deck ? colorTokenUsage(deck, key) : 0;
-  const out = clone(theme || {});
+  const out = clone(asTheme(theme));
   if (usage > 0) return { blocked: true, usage, theme: out };
   if (out.colors && Object.prototype.hasOwnProperty.call(out.colors, key)) delete out.colors[key];
   return { blocked: false, usage: 0, theme: out };
