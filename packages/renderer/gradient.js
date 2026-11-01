@@ -1,5 +1,5 @@
 // renderer/gradient.js — GradientFill → CSS / SVG gradient (unified renderer entry)
-// Angle spec (references/pptd.md): angle 0 = left→right, increasing clockwise (90 = top→bottom).
+// Angle spec: angle 0 = left→right, increasing clockwise (90 = top→bottom).
 // CSS linear-gradient 0deg points up and increases clockwise → CSS angle = PPTD angle + 90.
 // Shapes (SVG paths) cannot use CSS gradients, so svgGradient builds a <defs> gradient referenced
 // via url(#id); backgrounds / text (background-clip:text) / chart frames use gradientCss.

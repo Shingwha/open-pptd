@@ -1,9 +1,8 @@
 // writer/custgeom.js — custom path (SVG path) → a:custGeom (OOXML custom geometry)
 // shapeName:"custom" + viewBox + path (M/L/H/V/C/S/Q/A/Z) → a:path using the viewBox as its
 // coordinate system (w/h) and a:rect bounding the geometry; PowerPoint stretches that space to
-// the shape bounds, matching the preview.
-// Arc conversion: SVG A (endpoint) → OOXML arcTo (center); zero rotation emits arcTo directly,
-// otherwise a cubic bezier approximation (arcTo cannot express rotated ellipses).
+// the shape bounds, matching the preview. Arc conversion: SVG A (endpoint) → OOXML arcTo
+// (center); zero rotation emits arcTo directly, otherwise a cubic bezier approximation.
 // Holes: SVG's nonzero winding rule matches PowerPoint, so opposite ring directions pass through.
 
 import { el, angleToOOXML } from "./xml.js";
