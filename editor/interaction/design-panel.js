@@ -1,9 +1,9 @@
-// editor/interaction/design-panel.js — Design drawer (theme library / font library / appearance)
+// editor/interaction/design-panel.js — Design drawer (colors / font library / appearance)
 // One topbar entry ("设计", #btn-design), loaded lazily by design-panel-lazy.js.
-// Tabs: theme (current theme, library cards, every color token, style summary),
-// fonts (deck status, global library, import/delete), appearance (light/dark/auto,
-// viewer UI only, never deck.theme). Applying a theme goes through model applyTheme
-// and keeps tokens/styles the deck still references; theme/color edits are undoable.
+// Tabs: colors (deck theme.colors tokens; add/edit/delete, undoable), fonts (deck status,
+// global library, import/delete), appearance (light/dark/auto, viewer UI only, never
+// deck.theme). 3.2 removed the theme library: there are no theme cards, presets, save/
+// import/export actions. Color edits never touch theme.textStyles / theme.tableStyles.
 
 import * as controls from "../ui.js";
 // Instance services (ui.dialogs / ui.toast) are injected by createDesignPanel;
@@ -11,11 +11,9 @@ import { formatBytes } from "../app/export-image.js";
 import { THEME_MODES } from "../theme.js";
 import { SYSTEM_FONTS } from "../app/project/font-manager.js";
 import {
-  applyTheme,
   findFont,
   fontFileUrl,
   fetchFontBytes,
-  listBuiltinThemes,
   listColorTokens,
   loadFontRegistry,
   parseFontResources,
@@ -23,10 +21,9 @@ import {
   resolveColor,
   setColorToken,
 } from "../../packages/model/index.js";
-import { downloadBlob } from "../../packages/writer/index.js";
 
 // Constants
-const API = { themes: "/api/themes", fonts: "/api/fonts" };
+const API = { fonts: "/api/fonts" };
 
 /** Chinese labels for the standard semantic tokens (custom tokens show their key). */
 const STD_LABELS = {
@@ -48,7 +45,6 @@ const STD_LABELS = {
   accent6: "系列色 6",
 };
 
-const CARD_KEYS = ["primary", "accent", "accent3", "accent4", "accent5", "accent6"];
 const HEX_RE = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 const FONT_SAMPLE = "永远相信美好的事情即将发生 AaBb 0123";
 
@@ -64,11 +60,10 @@ export function createDesignPanel(ui) {
   let tabsEl = null;
   let bodyEl = null;
   let deps = null;
-  let activeTab = "theme";
+  let activeTab = "colors";
   let ac = null;
   let tokenTx = false;
 
-  let themes = { builtin: listBuiltinThemes(), user: [], api: false, loaded: false, loading: null };
   let fonts = { list: [], api: false, loaded: false, loading: null };
   let fontQuery = "";
   const facesRegistered = new Set();
@@ -86,7 +81,7 @@ export function createDesignPanel(ui) {
     show();
     setActiveTab(activeTab);
     renderBody();
-    // Library content may change outside the editor (CLI): refresh on every open.
+    // 字体库内容可能在编辑器外变化（CLI）：每次打开刷新；颜色编辑离线可用，无网络请求。
     ensureData({ force: true }).then(() => {
       if (panel && !panel.hidden) renderBody();
     });
@@ -147,7 +142,7 @@ export function createDesignPanel(ui) {
 
     tabsEl = document.createElement("div");
     tabsEl.className = "design-tabs";
-    for (const [id, label] of [["theme", "主题"], ["fonts", "字体"], ["appearance", "外观"]]) {
+    for (const [id, label] of [["colors", "颜色"], ["fonts", "字体"], ["appearance", "外观"]]) {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "design-tab";
@@ -172,7 +167,7 @@ export function createDesignPanel(ui) {
   }
 
   function setActiveTab(tab) {
-    activeTab = ["theme", "fonts", "appearance"].includes(tab) ? tab : "theme";
+    activeTab = ["colors", "fonts", "appearance"].includes(tab) ? tab : "colors";
     for (const b of tabsEl?.querySelectorAll(".design-tab") || []) {
       b.classList.toggle("active", b.dataset.tab === activeTab);
     }
@@ -190,30 +185,9 @@ export function createDesignPanel(ui) {
     return data;
   }
 
-  function ensureData({ force = false } = {}) {
-    const jobs = [];
-    if (force || !themes.loaded) jobs.push(loadThemes(force));
-    if (force || !fonts.loaded) jobs.push(loadFonts());
-    return Promise.all(jobs);
-  }
-
-  function loadThemes(force = false) {
-    if (themes.loading && !force) return themes.loading;
-    themes.loading = (async () => {
-      themes.builtin = listBuiltinThemes();
-      let user = [];
-      let api = false;
-      try {
-        const data = await apiJson(API.themes);
-        api = true;
-        user = (data.themes || []).filter((t) => !t.builtin);
-      } catch {
-        api = false; // static hosting / server without the theme API
-        user = [];
-      }
-      themes = { ...themes, builtin: listBuiltinThemes(), user, api, loaded: true, loading: null };
-    })();
-    return themes.loading;
+  function ensureData() {
+    // 颜色编辑只读写 deck.theme.colors（本地 state），无需任何网络数据；只需字体库。
+    return Promise.all([loadFonts()]);
   }
 
   async function loadFonts() {
@@ -254,64 +228,20 @@ export function createDesignPanel(ui) {
     return fonts.loading;
   }
 
-  // Theme helpers
-  const clone = (v) => (v == null ? v : JSON.parse(JSON.stringify(v)));
-  const sameColor = (a, b) => String(a || "").toLowerCase() === String(b || "").toLowerCase();
-
-  /** Match deck colors against a theme snapshot: exact match, or "custom based on" when extra tokens exist. */
-  function matchTheme() {
-    const deckColors = deps.state.theme?.colors || {};
-    let based = null;
-    for (const t of [...themes.builtin, ...themes.user]) {
-      const tc = t.colors || {};
-      const keys = Object.keys(tc);
-      if (!keys.length || !keys.every((k) => sameColor(deckColors[k], tc[k]))) continue;
-      const extra = Object.keys(deckColors).filter((k) => tc[k] === undefined);
-      if (!extra.length) return { exact: true, theme: t, extra: 0 };
-      if (!based) based = { exact: false, theme: t, extra: extra.length };
-    }
-    return based;
-  }
-
-  function currentThemeLabel() {
-    const hit = matchTheme();
-    if (!hit) return { name: "自定义主题", detail: "基于内置默认主题的修改" };
-    return hit.exact
-      ? { name: hit.theme.name, detail: "与主题库快照一致" }
-      : { name: `自定义（基于 ${hit.theme.name}）`, detail: `额外 ${hit.extra} 个自定义颜色` };
-  }
-
-  /** Apply a theme file with the preserved-reference report (undoable). */
-  function applyThemeFile(themeFile) {
-    endTokenTx();
-    deps.api.beginChange();
-    const result = applyTheme(deps.state.theme, themeFile, { deck: deps.state.deck });
-    deps.io.applyTheme(result.theme);
-    deps.api.endChange({ thumbs: "all" }); // theme change repaints every thumbnail
-    const kept =
-      result.preserved.colors.length + result.preserved.textStyles.length + result.preserved.tableStyles.length;
-    const name = typeof themeFile?.name === "string" ? themeFile.name : themeFile?.id || "主题";
-    ui.toast.show(
-      kept ? `已应用「${name}」；保留了 ${kept} 个仍被引用的自定义颜色/样式` : `已应用「${name}」`,
-      "info"
-    );
-    renderBody();
-  }
-
-  /** Write one color token into the deck theme (caller owns the history transaction). */
+  // Color helpers
+  /**
+   * Write one color token into deck.theme.colors (caller owns the history transaction).
+   * Text/table styles are never touched: loader.applyColors only replaces theme.colors.
+   */
   function writeToken(key, value) {
     let next;
     try {
-      next = setColorToken(deps.state.theme, key, value);
+      next = setColorToken(deps.state.deck.theme || deps.state.theme, key, value);
     } catch (err) {
       ui.dialogs.alert(err.message);
       return false;
     }
-    deps.io.applyTheme({
-      colors: next.colors,
-      textStyles: deps.state.theme.textStyles,
-      tableStyles: deps.state.theme.tableStyles,
-    });
+    deps.io.applyColors(next.colors);
     return true;
   }
 
@@ -327,18 +257,12 @@ export function createDesignPanel(ui) {
     deps.api.endChange({ thumbs: "all" }); // color token write: theme-level, all thumbnails
   }
 
-  function download(filename, text) {
-    downloadBlob(text, filename, "application/json;charset=utf-8");
-  }
-
-  const safeName = (name) => String(name || "theme").replace(/[\\/:*?"<>|\s]+/g, "-").slice(0, 60) || "theme";
-
   // Render dispatcher
   function renderBody() {
     if (!bodyEl) return;
     const scroll = bodyEl.scrollTop;
     bodyEl.innerHTML = "";
-    if (activeTab === "theme") renderThemeTab();
+    if (activeTab === "colors") renderColorsTab();
     else if (activeTab === "fonts") renderFontsTab();
     else renderAppearanceTab();
     bodyEl.scrollTop = scroll;
@@ -361,41 +285,8 @@ export function createDesignPanel(ui) {
     return d;
   }
 
-  // Theme tab
-  function renderThemeTab() {
-    // -- Current theme --
-    const cur = currentThemeLabel();
-    const curBox = document.createElement("div");
-    curBox.className = "design-current";
-    const curName = document.createElement("div");
-    curName.className = "design-current-name";
-    curName.textContent = cur.name;
-    const curDetail = document.createElement("div");
-    curDetail.className = "design-current-detail";
-    curDetail.textContent = cur.detail;
-    curBox.append(curName, curDetail);
-    bodyEl.append(sectionTitle("当前主题"), curBox);
-
-    // -- Library cards --
-    const cards = document.createElement("div");
-    cards.className = "design-theme-grid";
-    const hit = matchTheme();
-    for (const t of themes.builtin) cards.appendChild(themeCard(t, { builtin: true, active: hit?.theme === t }));
-    for (const t of themes.user) cards.appendChild(themeCard(t, { builtin: false, active: hit?.theme === t }));
-    bodyEl.append(sectionTitle(`主题库（内置 ${themes.builtin.length} · 我的 ${themes.user.length}）`), cards);
-    if (!themes.api) bodyEl.appendChild(hint("静态站仅提供内置主题；保存/导入/删除需要本地 open 服务。"));
-
-    // -- Library actions --
-    const actions = document.createElement("div");
-    actions.className = "design-actions";
-    const saveBtn = controls.button("保存当前为主题", () => saveCurrentTheme());
-    const importBtn = controls.button("导入…", () => importTheme());
-    saveBtn.disabled = !themes.api;
-    importBtn.disabled = !themes.api;
-    actions.append(saveBtn, importBtn);
-    bodyEl.appendChild(actions);
-
-    // -- Color tokens --
+  // Colors tab
+  function renderColorsTab() {
     bodyEl.appendChild(sectionTitle(`颜色令牌（${listColorTokens(deps.state.theme).length}）`));
     const tokens = document.createElement("div");
     tokens.className = "design-tokens";
@@ -404,64 +295,7 @@ export function createDesignPanel(ui) {
     const addBtn = controls.button("＋ 添加颜色", () => addColorDialog());
     addBtn.classList.add("design-add-color");
     bodyEl.appendChild(addBtn);
-
-    // -- Styles summary --
-    const ts = Object.keys(deps.state.theme?.textStyles || {}).length;
-    const tb = Object.keys(deps.state.theme?.tableStyles || {}).length;
-    bodyEl.append(
-      sectionTitle("文本 / 表格样式"),
-      hint(`${ts} 个文本样式、${tb} 个表格样式随主题保存与应用；v1 不提供可视化样式编辑器（由 AI/预设管理）。`)
-    );
-  }
-
-  function themeCard(t, { builtin, active }) {
-    const card = document.createElement("div");
-    card.className = "design-theme-card" + (active ? " active" : "");
-    card.dataset.themeId = t.id;
-
-    const swatches = document.createElement("button");
-    swatches.type = "button";
-    swatches.className = "design-swatches";
-    swatches.title = `应用「${t.name}」`;
-    for (const k of CARD_KEYS) {
-      const s = document.createElement("span");
-      s.className = "design-swatch";
-      s.style.background = t.colors?.[k] || "var(--line)";
-      swatches.appendChild(s);
-    }
-    swatches.addEventListener("click", () => applyThemeFile(t));
-
-    const name = document.createElement("button");
-    name.type = "button";
-    name.className = "design-theme-name";
-    name.textContent = t.name;
-    name.title = `应用「${t.name}」`;
-    name.addEventListener("click", () => applyThemeFile(t));
-
-    const meta = document.createElement("div");
-    meta.className = "design-theme-meta";
-    const badge = document.createElement("span");
-    badge.className = "design-badge" + (builtin ? "" : " mine");
-    badge.textContent = builtin ? "内置" : "我的";
-    meta.appendChild(badge);
-
-    if (!builtin) {
-      const exp = document.createElement("button");
-      exp.type = "button";
-      exp.className = "design-mini-btn";
-      exp.textContent = "导出";
-      exp.title = "导出主题 JSON";
-      exp.addEventListener("click", () => exportTheme(t));
-      const del = document.createElement("button");
-      del.type = "button";
-      del.className = "design-mini-btn danger";
-      del.textContent = "删除";
-      del.title = "删除该用户主题（内置只读）";
-      del.addEventListener("click", () => deleteTheme(t));
-      meta.append(exp, del);
-    }
-    card.append(swatches, name, meta);
-    return card;
+    bodyEl.appendChild(hint("只修改 theme.colors；文字/表格样式保持不变。"));
   }
 
   function tokenRow(tok) {
@@ -505,7 +339,7 @@ export function createDesignPanel(ui) {
     }, { signal: ac.signal });
     picker.addEventListener("change", () => {
       endTokenTx();
-      syncThemeHighlights();
+      syncColorRows();
     }, { signal: ac.signal });
     hex.addEventListener("change", () => {
       endTokenTx();
@@ -513,7 +347,7 @@ export function createDesignPanel(ui) {
       if (HEX_RE.test(hex.value.trim()) && writeToken(tok.key, hex.value.trim())) {
         endTokenTx();
         paint();
-        syncThemeHighlights();
+        syncColorRows();
       } else {
         endTokenTx();
         ui.dialogs.alert("颜色值需为 #RRGGBB 或 #RRGGBBAA");
@@ -536,22 +370,14 @@ export function createDesignPanel(ui) {
     return row;
   }
 
-  function syncThemeHighlights() {
-    if (!bodyEl || activeTab !== "theme") return;
+  /** 只同步颜色行的色块（3.2 无主题卡/当前主题标签）。 */
+  function syncColorRows() {
+    if (!bodyEl || activeTab !== "colors") return;
     for (const row of bodyEl.querySelectorAll(".design-token")) {
       const key = row.dataset.token;
       const resolved = resolveColor(deps.state.theme, deps.state.theme?.colors?.[key]);
       const sw = row.querySelector(".design-token-swatch");
       if (sw) sw.style.background = resolved || "transparent";
-    }
-    const cur = currentThemeLabel();
-    const nameEl = bodyEl.querySelector(".design-current-name");
-    const detailEl = bodyEl.querySelector(".design-current-detail");
-    if (nameEl) nameEl.textContent = cur.name;
-    if (detailEl) detailEl.textContent = cur.detail;
-    const hit = matchTheme();
-    for (const card of bodyEl.querySelectorAll(".design-theme-card")) {
-      card.classList.toggle("active", !!hit && hit.theme.id === card.dataset.themeId);
     }
   }
 
@@ -567,11 +393,7 @@ export function createDesignPanel(ui) {
       return;
     }
     beginTokenTx();
-    deps.io.applyTheme({
-      colors: report.theme.colors,
-      textStyles: deps.state.theme.textStyles,
-      tableStyles: deps.state.theme.tableStyles,
-    });
+    deps.io.applyColors(report.theme.colors);
     endTokenTx();
     ui.toast.show(`已删除颜色 $${key}`, "info");
     renderBody();
@@ -605,121 +427,6 @@ export function createDesignPanel(ui) {
         renderBody();
       },
     });
-  }
-
-  function saveCurrentTheme() {
-    if (!themes.api) {
-      ui.toast.show("保存主题需要本地 open 服务（静态站主题库只读）", "danger");
-      return;
-    }
-    const wrap = document.createElement("div");
-    wrap.className = "design-add-form";
-    const nameInput = document.createElement("input");
-    nameInput.type = "text";
-    nameInput.className = "design-input";
-    nameInput.placeholder = "例如：咨询暖灰";
-    const descInput = document.createElement("input");
-    descInput.type = "text";
-    descInput.className = "design-input";
-    descInput.placeholder = "可选：用途 / 场景";
-    wrap.append(controls.field("名称", nameInput), controls.field("描述", descInput));
-
-    ui.dialogs.showDialog("保存当前主题", wrap, {
-      doneText: "保存",
-      onDone() {
-        const name = nameInput.value.trim();
-        if (!name) {
-          ui.toast.show("主题名称不能为空", "danger");
-          return;
-        }
-        const existing = themes.user.find((t) => t.name === name);
-        const doSave = async () => {
-          const payload = {
-            version: 1,
-            id: existing?.id || `user-${Date.now().toString(36)}`,
-            name,
-            description: descInput.value.trim(),
-            colors: clone(deps.state.theme.colors),
-            textStyles: clone(deps.state.theme.textStyles),
-            tableStyles: clone(deps.state.theme.tableStyles),
-          };
-          try {
-            await apiJson(API.themes, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ theme: payload }),
-            });
-            await loadThemes(true);
-            renderBody();
-            ui.toast.show(`已保存主题「${name}」${existing ? "（覆盖同名主题）" : ""}`, "success");
-          } catch (err) {
-            ui.toast.show(`保存主题失败: ${err.message}`, "danger");
-          }
-        };
-        if (existing) {
-          ui.dialogs.confirm(`已存在同名主题「${name}」，覆盖它？`).then((ok) => {
-            if (ok) doSave();
-          });
-        } else {
-          doSave();
-        }
-      },
-    });
-  }
-
-  function importTheme() {
-    if (!themes.api) {
-      ui.toast.show("导入主题需要本地 open 服务", "danger");
-      return;
-    }
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json,application/json";
-    input.addEventListener("change", async () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      try {
-        const parsed = JSON.parse(await file.text());
-        const data = await apiJson(API.themes, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "import", json: parsed }),
-        });
-        await loadThemes(true);
-        renderBody();
-        const renamed = data.renamed ? "（id 重复，已另存）" : "";
-        ui.toast.show(`已导入主题「${data.theme?.name || file.name}」${renamed}`, "success");
-      } catch (err) {
-        ui.toast.show(`导入主题失败: ${err.message}`, "danger");
-      }
-    });
-    input.click();
-  }
-
-  async function exportTheme(t) {
-    try {
-      const json = t.builtin
-        ? JSON.stringify(t, null, 2)
-        : (await apiJson(`${API.themes}?id=${encodeURIComponent(t.id)}&export=1`)).json;
-      download(`${safeName(t.name)}.json`, json);
-      ui.toast.show(`已导出主题「${t.name}」`, "success");
-    } catch (err) {
-      ui.toast.show(`导出主题失败: ${err.message}`, "danger");
-    }
-  }
-
-  async function deleteTheme(t) {
-    if (t.builtin) return;
-    const ok = await ui.dialogs.confirm(`删除主题「${t.name}」？此操作不可撤销。`);
-    if (!ok) return;
-    try {
-      await apiJson(`${API.themes}?id=${encodeURIComponent(t.id)}`, { method: "DELETE" });
-      await loadThemes(true);
-      renderBody();
-      ui.toast.show(`已删除主题「${t.name}」`, "info");
-    } catch (err) {
-      ui.toast.show(`删除主题失败: ${err.message}`, "danger");
-    }
   }
 
   // Fonts tab

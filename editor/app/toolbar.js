@@ -116,14 +116,14 @@ export function bindToolbar({ state, api, view, io, present, themeMode = null, u
   function bindDesignButton() {
     if (!dom.btnDesign) return;
     const ac = new AbortController();
-    const open = (tab = "theme") => {
+    const open = (tab = "colors") => {
       designPanel.open({ state, api, io, themeMode, tab }).catch((err) =>
         toast.show(`打开设计面板失败: ${err.message}`, "danger")
       );
     };
-    dom.btnDesign.onclick = () => open("theme");
+    dom.btnDesign.onclick = () => open("colors");
     // Cross-module entry: the PPTX export dialog's "字体管理…" jumps to Design > 字体
-    window.addEventListener("pptd:open-design", (e) => open(e.detail?.tab || "theme"), { signal: ac.signal });
+    window.addEventListener("pptd:open-design", (e) => open(e.detail?.tab || "colors"), { signal: ac.signal });
     disposers.push(() => {
       ac.abort();
       if (dom.btnDesign) dom.btnDesign.onclick = null;

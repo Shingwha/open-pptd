@@ -14,7 +14,7 @@ import { pickProjectFolder, ensurePermission } from "./handle-io.js";
 import { addRecent, setPendingProject, clearPendingProject } from "./handle-store.js";
 import { createHistory } from "../../interaction/history.js";
 import { commitBaseline } from "../state.js";
-import { createDeck, createPage, normalizeTheme, syncElementId } from "../../../packages/model/index.js";
+import { createDeck, createPage, resolveTheme, syncElementId } from "../../../packages/model/index.js";
 
 /** Drop the project-bearing query param, keeping shell params (base / chrome / blank / shot). */
 function clearProjectUrl() {
@@ -122,7 +122,7 @@ export function createIo({ state, view, ops, source, ui, live = true, onSaved, o
     deck.pages.push(createPage({ pageType: "content" }));
     ops.replaceDeck(deck);
     ops.clearClipboard(); // a new blank document starts with an empty element clipboard
-    state.theme = normalizeTheme(null);
+    state.theme = resolveTheme(deck);
     state.manifestPath = null;
     state.projectHandle = null;
     state.projectName = "";
@@ -148,7 +148,7 @@ export function createIo({ state, view, ops, source, ui, live = true, onSaved, o
   }
 
   return {
-    applyTheme: loader.applyTheme,
+    applyColors: loader.applyColors,
     applyHistory: loader.applyHistory,
     loadDeck: loader.loadDeck,
     loadDeckFromHandle: loader.loadDeckFromHandle,
