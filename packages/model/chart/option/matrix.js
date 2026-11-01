@@ -1,7 +1,6 @@
-// ============================================================================
-// model/chart/option/matrix.js — matrix / hierarchy / flow family option (heatmap /
-// treemap / sunburst / sankey; pure functions)
-// ----------------------------------------------------------------------------
+// packages/model/chart/option/matrix.js — matrix / hierarchy / flow family option (heatmap /
+// treemap / sunburst / sankey; pure functions).
+// Heatmap grid, treemap rectangle and hierarchy colors project from the layout model / tree.js.
 
 import { resolveColor, colorOr } from "../../theme.js";
 import { hierarchyColor, hexA, labelColorOn } from "../colors.js";
@@ -11,8 +10,8 @@ import { resolveDataLabels } from "../labels.js";
 import { AXIS_TEXT, chartStyleColors, echartsLabel } from "./shared.js";
 
 /** Parent-child table -> ECharts tree (nodes carry itemStyle hierarchy colors; levels trimming
- * shares its source with the writer. The label color is picked dark/light from the tile
- * luminance (an explicit labels.color config wins) — dark text on a dark tile is unreadable). */
+ * shares its source with the writer. Label color is picked dark/light from the tile luminance,
+ * with an explicit labels.color winning — dark text on a dark tile is unreadable). */
 function buildEchartsTree(theme, el, s, labelCfg) {
   const { childrenOf, roots, subtreeSum } = parseHierarchy(el, s);
   const maxLevels = resolveTreeLevels(s);
@@ -44,11 +43,9 @@ export function buildMatrix(ctx) {
     const tree = buildEchartsTree(theme, el, s, labelCfg);
     const showValue = labelCfg?.content === "value";
     const showName = labelCfg?.content === "category" || labelCfg == null;
-    // With content: value the label is shown as well (displaying the number) — previously
-    // show only looked at showName, so configuring value left the whole preview unlabeled,
-    // disagreeing with the export side value=1
+    // content: value also shows the label (the number), matching export value=1
     const showLabel = showName || showValue;
-    // treemap fills the layout-model rectangle (I26: the ECharts default is 80% width/height centered, leaving margins while PPT fills the space)
+    // treemap fills the layout-model rectangle (ECharts otherwise centers an 80% box)
     const [, , bw, bh] = el.bounds || [0, 0, 0, 0];
     const treemapRect = {
       left: layout.grid.left,
@@ -90,8 +87,7 @@ export function buildMatrix(ctx) {
       ...common,
       legend: { show: false },
       tooltip: { trigger: "item", formatter: (p) => `${xCats[p.value[0]]} / ${yCats[p.value[1]]}: ${p.value[2]}` },
-      // Grid = projection from the layout model (right-band yield for the colorbar; this used to
-      // hard-code {48,40,16,36}, bypassing the model)
+      // Grid = projection from the layout model (right-band yield for the colorbar)
       grid: layout.grid,
       xAxis: { type: "category", data: xCats, axisLine: { lineStyle: { color: axisColor } }, axisLabel: AXIS_TEXT, splitArea: { show: true, areaStyle: { color: ["#fff"] } } },
       yAxis: { type: "category", data: yCats, axisLine: { lineStyle: { color: axisColor } }, axisLabel: AXIS_TEXT, splitArea: { show: true, areaStyle: { color: ["#fff"] } } },
@@ -133,8 +129,8 @@ export function buildMatrix(ctx) {
     const flows = (s._values.flow || []).map((v) => Number(v ?? 0));
     const links = srcs.map((sr, i) => ({ source: sr, target: tgts[i], value: Math.max(0, flows[i]) }))
       .filter((l) => l.source !== l.target);
-    // Kahn topological order (official: nodes are ordered topologically; DAG validation lives
-    // in the model layer, the preview leniently appends the remainder)
+    // Kahn topological order (DAG validation lives in the model layer; the preview leniently
+    // appends any remainder)
     const firstSeen = new Map();
     for (const n of [...srcs, ...tgts]) if (!firstSeen.has(n)) firstSeen.set(n, firstSeen.size);
     const indeg = new Map();
@@ -181,7 +177,7 @@ export function buildMatrix(ctx) {
         nodeWidth: 14,
         nodeGap: 10,
         label: { show: true, color: labelColor, fontSize: 11 },
-        // Opacity kept low: funnel-like data has many crossing flows, and 0.45 looks muddy when colors overlap
+        // Low opacity: funnel-like data has many crossing flows, and 0.45 looks muddy
         lineStyle: { color: "gradient", opacity: 0.3 },
       }],
     };

@@ -1,7 +1,6 @@
-// ============================================================================
-// model/chart/option/cartesian.js — cartesian-family option (bar/line/area/scatter/bubble/
-// candlestick + waterfall simulated with two bars; pure functions)
-// ----------------------------------------------------------------------------
+// packages/model/chart/option/cartesian.js — cartesian-family option (bar/line/area/scatter/
+// bubble/candlestick + waterfall simulated with two bars; pure functions).
+// Waterfall axes go through the shared cartesianAxes so xAxis/yAxis config is honored.
 
 import { resolveColor, colorOr } from "../../theme.js";
 import { dashSpec } from "../../style-spec.js";
@@ -13,9 +12,8 @@ import { resolveDataLabels } from "../labels.js";
 import { cartesianAxes } from "./axes.js";
 import { echartsLabel, markerSymbol, seriesColor } from "./shared.js";
 
-/** waterfall: simulated with two stacked bars (transparent base + colored segment). The axes
- * go through the shared cartesianAxes (previously it assembled hard-coded axes and ignored the
- * xAxis/yAxis config — I28). */
+/** waterfall: simulated with two stacked bars (transparent base + colored segment); axes go
+ * through the shared cartesianAxes so the xAxis/yAxis config is honored. */
 function waterfallOption(ctx) {
   const { theme, el, series, cats, common } = ctx;
   const s = series[0];
@@ -30,7 +28,7 @@ function waterfallOption(ctx) {
     base = isTotal ? y : base + y;
     return { start, end: start + y, y, isTotal };
   });
-  // Three-category color single source waterfallColorOf (same semantics in preview and chartEx export, including the default palette)
+  // Three-category color from waterfallColorOf (same semantics in preview and chartEx export)
   const colorOf = (d) => waterfallColorOf(theme, s, d.isTotal, d.y);
   const label = echartsLabel(theme, el, s, { position: "top" });
   const barWidth = el.barWidth != null ? `${el.barWidth * 100}%` : undefined;
@@ -48,10 +46,9 @@ function waterfallOption(ctx) {
     ...common,
     series: [
       // Two stacked bars: transparent base = min(start,end), colored segment = |y|, all
-      // stacked as positive values. start cannot be used as the base: ECharts accumulates a
-      // stack group on both sides by sign, so the colored segment of a negative delta would be
-      // pushed below the zero axis and the waterfall bridge would degenerate into an ordinary
-      // negative bar (a preview/export fork)
+      // stacked as positive values. start cannot be the base: ECharts accumulates a stack
+      // group by sign, so a negative delta would fall below zero and the bridge would
+      // degenerate into an ordinary negative bar.
       { type: "bar", stack: "wf", silent: true, barWidth, data: data.map((d) => Math.min(d.start, d.end)), itemStyle: { color: "transparent" }, tooltip: { show: false } },
       {
         type: "bar", stack: "wf", barWidth,
@@ -76,8 +73,8 @@ export function buildCartesian(ctx) {
   const stackedPercent = series.some((s) => s.stack === "percent");
   const horizontal = resolveChartDirection(el, series);
   const axes = cartesianAxes(theme, el, cats, series, { horizontal, percentMax: stackedPercent, scatter: primary === "scatter" || primary === "bubble" });
-  // The bottom yield for a category-axis title is handled centrally by the layout model
-  // resolvePlotLayout (already included in common.grid)
+  // The bottom yield for a category-axis title is handled by resolvePlotLayout
+  // (already included in common.grid)
 
   if (primary === "scatter" || primary === "bubble") {
     return {
@@ -171,9 +168,8 @@ export function buildCartesian(ctx) {
       return {
         ...commonSer,
         type: "candlestick",
-        // Candlestick bar width goes through the resolveBarLayout projection (same default as
-        // the writer stock gapWidth 150, converging the two sides — previously ECharts used
-        // ~80% slot width while PPT used 40%)
+        // Candlestick bar width goes through resolveBarLayout (same default as the writer
+        // stock gapWidth 150, keeping the two sides aligned)
         barWidth: `${barLayout.echarts.barWidthPct}%`,
         // Up/down default colors come from the same source as the export (CHART_DEFAULTS.candlestick, calibrated on chart46)
         itemStyle: {
@@ -192,10 +188,8 @@ export function buildCartesian(ctx) {
   });
 
   // Candlestick legend aligned with PowerPoint: a native stock chart expands one series into
-  // open/high/low/close legend entries (the preview previously showed only the series name,
-  // diverging from the export). Empty-data helper series carry the legend entries (they take
-  // no part in interaction) while the real series are excluded via legend.data; high/low are
-  // keyed with the up/down colors
+  // open/high/low/close legend entries. Empty-data helper series carry the entries (no
+  // interaction) while the real series are excluded via legend.data; high/low use up/down colors.
   const csSeries = series.find((s) => s.type === "candlestick");
   let legendData = null;
   if (csSeries) {

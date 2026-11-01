@@ -1,6 +1,6 @@
-// ============================================================================
-// model/chart/labels.js — data label resolution (official §3.3 chain, shared by renderer and writer)
-// ----------------------------------------------------------------------------
+// packages/model/chart/labels.js — data label resolution (shared by renderer and writer).
+// Per-type defaults live here; an unsupported content value falls back to the type default.
+// Labels are off unless Chart.dataLabels or series[i].dataLabels is configured.
 
 /** Content available per type for data labels (shared by the editor style panel and resolveDataLabels). */
 export const DATA_LABEL_CONTENTS = {
@@ -11,7 +11,7 @@ export const DATA_LABEL_CONTENTS = {
 };
 
 /**
- * Data label display (official §3.3 chain: series[i].dataLabels > Chart.dataLabels > not shown).
+ * Data label display (chain: series[i].dataLabels > Chart.dataLabels > not shown).
  * @returns {null | {content, numberFormat, color, fontSize, fontFamily}} effective config
  * (style fields come from DataLabelConfig extends TextStyle, consumed by writer/renderer)
  */

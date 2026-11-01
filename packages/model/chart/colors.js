@@ -1,14 +1,13 @@
-// ============================================================================
-// model/chart/colors.js — chart color lookup and derivation (official §5.2, shared by writer/renderer)
-// ----------------------------------------------------------------------------
+// packages/model/chart/colors.js — chart color lookup and derivation (shared by writer/renderer).
+// luminanceOf is for label contrast on tiles; validate.js keeps a separate WCAG contrast
+// formula — do not merge the two.
 
 import { resolveColor, colorOr, themeChartPalette } from "../theme.js";
 
 /**
- * Hierarchy node color (official treemap/sunburst color derivation, shared by writer/renderer):
- *   single fill -> all roots share one color; a 1D array cycles per root; a 2D array
- *   takes the outer index by root and the inner index by level directly;
- *   child nodes step down HSL.L by 10 per level (L_new = max(0, L_old - 10)).
+ * Hierarchy node color (treemap/sunburst derivation): a single fill gives all roots one
+ * color; a 1D array cycles per root; a 2D array takes the outer index by root and the
+ * inner index by level. Child nodes step down HSL.L by 10 per level.
  * @param {object} s normalized series (with fill)
  * @param {number} rootIdx root appearance-order index
  * @param {number} levelFromRoot distance from the root (0 = root)
@@ -54,12 +53,9 @@ export function parseHexColor(hex) {
 }
 
 /** Relative luminance (Rec.709 weighted, 0..1; hex6/hex8, invalid input returns null).
- * Deliberately different from the WCAG luminance inlined in validate.js's contrast rule:
- * that one gamma-linearizes each channel (v <= 0.03928 ? v/12.92 : ((v+0.055)/1.055)^2.4)
- * as the WCAG formula requires, while this one is a plain weighted sum. They answer
- * different questions — this picks a readable label color on a tile (threshold 0.5),
- * validate.js computes a text/background contrast ratio against a 3:1 threshold — so
- * keep the two implementations apart; do not "unify" them. */
+ * Deliberately a plain weighted sum, unlike validate.js's WCAG gamma-linearized luminance:
+ * this picks a readable label color on a tile (threshold 0.5), validate.js computes a
+ * text/background contrast ratio against 3:1. Keep the two implementations apart. */
 export function luminanceOf(hex) {
   const parsed = parseHexColor(hex);
   if (!parsed) return null;
@@ -76,10 +72,8 @@ export function labelColorOn(bgHex, darkHex = "#1f2937") {
 }
 
 /**
- * Waterfall three-category color (official totalBars/increaseBars/decreaseBars -> default
- * theme color cycle palette[0/1/2]; preview and chartEx export share the same category
- * semantics — previously an unconfigured chartEx fell back to the PowerPoint platform
- * palette, disagreeing with the preview).
+ * Waterfall three-category color (totalBars/increaseBars/decreaseBars -> default theme
+ * color cycle palette[0/1/2]; preview and chartEx export share the same semantics).
  */
 export function waterfallColorOf(theme, s, isTotal, y) {
   const cfg = isTotal ? s.totalBars : y >= 0 ? s.increaseBars : s.decreaseBars;
@@ -91,7 +85,7 @@ export function waterfallColorOf(theme, s, isTotal, y) {
   return isTotal ? palette[0] : y >= 0 ? palette[1] : palette[2];
 }
 
-/** Reduce HSL lightness by n% (official treemap derivation: L_new = max(0, L_old - 10)). */
+/** Reduce HSL lightness by n% (treemap derivation; default step 10). */
 export function darkenByLightness(hex, step = 10) {
   const h = String(hex || "#888888").replace("#", "");
   if (h.length < 6) return hex;

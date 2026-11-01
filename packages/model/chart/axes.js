@@ -1,12 +1,8 @@
-// ============================================================================
-// model/chart/axes.js — axis config normalization and direction/channel resolution (shared by writer/renderer)
-// ----------------------------------------------------------------------------
-// Aligned with official §Chart direction rules + §5.3 axis-array rules: a secondary
-// axis always sits on the value-axis side — vertical charts use series.yAxisIndex,
-// horizontal charts use series.xAxisIndex.
-// ============================================================================
+// packages/model/chart/axes.js — axis config normalization and direction/channel resolution.
+// A secondary axis always sits on the value-axis side: vertical charts use yAxisIndex,
+// horizontal charts xAxisIndex (see seriesAxisIndex).
 
-/** Axis config normalization: AxisConfig | AxisConfig[] -> AxisConfig[] (omitted = [{}], official §general rules 5). */
+/** Axis config normalization: AxisConfig | AxisConfig[] -> AxisConfig[] (omitted = [{}]). */
 export function toAxisArray(cfg) {
   if (cfg == null) return [{}];
   const arr = Array.isArray(cfg) ? cfg : [cfg];
@@ -35,10 +31,9 @@ function isHorizontalChart(el, data, encode) {
 }
 
 /**
- * Chart direction (official §Chart direction rules): bar/waterfall is decided by axis
- * types — xAxis.type==="category" (explicit or inferred from data) -> vertical;
- * yAxis.type==="category" -> horizontal. All other types
- * (line/area/scatter/bubble/candlestick/heatmap/radar…) are always vertical.
+ * Chart direction: bar/waterfall is decided by axis types — xAxis.type==="category"
+ * (explicit or inferred from data) -> vertical; yAxis.type==="category" -> horizontal.
+ * All other types (line/area/scatter/bubble/candlestick/heatmap/radar…) are vertical.
  * @returns {boolean} true = horizontal (barDir=bar)
  */
 export function resolveChartDirection(el, series) {
@@ -51,10 +46,10 @@ export function resolveChartDirection(el, series) {
 export { isHorizontalChart };
 
 /**
- * Series axis index (official §5.3): a secondary axis always sits on the value-axis
- * side — vertical charts use series.yAxisIndex, horizontal charts use series.xAxisIndex.
- * Returns the axis index (0 = primary axis; ≥1 = the Nth secondary axis, which requires
- * the xAxis/yAxis array length to be ≥ index+1).
+ * Series axis index: a secondary axis always sits on the value-axis side — vertical
+ * charts use series.yAxisIndex, horizontal charts series.xAxisIndex. Returns the axis
+ * index (0 = primary; ≥1 = the Nth secondary axis, requiring the axis array length to
+ * be ≥ index+1).
  */
 export function seriesAxisIndex(s, horizontal) {
   const idx = horizontal ? s.xAxisIndex : s.yAxisIndex;
