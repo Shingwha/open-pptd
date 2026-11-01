@@ -30,6 +30,7 @@
 | W3b | 注释/文档整理 | 压缩 banner、去历史/spec 编号复述、保留公共 JSDoc/算法 | W3a | 全仓非公式、非 vendor 的 .js/.mjs | 全量 39/39；diff 仅注释；contract/dep-graph |
 | W4 | 试用反馈修复 | 画廊静态 / 越界提示 / Logo / 缩略图选中 | 3.1 | editor preview/view/skeleton/thumbnails/styles；feedback-fixes e2e | 全量 39/39；全部 e2e；golden 156/156 |
 | W5 | 恢复添加元素 | 形状/线条/图片 + 6 项添加菜单 | W4 | editor types/add-menu/api/toolbar/styles；add-elements e2e | 全量 39/39；全部 e2e；golden 156/156；图片落盘 |
+| W6 | 性能优化 | 纯度量 + 缩略图增量 + viewport 缓存 + perf 工具 | W5 | editor view/thumbnails/viewport/api；tests/perf | 全量 39/39；全部 e2e；golden 156/156；六茶 p50 ≤20ms |
 
 > W3b 可按**文件不相交**并行 3–4 个 worker；合并顺序固定，lead 逐个门禁后合并。
 
@@ -70,3 +71,5 @@
 - ✅ W4（2026-11-01 @ `feat/3.1-w4-feedback` → main）：画廊封面静态、越界提示仅编辑器、字标 OPEN PPTD、缩略图不再选中内容；feedback-fixes 21/21。
 - ✅ W5（2026-11-01 @ `feat/3.1-w5-add` → main）：添加菜单六类（文字/表格/图表/形状/线条/图片）；形状 187 preset 搜索、线条 3 变体、图片落 media；add-elements 12/12。
 - ✅ 3.1 终验 + 试用反馈：run-all 39/39、全部 e2e、golden 156/156；详见 `handoff/W3.1-lead.md`。未 push/tag/发版。
+- 另修 `open --detach` 子进程重复开浏览器（补 `--no-open`）。
+- W6 性能优化已派工（DOM 度量移除 + 缩略图增量化）。
