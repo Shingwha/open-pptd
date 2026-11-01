@@ -105,7 +105,8 @@ export function createView({ state, page, api, controller = null, getController 
       iconMap: state.iconMap,
     });
     coords.setLayoutPage(tree.pages[0]);
-    notifyOverflow(state.currentPage, tree.pages[0]);
+    // Out-of-bounds is an editing hint only: gallery covers and full previews stay silent.
+    if (editable) notifyOverflow(state.currentPage, tree.pages[0]);
     ctl()?.refreshSelection();
     // Progressive-load mask: cover the failure placeholder while the current page's assets are not ready (assets landing re-render via refreshPage)
     if (dom.canvasLoading) dom.canvasLoading.hidden = !state.pagesPending?.has(pg);

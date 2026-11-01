@@ -79,7 +79,7 @@ export function editorSkeletonHtml() {
     // topbar: flat single row — brand left, one right-aligned cluster (status + undo/redo + file/design/present + GitHub)
     `<header class="topbar">` +
     `<div class="brand">` +
-    `<a class="brand-home" href="./" title="返回作品画廊">OPEN/PPTD</a>` +
+    `<a class="brand-home" href="./" title="返回作品画廊">OPEN PPTD</a>` +
     `<span class="brand-file" id="brand-file"></span>` +
     `</div>` +
     `<div class="topbar-actions">` +
@@ -151,7 +151,7 @@ export function previewSkeletonHtml({ chrome = "full" } = {}) {
     `<div class="app pptd-preview" data-chrome="full">` +
     `<header class="topbar">` +
     `<div class="brand">` +
-    `<a class="brand-home" href="./" title="返回作品画廊">OPEN/PPTD</a>` +
+    `<a class="brand-home" href="./" title="返回作品画廊">OPEN PPTD</a>` +
     `<span class="brand-file" id="brand-file"></span>` +
     `</div>` +
     `<div class="topbar-actions">` +
@@ -178,7 +178,7 @@ export function homeSkeletonHtml() {
     `<div class="gallery-view" id="home-view">` +
     // top row: wordmark + file / GitHub (thin hairline, no color block)
     `<header class="gallery-top">` +
-    `<div class="brand"><a class="brand-home" href="./" title="刷新作品画廊">OPEN/PPTD</a></div>` +
+    `<div class="brand"><a class="brand-home" href="./" title="刷新作品画廊">OPEN PPTD</a></div>` +
     `<div class="gallery-top-actions">` +
     `<button id="btn-file" class="btn" title="文件：新建 / 打开本地项目 / 最近打开">` +
     `<span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M3 6a1.5 1.5 0 0 1 1.5-1.5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.2V18a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>` +

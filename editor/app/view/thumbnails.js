@@ -23,6 +23,20 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
   let thumbDrag = null; // { x, y, startScroll, moved, card, index, drop }
   let suppressClick = false;
 
+  /** A page drag must never select painted thumbnail text (the browser selection is document-wide). */
+  function clearSelection() {
+    try {
+      window.getSelection?.()?.removeAllRanges();
+    } catch {
+      /* none */
+    }
+  }
+
+  /** Painted deck images are content, not draggable documents: the pointer gesture belongs to the strip. */
+  function pinDraggable(rootEl) {
+    for (const img of rootEl.querySelectorAll("img")) img.draggable = false;
+  }
+
   function thumbAt(x, y) {
     // Cards sit inside .thumb-item (page number underneath), so hit the item first
     return document.elementFromPoint(x, y)?.closest(".thumb-item")?.querySelector(".thumb") || null;
@@ -59,6 +73,10 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
     bar.addEventListener("pointerdown", (e) => {
       if (e.button !== 0) return;
       if (e.target.closest("button")) return; // delete button: a normal click
+      // The strip is a drag surface: cancel the pointerdown default so no text/image
+      // selection or native drag starts. Click still fires on release (page switch).
+      e.preventDefault();
+      clearSelection();
       const item = e.target.closest(".thumb-item");
       const card = item?.querySelector(".thumb") || null;
       thumbDrag = {
@@ -99,6 +117,7 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
       bar.classList.remove("reordering");
       if (!d.moved) return;
       suppressClick = true; // swallow the click that immediately follows (avoids an accidental page switch)
+      clearSelection(); // a drag that started before the selection was cleared may have re-selected
       setTimeout(() => (suppressClick = false), 160);
       if (!editable || d.index < 0 || !d.drop) return;
       // Target index conversion: after removing the original page, a drop point past it shifts by -1
@@ -129,11 +148,13 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
       thumb.className = "thumb" + (i === state.currentPage ? " active" : "");
       thumb.dataset.pageIndex = String(i);
       thumb.title = `第 ${i + 1} 页`;
+      thumb.draggable = false; // the strip owns the gesture (no native element drag)
       item.appendChild(thumb);
       // Insert before measuring: the card size is decided by the CSS breakpoint and measured at runtime
       bar.appendChild(item);
       const mini = document.createElement("div");
       mini.className = "thumb-canvas";
+      mini.draggable = false;
       // Contain the canvas's real ratio into the measured card content box (16:9 fills exactly; a portrait poster
       // centers with top/bottom padding). Not a constant: the narrow-screen card box is smaller.
       const [pw, ph] = deckSize(deck);
@@ -149,7 +170,10 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
       // Progressive loading: skeleton placeholder (page number/delete/click still work; refreshThumb swaps it in place once assets land)
       const skeleton = state.pagesPending?.has(pg) ? document.createElement("div") : null;
       if (skeleton) skeleton.className = "thumb-skeleton";
-      else paintModelPage(mini, pg, deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
+      else {
+        paintModelPage(mini, pg, deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
+        pinDraggable(mini);
+      }
 
       thumb.append(mini, ...(skeleton ? [skeleton] : []));
       const num = document.createElement("span");
@@ -199,7 +223,10 @@ export function createThumbnails({ state, api, ops, ui, editable = true, reload 
     disposeChartInstances(thumb);
     thumb.querySelector(".thumb-skeleton")?.remove();
     const mini = thumb.querySelector(".thumb-canvas");
-    if (mini) paintModelPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
+    if (mini) {
+      paintModelPage(mini, pg, state.deck, state.theme, { imageMap: state.imageMap, iconMap: state.iconMap });
+      pinDraggable(thumb);
+    }
   }
 
   return {

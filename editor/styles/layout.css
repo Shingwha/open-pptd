@@ -140,6 +140,20 @@
   transition: border-color var(--dur-fast) var(--ease);
 }
 .thumb:hover:not(.active) { border-color: var(--line-strong); }
+
+/* The strip is a drag surface: dragging a card must never select painted page text or
+   start a native image drag (thumbnails.js also cancels pointerdown and clears the
+   document selection). Clicks/drag-sort/delete/wheel all remain on the strip. */
+.thumbbar,
+.page-thumbs,
+.thumb-item,
+.thumb,
+.thumb * {
+  user-select: none;
+  -webkit-user-select: none;
+}
+.thumb img { -webkit-user-drag: none; }
+
 /* Current page: accent frame + a 2px inner line (outline keeps the measured box stable) */
 .thumb.active {
   border-color: var(--accent);
