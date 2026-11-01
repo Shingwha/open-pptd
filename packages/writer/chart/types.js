@@ -1,8 +1,5 @@
-// ============================================================================
 // writer/chart/types.js — chartEx fallback placeholder image
-// ----------------------------------------------------------------------------
-// Chart-type grouping has a single source in CHART_META.route (model); this file caches no derived list.
-// ============================================================================
+// Chart-type grouping has a single source in CHART_META.route (model); no derived list here.
 
 /** 1×1 transparent PNG (chartEx mc:Fallback placeholder preview). */
 export const TINY_PNG = (() => {

@@ -1,12 +1,8 @@
-// ============================================================================
 // writer/chart/classic.js — classic c:chartSpace chart export main assembly
-// ----------------------------------------------------------------------------
-// Aligned with the official (python-pptx-generated 8-type reference skeleton):
-//   - the chart XML must declare <c:externalData r:id="rId1"> → pointing at the embedded xlsx
-//   - strCache/numCache must be written (so values show without opening the data sheet)
-//   - schema element order is strict (PowerPoint validates it)
-//   - chart text binds the theme minor font via +mn-lt/+mn-ea
-// ============================================================================
+// Invariants: the chart XML must declare <c:externalData r:id="rId1"> pointing at the embedded
+// xlsx; strCache/numCache must be written (values show without opening the data sheet); schema
+// element order is strict (PowerPoint validates it); chart text binds the theme minor font via
+// +mn-lt/+mn-ea.
 
 import { el, esc, xmlHeader } from "../xml.js";
 import { resolveChartSpec, CHART_META, resolveChartDirection, seriesAxisIndex, seriesChannels, chartDataTable, resolveDataLabels, colLetter } from "../../model/chart.js";
@@ -26,18 +22,19 @@ import { buildChartExParts } from "./chartex.js";
  *  xml/rels are empty (the preview is fine; export skips this element with a warning).
  */
 export function buildChartParts(theme, chartEl, chartIndex) {
-  // Effective-semantics single source (spec: normalized series/title/legend/layout/bar-width/bubble); this function only projects to OOXML
+  // Effective semantics come from resolveChartSpec (normalized series/title/legend/layout/bar
+  // width/bubble); this function only projects them to OOXML.
   const spec = resolveChartSpec(theme, chartEl);
   const series = spec.series;
   const types = spec.types;
   const layout = spec.layout;
-  // Route single source CHART_META.route: no route = unknown type (preview is fine; export skips with a warning)
+  // Route single source CHART_META.route: no route = unknown type (preview works; export skips)
   const unsupported = types.filter((t) => !CHART_META[t]?.route);
   if (unsupported.length) {
     console.warn(`[writer] 图表 ${chartEl.elementId} 类型 ${unsupported.join("/")} 暂不支持原生导出（待官方参考比对），已跳过`);
     return null;
   }
-  // chartEx system (waterfall/treemap/sunburst take over the series array; route single source CHART_META.route)
+  // chartEx system (waterfall/treemap/sunburst take over the series array)
   if (types.some((t) => CHART_META[t]?.route === "chartex")) {
     return buildChartExParts(spec, chartIndex);
   }
@@ -45,7 +42,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
   const table = chartDataTable(chartEl);
   const rowCount = table.length;
   const dataRows = Math.max(0, rowCount - 1);
-  // Direction (official chart direction rules): for bar/waterfall it comes from xAxis/yAxis.type
+  // Axis direction comes from xAxis/yAxis.type for bar (and follows the model for the rest)
   const horizontal = resolveChartDirection(chartEl, series);
   const sheetOrder = buildSheetOrder(chartEl, series, horizontal);
   // After reordering: old column index → new column index
@@ -64,7 +61,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
   };
   sheetRange.colHeader = (colIdx) => newIdxOf.get(colIdx) ?? 0; // column-header reference (candlestick channels)
   sheetRange.rowEnd = () => rowCount;
-  // Data labels + global fontFamily injection (official chain: label.fontFamily > Chart.fontFamily)
+  // Data labels + global fontFamily injection (chain: label.fontFamily > Chart.fontFamily)
   const labelsOf = (s, type) => {
     const l = resolveDataLabels(chartEl, s, type);
     if (!l) return null;
@@ -80,7 +77,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
 
   const chartElems = [];
   let serCounter = 0;
-  // Bar/slot width semantics (spec.barLayout single source; the renderer preview projects the same result)
+  // Bar/slot width semantics (spec.barLayout; the preview projects the same result)
   const barLayout = spec.barLayout;
   const isStacked = barLayout.stacked;
   const isPercent = barLayout.percent;
@@ -113,13 +110,13 @@ export function buildChartParts(theme, chartEl, chartIndex) {
         })(),
       ];
       // ECMA-376 CT_BarChart order: … ser* → dLbls? → gapWidth? → overlap? → serLines? → axId×2
-      // gapWidth must precede overlap (PowerPoint parses strictly by schema; reversed order pops a repair dialog)
+      // gapWidth must precede overlap (PowerPoint parses strictly by schema; reversed order pops repair)
       if (barLayout.hasGapWidthConfig) kids.push(el("c:gapWidth", { val: barLayout.gapWidth }));
       if (barLayout.overlap != null) kids.push(el("c:overlap", { val: barLayout.overlap }));
       kids.push(el("c:axId", { val: catId }), el("c:axId", { val: valId }));
       chartElems.push(el("c:barChart", {}, kids.join("")));
     } else if (type === "line" || type === "area") {
-      // grouping shares the bar source (model resolveBarLayout decides stack/percent); hardcoding
+      // grouping shares the bar source (resolveBarLayout decides stack/percent); hardcoding
       // "standard" would drop stack: value/percent and redraw stacked charts overlapping from 0
       const grouping = isPercent ? "percentStacked" : isStacked ? "stacked" : "standard";
       const kids = [
@@ -138,7 +135,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
             return ss.join("");
           })(),
       ];
-      // smooth is written explicitly per series (c:smooth 0/1); the group-level value is gone, so "any smoothed series smooths the whole group" no longer applies
+      // smooth is written explicitly per series (c:smooth 0/1); there is no group-level smooth
       kids.push(el("c:axId", { val: catId }), el("c:axId", { val: valId }));
       chartElems.push(el(`c:${type === "area" ? "areaChart" : "lineChart"}`, {}, kids.join("")));
     } else if (type === "scatter") {
@@ -156,9 +153,8 @@ export function buildChartParts(theme, chartEl, chartIndex) {
         ].join(""))
       );
     } else if (type === "bubble") {
-      // Effective bubble-size semantics (spec.bubble single source: preview diameter and export
-      // normalized values, bubbleScale inverted from the same model; previously the writer duplicated
-      // the mapping and mutated s._values.size, polluting the model result as an export side effect)
+      // Effective bubble-size semantics (spec.bubble: preview diameter and export normalized values,
+      // bubbleScale inverted from the same model)
       const bub = spec.bubble;
       chartElems.push(
         el("c:bubbleChart", {}, [
@@ -229,7 +225,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
     }
   }
 
-  // Axes (full official AxisConfig; radar's spokeAxis maps to catAx/valAx)
+  // Axes (radar's spokeAxis maps to catAx/valAx)
   const primary = spec.primary;
   let axes = "";
   if (primary === "pie") {
@@ -247,7 +243,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
     axes = buildAxesXml(theme, chartEl, series, horizontal, "catVal", { valNumFmt: isPercent ? "0%" : null });
   }
 
-  // Title (effective config spec.title; the rich character style shares richCharStyleXml with chartEx axis titles)
+  // Title (rich character style shared with chartEx axis titles via richCharStyleXml)
   const t = spec.title;
   const titleXml = t.text
     ? (
@@ -258,7 +254,7 @@ export function buildChartParts(theme, chartEl, chartIndex) {
     )
     : `<c:autoTitleDeleted val="1"/>`;
 
-  // Legend (effective config spec.legend: on/position/size single source; consumes official LegendConfig)
+  // Legend (spec.legend: on/position/size)
   const lg = spec.legend;
   let legendXml = "";
   if (lg.on) {
@@ -266,12 +262,12 @@ export function buildChartParts(theme, chartEl, chartIndex) {
     legendXml = `<c:legend><c:legendPos val="${lg.ooxmlPos}"/><c:overlay val="0"/>${txPrXml(theme, Math.round(lg.size * 100), "tx1", { ...(lg.color ? { color: lg.color } : {}), ...(legendFontFamily ? { fontFamily: legendFontFamily } : {}) })}</c:legend>`;
   }
 
-  // nullHandling (first non-null across series; official radar default is connect)
+  // nullHandling (first non-null across series; radar's default is connect)
   const nh = series.map((s) => s.nullHandling).find((v) => v) || (primary === "radar" ? "connect" : "gap");
   const disp = nh === "zero" ? "zero" : nh === "connect" ? "span" : "gap";
 
-  // Chart frame (official Chart.fill/border/shadow → chartSpace spPr, independent of series colors;
-  // isomorphic with chartEx cx:spPr and sharing chartSpaceSpPrXml). Order after </c:chart>:
+  // Chart frame (Chart.fill/border/shadow → chartSpace spPr, independent of series colors;
+  // isomorphic with chartEx cx:spPr). Order after </c:chart>:
   // c:spPr → c:txPr → c:externalData
   const frameSpPr = chartSpaceSpPrXml(theme, chartEl, "c");
 

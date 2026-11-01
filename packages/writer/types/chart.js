@@ -1,10 +1,6 @@
-// ============================================================================
 // writer/types/chart.js — chart toXml shard (route: image / classic / chartEx)
-// ----------------------------------------------------------------------------
-// Route single source chartRouteOf: image collects media first (no chart number
-// consumed); classic/chartEx register the chart part then emit a graphicFrame;
-// no route = skip.
-// ============================================================================
+// Route single source chartRouteOf: image collects media first (no chart number consumed);
+// classic/chartEx register the chart part then emit a graphicFrame; no route = skip.
 
 import { registerType } from "../../model/registry.js";
 import { chartRouteOf } from "../../model/chart.js";

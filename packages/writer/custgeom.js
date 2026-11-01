@@ -1,17 +1,10 @@
-// ============================================================================
 // writer/custgeom.js — custom path (SVG path) → a:custGeom (OOXML custom geometry)
-// ----------------------------------------------------------------------------
-// PPTD shapeName:"custom" + viewBox + path (M/L/H/V/C/S/Q/A/Z) → official PowerPoint
-// storage: a:path uses the viewBox as its geometry coordinate system (w/h attributes) and
-// a:rect bounds the whole geometry → PowerPoint stretches that coordinate system to the shape
-// bounds (matching the preview).
-//
-// Arc conversion: SVG A (endpoint parameterization) → OOXML arcTo (center parameterization);
-// with a zero rotation angle it emits arcTo directly, otherwise it degrades to a cubic bezier
-// approximation (arcTo cannot express rotated ellipses).
-// Holes: SVG's nonzero winding rule matches PowerPoint — opposite inner/outer ring directions
-// produce a hole, passed through as-is.
-// ============================================================================
+// shapeName:"custom" + viewBox + path (M/L/H/V/C/S/Q/A/Z) → a:path using the viewBox as its
+// coordinate system (w/h) and a:rect bounding the geometry; PowerPoint stretches that space to
+// the shape bounds, matching the preview.
+// Arc conversion: SVG A (endpoint) → OOXML arcTo (center); zero rotation emits arcTo directly,
+// otherwise a cubic bezier approximation (arcTo cannot express rotated ellipses).
+// Holes: SVG's nonzero winding rule matches PowerPoint, so opposite ring directions pass through.
 
 import { el, angleToOOXML } from "./xml.js";
 import { parseSvgPath } from "../model/svg-path.js";
@@ -136,7 +129,7 @@ export function svgPathToOoxml(viewBox, d) {
       case "A": {
         const [rx, ry, rot, largeArc, sweep, x, y] = args;
         // Near-coincident endpoints = a full circle (official example M500,0 A500,500 0 1 1 499,0):
-        // split into two 180° arcs. Non-zero rotation → cubic bezier approximation (arcTo cannot rotate ellipses)
+        // split into two 180° arcs. Non-zero rotation → cubic bezier approximation.
         for (const sub of splitArc(cx, cy, rx, ry, rot, largeArc, sweep, x, y)) {
           if (sub.rot % 360 === 0) {
             const arc = svgArcToOoxml(sub.x0, sub.y0, sub.rx, sub.ry, 0, sub.largeArc, sub.sweep, sub.x1, sub.y1);
@@ -200,8 +193,8 @@ function ptCmd(tag, x, y) {
 /**
  * Arc → sub-arc list: near-coincident endpoints (a full circle, as in the official hole example)
  * split into two 180° arcs; everything else is returned as-is. A full circle's stAng is 0 (the
- * current point is at angle 0) and the direction follows sweep (outer clockwise / inner
- * counter-clockwise → PowerPoint nonzero-winding holes).
+ * current point is at angle 0) and the direction follows sweep, giving PowerPoint nonzero-winding
+ * holes for counter-clockwise inner rings.
  */
 export function splitArc(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
   rx = Math.abs(rx);
@@ -225,8 +218,8 @@ export function splitArc(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
 
 /**
  * SVG A command (endpoint parameterization) → OOXML arcTo (center parameterization).
- * Exact conversion when the rotation angle is 0 (W3C SVG appendix F.6.5); returns null
- * otherwise (the caller degrades to bezier).
+ * Exact conversion when the rotation angle is 0 (W3C SVG appendix F.6.5); null otherwise
+ * (the caller degrades to bezier).
  */
 export function svgArcToOoxml(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
   const c = svgArcCenter(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1);
@@ -320,9 +313,6 @@ export function arcToBezier(x0, y0, rx, ry, rotDeg, largeArc, sweep, x1, y1) {
   return out;
 }
 
-// ---------------------------------------------------------------------------
-// SVG path parsing lives in model/svg-path.js (shared lexer + arity table with the
-// renderer clip-path scaler). Re-exported here so existing custgeom.js#parseSvgPath
-// consumers and the preset-shapes regression keep their import path.
-// ---------------------------------------------------------------------------
+// SVG path parsing lives in model/svg-path.js (shared lexer + arity table with the renderer
+// clip-path scaler); re-exported here to keep custgeom.js#parseSvgPath import paths stable.
 export { parseSvgPath };

@@ -1,6 +1,4 @@
-// ============================================================================
 // writer/chart/frame.js — chart element → in-slide graphicFrame (including the chartEx mc wrapper)
-// ----------------------------------------------------------------------------
 
 import { el, escAttr } from "../xml.js";
 import { chartRouteOf } from "../../model/chart.js";
@@ -8,7 +6,7 @@ import { TINY_PNG } from "./types.js";
 
 /** Chart element → in-slide graphicFrame (references the chart part; media/parts are gathered by pptx.js).
  * heatmap/sankey image conversion (route image, caller passes imgRef) → p:pic (PNG placeholder +
- * svgBlip vector; PowerPoint 2016+/new WPS/LibreOffice show the vector, older versions the placeholder). */
+ * svgBlip vector; PowerPoint 2016+/new WPS/LibreOffice show the vector, older versions the PNG). */
 export function chartXml(theme, chartEl, ctx, chartId, imgRef = null) {
   const [x, y, w, h] = chartEl.bounds;
   if (imgRef) {
@@ -35,7 +33,7 @@ export function chartXml(theme, chartEl, ctx, chartId, imgRef = null) {
       el("p:spPr", {}, xfrm + el("a:prstGeom", { prst: "rect" }, el("a:avLst"))),
     ].join(""));
   }
-  // chartEx detection single source chartRouteOf (model CHART_META.route)
+  // chartEx detection single source: chartRouteOf (model CHART_META.route)
   const isChartEx = chartRouteOf(chartEl) === "chartex";
   const rId = ctx.chartRef ? ctx.chartRef(chartId, isChartEx ? "chartEx" : "chart") : "rIdChart1";
   const uri = isChartEx
@@ -47,7 +45,7 @@ export function chartXml(theme, chartEl, ctx, chartId, imgRef = null) {
   const frameId = ctx.nextId();
   const name = escAttr(chartEl.elementId);
   // graphicFrame's p:xfrm holds off/ext directly (only a pic's spPr needs the a:xfrm wrapper —
-  // double-wrapping is invalid and PowerPoint ignores the transform, leaving a zero-size invisible chart)
+  // double-wrapping is invalid and PowerPoint ignores the transform, leaving a zero-size chart)
   const xfrm =
     el("a:off", { x: Math.round(x * 12700), y: Math.round(y * 12700) }) +
     el("a:ext", { cx: Math.round(w * 12700), cy: Math.round(h * 12700) });
@@ -61,10 +59,9 @@ export function chartXml(theme, chartEl, ctx, chartId, imgRef = null) {
     el("a:graphic", {}, el("a:graphicData", { uri }, inner)),
   ].join(""));
   if (!isChartEx) return graphicFrame;
-  // chartEx (PowerPoint 2016+ charts): official structure = an mc:AlternateContent wrapper with
-  // Choice Requires="cx4" (the 2016/5/10 chartex namespace) + a Fallback preview image. Missing
-  // Fallback violates the mc spec (which requires Choice + Fallback); the Fallback uses a 1×1
-  // transparent PNG placeholder (a chart screenshot cannot be generated).
+  // chartEx (PowerPoint 2016+ charts) = an mc:AlternateContent wrapper with Choice Requires="cx4"
+  // plus a Fallback preview image (mc requires both branches). The Fallback is a 1×1 transparent
+  // PNG placeholder, since no chart screenshot can be generated.
   const media = ctx.addMedia(TINY_PNG, "png");
   const fallbackPic = el("p:pic", {}, [
     el("p:nvPicPr", {}, [
