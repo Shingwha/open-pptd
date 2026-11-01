@@ -1,13 +1,10 @@
-/* ============================================================================
-   responsive.css — three tiers: ≥1200 / 760–1199 / <760
-   ----------------------------------------------------------------------------
-   Only breakpoint overrides live here. The layout deforms, it never restructures:
-   the topbar compresses to icons, the thumbnail cards shrink, the Design drawer
-   goes full width and dialogs become bottom sheets.
-   Touch targets stay ≥36px below 760 (control tokens bump one step).
-   ============================================================================ */
+/* responsive.css — three tiers: ≥1200 / 760–1199 / <760
+ * Only breakpoint overrides live here. The layout deforms, it never restructures: the
+ * topbar compresses to icons, thumbnail cards shrink, the Design drawer goes full width
+ * and dialogs become bottom sheets. Touch targets stay ≥36px below 760.
+ */
 
-/* ==== 760–1199: two gallery columns, smaller page cards, truncating doc name ==== */
+/* 760–1199: two gallery columns, smaller page cards, truncating doc name */
 @media (max-width: 1199px) {
   body { --thumb-w: 96px; --thumb-h: 54px; }
   body .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -16,7 +13,7 @@
   body .gallery-masthead { margin-bottom: var(--space-8); }
 }
 
-/* ==== <760: one column, icon-only chrome, mini page cards, full-width drawer ==== */
+/* <760: one column, icon-only chrome, mini page cards, full-width drawer */
 @media (max-width: 759px) {
   /* Touch scale: controls one step up */
   body {

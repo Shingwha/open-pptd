@@ -1,10 +1,7 @@
-/* ============================================================================
-   panels.css — add menu, content editors (text / table / chart), Excel grid
-   ----------------------------------------------------------------------------
-   These panels live inside dialogs: hairline separators, white ground, no filled
-   cards. The gallery and the Design drawer have their own sheets (gallery.css /
-   design.css).
-   ============================================================================ */
+/* panels.css — add menu, content editors (text / table / chart), Excel grid
+ * These panels live inside dialogs: hairline separators, white ground, no filled
+ * cards. The gallery and Design drawer have their own sheets (gallery.css / design.css).
+ */
 
 /* Content-editor dialogs carry a grid + a side/under panel: wider than a plain
    message dialog on desktop only (below 760 they are full-width bottom sheets). */
@@ -13,7 +10,7 @@
   .dialog:has(.table-editor) { width: min(720px, 92vw); }
 }
 
-/* ==== add control popup (interaction/add-menu.js) ==== */
+/* add control popup (interaction/add-menu.js) */
 
 .add-list {
   position: absolute;
@@ -52,11 +49,11 @@
 .add-item-label { font-size: var(--text-md); font-weight: 500; }
 .add-item-hint { font-size: var(--text-xs); color: var(--sub); }
 
-/* ==== text editor ==== */
+/* text editor */
 
 .text-editor { display: flex; flex-direction: column; min-width: 380px; }
 
-/* ==== Excel-style data grid (excel-grid.js; table + chart editors) ==== */
+/* Excel-style data grid (excel-grid.js; table + chart editors) */
 
 .table-editor { display: flex; flex-direction: column; gap: var(--space-3); }
 .table-toolbar {
@@ -183,7 +180,7 @@
   overflow: auto;
 }
 
-/* ==== chart editor ==== */
+/* chart editor */
 
 .chart-editor { display: flex; flex-direction: column; gap: var(--space-3); min-width: 640px; }
 .chart-top { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }

@@ -1,9 +1,7 @@
-/* ============================================================================
-   design.css — Design drawer (theme / fonts / appearance)
-   ----------------------------------------------------------------------------
-   420px right drawer on panel ground with a hairline left edge; tabs are text
-   segments with a 2px accent underline; theme cards show six 12px color dots.
-   ============================================================================ */
+/* design.css — Design drawer (theme / fonts / appearance)
+ * 420px right drawer on panel ground with a hairline left edge; tabs are text
+ * segments with a 2px accent underline; theme cards show six 12px color dots.
+ */
 
 .design-mask { position: fixed; inset: 0; z-index: 90; background: var(--mask); }
 .design-mask[hidden] { display: none; }

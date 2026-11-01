@@ -1,36 +1,24 @@
-/* ============================================================================
-   tokens.css — Paper & Ink design tokens (single source of truth)
-   ----------------------------------------------------------------------------
-   Concept: a quiet studio. Warm paper desk, black ink type, one cinnabar accent
-   (wide 3.1 W2 pass; see specs/2026-11-01-0743-open-pptd-3.1/ref/design-direction.md).
+/* tokens.css — Paper & Ink design tokens (single source of truth)
+ * A quiet studio: warm paper desk, black ink type, one cinnabar accent.
+ * Order: 1 base (type/sizes/spacing/radii/shadows/motion/layers), 2 light palette
+ * on :root/[data-pptd-theme], 3 dark palette on [data-pptd-theme="dark"], 4 compat
+ * aliases. Every UI color literal lives here (ui-token-literals gate); present.css is
+ * the only exemption (arbitrary projection media). --canvas stays white in both modes:
+ * deck content must not flip with the UI theme; only the desk and panels darken.
+ * No gradients or backdrop-filter: structure comes from hairlines and space.
+ */
 
-   Order:
-     1. base: type / sizes / spacing / radii / shadows / motion / layers
-     2. light palette (the default) on :root, [data-pptd-theme]
-     3. dark palette on [data-pptd-theme="dark"]
-     4. compat aliases still referenced by the stylesheets (no values of their own)
-
-   Rules held by this sheet:
-     - Every color literal in the UI lives here (tests/regression/ui-token-literals.mjs).
-       present.css is the only exemption (it paints on arbitrary projection media).
-     - --canvas (the deck sheet) stays white in both modes: deck content must not
-       flip with the UI theme; only the desk (--paper) and panels (--panel) darken.
-     - No gradients, no backdrop-filter: structure comes from hairlines and space.
-     - Motion is state only: 120ms/180ms, ease-out. No entrance animations.
-   ============================================================================ */
-
-/* ---- 1. base (mode-independent) ---- */
+/* 1. base (mode-independent) */
 :root,
 [data-pptd-theme] {
   /* Type */
   --font-ui: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-display: "Iowan Old Style", "Palatino Linotype", Georgia, "Songti SC", "Noto Serif SC", serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  /* Deck paint stack: the 3.0 default (Microsoft YaHei first). Deck pages whose theme
-     declares no fontFamily inherit this stack, so the UI font must never reach them. */
+  /* Deck paint stack: colorless deck text inherits this stack, so the UI font
+   * must never reach deck pages. */
   --font-deck: "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif;
-  /* Deck default text color (3.0 value): colorless deck text inherits it, so the UI
-     ink palette can change without touching rendering (golden text#2–8). */
+  /* Deck default text color: the UI ink palette can change without touching rendering. */
   --ink-deck: #1c2532;
   /* Font scale — 11/12/13/14/16/20/28/44 */
   --text-xs: 11px;
@@ -93,7 +81,7 @@
   --z-toast: 1100;
 }
 
-/* ---- 2. light palette (default) ---- */
+/* 2. light palette (default) */
 :root,
 [data-pptd-theme] {
   --paper: #f6f3ec;        /* app desk / page ground */
@@ -132,7 +120,7 @@
   --scrollbar: var(--line-strong);
 }
 
-/* ---- 3. dark palette: paper desk goes dark, the canvas sheet stays white ---- */
+/* 3. dark palette: paper desk goes dark, the canvas sheet stays white */
 [data-pptd-theme="dark"] {
   --paper: #161513;
   --panel: #1d1c19;
@@ -175,17 +163,12 @@
   --shadow-sheet: 0 -8px 32px rgba(0, 0, 0, 0.55);
 }
 
-/* ============================================================================
-   4. compat aliases — not a value source
-   ----------------------------------------------------------------------------
-   Only names that the stylesheets (or editor/theme.js TOKENS) still read.
-   Each points at a canonical token above; new code uses the canonical names.
-   --primary-soft / --primary-tint are kept because the data-grid selected/region
-   cells paint an inset overlay with exactly that expression (frozen whitelist in
-   tests/regression/ui-token-literals.mjs). Everything else from the previous
-   legacy block (--f-* / --r-* / --sh-* / --h-* / --n-* / --t-*, --primary,
-   --primary-strong, --font-ui alias) had zero references and was deleted.
-   ============================================================================ */
+/* 4. compat aliases — not a value source. Only names the stylesheets (or
+ * editor/theme.js TOKENS) still read, each pointing at a canonical token above.
+ * --primary-soft/--primary-tint stay because the data-grid selected/region cells
+ * paint an inset overlay with exactly that expression (frozen whitelist in
+ * tests/regression/ui-token-literals.mjs).
+ */
 :root,
 [data-pptd-theme] {
   --bg: var(--paper);              /* old app-background name (theme.js TOKENS) */

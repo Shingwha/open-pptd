@@ -1,11 +1,9 @@
-/* ============================================================================
-   preview.css — preview surfaces (createPreview, editor/preview.js)
-   ----------------------------------------------------------------------------
-   "full" previews reuse the editor app layout (topbar / workspace / thumbbar).
-   "embedded" previews have no chrome: the mount point fills its host box and the
-   stage takes the remaining space (the canvas fit scale is computed from it), so
-   gallery covers and host embeds need nothing but width/height on the container.
-   ============================================================================ */
+/* preview.css — preview surfaces (createPreview, editor/preview.js)
+ * "full" previews reuse the editor app layout (topbar / workspace / thumbbar).
+ * "embedded" previews have no chrome: the mount point fills its host box and the stage
+ * takes the remaining space (the fit scale is computed from it), so gallery covers and
+ * host embeds need nothing but width/height on the container.
+ */
 
 .pptd-preview {
   position: relative;

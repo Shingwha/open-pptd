@@ -1,9 +1,7 @@
-/* ============================================================================
-   layout.css — app skeleton: topbar (56px) / workspace / thumbnail bar (88px)
-   ----------------------------------------------------------------------------
-   Paper & Ink: the chrome is a thin hairline frame around the paper desk. The
-   brand wordmark is serif; tool controls stay quiet (ghost buttons).
-   ============================================================================ */
+/* layout.css — app skeleton: topbar (56px) / workspace / thumbnail bar (88px)
+ * The chrome is a thin hairline frame around the paper desk; the brand wordmark is
+ * serif and tool controls stay quiet (ghost buttons).
+ */
 
 .app {
   display: flex;
@@ -19,7 +17,7 @@
   display: flex; /* single column: the canvas fills the workspace, Design is a drawer */
 }
 
-/* ==== topbar ==== */
+/* topbar */
 
 .topbar {
   display: flex;
@@ -74,7 +72,7 @@
   margin-left: auto;
 }
 
-/* ==== thumbnail bar ==== */
+/* thumbnail bar */
 
 .thumbbar {
   display: flex;

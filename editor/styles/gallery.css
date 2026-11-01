@@ -1,10 +1,8 @@
-/* ============================================================================
-   gallery.css — Home: masthead, filter tabs, work grid, empty states
-   ----------------------------------------------------------------------------
-   Editorial Home (Paper & Ink §6): the wordmark and the big serif statement carry
-   the page; work covers are the only imagery. Tabs are text with an accent
-   underline, never pills. Cards have no frame — the cover itself is the 6px card.
-   ============================================================================ */
+/* gallery.css — Home: masthead, filter tabs, work grid, empty states
+ * The wordmark and the big serif statement carry the page; work covers are the only
+ * imagery. Tabs are text with an accent underline, never pills. Cards have no frame —
+ * the cover itself is the card.
+ */
 
 html:has(.gallery-view) {
   scrollbar-gutter: stable;
@@ -17,7 +15,7 @@ html:has(.gallery-view) {
   background: var(--paper);
 }
 
-/* ==== top row: wordmark + file / GitHub ==== */
+/* top row: wordmark + file / GitHub */
 
 .gallery-top {
   position: sticky;
@@ -34,7 +32,7 @@ html:has(.gallery-view) {
 }
 .gallery-top-actions { display: flex; align-items: center; gap: var(--space-1); }
 
-/* ==== masthead ==== */
+/* masthead */
 
 .gallery-main {
   flex: 1;
@@ -78,7 +76,7 @@ html:has(.gallery-view) {
   padding-bottom: var(--space-1);
 }
 
-/* ==== filter tabs: text + 2px underline ==== */
+/* filter tabs: text + 2px underline */
 
 .gallery-tabs { display: flex; gap: var(--space-6); }
 .gallery-tab {
@@ -126,7 +124,7 @@ html:has(.gallery-view) {
 }
 .gallery-mode.remote .mode-dot { background: var(--warning); }
 
-/* ==== work grid: 3 / 2 / 1 columns ==== */
+/* work grid: 3 / 2 / 1 columns */
 
 .gallery-grid {
   display: grid;
@@ -177,7 +175,7 @@ html:has(.gallery-view) {
   font-size: var(--text-sm);
 }
 
-/* ==== card meta: title · page count / description / tags ==== */
+/* card meta: title · page count / description / tags */
 
 .gallery-card-info { padding-top: var(--space-3); }
 .gallery-card-title-row { display: flex; align-items: baseline; gap: var(--space-2); }
@@ -224,7 +222,7 @@ html:has(.gallery-view) {
 .gallery-tag { font-size: var(--text-xs); color: var(--sub); white-space: nowrap; }
 .gallery-tag + .gallery-tag::before { content: "·"; padding: 0 6px; color: var(--sub); }
 
-/* ==== empty state: serif title + one line + action ==== */
+/* empty state: serif title + one line + action */
 
 .gallery-grid > .gallery-empty { grid-column: 1 / -1; }
 .gallery-empty {
