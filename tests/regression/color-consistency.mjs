@@ -9,7 +9,7 @@
 // Usage: node tests/regression/color-consistency.mjs [project dir, default tests/projects/text]
 // ============================================================================
 
-import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import yaml from "../../packages/model/vendor/js-yaml.mjs";
 import { normalizeTheme, resolveColor } from "../../packages/model/theme.js";
