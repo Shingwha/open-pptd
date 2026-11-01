@@ -12,9 +12,7 @@ import { fileURLToPath } from "node:url";
 import { resolveFile, resolveStaticFile, sendFile } from "./static.js";
 import { resourceRoots as DEFAULT_RESOURCE_ROOTS } from "../paths.js";
 import { handleSave, handlePing } from "./api.js";
-import { handleThemes } from "./themes.js";
 import { handleFonts } from "./fonts.js";
-import { createFileThemeStore } from "./theme-store.js";
 import { createFileFontLibrary } from "./font-library.js";
 import { createExportImageHandler } from "./export-image.js";
 import { createSseHub } from "./events.js";
@@ -24,10 +22,8 @@ import { buildManifest } from "./gallery.js";
 // liveness handlers on their own routes without deep imports into packages/server/*.
 export { MIME, resolveFile, resolveStaticFile, sendFile } from "./static.js";
 export { handleSave, handlePing } from "./api.js";
-// Theme/font library API + Node stores
-export { handleThemes } from "./themes.js";
+// Font library API + Node store
 export { handleFonts } from "./fonts.js";
-export { createFileThemeStore, themeStorePaths } from "./theme-store.js";
 export { createFileFontLibrary, fontLibraryPaths } from "./font-library.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -48,9 +44,8 @@ export function createServer(options = {}) {
   // headless. The handler shares this module's origin; startServer is injected here
   // (renderDeck needs a temporary static server).
   const exportImage = createExportImageHandler({ startServer });
-  // Theme / font library API: stores are cheap closures; inject for tests or
-  // pass `false` to disable the endpoints. File IO happens per request.
-  const themeStore = options.themeStore === false ? null : (options.themeStore || createFileThemeStore());
+  // Font library API: store is a cheap closure; inject for tests or pass `false` to
+  // disable the endpoint. File IO happens per request.
   const fontLibrary = options.fontLibrary === false ? null : (options.fontLibrary || createFileFontLibrary());
 
   return http.createServer((req, res) => {
@@ -62,11 +57,7 @@ export function createServer(options = {}) {
         base = projectRoot;
         pathname = pathname === "/project" ? "/" : pathname.slice("/project".length);
       }
-      // Theme/font library API (loopback-only inside the handlers)
-      if (pathname === "/api/themes" && themeStore) {
-        handleThemes(req, res, url, { store: themeStore });
-        return;
-      }
+      // Font library API (loopback-only inside the handler)
       if (pathname === "/api/fonts" && fontLibrary) {
         handleFonts(req, res, url, { library: fontLibrary });
         return;
