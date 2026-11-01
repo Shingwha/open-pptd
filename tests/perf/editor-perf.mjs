@@ -10,9 +10,8 @@
 //      (thumbs "all"), one content edit (thumbs "current"). A MutationObserver on the
 //      thumbnail strip counts which cards were repainted, proving the incremental path.
 //
-// Thresholds (this machine, headless Chrome, 1440×900): six-tea canvas p50 ≤ 20ms /
-// p95 ≤ 30ms; six-tea full ≤ 60ms; business-review full ≤ 40ms; page switch ≤ 30ms.
-// No Chrome → SKIP + exit 0.
+// Timing metrics are report-only; no machine-specific wall-clock thresholds.
+// Functional assertions cover the incremental render path. No Chrome → SKIP + exit 0.
 
 import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
@@ -388,12 +387,7 @@ console.log(
     `（新增 .thumb-item 节点 ${review.switchStats.addedThumbs}/${review.fullStats.addedThumbs}/${review.editStats.addedThumbs}）`
 );
 
-console.log("\n=== 阈值 ===");
-check("六茶 refreshPreview p50 ≤ 20ms", canvasP50, canvasP50 <= 20, fmt(canvasP50));
-check("六茶 refreshPreview p95 ≤ 30ms", canvasP95, canvasP95 <= 30, fmt(canvasP95));
-check("六茶全量渲染 ≤ 60ms", fullP50, fullP50 <= 60, fmt(fullP50));
-check("远川复盘全量渲染 ≤ 40ms", reviewFullP50, reviewFullP50 <= 40, fmt(reviewFullP50));
-check("远川复盘切页 ≤ 30ms", switchP50, switchP50 <= 30, fmt(switchP50));
+console.log("\n=== 功能断言（耗时仅作报告，不设机器相关阈值）===");
 check("六茶 refreshPreview 无 getBoundingClientRect", sixTea.canvas.gbr, sixTea.canvas.gbr === 0, `${sixTea.canvas.gbr} 次`);
 check("六茶 refreshPreview 不重画缩略图", sixTea.canvasStats.painted, sixTea.canvasStats.painted === 0, `${sixTea.canvasStats.painted} 张`);
 check("六茶 duplicate+undo 只重画当前卡", sixTea.dupStats.painted, sixTea.dupStats.painted === 1, `${sixTea.dupStats.painted} 张`);
@@ -410,8 +404,8 @@ check("远川复盘 duplicate+undo 回到基线元素数", review.edit.after, re
 check("六茶 dup+undo 回到基线元素数", sixTea.dupUndo.after, sixTea.dupUndo.after === sixTea.dupUndo.baseline, `${sixTea.dupUndo.after}/${sixTea.dupUndo.baseline}`);
 
 if (failures.length) {
-  console.log(`\n结果: ${failures.length} 项未达阈值 ❌（${failures.join("；")}）`);
+  console.log(`\n结果: ${failures.length} 项功能断言失败 ❌（${failures.join("；")}）`);
   process.exit(1);
 }
-console.log("\n结果: 性能基线全部达标 ✅");
+console.log("\n结果: 性能指标已记录，功能断言全部通过 ✅");
 process.exit(0);

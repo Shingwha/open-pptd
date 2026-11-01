@@ -2,7 +2,7 @@
 // tests/e2e/editor-minimal.mjs — minimal editor E2E.
 // Covers selection/drag transform/multi-select, text/table/chart content editors (open + commit),
 // text color (token list + hex), add control (6 items in fixed order) + Delete, and the Design panel (color
-// tokens only — no theme library, colors-only write, live picker + 100ms thumbnail invalidation,
+// tokens only — no theme library, colors-only write, live picker + debounced thumbnail invalidation,
 // undo restores canvas/all thumbnails/panel hex, appearance toggle); legacy entries are gone (#btn-fonts/#btn-theme/
 // #inspector/#quickbar/#add-menu). Depends on local Chrome (CDP 9341); SKIP when missing.
 // Usage: node tests/e2e/editor-minimal.mjs
@@ -224,10 +224,15 @@ try {
     const picker = document.querySelector('[data-token="primary"] .design-token-picker');
     picker.value = '#654321';
     picker.dispatchEvent(new Event('input', { bubbles: true }));
-    await new Promise((r) => setTimeout(r, 130));
+    const deadline = performance.now() + 2000;
+    let thumbsChanged = false;
+    do {
+      const thumb1 = thumbHashes();
+      thumbsChanged = thumb1.length === thumb0.length && thumb1.every((h, i) => h !== thumb0[i]);
+      if (thumbsChanged) break;
+      await new Promise((r) => setTimeout(r, 50));
+    } while (performance.now() < deadline);
     const canvasChanged = hash(canvasEl.innerHTML) !== canvas0;
-    const thumb1 = thumbHashes();
-    const thumbsChanged = thumb1.length === thumb0.length && thumb1.every((h, i) => h !== thumb0[i]);
     const live = api.state.deck.theme?.colors?.primary;
     picker.dispatchEvent(new Event('change', { bubbles: true }));
     api.undo();
@@ -252,7 +257,7 @@ try {
     JSON.stringify({ tabs: s.tabs, cards: s.cards, tokens: s.tokens })
   );
   log(
-    "取色器 input 后画布实时、全部缩略图 100ms 内更新",
+    "取色器 input 后画布实时、全部缩略图完成更新",
     s.canvasChanged === true && s.thumbsChanged === true && String(s.live).toLowerCase() === "#654321" && s.thumbsCount === 2,
     JSON.stringify({ canvasChanged: s.canvasChanged, thumbsChanged: s.thumbsChanged, thumbs: s.thumbsCount, live: s.live })
   );

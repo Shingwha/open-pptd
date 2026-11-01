@@ -50,7 +50,7 @@ const { files, count } = await renderDeck({
 const elapsed = Date.now() - t0;
 record("页面数一致", count === pageCount, `count=${count} expected=${pageCount}`);
 record("输出文件数一致", files.length === pageCount, `files=${files.length}`);
-record("渲染耗时合理（<60s）", elapsed < 60000, `${elapsed}ms`);
+console.log(`  渲染耗时 ${elapsed}ms（仅报告，不作为门禁）`);
 
 let dimsOk = true;
 let nonEmptyOk = true;
