@@ -1,8 +1,6 @@
-// ============================================================================
-// model/types/line.js — line element type descriptor (manifest metadata)
-// ----------------------------------------------------------------------------
+// packages/model/types/line.js — line element type descriptor (manifest metadata).
 // geometry fields only; render/toXml are registered by the renderer/writer shards.
-// ============================================================================
+// Part of the TypeManifest; its order follows types/index.js.
 
 export const lineType = {
   id: "line",

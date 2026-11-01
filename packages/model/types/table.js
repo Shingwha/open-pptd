@@ -1,9 +1,6 @@
-// ============================================================================
-// model/types/table.js — table element type descriptor (manifest metadata)
-// ----------------------------------------------------------------------------
-// layoutKey routes to the table layout hook; contentEditor marks the table data
-// editor; render/toXml are registered by the renderer/writer shards.
-// ============================================================================
+// packages/model/types/table.js — table element type descriptor (manifest metadata).
+// layoutKey routes to the table layout hook; contentEditor marks the table data editor;
+// render/toXml are registered by the renderer/writer shards.
 
 export const tableType = {
   id: "table",

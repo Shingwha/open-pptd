@@ -1,18 +1,9 @@
-// ============================================================================
-// model/theme-library.js — theme library core (pure, browser + Node)
-// ----------------------------------------------------------------------------
-// Three layers (spec 2026-10-31-2102-open-pptd-3.0/ref/theme-font.md §2–§5):
-//   1. built-in snapshots: DEFAULT_THEME + the 10 THEME_PALETTES expanded into
-//      complete themes (palette colors + default textStyles/tableStyles);
-//   2. user themes: plain JSON files, stored by an injected adapter
-//      (~/.open-pptd/themes/*.json in the Node adapter); ThemeStore is the
-//      environment-free factory over that adapter;
-//   3. application: applyTheme replaces the three theme blocks, keeps only the
-//      tokens/styles the deck still references (D12), and reports `preserved`.
-//
-// No node:* / DOM: storage is dependency-injected. All public methods return
-// cloned values so callers cannot mutate the built-in snapshots or the store.
-// ============================================================================
+// packages/model/theme-library.js — theme library core (pure, browser + Node).
+// Three layers: built-in snapshots (DEFAULT_THEME + 10 palettes expanded to complete
+// themes), user themes stored through an injected adapter (ThemeStore is the environment-
+// free factory), and applyTheme (replaces the three theme blocks, keeps referenced tokens
+// and reports `preserved`). No node:* / DOM; public methods return cloned values so callers
+// cannot mutate built-in snapshots or the store.
 
 import { DEFAULT_THEME, THEME_PALETTES } from "./theme-presets.js";
 
@@ -128,7 +119,7 @@ export function listBuiltinThemes() {
 }
 
 /**
- * Validate + normalize a ThemeFile (D11/D13).
+ * Validate + normalize a ThemeFile.
  *
  * Lenient-by-design normalization: unknown fields are dropped, invalid color
  * entries are skipped, missing textStyles/tableStyles fall back to the default
@@ -294,9 +285,7 @@ export function createThemeStore(adapter) {
   return { list, read, save, remove, import: importTheme, export: exportTheme };
 }
 
-// ----------------------------------------------------------------------------
-// Deck reference scanning (D12/D13)
-// ----------------------------------------------------------------------------
+// Deck reference scanning
 
 /**
  * Walk the deck and collect theme references:
@@ -354,7 +343,7 @@ function collectStyleColorRefs(styles, out = new Set()) {
 
 /**
  * Count `$token` color references in a deck (0 when unused). Used by the custom
- * color delete guard (D13): a referenced token must be warned/blocked.
+ * color delete guard: a referenced token must be warned/blocked.
  * @param {object} deck
  * @param {string} token token key, with or without a leading `$`
  * @returns {number}
@@ -386,8 +375,8 @@ export function colorTokenUsage(deck, token) {
 }
 
 /**
- * List every color token of a theme for the color pickers (D13): standard keys
- * in canonical order, then custom tokens in insertion order.
+ * List every color token of a theme for the color pickers: standard keys in
+ * canonical order, then custom tokens in insertion order.
  * @param {object} theme
  * @returns {Array<{key:string,value:string,standard:boolean}>}
  */
@@ -409,7 +398,7 @@ export function listColorTokens(theme) {
 }
 
 /**
- * Add or edit a custom color token (D13). Pure: returns a new theme object.
+ * Add or edit a custom color token. Pure: returns a new theme object.
  * @param {object} theme
  * @param {string} key
  * @param {string} value #RRGGBB / #RRGGBBAA
@@ -428,8 +417,8 @@ export function setColorToken(theme, key, value) {
 }
 
 /**
- * Remove a color token (D13). Referenced tokens are blocked: the caller warns
- * or forces after explicit confirmation. Pure: returns a report + new theme.
+ * Remove a color token. Referenced tokens are blocked: the caller warns or
+ * forces after explicit confirmation. Pure: returns a report + new theme.
  * @param {object} theme
  * @param {string} key
  * @param {{deck?: object}} [options]
@@ -444,12 +433,12 @@ export function removeColorToken(theme, key, { deck = null } = {}) {
 }
 
 /**
- * Apply a theme snapshot to the current deck theme (D11/D12).
+ * Apply a theme snapshot to the current deck theme.
  *
- * 1. colors/textStyles/tableStyles are replaced by the theme snapshot;
- * 2. every token/style the deck still references but the new theme lacks is
- *    copied from the old theme (and reported in `preserved`);
- * 3. unreferenced old entries are dropped; no deck -> a pure replacement.
+ * colors/textStyles/tableStyles are replaced by the theme snapshot; every token/style
+ * the deck still references but the new theme lacks is copied from the old theme (and
+ * reported in `preserved`); unreferenced old entries are dropped; no deck -> a pure
+ * replacement.
  * Color tokens referenced by the resulting style blocks are also kept when the
  * old theme provides them (a style must never dangle after switching themes).
  *

@@ -1,6 +1,6 @@
-// ============================================================================
-// geometry.js — coordinates and geometry conversion (shared by renderer and writer, single implementation)
-// ============================================================================
+// packages/model/geometry.js — coordinate and geometry conversion (single implementation).
+// parsePoints maps viewBox line points into bounds coordinates; smoothSegments splits a point
+// list into cubic/quadratic/line closures. Shared by renderer and writer so they cannot drift.
 
 /**
  * Parse PPTD line points (viewBox coordinates -> real coordinates inside bounds).
@@ -28,8 +28,8 @@ export function parsePoints(pointsStr, viewBox, bounds) {
  * Split into cubic Beziers as consecutive "4-point chunks"; when 1 control point
  * plus the final anchor remains, close with a quadratic Bezier; if the split
  * leaves exactly one stray final anchor (point count n ≡ 2 mod 3, e.g. 5/8/11…),
- * close with a straight line so the final anchor is always drawn (previously that
- * point was silently dropped and the curve ended abruptly).
+ * close with a straight line so the final anchor is always drawn instead of being
+ * silently dropped.
  * @param {Array<[number, number]>} rel point sequence (first/last on-curve, length ≥ 2)
  * @returns {Array<{cmd: "Q"|"C"|"L", pts: Array<[number, number]>}>}
  */

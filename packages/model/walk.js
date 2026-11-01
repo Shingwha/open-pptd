@@ -1,11 +1,6 @@
-// ============================================================================
-// model/walk.js — sole page/element traversal (v3 #3)
-// ----------------------------------------------------------------------------
-// Every "page by page, element by element" walk (image collection, preload,
-// persistence, export) goes through here; no more nested for-loop copies. The
-// page model is structurally identical to a raw YAML page object
-// ({ elements: [...] }), so the editor and the CLI export both use this.
-// ============================================================================
+// packages/model/walk.js — sole page/element traversal.
+// Every page-by-page, element-by-element walk goes through here. The page model has the
+// same { elements } shape as a raw YAML page, so the editor and CLI export both use it.
 
 /**
  * Per-page, per-element callback.

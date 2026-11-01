@@ -1,19 +1,9 @@
-// ============================================================================
-// model/validate.js — PPTD validator (v3 §4.4, manual review experience cast into code)
-// ----------------------------------------------------------------------------
-// validateDeck(deck, opts) -> { errors, warnings, perPage }
-// Every issue: { level: "error"|"warning", rule, page?, elementId?, message }
-// Rule-registry pattern: a new rule = registerRule(fn) with a pure function (deck, ctx, report).
-//
-// Environment-free (no fs/fetch): checks needing environment capabilities are injected
-// through opts and skipped automatically when absent:
-//   - opts.fileExists(rel)  relative-path resource existence (the CLI passes an fs implementation)
-//   - opts.fontRegistry     font registry object (the product of cli/resource-status.js readFontRegistry)
-//   - opts.iconRegistry     FA icon registry object (assets/icons/registry.json)
-//   - opts.layout           LayoutTree (packages/layout): when passed, consumes overflow facts
-//                           to report out-of-bounds/overlap issues; when absent that class of
-//                           check is skipped (spec 09 T4)
-// ============================================================================
+// packages/model/validate.js — PPTD validator.
+// validateDeck(deck, opts) -> { errors, warnings, perPage }; every issue is
+// { level: "error"|"warning", rule, page?, elementId?, message }. A new rule is a pure
+// function (deck, ctx, report) added with registerRule.
+// Environment-free (no fs/fetch): capability checks are injected through opts and skipped
+// when absent (fileExists, fontRegistry, iconRegistry, layout).
 
 import { normalizeTheme, resolveColor, resolveTextStyle } from "./theme.js";
 import { parseFontResources } from "./font.js";
@@ -57,9 +47,7 @@ export function validateDeck(deck, opts = {}) {
   return { errors, warnings, perPage };
 }
 
-// ============================================================================
 // Built-in rules
-// ============================================================================
 
 // ---- schema: deck structure and common element fields ----
 registerRule((deck, ctx, report) => {
@@ -226,11 +214,9 @@ registerRule((deck, ctx, report) => {
   });
 });
 
-// ---- geometric facts: LayoutTree overflow/overlap consumption (spec 09 T4 / plan §4 scenario D) ----
-// The old "conservative text overflow estimate" heuristic (estimating width by Σ, reporting
-// only past 2× the box height) was deleted: too crude and it ignored lineHeightPx. It now
-// consumes the overflow fact from the layout stage (deterministic height); when opts.layout is
-// not passed this class of check is skipped (the other checks are unchanged).
+// ---- geometric facts: LayoutTree overflow/overlap consumption ----
+// Consumes the deterministic overflow facts from the layout stage; when opts.layout is not
+// passed this class of check is skipped and the other checks are unchanged.
 registerRule((deck, ctx, report) => {
   const lt = ctx.opts.layout;
   if (!lt) return;
@@ -259,10 +245,9 @@ registerRule((deck, ctx, report) => {
 // order) that fully contains it, otherwise the page solid background.
 registerRule((deck, ctx, report) => {
   const lum = (hex) => {
-    // WCAG relative luminance: each channel is sRGB gamma-linearized before the Rec.709
-    // weighting. Deliberately different from model/chart/colors.js#luminanceOf, which uses a
-    // plain weighted sum to choose a readable label color; this rule needs the exact WCAG
-    // formula for its 3:1 contrast ratio to be meaningful. Keep the two apart; do not merge.
+    // WCAG relative luminance: sRGB gamma-linearized channels before Rec.709 weighting.
+    // Deliberately different from chart/colors.js#luminanceOf (plain weighted sum for label
+    // colors); this rule needs the exact WCAG formula for its 3:1 ratio. Do not merge them.
     const m = /^#([0-9a-fA-F]{6})/.exec(hex || "");
     if (!m) return null;
     const n = parseInt(m[1], 16);

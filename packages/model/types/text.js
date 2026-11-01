@@ -1,10 +1,6 @@
-// ============================================================================
-// model/types/text.js — text element type descriptor (manifest metadata)
-// ----------------------------------------------------------------------------
-// Part of the TypeManifest: id/label/schema/layoutKey/contentEditor only.
-// Never imports style-spec.js (style-spec derives ELEMENT_TYPES from this list);
-// render/toXml live in the renderer/writer shards, content editor UI in the editor.
-// ============================================================================
+// packages/model/types/text.js — text element type descriptor (manifest metadata).
+// id/label/schema/layoutKey/contentEditor only; render/toXml live in the renderer/writer
+// shards, content editor UI in the editor. Never imports style-spec.js (cycle).
 
 export const textType = {
   id: "text",

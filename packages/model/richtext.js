@@ -1,12 +1,8 @@
-// ============================================================================
-// richtext.js — unified rich-text DSL parsing (shared by renderer and writer)
-// ----------------------------------------------------------------------------
-// Input: PPTD rich-text DSL (<p>/<span style>/<strong>/<em>/<u>/<s>/<sup>/<sub>/
-//        <a href>/<ul>/<ol>/<li>/<br>, with a common subset supported in the style attribute)
-// Output: { paragraphs: [ { style, listType, runs: [ { text, style, href } ] } ] }
-// Style fields are "omitted when unset"; the inheritance chain is handled uniformly on
-// the consumer side (render/export).
-// ============================================================================
+// packages/model/richtext.js — unified rich-text DSL parsing (shared by renderer and writer).
+// Input: PPTD rich-text DSL (<p>/<span style>/<strong>/<em>/<u>/<s>/<sup>/<sub>/<a href>/
+// <ul>/<ol>/<li>/<br>, with a common subset supported in the style attribute).
+// Output: { paragraphs: [{ style, listType, runs: [{ text, style, href }] }] }.
+// Style fields are omitted when unset; the inheritance chain is applied by the consumer.
 
 import { decodeEntities } from "./escape.js";
 
@@ -104,9 +100,7 @@ function parseCss(styleStr) {
   return out;
 }
 
-// ----------------------------------------------------------------------------
 // Tokenize + recursively parse into a node tree
-// ----------------------------------------------------------------------------
 function tokenize(input) {
   const tokens = [];
   let m;
@@ -164,9 +158,7 @@ function parseNodes(tokens, i, stack) {
   return { nodes, i };
 }
 
-// ----------------------------------------------------------------------------
 // Node tree -> paragraph/run tree
-// ----------------------------------------------------------------------------
 function mergeStyle(base, extra) {
   if (!extra) return base;
   return { ...base, ...extra };

@@ -1,16 +1,9 @@
-// ============================================================================
-// model/font-library.js — global font library core (pure, browser + Node)
-// ----------------------------------------------------------------------------
-// One library shared by the editor and CLI (D14):
-//   built-in registry (assets/fonts/registry.json, read-only)
-//   + user fonts (copied bytes + metadata in an injected home store)
-//   + system fonts (declared only, never embedded).
-//
-// Resolution order (interfaces.md §3 / theme-font.md §6): user library →
-// built-in registry → system → missing. deck.fonts only references a family;
-// byte reading/fetching is delegated to the injected adapter, so this module
-// stays environment-free (no node:* / DOM).
-// ============================================================================
+// packages/model/font-library.js — global font library core (pure, browser + Node).
+// One library shared by editor and CLI: built-in registry (read-only) + user fonts
+// (bytes + metadata via an injected store) + system fonts (declared only, never embedded).
+// Resolution: user -> built-in -> system -> missing. deck.fonts references a family only;
+// byte reading/fetching is delegated to the injected adapter, so this module stays
+// environment-free (no node:* / DOM).
 
 import { parseFontInfo } from "./font.js";
 import { findFont, findSystemFont } from "./font-registry.js";

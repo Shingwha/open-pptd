@@ -1,21 +1,9 @@
-// ============================================================================
-// model/table.js — table model (grid expansion / merge & split / size validation / layout)
-// ----------------------------------------------------------------------------
-// Official Cell rules (pptd.md Table/Cell):
-//   - rows is a 2-D Cell array; merges declare rowSpan/colSpan and the covered
-//     positions are simply omitted (no null placeholders), so expanding the grid
-//     must consume cells row by row
-//   - every entry of columnWidths/rowHeights is in [0,1] and the entries sum to 1
-// Row height semantics (matching PowerPoint a:tr min-height behavior):
-//   - row height = minimum row height: with no rowHeights -> readability floor
-//     (header 30 / row 26); with rowHeights -> ratio × bounds height (never below
-//     the floor)
-//   - when content is taller than the minimum, the row grows automatically
-//     (both preview tr and PowerPoint are min-height)
-//   - no content estimation: formula/multi-line text height comes from each layout
-//     engine (both sides use Cambria Math metrics)
-// Shared by preview (renderer) and export (writer).
-// ============================================================================
+// packages/model/table.js — table model: grid expansion, merge/split, validation, layout.
+// rows is a 2-D Cell array; merge-covered positions are omitted (no null placeholders), so
+// expansion consumes cells row by row. columnWidths/rowHeights entries are in [0,1] and sum
+// to 1. Row height is a minimum (readability floor 30 header / 26 row, or ratio × bounds
+// height), grown automatically when content is taller in both preview and PowerPoint; no
+// content estimation (shared by preview renderer and export writer).
 
 export const TABLE_FONT_SIZE = 13; // pt/px
 export const TABLE_CELL_PAD = 5; // vertical padding (pt/px)
@@ -23,9 +11,7 @@ export const TABLE_CELL_PAD_X = 9; // horizontal padding
 export const TABLE_MIN_ROW = 26; // row-height readability floor (pt/px)
 export const TABLE_MIN_HEADER = 30; // header row-height floor (pt/px)
 
-// ----------------------------------------------------------------------------
 // Grid expansion and merging
-// ----------------------------------------------------------------------------
 
 /**
  * Expand rows (merge-omitting form) into a complete grid.
@@ -194,9 +180,7 @@ export function validateDims(dims, name) {
   return null;
 }
 
-// ----------------------------------------------------------------------------
 // Row-height ratio lifecycle (rowHeights is a ratio array aligned 1:1 with rows)
-// ----------------------------------------------------------------------------
 
 /**
  * Validate and normalize el.rowHeights.
@@ -266,9 +250,7 @@ export function adjustRowHeightsForRowChange(ratios, rows, index, delta) {
   return next.map((v) => v / nextSum);
 }
 
-// ----------------------------------------------------------------------------
 // Layout: column-width ratios + minimum row height (no content estimation; rows grow with content)
-// ----------------------------------------------------------------------------
 
 /**
  * Table layout: column-width ratios (relative to the bounds width); row height =

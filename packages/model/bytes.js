@@ -1,10 +1,6 @@
-// ============================================================================
-// model/bytes.js — sole byte codec (base64 / UTF-8, browser + Node)
-// ----------------------------------------------------------------------------
-// Browsers use native atob/btoa/TextEncoder; Node falls back to Buffer. No
-// environment global is touched at module scope: model/writer/renderer/editor/CLI
-// all funnel through here (v3 #2).
-// ============================================================================
+// packages/model/bytes.js — sole byte codec (base64 / UTF-8, browser + Node).
+// Browsers use native atob/btoa/TextEncoder; Node falls back to Buffer. No environment
+// global is touched at module scope.
 
 /** Uint8Array -> base64 (chunked concat avoids stack overflow). */
 export function bytesToBase64(bytes) {

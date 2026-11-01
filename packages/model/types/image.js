@@ -1,8 +1,6 @@
-// ============================================================================
-// model/types/image.js — image element type descriptor (manifest metadata)
-// ----------------------------------------------------------------------------
+// packages/model/types/image.js — image element type descriptor (manifest metadata).
 // schema only; render/toXml are registered by the renderer/writer shards.
-// ============================================================================
+// Part of the TypeManifest; its order follows types/index.js.
 
 export const imageType = {
   id: "image",

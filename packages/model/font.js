@@ -1,13 +1,8 @@
-// ============================================================================
-// font.js — font byte utilities: metadata parsing / EOT wrapping / TTF subsetting (zero deps, browser + Node)
-// ----------------------------------------------------------------------------
-// Core of the whole PPTX embedded-font pipeline:
-//   1. parseFontInfo  reads the OS/2/head/name tables -> embedding permission / font names / EOT header fields
-//   2. checkEmbeddable fsType embedding permission check (0x0002 Restricted forbids embedding)
-//   3. buildEot       TTF/OTF -> EOT v2.2 (plain FontData, same as PowerPoint/LibreOffice)
-//   4. subsetTtf      TTF -> subset (keeps only the requested characters, byte-identical to the fontTools gold standard)
-// Pure byte operations, shared by the browser (Uint8Array) and Node.
-// ============================================================================
+// packages/model/font.js — font byte utilities: metadata parsing, EOT wrapping, TTF subsetting.
+// Pure byte operations shared by the browser (Uint8Array) and Node, zero dependencies.
+// parseFontInfo reads OS/2/head/name; checkEmbeddable enforces fsType permission (0x0002
+// Restricted forbids embedding); buildEot emits EOT v2.2; subsetTtf keeps the requested
+// characters and composite components (CFF/OTTO throws so the caller can embed in full).
 
 /** DataView view (with byte offset/length, avoiding a new allocation each time). */
 const dv = (bytes, off = 0, len = bytes.length - off) =>
@@ -37,9 +32,7 @@ function parseTables(buf) {
 }
 const table = (buf, t) => buf.subarray(t.offset, t.offset + t.length);
 
-// ────────────────────────────────────────────────────────────────────────────
-// 1. Metadata parsing (OS/2 + head + name)
-// ────────────────────────────────────────────────────────────────────────────
+// Metadata parsing (OS/2 + head + name)
 
 /**
  * Parse font metadata: embedding permission + EOT header fields + font names.
@@ -177,9 +170,7 @@ export function checkEmbeddable(fsType) {
   return { ok: true };
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// 2. EOT v2.2 wrapping (the fntdata part format)
-// ────────────────────────────────────────────────────────────────────────────
+// EOT v2.2 wrapping (the fntdata part format)
 
 const u16le = (v) => {
   const b = new Uint8Array(2);
@@ -251,9 +242,7 @@ export function buildEot(ttf, info = null, flags = 0) {
   return eot;
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// 3. TTF subsetting (TrueType outlines only; CFF/OTTO throws so the caller can fall back to full embedding)
-// ────────────────────────────────────────────────────────────────────────────
+// TTF subsetting (TrueType outlines only; CFF/OTTO throws so the caller can fall back to full embedding)
 
 /** cmap read (format 4 + 12) -> Map<charCode, glyphId>. */
 function readCmap(buf, cmapT) {

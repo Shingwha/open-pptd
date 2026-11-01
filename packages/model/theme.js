@@ -1,17 +1,9 @@
-// ============================================================================
-// theme.js — theme token system (strictly aligned with official PPTD Theme)
-// ----------------------------------------------------------------------------
-// Official structure (references/pptd.md §3 Theme):
-//   Theme = { colors: Record<string, Color>, textStyles: Record<string, TextStyleConfig>,
-//             tableStyles: Record<string, TableStyleConfig> }
-// Principle: any style an element does not set explicitly is taken from the theme;
-// locals only store overrides. The renderer (DOM) and the writer (OOXML) share this
-// module: the renderer takes hex, the export maps to schemeClr.
-//
-// Non-official extensions (kept; official editors ignore them leniently):
-//   - deck.fonts font resource table ({key: {family, url/file, subset}}) -> this editor's font embedding
-//   - TextContent.style / Cell.textStyle / Table.style all reference by official "$key" string
-// ============================================================================
+// packages/model/theme.js — theme token system (official PPTD Theme structure).
+// Theme = { colors, textStyles, tableStyles }; any style an element does not set explicitly
+// comes from the theme, locals store overrides only. The renderer (DOM) takes hex, the
+// writer (OOXML) maps to schemeClr.
+// Extensions (official editors ignore them): deck.fonts resource table
+// ({key: {family, url/file, subset}}); styles reference theme keys by "$key".
 
 import { DEFAULT_THEME, THEME_PALETTES } from "./theme-presets.js";
 import { TABLE_FONT_SIZE } from "./table.js";
@@ -21,12 +13,11 @@ export { DEFAULT_THEME, THEME_PALETTES } from "./theme-presets.js";
 const HEX_RE = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
 /**
- * Normalize a theme: deep-merge over the default theme (official structure).
- * An official theme is always an object (references/pptd.md §Theme). Compatible with
- * legacy v1 string keys: a hit among the built-in presets (THEME_PALETTES, e.g. "tech")
- * takes its colors plus the default textStyles/tableStyles; an unknown key warns and
- * falls back to the default theme (no longer silent, so "theme: blue" cannot quietly
- * become the default palette).
+ * Normalize a theme: deep-merge over the default theme.
+ * Compatible with legacy string keys: a hit among the built-in presets (THEME_PALETTES,
+ * e.g. "tech") takes its colors plus the default textStyles/tableStyles; an unknown key
+ * warns and falls back to the default theme, so "theme: blue" cannot quietly become the
+ * default palette.
  */
 export function normalizeTheme(input) {
   const base = JSON.parse(JSON.stringify(DEFAULT_THEME));
@@ -73,12 +64,9 @@ export function resolveColor(theme, color) {
 }
 
 /**
- * Resolve a color and fall back to a substitute when resolution fails.
- * Collapses the "resolveColor(theme, x) || fallback" idiom repeated across chart
- * option, renderer and writer modules into one expression, so the fallback policy
- * lives in a single place. `fallback` is a plain value and is evaluated by the
- * caller; behavior is identical to the inline `||` form (resolveColor only ever
- * returns a string or null, so the fallback applies exactly when it returns null).
+ * Resolve a color with a fallback; identical to `resolveColor(theme, color) || fallback`
+ * (resolveColor returns only a string or null, so the fallback applies exactly on failure).
+ * One expression so the fallback policy lives in a single place.
  */
 export function colorOr(theme, color, fallback = null) {
   return resolveColor(theme, color) || fallback;
@@ -129,10 +117,9 @@ export function resolveFont(theme, font) {
 export const DEFAULT_FONT = "Microsoft YaHei";
 
 /**
- * Chart series color cycle (official §3.1 "Theme.colors theme color cycle"):
- * same semantics as the PPTX theme slots (writer/parts.js themeColorSlots) —
- * accent1/2 are fixed to primary/accent, accent3-6 use the same fallback chain.
- * Returns a 6-color hex array, consumed cyclically in series order.
+ * Chart series color cycle: same semantics as the PPTX theme slots (writer/parts.js
+ * themeColorSlots) — accent1/2 are fixed to primary/accent, accent3-6 use the same
+ * fallback chain. Returns a 6-color hex array, consumed cyclically in series order.
  */
 export function themeChartPalette(theme) {
   const c = theme?.colors || {};
@@ -150,10 +137,9 @@ export function themeChartPalette(theme) {
 
 /**
  * Attach the deck-level font declarations (extension field) to the theme: only the
- * font resource table (fontResources) is parsed. The v1 component slots
- * (fonts.title/body/… strings) are deprecated (the official equivalent is
- * theme.textStyles.<key>.fontFamily); legacy projects get a warning and the entries
- * are ignored.
+ * font resource table (fontResources) is parsed. Legacy component slots
+ * (fonts.title/body/… strings) are deprecated in favor of
+ * theme.textStyles.<key>.fontFamily; they warn and are ignored.
  */
 export function mergeFonts(theme, fonts) {
   theme.fontResources = parseFontResources(fonts);
@@ -194,9 +180,7 @@ export function resolveTextStyle(theme, styleRef) {
   return {};
 }
 
-// ----------------------------------------------------------------------------
 // Table styles (official TableStyleConfig resolution and inheritance chain)
-// ----------------------------------------------------------------------------
 
 /**
  * Resolve a table style reference: accepts "$key" (theme.tableStyles), an inline
@@ -220,8 +204,7 @@ export function resolveTableStyle(theme, styleRef) {
  * (resolveTableCellStyle) > default.
  * lineHeightPx (fixed px) and lineHeight (multiplier) are returned as separate
  * fields with lineHeightPx taking precedence, and each side projects them itself
- * (CSS line-height / a:lnSpc). The merge logic used to be written twice, which
- * drifted easily.
+ * (CSS line-height / a:lnSpc).
  */
 export function cellTextStyle(theme, ts, r, c, rowCount, colCount, cell) {
   const s = resolveTableCellStyle(ts, r, c, rowCount, colCount);
@@ -246,8 +229,8 @@ export function cellTextStyle(theme, ts, r, c, rowCount, colCount, cell) {
  *   class (firstRow/lastRow/firstColumn/lastColumn, arbitrated by rowOverColumn,
  *   default true = rows win)
  * Returns the merged concrete CellStyle fields (colors keep the $ reference, the
- * consumer applies resolveColor). Cell inline fields (the C2 Cell object) have the
- * highest priority and are not part of this function.
+ * consumer applies resolveColor). Cell inline fields have the highest priority and
+ * are not part of this function.
  */
 export function resolveTableCellStyle(ts, r, c, rowCount, colCount) {
   const merged = {};
