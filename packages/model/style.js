@@ -1,10 +1,6 @@
-// ============================================================================
-// style.js — text style inheritance chain (shared by renderer and writer, single implementation)
-// ----------------------------------------------------------------------------
-// Inheritance chain (PPTD spec): run inline > paragraph > content field > $style
-// theme reference > default. Both the renderer and the exporter call
-// computeBaseStyle + mergeRunStyle so preview == export.
-// ============================================================================
+// packages/model/style.js — text style inheritance chain (single implementation).
+// Chain: run inline > paragraph > content field > $style theme reference > default.
+// Renderer and exporter both call computeBaseStyle + mergeRunStyle so preview == export.
 
 import { resolveTextStyle } from "./theme.js";
 

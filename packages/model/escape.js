@@ -1,15 +1,8 @@
-// ============================================================================
-// model/escape.js — sole XML escaping / entity decoding (environment-free, browser + Node)
-// ----------------------------------------------------------------------------
-// All XML string handling in the repo funnels through here (v3 #1: no third
-// escaping implementation):
-//   - inside model: icon-svg.js / xml-parser.js / mathml2omml.js / richtext.js
-//   - writer/xml.js re-exports esc/escAttr from here (writer -> model direction)
-// The three escape variants differ on purpose; check the call sites before merging:
-//   escText  for text nodes: & < >
-//   esc      for text nodes (with quotes): & < > "
-//   escAttr  for attribute values: & < " (> left alone, matching PowerPoint output)
-// ============================================================================
+// packages/model/escape.js — sole XML escaping / entity decoding (environment-free).
+// All XML string handling funnels through here; writer/xml.js re-exports esc/escAttr.
+// The three escape variants differ on purpose, check call sites before merging:
+// escText for text nodes (& < >), esc for text nodes with quotes (& < > "),
+// escAttr for attribute values (& < " only, matching PowerPoint output).
 
 /** XML text escape (& < >). */
 export function escText(value) {

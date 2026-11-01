@@ -1,13 +1,7 @@
-// ============================================================================
-// model/style-spec.js — element style spec (single source of truth for renderer and writer)
-// ----------------------------------------------------------------------------
-// The same DSL spec is defined once here; each consumer only makes a thin
-// "spec -> target format" projection:
-//   - packages/renderer -> CSS / SVG attributes
-//   - packages/writer   -> OOXML elements
-// No literal mapping tables may be written again on the consumer side
-// (historically dash/fill/border/align each had 4~8 copies).
-// ============================================================================
+// packages/model/style-spec.js — element style spec (single source for renderer and writer).
+// The DSL is defined once here; each consumer only projects it to its target format
+// (renderer -> CSS/SVG attributes, writer -> OOXML elements). Do not write literal mapping
+// tables again on the consumer side.
 
 // ---- Element types (derived from the TypeManifest; order is manifest order) ----
 // The single source of truth is packages/model/types/index.js. "group" is a composite:
@@ -127,11 +121,9 @@ export function shadowOffset(shadow) {
   return [dx, dy];
 }
 
-// Single-source defaults (the only default on both sides): black, no blur, zero
-// offset. Three competing sets used to exist (preview box/drop with 0.3 alpha black
-// + 6px blur, preview text with no default, export black + 0 blur), so the same
-// shadow looked different in preview and export, and a preview text shadow without
-// color produced invalid CSS that the browser then dropped entirely.
+// Single-source shadow defaults (the only default on both sides): black, no blur, zero
+// offset. Preview and export must project these same values; a text shadow without a color
+// would otherwise produce invalid CSS that the browser drops entirely.
 export const SHADOW_DEFAULTS = { color: "#000000", blur: 0, offset: [0, 0] };
 
 /** Fill ShadowSpec defaults -> { dx, dy, blur, color }; returns null when there is no shadow. */

@@ -1,13 +1,8 @@
-// ============================================================================
-// model/chart/option/index.js — chart spec -> ECharts option (preview dialect projection, pure functions)
-// ----------------------------------------------------------------------------
-// The spec single source is chart/spec.js (resolveChartSpec: normalized series/title/
-// legend/layout/bubble); this directory projects the spec into an ECharts option and
-// makes no semantic decisions. Dispatch is by axis family: polar (pie/radar) /
-// cartesian (bar/line/area/scatter/bubble/candlestick/waterfall) / matrix
-// (heatmap/treemap/sunburst/sankey). Shared by preview rendering (renderer/chart.js)
-// and export rasterization (writer SSR); every official default comes from the spec result.
-// ============================================================================
+// packages/model/chart/option/index.js — chart spec -> ECharts option (preview dialect projection).
+// The semantic single source is chart/spec.js; this directory projects it and makes no
+// decisions. Dispatch by axis family: polar (pie/radar) / cartesian (bar/line/area/scatter/
+// bubble/candlestick/waterfall) / matrix (heatmap/treemap/sunburst/sankey). Shared by preview
+// rendering and export rasterization (SSR); every default comes from the spec result.
 
 import { resolveChartSpec } from "../spec.js";
 import { colorOr, resolveFont } from "../../theme.js";
@@ -53,12 +48,10 @@ export function buildOptionFromSpec(spec) {
 
   const ctx = { theme, el, series, cats, types, primary, common, layout, barLayout: spec.barLayout, bubble };
   const built = buildPolar(ctx) ?? buildMatrix(ctx) ?? buildCartesian(ctx);
-  // Single-source contract: preview / render screenshots / front-end image export all
-  // assume "no animation, the first frame is the final frame". A top-level animation:false
-  // does not cover every series — the ECharts treemap defaultOption hard-codes
-  // animation:true, so new labels fade in via ChartView._animateLabels opacity 0->1 and a
-  // synchronous capture (screenshot / canvas.toDataURL) catches transparent text. Hence the
-  // per-series fallback, instead of relying on each type's defaultOption defaults.
+  // Preview, render screenshots and front-end image export assume "no animation, the first
+  // frame is the final frame". A top-level animation:false does not cover every series
+  // (ECharts treemap defaultOption hard-codes animation:true), so labels fade in and a
+  // synchronous capture catches transparent text. Hence the per-series fallback.
   for (const s of built?.series || []) s.animation = false;
   return built;
 }

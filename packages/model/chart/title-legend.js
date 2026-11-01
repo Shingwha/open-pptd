@@ -1,15 +1,10 @@
-// ============================================================================
-// model/chart/title-legend.js — effective title/legend config (string | Config -> single form)
-// ----------------------------------------------------------------------------
-// Chart titles and axis titles share resolveTitleLike; legend on/off, position and font
-// size share resolveLegend (single source for the official legendOffTypes default table;
-// default position bottom — previously the writer's classic and chartex fallbacks
-// disagreed: b vs t). A leaf module depending only on meta.
-// ============================================================================
+// packages/model/chart/title-legend.js — effective title/legend config (string | Config -> one form).
+// Titles and axis titles share resolveTitleLike; resolveLegend owns on/off, position, style
+// and the legendOffTypes default table (default position bottom). A leaf depending only on meta.
 
 import { CHART_DEFAULTS } from "./meta.js";
 
-/** Title-like config (official string | TitleConfig) -> effective form. */
+/** Title-like config (string | TitleConfig) -> effective form. */
 export function resolveTitleLike(cfg, { fallbackFontFamily = null, defaultSize = CHART_DEFAULTS.titleSize } = {}) {
   const c = cfg && typeof cfg === "object" ? cfg : null;
   return {
@@ -21,9 +16,8 @@ export function resolveTitleLike(cfg, { fallbackFontFamily = null, defaultSize =
 }
 
 /**
- * Effective legend config (official LegendConfig): legend:false turns it off globally;
- * when unset it follows the legendOffTypes default table (off by default only when every
- * type matches); position defaults to bottom.
+ * Effective legend config: legend:false turns it off globally; when unset it follows the
+ * legendOffTypes table (off only when every type matches); position defaults to bottom.
  * ooxmlPos = projection to the OOXML legendPos enum (t/b/l/r); the preview projection
  * lives in option/shared legendState.
  */

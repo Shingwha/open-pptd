@@ -1,15 +1,9 @@
-// ============================================================================
-// icon-svg.js — icon -> SVG string (same source for preview rendering and PPTX export)
-// ----------------------------------------------------------------------------
-// Icon data def = the product of normalizeIconSvg(): {inner, w, h} (Font Awesome
-// paths with root svg/comments/currentColor already stripped). This module is the
-// only place that generates icon SVG: the preview injects it via innerHTML, the
-// export writes it to media/*.svg — preview == export.
-//
-// fill injection: injected per shape (FA inner has no fill attribute after
-// normalize), which is more deterministic than inheriting from the root svg —
-// PowerPoint's SVG engine gives no spec guarantee for paint-server inheritance.
-// ============================================================================
+// packages/model/icon-svg.js — icon -> SVG string (same source for preview and PPTX export).
+// Icon def = normalizeIconSvg() product {inner, w, h} (root svg/comments/currentColor already
+// stripped). This is the only place that generates icon SVG: the preview injects it via
+// innerHTML and the export writes media/*.svg. fill is injected per shape, which is more
+// deterministic than inheriting from the root svg (PowerPoint's SVG engine gives no paint-
+// server inheritance guarantee).
 
 import { colorOr } from "./theme.js";
 import { svgGradientDef } from "./svg-gradient.js";
@@ -44,10 +38,8 @@ const SHAPE_OPEN = /<(path|circle|ellipse|rect|polygon|polyline)(?=[\s/>])/g;
  */
 export function iconSvgBody(def, fill, gid = "ig") {
   if (fill?.type === "gradient") {
-    // Same gradient generator as shapes (model/svg-gradient.js): full-length
-    // rectangle projection, so the angle does not distort on non-square boxes —
-    // previously icon carried its own half-vector implementation that disagreed
-    // with shape gradient direction
+    // Same gradient generator as shapes (model/svg-gradient.js): full-length rectangle
+    // projection, so the angle does not distort on non-square boxes.
     const g = svgGradientDef({ fill, id: gid, w: def.w, h: def.h, x: def.vx || 0, y: def.vy || 0 });
     const paint = `url(#${gid})`;
     return `<defs>${g.def}</defs>${def.inner.replace(SHAPE_OPEN, `<$1 fill="${paint}"`)}`;

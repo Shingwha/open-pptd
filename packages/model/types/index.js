@@ -1,14 +1,8 @@
-// ============================================================================
-// model/types/index.js — TypeManifest (single source of truth for element types)
-// ----------------------------------------------------------------------------
-// One descriptor module per type. Descriptors carry metadata only:
-//   { id, label, composite?, layoutKey?, schema?(el) -> Issue[], contentEditor? }
-// render/toXml are registered by the renderer/writer shards; editor UI (menu/
-// create/props/content editor) is contributed by the editor shards.
-//
-// Direction: style-spec.js derives ELEMENT_TYPES from TYPE_IDS, so this directory
-// must never import style-spec.js (that would be a cycle): style-spec -> types.
-// ============================================================================
+// packages/model/types/index.js — TypeManifest (single source of truth for element types).
+// One descriptor module per type: { id, label, composite?, layoutKey?, schema?, contentEditor? }.
+// render/toXml come from renderer/writer shards, editor UI from the editor shards.
+// Direction: style-spec.js derives ELEMENT_TYPES from TYPE_IDS, so this directory must never
+// import style-spec.js (that would be a cycle: style-spec -> types).
 
 import { textType } from "./text.js";
 import { shapeType } from "./shape.js";

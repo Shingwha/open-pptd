@@ -1,6 +1,6 @@
-// ============================================================================
-// model/chart/option/polar.js — polar-coordinate option (pie / radar; pure functions)
-// ----------------------------------------------------------------------------
+// packages/model/chart/option/polar.js — polar-coordinate option (pie / radar; pure functions).
+// Pie radius/center project from the layout model; radar honors spokeAxis config.
+// Shared by preview rendering and export rasterization (SSR); no DOM access.
 
 import { resolveColor, colorOr, themeChartPalette } from "../../theme.js";
 import { dashSpec } from "../../style-spec.js";
@@ -19,23 +19,20 @@ export function buildPolar(ctx) {
       series: [{
         type: "pie",
         // Radius/center projected by the layout model (inscribed in the manualLayout inner
-        // rectangle); previously hard-coded at 72% / center 46%, diverging from PowerPoint's
-        // automatic layout (the page-02 PPT pie came out clearly larger)
+        // rectangle) so the preview matches PowerPoint's automatic layout
         radius: [inner * 100 + "%", `${layout.pie.radiusPct}%`],
         center: [`${layout.pie.centerX}%`, `${layout.pie.centerY}%`],
         startAngle: 90 + (s.startAngle || 0), // official 0 = 12 o'clock; ECharts 90 = 3 o'clock
         avoidLabelOverlap: true,
-        // PowerPoint puts doughnut labels inside the ring band by default (doughnut has no
-        // dLblPos support and the export also omits the element), so the preview follows with
-        // inside — a light label (e.g. white text) is only readable on a dark ring, while
-        // placing it outside makes it invisible against the page background; a solid pie keeps
-        // outside + leader line (matching the export outEnd)
+        // PowerPoint puts doughnut labels inside the ring band by default (no dLblPos support;
+        // the export omits the element), so the preview follows with inside — a light label is
+        // only readable on the ring; a solid pie keeps outside + leader line (export outEnd)
         label: echartsLabel(theme, el, s, { position: inner > 0 ? "inside" : "outside", pie: true }),
         itemStyle: { borderColor: s.border?.color ? resolveColor(theme, s.border.color) : undefined, borderWidth: s.border?.width },
         data: cats.map((c, i) => ({
           name: c,
           value: s._values.value?.[i] ?? 0,
-          // Official fill: an array cycles per point; a single color makes all points the same; unset = theme color cycle
+          // fill: an array cycles per point; a single color makes all points the same; unset = theme cycle
           itemStyle: { color: fills ? colorOr(theme, fills[i % fills.length], pal[i % 6]) : s.color || pal[i % 6] },
         })),
       }],

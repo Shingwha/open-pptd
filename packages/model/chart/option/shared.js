@@ -1,10 +1,7 @@
-// ============================================================================
-// model/chart/option/shared.js — common ECharts option assembly fragments (pure functions, no DOM)
-// ----------------------------------------------------------------------------
-// This directory (model/chart/option/) is the shared option single source for preview
-// rendering and export rasterization (SSR). Pure data assembly: importing echarts or
-// touching window/document is forbidden (enforced by dep-graph).
-// ============================================================================
+// packages/model/chart/option/shared.js — common ECharts option fragments (pure, no DOM).
+// This directory is the shared option source for preview rendering and export rasterization
+// (SSR). Pure data assembly: importing echarts or touching window/document is forbidden
+// (enforced by dep-graph).
 
 import { resolveColor, colorOr, resolveFont } from "../../theme.js";
 import { dashSpec } from "../../style-spec.js";
@@ -12,7 +9,7 @@ import { CHART_DEFAULTS } from "../meta.js";
 import { resolveDataLabels } from "../labels.js";
 import { formatChartValue } from "../format.js";
 
-/** Theme axis/text default styles (font size from the official CHART_DEFAULTS single source). */
+/** Theme axis/text default styles (font size from CHART_DEFAULTS). */
 export const AXIS_TEXT = { color: "#6b7280", fontSize: CHART_DEFAULTS.axisSize };
 
 /** Cartesian grid margins (px; shared by the ECharts layout and the category-label crowding estimate).
@@ -29,9 +26,9 @@ export function chartStyleColors(theme) {
   };
 }
 
-/** Official dataLabels -> ECharts label config (including style color/fontSize).
- * For scatter/bubble p.value is an [x,y(,size)] array, so the display value is taken from
- * the y channel (matching showVal on the export side). */
+/** dataLabels -> ECharts label config (including style color/fontSize).
+ * For scatter/bubble p.value is an [x,y(,size)] array, so the display value comes from the
+ * y channel (matching showVal on the export side). */
 export function echartsLabel(theme, el, s, { position = "top", pie = false } = {}) {
   const cfg = resolveDataLabels(el, s, s.type);
   if (!cfg) return undefined;
@@ -56,7 +53,7 @@ export function seriesColor(theme, s) {
   return resolveColor(theme, s.color);
 }
 
-/** Official marker -> ECharts symbol (fill/border theme references resolved). */
+/** marker -> ECharts symbol (fill/border theme references resolved). */
 export function markerSymbol(theme, marker, color) {
   if (!marker || marker === false) return { show: false };
   const cfg = typeof marker === "object" ? marker : {};
@@ -84,9 +81,8 @@ export function baseOption(theme, el) {
 }
 
 /** Legend ECharts projection (semantics in spec.legend: on/pos/size/color single source).
- * Full four-position mapping (top/bottom centered horizontally, left/right centered
- * vertically and stacked) — previously only a one-sided {pos:0} was written, so right
- * collapsed to a horizontal bar at the top, diverging from the export legendPos. */
+ * Full four-position mapping: top/bottom centered horizontally, left/right centered
+ * vertically and stacked. */
 export function legendState(theme, legend) {
   const { legendColor } = chartStyleColors(theme);
   const cfg = legend.cfg || {};
@@ -98,7 +94,7 @@ export function legendState(theme, legend) {
     show: legend.on,
     ...posOpt,
     textStyle: { color: cfg.color ? colorOr(theme, cfg.color, legendColor) : legendColor, fontSize: cfg.fontSize || CHART_DEFAULTS.legendSize },
-    // Legend marker converges on the PowerPoint small-square look (previously a roundRect 14×8 rounded block, I25)
+    // Legend marker follows the PowerPoint small-square look
     icon: "rect", itemWidth: 10, itemHeight: 8,
   };
   return { legendOn: legend.on, legendOpt };

@@ -1,20 +1,8 @@
-// ============================================================================
-// model/font-registry.js — built-in font library registry (browser + Node)
-// ----------------------------------------------------------------------------
-// Data source: assets/fonts/registry.json (the skill resource folder, not uploaded to GitHub).
-// Per font: key (display name) / family (embed registration name, ID16 preferred) /
-//           file (in-library file name) / url (origin download) / license / subset advice.
-// registry.systemFonts: system font reference list (no file/url, declared but not embedded;
-//           relies on the opening side having it installed; used to align registration names
-//           and for CLI check recognition).
-//
-// Uses:
-//   - writer/font.js: when a deck.fonts resource entry is written as {family: X} (no
-//     file/url), a family or key hit in the registry auto-fills the library file and embeds
-//     it (subset by default)
-//   - editor font panel: lists the built-in library (✓ loaded / ✗ not loaded) for one-click use
-//   - CLI fonts list/download: registry overview + supplementary download
-// ============================================================================
+// packages/model/font-registry.js — built-in font library registry (browser + Node).
+// Data source: assets/fonts/registry.json. Per font: key (display name) / family (embed
+// registration name, ID16 preferred) / file / url / license / subset advice; systemFonts are
+// declared only and never embedded. Used by writer font embedding, the editor font panel and
+// CLI list/download.
 
 // Repo root URL (this file lives at <root>/packages/model/, so ../../ is the site root — works
 // both locally and under a GitHub Pages subpath)
@@ -72,19 +60,9 @@ export function fontFileUrl(file) {
   return new URL(`assets/fonts/${encodeURIComponent(file)}`, ROOT).href;
 }
 
-// ----------------------------------------------------------------------------
-// Font byte fetching: local library file first -> online sources as fallback (the registry's
-// url primary source + mirrors)
-//   - local serve: a file exists in assets/fonts/ -> read locally (fast, works offline)
-//   - online Pages: the repo has no font files uploaded -> fetch from raw.githubusercontent /
-//     jsDelivr (both allow CORS; FontFace registers from bytes and is not subject to the
-//     cross-origin restriction)
-//   - fetched bytes go into the Cache API for cross-session caching, so repeat visits make no
-//     network request
-//   - the cache key carries the registry size as a fingerprint: when upstream bytes change
-//     (e.g. the v1.3.3 butter font source swap) the old cache is invalidated automatically,
-//     preventing bad bytes from being cached forever (the v1 cache was abandoned for this reason)
-// ----------------------------------------------------------------------------
+// Font byte fetching: local library file first, then the registry url + mirrors. Fetched
+// bytes go into the Cache API for cross-session reuse; the cache key carries the registry
+// size as a fingerprint, so changed upstream bytes invalidate old entries automatically.
 const FONT_CACHE_NAME = "open-pptd-fonts-v2";
 
 async function readCachedFont(key) {

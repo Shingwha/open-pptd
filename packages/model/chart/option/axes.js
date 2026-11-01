@@ -1,6 +1,6 @@
-// ============================================================================
-// model/chart/option/axes.js — cartesian axes -> ECharts axis array (pure functions)
-// ----------------------------------------------------------------------------
+// packages/model/chart/option/axes.js — cartesian axes -> ECharts axis array (pure functions).
+// A vertical chart uses a yAxis array + yAxisIndex, a horizontal chart an xAxis array +
+// xAxisIndex; a secondary axis switches side to right/top.
 
 import { colorOr } from "../../theme.js";
 import { dashSpec } from "../../style-spec.js";
@@ -12,9 +12,8 @@ import { AXIS_TEXT, CHART_GRID, chartStyleColors } from "./shared.js";
 const axisTitleCfg = (title) => (typeof title === "string" ? { text: title } : title || null);
 
 /**
- * Cartesian axes (official §5.3 axis-array rules: a vertical chart uses a yAxis array +
- * yAxisIndex, a horizontal chart an xAxis array + xAxisIndex; a secondary axis switches
- * side to right/top).
+ * Cartesian axes (a vertical chart uses a yAxis array + yAxisIndex, a horizontal chart an
+ * xAxis array + xAxisIndex; a secondary axis switches side to right/top).
  */
 export function cartesianAxes(theme, el, cats, series, { horizontal = false, percentMax = false, scatter = false } = {}) {
   const { axisColor, gridColor, labelColor } = chartStyleColors(theme);
@@ -29,9 +28,7 @@ export function cartesianAxes(theme, el, cats, series, { horizontal = false, per
     if (cfg === false) return { show: false, type: def.type };
     const o = typeof cfg === "object" ? cfg : {};
     // Axis title: centered along the axis (PowerPoint convention), rotated 90° on a
-    // vertical axis — previously this used the ECharts default name (drawn outside the
-    // axis end), so a vertical axis title landed in the top-left corner and a horizontal
-    // axis title was invisible
+    // vertical axis; the ECharts default name would be drawn outside the axis end.
     const titleCfg = axisTitleCfg(o.title);
     // Axis line arrow (official axisLine.arrow -> ECharts symbol pair)
     const arrow = o.axisLine && typeof o.axisLine === "object" ? o.axisLine.arrow : null;
@@ -65,7 +62,7 @@ export function cartesianAxes(theme, el, cats, series, { horizontal = false, per
     const crowded = cats.length > 0 && (vertical
       ? cats.reduce((w, c) => w + textWidth(c, fs), 0) > axisLength * 0.8
       : cats.length * fs * 1.4 > axisLength * 0.8);
-    // Category axis title (same centered layout as mkAxis; catAxis previously ignored title, so a horizontal axis title was missing)
+    // Category axis title (same centered layout as mkAxis)
     const titleCfg = axisTitleCfg(cfg.title);
     return {
       type: "category",

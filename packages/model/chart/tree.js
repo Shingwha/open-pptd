@@ -1,10 +1,6 @@
-// ============================================================================
-// model/chart/tree.js — treemap/sunburst parent-child table -> tree parsing (single implementation)
-// ----------------------------------------------------------------------------
-// The ECharts preview (nesting projection in option/matrix.js) and the chartEx export
-// (leaf path/row projection in writer/chart/chartex.js) share the same node parsing,
-// subtree summation and levels trimming semantics.
-// ============================================================================
+// packages/model/chart/tree.js — treemap/sunburst parent-child table -> tree parsing.
+// The ECharts preview and the chartEx export share the same node parsing, subtree
+// summation and levels trimming semantics.
 
 /**
  * Parse a parent-child table into a forest.

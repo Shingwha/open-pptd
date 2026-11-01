@@ -1,14 +1,8 @@
-// ============================================================================
-// model/chart/resolve.js — chart normalization (defaults merge, encode lookup, default color, coexistence validation)
-// ----------------------------------------------------------------------------
-// C3 aligned with the official spec:
-//   - seriesDefaults merge (§3.4): scalars override / objects shallow-merge / arrays
-//     replace wholesale; type/encode are not included
-//   - numeric channels parse strings into numbers (ChartData constraint); missing cells
-//     fill with null
-//   - color lookup (§5.2): defaults to themeChartPalette (theme accent1-6 color cycle)
-//     cycling in series order; the three waterfall categories do not take part in the cycle
-// ============================================================================
+// packages/model/chart/resolve.js — chart normalization: seriesDefaults merge, encode lookup,
+// default colors and coexistence validation.
+// Scalars override, objects shallow-merge and arrays replace; type/encode never come from
+// defaults. Numeric channels parse strings, missing cells become null, and colors default to
+// the theme accent1-6 cycle (waterfall categories do not take part in the cycle).
 
 import { themeChartPalette } from "../theme.js";
 import { CHART_META, SOLO_TYPES } from "./meta.js";
@@ -33,8 +27,8 @@ function toNum(v) {
 }
 
 /**
- * Validate the type coexistence constraints of a series array (§5.4). Returns an array
- * of warning strings (never throws; lenient consumption).
+ * Validate the type coexistence constraints of a series array. Returns an array of
+ * warning strings (never throws; lenient consumption).
  */
 export function validateChartSeries(el) {
   const warns = [];
@@ -70,7 +64,7 @@ export function validateChartSeries(el) {
   return warns;
 }
 
-/** Merge seriesDefaults + series[i] (§3.4): scalars override; objects shallow-merge; arrays replace. type/encode never come from defaults. */
+/** Merge seriesDefaults + series[i]: scalars override; objects shallow-merge; arrays replace. type/encode never come from defaults. */
 export function mergeSeriesDefault(defaults, series) {
   if (!defaults) return { ...series };
   const out = { ...defaults, ...series };
@@ -140,8 +134,8 @@ export function resolveChartSeries(theme, el) {
       _values[ch] = _values[ch].map(toNum);
     }
 
-    // Default color (§5.2): the color field per type. The editor UI writes s.color (generic
-    // field); the official fill/lineColor win (including merged seriesDefaults), color is the fallback.
+    // Default color: the color field per type. The editor writes s.color (generic field);
+    // official fill/lineColor win (including merged seriesDefaults), color is the fallback.
     let color = null;
     if (type === "line" || type === "area" || type === "radar") {
       color = merged.lineColor || merged.color || palette[i % palette.length];

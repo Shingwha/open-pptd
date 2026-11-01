@@ -1,26 +1,9 @@
-// ============================================================================
-// model/chart/meta.js — 13-type registry and official defaults (shared by renderer and writer, single implementation)
-// ----------------------------------------------------------------------------
-// Aligned with the official spec (references/pptd.md §Chart lines 1009-1500):
-//   - 13 series types, no top-level type; pie.innerRadius > 0 = doughnut (the official
-//     spec has no doughnut type)
-//   - type coexistence constraints (§5.4) are expressed by CHART_META.coexist and
-//     consumed by validateChartSeries (resolve.js)
-//   - the encode semantic-key alias table feeds type-switch remapping (remapEncode,
-//     shared by editor and property panel)
-//
-// How to add a chart type:
-//   1. register CHART_META (route export path + encode + coexist) and CHART_DEFAULTS
-//      in this file; put semantic defaults in spec.js, never in a projection layer
-//   2. confirm the encode channel in resolve.js; a new channel changes axes.js seriesChannels
-//   3. add a builder to the matching family under model/chart/option/ (cartesian/polar/matrix)
-//   4. writer projection: the classic family goes to writer/chart/classic.js + ser.js; the
-//      chartEx family to chartex.js; types with no native support go through image.js SSR
-//      rasterization (route: "image")
-//   5. editor panel fields (editor/types/chart.js + chart-editor.js)
-//   6. add a regression page under tests/projects/chart/pages/ and register it in the
-//      deck.pptd pages: list, then lock the form with screenshots on both sides
-// ============================================================================
+// packages/model/chart/meta.js — 13-type registry, official defaults and encode remapping.
+// 13 series types with no top-level type; pie.innerRadius > 0 means doughnut. Coexist
+// constraints live here (consumed by validateChartSeries) and encode aliases feed type-switch
+// remapping. route is the sole export-route source: classic / chartex / image.
+// To add a type: register here, confirm the encode channel in resolve.js, add an option
+// builder under model/chart/option/, add the writer route shard and an editor panel field.
 
 /**
  * 13-type registry (official field set + constraints + export route).
@@ -57,12 +40,10 @@ export function chartRouteOf(el) {
 
 export const CHART_TYPE_ORDER = Object.keys(CHART_META);
 
-/** Single-series-exclusive types (the series array may hold only 1 element; §5.4, consumed by validateChartSeries). */
+/** Single-series-exclusive types (the series array may hold only 1 element; consumed by validateChartSeries). */
 export const SOLO_TYPES = new Set(["pie", "waterfall", "heatmap", "treemap", "sunburst", "sankey", "radar"]);
 
-// —— Shared preview/export defaults (single source; font size in pt, export sz = pt×100, preview px 1:1 with pt) ——
-// The three text defaults used to be written on both sides and had already drifted
-// (label 10/9, axis 11/9, legend 11/9).
+// Shared preview/export defaults (font size in pt; export sz = pt×100, preview px 1:1 with pt).
 export const CHART_DEFAULTS = {
   labelSize: 9,  // dataLabels font size
   axisSize: 9,   // axis tick labels
@@ -70,8 +51,7 @@ export const CHART_DEFAULTS = {
   titleSize: 14, // chart title (official string | TitleConfig default 14pt)
   markerSize: 8, // preview marker symbolSize default (export writes no c:size when unset, falling back to the platform default)
   // Candlestick up/down defaults (matching native PowerPoint/Excel: up = white fill gray
-  // border / down = black fill gray border, calibrated on chart46; preview previously wrote
-  // #000000-family color0/borderColor, disagreeing with the export)
+  // border / down = black fill gray border; calibrated against a reference PowerPoint chart)
   candlestick: { upFill: "#FFFFFF", upBorder: "#666666", downFill: "#404040", downBorder: "#666666" },
   // These types hide the legend by default (when legend is not configured)
   legendOffTypes: ["waterfall", "treemap", "sunburst", "sankey", "heatmap"],

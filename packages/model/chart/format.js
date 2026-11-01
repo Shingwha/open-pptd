@@ -1,15 +1,12 @@
-// ============================================================================
-// model/chart/format.js — chart number formatting (the sole interpreter of the official numberFormat vocabulary)
-// ----------------------------------------------------------------------------
-// Shared by preview label/axis formatters and SSR rasterization; native writer export
-// does not go through this module (the formatCode is passed through for PowerPoint's
-// native parser).
-// ============================================================================
+// packages/model/chart/format.js — chart number formatting (sole interpreter of the
+// numberFormat vocabulary).
+// Used by preview label/axis formatters and SSR rasterization; the native writer export
+// passes formatCode through to PowerPoint's own parser.
 
-/** Full numberFormat code set (vocabulary anchor for the editor dropdown; display text lives on the editor side). */
+/** Full numberFormat code set (vocabulary anchor for the editor dropdown; display text is editor-side). */
 export const NUMBER_FORMAT_CODES = ["", "0", "0.0", "0%", "0.0%", "#,##0", "0.0E+00"];
 
-/** formatCode -> display string (official vocabulary default = rounded integer). */
+/** formatCode -> display string (default vocabulary = rounded integer). */
 export function formatChartValue(v, format) {
   const n = Number(v);
   if (Number.isNaN(n)) return String(v ?? "");

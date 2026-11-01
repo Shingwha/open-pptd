@@ -1,15 +1,8 @@
-// ============================================================================
-// model/chart/spec.js — chart effective semantics single source (resolveChartSpec)
-// ----------------------------------------------------------------------------
-// Chart element -> fully resolved "effective config": normalized series, title, legend,
-// layout, bubble sizes and every other default are settled here. The preview (option/,
-// projecting ECharts) and the export (writer/, projecting OOXML) only do dialect
-// conversion and no longer hold semantics of their own — previously title extraction
-// existed in 7 places, the legend toggle in 3+1, position mapping in 3 (a real fork
-// where chartex defaulted to t while classic used b), bubble normalization in two
-// copies, and the writer even mutated the model normalization result (s._values.size).
-// Pure functions; consumers always go through the model/chart.js barrel.
-// ============================================================================
+// packages/model/chart/spec.js — chart effective semantics single source (resolveChartSpec).
+// Chart element -> fully resolved config: normalized series, title, legend, layout, bubble
+// sizes and every other default. The preview (option/) and export (writer/) only do dialect
+// conversion and hold no semantics of their own. Pure functions; consumers go through the
+// model/chart.js barrel.
 
 import { resolveChartSeries } from "./resolve.js";
 import { resolvePlotLayout, resolveBarLayout } from "./layout.js";
@@ -39,18 +32,17 @@ export function resolveChartSpec(theme, el) {
 }
 
 /**
- * Bubble size effective semantics (I22 single source):
- *   - glo/ghi: global extremes across all bubble series in the chart (normalizing each
- *     series separately would break cross-series size comparability)
- *   - diameterFn(s): raw value -> target diameter px (consumed directly as the preview symbolSize)
- *   - writes: the value written on export, 100×(d/dmax)², aligned to bubble series order
- *     (PowerPoint diameter ∝ √size, sizeRepresents=area; putting raw values straight into
- *     data coordinates makes bubbles huge and overlapping)
- *   - bubbleScale: solved back from the ratio of the largest target bubble to the plot-area
- *     short side (calibration: scale=100 -> largest bubble diameter ≈ 0.51×short side; >150
- *     triggers the platform clamp at 0.83)
- * Pure function: it does not rewrite the series normalization result (the writer used to
- * mutate s._values.size directly).
+ * Bubble size effective semantics:
+ *   - glo/ghi: global extremes across all bubble series (normalizing each series separately
+ *     would break cross-series size comparability)
+ *   - diameterFn(s): raw value -> target diameter px (the preview symbolSize)
+ *   - writes: the value written on export, 100×(d/dmax)², in bubble series order
+ *     (PowerPoint diameter ∝ √size with sizeRepresents=area; raw values in data coordinates
+ *     make bubbles huge and overlapping)
+ *   - bubbleScale: solved from the largest target bubble vs the plot-area short side
+ *     (calibration: scale=100 -> largest diameter ≈ 0.51×short side; >150 hits the platform
+ *     clamp at 0.83)
+ * Pure function: it does not rewrite the series normalization result.
  */
 function resolveBubbleLayout(chartEl, series, layout) {
   const bubbleSeries = series.filter((s) => s.type === "bubble");

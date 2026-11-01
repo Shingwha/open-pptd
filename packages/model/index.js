@@ -1,16 +1,8 @@
-// ============================================================================
-// model/index.js — packages/model package barrel (contract entry 4, open-pptd/model)
-// ----------------------------------------------------------------------------
-// Pure re-export, zero logic: collapses 300+ deep paths into a stable entry point.
-// The export surface is machine-readable in contract.json and asserted by
-// tests/contract/public-api.mjs; the names come from the real exports of each
-// source file (PRESET_SHAPES from preset-geometry.data.js, ELEMENT_TYPES from
-// style-spec.js — neither lives in model.js).
-//
-// Browser + Node: neither this file nor its transitive closure may contain node:* /
-// fs / window. / document. (the Node branches of the font and icon registries use
-// options.fs dependency injection, see the four existing dep-graph rules).
-// ============================================================================
+// packages/model/index.js — packages/model package barrel (Contract 3.0 entry, open-pptd/model).
+// Pure re-export, zero logic: one stable entry point over the model submodules. The export
+// surface is machine-readable in contract.json and asserted by tests/contract/public-api.mjs.
+// Browser + Node: neither this file nor its transitive closure may contain node:*/fs/window/
+// document (the font and icon registries use options.fs dependency injection).
 
 // ---- Parse and serialize (pptd-io.js) ----
 export { parseDeck, serializeDeck } from "./pptd-io.js";
@@ -107,9 +99,8 @@ export { parseFontInfo, parseFontResources } from "./font.js";
 export * as yaml from "./vendor/js-yaml.mjs";
 
 // ---- Chart namespace (all chart.js exports + chart/option builders) ----
-// chart.js only re-exports metadata/resolve/layout helpers; buildChartOption lives in
-// chart/option/index.js. The two are merged into a single chart namespace (D.1 requires
-// chart to contain buildChartOption).
+// chart.js re-exports metadata/resolve/layout helpers; buildChartOption lives in
+// chart/option/index.js. Both are merged into one chart namespace.
 import * as chartCore from "./chart.js";
 import * as chartOption from "./chart/option/index.js";
 export const chart = { ...chartCore, ...chartOption };

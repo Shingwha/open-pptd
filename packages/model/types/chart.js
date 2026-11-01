@@ -1,9 +1,6 @@
-// ============================================================================
-// model/types/chart.js — chart element type descriptor (manifest metadata)
-// ----------------------------------------------------------------------------
+// packages/model/types/chart.js — chart element type descriptor (manifest metadata).
 // contentEditor marks the chart data editor; render/toXml are registered by the
 // renderer/writer shards.
-// ============================================================================
 
 export const chartType = {
   id: "chart",

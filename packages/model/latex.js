@@ -1,13 +1,7 @@
-// ============================================================================
-// latex.js — LaTeX -> MathML wrapper (vendored KaTeX, MathML output mode only)
-// ----------------------------------------------------------------------------
-// Single source of truth for the formula component: PPTD stores latex and it is
-// converted at runtime:
-//   - preview (browser): MathML is put into the DOM and rendered natively
-//     (Edge / Chrome 109+)
-//   - export (Node): MathML -> mathml2omml -> OMML injected into the PPTX
-// KaTeX's MathML output mode needs no css/font files (270KB single file, no npm deps).
-// ============================================================================
+// packages/model/latex.js — LaTeX -> MathML wrapper (vendored KaTeX, MathML output only).
+// PPTD stores latex and converts at runtime: the preview puts MathML into the DOM (native
+// rendering); the export goes MathML -> mathml2omml -> OMML. KaTeX MathML mode needs no
+// css/font assets and no npm dependencies.
 
 import katex from "./vendor/katex.mjs";
 

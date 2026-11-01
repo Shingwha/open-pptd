@@ -1,22 +1,9 @@
-// ============================================================================
-// measure/font-metrics.js — deterministic typographic measurement pure functions (default MeasurePort)
-// ----------------------------------------------------------------------------
-// Input = rich-text runs + style + font metrics; output = geometry. Zero DOM, zero Node
-// APIs, so it runs and snapshots on Node/CLI/CI (the "MeasurePort defaults to a
-// deterministic pure function" invariant).
-//
-//   measureTextRuns(runs, style, maxWidth, fonts) → { lines, height }
-//   measureCell(cell, colWidth, fonts)           → number (cell content height in px)
-//   measureTable(table, opts?)                   → { columnWidths, rowHeights, totalHeight }
-//     opts = { theme, fonts } (a bare metrics table is still accepted for compatibility)
-//
-// Wrapping: greedy by character-width class (CJK ≈ cjkWidth em, Latin ≈ latinWidth em,
-// formulas via the closed form), biased to over- rather than under-estimate — a safety
-// factor (default 1.06, configurable in metrics-data.json) multiplies the final height.
-// Single source of line height: lineHeightPx > fontSize × lineHeight (derived from the same
-// table as the writer's spcPct compensation, so both ends end up at fontSize × lineHeight).
-// LaTeX keeps the simplified closed form.
-// ============================================================================
+// packages/measure/font-metrics.js — deterministic typographic measurement (default MeasurePort).
+// Input = rich-text runs + style + font metrics; output = geometry. Zero DOM/Node APIs, so it
+// runs and snapshots on Node/CLI/CI. measureTable accepts { theme, fonts } (a bare metrics
+// table is also accepted).
+// Wrapping is greedy by character-width class and biased to over-estimate via the safety
+// factor (default 1.06); line-height source is lineHeightPx > fontSize × lineHeight.
 
 import { parseRichText } from "../model/richtext.js";
 import { TABLE_CELL_PAD, TABLE_CELL_PAD_X, TABLE_FONT_SIZE } from "../model/table.js";
@@ -189,8 +176,7 @@ export function measureCell(cell, colWidth, fonts = defaultMetricsTable) {
  * Style awareness: each cell's text style is resolved through the official inheritance chain
  * (cell inline > Cell.textStyle > position class > bodyStyles > cellStyle > default) with
  * `resolveTableStyle` + `cellTextStyle`, then handed to measureCell. Without a theme the
- * result is identical to the previous cell-inline-only measurement (the single-cell API and
- * its direct callers are unchanged).
+ * result is identical to cell-inline-only measurement.
  *
  * Row heights:
  *   1. seed = estimateTableLayout (rowHeights ratio × bounds height, never below the floor),
@@ -199,7 +185,7 @@ export function measureCell(cell, colWidth, fonts = defaultMetricsTable) {
  *   3. each rowSpan>1 cell computes required = content height (padding counted once) and
  *      available = current sum over its span; a positive deficit is split as
  *      q = floor(deficit / span) with the first `rem` rows taking one extra pixel, so the
- *      span total is >= required with exactly one rounding step (D7).
+ *      span total is >= required with exactly one rounding step.
  *
  * @param {object} table table element (rows/columnWidths/rowHeights/bounds/fill/style)
  * @param {{theme?: object, fonts?: object}|object} [opts] { theme, fonts } or a bare metrics table (compatibility)

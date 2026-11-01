@@ -1,15 +1,8 @@
-// ============================================================================
-// svg-gradient.js — GradientFill -> SVG <defs> gradient definition (same source for preview and export media)
-// ----------------------------------------------------------------------------
-// Angle spec (references/pptd.md): angle 0 = left->right, increasing clockwise
-// (90 = top->bottom). linear uses userSpaceOnUse and projects the gradient vector
-// over the full rectangle length (matching the CSS gradient-line formula, so angles
-// do not distort on non-square boxes); radial is an objectBoundingBox circle
-// (cx/cy 50%, r 50%). Shapes (renderer/svgGradient) and icons (model/iconSvgBody)
-// share this generator — icon previously carried its own objectBoundingBox
-// half-vector implementation, so gradients pointed differently from shapes on
-// non-square boxes.
-// ============================================================================
+// packages/model/svg-gradient.js — GradientFill -> SVG <defs> gradient (preview and export).
+// angle 0 = left->right, increasing clockwise (90 = top->bottom). linear uses
+// userSpaceOnUse and projects the gradient over the full rectangle length (the CSS
+// gradient-line formula, so angles do not distort on non-square boxes); radial is an
+// objectBoundingBox circle (cx/cy 50%, r 50%). Shapes and icons share this generator.
 
 import { colorOr } from "./theme.js";
 

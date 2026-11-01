@@ -1,6 +1,6 @@
-// ============================================================================
-// model/chart/data.js — ChartData table utilities (shared by xlsx embed and the data editor)
-// ============================================================================
+// packages/model/chart/data.js — ChartData table utilities (shared by xlsx embed and the data editor).
+// Tables are [header, ...data] rows; colLetter maps a 0-based index to an Excel column letter.
+// Pure functions with no chart semantics beyond the table shape.
 
 /** Chart data -> xlsx table layout (rows: header + data). */
 export function chartDataTable(el) {

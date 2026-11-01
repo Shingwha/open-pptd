@@ -1,14 +1,8 @@
-// ============================================================================
-// preset-geometry.js — ECMA-376 preset shape geometry evaluator (render side: SVG path)
-// ----------------------------------------------------------------------------
-// The data (preset-geometry.data.js) shares its origin with PowerPoint prstGeom (ECMA-376
-// appendix): the preview is the path evaluated by the spec formulas, the export is the
-// same-named prstGeom preset. Both geometries agree.
-//
-// Supported formula ops: val */ +- +/ ?: abs at2 cat2 cos max min mod pin sat2 sin sqrt tan
-// Supported path commands: moveTo(M) / lnTo(L) / cubicBezTo(C) / quadBezTo(Q) / arcTo(A) / close(Z)
-// Supports multiple paths: main fill outline + lighten/darken shading faces + fill="none" stroke detail.
-// ============================================================================
+// packages/model/preset-geometry.js — ECMA-376 preset shape geometry evaluator (render: SVG path).
+// Data (preset-geometry.data.js) shares its origin with PowerPoint prstGeom; the evaluated SVG
+// path and the exported same-named preset agree. Multiple paths cover the fill outline,
+// lighten/darken shading faces and fill="none" stroke detail.
+// Ops: val */ +- +/ ?: abs at2 cat2 cos max min mod pin sat2 sin sqrt tan; commands M L C Q A Z.
 
 import { PRESET_SHAPES } from "./preset-geometry.data.js";
 

@@ -1,14 +1,7 @@
-// ============================================================================
-// xml-parser.js — lightweight XML parser (zero dependencies, targeting a MathML subset)
-// ----------------------------------------------------------------------------
-// Split out of mathml2omml.js (previously an inline implementation): generic XML -> node tree.
-// Supports: elements/attributes/text/self-closing tags/skipped comments/entity decoding
-// (including numeric entities, see escape.js).
-// Does not do: CDATA, processing instructions, DTD, namespaces (prefix stripped,
-// node name is the part after the colon).
-// Node shape: { name, attrs: {}, children: [], text: "", parent }
-// Consumers: packages/model/mathml2omml.js (KaTeX MathML parsing).
-// ============================================================================
+// packages/model/xml-parser.js — lightweight XML parser targeting a MathML subset (zero deps).
+// Supports elements/attributes/text/self-closing tags/comments/entity decoding (including
+// numeric entities, see escape.js). Does not do CDATA, processing instructions, DTD or
+// namespaces (the prefix is stripped). Node shape: { name, attrs, children, text, parent }.
 
 import { decodeEntities } from "./escape.js";
 

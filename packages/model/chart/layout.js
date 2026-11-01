@@ -1,27 +1,21 @@
-// ============================================================================
-// model/chart/layout.js — chart layout semantics single source (writer export and renderer preview both project from it)
-// ----------------------------------------------------------------------------
-// Plot-area layout model (I19): the only place the geometry of the preview ECharts
-// grid and the export c:plotArea manualLayout is defined. Previously the preview used
-// a fixed grid while the export wrote <c:layout/> to let PowerPoint lay out
-// automatically, so the two sides used unrelated plot-area geometry (page 01/02 pie
-// and bar charts clearly diverged in size).
-// chartEx (waterfall/treemap/sunburst) has no platform plotArea layout control, so the
-// plot field is consumed by classic chart export only; on the preview side waterfall
-// still consumes grid.
+// packages/model/chart/layout.js — chart layout semantics single source; preview and export
+// both project from it.
+// The only place the preview ECharts grid and the export c:plotArea manualLayout geometry
+// are defined, plus the bar width/gap/overlap rules. chartEx (waterfall/treemap/sunburst)
+// has no platform plotArea layout control, so plot is consumed by classic export only;
+// waterfall still consumes grid in the preview.
 
 import { toAxisArray, resolveChartDirection } from "./axes.js";
 import { resolveTitleLike, resolveLegend } from "./title-legend.js";
 
-/** Cartesian base margins (px) — the common basis of the plot-area layout model, also
- * used as the reference by the axis-label crowding estimate (option/axes.js). Single
- * definition; option/shared.js re-exports it. */
+/** Cartesian base margins (px) — common basis of the plot-area layout model and the
+ * axis-label crowding estimate (option/axes.js). Single definition; option/shared.js
+ * re-exports it. */
 export const CHART_GRID = { left: 48, right: 24, top: 28, bottom: 36 };
 
-/** Yield coefficients (convention values calibrated on COM screenshots; changing them
- * requires a page 02/08 cross-side regression):
- * the label margin ratio PowerPoint leaves inside the manualLayout inner rectangle for
- * the pie/radar inscribed circle. */
+/** Yield coefficients (calibrated on COM screenshots; changing them requires a page 02/08
+ * cross-side regression): the label margin ratio PowerPoint leaves inside the manualLayout
+ * inner rectangle for the pie/radar inscribed circle. */
 const PIE_FILL = 0.95;
 const RADAR_FILL = 0.9;
 
@@ -37,11 +31,10 @@ const RADAR_FILL = 0.9;
  *           +18 yield for a vertical cartesian category-axis title)
  *   plot  — chartSpace 0-1 fractional rectangle (writer writes manualLayout layoutTarget=inner)
  *   pie/radar — ECharts % (radius relative to min(w,h)/2, center relative to the container)
- * The yield conditions match the historical preview behavior item by item: title yield for
- * all types; category-axis-title yield only for vertical bar/line/area/candlestick
- * (scatter/bubble use a numeric x axis, waterfall/heatmap go through chartEx or the matrix
- * family and historically do not yield); pie/radar have no axis labels, their left/right
- * margins narrow symmetrically to 24px.
+ * Yield conditions: title yield for all types; category-axis-title yield only for vertical
+ * bar/line/area/candlestick (scatter/bubble use a numeric x axis, waterfall/heatmap go
+ * through chartEx or the matrix family and do not yield); pie/radar have no axis labels and
+ * narrow their left/right margins to 24px.
  */
 export function resolvePlotLayout(el, series, chrome = null) {
   const [, , bw0, bh0] = el.bounds || [];
@@ -67,12 +60,10 @@ export function resolvePlotLayout(el, series, chrome = null) {
 
   const polar = primary === "pie" || primary === "radar";
   // treemap/sunburst have no axes and no legend (off by default), so PPT fills the whole
-  // space below the title/legend bands (I26: previously the ECharts treemap defaulted to
-  // 80% width/height centered, leaving margins in the preview while PPT filled the space)
+  // space below the title/legend bands; the preview does the same instead of ECharts' 80%
+  // default rectangle.
   const treeLike = primary === "treemap" || primary === "sunburst";
-  // heatmap: the colorbar occupies a right band (40 with colorbar / 24 without); a
-  // historical calibration value that stands on its own (previously this grid was
-  // hard-coded in option/matrix.js, bypassing the layout model)
+  // heatmap: the colorbar occupies a right band (40 with colorbar / 24 without)
   const heatmapGrid = primary === "heatmap"
     ? { left: 48, right: series[0]?.colorbar !== false ? 40 : 24, top: 16, bottom: 36 }
     : null;
@@ -118,9 +109,8 @@ export function resolvePlotLayout(el, series, chrome = null) {
  *     export omits the element and PowerPoint falls back to the schema default 0, same semantics)
  * Render-side projection: echarts.barWidthPct = 100/(n + gapWidth/100 + (n-1)×|overlap|/100),
  * barGapPct = |overlap| (stacked bars share one slot, n = 1). The preview must pass the
- * converted result explicitly; passing undefined through would let ECharts use its own
- * defaults (gap 30% / categoryGap 20%), making grouped bars exceed the category slot and
- * overflow into neighboring categories, drifting from the export.
+ * converted result explicitly; undefined would let ECharts use gap 30% / categoryGap 20%,
+ * making grouped bars exceed the category slot and drift from the export.
  */
 export function resolveBarLayout(chartEl, series) {
   const bars = series.filter((s) => s.type === "bar");

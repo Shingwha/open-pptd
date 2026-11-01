@@ -1,12 +1,7 @@
-// ============================================================================
-// model.js — unified data model (single source of truth shared by renderer and writer)
-// ----------------------------------------------------------------------------
-// Supported components (aligned with official PPTD v2):
-//   text / shape (187 preset geometries + custom path) / line / image / icon /
-//   table / chart (13 series types)
-// Page background, page type, fade transition and speaker notes are written
-// directly by the writer.
-// ============================================================================
+// packages/model/model.js — unified data model (single source of truth for renderer and writer).
+// Components: text / shape (187 preset geometries + custom path) / line / image / icon /
+// table / chart (13 series types). Page background, page type, transition and speaker notes
+// are written directly by the writer.
 
 import { PRESET_SHAPES } from "./preset-geometry.data.js";
 
@@ -33,9 +28,7 @@ export const PAGE_TYPES = ["cover", "table_of_contents", "chapter", "content", "
 export const SHOT_READY_TITLE = "PPTD_READY";
 export const SHOT_ERROR_TITLE = "PPTD_ERROR";
 
-// ----------------------------------------------------------------------------
 // Creation and validation
-// ----------------------------------------------------------------------------
 export function createDeck({ title = "未命名演示文稿", size = [PAGE_WIDTH, PAGE_HEIGHT], theme = null, fonts = null, pages = [] } = {}) {
   return { version: "v2", title, size, theme, fonts, pages };
 }

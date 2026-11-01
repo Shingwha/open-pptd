@@ -1,20 +1,9 @@
-// ============================================================================
-// model/svg-path.js — SVG path lexing, shared by the renderer clip-path scaler and
-// the writer a:custGeom parser (browser + Node, zero dependencies)
-// ----------------------------------------------------------------------------
-// Both consumers used to carry their own copy of the command token regex and the
-// command-arity table. Those two pieces are byte-for-byte identical, and that is what
-// this module single-sources; each consumer keeps its own segment loop because their
-// jobs differ:
-//   - parseSvgPath: absolute command stream consumed by writer/custgeom.js
-//   - scaleSvgPath: coordinate scaling for a CSS clip-path (custom cropShape viewBox)
-//
-// The segment loops stay separate for the same reason. Historical note: scaleSvgPath's
-// arity-0 (Z) branch used to re-emit the token after Z, swallowing the next command
-// letter (leaving the following subpath unscaled) and appending the literal "undefined"
-// for a trailing Z. Fixed to scale every subpath; at scale 1 the output is unchanged,
-// which the golden render baseline pins.
-// ============================================================================
+// packages/model/svg-path.js — SVG path lexing for the renderer clip-path scaler and the
+// writer a:custGeom parser (browser + Node, zero dependencies).
+// This module single-sources the command token regex and the arity table; each consumer
+// keeps its own segment loop because their jobs differ: parseSvgPath yields the absolute
+// command stream, scaleSvgPath scales coordinates for a CSS clip-path.
+// Do not rework scaleSvgPath's Z branch without regenerating the golden baseline (scale 1 is pinned).
 
 /** SVG command arity: argument count per command letter (Z takes none). */
 export const SVG_CMD_ARITY = { M: 2, L: 2, H: 1, V: 1, C: 6, S: 4, Q: 4, T: 2, A: 7, Z: 0 };
@@ -127,9 +116,8 @@ export function parseSvgPath(d) {
  * geometry, not position). Relative deltas are scaled in place; absolute coordinates
  * are scaled directly. Values are rounded to 3 decimals.
  *
- * Keeps its original segment loop verbatim, including the arity-0/Z branch described
- * in the file header. Do not "fix" it against parseSvgPath without regenerating the
- * golden render baseline.
+ * Keeps its own segment loop, including the arity-0/Z branch described in the file
+ * header. Do not "fix" it against parseSvgPath without regenerating the golden baseline.
  * @param {string} d SVG path
  * @param {number} sx x scale
  * @param {number} sy y scale

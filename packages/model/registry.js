@@ -1,25 +1,9 @@
-// ============================================================================
-// model/registry.js — element type registry contract (extensibility core, sharded registration)
-// ----------------------------------------------------------------------------
-// The manifest (model/types/index.js) seeds the registry with every type's metadata:
-//   { type: "text", id: "text", label, composite, layoutKey?, schema?, contentEditor }
-// Shards then merge their fields into the same entry (registering the same type again
-// merges fields, Object.assign semantics; console.warn only when the same field is
-// overwritten with a different value):
-//   {
-//     type: "text",                // element type id (elementType)
-//     render: (theme, el, ctx) => Node|null, // preview render shard (packages/renderer/types/)
-//     toXml: (theme, el, ctx) => string,     // OOXML export shard (packages/writer/types/)
-//     label: displayName,          // manifest metadata (editor UI shard may re-register the same value)
-//     menu: { group, items },      // add menu (editor UI shard; removed by the 3.0 UI wave)
-//     create: () => element,       // default element for creation (editor UI shard)
-//     props: (el, h) => [node],    // property-panel group (editor UI shard)
-//     quickbar: (el, h) => void,   // floating quick bar (editor UI shard)
-//   }
-// Assemblers pull in the shards they need: the editor (editor/types/index.js)
-// pulls all of them; CLI export pulls only the writer shard; render screenshots
-// pull only the renderer shard.
-// ============================================================================
+// packages/model/registry.js — element type registry contract (extensibility core).
+// The manifest (model/types/index.js) seeds each type's metadata; shards merge their fields
+// into the same entry (registering the same type again uses Object.assign semantics and
+// warns only when the same field is overwritten with a different value). Shards contribute
+// render (packages/renderer/types/), toXml (packages/writer/types/) and editor UI fields
+// (label/create/addIcon/addHint). Assemblers load only the shards they need.
 
 import { TYPE_DEFS, defineType as defineMeta } from "./types/index.js";
 
