@@ -3,7 +3,8 @@
 // export, editor canvas). Per-instance skeleton/services; destroy() removes only
 // this instance's DOM, listeners, live channel and charts.
 // chrome: "full" (viewer chrome) | "embedded" (canvas only).
-// Internal options: headless (bare deck-sized surface), live:false.
+// Internal options: headless (bare deck-sized surface), live:false, interactive
+// (embedded hosts may opt into pan/zoom; full chrome is interactive by default).
 
 import { createEditorState } from "./app/state.js";
 import { createEditorApi } from "./app/api.js";
@@ -107,6 +108,10 @@ export function createPreviewCore(rootEl, options, { html, chrome, editable }) {
   let controller = null;
   // Embedded covers fit their host box exactly; editor/viewer keep the 64px margin.
   const embeddedFit = !editable && chrome === "embedded";
+  // Embedded previews are static by default: a gallery cover must not pan/zoom under
+  // the pointer or swallow the host's wheel/page keys. Full viewers keep the
+  // interactive chrome; a host embedding a preview may opt in via the internal flag.
+  const interactive = options.interactive ?? chrome === "full";
   const view = headless
     ? createPageView({ state, container: mount })
     : createView({
@@ -156,7 +161,10 @@ export function createPreviewCore(rootEl, options, { html, chrome, editable }) {
     present = createPresent({ state, view, ops, ui });
     api.bind({ present });
     disposers.push(() => present.destroy?.());
-    if (!editable) bindViewerChrome();
+    // Static embedded previews bind nothing: no pan/zoom, wheel, page keys or window
+    // resize (the gallery's own ResizeObserver refits the cover). Full chrome keeps
+    // the viewer interaction; an embedded host can opt in through `interactive`.
+    if (!editable && interactive) bindViewerChrome();
   }
 
   // --------------------------------------------------------------------------
