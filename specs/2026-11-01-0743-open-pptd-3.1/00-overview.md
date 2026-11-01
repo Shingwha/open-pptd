@@ -76,4 +76,5 @@
 - ✅ 3.1 终验 + 试用反馈：run-all 39/39、全部 e2e、golden 156/156；详见 `handoff/W3.1-lead.md`。未 push/tag/发版。
 - 另修 `open --detach` 子进程重复开浏览器（补 `--no-open`）。
 - ✅ W6（2026-11-01 @ `feat/3.1-w6-perf` → main）：删除编辑器 DOM 度量、缩略图增量/分帧、viewport 缓存；六茶画布 p50 50→12ms，青山切页 176→14ms；perf 3 连跑全达标；全部 e2e、run-all 39/39、golden 156/156。
-- W7 画廊优化已派工；W8 EV 学术风重构随后串行（避免 e2e 固定端口冲突）。
+- ✅ W7（2026-11-01 @ `feat/3.1-w7-gallery` → main）：删除青山项目/展示图；卡片去描述子标题；Logo 回页首；perf/ui-shots 换远川复盘；golden 23/144。
+- ✅ W8（2026-11-01 @ `feat/3.1-w8-ev` → main）：EV 17 页白色/海军蓝学术风（删 58 装饰）、思源宋体标题；海报删中文副标题；golden rebaseline 23/144；全部 e2e、run-all 39/39、docs 35/35。
