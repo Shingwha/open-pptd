@@ -52,6 +52,8 @@
 | W2 | `feat/3.2-w2-theme-library-editor-colors` | 无（与 W1 并行；合并顺序 W1→W2） | `packages/model/**`、`editor/**`、`tests/contract/**`、`tests/regression/{color-tokens,theme-*}`、`tests/run-all.mjs`、`tests/e2e/{editor-minimal,incremental-load}.mjs` | `run-all`、editor-minimal、incremental-load、golden 142/142 |
 | W3 | `feat/3.2-w3-invalidation-examples-docs` | W2 | `editor/app/**`（失效/实时）、`editor/context.js`、EV pages、README/CHANGELOG、e2e、golden | 全部 e2e、run-all、docs、golden、perf |
 
+**状态（2026-11-01）**：W1 ✅ `04c3f29`（run-all 39/39、CLI 73/73）；W2 ✅ `c65cd04`（run-all 38/38、editor-minimal 21/21、incremental 5/5、golden 142/142）；W3 进行中。
+
 W1/W2 文件级不相交，可并行；合并顺序 W1 先，避免 W2 删除 model 导出后 CLI 仍引用。W3 在 W2 合并后派工。
 
 ## 共享文件所有者

@@ -48,14 +48,15 @@ colorTokenUsage(deck, token) -> number
 `packages/model/index.js` 只导出以上颜色工具；删除：
 `applyTheme`、`normalizeThemeFile`、`createThemeStore`、`listBuiltinThemes`、`BUILTIN_THEME_PREFIX`、`THEME_FILE_VERSION`、`isBuiltinThemeId`、`isUserThemeId`、`collectThemeReferences`、`THEME_PALETTES`、`mergePaletteColors`。
 
-## 3. 编辑器颜色写入（W2 基线，W3 扩展）
+## 3. 编辑器颜色写入（W2 已合并；W3 扩展）
 
-W2 目标签名（设计面板可直接用）：
+W2 实际签名：
 
 ```js
 // editor/app/project/loader.js
 applyColors(colors) -> void
-  // state.deck.theme = { ...(state.deck.theme || {}), colors: deepClone(colors) }
+  // current = state.deck.theme（非对象按 {} 处理，兼容旧字符串 theme）
+  // state.deck.theme = { ...current, colors: deepClone(colors) }
   // state.theme = resolveTheme(state.deck)
   // 不触碰 textStyles/tableStyles
 
@@ -63,7 +64,14 @@ applyColors(colors) -> void
 applyColors: loader.applyColors
 ```
 
-W3 增加（最终形态）：
+W2 实际 Design 面板：
+
+- tabs：`colors`（颜色）/ `fonts` / `appearance`；`activeTab` 默认 `colors`。
+- `writeToken` 用 `deps.state.deck.theme`（非对象回退 `deps.state.theme`）→ `setColorToken` → `io.applyColors(next.colors)`；只写 colors。
+- 颜色历史：首次 input `beginChange()`，change/blur `endChange({ thumbs: "all" })`。
+- 仍无 `themeRevision` / `ui.events` / 实时 debounce（W3）。
+
+W3 最终形态：
 
 ```js
 // editor/app/state.js
@@ -76,12 +84,15 @@ ui.events: EventTarget           // 实例级；"themechange" CustomEvent
 // editor/app/project/loader.js
 applyColors(colors, { origin = "editor" } = {}) -> void
   // 写 colors、resolveTheme、themeRevision++、dispatch themechange
+  // 旧字符串 theme 仍按 {} 处理
+applyHistory(deckSnapshot)
+  // 比较 colors/textStyles/tableStyles 签名；变化才 themeRevision++ + dispatch origin:"history"
 
 // editor/app/api.js
 setThemeColors(colors, { origin = "editor" } = {}) -> void
-  // io.applyColors + 画布刷新（缩略图由调用方/视图决定）
-setThemeColor(key, value) -> theme | null
-  // setColorToken(state.deck.theme, key, value) → setThemeColors；非法时返回 null
+  // io.applyColors + view.renderCanvas()（缩略图由 W3 view/面板决定）
+setThemeColor(key, value) -> theme
+  // setColorToken(安全 theme, key, value) → setThemeColors；非法抛 ThemeError
 refreshThumbnails() -> void
   // view.renderThumbnails()（全量；取色器 debounce 用）
 
@@ -99,12 +110,13 @@ render({ thumbs?: "all"|"current"|"none" }) -> void
 - Design 面板订阅 `ui.events` 的 `themechange`：`origin:"design"` 只同步本地色块；`history/load` 重建当前 tab（保留 scroll）。
 - 任何路径都不得写 `theme.textStyles/tableStyles`。
 
+
 ## 4. CLI 删除面（W1）
 
 删除：
 
-- `open-pptd assets themes list|import|export|delete|apply`
-- `open-pptd build --theme <id>`（未知选项 -> 现有参数错误）
+- `open-pptd assets themes list|import|export|delete|apply`（`assets themes` 现为未知子命令，exit 1）
+- `open-pptd build --theme <id>`（在 `runBuild` 入口显式拒绝：`ERR_INVALID_OPTION`，消息含“已移除”）
 - `assets list --json` 的 `themes` 字段；人类输出不再有 `themes` 行
 - `doctor --json` / 人类输出的 themes 计数与路径
 
@@ -114,19 +126,20 @@ render({ thumbs?: "all"|"current"|"none" }) -> void
 - `assets list --json`：`{ ok, home, fonts, icons, userFonts, registry }`（无 `themes`）
 - CLI 仍是五命令：`open/build/check/assets/doctor`
 
-错误码：删除后不再产生 `ERR_THEME_NOT_FOUND` / `ERR_THEME_INVALID`（颜色 token 的 `ERR_THEME_INVALID` 仍由 model 抛出）。
+错误码：删除后不再产生 `ERR_THEME_NOT_FOUND`；颜色 token 的 `ERR_THEME_INVALID` 仍由 model 抛出；`build --theme` 使用 `ERR_INVALID_OPTION`。
 
-## 5. Server 删除面（W1）
+## 5. Server 删除面（W1 已合并）
 
-- 删除 `/api/themes` 路由、`handleThemes`、`createFileThemeStore`、`themeStorePaths`、`theme-store.js`、`themes.js`。
+- 已删除 `/api/themes` 路由、`handleThemes`、`createFileThemeStore`、`themeStorePaths`、`theme-store.js`、`themes.js`。
 - `createServer(options)` 不再接受 `themeStore`；`/api/fonts` 不动。
 - `packages/paths.js` 不再有 `paths.themes`；`ensureHome` 不创建 themes 目录。
+- `packages/server/http-util.js` 注释同步去掉 themes。
 
-## 6. Export 删除面（W1）
+## 6. Export 删除面（W1 已合并）
 
 - `exportProject(project, options)` 不再支持 `options.theme`。
-  - 传入 `theme` -> `ExportError(EXPORT_ERRORS.INVALID_OPTION, "theme 覆盖已移除")`（明确失败，不静默）。
-- CLI `build` 不再传 theme。
+  - 传入 `theme` -> `ExportError(EXPORT_ERRORS.INVALID_OPTION, "theme 覆盖已移除（主题库已删除）")`（明确失败，不静默）。
+- CLI `build` 不再传 theme；`build --theme` 在入口拒绝。
 
 ## 7. 测试契约
 
