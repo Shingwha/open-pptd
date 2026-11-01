@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generated": "2026-11-01T09:55:08.695Z",
+ "generated": "2026-11-01T11:46:11.374Z",
  "scale": 1,
  "renderer": "renderer/headless renderDeck（现役旧管线，spec 09 T2）",
  "hash": {
@@ -331,7 +331,7 @@
    "deck": "examples/ev-range/deck.pptd",
    "pngDir": "examples__ev-range",
    "pageCount": 15,
-   "sourceHash": "994a0d1c4d5e6baf4894ebcc1358d9dd229b4bef1fb2e224c670d8baf370e437",
+   "sourceHash": "4c8e1e8ac7f34dc766b8457f30e4d355b4f1de60e249c69c3256638edcbae455",
    "size": [
     960,
     540
@@ -341,10 +341,10 @@
      "page": 1,
      "w": 960,
      "h": 540,
-     "bytes": 297526,
-     "sha256": "0153d79767dccda4febe0e74b91ff9d924804388453b2cd00dc5fced0653e3ac",
-     "dHash": "ffff9f8fbfafdfff",
-     "aHash": "c080fcfcf8fcfcf8"
+     "bytes": 250369,
+     "sha256": "a52b3db3ab654b43b136c6ba2daef8c6a70e5a4cabf129a9626bcfd2921e83b1",
+     "dHash": "ffff9f8fffffdfff",
+     "aHash": "8080fcfcf0f8f8f8"
     },
     {
      "page": 2,
@@ -467,10 +467,10 @@
      "page": 15,
      "w": 960,
      "h": 540,
-     "bytes": 274087,
-     "sha256": "3b0d5bfb278fd87458aa088956d65151b93ca0c063eac85556223faf5e87f826",
-     "dHash": "ffffcf9fffcfdfdf",
-     "aHash": "c0c0f8fcf8f8f8fc"
+     "bytes": 226554,
+     "sha256": "9c312e4fcccaa071c1eccaea08fe7d51bb41b531d8a17836f202c353c327bad8",
+     "dHash": "ffffcf9fffffffff",
+     "aHash": "8080d8fcf0f8f8f8"
     }
    ]
   },
