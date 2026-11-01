@@ -21,7 +21,7 @@
   banner 扫描 ^\s*//\s*={4,} → 0 命中；最长文件头 = 6 行（无 >20 行注释块）
 ```
 
-**冗余统计（writer+renderer，63 文件）**：注释行 1466 → 1101（−365，−24.9%）；注释占比 20.8% → 16.5%；总行 7038 → 6671（−367）。diff：448 insertions / 815 deletions。
+**冗余统计（writer+renderer，63 文件）**：注释行 1466 → 1098（−368，−25.1%）；注释占比 20.8% → 16.5%；总行 7038 → 6668（−370）。diff：511 insertions / 815 deletions。
 
 | commit | message |
 |---|---|
@@ -29,7 +29,8 @@
 | `bbf74e1` | docs(writer): 整理图表/字体/图标/自定义几何与类型分片注释 |
 | `c38b2fa` | docs(renderer): 整理预览/表格/文本与 headless 注释 |
 | `426c439` | docs(w3b-b): 头部压到 6 行内并修正过期文档引用 |
-| 本文件 | docs(w3b-b): 写 W3b-B 交接 |
+| `f313bac` | docs(w3b-b): 写 W3b-B 注释整理交接 |
+| `b742b44` | docs(w3b-b): shell/text/backend 头部再压一行至 6 行 |
 
 **保留的公共/复杂 JSDoc**：`pptx.buildPptx` options、`drawing.buildFill/coverSrcRect/shadowEffectLst`、
 `table.mergePlaceholderTc`（rowSpan/vMerge/hMerge 结构）、`zip.dosDateTime`、`custgeom` 圆弧换算、
@@ -41,7 +42,7 @@
 1. **代码行尾注释一律未改**：门禁把任何以代码开头的 ± 行判为代码行，因此这些“复述型”尾注保留原样：
    `writer/index.js:10-12`（导出名清单）、`writer/types/chart.js:28`、`writer/chart/image.js:40`、
    `writer/text.js:246`（opacity 行）、`writer/image.js:126`（cropShape 行）。若 lead 要求清掉，需要放宽门禁或单独授权。
-2. **第 4 个 commit 426c439** 超出“2–3 个文件簇 commit”：custgeom/backend/gradient 三处头部压到 ≤6 行，
+2. **收尾提交 426c439 + b742b44** 超出“2–3 个文件簇 commit”：custgeom/backend/gradient/shell/text 共 5 处头部压到 ≤6 行，
    同时修正过期引用（`references/pptd.md` 已不存在；`interfaces.md §6` 在 3.1 文档中无此节 → 改指
    `packages/export/index.js` 的 RenderBackend typedef）。
 3. **踩坑**：逐条 Edit 时 `old_string` 若带行尾换行，会把注释与下一行代码拼成一行；本组出现 2 次
