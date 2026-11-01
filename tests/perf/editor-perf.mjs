@@ -198,12 +198,13 @@ const SNIPPET_EDIT = `(() => {
 const SNIPPET_OBSERVE = `(() => {
   const bar = document.getElementById("page-thumbs");
   window.__thumbObs?.disconnect?.();
-  const stats = { cards: new Set(), addedThumbs: 0 };
+  const stats = { cards: new Set(), addedThumbs: 0, events: 0 };
   window.__thumbStats = stats;
   const mo = new MutationObserver((records) => {
     for (const r of records) {
       for (const n of r.addedNodes) {
         if (n.nodeType !== 1) continue;
+        stats.events += 1;
         if (n.classList?.contains("thumb-item")) stats.addedThumbs += 1;
         const card = n.closest?.(".thumb-canvas");
         if (card) stats.cards.add(card);
@@ -214,8 +215,40 @@ const SNIPPET_OBSERVE = `(() => {
   window.__thumbObs = mo;
   return true;
 })()`;
-const SNIPPET_RESET_STATS = `(() => { window.__thumbStats.cards = new Set(); window.__thumbStats.addedThumbs = 0; return true; })()`;
+const SNIPPET_RESET_STATS = `(() => { window.__thumbStats.cards = new Set(); window.__thumbStats.addedThumbs = 0; window.__thumbStats.events = 0; return true; })()`;
 const SNIPPET_STATS = `(() => ({ painted: window.__thumbStats.cards.size, addedThumbs: window.__thumbStats.addedThumbs }))()`;
+const SNIPPET_EVENTS = `window.__thumbStats.events`;
+
+/** Every card has painted content (first load may still be filling cards frame by frame). */
+const SNIPPET_ALL_PAINTED = `[...document.querySelectorAll("#page-thumbs .thumb-canvas")].every((c) => c.childElementCount > 0)`;
+
+/** Wait until every thumbnail card is painted (the deferred queue may still be running after ready). */
+async function waitAllCardsPainted(cdp, timeoutMs = 8000) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < timeoutMs) {
+    if (await cdp.evalJs(SNIPPET_ALL_PAINTED)) return Date.now() - t0;
+    await sleep(30);
+  }
+  throw new Error("缩略图卡片未在超时内完成首轮绘制");
+}
+
+/** Wait for the frame-chunked paint queue to drain: no new thumbnail DOM mutation for `quietMs`. */
+async function waitQuiet(cdp, quietMs = 300, timeoutMs = 8000) {
+  const t0 = Date.now();
+  let last = -1;
+  let lastChange = Date.now();
+  while (Date.now() - t0 < timeoutMs) {
+    const events = await cdp.evalJs(SNIPPET_EVENTS);
+    if (events !== last) {
+      last = events;
+      lastChange = Date.now();
+    } else if (Date.now() - lastChange >= quietMs) {
+      return Date.now() - t0;
+    }
+    await sleep(24);
+  }
+  throw new Error("缩略图绘制未在超时内停止（rAF 队列未清空）");
+}
 
 /** Wait until at least `expected` cards were painted (non-current cards paint frame-chunked). */
 async function waitPainted(cdp, expected, timeoutMs = 3000) {
@@ -252,7 +285,12 @@ try {
       })()`,
     },
     async (cdp) => {
+      // The load pipeline's final font render may still be painting cards frame by
+      // frame: wait for every card and for the rAF queue to go quiet before counting,
+      // otherwise those initial paints are misattributed to the measured action.
+      await waitAllCardsPainted(cdp);
       await cdp.evalJs(SNIPPET_OBSERVE);
+      await waitQuiet(cdp);
       // 1) canvas-only refresh must not repaint any thumbnail
       await cdp.evalJs(SNIPPET_RESET_STATS);
       const canvas = await cdp.evalJs(SNIPPET_CANVAS);
@@ -265,6 +303,7 @@ try {
       // 3) full render rebuilds the single card (warmup outside the counted renders)
       await cdp.evalJs(SNIPPET_WARM_FULL);
       await waitPainted(cdp, 1);
+      await waitQuiet(cdp);
       await cdp.evalJs(SNIPPET_RESET_STATS);
       const full = await cdp.evalJs(SNIPPET_FULL);
       const fullStats = await waitPainted(cdp, 1);
@@ -287,7 +326,9 @@ try {
       })()`,
     },
     async (cdp) => {
+      await waitAllCardsPainted(cdp);
       await cdp.evalJs(SNIPPET_OBSERVE);
+      await waitQuiet(cdp); // initial frame-chunked painting must be finished before counting
       await cdp.evalJs(SNIPPET_RESET_STATS);
       const switchRun = await cdp.evalJs(SNIPPET_SWITCH);
       await sleep(60); // let the MutationObserver microtask deliver
@@ -295,9 +336,11 @@ try {
 
       await cdp.evalJs(SNIPPET_WARM_FULL);
       await waitPainted(cdp, 12); // let the warmup's deferred batch finish
+      await waitQuiet(cdp);
       await cdp.evalJs(SNIPPET_RESET_STATS);
       const full = await cdp.evalJs(SNIPPET_FULL);
       const fullStats = await waitPainted(cdp, 12);
+      await waitQuiet(cdp);
 
       await cdp.evalJs(SNIPPET_RESET_STATS);
       const edit = await cdp.evalJs(SNIPPET_EDIT);

@@ -16,7 +16,8 @@ $ node tests/tools/golden-diff.mjs → 字节一致 156 页 ✅
 $ node tests/run-all.mjs → 39/39 ✅；dep-graph → ✓；contract → 契约通过 ✅
 $ 同上 8 个 e2e → 21/21、17/17、22/22、23/23、21/21、12/12、15/15、5/5 ✅；render → 9/9 ✅
 $ node tests/tools/golden-diff.mjs → 24 项目/156 页；字节一致 156、感知一致 0；无未登记漂移 ✅
-$ npm run test:perf → 13/13 阈值项全 PASS（六茶 p50 12.0/p95 14.7、全量 28.1；青山全量 5.6、切页 14.1）
+$ npm run test:perf ×3 → 3/3 全 PASS（13/13 阈值项；切页重画计数 0/0/0）
+  六茶 p50 11.1–12.7 / p95 13.7–17.9、全量 30.3–38.0；青山全量 4.5–5.6、切页 13.1–14.6
 ```
 
 前后对比（同一台机器，headless Chrome 1440×900；前=用 `git archive b6c2303` 的代码树跑同一探针，后=本分支）：
@@ -47,7 +48,7 @@ DOM measure 删除证据：`git grep -nE "dom-measure|domMeasure|createDomMeasur
 
 **偏差（需 lead 知悉）**：① 非当前页缩略图绘制改为分帧（最多 24ms/帧），青山 12 张卡片在 ~0.2s 内补齐；这是达到“青山全量 ≤80ms”的必要手段——12 张 ECharts 卡片的同步绘制下限实测 ~123ms（ECharts init/draw ~48ms + 页面布局 ~63ms + GC），无法在同步路径内压到 80ms。截图/全部 e2e 均在等待后与优化前一致。② `api.endChange` 默认 `{thumbs:"current"}`，design-panel 两处显式传 `all`（主题/颜色令牌）。③ `view.render` 默认仍 `all`（外部 resize/present 调用点语义不变）。
 
-**坑**：缩略图循环里每卡 `clientWidth` 会触发布局抖动；`scrollIntoView` 全量重建时成本高；签名不能含元素数量（paste/duplicate 会误判）；rAF 队列在快速连续 render 时需取消重建；headless 下字体收尾的第二次 `view.render()` 可能晚于 ready，性能取数需等“无空缩略卡”。
+**坑**：缩略图循环里每卡 `clientWidth` 会触发布局抖动；`scrollIntoView` 全量重建时成本高；签名不能含元素数量（paste/duplicate 会误判）；rAF 队列在快速连续 render 时需取消重建；headless 下字体收尾的第二次 `view.render()` 晚于 ready，首轮分帧绘制可能仍在跑——perf 测试在挂 MutationObserver 前先轮询“12/1 张 `.thumb-canvas` 均已有子节点”，再用 300ms 无新增 DOM 变动的静默窗口确认 rAF 队列清空，否则初始绘制会被误计成切页重画（lead 复跑曾出现 `青山切页不重画缩略图 6 张`）。
 
 ## C. commit / 文件 / 探索审计 / 未决
 
@@ -58,11 +59,12 @@ DOM measure 删除证据：`git grep -nE "dom-measure|domMeasure|createDomMeasur
 | `53b03ea` | perf(editor): viewport 缓存 stage 尺寸，render 路径不再强制布局 |
 | `bc3c044` | perf(editor): 缩略图卡片复用与分帧绘制，全量渲染不再同步重画所有页 |
 | `9ab769e` | test(perf): 新增编辑器性能基线（六茶刷新/全量、青山切页/全量，npm run test:perf） |
-| （本提交） | docs(w6): 写 W6 交接 |
+| `b92cff3` | docs(w6): 写 W6 交接（性能前后对比、缩略图重建计数、度量删除证据） |
+| （本提交） | test(perf): 等待缩略图首轮绘制完成；刷新 UI 截图 |
 
 新增 `tests/perf/editor-perf.mjs`（临时 server + headless Chrome，无 Chrome SKIP+exit 0，不进 run-all）；删除 `editor/app/view/dom-measure.js`；修改 `editor/app/view/{view,thumbnails,viewport}.js`、`editor/app/api.js`、`editor/app/project/{io,loader}.js`、`editor/interaction/design-panel.js`（2 处 render 分类）、`package.json`（`test:perf` 一行）。
 `git diff --name-only b6c2303 -- packages editor/preview.js editor/editor.js editor/main.js editor/interaction/{canvas,stage}.js editor/gallery.js tests/golden tests/projects tests/contract contract.json skill editor/styles` → 空。
 
 **探索审计（只读）**：`specs/.../07-W6-performance.md`、`ref/repo-map.md`、`handoff/{W2,W5}-worker.md`；`editor/{preview,editor,main,skeleton,dom,ui,theme}.js`、`editor/app/{state,api,present,shot,toolbar,keyboard}.js`、`editor/app/project/{io,loader,source,saver,images}.js`、`editor/app/view/*`、`editor/interaction/{canvas,design-panel,dialogs/{table,chart}-editor,excel-grid}.js`、`packages/layout/index.js`、`packages/renderer/{page,chart,shell,text}.js`、`packages/model/model.js`、`packages/server/index.js`、`packages/renderer/headless/{browser,cdp}.js`、`tests/e2e/*`、`tests/regression/measure.mjs`、`tests/tools/{golden-diff,ui-shots}.mjs`、`examples/{poster-six-tea-types,qingshan-coffee-review-12p}`。未全仓重读。
 
-**未决**：① `docs/images/{editor,gallery}.png` 与当前代码仅顶栏品牌字形差异（`OPEN/PPTD` vs `OPEN PPTD`，W2 之后的既有差异，非本次改动；画布/缩略图像素 0 差异），故未重生成。② 主题切换时非当前卡晚一帧可见（≤0.2s），如需更快可调大 `PAINT_BUDGET_MS` 或改为一次性补齐。③ 六茶 `endChange` 单次提交约 40–54ms（含 `syncDirty` 全 deck JSON 对比 + 画布 + 当前卡），仍在 60ms 预算内。
+**未决**：① `docs/images/{editor,gallery}.png` 已用 `node tests/tools/ui-shots.mjs` 刷新（顶栏字标现为 `OPEN PPTD`，W4 之后的旧图已过期）；画布/缩略图与此前像素一致。② 主题切换时非当前卡晚一帧可见（≤0.2s），如需更快可调大 `PAINT_BUDGET_MS` 或改为一次性补齐。③ 六茶 `endChange` 单次提交约 40–54ms（含 `syncDirty` 全 deck JSON 对比 + 画布 + 当前卡），仍在 60ms 预算内。
