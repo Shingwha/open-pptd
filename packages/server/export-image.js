@@ -29,33 +29,10 @@ import { join, normalize, sep, dirname } from "node:path";
 import { createDiskProjectSource, createFsResourceProvider } from "./runtime-node.js";
 import { createProject } from "../runtime/index.js";
 import { exportProject } from "../export/index.js";
+import { readBody, sendJson as json } from "./http-util.js";
 
 const MAX_BODY = 256 * 1024 * 1024; // 256MB (safe cap for many pages + large images)
 const RENDER_TIMEOUT_MS = 60000; // per-session screenshot timeout (headless cold start is slow)
-
-const json = (res, status, payload) =>
-  res
-    .writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" })
-    .end(JSON.stringify(payload));
-
-/** Read the request body (aborts when over the cap). */
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    let size = 0;
-    const chunks = [];
-    req.on("data", (c) => {
-      size += c.length;
-      if (size > MAX_BODY) {
-        req.destroy();
-        reject(new Error(`请求体过大（>${(MAX_BODY / 1024 / 1024) | 0}MB）`));
-        return;
-      }
-      chunks.push(c);
-    });
-    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
-    req.on("error", reject);
-  });
-}
 
 /** Same-origin check: reject when Origin is present and its host is not loopback (prevents cross-site pages from driving headless rendering). */
 function originAllowed(req) {
@@ -131,7 +108,7 @@ export function createExportImageHandler({ startServer } = {}) {
     }
     let workDir = null;
     try {
-      const raw = await readBody(req);
+      const raw = await readBody(req, { limit: MAX_BODY });
       const payload = JSON.parse(raw || "{}");
       const files = Array.isArray(payload.files) ? payload.files : [];
       const manifestName = String(payload.manifestName || "deck.pptd").replace(/[\\/]+/g, "/");

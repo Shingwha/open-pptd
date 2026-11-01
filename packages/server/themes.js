@@ -14,62 +14,9 @@
 
 import { ThemeError } from "../model/theme-library.js";
 import { createFileThemeStore } from "./theme-store.js";
+import { isLoopback, readJsonBody, sendError, sendJson } from "./http-util.js";
 
 const MAX_BODY = 1024 * 1024;
-
-function isLoopback(req) {
-  const addr = req.socket?.remoteAddress || "";
-  return addr === "127.0.0.1" || addr === "::1" || addr === "::ffff:127.0.0.1";
-}
-
-function sendJson(res, status, payload, extraHeaders = {}) {
-  if (res.writableEnded) return;
-  res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...extraHeaders });
-  res.end(JSON.stringify(payload));
-}
-
-function sendError(res, status, code, message) {
-  sendJson(res, status, { ok: false, error: { code, message } });
-}
-
-function readJsonBody(req, limit) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    let size = 0;
-    let tooLarge = false;
-    let done = false;
-    req.on("data", (chunk) => {
-      if (done) return;
-      size += chunk.length;
-      if (size > limit) {
-        tooLarge = true;
-        chunks.length = 0; // stop buffering; keep draining so a 413 response can still be sent
-        return;
-      }
-      chunks.push(chunk);
-    });
-    req.on("end", () => {
-      if (done) return;
-      done = true;
-      if (tooLarge) {
-        reject(Object.assign(new Error(`请求体超过上限 ${limit} 字节`), { code: "ERR_BODY_TOO_LARGE", status: 413 }));
-        return;
-      }
-      const text = Buffer.concat(chunks).toString("utf8");
-      if (!text.trim()) return resolve({});
-      try {
-        resolve(JSON.parse(text));
-      } catch (err) {
-        reject(Object.assign(new Error(`JSON 解析失败: ${err.message}`), { code: "ERR_INVALID_JSON", status: 400 }));
-      }
-    });
-    req.on("error", (err) => {
-      if (done) return;
-      done = true;
-      reject(Object.assign(err, { code: "ERR_INVALID_JSON", status: 400 }));
-    });
-  });
-}
 
 function statusOf(err) {
   if (Number.isInteger(err?.status)) return err.status;

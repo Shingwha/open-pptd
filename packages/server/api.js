@@ -22,32 +22,9 @@ import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileS
 import { dirname, join, normalize, sep } from "node:path";
 import * as yaml from "../model/vendor/js-yaml.mjs";
 import { projectRevision } from "../runtime/index.js";
+import { readBody, sendJson as json } from "./http-util.js";
 
 const MAX_BODY = 64 * 1024 * 1024; // 64MB (images are base64-inflated by ~33%)
-
-const json = (res, status, payload, extraHeaders = {}) =>
-  res
-    .writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...extraHeaders })
-    .end(JSON.stringify(payload));
-
-/** Read the request body as UTF-8 text (aborts when over the cap). */
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    let size = 0;
-    const chunks = [];
-    req.on("data", (c) => {
-      size += c.length;
-      if (size > MAX_BODY) {
-        req.destroy();
-        reject(Object.assign(new Error(`请求体过大（>${(MAX_BODY / 1024 / 1024) | 0}MB）`), { status: 413 }));
-        return;
-      }
-      chunks.push(c);
-    });
-    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
-    req.on("error", reject);
-  });
-}
 
 /** Project-relative path → absolute, refusing escapes. */
 function targetOf(projectRoot, rel) {
@@ -172,7 +149,7 @@ export function handleSave(req, res, projectRoot) {
     res.writeHead(404).end("not found");
     return;
   }
-  readBody(req).then(
+  readBody(req, { limit: MAX_BODY, status: 413 }).then(
     (body) => {
       try {
         const payload = JSON.parse(body || "{}");
