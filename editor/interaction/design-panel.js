@@ -24,6 +24,7 @@
 
 import * as controls from "../ui.js";
 // Instance services (ui.dialogs / ui.toast) are injected by createDesignPanel;
+import { formatBytes } from "../app/export-image.js";
 import { THEME_MODES } from "../theme.js";
 import { SYSTEM_FONTS } from "../app/project/font-manager.js";
 import {
@@ -39,6 +40,7 @@ import {
   resolveColor,
   setColorToken,
 } from "../../packages/model/index.js";
+import { downloadBlob } from "../../packages/writer/index.js";
 
 // ----------------------------------------------------------------------------
 // Constants
@@ -353,15 +355,7 @@ export function createDesignPanel(ui) {
   }
 
   function download(filename, text) {
-    const blob = new Blob([text], { type: "application/json;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    downloadBlob(text, filename, "application/json;charset=utf-8");
   }
 
   const safeName = (name) => String(name || "theme").replace(/[\\/:*?"<>|\s]+/g, "-").slice(0, 60) || "theme";
@@ -936,7 +930,7 @@ export function createDesignPanel(ui) {
   function formatSize(size) {
     const n = Number(size) || 0;
     if (!n) return "";
-    return n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`;
+    return formatBytes(n);
   }
 
   /** Best-effort font bytes for preview: built-in registry, then the user library file, then the entry URL. */

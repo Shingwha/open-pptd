@@ -16,24 +16,19 @@
 // ============================================================================
 
 import { commitBaseline } from "../state.js";
-import { createImageExporter } from "../export-image.js";
+import { createImageExporter, formatBytes } from "../export-image.js";
 import { createBrowserExportService } from "./export-service.js";
 import { base64ToBytes, deckSize, serializeDeck } from "../../../packages/model/index.js";
-import { projectRevision } from "../../../packages/runtime/index.js";
+import { revisionOfSourceFiles } from "./source.js";
 
-/** Byte count → human-readable (MB to one decimal / KB rounded). */
-const fmtSize = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.round(n / 1024)} KB`);
-
-/** Save-time revision domain (manifest + page texts) — must match the source/server implementation. */
-function revisionOfSourceFiles(files) {
-  let manifestText = "";
-  const pageFiles = new Map();
-  for (const f of files || []) {
-    if (typeof f.text !== "string") continue;
-    if (/\.pptd$/i.test(f.path)) manifestText = f.text;
-    else if (/\.page$/i.test(f.path)) pageFiles.set(f.path, f.text);
-  }
-  return projectRevision({ manifestText, pageFiles });
+/** Export dialog chip (single-select / multi-select share the same construction). */
+function makeChip(text, { active = false, onClick } = {}) {
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.className = "export-chip" + (active ? " on" : "");
+  chip.textContent = text;
+  if (onClick) chip.onclick = onClick;
+  return chip;
 }
 
 export function createProjectSaver({ state, images, fontManager, source, ui, renderStatusBar, onSaved, onError, reload }) {
@@ -72,15 +67,14 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
       [false, "子集（体积小）"],
       [true, "完整（可编辑）"],
     ].map(([val, text]) => {
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "export-chip" + (val === fullFonts ? " on" : "");
-      chip.textContent = text;
-      chip.onclick = () => {
-        fullFonts = val;
-        scopeChips.forEach((c) => c.classList.toggle("on", c === chip));
-        renderHint();
-      };
+      const chip = makeChip(text, {
+        active: val === fullFonts,
+        onClick: () => {
+          fullFonts = val;
+          scopeChips.forEach((c) => c.classList.toggle("on", c === chip));
+          renderHint();
+        },
+      });
       scopeBox.appendChild(chip);
       return chip;
     });
@@ -98,7 +92,7 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
       if (fullFonts && embedded.length) {
         // The full-scope delta is estimated from font-library bytes (a lower bound when some font bytes are not preloaded)
         const bytes = embedded.reduce((n, k) => n + (state.fontLibrary[k].bytes?.length || 0), 0);
-        if (bytes) text += `；完整模式预计 +${fmtSize(bytes)}`;
+        if (bytes) text += `；完整模式预计 +${formatBytes(bytes)}`;
       }
       hint.textContent = text;
     };
@@ -130,7 +124,7 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
         const report = await exportService.exportPptx({ embedFonts, fullFonts });
         if (!report.ok) throw reportError(report, "PPTX 导出失败");
         const name = baseNameOf(report.files?.[0]) || "deck.pptx";
-        toast.show(`已导出 ${name}（${fmtSize(report.bytes || 0)}）`, "success");
+        toast.show(`已导出 ${name}（${formatBytes(report.bytes || 0)}）`, "success");
         if (report.skipped?.length) {
           console.warn(`[export] ${report.skipped.length} 个字体未嵌入:`, report.skipped);
           toast.show(
@@ -166,7 +160,7 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
       const report = await exportService.exportBundle();
       if (!report.ok) throw reportError(report, "项目包导出失败");
       const name = baseNameOf(report.files?.[0]) || "project.zip";
-      toast.show(`项目包已导出 ${name}（${fmtSize(report.bytes || 0)}）`, "success");
+      toast.show(`项目包已导出 ${name}（${formatBytes(report.bytes || 0)}）`, "success");
     } catch (err) {
       toast.show(`导出项目包失败: ${err.message}`, "danger");
       console.error(err);
@@ -301,7 +295,7 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
       const name = baseNameOf(report.files?.[0]) || "project.zip";
       markSaved();
       renderStatusBar();
-      toast.show(`项目已打包下载 ${name}（${fmtSize(report.bytes || 0)}）`, "success");
+      toast.show(`项目已打包下载 ${name}（${formatBytes(report.bytes || 0)}）`, "success");
     } catch (err) {
       toast.show(`保存失败: ${err.message}`, "danger");
       console.error(err);
@@ -340,15 +334,14 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
     const chipsBox = document.createElement("div");
     chipsBox.className = "export-img-chips";
     const chips = state.deck.pages.map((_, i) => {
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "export-chip" + (selected.has(i) ? " on" : "");
-      chip.textContent = i + 1;
-      chip.onclick = () => {
-        selected.has(i) ? selected.delete(i) : selected.add(i);
-        chip.classList.toggle("on", selected.has(i));
-        renderHead();
-      };
+      const chip = makeChip(i + 1, {
+        active: selected.has(i),
+        onClick: () => {
+          selected.has(i) ? selected.delete(i) : selected.add(i);
+          chip.classList.toggle("on", selected.has(i));
+          renderHead();
+        },
+      });
       chipsBox.appendChild(chip);
       return chip;
     });
@@ -362,14 +355,13 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
       ["zip", "zip 打包"],
       ["files", "逐张下载"],
     ].map(([val, text]) => {
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "export-chip" + (val === mode ? " on" : "");
-      chip.textContent = text;
-      chip.onclick = () => {
-        mode = val;
-        modeChips.forEach((c) => c.classList.toggle("on", c === chip));
-      };
+      const chip = makeChip(text, {
+        active: val === mode,
+        onClick: () => {
+          mode = val;
+          modeChips.forEach((c) => c.classList.toggle("on", c === chip));
+        },
+      });
       modeBox.appendChild(chip);
       return chip;
     });
@@ -379,14 +371,13 @@ export function createProjectSaver({ state, images, fontManager, source, ui, ren
     const scaleBox = document.createElement("div");
     scaleBox.className = "export-img-chips";
     const scaleChips = [1, 2, 3].map((n) => {
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "export-chip" + (n === scale ? " on" : "");
-      chip.textContent = `${n}x · ${dw * n}×${dh * n}`;
-      chip.onclick = () => {
-        scale = n;
-        scaleChips.forEach((c, m) => c.classList.toggle("on", [1, 2, 3][m] === n));
-      };
+      const chip = makeChip(`${n}x · ${dw * n}×${dh * n}`, {
+        active: n === scale,
+        onClick: () => {
+          scale = n;
+          scaleChips.forEach((c, m) => c.classList.toggle("on", [1, 2, 3][m] === n));
+        },
+      });
       scaleBox.appendChild(chip);
       return chip;
     });

@@ -9,6 +9,12 @@
 // zip packaging and reporting are handled by the export service.
 // ============================================================================
 
+/** Byte count → human-readable (MB to one decimal / KB rounded by default). */
+export function formatBytes(n, { kbDigits = 0 } = {}) {
+  const v = Number(n) || 0;
+  return v >= 1048576 ? `${(v / 1048576).toFixed(1)} MB` : `${(v / 1024).toFixed(kbDigits)} KB`;
+}
+
 /**
  * @param {{state: object, toast: object, exportService: {exportPng: Function}}} deps
  */
@@ -26,7 +32,7 @@ export function createImageExporter({ state, toast, exportService }) {
       const { results, dropped } = await exportService.exportPng(opts);
       if (!results.length) return [];
       const totalBytes = results.reduce((n, r) => n + (r.png?.length || 0), 0);
-      const size = totalBytes >= 1048576 ? `${(totalBytes / 1048576).toFixed(1)} MB` : `${(totalBytes / 1024).toFixed(1)} KB`;
+      const size = formatBytes(totalBytes, { kbDigits: 1 });
       toast.show(
         results.length === 1 ? `已导出 1 张图片（${size}）` : `已导出 ${results.length} 页图片${opts.mode === "files" ? "（逐张下载）" : ""}（${size}）`,
         "success"
