@@ -1,217 +1,144 @@
 pageType: content
-background:
-  type: solid
-  color: "$bg"
-notes: |-
-  驾驶行为量化因子 Q：趋势反向化（P_r）→ 归一化（消除量纲）→ 加权求和得到 Q。
-  图 12 表明 Q 越大、速度工况越高，驱动电机能耗均值越大。
+background: { type: solid, color: "$bg" }
 elements:
-  - elementId: chapter-bar
+  - elementId: header-marker
     elementType: shape
-    bounds: [0, 0, 960, 56]
+    bounds: [36, 24, 8, 30]
     shapeName: rect
     fill: { type: solid, color: "$primary" }
-  - elementId: chapter-text
+  - elementId: header-title
     elementType: text
-    bounds: [48, 11, 760, 34]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 24
-      color: "#FFFFFF"
-      bold: true
-      align: [left, middle]
-      wrap: false
-      text: '02. 数据与方法 —— 驾驶行为量化因子'
-  - elementId: chapter-brand
+    bounds: [54, 22, 680, 34]
+    content: { style: "$pageTitle", wrap: false, text: "02. 数据与方法 —— 驾驶行为量化因子" }
+  - elementId: header-brand
     elementType: text
-    bounds: [736, 20, 176, 16]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.8
-      color: "$accent6"
-      align: [right, top]
-      wrap: false
-      text: EV RANGE · 学术报告
-  - elementId: title
-    elementType: text
-    bounds: [48, 70, 864, 34]
-    content:
-      style: "$title"
-      wrap: false
-      text: Q = 趋势反向化 · 归一化 · 加权求和
-  - elementId: subtitle
-    elementType: text
-    bounds: [48, 104, 864, 16]
-    content:
-      style: "$caption"
-      fontSize: 9.6
-      wrap: false
-      text: 把 7 项指标压缩成一个连续数值，为每个短行驶片段标注驾驶行为
-  - elementId: step-1-card
+    bounds: [730, 30, 194, 14]
+    content: { style: "$label", fontSize: 9, align: [right, top], wrap: false, text: EV RANGE · RESEARCH }
+  - elementId: header-rule
     elementType: shape
-    bounds: [48, 132, 320, 92]
-    shapeName: roundRect
-    adjustments: [12000]
+    bounds: [36, 66, 888, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryDeep" }
+  - elementId: statement
+    elementType: text
+    bounds: [52, 78, 856, 42]
+    content:
+      style: "$statement"
+      align: [center, middle]
+      text: |-
+        <p>Q = 趋势反向化 · 归一化 · <span style="color:$danger">加权求和</span></p>
+  - elementId: step-1-frame
+    elementType: shape
+    bounds: [36, 132, 290, 78]
+    shapeName: rect
     fill: { type: solid, color: "#FFFFFF" }
     border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 8, color: "#1F5FBF12", offset: [0, 2] }
-  - elementId: step-1-num
-    elementType: text
-    bounds: [64, 144, 32, 20]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 15
-      color: "$primary"
-      bold: true
-      wrap: false
-      text: "01"
   - elementId: step-1-title
     elementType: text
-    bounds: [100, 144, 250, 18]
-    content:
-      style: "$heading"
-      fontSize: 11
-      wrap: false
-      text: 趋势反向化
+    bounds: [52, 142, 258, 18]
+    content: { style: "$heading", fontSize: 12, wrap: false, text: 01 · 趋势反向化 }
   - elementId: step-1-text
     elementType: text
-    bounds: [64, 168, 288, 48]
-    content:
-      style: "$body"
-      fontSize: 9.2
-      lineHeight: 1.45
-      text: P<sub>r</sub> 与能耗正相关、其余六项负相关，对 P<sub>r</sub> 取 i' = 1 − i 反向化，使各指标与能耗同向。
-  - elementId: step-2-card
+    bounds: [52, 164, 258, 38]
+    content: { style: "$caption", fontSize: 10, color: "$text", text: 对 Pᵣ 取 i′ = 1 − i，使其与其余六项指标同向反映能耗强度。 }
+  - elementId: step-2-frame
     elementType: shape
-    bounds: [48, 232, 320, 92]
-    shapeName: roundRect
-    adjustments: [12000]
-    fill: { type: solid, color: "#FFFFFF" }
-    border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 8, color: "#1F5FBF12", offset: [0, 2] }
-  - elementId: step-2-num
-    elementType: text
-    bounds: [64, 244, 32, 20]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 15
-      color: "$primary"
-      bold: true
-      wrap: false
-      text: "02"
-  - elementId: step-2-title
-    elementType: text
-    bounds: [100, 244, 250, 18]
-    content:
-      style: "$heading"
-      fontSize: 11
-      wrap: false
-      text: 归一化处理
-  - elementId: step-2-text
-    elementType: text
-    bounds: [64, 268, 288, 48]
-    content:
-      style: "$body"
-      fontSize: 9.2
-      lineHeight: 1.45
-      text: P<sub>a</sub>、P<sub>h</sub>、P<sub>r</sub> 本身为占比无需处理；仅对 V<sub>m</sub>、V<sub>std</sub>、a<sub>m</sub>、a<sub>std</sub> 归一化，消除量纲差异。
-  - elementId: step-3-card
-    elementType: shape
-    bounds: [48, 332, 320, 92]
-    shapeName: roundRect
-    adjustments: [12000]
+    bounds: [36, 222, 290, 78]
+    shapeName: rect
     fill: { type: solid, color: "$primarySoft" }
     border: { style: solid, width: 1, color: "$primaryTint" }
-  - elementId: step-3-num
+  - elementId: step-2-title
     elementType: text
-    bounds: [64, 344, 32, 20]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 15
-      color: "$primary"
-      bold: true
-      wrap: false
-      text: "03"
+    bounds: [52, 232, 258, 18]
+    content: { style: "$heading", fontSize: 12, wrap: false, text: 02 · 归一化处理 }
+  - elementId: step-2-text
+    elementType: text
+    bounds: [52, 254, 258, 38]
+    content: { style: "$caption", fontSize: 10, color: "$text", text: 占比指标无需处理；仅对车速、加速度均值与标准差消除量纲。 }
+  - elementId: step-3-frame
+    elementType: shape
+    bounds: [36, 312, 290, 78]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
   - elementId: step-3-title
     elementType: text
-    bounds: [100, 344, 250, 18]
-    content:
-      style: "$heading"
-      fontSize: 11
-      wrap: false
-      text: 加权求和
+    bounds: [52, 322, 258, 18]
+    content: { style: "$heading", fontSize: 12, wrap: false, text: 03 · 加权求和 }
   - elementId: step-3-text
     elementType: text
-    bounds: [64, 368, 288, 48]
-    content:
-      style: "$body"
-      fontSize: 9.2
-      lineHeight: 1.45
-      text: f(i) 为归一化后的评价指标，w<sub>i</sub> 为随机森林权重系数，n = 7。每个片段由此获得唯一连续标签。
-  - elementId: formula-card
+    bounds: [52, 344, 258, 38]
+    content: { style: "$caption", fontSize: 10, color: "$text", text: f(i) 为归一化指标，wᵢ 为随机森林权重，n = 7；每片获得唯一 Q。 }
+  - elementId: formula-frame
     elementType: shape
-    bounds: [48, 436, 320, 36]
-    shapeName: roundRect
-    adjustments: [14000]
+    bounds: [36, 402, 290, 32]
+    shapeName: rect
     fill: { type: solid, color: "$primaryDeep" }
   - elementId: formula
     elementType: text
-    bounds: [64, 440, 288, 28]
+    bounds: [48, 402, 266, 32]
     content:
       fontSize: 13
       color: "#FFFFFF"
       align: [center, middle]
       text: |-
         <p>\(Q = \sum_{i=1}^{n} f(i) \cdot w_i\)</p>
-  - elementId: fig-card
+  - elementId: fig-frame
     elementType: shape
-    bounds: [392, 132, 520, 300]
-    shapeName: roundRect
-    adjustments: [8000]
+    bounds: [342, 132, 582, 244]
+    shapeName: rect
     fill: { type: solid, color: "#FFFFFF" }
     border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 12, color: "#1F5FBF14", offset: [0, 3] }
   - elementId: fig-12
     elementType: image
-    bounds: [396, 136, 512, 262]
+    bounds: [346, 136, 574, 236]
     src: media/fig12_consumption.jpg
     fit: { mode: contain }
   - elementId: fig-caption
     elementType: text
-    bounds: [396, 402, 512, 26]
+    bounds: [342, 382, 582, 28]
     content:
       style: "$caption"
-      fontSize: 8.2
+      fontSize: 9
       text: |-
-        <p><span style="color:$accent;font-weight:bold;">图 12</span>　不同速度工况下驾驶行为量化因子与驱动电机能耗均值</p>
+        <p><span style="color:$primary"><strong>图 12</strong></span>　不同速度工况下 Q 与驱动电机能耗均值；来源：陈默等（2024），图 12</p>
   - elementId: reading
     elementType: text
-    bounds: [392, 438, 520, 34]
+    bounds: [342, 414, 582, 20]
     content:
       style: "$body"
-      fontSize: 9.4
-      lineHeight: 1.5
-      text: 随 Q 增大，能耗均值上升；同一 Q 下速度工况越高、能耗越大——<strong>驾驶越激烈，剩余续驶里程越短</strong>。
-  - elementId: footer-line
-    elementType: shape
-    bounds: [48, 502, 864, 1]
-    shapeName: rect
-    fill: { type: solid, color: "$line" }
-  - elementId: footer-left
-    elementType: text
-    bounds: [48, 507, 640, 12]
-    content:
-      style: "$nav"
+      fontSize: 11.5
+      align: [center, top]
       wrap: false
-      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+      text: Q 越大，能耗均值越高；同一 Q 下速度工况越高，能耗越大。
+  - elementId: takeaway-bar
+    elementType: shape
+    bounds: [36, 452, 888, 40]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+  - elementId: wave-left
+    elementType: line
+    bounds: [50, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 8,7 12,2 17,12 23,5 28,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: wave-right
+    elementType: line
+    bounds: [862, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 20,7 25,5 31,12 36,2 40,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: takeaway
+    elementType: text
+    bounds: [100, 456, 760, 30]
+    content: { style: "$takeaway", align: [center, middle], wrap: false, text: 七项指标被压缩为一个连续数值，驾驶越激烈，剩余续驶里程越短 }
+  - elementId: footer-source
+    elementType: text
+    bounds: [36, 510, 680, 12]
+    content: { style: "$nav", fontSize: 8.2, wrap: false, text: 来源：陈默等（2024），驾驶行为量化因子定义与图 12 }
   - elementId: footer-page
     elementType: text
-    bounds: [800, 506, 112, 14]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.5
-      color: "$primary"
-      bold: true
-      align: [right, top]
-      wrap: false
-      text: 08 / 15
+    bounds: [836, 510, 88, 12]
+    content: { style: "$nav", color: "$primary", bold: true, align: [right, top], wrap: false, text: 08 / 15 }

@@ -1,142 +1,92 @@
 pageType: content
-background:
-  type: solid
-  color: "$bg"
-notes: |-
-  训练设置：归一化、7:3/8:2/9:1 划分、序列长度 20、批 256、节点 128、Adam。
-  表 7（9:1）显示含 Q 的 LSTM 误差最低；三点发现：数据越多误差越小、含 Q 更优、LSTM 最好。
+background: { type: solid, color: "$bg" }
 elements:
-  - elementId: chapter-bar
+  - elementId: header-marker
     elementType: shape
-    bounds: [0, 0, 960, 56]
+    bounds: [36, 24, 8, 30]
     shapeName: rect
     fill: { type: solid, color: "$primary" }
-  - elementId: chapter-text
+  - elementId: header-title
     elementType: text
-    bounds: [48, 11, 760, 34]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 24
-      color: "#FFFFFF"
-      bold: true
-      align: [left, middle]
-      wrap: false
-      text: '03. 预测模型 —— 训练设置与算法对比'
-  - elementId: chapter-brand
+    bounds: [54, 22, 680, 34]
+    content: { style: "$pageTitle", wrap: false, text: "03. 预测模型 —— 训练设置与算法对比" }
+  - elementId: header-brand
     elementType: text
-    bounds: [736, 20, 176, 16]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.8
-      color: "$accent6"
-      align: [right, top]
-      wrap: false
-      text: EV RANGE · 学术报告
-  - elementId: title
-    elementType: text
-    bounds: [48, 70, 864, 34]
-    content:
-      style: "$title"
-      wrap: false
-      text: 9:1 划分、含 Q 输入、LSTM：三项设置同时最优
-  - elementId: subtitle
-    elementType: text
-    bounds: [48, 104, 864, 16]
-    content:
-      style: "$caption"
-      fontSize: 9.6
-      wrap: false
-      text: 四车输入归一化；序列长度 20、批 256、节点 128、迭代 100、Adam 优化器
-  - elementId: setup-card
+    bounds: [730, 30, 194, 14]
+    content: { style: "$label", fontSize: 9, align: [right, top], wrap: false, text: EV RANGE · RESEARCH }
+  - elementId: header-rule
     elementType: shape
-    bounds: [48, 132, 264, 332]
-    shapeName: roundRect
-    adjustments: [8000]
+    bounds: [36, 66, 888, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryDeep" }
+  - elementId: statement
+    elementType: text
+    bounds: [52, 78, 856, 42]
+    content:
+      style: "$statement"
+      align: [center, middle]
+      text: |-
+        <p>9:1 划分、含 Q 输入、LSTM：<span style="color:$danger">三项设置同时最优</span></p>
+  - elementId: setup-frame
+    elementType: shape
+    bounds: [36, 132, 250, 302]
+    shapeName: rect
     fill: { type: solid, color: "#FFFFFF" }
     border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
   - elementId: setup-label
     elementType: text
-    bounds: [64, 146, 232, 14]
-    content:
-      style: "$label"
-      fontSize: 8.4
-      wrap: false
-      text: 训练设置
+    bounds: [52, 144, 218, 20]
+    content: { style: "$heading", align: [center, top], wrap: false, text: 训练设置 }
   - elementId: setup-text
     elementType: text
-    bounds: [64, 164, 232, 66]
-    content:
-      style: "$body"
-      fontSize: 8.9
-      lineHeight: 1.45
-      text: 训练 / 测试按 7:3、8:2、9:1 三种比例划分（不随机抽样）；序列长度 20、批 256、节点 128、迭代 100 次。
-  - elementId: setup-divider-1
+    bounds: [52, 170, 218, 64]
+    content: { style: "$body", fontSize: 11.5, text: 训练 / 测试按 7:3、8:2、9:1 划分（不随机抽样）；序列长度 20、批 256、节点 128、迭代 100 次，Adam 优化。 }
+  - elementId: setup-sep-1
     elementType: shape
-    bounds: [64, 238, 232, 1]
+    bounds: [52, 242, 218, 1]
     shapeName: rect
     fill: { type: solid, color: "$line" }
-  - elementId: cmp-label
+  - elementId: compare-label
     elementType: text
-    bounds: [64, 248, 232, 14]
-    content:
-      style: "$label"
-      fontSize: 8.4
-      wrap: false
-      text: 对比方案与指标
-  - elementId: cmp-text
+    bounds: [52, 254, 218, 16]
+    content: { style: "$label", wrap: false, text: 对比方案与指标 }
+  - elementId: compare-text
     elementType: text
-    bounds: [64, 266, 232, 60]
-    content:
-      style: "$body"
-      fontSize: 8.9
-      lineHeight: 1.45
-      text: 对比 SVR、BP、RNN 与 LSTM 四种算法，输入含 / 不含 Q；以 RMSE 与 MAE 评价预测效果。
-  - elementId: setup-divider-2
+    bounds: [52, 276, 218, 58]
+    content: { style: "$body", fontSize: 11.5, text: 对比 SVR、BP、RNN 与 LSTM，输入含 / 不含 Q；以 RMSE 与 MAE 评价。 }
+  - elementId: setup-sep-2
     elementType: shape
-    bounds: [64, 334, 232, 1]
+    bounds: [52, 342, 218, 1]
     shapeName: rect
     fill: { type: solid, color: "$line" }
   - elementId: find-label
     elementType: text
-    bounds: [64, 344, 232, 14]
-    content:
-      style: "$label"
-      fontSize: 8.4
-      wrap: false
-      text: 三点发现
+    bounds: [52, 354, 218, 16]
+    content: { style: "$label", wrap: false, text: 三点发现 }
   - elementId: find-text
     elementType: text
-    bounds: [64, 362, 232, 92]
-    content:
-      style: "$body"
-      fontSize: 8.9
-      lineHeight: 1.5
-      text: |-
-        <p><strong>①</strong> 训练集比例增大，RMSE / MAE 整体降低，9:1 最优；</p>
-        <p style="margin-top:3px"><strong>②</strong> 含 Q 的模型误差总体小于不含 Q；</p>
-        <p style="margin-top:3px"><strong>③</strong> LSTM 在四种算法中预测效果最好。</p>
-  - elementId: table-card
-    elementType: shape
-    bounds: [328, 132, 584, 258]
-    shapeName: roundRect
-    adjustments: [8000]
-    fill: { type: solid, color: "#FFFFFF" }
-    border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 12, color: "#1F5FBF14", offset: [0, 3] }
-  - elementId: table-caption
-    elementType: text
-    bounds: [344, 144, 552, 16]
+    bounds: [52, 376, 218, 52]
     content:
       style: "$caption"
-      fontSize: 8.4
+      fontSize: 9.5
+      color: "$text"
+      text: |-
+        <p>① 训练集比例增大，误差整体降低</p>
+        <p>② 含 Q 模型误差总体更小</p>
+        <p>③ LSTM 在四种算法中最优</p>
+  - elementId: table-caption
+    elementType: text
+    bounds: [306, 132, 618, 18]
+    content:
+      style: "$caption"
+      fontSize: 10
       wrap: false
       text: |-
-        <p><span style="color:$accent;font-weight:bold;">表 7（摘）</span>　9:1 划分下 LSTM 含 / 不含 Q 的误差对比</p>
+        <p><span style="color:$primary"><strong>表 7（摘）</strong></span>　9:1 划分下 LSTM 含 / 不含 Q 的归一化误差</p>
   - elementId: table-7
     elementType: table
-    bounds: [344, 166, 552, 195]
-    columnWidths: [0.16, 0.21, 0.21, 0.21, 0.21]
+    bounds: [306, 156, 618, 180]
+    columnWidths: [0.14, 0.225, 0.225, 0.20, 0.20]
     rowHeights: [0.2, 0.2, 0.2, 0.2, 0.2]
     style: "$blueCompact"
     rows:
@@ -148,76 +98,77 @@ elements:
       - - text: 1号
         - text: "0.024"
         - text: |-
-            <p><span style="color:$primary;font-weight:bold;">0.017</span></p>
+            <p><span style="color:$primary"><strong>0.017</strong></span></p>
         - text: "0.021"
         - text: |-
-            <p><span style="color:$primary;font-weight:bold;">0.013</span></p>
+            <p><span style="color:$primary"><strong>0.013</strong></span></p>
       - - text: 2号
         - text: "0.017"
         - text: |-
-            <p><span style="color:$primary;font-weight:bold;">0.005</span></p>
+            <p><span style="color:$primary"><strong>0.005</strong></span></p>
         - text: "0.016"
         - text: |-
-            <p><span style="color:$primary;font-weight:bold;">0.007</span></p>
+            <p><span style="color:$primary"><strong>0.007</strong></span></p>
       - - text: 3号
         - text: "0.014"
         - text: |-
-            <p><span style="color:$primary;font-weight:bold;">0.011</span></p>
+            <p><span style="color:$primary"><strong>0.011</strong></span></p>
         - text: "0.010"
         - text: |-
-            <p><span style="color:$primary;font-weight:bold;">0.008</span></p>
+            <p><span style="color:$primary"><strong>0.008</strong></span></p>
       - - text: 4号
         - text: "0.017"
         - text: |-
-            <p><span style="color:$primary;font-weight:bold;">0.014</span></p>
+            <p><span style="color:$primary"><strong>0.014</strong></span></p>
         - text: "0.014"
         - text: |-
-            <p><span style="color:$primary;font-weight:bold;">0.012</span></p>
+            <p><span style="color:$primary"><strong>0.012</strong></span></p>
   - elementId: table-note
     elementType: text
-    bounds: [344, 366, 552, 14]
-    content:
-      style: "$caption"
-      fontSize: 7.6
-      wrap: false
-      text: 数值为归一化后的误差；完整 SVR / BP / RNN 对比见原文表 5–7。
-  - elementId: kpi-card
+    bounds: [306, 342, 618, 16]
+    content: { style: "$caption", fontSize: 8.5, wrap: false, text: 来源：陈默等（2024），表 7；完整 SVR / BP / RNN 对比见原文表 5–7。 }
+  - elementId: kpi-frame
     elementType: shape
-    bounds: [328, 402, 584, 62]
-    shapeName: roundRect
-    adjustments: [14000]
-    fill: { type: solid, color: "$primaryDeep" }
-    shadow: { blur: 12, color: "#123B7A33", offset: [0, 3] }
+    bounds: [306, 374, 618, 60]
+    shapeName: rect
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: kpi-number
+    elementType: text
+    bounds: [326, 384, 200, 36]
+    content: { style: "$stat", fontSize: 24, align: [center, middle], wrap: false, text: 0.017 → 0.005 }
   - elementId: kpi-text
     elementType: text
-    bounds: [344, 410, 552, 46]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 10.4
-      color: "#FFFFFF"
-      lineHeight: 1.5
-      text: |-
-        <p><span style="font-size:17px;font-family:Source Han Serif CN;font-weight:bold;">0.017 → 0.005</span>　　2 号车 RMSE；四车 RMSE / MAE 均以含 Q 的 LSTM 最低。</p>
-  - elementId: footer-line
+    bounds: [544, 382, 356, 44]
+    content: { style: "$body", fontSize: 12, align: [left, middle], text: 2 号车 RMSE；四车 RMSE / MAE 均以含 Q 的 LSTM 最低。 }
+  - elementId: takeaway-bar
     elementType: shape
-    bounds: [48, 502, 864, 1]
+    bounds: [36, 452, 888, 40]
     shapeName: rect
-    fill: { type: solid, color: "$line" }
-  - elementId: footer-left
+    fill: { type: solid, color: "$primary" }
+  - elementId: wave-left
+    elementType: line
+    bounds: [50, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 8,7 12,2 17,12 23,5 28,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: wave-right
+    elementType: line
+    bounds: [862, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 20,7 25,5 31,12 36,2 40,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: takeaway
     elementType: text
-    bounds: [48, 507, 640, 12]
-    content:
-      style: "$nav"
-      wrap: false
-      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+    bounds: [100, 456, 760, 30]
+    content: { style: "$takeaway", align: [center, middle], wrap: false, text: 数据划分、行为特征与序列模型共同决定最终预测精度 }
+  - elementId: footer-source
+    elementType: text
+    bounds: [36, 510, 680, 12]
+    content: { style: "$nav", fontSize: 8.2, wrap: false, text: 来源：陈默等（2024），表 7；误差均为归一化数值 }
   - elementId: footer-page
     elementType: text
-    bounds: [800, 506, 112, 14]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.5
-      color: "$primary"
-      bold: true
-      align: [right, top]
-      wrap: false
-      text: 10 / 15
+    bounds: [836, 510, 88, 12]
+    content: { style: "$nav", color: "$primary", bold: true, align: [right, top], wrap: false, text: 10 / 15 }

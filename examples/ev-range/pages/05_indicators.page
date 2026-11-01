@@ -1,130 +1,109 @@
 pageType: content
-background:
-  type: solid
-  color: "$bg"
-notes: |-
-  七项驾驶行为评价指标：选取逻辑（驾驶行为→车速/加速度→驱动电机能耗），
-  表 3 给出符号与计算式；P_r 与能耗正相关，其余六项负相关。
+background: { type: solid, color: "$bg" }
 elements:
-  - elementId: chapter-bar
+  - elementId: header-marker
     elementType: shape
-    bounds: [0, 0, 960, 56]
+    bounds: [36, 24, 8, 30]
     shapeName: rect
     fill: { type: solid, color: "$primary" }
-  - elementId: chapter-text
+  - elementId: header-title
     elementType: text
-    bounds: [48, 11, 720, 34]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 24
-      color: "#FFFFFF"
-      bold: true
-      align: [left, middle]
-      wrap: false
-      text: '02. 数据与方法 —— 七项驾驶行为指标'
-  - elementId: chapter-brand
+    bounds: [54, 22, 680, 34]
+    content: { style: "$pageTitle", wrap: false, text: "02. 数据与方法 —— 七项驾驶行为指标" }
+  - elementId: header-brand
     elementType: text
-    bounds: [736, 20, 176, 16]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.8
-      color: "$accent6"
-      align: [right, top]
-      wrap: false
-      text: EV RANGE · 学术报告
-  - elementId: title
-    elementType: text
-    bounds: [48, 70, 864, 34]
-    content:
-      style: "$title"
-      wrap: false
-      text: 七项指标不描述“风格”，只量化可赋权的行为强度
-  - elementId: subtitle
-    elementType: text
-    bounds: [48, 104, 864, 16]
-    content:
-      style: "$caption"
-      fontSize: 9.6
-      wrap: false
-      text: 均值、占比、标准差：三类统计量覆盖车速与加速度两个维度
-  - elementId: logic-card
+    bounds: [730, 30, 194, 14]
+    content: { style: "$label", fontSize: 9, align: [right, top], wrap: false, text: EV RANGE · RESEARCH }
+  - elementId: header-rule
     elementType: shape
-    bounds: [48, 132, 304, 168]
-    shapeName: roundRect
-    adjustments: [10000]
+    bounds: [36, 66, 888, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryDeep" }
+  - elementId: statement
+    elementType: text
+    bounds: [52, 78, 856, 42]
+    content:
+      style: "$statement"
+      align: [center, middle]
+      text: |-
+        <p>不描述“风格”，只量化<span style="color:$danger">可赋权的行为强度</span></p>
+  - elementId: logic-frame
+    elementType: shape
+    bounds: [36, 132, 260, 302]
+    shapeName: rect
     fill: { type: solid, color: "#FFFFFF" }
     border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
   - elementId: logic-label
     elementType: text
-    bounds: [66, 146, 268, 16]
-    content:
-      style: "$label"
-      fontSize: 8.6
-      wrap: false
-      text: 选取逻辑
-  - elementId: logic-text
-    elementType: text
-    bounds: [66, 168, 268, 86]
-    content:
-      style: "$body"
-      fontSize: 9.8
-      lineHeight: 1.6
-      text: 驾驶行为变化引起车速与加速度变化，进而改变驱动电机能耗。以短行驶片段内的均值、占比与标准差刻画变化特征，兼顾指标的可获取性与可操作性。
-  - elementId: logic-types
-    elementType: text
-    bounds: [66, 262, 268, 30]
-    content:
-      style: "$caption"
-      fontSize: 8.4
-      lineHeight: 1.45
-      text: 均值：V<sub>m</sub>、a<sub>m</sub>｜占比：P<sub>a</sub>、P<sub>h</sub>、P<sub>r</sub>｜标准差：V<sub>std</sub>、a<sub>std</sub>
-  - elementId: dir-card
+    bounds: [52, 144, 228, 20]
+    content: { style: "$heading", align: [center, top], wrap: false, text: 指标选取逻辑 }
+  - elementId: logic-box-1
     elementType: shape
-    bounds: [48, 316, 304, 154]
-    shapeName: roundRect
-    adjustments: [10000]
+    bounds: [62, 176, 208, 42]
+    shapeName: rect
     fill: { type: solid, color: "$primarySoft" }
     border: { style: solid, width: 1, color: "$primaryTint" }
-  - elementId: dir-label
+  - elementId: logic-text-1
     elementType: text
-    bounds: [66, 330, 268, 16]
-    content:
-      style: "$label"
-      fontSize: 8.6
-      wrap: false
-      text: 与能耗的相关方向
-  - elementId: dir-text
+    bounds: [68, 176, 196, 42]
+    content: { style: "$heading", fontSize: 12, align: [center, middle], wrap: false, text: 驾驶行为变化 }
+  - elementId: logic-arrow-1
+    elementType: line
+    bounds: [160, 218, 12, 24]
+    viewBox: [12, 24]
+    points: "6,0 6,22"
+    curve: sharp
+    arrow: [null, arrow]
+    border: { style: solid, width: 1.5, color: "$accent" }
+  - elementId: logic-box-2
+    elementType: shape
+    bounds: [62, 242, 208, 42]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: logic-text-2
     elementType: text
-    bounds: [66, 352, 268, 58]
-    content:
-      style: "$body"
-      fontSize: 9.6
-      lineHeight: 1.55
-      text: |-
-        <p><strong>负相关</strong>：P<sub>a</sub>、P<sub>h</sub>、V<sub>m</sub>、V<sub>std</sub>、a<sub>m</sub>、a<sub>std</sub>。</p>
-        <p style="margin-top:4px"><strong>正相关</strong>：能量回收占比 P<sub>r</sub>——计算因子前先作趋势反向化。</p>
-  - elementId: dir-role
+    bounds: [68, 242, 196, 42]
+    content: { style: "$heading", fontSize: 12, align: [center, middle], wrap: false, text: 车速与加速度变化 }
+  - elementId: logic-arrow-2
+    elementType: line
+    bounds: [160, 284, 12, 24]
+    viewBox: [12, 24]
+    points: "6,0 6,22"
+    curve: sharp
+    arrow: [null, arrow]
+    border: { style: solid, width: 1.5, color: "$accent" }
+  - elementId: logic-box-3
+    elementType: shape
+    bounds: [62, 308, 208, 42]
+    shapeName: rect
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: logic-text-3
     elementType: text
-    bounds: [66, 418, 268, 32]
+    bounds: [68, 308, 196, 42]
+    content: { style: "$heading", fontSize: 12, align: [center, middle], wrap: false, text: 驱动电机能耗变化 }
+  - elementId: logic-note
+    elementType: text
+    bounds: [54, 362, 224, 58]
     content:
       style: "$caption"
-      fontSize: 8.6
-      lineHeight: 1.45
-      text: 7 项加权求和 → 每个片段唯一的连续标签 Q。
+      fontSize: 10
+      color: "$text"
+      text: 以片段内的均值、占比与标准差刻画行为，兼顾可获取性与可操作性；7 项加权求和形成连续标签 Q。
   - elementId: table-caption
     elementType: text
-    bounds: [384, 144, 512, 16]
+    bounds: [316, 132, 608, 18]
     content:
       style: "$caption"
-      fontSize: 8.6
+      fontSize: 10
       wrap: false
       text: |-
-        <p><span style="color:$accent;font-weight:bold;">表 3</span>　七项驾驶行为评价指标与计算式</p>
+        <p><span style="color:$primary"><strong>表 3</strong></span>　七项驾驶行为评价指标与计算式</p>
   - elementId: table-3
     elementType: table
-    bounds: [384, 166, 512, 285.5]
-    columnWidths: [0.09, 0.17, 0.28, 0.46]
+    bounds: [316, 156, 608, 250]
+    columnWidths: [0.08, 0.16, 0.28, 0.48]
     rowHeights: [0.10, 0.12, 0.12, 0.12, 0.12, 0.12, 0.12, 0.18]
     style: "$formula"
     rows:
@@ -161,7 +140,7 @@ elements:
             <p>\(V_{\mathrm{std}}\)</p>
         - text: 车速标准差
         - text: |-
-            <p style="font-size:7px">\(V_{\mathrm{std}} = \sqrt{\frac{\sum_{i=1}^{n} (v_i - V_{\mathrm{m}})^2}{n}}\)</p>
+            <p>\(V_{\mathrm{std}} = \sqrt{\frac{\sum_{i=1}^{n} (v_i - V_{\mathrm{m}})^2}{n}}\)</p>
       - - text: "6"
         - text: |-
             <p>\(a_{\mathrm{m}}\)</p>
@@ -173,35 +152,42 @@ elements:
             <p>\(a_{\mathrm{std}}\)</p>
         - text: 加速度标准差
         - text: |-
-            <p style="font-size:7px">\(a_{\mathrm{std}} = \sqrt{\frac{\sum_{i=1}^{n} (a_i - a_{\mathrm{m}})^2}{n}}\)</p>
+            <p>\(a_{\mathrm{std}} = \sqrt{\frac{\sum_{i=1}^{n} (a_i - a_{\mathrm{m}})^2}{n}}\)</p>
   - elementId: table-note
     elementType: text
-    bounds: [384, 474, 512, 12]
+    bounds: [316, 412, 608, 22]
     content:
       style: "$caption"
-      fontSize: 7.6
-      text: |-
-        <p>T 为片段总时长；t<sub>a</sub>、t<sub>h</sub> 为急加速、高速累计时长；E<sub>r</sub>、E 为回收能耗与片段总能耗。</p>
-  - elementId: footer-line
+      fontSize: 8.5
+      text: T 为片段总时长；Pᵣ 与能耗正相关，其余六项负相关，计算因子前先对 Pᵣ 作趋势反向化。来源：陈默等（2024），表 3。
+  - elementId: takeaway-bar
     elementType: shape
-    bounds: [48, 502, 864, 1]
+    bounds: [36, 452, 888, 40]
     shapeName: rect
-    fill: { type: solid, color: "$line" }
-  - elementId: footer-left
+    fill: { type: solid, color: "$primary" }
+  - elementId: wave-left
+    elementType: line
+    bounds: [50, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 8,7 12,2 17,12 23,5 28,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: wave-right
+    elementType: line
+    bounds: [862, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 20,7 25,5 31,12 36,2 40,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: takeaway
     elementType: text
-    bounds: [48, 507, 640, 12]
-    content:
-      style: "$nav"
-      wrap: false
-      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+    bounds: [100, 456, 760, 30]
+    content: { style: "$takeaway", align: [center, middle], wrap: false, text: 均值、占比、标准差共同覆盖车速与加速度两个行为维度 }
+  - elementId: footer-source
+    elementType: text
+    bounds: [36, 510, 680, 12]
+    content: { style: "$nav", fontSize: 8.2, wrap: false, text: 来源：陈默等（2024），原文表 3 与第 2 节 }
   - elementId: footer-page
     elementType: text
-    bounds: [800, 506, 112, 14]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.5
-      color: "$primary"
-      bold: true
-      align: [right, top]
-      wrap: false
-      text: 05 / 15
+    bounds: [836, 510, 88, 12]
+    content: { style: "$nav", color: "$primary", bold: true, align: [right, top], wrap: false, text: 05 / 15 }

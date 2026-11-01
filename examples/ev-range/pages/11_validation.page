@@ -1,141 +1,101 @@
 pageType: content
-background:
-  type: solid
-  color: "$bg"
-notes: |-
-  实车验证：每辆车取一个较长驾驶事件作预测数据。图 14 为四车不同模型预测对比。
-  确定系数 R² 按 T/CSAE 172-2021 评价；含 Q 的 LSTM 四车 R² 均提升，最高 0.9953。
+background: { type: solid, color: "$bg" }
 elements:
-  - elementId: chapter-bar
+  - elementId: header-marker
     elementType: shape
-    bounds: [0, 0, 960, 56]
+    bounds: [36, 24, 8, 30]
     shapeName: rect
     fill: { type: solid, color: "$primary" }
-  - elementId: chapter-text
+  - elementId: header-title
     elementType: text
-    bounds: [48, 11, 720, 34]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 24
-      color: "#FFFFFF"
-      bold: true
-      align: [left, middle]
-      wrap: false
-      text: '04. 验证与讨论 —— 实车单驾驶事件'
-  - elementId: chapter-brand
+    bounds: [54, 22, 680, 34]
+    content: { style: "$pageTitle", wrap: false, text: "04. 验证与讨论 —— 实车单驾驶事件" }
+  - elementId: header-brand
     elementType: text
-    bounds: [736, 20, 176, 16]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.8
-      color: "$accent6"
-      align: [right, top]
-      wrap: false
-      text: EV RANGE · 学术报告
-  - elementId: title
-    elementType: text
-    bounds: [48, 70, 864, 34]
-    content:
-      style: "$title"
-      wrap: false
-      text: 四辆车 R² 全部提升，最高 0.9953
-  - elementId: subtitle
-    elementType: text
-    bounds: [48, 104, 864, 16]
-    content:
-      style: "$caption"
-      fontSize: 9.6
-      wrap: false
-      text: 每辆车取一个较长驾驶事件；按 T/CSAE 172-2021 确定系数法评价
-  - elementId: fig-a-card
+    bounds: [730, 30, 194, 14]
+    content: { style: "$label", fontSize: 9, align: [right, top], wrap: false, text: EV RANGE · RESEARCH }
+  - elementId: header-rule
     elementType: shape
-    bounds: [48, 132, 202, 126]
-    shapeName: roundRect
-    adjustments: [10000]
+    bounds: [36, 66, 888, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryDeep" }
+  - elementId: statement
+    elementType: text
+    bounds: [52, 78, 856, 42]
+    content:
+      style: "$statement"
+      align: [center, middle]
+      text: |-
+        <p>四辆车 R² 全部提升，<span style="color:$danger">最高 0.9953</span></p>
+  - elementId: fig-a-frame
+    elementType: shape
+    bounds: [36, 132, 204, 114]
+    shapeName: rect
     fill: { type: solid, color: "#FFFFFF" }
     border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 8, color: "#1F5FBF12", offset: [0, 2] }
   - elementId: fig-a
     elementType: image
-    bounds: [52, 136, 194, 118]
+    bounds: [40, 136, 196, 106]
     src: media/fig14a.jpg
     fit: { mode: contain }
-  - elementId: fig-b-card
+  - elementId: fig-b-frame
     elementType: shape
-    bounds: [258, 132, 202, 126]
-    shapeName: roundRect
-    adjustments: [10000]
+    bounds: [252, 132, 204, 114]
+    shapeName: rect
     fill: { type: solid, color: "#FFFFFF" }
     border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 8, color: "#1F5FBF12", offset: [0, 2] }
   - elementId: fig-b
     elementType: image
-    bounds: [262, 136, 194, 118]
+    bounds: [256, 136, 196, 106]
     src: media/fig14b.jpg
     fit: { mode: contain }
-  - elementId: fig-c-card
+  - elementId: fig-c-frame
     elementType: shape
-    bounds: [48, 266, 202, 126]
-    shapeName: roundRect
-    adjustments: [10000]
+    bounds: [36, 258, 204, 114]
+    shapeName: rect
     fill: { type: solid, color: "#FFFFFF" }
     border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 8, color: "#1F5FBF12", offset: [0, 2] }
   - elementId: fig-c
     elementType: image
-    bounds: [52, 270, 194, 118]
+    bounds: [40, 262, 196, 106]
     src: media/fig14c.jpg
     fit: { mode: contain }
-  - elementId: fig-d-card
+  - elementId: fig-d-frame
     elementType: shape
-    bounds: [258, 266, 202, 126]
-    shapeName: roundRect
-    adjustments: [10000]
+    bounds: [252, 258, 204, 114]
+    shapeName: rect
     fill: { type: solid, color: "#FFFFFF" }
     border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 8, color: "#1F5FBF12", offset: [0, 2] }
   - elementId: fig-d
     elementType: image
-    bounds: [262, 270, 194, 118]
+    bounds: [256, 262, 196, 106]
     src: media/fig14d.jpg
     fit: { mode: contain }
   - elementId: fig-caption
     elementType: text
-    bounds: [48, 398, 412, 30]
+    bounds: [36, 380, 420, 30]
     content:
       style: "$caption"
-      fontSize: 8.2
+      fontSize: 8.8
       text: |-
-        <p><span style="color:$accent;font-weight:bold;">图 14</span>　四辆车不同模型剩余续驶里程预测结果，(a)–(d) 对应 1–4 号车；图例 LSTM 含 Q 为含驾驶行为量化因子的模型。</p>
+        <p><span style="color:$primary"><strong>图 14</strong></span>　四车不同模型预测结果，(a)–(d) 对应 1–4 号车；来源：陈默等（2024）</p>
   - elementId: fig-reading
     elementType: text
-    bounds: [48, 432, 412, 32]
-    content:
-      style: "$body"
-      fontSize: 9.2
-      lineHeight: 1.45
-      text: 含 Q 的 LSTM 预测值与真实值误差更小、线性拟合度更高，优于不含 Q 模型与原车仪表预测。
-  - elementId: table-card
-    elementType: shape
-    bounds: [476, 132, 436, 206]
-    shapeName: roundRect
-    adjustments: [8000]
-    fill: { type: solid, color: "#FFFFFF" }
-    border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 12, color: "#1F5FBF14", offset: [0, 3] }
+    bounds: [36, 414, 420, 20]
+    content: { style: "$body", fontSize: 11.5, wrap: false, text: 含 Q 的 LSTM 更接近真实值，优于不含 Q 模型与原车仪表。 }
   - elementId: table-caption
     elementType: text
-    bounds: [492, 144, 404, 16]
+    bounds: [480, 132, 444, 18]
     content:
       style: "$caption"
-      fontSize: 8.4
+      fontSize: 10
       wrap: false
       text: |-
-        <p><span style="color:$accent;font-weight:bold;">表 8（摘）</span>　单驾驶事件预测的确定系数</p>
+        <p><span style="color:$primary"><strong>表 8（摘）</strong></span>　单驾驶事件预测的确定系数 R²</p>
   - elementId: table-8
     elementType: table
-    bounds: [492, 164, 404, 165]
-    columnWidths: [0.25, 0.375, 0.375]
+    bounds: [480, 156, 444, 150]
+    columnWidths: [0.24, 0.38, 0.38]
     rowHeights: [0.2, 0.2, 0.2, 0.2, 0.2]
     style: "$blue"
     rows:
@@ -145,88 +105,74 @@ elements:
       - - text: 1号
         - text: "0.9514"
         - text: |-
-            <p><span style="color:$primary;font-weight:bold;">0.9756</span></p>
+            <p><span style="color:$primary"><strong>0.9756</strong></span></p>
       - - text: 2号
         - text: "0.9644"
         - text: |-
-            <p><span style="color:$primary;font-weight:bold;">0.9946</span></p>
+            <p><span style="color:$primary"><strong>0.9946</strong></span></p>
       - - text: 3号
         - text: "0.9814"
         - text: |-
-            <p><span style="color:$primary;font-weight:bold;">0.9953</span></p>
+            <p><span style="color:$primary"><strong>0.9953</strong></span></p>
       - - text: 4号
         - text: "0.9531"
         - text: |-
-            <p><span style="color:$primary;font-weight:bold;">0.9680</span></p>
+            <p><span style="color:$primary"><strong>0.9680</strong></span></p>
   - elementId: table-source
     elementType: text
-    bounds: [492, 330, 404, 10]
-    content:
-      style: "$caption"
-      fontSize: 7.2
-      align: [right, top]
-      wrap: false
-      text: 数据来源：原文表 8；R² 按 T/CSAE 172-2021 计算
-  - elementId: formula-card
+    bounds: [480, 312, 444, 14]
+    content: { style: "$caption", fontSize: 8.5, align: [right, top], wrap: false, text: 来源：原文表 8；R² 按 T/CSAE 172-2021 计算 }
+  - elementId: formula-frame
     elementType: shape
-    bounds: [476, 350, 436, 64]
-    shapeName: roundRect
-    adjustments: [12000]
+    bounds: [480, 340, 444, 54]
+    shapeName: rect
     fill: { type: solid, color: "$primarySoft" }
     border: { style: solid, width: 1, color: "$primaryTint" }
   - elementId: formula
     elementType: text
-    bounds: [492, 358, 404, 26]
+    bounds: [496, 346, 412, 26]
     content:
-      fontSize: 11.5
+      fontSize: 12
       color: "$text"
       align: [center, middle]
       text: |-
         <p>\(R^2 = 1 - \frac{\sum (y_i - \hat{y}_i)^2}{\sum (y_i - \bar{y})^2}\)</p>
   - elementId: formula-note
     elementType: text
-    bounds: [492, 386, 404, 22]
-    content:
-      style: "$caption"
-      fontSize: 7.6
-      align: [center, top]
-      text: R² 越接近 1，预测偏差越小、准确度越高。
-  - elementId: conclusion-card
-    elementType: shape
-    bounds: [476, 426, 436, 38]
-    shapeName: roundRect
-    adjustments: [18000]
-    fill: { type: solid, color: "$primaryDeep" }
-  - elementId: conclusion-text
+    bounds: [496, 374, 412, 14]
+    content: { style: "$caption", fontSize: 8.5, align: [center, top], wrap: false, text: R² 越接近 1，预测偏差越小、准确度越高 }
+  - elementId: validation-note
     elementType: text
-    bounds: [492, 432, 404, 24]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9.2
-      color: "#FFFFFF"
-      align: [center, middle]
-      wrap: false
-      text: 四车 R² 全部高于不含 Q 模型；3 号车最高 0.9953。
-  - elementId: footer-line
+    bounds: [480, 408, 444, 26]
+    content: { style: "$body", fontSize: 11.5, align: [center, middle], text: 每辆车选取一个较长驾驶事件；四车含 Q 模型的 R² 均提高。 }
+  - elementId: takeaway-bar
     elementType: shape
-    bounds: [48, 502, 864, 1]
+    bounds: [36, 452, 888, 40]
     shapeName: rect
-    fill: { type: solid, color: "$line" }
-  - elementId: footer-left
+    fill: { type: solid, color: "$primary" }
+  - elementId: wave-left
+    elementType: line
+    bounds: [50, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 8,7 12,2 17,12 23,5 28,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: wave-right
+    elementType: line
+    bounds: [862, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 20,7 25,5 31,12 36,2 40,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: takeaway
     elementType: text
-    bounds: [48, 507, 640, 12]
-    content:
-      style: "$nav"
-      wrap: false
-      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+    bounds: [100, 456, 760, 30]
+    content: { style: "$takeaway", align: [center, middle], wrap: false, text: 实车单事件验证支持 H3：驾驶行为量化因子提高了预测拟合度 }
+  - elementId: footer-source
+    elementType: text
+    bounds: [36, 510, 680, 12]
+    content: { style: "$nav", fontSize: 8.2, wrap: false, text: 来源：陈默等（2024），图 14、表 8；评价标准 T/CSAE 172-2021 }
   - elementId: footer-page
     elementType: text
-    bounds: [800, 506, 112, 14]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.5
-      color: "$primary"
-      bold: true
-      align: [right, top]
-      wrap: false
-      text: 11 / 15
+    bounds: [836, 510, 88, 12]
+    content: { style: "$nav", color: "$primary", bold: true, align: [right, top], wrap: false, text: 11 / 15 }

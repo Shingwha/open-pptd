@@ -1,230 +1,229 @@
 pageType: content
-background:
-  type: solid
-  color: "$bg"
-notes: |-
-  研究背景：规模与数据都不缺，缺的是逐样本刻画驾驶行为的连续特征。
-  已知：2022 年新能源汽车销量 688.7 万辆、电动汽车占 78.9%；现有预测多只看 SOC 与平均能耗。
-  缺口：聚类标签让同簇样本共享单一标签，无法刻画每个样本点对能耗的影响。
+background: { type: solid, color: "$bg" }
 elements:
-  - elementId: chapter-bar
+  - elementId: header-marker
     elementType: shape
-    bounds: [0, 0, 960, 56]
+    bounds: [36, 24, 8, 30]
     shapeName: rect
     fill: { type: solid, color: "$primary" }
-  - elementId: chapter-text
+  - elementId: header-title
     elementType: text
-    bounds: [48, 11, 640, 34]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 24
-      color: "#FFFFFF"
-      bold: true
-      align: [left, middle]
-      wrap: false
-      text: '01. 研究背景 —— 续航焦虑与预测偏差'
-  - elementId: chapter-brand
+    bounds: [54, 22, 680, 34]
+    content: { style: "$pageTitle", wrap: false, text: "01. 研究背景 —— 续航焦虑与预测偏差" }
+  - elementId: header-brand
     elementType: text
-    bounds: [736, 20, 176, 16]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.8
-      color: "$accent6"
-      align: [right, top]
-      wrap: false
-      text: EV RANGE · 学术报告
-  - elementId: title
-    elementType: text
-    bounds: [48, 70, 864, 34]
-    content:
-      style: "$title"
-      wrap: false
-      text: 预测偏差来自被忽略的驾驶行为差异
-  - elementId: subtitle
-    elementType: text
-    bounds: [48, 104, 864, 16]
-    content:
-      style: "$caption"
-      fontSize: 9.6
-      wrap: false
-      text: 规模与数据都不缺，缺的是把驾驶行为逐样本量化的特征
-  - elementId: known-card
+    bounds: [730, 30, 194, 14]
+    content: { style: "$label", fontSize: 9, align: [right, top], wrap: false, text: EV RANGE · RESEARCH }
+  - elementId: header-rule
     elementType: shape
-    bounds: [48, 132, 414, 196]
-    shapeName: roundRect
-    adjustments: [9000]
-    fill: { type: solid, color: "#FFFFFF" }
-    border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
-  - elementId: known-label
+    bounds: [36, 66, 888, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryDeep" }
+  - elementId: statement
     elementType: text
-    bounds: [68, 148, 374, 16]
+    bounds: [52, 78, 856, 42]
     content:
-      style: "$label"
-      fontSize: 8.6
-      letterSpacing: 1.6
-      wrap: false
-      text: 已知 / WHAT IS KNOWN
-  - elementId: known-text
-    elementType: text
-    bounds: [68, 172, 374, 142]
-    content:
-      style: "$body"
-      fontSize: 10.6
-      lineHeight: 1.6
-      text: |-
-        <p>· 2022 年我国新能源汽车销量 688.7 万辆，其中电动汽车占 78.9%。</p>
-        <p style="margin-top:5px">· 现有车型多仅以 SOC、平均能耗等因素估算剩余续驶里程，预测结果与实际偏差较大。</p>
-        <p style="margin-top:5px">· 聚类方法让同一簇内所有样本共享单一标签，难以刻画每个样本点对能耗的影响。</p>
-  - elementId: gap-card
-    elementType: shape
-    bounds: [486, 132, 426, 196]
-    shapeName: roundRect
-    adjustments: [9000]
-    fill: { type: solid, color: "$primarySoft" }
-    border: { style: solid, width: 1, color: "$primaryTint" }
-    shadow: { blur: 12, color: "#1F5FBF1A", offset: [0, 3] }
-  - elementId: gap-label
-    elementType: text
-    bounds: [506, 148, 386, 16]
-    content:
-      style: "$label"
-      fontSize: 8.6
-      letterSpacing: 1.6
-      wrap: false
-      text: 缺口 / THE GAP
-  - elementId: gap-statement
-    elementType: text
-    bounds: [506, 170, 386, 42]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 14.5
-      color: "$primaryDeep"
-      bold: true
-      lineHeight: 1.45
-      text: 没有一个连续的、可赋权的单样本驾驶行为特征。
-  - elementId: gap-text
-    elementType: text
-    bounds: [506, 218, 386, 76]
-    content:
-      style: "$body"
-      fontSize: 10.4
-      lineHeight: 1.6
-      text: |-
-        <p>驾驶行为对能耗的影响因此被平均化：同一 SOC 下，激进驾驶与温和驾驶的剩余里程差异无法进入预测。</p>
-  - elementId: gap-consequence
-    elementType: text
-    bounds: [506, 300, 386, 18]
-    content:
-      style: "$caption"
-      fontSize: 8.8
-      wrap: false
-      text: 后果：续航焦虑与充电规划失准。
-  - elementId: stat-1-card
-    elementType: shape
-    bounds: [48, 344, 272, 118]
-    shapeName: roundRect
-    adjustments: [9000]
-    fill: { type: solid, color: "#FFFFFF" }
-    border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
-  - elementId: stat-1-num
-    elementType: text
-    bounds: [68, 358, 232, 36]
-    content:
-      style: "$stat"
-      wrap: false
-      text: |-
-        <p><span style="font-size:26px;">688.7</span><span style="font-size:12px;color:$muted;"> 万辆</span></p>
-  - elementId: stat-1-label
-    elementType: text
-    bounds: [68, 400, 232, 34]
-    content:
-      style: "$caption"
-      fontSize: 9
-      text: 2022 年我国新能源汽车销量
-  - elementId: stat-2-card
-    elementType: shape
-    bounds: [336, 344, 272, 118]
-    shapeName: roundRect
-    adjustments: [9000]
-    fill: { type: solid, color: "#FFFFFF" }
-    border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
-  - elementId: stat-2-num
-    elementType: text
-    bounds: [356, 358, 232, 36]
-    content:
-      style: "$stat"
-      wrap: false
-      text: |-
-        <p><span style="font-size:26px;">78.9</span><span style="font-size:12px;color:$muted;">%</span></p>
-  - elementId: stat-2-label
-    elementType: text
-    bounds: [356, 400, 232, 34]
-    content:
-      style: "$caption"
-      fontSize: 9
-      text: 电动汽车占新能源汽车销量的比重
-  - elementId: stat-3-card
-    elementType: shape
-    bounds: [624, 344, 288, 118]
-    shapeName: roundRect
-    adjustments: [9000]
-    fill: { type: solid, color: "#FFFFFF" }
-    border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
-  - elementId: stat-3-num
-    elementType: text
-    bounds: [644, 358, 248, 36]
-    content:
-      style: "$stat"
-      wrap: false
-      text: |-
-        <p><span style="font-size:25px;">20,300,600</span><span style="font-size:12px;color:$muted;"> 条</span></p>
-  - elementId: stat-3-label
-    elementType: text
-    bounds: [644, 400, 248, 34]
-    content:
-      style: "$caption"
-      fontSize: 9
-      text: 4 辆实车原始报文（1 Hz，2022.10–2023.04）
-  - elementId: takeaway-bar
-    elementType: shape
-    bounds: [48, 472, 864, 26]
-    shapeName: roundRect
-    adjustments: [50000]
-    fill: { type: solid, color: "$primary" }
-  - elementId: takeaway-text
-    elementType: text
-    bounds: [64, 476, 832, 18]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9.4
-      color: "#FFFFFF"
+      style: "$statement"
       align: [center, middle]
-      wrap: false
-      text: 规模不是瓶颈——逐样本的驾驶行为量化，才是预测精度的来源。
-  - elementId: footer-line
+      text: |-
+        <p>预测偏差来自被忽略的<span style="color:$danger">驾驶行为差异</span></p>
+  - elementId: known-frame
     elementType: shape
-    bounds: [48, 502, 864, 1]
+    bounds: [36, 132, 568, 234]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$line" }
+  - elementId: known-heading-1
+    elementType: text
+    bounds: [52, 140, 536, 20]
+    content: { style: "$heading", align: [center, top], wrap: false, text: 市场规模化，续航估算仍是基础体验 }
+  - elementId: known-body-1
+    elementType: text
+    bounds: [54, 164, 532, 40]
+    content:
+      style: "$body"
+      fontSize: 12.5
+      text: 2022 年我国新能源汽车销量 688.7 万辆，其中电动汽车占 78.9%；车辆规模扩大使准确续航预测更关键。
+  - elementId: known-sep-1
+    elementType: shape
+    bounds: [36, 208, 568, 1]
     shapeName: rect
     fill: { type: solid, color: "$line" }
-  - elementId: footer-left
+  - elementId: known-heading-2
     elementType: text
-    bounds: [48, 507, 640, 12]
+    bounds: [52, 216, 536, 20]
+    content: { style: "$heading", align: [center, top], wrap: false, text: 现有估算主要看 SOC 与平均能耗 }
+  - elementId: known-body-2
+    elementType: text
+    bounds: [54, 240, 532, 40]
     content:
-      style: "$nav"
+      style: "$body"
+      fontSize: 12.5
+      text: 同一 SOC 下，激进驾驶与温和驾驶的能耗差异没有进入预测，结果与实际剩余里程偏差较大。
+  - elementId: known-sep-2
+    elementType: shape
+    bounds: [36, 286, 568, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: known-heading-3
+    elementType: text
+    bounds: [52, 294, 536, 20]
+    content: { style: "$heading", align: [center, top], wrap: false, text: 聚类标签把同簇差异平均化 }
+  - elementId: known-body-3
+    elementType: text
+    bounds: [54, 318, 532, 40]
+    content:
+      style: "$body"
+      fontSize: 12.5
+      text: 同一簇内所有样本共享单一标签，难以刻画每个样本点对能耗的影响，亟需连续、可赋权的单样本特征。
+  - elementId: stats-frame
+    elementType: shape
+    bounds: [620, 132, 304, 234]
+    shapeName: rect
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: stat-1
+    elementType: text
+    bounds: [640, 142, 264, 34]
+    content:
+      style: "$stat"
+      align: [center, top]
       wrap: false
-      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+      text: |-
+        <p>688.7<span style="font-size:11px;color:$muted"> 万辆</span></p>
+  - elementId: stat-1-label
+    elementType: text
+    bounds: [640, 178, 264, 14]
+    content: { style: "$caption", align: [center, top], wrap: false, text: 2022 年新能源汽车销量 }
+  - elementId: stat-sep-1
+    elementType: shape
+    bounds: [640, 200, 264, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryTint" }
+  - elementId: stat-2
+    elementType: text
+    bounds: [640, 208, 264, 34]
+    content:
+      style: "$stat"
+      align: [center, top]
+      wrap: false
+      text: |-
+        <p>78.9<span style="font-size:11px;color:$muted">%</span></p>
+  - elementId: stat-2-label
+    elementType: text
+    bounds: [640, 244, 264, 14]
+    content: { style: "$caption", align: [center, top], wrap: false, text: 电动汽车销量占比 }
+  - elementId: stat-sep-2
+    elementType: shape
+    bounds: [640, 266, 264, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryTint" }
+  - elementId: stat-3
+    elementType: text
+    bounds: [640, 274, 264, 34]
+    content:
+      style: "$stat"
+      fontSize: 24
+      align: [center, top]
+      wrap: false
+      text: |-
+        <p>20,300,600<span style="font-size:11px;color:$muted"> 条</span></p>
+  - elementId: stat-3-label
+    elementType: text
+    bounds: [640, 312, 264, 38]
+    content: { style: "$caption", align: [center, top], text: 4 辆实车原始报文 · 1 Hz · 2022.10–2023.04 }
+  - elementId: flow-1
+    elementType: shape
+    bounds: [36, 382, 195, 52]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: flow-1-text
+    elementType: text
+    bounds: [42, 382, 183, 52]
+    content: { style: "$heading", fontSize: 11.5, align: [center, middle], text: SOC 与平均能耗估算 }
+  - elementId: flow-arrow-1
+    elementType: line
+    bounds: [231, 402, 36, 12]
+    viewBox: [36, 12]
+    points: "0,6 34,6"
+    curve: sharp
+    arrow: [null, arrow]
+    border: { style: solid, width: 1.5, color: "$accent" }
+  - elementId: flow-2
+    elementType: shape
+    bounds: [267, 382, 195, 52]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: flow-2-text
+    elementType: text
+    bounds: [273, 382, 183, 52]
+    content: { style: "$heading", fontSize: 11.5, align: [center, middle], text: 行为差异未被量化 }
+  - elementId: flow-arrow-2
+    elementType: line
+    bounds: [462, 402, 36, 12]
+    viewBox: [36, 12]
+    points: "0,6 34,6"
+    curve: sharp
+    arrow: [null, arrow]
+    border: { style: solid, width: 1.5, color: "$accent" }
+  - elementId: flow-3
+    elementType: shape
+    bounds: [498, 382, 195, 52]
+    shapeName: rect
+    fill: { type: solid, color: "#FFFFFF" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
+  - elementId: flow-3-text
+    elementType: text
+    bounds: [504, 382, 183, 52]
+    content: { style: "$heading", fontSize: 11.5, align: [center, middle], text: 剩余里程预测偏差 }
+  - elementId: flow-arrow-3
+    elementType: line
+    bounds: [693, 402, 36, 12]
+    viewBox: [36, 12]
+    points: "0,6 34,6"
+    curve: sharp
+    arrow: [null, arrow]
+    border: { style: solid, width: 1.5, color: "$accent" }
+  - elementId: flow-4
+    elementType: shape
+    bounds: [729, 382, 195, 52]
+    shapeName: rect
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primary" }
+  - elementId: flow-4-text
+    elementType: text
+    bounds: [735, 382, 183, 52]
+    content: { style: "$heading", fontSize: 11.5, align: [center, middle], text: 续航焦虑与规划失准 }
+  - elementId: takeaway-bar
+    elementType: shape
+    bounds: [36, 452, 888, 40]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+  - elementId: wave-left
+    elementType: line
+    bounds: [50, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 8,7 12,2 17,12 23,5 28,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: wave-right
+    elementType: line
+    bounds: [862, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 20,7 25,5 31,12 36,2 40,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: takeaway
+    elementType: text
+    bounds: [100, 456, 760, 30]
+    content: { style: "$takeaway", align: [center, middle], wrap: false, text: 规模不是瓶颈——逐样本的驾驶行为量化，才是预测精度的来源 }
+  - elementId: footer-source
+    elementType: text
+    bounds: [36, 510, 680, 12]
+    content: { style: "$nav", fontSize: 8.2, wrap: false, text: 来源：陈默等（2024）；某车企监控平台，2022.10–2023.04 }
   - elementId: footer-page
     elementType: text
-    bounds: [800, 506, 112, 14]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.5
-      color: "$primary"
-      bold: true
-      align: [right, top]
-      wrap: false
-      text: 02 / 15
+    bounds: [836, 510, 88, 12]
+    content: { style: "$nav", color: "$primary", bold: true, align: [right, top], wrap: false, text: 02 / 15 }

@@ -6,66 +6,67 @@ fonts:
   霞鹜新晰黑: { family: "LXGW Neo XiHei" }
 theme:
   colors:
-    primary: "#1F5FBF"
-    primaryDeep: "#123B7A"
-    accent: "#2F80ED"
+    primary: "#1F5B97"
+    accent: "#3578B5"
     bg: "#FFFFFF"
-    text: "#1B2A3A"
-    muted: "#5F7186"
-    line: "#D6E4F7"
+    text: "#1B2B3A"
+    muted: "#65788A"
+    line: "#C9D6E2"
     success: "#2F6B57"
-    warning: "#C98A2B"
-    danger: "#B54A3F"
-    primarySoft: "#EAF2FF"
-    primaryTint: "#D6E6FB"
-    accent3: "#5B9BF5"
-    accent4: "#8FBDFA"
-    accent5: "#2A5FA8"
-    accent6: "#BFD8F7"
+    warning: "#B4872D"
+    danger: "#B33E38"
+    primarySoft: "#EFF4F8"
+    primaryTint: "#D8E5F0"
+    primaryDeep: "#123E6C"
+    accent3: "#4C83B5"
+    accent4: "#86A9C8"
+    accent5: "#31587A"
+    accent6: "#B8CDDE"
   textStyles:
     display:
       fontFamily: "Source Han Serif CN"
-      fontSize: 40
+      fontSize: 44
       color: "#FFFFFF"
       bold: true
-      lineHeight: 1.3
-    title:
-      fontFamily: "Source Han Serif CN"
+      lineHeight: 1.35
+    pageTitle:
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 23
       color: "$primaryDeep"
       bold: true
       lineHeight: 1.25
+    statement:
+      fontFamily: "LXGW Neo XiHei"
+      fontSize: 19
+      color: "$primaryDeep"
+      bold: true
+      lineHeight: 1.35
     heading:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 12.5
+      fontSize: 13
       color: "$primary"
       bold: true
       lineHeight: 1.35
     body:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 11
+      fontSize: 15
       color: "$text"
-      lineHeight: 1.55
+      lineHeight: 1.45
     caption:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.8
+      fontSize: 9.5
       color: "$muted"
-      lineHeight: 1.4
+      lineHeight: 1.35
     label:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$primary"
-      letterSpacing: 1
-      lineHeight: 1.3
-    kicker:
-      fontFamily: "LXGW Neo XiHei"
       fontSize: 10
-      color: "$accent"
-      letterSpacing: 2
+      color: "$primary"
+      bold: true
+      letterSpacing: 0.8
       lineHeight: 1.3
     stat:
       fontFamily: "Source Han Serif CN"
-      fontSize: 27
+      fontSize: 28
       color: "$primary"
       bold: true
       lineHeight: 1.15
@@ -74,66 +75,16 @@ theme:
       fontSize: 8.5
       color: "$muted"
       lineHeight: 1.2
-    coverLabel:
+    takeaway:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 9.5
-      color: "$primaryTint"
-      letterSpacing: 1.5
+      fontSize: 15
+      color: "#FFFFFF"
+      bold: true
       lineHeight: 1.3
   tableStyles:
     blue:
       cellStyle:
-        fontSize: 10
-        fontFamily: "LXGW Neo XiHei"
-        color: "$text"
-        align: [center, middle]
-        fill: { type: solid, color: "#FFFFFF" }
-        border: [null, null, { style: solid, width: 0.75, color: "$line" }, null]
-        lineHeight: 1.3
-      firstRowStyle:
-        fill: { type: solid, color: "$primary" }
-        color: "#FFFFFF"
-        bold: true
-        fontSize: 10
-        border: null
-      bodyStyles:
-        - { fill: { type: solid, color: "#FFFFFF" } }
-        - { fill: { type: solid, color: "#F6FAFF" } }
-      lastRowStyle:
-        border:
-          - null
-          - null
-          - { style: solid, width: 1, color: "$primary" }
-          - null
-      rowOverColumn: true
-    formula:
-      cellStyle:
-        fontSize: 8.2
-        fontFamily: "LXGW Neo XiHei"
-        color: "$text"
-        align: [center, middle]
-        fill: { type: solid, color: "#FFFFFF" }
-        border: [null, null, { style: solid, width: 0.75, color: "$line" }, null]
-        lineHeight: 1.15
-      firstRowStyle:
-        fill: { type: solid, color: "$primary" }
-        color: "#FFFFFF"
-        bold: true
-        fontSize: 8.2
-        border: null
-      bodyStyles:
-        - { fill: { type: solid, color: "#FFFFFF" } }
-        - { fill: { type: solid, color: "#F6FAFF" } }
-      lastRowStyle:
-        border:
-          - null
-          - null
-          - { style: solid, width: 1, color: "$primary" }
-          - null
-      rowOverColumn: true
-    blueCompact:
-      cellStyle:
-        fontSize: 9
+        fontSize: 11
         fontFamily: "LXGW Neo XiHei"
         color: "$text"
         align: [center, middle]
@@ -144,17 +95,55 @@ theme:
         fill: { type: solid, color: "$primary" }
         color: "#FFFFFF"
         bold: true
-        fontSize: 8.8
+        fontSize: 10.5
         border: null
       bodyStyles:
         - { fill: { type: solid, color: "#FFFFFF" } }
-        - { fill: { type: solid, color: "#F6FAFF" } }
+        - { fill: { type: solid, color: "$primarySoft" } }
       lastRowStyle:
-        border:
-          - null
-          - null
-          - { style: solid, width: 1, color: "$primary" }
-          - null
+        border: [null, null, { style: solid, width: 1.2, color: "$primary" }, null]
+      rowOverColumn: true
+    formula:
+      cellStyle:
+        fontSize: 9.5
+        fontFamily: "LXGW Neo XiHei"
+        color: "$text"
+        align: [center, middle]
+        fill: { type: solid, color: "#FFFFFF" }
+        border: [null, null, { style: solid, width: 0.75, color: "$line" }, null]
+        lineHeight: 1.15
+      firstRowStyle:
+        fill: { type: solid, color: "$primary" }
+        color: "#FFFFFF"
+        bold: true
+        fontSize: 10
+        border: null
+      bodyStyles:
+        - { fill: { type: solid, color: "#FFFFFF" } }
+        - { fill: { type: solid, color: "$primarySoft" } }
+      lastRowStyle:
+        border: [null, null, { style: solid, width: 1.2, color: "$primary" }, null]
+      rowOverColumn: true
+    blueCompact:
+      cellStyle:
+        fontSize: 10.5
+        fontFamily: "LXGW Neo XiHei"
+        color: "$text"
+        align: [center, middle]
+        fill: { type: solid, color: "#FFFFFF" }
+        border: [null, null, { style: solid, width: 0.75, color: "$line" }, null]
+        lineHeight: 1.2
+      firstRowStyle:
+        fill: { type: solid, color: "$primary" }
+        color: "#FFFFFF"
+        bold: true
+        fontSize: 10
+        border: null
+      bodyStyles:
+        - { fill: { type: solid, color: "#FFFFFF" } }
+        - { fill: { type: solid, color: "$primarySoft" } }
+      lastRowStyle:
+        border: [null, null, { style: solid, width: 1.2, color: "$primary" }, null]
       rowOverColumn: true
 pages:
   - pages/01_cover.page

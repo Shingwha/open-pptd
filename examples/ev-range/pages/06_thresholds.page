@@ -1,110 +1,81 @@
 pageType: content
-background:
-  type: solid
-  color: "$bg"
-notes: |-
-  阈值确定：急加速采用分段区间 90% 百分位线；K-means（K=3）划分低/中/高速，
-  高速阈值 60.68 km/h；能量回收占比：3 号车 8.715%、4 号车 7.041%。
+background: { type: solid, color: "$bg" }
 elements:
-  - elementId: chapter-bar
+  - elementId: header-marker
     elementType: shape
-    bounds: [0, 0, 960, 56]
+    bounds: [36, 24, 8, 30]
     shapeName: rect
     fill: { type: solid, color: "$primary" }
-  - elementId: chapter-text
+  - elementId: header-title
     elementType: text
-    bounds: [48, 11, 720, 34]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 24
-      color: "#FFFFFF"
-      bold: true
-      align: [left, middle]
-      wrap: false
-      text: '02. 数据与方法 —— 阈值与速度区间'
-  - elementId: chapter-brand
+    bounds: [54, 22, 680, 34]
+    content: { style: "$pageTitle", wrap: false, text: "02. 数据与方法 —— 阈值与速度区间" }
+  - elementId: header-brand
     elementType: text
-    bounds: [736, 20, 176, 16]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.8
-      color: "$accent6"
-      align: [right, top]
-      wrap: false
-      text: EV RANGE · 学术报告
-  - elementId: title
-    elementType: text
-    bounds: [48, 70, 864, 34]
-    content:
-      style: "$title"
-      wrap: false
-      text: 阈值按速度区间自适应，高速段不再漏检急加速
-  - elementId: subtitle
-    elementType: text
-    bounds: [48, 104, 864, 16]
-    content:
-      style: "$caption"
-      fontSize: 9.6
-      wrap: false
-      text: 分段百分位线 + K-means 三类速度区间，替代固定阈值与全局百分位线
-  - elementId: fig-card
+    bounds: [730, 30, 194, 14]
+    content: { style: "$label", fontSize: 9, align: [right, top], wrap: false, text: EV RANGE · RESEARCH }
+  - elementId: header-rule
     elementType: shape
-    bounds: [48, 132, 360, 270]
-    shapeName: roundRect
-    adjustments: [8000]
+    bounds: [36, 66, 888, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryDeep" }
+  - elementId: statement
+    elementType: text
+    bounds: [52, 78, 856, 42]
+    content:
+      style: "$statement"
+      align: [center, middle]
+      text: |-
+        <p>阈值按速度区间自适应，<span style="color:$danger">高速段不再漏检急加速</span></p>
+  - elementId: fig-frame
+    elementType: shape
+    bounds: [36, 132, 430, 258]
+    shapeName: rect
     fill: { type: solid, color: "#FFFFFF" }
     border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 12, color: "#1F5FBF14", offset: [0, 3] }
   - elementId: fig-4
     elementType: image
-    bounds: [52, 136, 352, 226]
+    bounds: [40, 136, 422, 250]
     src: media/fig04_percentile.jpg
     fit: { mode: contain }
   - elementId: fig-caption
     elementType: text
-    bounds: [64, 366, 328, 28]
+    bounds: [36, 396, 430, 32]
     content:
       style: "$caption"
-      fontSize: 8.2
+      fontSize: 9
       text: |-
-        <p><span style="color:$accent;font-weight:bold;">图 4</span>　分段区间 90% 百分位线判断方法</p>
-  - elementId: cluster-card
+        <p><span style="color:$primary"><strong>图 4</strong></span>　分段区间 90% 百分位线判断方法；来源：陈默等（2024），图 4</p>
+  - elementId: cluster-frame
     elementType: shape
-    bounds: [428, 132, 484, 270]
-    shapeName: roundRect
-    adjustments: [8000]
+    bounds: [482, 132, 442, 258]
+    shapeName: rect
     fill: { type: solid, color: "#FFFFFF" }
     border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 12, color: "#1F5FBF14", offset: [0, 3] }
   - elementId: cluster-label
     elementType: text
-    bounds: [444, 146, 452, 16]
-    content:
-      style: "$label"
-      fontSize: 8.6
-      wrap: false
-      text: 速度区间聚类（K-means）
+    bounds: [500, 144, 406, 20]
+    content: { style: "$heading", align: [center, top], wrap: false, text: 速度区间聚类（K-means，K = 3） }
   - elementId: cluster-text
     elementType: text
-    bounds: [444, 166, 452, 44]
+    bounds: [500, 168, 406, 40]
     content:
       style: "$body"
-      fontSize: 9.4
-      lineHeight: 1.5
-      text: 轮廓系数在 K=3 时均值最大，手肘法同样指向 3 类——低速 / 中速 / 高速，聚类效果最佳。
-  - elementId: table-4-caption
+      fontSize: 12
+      text: 轮廓系数在 K = 3 时均值最大，手肘法同样指向低 / 中 / 高速三类，替代固定阈值与全局百分位线。
+  - elementId: table-caption
     elementType: text
-    bounds: [444, 214, 260, 13]
+    bounds: [500, 216, 238, 16]
     content:
       style: "$caption"
-      fontSize: 7.8
+      fontSize: 9
       wrap: false
       text: |-
-        <p><span style="color:$accent;font-weight:bold;">表 4</span>　聚类中心 / km·h⁻¹</p>
+        <p><span style="color:$primary"><strong>表 4</strong></span>　聚类中心 / km·h⁻¹</p>
   - elementId: table-4
     elementType: table
-    bounds: [444, 230, 260, 120]
-    columnWidths: [0.55, 0.45]
+    bounds: [500, 238, 238, 120]
+    columnWidths: [0.56, 0.44]
     rowHeights: [0.25, 0.25, 0.25, 0.25]
     style: "$blueCompact"
     rows:
@@ -116,83 +87,69 @@ elements:
         - text: "33.98"
       - - text: 高速状态
         - text: |-
-            <p><span style="color:$primary;font-weight:bold;">60.68</span></p>
+            <p><span style="color:$primary"><strong>60.68</strong></span></p>
   - elementId: threshold-label
     elementType: text
-    bounds: [724, 216, 172, 13]
-    content:
-      style: "$label"
-      fontSize: 8.2
-      wrap: false
-      text: 高速事件阈值
+    bounds: [754, 222, 152, 16]
+    content: { style: "$label", align: [center, top], wrap: false, text: 高速事件阈值 }
   - elementId: threshold-num
     elementType: text
-    bounds: [724, 232, 172, 34]
+    bounds: [754, 246, 152, 38]
     content:
       style: "$stat"
-      fontSize: 24
+      fontSize: 25
+      align: [center, top]
       wrap: false
       text: |-
-        <p><span style="font-size:24px;">60.68</span><span style="font-size:10px;color:$muted;"> km/h</span></p>
+        <p>60.68<span style="font-size:10px;color:$muted"> km/h</span></p>
   - elementId: threshold-note
     elementType: text
-    bounds: [724, 272, 172, 52]
-    content:
-      style: "$caption"
-      fontSize: 7.8
-      lineHeight: 1.45
-      text: 取高速聚类中心作为阈值，用于统计高速时长占比 P<sub>h</sub>。
-  - elementId: compare-note
-    elementType: text
-    bounds: [724, 330, 172, 58]
-    content:
-      style: "$caption"
-      fontSize: 7.4
-      lineHeight: 1.4
-      text: 固定阈值 1.11–1.2 m/s² 在高速区间漏检；全局百分位线无法区分区间。
-  - elementId: recover-card
+    bounds: [754, 292, 152, 66]
+    content: { style: "$caption", fontSize: 9, text: 取高速聚类中心作为阈值，用于统计高速时长占比 Pₕ；固定阈值易在高速区间漏检。 }
+  - elementId: recover-frame
     elementType: shape
-    bounds: [48, 416, 864, 48]
-    shapeName: roundRect
-    adjustments: [16000]
+    bounds: [482, 402, 442, 32]
+    shapeName: rect
     fill: { type: solid, color: "$primarySoft" }
     border: { style: solid, width: 1, color: "$primaryTint" }
-  - elementId: recover-label
-    elementType: text
-    bounds: [64, 424, 120, 14]
-    content:
-      style: "$label"
-      fontSize: 8.4
-      wrap: false
-      text: 能量回收占比
   - elementId: recover-text
     elementType: text
-    bounds: [184, 422, 712, 32]
+    bounds: [496, 402, 414, 32]
     content:
-      style: "$body"
-      fontSize: 9.4
-      lineHeight: 1.5
-      text: 1、2 号车未开启能量回收；3、4 号车开启，回收能耗占比分别为 <strong>8.715%</strong> 与 <strong>7.041%</strong>——不同驾驶员的回收效率差异明显。
-  - elementId: footer-line
-    elementType: shape
-    bounds: [48, 502, 864, 1]
-    shapeName: rect
-    fill: { type: solid, color: "$line" }
-  - elementId: footer-left
-    elementType: text
-    bounds: [48, 507, 640, 12]
-    content:
-      style: "$nav"
+      style: "$caption"
+      fontSize: 9.5
+      color: "$text"
+      align: [center, middle]
       wrap: false
-      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+      text: 能量回收占比：3 号车 8.715%，4 号车 7.041%；1、2 号车未开启
+  - elementId: takeaway-bar
+    elementType: shape
+    bounds: [36, 452, 888, 40]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
+  - elementId: wave-left
+    elementType: line
+    bounds: [50, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 8,7 12,2 17,12 23,5 28,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: wave-right
+    elementType: line
+    bounds: [862, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 20,7 25,5 31,12 36,2 40,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: takeaway
+    elementType: text
+    bounds: [100, 456, 760, 30]
+    content: { style: "$takeaway", align: [center, middle], wrap: false, text: 分段百分位线与三类速度区间共同定义可计算的行为阈值 }
+  - elementId: footer-source
+    elementType: text
+    bounds: [36, 510, 680, 12]
+    content: { style: "$nav", fontSize: 8.2, wrap: false, text: 来源：陈默等（2024），图 4、表 4 及第 2 节 }
   - elementId: footer-page
     elementType: text
-    bounds: [800, 506, 112, 14]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.5
-      color: "$primary"
-      bold: true
-      align: [right, top]
-      wrap: false
-      text: 06 / 15
+    bounds: [836, 510, 88, 12]
+    content: { style: "$nav", color: "$primary", bold: true, align: [right, top], wrap: false, text: 06 / 15 }

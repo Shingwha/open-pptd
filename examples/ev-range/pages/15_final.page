@@ -1,126 +1,70 @@
 pageType: final
-background:
-  type: gradient
-  gradientType: linear
-  angle: 135
-  stops:
-    - { position: 0, color: "$primaryDeep" }
-    - { position: 0.55, color: "$primary" }
-    - { position: 1, color: "$accent3" }
-notes: |-
-  收尾：回到封面同一套视觉，用结论式标题收束；保留通讯作者与基金信息，进入讨论与提问。
+background: { type: solid, color: "$bg" }
 elements:
+  - elementId: final-field
+    elementType: shape
+    bounds: [0, 0, 960, 332]
+    shapeName: rect
+    fill: { type: solid, color: "$primary" }
   - elementId: brand-left
     elementType: text
-    bounds: [48, 30, 420, 16]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "$accent6"
-      letterSpacing: 2
-      wrap: false
-      text: EV RANGE · 学术报告
+    bounds: [48, 30, 420, 18]
+    content: { fontFamily: "LXGW Neo XiHei", fontSize: 10, color: "$primaryTint", letterSpacing: 1.2, wrap: false, text: EV RANGE · RESEARCH }
   - elementId: brand-right
     elementType: text
-    bounds: [712, 30, 200, 16]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9
-      color: "#FFFFFF"
-      letterSpacing: 1.5
-      align: [right, top]
-      wrap: false
-      text: 2024 · 新能源车辆工程
-  - elementId: top-rule
-    elementType: shape
-    bounds: [48, 58, 864, 1]
-    shapeName: rect
-    fill: { type: solid, color: "$accent4" }
-    opacity: 0.38
+    bounds: [680, 30, 232, 18]
+    content: { fontFamily: "LXGW Neo XiHei", fontSize: 10, color: "#FFFFFF", bold: true, align: [right, top], wrap: false, text: 2024 · 新能源车辆工程 }
   - elementId: statement
     elementType: text
-    bounds: [100, 150, 760, 100]
+    bounds: [90, 88, 780, 112]
     content:
       fontFamily: "Source Han Serif CN"
-      fontSize: 30
+      fontSize: 34
       color: "#FFFFFF"
       bold: true
       lineHeight: 1.4
-      align: [center, top]
+      align: [center, middle]
       text: |-
         <p>驾驶行为量化因子，</p>
         <p>让剩余续驶里程可解释、可验证</p>
   - elementId: answer-line
     elementType: text
-    bounds: [120, 264, 720, 26]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 11.5
-      color: "$primaryTint"
-      align: [center, top]
-      wrap: false
-      text: 四辆实车 R² 全部提升，最高 0.9953；LSTM + Q 在 RMSE / MAE 上最优。
-  - elementId: question-pill
-    elementType: shape
-    bounds: [380, 312, 200, 34]
-    shapeName: roundRect
-    adjustments: [50000]
-    border: { style: solid, width: 1, color: "#FFFFFF" }
-  - elementId: question-pill-text
+    bounds: [110, 216, 740, 24]
+    content: { fontFamily: "LXGW Neo XiHei", fontSize: 13, color: "$primaryTint", align: [center, top], wrap: false, text: 四辆实车 R² 全部提升；LSTM + Q 在 RMSE / MAE 上最优 }
+  - elementId: final-number
     elementType: text
-    bounds: [380, 319, 200, 20]
+    bounds: [280, 254, 400, 50]
     content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 10
+      fontFamily: "Source Han Serif CN"
+      fontSize: 34
       color: "#FFFFFF"
-      letterSpacing: 1
+      bold: true
       align: [center, middle]
       wrap: false
-      text: 讨论与提问
+      text: 最高 R² 0.9953
+  - elementId: question-pill
+    elementType: shape
+    bounds: [380, 356, 200, 36]
+    shapeName: roundRect
+    adjustments: [50000]
+    fill: { type: solid, color: "$primary" }
+  - elementId: question-pill-text
+    elementType: text
+    bounds: [380, 356, 200, 36]
+    content: { fontFamily: "LXGW Neo XiHei", fontSize: 12, color: "#FFFFFF", bold: true, letterSpacing: 1, align: [center, middle], wrap: false, text: 讨论与提问 }
   - elementId: courtesy
     elementType: text
-    bounds: [120, 356, 720, 16]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 9.4
-      color: "$accent6"
-      align: [center, top]
-      wrap: false
-      text: 恳请各位专家批评指正
+    bounds: [120, 408, 720, 20]
+    content: { fontFamily: "LXGW Neo XiHei", fontSize: 12, color: "$primaryDeep", align: [center, top], wrap: false, text: 恳请各位专家批评指正 }
   - elementId: contact
     elementType: text
-    bounds: [120, 378, 720, 44]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 10.2
-      color: "#FFFFFF"
-      lineHeight: 1.7
-      align: [center, top]
-      text: |-
-        <p>通讯作者：沈既明 · 麓山理工大学车辆工程学院　shenjm_2024@163.com</p>
+    bounds: [100, 442, 760, 22]
+    content: { fontFamily: "LXGW Neo XiHei", fontSize: 10.5, color: "$text", align: [center, top], wrap: false, text: 通讯作者：沈既明 · 麓山理工大学车辆工程学院 · shenjm_2024@163.com }
   - elementId: funding
     elementType: text
-    bounds: [120, 430, 720, 18]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.6
-      color: "$accent6"
-      align: [center, top]
-      wrap: false
-      text: 国家自然科学基金（52275123）· 湖南省重点研发计划（2024GK4021）
-  - elementId: bottom-rule
-    elementType: shape
-    bounds: [48, 486, 864, 1]
-    shapeName: rect
-    fill: { type: solid, color: "$accent4" }
-    opacity: 0.32
+    bounds: [120, 476, 720, 16]
+    content: { style: "$nav", fontSize: 8.5, align: [center, top], wrap: false, text: 国家自然科学基金（52275123）· 湖南省重点研发计划（2024GK4021） }
   - elementId: journal
     elementType: text
-    bounds: [48, 494, 864, 14]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.2
-      color: "$accent6"
-      align: [center, top]
-      wrap: false
-      text: "《新能源车辆工程学报》 · 网络版发表 2024-11-08 · DOI: 10.12345/NEVE-2024-0128"
+    bounds: [48, 508, 864, 14]
+    content: { style: "$nav", fontSize: 8.2, align: [center, top], wrap: false, text: "《新能源车辆工程学报》 · 网络版发表 2024-11-08 · DOI: 10.12345/NEVE-2024-0128" }

@@ -1,195 +1,167 @@
 pageType: content
-background:
-  type: solid
-  color: "$bg"
-notes: |-
-  参考文献与依据：只列正文实际使用的来源与标准——原文、GB/T 32960、T/CSAE 172-2021 与车企平台数据。
-  每条注明正文使用位置；完整参考文献见原文，本页不重复未在正文出现的条目。
+background: { type: solid, color: "$bg" }
 elements:
-  - elementId: chapter-bar
+  - elementId: header-marker
     elementType: shape
-    bounds: [0, 0, 960, 56]
+    bounds: [36, 24, 8, 30]
     shapeName: rect
     fill: { type: solid, color: "$primary" }
-  - elementId: chapter-text
+  - elementId: header-title
     elementType: text
-    bounds: [48, 11, 720, 34]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 24
-      color: "#FFFFFF"
-      bold: true
-      align: [left, middle]
-      wrap: false
-      text: '05. 结论 —— 依据与参考文献'
-  - elementId: chapter-brand
+    bounds: [54, 22, 680, 34]
+    content: { style: "$pageTitle", wrap: false, text: "05. 结论 —— 依据与参考文献" }
+  - elementId: header-brand
     elementType: text
-    bounds: [736, 20, 176, 16]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.8
-      color: "$accent6"
-      align: [right, top]
-      wrap: false
-      text: EV RANGE · 学术报告
-  - elementId: title
-    elementType: text
-    bounds: [48, 70, 864, 34]
-    content:
-      style: "$title"
-      wrap: false
-      text: 本文依据
-  - elementId: subtitle
-    elementType: text
-    bounds: [48, 104, 864, 16]
-    content:
-      style: "$caption"
-      fontSize: 9.6
-      wrap: false
-      text: 只列出文中实际引用的来源与标准，每条注明使用位置
-  - elementId: ref-card
+    bounds: [730, 30, 194, 14]
+    content: { style: "$label", fontSize: 9, align: [right, top], wrap: false, text: EV RANGE · RESEARCH }
+  - elementId: header-rule
     elementType: shape
-    bounds: [48, 132, 560, 332]
-    shapeName: roundRect
-    adjustments: [8000]
+    bounds: [36, 66, 888, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryDeep" }
+  - elementId: statement
+    elementType: text
+    bounds: [52, 78, 856, 42]
+    content:
+      style: "$statement"
+      align: [center, middle]
+      text: |-
+        <p>只列正文实际使用的<span style="color:$danger">来源与标准</span>，每条注明使用位置</p>
+  - elementId: refs-frame
+    elementType: shape
+    bounds: [36, 132, 580, 302]
+    shapeName: rect
     fill: { type: solid, color: "#FFFFFF" }
     border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
-  - elementId: ref-label
-    elementType: text
-    bounds: [66, 146, 524, 14]
-    content:
-      style: "$label"
-      fontSize: 8.4
-      letterSpacing: 1.5
-      wrap: false
-      text: 来源与标准 / SOURCES
   - elementId: ref-1
     elementType: text
-    bounds: [66, 168, 524, 56]
+    bounds: [54, 146, 544, 56]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 9.8
+      fontSize: 11
       color: "$text"
-      lineHeight: 1.55
+      lineHeight: 1.4
       text: |-
-        <p><span style="color:$primary;font-weight:bold;">[1]</span> 陈默, 周远航, 林晚晴, 等. 基于驾驶行为量化特征的电动汽车剩余续驶里程预测[J]. 新能源车辆工程学报, 2024. DOI: 10.12345/NEVE-2024-0128. <span style="color:$muted;">（全文依据）</span></p>
+        <p><span style="color:$primary"><strong>[1]</strong></span> 陈默, 周远航, 林晚晴, 等. 基于驾驶行为量化特征的电动汽车剩余续驶里程预测[J]. 新能源车辆工程学报, 2024. DOI: 10.12345/NEVE-2024-0128. <span style="color:$muted">（全文依据）</span></p>
+  - elementId: ref-sep-1
+    elementType: shape
+    bounds: [54, 208, 544, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
   - elementId: ref-2
     elementType: text
-    bounds: [66, 232, 524, 52]
+    bounds: [54, 220, 544, 44]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 9.8
+      fontSize: 11
       color: "$text"
-      lineHeight: 1.55
+      lineHeight: 1.4
       text: |-
-        <p><span style="color:$primary;font-weight:bold;">[2]</span> GB/T 32960. 电动汽车远程服务与管理系统技术规范[S]. <span style="color:$muted;">（§2.1 数据采集与 1 Hz 上传）</span></p>
+        <p><span style="color:$primary"><strong>[2]</strong></span> GB/T 32960. 电动汽车远程服务与管理系统技术规范[S]. <span style="color:$muted">（§2.1 数据采集与 1 Hz 上传）</span></p>
+  - elementId: ref-sep-2
+    elementType: shape
+    bounds: [54, 270, 544, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
   - elementId: ref-3
     elementType: text
-    bounds: [66, 296, 524, 52]
+    bounds: [54, 282, 544, 44]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 9.8
+      fontSize: 11
       color: "$text"
-      lineHeight: 1.55
+      lineHeight: 1.4
       text: |-
-        <p><span style="color:$primary;font-weight:bold;">[3]</span> T/CSAE 172-2021. 确定系数法[S]. <span style="color:$muted;">（§4.3 R² 准确度评价）</span></p>
+        <p><span style="color:$primary"><strong>[3]</strong></span> T/CSAE 172-2021. 确定系数法[S]. <span style="color:$muted">（§4.3 R² 准确度评价）</span></p>
+  - elementId: ref-sep-3
+    elementType: shape
+    bounds: [54, 332, 544, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
   - elementId: ref-4
     elementType: text
-    bounds: [66, 360, 524, 56]
+    bounds: [54, 344, 544, 48]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 9.8
+      fontSize: 11
       color: "$text"
-      lineHeight: 1.55
+      lineHeight: 1.4
       text: |-
-        <p><span style="color:$primary;font-weight:bold;">[4]</span> 某新能源车企监控平台. 4 辆电动汽车历史行驶数据（2022.10–2023.04）[DB]. <span style="color:$muted;">（§2.1 原始报文 20,300,600 条）</span></p>
+        <p><span style="color:$primary"><strong>[4]</strong></span> 某新能源车企监控平台. 4 辆电动汽车历史行驶数据（2022.10–2023.04）[DB]. <span style="color:$muted">（§2.1 原始报文）</span></p>
   - elementId: ref-note
     elementType: text
-    bounds: [66, 420, 524, 44]
-    content:
-      style: "$caption"
-      fontSize: 8.2
-      lineHeight: 1.5
-      text: 本页不重复未在正文出现的条目；正文图表编号与表 2、3、4、7、8，图 1、2、4、9、10、12、13、14 一一对应。
-  - elementId: index-card
+    bounds: [54, 402, 544, 24]
+    content: { style: "$caption", fontSize: 9, text: 引用格式 GB/T 7714；图表编号沿用原文，便于逐项对照。 }
+  - elementId: index-frame
     elementType: shape
-    bounds: [624, 132, 288, 198]
-    shapeName: roundRect
-    adjustments: [9000]
+    bounds: [636, 132, 288, 160]
+    shapeName: rect
     fill: { type: solid, color: "$primarySoft" }
     border: { style: solid, width: 1, color: "$primaryTint" }
   - elementId: index-label
     elementType: text
-    bounds: [642, 146, 252, 14]
-    content:
-      style: "$label"
-      fontSize: 8.4
-      letterSpacing: 1.5
-      wrap: false
-      text: 图表索引
+    bounds: [654, 144, 252, 18]
+    content: { style: "$heading", fontSize: 12, align: [center, top], wrap: false, text: 图表索引 }
   - elementId: index-text
     elementType: text
-    bounds: [642, 168, 252, 152]
+    bounds: [654, 172, 252, 108]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 9.2
+      fontSize: 10
       color: "$text"
-      lineHeight: 1.85
+      lineHeight: 1.55
       text: |-
         <p><strong>图</strong>　1 驾驶事件　2 片段划分</p>
         <p>　　　4 百分位线　9 随机森林</p>
         <p>　　　10 权重　12 Q–能耗</p>
         <p>　　　13 LSTM 结构　14 实车验证</p>
-        <p style="margin-top:5px"><strong>表</strong>　2 数据分布　3 指标</p>
-        <p>　　　4 聚类中心　7 误差</p>
-        <p>　　　8 确定系数</p>
-  - elementId: data-card
+        <p><strong>表</strong>　2 数据分布　3 指标　4 聚类</p>
+        <p>　　　7 误差　8 确定系数</p>
+  - elementId: data-frame
     elementType: shape
-    bounds: [624, 344, 288, 120]
-    shapeName: roundRect
-    adjustments: [9000]
+    bounds: [636, 308, 288, 126]
+    shapeName: rect
     fill: { type: solid, color: "#FFFFFF" }
     border: { style: solid, width: 1, color: "$line" }
   - elementId: data-label
     elementType: text
-    bounds: [642, 356, 252, 14]
-    content:
-      style: "$label"
-      fontSize: 8.4
-      letterSpacing: 1.5
-      wrap: false
-      text: 数据与代码可用性
+    bounds: [654, 320, 252, 18]
+    content: { style: "$heading", fontSize: 12, align: [center, top], wrap: false, text: 数据与代码可用性 }
   - elementId: data-text
     elementType: text
-    bounds: [642, 376, 252, 78]
+    bounds: [654, 348, 252, 70]
     content:
       style: "$body"
-      fontSize: 8.5
-      lineHeight: 1.5
-      text: |-
-        <p>数据受车企平台授权限制，未公开；模型结构、训练设置与完整算法对比见原文第 3 节。</p>
-        <p style="margin-top:4px">引用格式：GB/T 7714；图表编号沿用原文，便于对照。</p>
-  - elementId: footer-line
+      fontSize: 11
+      text: 数据受车企平台授权限制，未公开；模型结构、训练设置与完整算法对比见原文第 3 节。
+  - elementId: takeaway-bar
     elementType: shape
-    bounds: [48, 502, 864, 1]
+    bounds: [36, 452, 888, 40]
     shapeName: rect
-    fill: { type: solid, color: "$line" }
-  - elementId: footer-left
+    fill: { type: solid, color: "$primary" }
+  - elementId: wave-left
+    elementType: line
+    bounds: [50, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 8,7 12,2 17,12 23,5 28,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: wave-right
+    elementType: line
+    bounds: [862, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 20,7 25,5 31,12 36,2 40,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: takeaway
     elementType: text
-    bounds: [48, 507, 640, 12]
-    content:
-      style: "$nav"
-      wrap: false
-      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+    bounds: [100, 456, 760, 30]
+    content: { style: "$takeaway", align: [center, middle], wrap: false, text: 正文图表、评价标准与数据来源均可按原文编号回溯 }
+  - elementId: footer-source
+    elementType: text
+    bounds: [36, 510, 680, 12]
+    content: { style: "$nav", fontSize: 8.2, wrap: false, text: 参考文献与数据可用性说明沿用原项目内容 }
   - elementId: footer-page
     elementType: text
-    bounds: [800, 506, 112, 14]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.5
-      color: "$primary"
-      bold: true
-      align: [right, top]
-      wrap: false
-      text: 14 / 15
+    bounds: [836, 510, 88, 12]
+    content: { style: "$nav", color: "$primary", bold: true, align: [right, top], wrap: false, text: 14 / 15 }

@@ -1,197 +1,181 @@
 pageType: content
-background:
-  type: solid
-  color: "$bg"
-notes: |-
-  随机森林客观赋权：避免主观赋权干扰；OOB 打乱置换衡量指标重要性。
-  权重排序：高速时长占比 > 车速均值 > 急加速时长 > 能量回收占比 > 加速度均值 > 车速标准差 > 加速度标准差。
+background: { type: solid, color: "$bg" }
 elements:
-  - elementId: chapter-bar
+  - elementId: header-marker
     elementType: shape
-    bounds: [0, 0, 960, 56]
+    bounds: [36, 24, 8, 30]
     shapeName: rect
     fill: { type: solid, color: "$primary" }
-  - elementId: chapter-text
+  - elementId: header-title
     elementType: text
-    bounds: [48, 11, 720, 34]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 24
-      color: "#FFFFFF"
-      bold: true
-      align: [left, middle]
-      wrap: false
-      text: '02. 数据与方法 —— 随机森林赋权'
-  - elementId: chapter-brand
+    bounds: [54, 22, 680, 34]
+    content: { style: "$pageTitle", wrap: false, text: "02. 数据与方法 —— 随机森林赋权" }
+  - elementId: header-brand
     elementType: text
-    bounds: [736, 20, 176, 16]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.8
-      color: "$accent6"
-      align: [right, top]
-      wrap: false
-      text: EV RANGE · 学术报告
-  - elementId: title
-    elementType: text
-    bounds: [48, 70, 864, 34]
-    content:
-      style: "$title"
-      wrap: false
-      text: 用 OOB 置换，把“谁更影响能耗”变成客观权重
-  - elementId: subtitle
-    elementType: text
-    bounds: [48, 104, 864, 16]
-    content:
-      style: "$caption"
-      fontSize: 9.6
-      wrap: false
-      text: 7 项指标输入随机森林，输出对驱动电机能耗的权重系数 w_i
-  - elementId: why-card
+    bounds: [730, 30, 194, 14]
+    content: { style: "$label", fontSize: 9, align: [right, top], wrap: false, text: EV RANGE · RESEARCH }
+  - elementId: header-rule
     elementType: shape
-    bounds: [48, 132, 300, 176]
-    shapeName: roundRect
-    adjustments: [10000]
+    bounds: [36, 66, 888, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryDeep" }
+  - elementId: statement
+    elementType: text
+    bounds: [52, 78, 856, 42]
+    content:
+      style: "$statement"
+      align: [center, middle]
+      text: |-
+        <p>用 OOB 置换，把“谁更影响能耗”变成<span style="color:$danger">客观权重</span></p>
+  - elementId: method-frame
+    elementType: shape
+    bounds: [36, 132, 280, 302]
+    shapeName: rect
     fill: { type: solid, color: "#FFFFFF" }
     border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
   - elementId: why-label
     elementType: text
-    bounds: [66, 146, 264, 16]
-    content:
-      style: "$label"
-      fontSize: 8.6
-      wrap: false
-      text: 为什么客观赋权
+    bounds: [54, 146, 244, 20]
+    content: { style: "$heading", align: [center, top], wrap: false, text: 为什么客观赋权 }
   - elementId: why-text
     elementType: text
-    bounds: [66, 168, 264, 126]
+    bounds: [54, 172, 244, 82]
     content:
       style: "$body"
-      fontSize: 9.7
-      lineHeight: 1.6
-      text: 为避免主观赋权引入人为干扰，采用随机森林评估指标重要性：集成决策树、泛化性强、计算复杂度低，可处理较高维数据并输出特征重要性。
-  - elementId: rf-split
-    elementType: text
-    bounds: [66, 262, 264, 36]
-    content:
-      style: "$caption"
-      fontSize: 8.4
-      lineHeight: 1.45
-      text: 有效数据按 7:3 划分训练 / 测试，训练后得到各指标对驱动电机能耗的权重系数 w<sub>i</sub>。
-  - elementId: oob-card
+      fontSize: 12
+      text: 为避免主观赋权引入人为干扰，采用随机森林评估指标重要性：集成决策树、泛化性强、计算复杂度低，可输出特征重要性。
+  - elementId: method-sep-1
     elementType: shape
-    bounds: [48, 320, 300, 146]
-    shapeName: roundRect
-    adjustments: [10000]
-    fill: { type: solid, color: "$primarySoft" }
-    border: { style: solid, width: 1, color: "$primaryTint" }
+    bounds: [54, 262, 244, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
+  - elementId: split-label
+    elementType: text
+    bounds: [54, 274, 244, 16]
+    content: { style: "$label", wrap: false, text: 数据划分 }
+  - elementId: split-text
+    elementType: text
+    bounds: [54, 296, 244, 46]
+    content: { style: "$body", fontSize: 12, text: 有效数据按 7:3 划分训练 / 测试，训练后得到各指标对能耗的权重系数 wᵢ。 }
+  - elementId: method-sep-2
+    elementType: shape
+    bounds: [54, 348, 244, 1]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
   - elementId: oob-label
     elementType: text
-    bounds: [66, 334, 264, 16]
-    content:
-      style: "$label"
-      fontSize: 8.6
-      wrap: false
-      text: 重要性度量（OOB 置换）
+    bounds: [54, 358, 244, 16]
+    content: { style: "$label", wrap: false, text: OOB 置换重要性 }
   - elementId: oob-text
     elementType: text
-    bounds: [66, 354, 264, 48]
-    content:
-      style: "$body"
-      fontSize: 9.2
-      lineHeight: 1.45
-      text: 打乱指标 X<sub>p</sub> 的取值序列重新预测，MSE 增量越大越重要；对全部 I 棵树取平均。
+    bounds: [54, 380, 244, 34]
+    content: { style: "$caption", fontSize: 9.5, color: "$text", text: 打乱指标序列重新预测，MSE 增量越大越重要。 }
   - elementId: vim-formula
     elementType: text
-    bounds: [66, 410, 264, 34]
+    bounds: [54, 412, 244, 22]
     content:
-      fontSize: 13
+      fontSize: 12
       color: "$text"
       align: [center, middle]
       text: |-
         <p>\(VIM_p = \frac{1}{I}\sum_{i=1}^{I} mse_i^p\)</p>
-  - elementId: fig-9-card
+  - elementId: fig-9-frame
     elementType: shape
-    bounds: [368, 132, 544, 248]
-    shapeName: roundRect
-    adjustments: [8000]
+    bounds: [332, 132, 592, 186]
+    shapeName: rect
     fill: { type: solid, color: "#FFFFFF" }
     border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 12, color: "#1F5FBF14", offset: [0, 3] }
   - elementId: fig-9
     elementType: image
-    bounds: [372, 136, 536, 208]
+    bounds: [336, 136, 584, 178]
     src: media/fig09_rf.jpg
     fit: { mode: contain }
   - elementId: fig-9-caption
     elementType: text
-    bounds: [372, 348, 536, 26]
+    bounds: [332, 324, 592, 30]
     content:
       style: "$caption"
-      fontSize: 8.2
+      fontSize: 9
       text: |-
-        <p><span style="color:$accent;font-weight:bold;">图 9</span>　随机森林框架：训练集随机采样建立 i 棵决策树，测试集结果取均值输出能耗预测</p>
-  - elementId: fig-10-card
-    elementType: shape
-    bounds: [368, 390, 200, 76]
-    shapeName: roundRect
-    adjustments: [14000]
-    fill: { type: solid, color: "#FFFFFF" }
-    border: { style: solid, width: 1, color: "$line" }
-  - elementId: fig-10
-    elementType: image
-    bounds: [372, 393, 192, 60]
-    src: media/fig10_weights.jpg
-    fit: { mode: contain }
+        <p><span style="color:$primary"><strong>图 9</strong></span>　随机森林框架：训练集随机采样建立决策树，测试集取均值输出；来源：陈默等（2024）</p>
+  - elementId: fig-10-chart
+    elementType: chart
+    bounds: [332, 358, 252, 68]
+    fontFamily: "LXGW Neo XiHei"
+    legend: false
+    data:
+      cols: [variable, weight]
+      rows:
+        - ["2", 0.263]
+        - ["4", 0.163]
+        - ["1", 0.158]
+        - ["3", 0.157]
+        - ["6", 0.097]
+        - ["5", 0.084]
+        - ["7", 0.077]
+    xAxis: { title: 变量序号, label: { fontSize: 7 }, gridLine: false }
+    yAxis: { min: 0, max: 0.3, title: 权重系数, label: { fontSize: 7, numberFormat: "0.00" }, gridLine: { color: "$line" } }
+    series:
+      - type: bar
+        encode: { x: variable, y: weight }
+        name: 权重系数
+        fill: "$primary"
+        dataLabels: { show: true, fontSize: 7, numberFormat: "0.000" }
   - elementId: fig-10-caption
     elementType: text
-    bounds: [368, 468, 200, 12]
+    bounds: [332, 428, 252, 14]
     content:
       style: "$caption"
-      fontSize: 7.4
+      fontSize: 8.5
       wrap: false
       text: |-
-        <p><span style="color:$accent;font-weight:bold;">图 10</span>　评价指标权重系数</p>
-  - elementId: rank-card
+        <p><span style="color:$primary"><strong>图 10</strong></span>　指标权重；据陈默等（2024）图 10 重绘</p>
+  - elementId: rank-frame
     elementType: shape
-    bounds: [580, 390, 332, 76]
-    shapeName: roundRect
-    adjustments: [14000]
+    bounds: [604, 366, 320, 68]
+    shapeName: rect
     fill: { type: solid, color: "$primarySoft" }
     border: { style: solid, width: 1, color: "$primaryTint" }
   - elementId: rank-text
     elementType: text
-    bounds: [594, 398, 304, 62]
+    bounds: [618, 372, 292, 56]
     content:
       fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.4
+      fontSize: 10
       color: "$text"
-      lineHeight: 1.55
+      lineHeight: 1.5
       text: |-
         <p><strong>1</strong> 高速时长占比　<strong>2</strong> 车速均值　<strong>3</strong> 急加速时长</p>
         <p><strong>4</strong> 能量回收占比　<strong>5</strong> 加速度均值</p>
         <p><strong>6</strong> 车速标准差　<strong>7</strong> 加速度标准差</p>
-  - elementId: footer-line
+  - elementId: takeaway-bar
     elementType: shape
-    bounds: [48, 502, 864, 1]
+    bounds: [36, 452, 888, 40]
     shapeName: rect
-    fill: { type: solid, color: "$line" }
-  - elementId: footer-left
+    fill: { type: solid, color: "$primary" }
+  - elementId: wave-left
+    elementType: line
+    bounds: [50, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 8,7 12,2 17,12 23,5 28,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: wave-right
+    elementType: line
+    bounds: [862, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 20,7 25,5 31,12 36,2 40,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: takeaway
     elementType: text
-    bounds: [48, 507, 640, 12]
-    content:
-      style: "$nav"
-      wrap: false
-      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+    bounds: [100, 456, 760, 30]
+    content: { style: "$takeaway", align: [center, middle], wrap: false, text: 高速时长占比、车速均值与急加速时长位列权重前三 }
+  - elementId: footer-source
+    elementType: text
+    bounds: [36, 510, 680, 12]
+    content: { style: "$nav", fontSize: 8.2, wrap: false, text: 来源：陈默等（2024），图 9、图 10 与随机森林赋权方法 }
   - elementId: footer-page
     elementType: text
-    bounds: [800, 506, 112, 14]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.5
-      color: "$primary"
-      bold: true
-      align: [right, top]
-      wrap: false
-      text: 07 / 15
+    bounds: [836, 510, 88, 12]
+    content: { style: "$nav", color: "$primary", bold: true, align: [right, top], wrap: false, text: 07 / 15 }

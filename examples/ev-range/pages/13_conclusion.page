@@ -1,273 +1,144 @@
 pageType: content
-background:
-  type: solid
-  color: "$bg"
-notes: |-
-  结论：三条回答分别对应问题、方法与证据。贡献是把驾驶行为从离散标签改写为可赋权的连续因子，
-  并打通数据清洗→特征工程→LSTM→实车验证全流程。下一步做高寒/高原/高温与多车型在线验证。
+background: { type: solid, color: "$bg" }
 elements:
-  - elementId: chapter-bar
+  - elementId: header-marker
     elementType: shape
-    bounds: [0, 0, 960, 56]
+    bounds: [36, 24, 8, 30]
     shapeName: rect
     fill: { type: solid, color: "$primary" }
-  - elementId: chapter-text
+  - elementId: header-title
     elementType: text
-    bounds: [48, 11, 720, 34]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 24
-      color: "#FFFFFF"
-      bold: true
-      align: [left, middle]
-      wrap: false
-      text: '05. 结论 —— 回答与贡献'
-  - elementId: chapter-brand
+    bounds: [54, 22, 680, 34]
+    content: { style: "$pageTitle", wrap: false, text: "05. 结论 —— 回答与贡献" }
+  - elementId: header-brand
     elementType: text
-    bounds: [736, 20, 176, 16]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.8
-      color: "$accent6"
-      align: [right, top]
-      wrap: false
-      text: EV RANGE · 学术报告
-  - elementId: title
-    elementType: text
-    bounds: [48, 70, 864, 34]
-    content:
-      style: "$title"
-      wrap: false
-      text: 驾驶行为量化因子让里程预测从“平均”走向“逐样本”
-  - elementId: subtitle
-    elementType: text
-    bounds: [48, 104, 864, 16]
-    content:
-      style: "$caption"
-      fontSize: 9.6
-      wrap: false
-      text: 三条回答分别对应问题、方法与证据
-  - elementId: answer-1-card
+    bounds: [730, 30, 194, 14]
+    content: { style: "$label", fontSize: 9, align: [right, top], wrap: false, text: EV RANGE · RESEARCH }
+  - elementId: header-rule
     elementType: shape
-    bounds: [48, 132, 280, 212]
-    shapeName: roundRect
-    adjustments: [9000]
-    fill: { type: solid, color: "#FFFFFF" }
-    border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
+    bounds: [36, 66, 888, 2]
+    shapeName: rect
+    fill: { type: solid, color: "$primaryDeep" }
+  - elementId: statement
+    elementType: text
+    bounds: [52, 78, 856, 42]
+    content:
+      style: "$statement"
+      align: [center, middle]
+      text: |-
+        <p>驾驶行为量化因子让里程预测从“平均”走向<span style="color:$danger">“逐样本”</span></p>
   - elementId: answer-1-num
     elementType: text
-    bounds: [66, 148, 60, 28]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 20
-      color: "$primary"
-      bold: true
-      wrap: false
-      text: "01"
-  - elementId: answer-1-title
-    elementType: text
-    bounds: [66, 180, 244, 18]
-    content:
-      style: "$heading"
-      fontSize: 11.5
-      wrap: false
-      text: 问题
+    bounds: [52, 138, 240, 34]
+    content: { style: "$stat", fontSize: 26, wrap: false, text: "01 · 问题" }
   - elementId: answer-1-text
     elementType: text
-    bounds: [66, 204, 244, 66]
-    content:
-      style: "$body"
-      fontSize: 9.8
-      lineHeight: 1.55
-      text: 聚类标签粒度粗、现有预测偏差大；Q 为每个短片段提供连续的驾驶行为标签。
+    bounds: [52, 184, 240, 70]
+    content: { style: "$body", fontSize: 12.5, text: 聚类标签粒度粗、预测偏差大；Q 为每个短片段提供连续的驾驶行为标签。 }
   - elementId: answer-1-stat
     elementType: text
-    bounds: [66, 276, 244, 30]
+    bounds: [52, 268, 250, 32]
     content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 18
-      color: "$primary"
-      bold: true
+      style: "$stat"
+      fontSize: 23
       wrap: false
       text: |-
-        <p><span style="font-size:18px;">3,622</span><span style="font-size:9px;color:$muted;font-family:LXGW Neo XiHei;"> 个驾驶事件</span></p>
+        <p>3,622<span style="font-size:11px;color:$muted"> 个驾驶事件</span></p>
   - elementId: answer-1-ref
     elementType: text
-    bounds: [66, 316, 244, 14]
-    content:
-      style: "$caption"
-      fontSize: 8
-      wrap: false
-      text: → §1 背景 / §2 指标
-  - elementId: answer-2-card
+    bounds: [52, 312, 240, 16]
+    content: { style: "$caption", wrap: false, text: 证据指针 → §1 背景 / §2 指标 }
+  - elementId: answer-sep-1
     elementType: shape
-    bounds: [344, 132, 280, 212]
-    shapeName: roundRect
-    adjustments: [9000]
-    fill: { type: solid, color: "$primarySoft" }
-    border: { style: solid, width: 1, color: "$primaryTint" }
+    bounds: [318, 138, 1, 190]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
   - elementId: answer-2-num
     elementType: text
-    bounds: [362, 148, 60, 28]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 20
-      color: "$primary"
-      bold: true
-      wrap: false
-      text: "02"
-  - elementId: answer-2-title
-    elementType: text
-    bounds: [362, 180, 244, 18]
-    content:
-      style: "$heading"
-      fontSize: 11.5
-      wrap: false
-      text: 方法
+    bounds: [352, 138, 240, 34]
+    content: { style: "$stat", fontSize: 26, wrap: false, text: "02 · 方法" }
   - elementId: answer-2-text
     elementType: text
-    bounds: [362, 204, 244, 66]
-    content:
-      style: "$body"
-      fontSize: 9.8
-      lineHeight: 1.55
-      text: 7 项指标经随机森林客观赋权；含 Q 的 LSTM 在四车上 RMSE / MAE 最低，优于 SVR / BP / RNN。
+    bounds: [352, 184, 240, 70]
+    content: { style: "$body", fontSize: 12.5, text: 七项指标经随机森林客观赋权；含 Q 的 LSTM 在四车上误差最低。 }
   - elementId: answer-2-stat
     elementType: text
-    bounds: [362, 276, 244, 30]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 16
-      color: "$primary"
-      bold: true
-      wrap: false
-      text: |-
-        <p><span style="font-size:16px;">0.017 → 0.005</span><span style="font-size:9px;color:$muted;font-family:LXGW Neo XiHei;"> RMSE</span></p>
+    bounds: [352, 268, 240, 32]
+    content: { style: "$stat", fontSize: 22, wrap: false, text: 0.017 → 0.005 }
   - elementId: answer-2-ref
     elementType: text
-    bounds: [362, 316, 244, 14]
-    content:
-      style: "$caption"
-      fontSize: 8
-      wrap: false
-      text: → 表 3 / 表 7
-  - elementId: answer-3-card
+    bounds: [352, 312, 240, 16]
+    content: { style: "$caption", wrap: false, text: 证据指针 → 表 3 / 表 7 }
+  - elementId: answer-sep-2
     elementType: shape
-    bounds: [640, 132, 272, 212]
-    shapeName: roundRect
-    adjustments: [9000]
-    fill: { type: solid, color: "#FFFFFF" }
-    border: { style: solid, width: 1, color: "$line" }
-    shadow: { blur: 10, color: "#1F5FBF14", offset: [0, 2] }
+    bounds: [618, 138, 1, 190]
+    shapeName: rect
+    fill: { type: solid, color: "$line" }
   - elementId: answer-3-num
     elementType: text
-    bounds: [658, 148, 60, 28]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 20
-      color: "$primary"
-      bold: true
-      wrap: false
-      text: "03"
-  - elementId: answer-3-title
-    elementType: text
-    bounds: [658, 180, 236, 18]
-    content:
-      style: "$heading"
-      fontSize: 11.5
-      wrap: false
-      text: 证据
+    bounds: [652, 138, 240, 34]
+    content: { style: "$stat", fontSize: 26, wrap: false, text: "03 · 证据" }
   - elementId: answer-3-text
     elementType: text
-    bounds: [658, 204, 236, 66]
-    content:
-      style: "$body"
-      fontSize: 9.8
-      lineHeight: 1.55
-      text: 实车单驾驶事件 R² 全部提升，最高 0.9514 → 0.9953；原车仪表偏差更大。
+    bounds: [652, 184, 240, 70]
+    content: { style: "$body", fontSize: 12.5, text: 实车单驾驶事件 R² 全部提升，优于不含 Q 模型与原车仪表。 }
   - elementId: answer-3-stat
     elementType: text
-    bounds: [658, 276, 236, 30]
-    content:
-      fontFamily: "Source Han Serif CN"
-      fontSize: 18
-      color: "$primary"
-      bold: true
-      wrap: false
-      text: |-
-        <p><span style="font-size:18px;">0.9953</span><span style="font-size:9px;color:$muted;font-family:LXGW Neo XiHei;"> 最高 R²</span></p>
+    bounds: [652, 268, 240, 32]
+    content: { style: "$stat", fontSize: 23, wrap: false, text: 最高 R² 0.9953 }
   - elementId: answer-3-ref
     elementType: text
-    bounds: [658, 316, 236, 14]
-    content:
-      style: "$caption"
-      fontSize: 8
-      wrap: false
-      text: → 表 8 / 图 14
-  - elementId: contribution-card
+    bounds: [652, 312, 240, 16]
+    content: { style: "$caption", wrap: false, text: 证据指针 → 表 8 / 图 14 }
+  - elementId: contribution-frame
     elementType: shape
-    bounds: [48, 360, 864, 92]
-    shapeName: roundRect
-    adjustments: [10000]
-    fill: { type: solid, color: "$primaryDeep" }
-    shadow: { blur: 14, color: "#123B7A33", offset: [0, 3] }
+    bounds: [36, 350, 888, 84]
+    shapeName: rect
+    fill: { type: solid, color: "$primarySoft" }
+    border: { style: solid, width: 1, color: "$primaryTint" }
   - elementId: contribution-label
     elementType: text
-    bounds: [66, 372, 300, 14]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.4
-      color: "$accent6"
-      letterSpacing: 1.8
-      wrap: false
-      text: 贡献 / CONTRIBUTION
+    bounds: [54, 360, 150, 18]
+    content: { style: "$heading", fontSize: 12, wrap: false, text: 贡献 / CONTRIBUTION }
   - elementId: contribution-text
     elementType: text
-    bounds: [66, 388, 828, 34]
+    bounds: [214, 358, 688, 42]
     content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 10.6
-      color: "#FFFFFF"
-      lineHeight: 1.5
+      style: "$body"
+      fontSize: 12
       text: 把驾驶行为从离散标签改写为可赋权的连续因子，打通“数据清洗 → 特征工程 → LSTM → 实车验证”全流程，为续驶里程管理与充电规划提供支持。
   - elementId: contribution-boundary
     elementType: text
-    bounds: [66, 426, 828, 18]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.4
-      color: "$accent6"
-      wrap: false
-      text: 边界：单车型、离线数据；外推需更多地区与车型验证。
-  - elementId: next-step
-    elementType: text
-    bounds: [48, 466, 864, 14]
-    content:
-      style: "$caption"
-      fontSize: 8.4
-      wrap: false
-      text: 下一步：高寒 / 高原 / 高温地区车辆适应性优化，更多车型在线验证。
-  - elementId: footer-line
+    bounds: [214, 406, 688, 16]
+    content: { style: "$caption", fontSize: 9, wrap: false, text: 边界：单车型、离线数据；下一步扩展高寒 / 高原 / 高温地区与更多车型在线验证。 }
+  - elementId: takeaway-bar
     elementType: shape
-    bounds: [48, 502, 864, 1]
+    bounds: [36, 452, 888, 40]
     shapeName: rect
-    fill: { type: solid, color: "$line" }
-  - elementId: footer-left
+    fill: { type: solid, color: "$primary" }
+  - elementId: wave-left
+    elementType: line
+    bounds: [50, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 8,7 12,2 17,12 23,5 28,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: wave-right
+    elementType: line
+    bounds: [862, 464, 48, 14]
+    viewBox: [48, 14]
+    points: "0,7 20,7 25,5 31,12 36,2 40,7 48,7"
+    curve: sharp
+    border: { style: solid, width: 1, color: "$accent4" }
+  - elementId: takeaway
     elementType: text
-    bounds: [48, 507, 640, 12]
-    content:
-      style: "$nav"
-      wrap: false
-      text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测 · 《新能源车辆工程学报》
+    bounds: [100, 456, 760, 30]
+    content: { style: "$takeaway", align: [center, middle], wrap: false, text: 问题、方法与证据形成闭环：Q 是可计算、可赋权、可验证的行为特征 }
+  - elementId: footer-source
+    elementType: text
+    bounds: [36, 510, 680, 12]
+    content: { style: "$nav", fontSize: 8.2, wrap: false, text: 结论依据：原文表 3、表 7、表 8 与图 14 }
   - elementId: footer-page
     elementType: text
-    bounds: [800, 506, 112, 14]
-    content:
-      fontFamily: "LXGW Neo XiHei"
-      fontSize: 8.5
-      color: "$primary"
-      bold: true
-      align: [right, top]
-      wrap: false
-      text: 13 / 15
+    bounds: [836, 510, 88, 12]
+    content: { style: "$nav", color: "$primary", bold: true, align: [right, top], wrap: false, text: 13 / 15 }
