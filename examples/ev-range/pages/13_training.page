@@ -28,14 +28,14 @@ elements:
     fill: { type: solid, color: "$line" }
   - elementId: chrome-rule-accent
     elementType: shape
-    bounds: [60, 85, 44, 3]
+    bounds: [60, 87, 44, 1]
     shapeName: rect
     fill: { type: solid, color: "$accent" }
   - elementId: setup-label
     elementType: text
     bounds: [60, 106, 320, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$accent"
       wrap: false
@@ -57,7 +57,7 @@ elements:
     elementType: text
     bounds: [60, 240, 320, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$accent"
       wrap: false
@@ -79,7 +79,7 @@ elements:
     elementType: text
     bounds: [60, 338, 320, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$accent"
       wrap: false
@@ -117,31 +117,31 @@ elements:
       - - text: 1号
         - text: "0.024"
         - text: |
-            <p><span style="color:$accent;font-weight:bold;">0.017</span></p>
+            <p><span style="color:$primary;font-weight:bold;">0.017</span></p>
         - text: "0.021"
         - text: |
-            <p><span style="color:$accent;font-weight:bold;">0.013</span></p>
+            <p><span style="color:$primary;font-weight:bold;">0.013</span></p>
       - - text: 2号
         - text: "0.017"
         - text: |
-            <p><span style="color:$accent;font-weight:bold;">0.005</span></p>
+            <p><span style="color:$primary;font-weight:bold;">0.005</span></p>
         - text: "0.016"
         - text: |
-            <p><span style="color:$accent;font-weight:bold;">0.007</span></p>
+            <p><span style="color:$primary;font-weight:bold;">0.007</span></p>
       - - text: 3号
         - text: "0.014"
         - text: |
-            <p><span style="color:$accent;font-weight:bold;">0.011</span></p>
+            <p><span style="color:$primary;font-weight:bold;">0.011</span></p>
         - text: "0.010"
         - text: |
-            <p><span style="color:$accent;font-weight:bold;">0.008</span></p>
+            <p><span style="color:$primary;font-weight:bold;">0.008</span></p>
       - - text: 4号
         - text: "0.017"
         - text: |
-            <p><span style="color:$accent;font-weight:bold;">0.014</span></p>
+            <p><span style="color:$primary;font-weight:bold;">0.014</span></p>
         - text: "0.014"
         - text: |
-            <p><span style="color:$accent;font-weight:bold;">0.012</span></p>
+            <p><span style="color:$primary;font-weight:bold;">0.012</span></p>
   - elementId: table7-note
     elementType: text
     bounds: [420, 412, 480, 72]
@@ -167,9 +167,9 @@ elements:
     elementType: text
     bounds: [856, 512, 44, 18]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 11
-      color: "$text"
+      color: "$primary"
       align: [right, top]
       wrap: false
       text: "13"

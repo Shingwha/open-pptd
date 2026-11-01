@@ -27,25 +27,25 @@ elements:
     fill: { type: solid, color: "$line" }
   - elementId: chrome-rule-accent
     elementType: shape
-    bounds: [60, 85, 44, 3]
+    bounds: [60, 87, 44, 1]
     shapeName: rect
     fill: { type: solid, color: "$accent" }
   - elementId: toc-num1
     elementType: text
     bounds: [60, 124, 80, 30]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 22
-      color: "$accent"
+      color: "$primary"
       wrap: false
       text: "01"
   - elementId: toc-title1
     elementType: text
     bounds: [150, 124, 500, 26]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 16
-      color: "$text"
+      color: "$primary"
       wrap: false
       text: 数据采集与处理
   - elementId: toc-desc1
@@ -65,18 +65,18 @@ elements:
     elementType: text
     bounds: [60, 216, 80, 30]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 22
-      color: "$accent"
+      color: "$primary"
       wrap: false
       text: "02"
   - elementId: toc-title2
     elementType: text
     bounds: [150, 216, 560, 26]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 16
-      color: "$text"
+      color: "$primary"
       wrap: false
       text: 特征工程：驾驶行为量化因子
   - elementId: toc-desc2
@@ -96,18 +96,18 @@ elements:
     elementType: text
     bounds: [60, 308, 80, 30]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 22
-      color: "$accent"
+      color: "$primary"
       wrap: false
       text: "03"
   - elementId: toc-title3
     elementType: text
     bounds: [150, 308, 560, 26]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 16
-      color: "$text"
+      color: "$primary"
       wrap: false
       text: LSTM 剩余续驶里程预测模型
   - elementId: toc-desc3
@@ -127,18 +127,18 @@ elements:
     elementType: text
     bounds: [60, 400, 80, 30]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 22
-      color: "$accent"
+      color: "$primary"
       wrap: false
       text: "04"
   - elementId: toc-title4
     elementType: text
     bounds: [150, 400, 560, 26]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 16
-      color: "$text"
+      color: "$primary"
       wrap: false
       text: 实车验证与结论
   - elementId: toc-desc4
@@ -165,9 +165,9 @@ elements:
     elementType: text
     bounds: [856, 512, 44, 18]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 11
-      color: "$text"
+      color: "$primary"
       align: [right, top]
       wrap: false
       text: "03"
