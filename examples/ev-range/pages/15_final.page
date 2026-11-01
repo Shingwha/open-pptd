@@ -4,9 +4,9 @@ background:
   gradientType: linear
   angle: 135
   stops:
-    - { position: 0, color: "#0E2E5F" }
-    - { position: 0.55, color: "#1F5FBF" }
-    - { position: 1, color: "#3E7BD6" }
+    - { position: 0, color: "$primaryDeep" }
+    - { position: 0.55, color: "$primary" }
+    - { position: 1, color: "$accent3" }
 notes: |-
   收尾：回到封面同一套视觉，用结论式标题收束；保留通讯作者与基金信息，进入讨论与提问。
 elements:

@@ -19,7 +19,6 @@ import {
   parseFontResources,
   removeColorToken,
   resolveColor,
-  setColorToken,
 } from "../../packages/model/index.js";
 
 // Constants
@@ -63,6 +62,7 @@ export function createDesignPanel(ui) {
   let activeTab = "colors";
   let ac = null;
   let tokenTx = false;
+  let thumbTimer = 0; // 取色器拖动时的缩略图 debounce（约 100ms）
 
   let fonts = { list: [], api: false, loaded: false, loading: null };
   let fontQuery = "";
@@ -89,6 +89,7 @@ export function createDesignPanel(ui) {
 
   /** Close and remove the panel DOM (idempotent; used by createEditor destroy). */
   function closeDesignPanel() {
+    clearThumbTimer();
     endTokenTx();
     ac?.abort();
     ac = null;
@@ -107,6 +108,7 @@ export function createDesignPanel(ui) {
   }
 
   function close() {
+    clearThumbTimer();
     endTokenTx();
     if (panel) {
       panel.hidden = true;
@@ -159,11 +161,25 @@ export function createDesignPanel(ui) {
     document.body.append(mask, panel);
 
     ac = new AbortController();
+    // 主题变化的实例级广播：设计面板自己发起的颜色写入（origin:"design"）跳过重建，
+    // 否则拖动取色器时会被整块 DOM 重建打断；撤销/重做/重新加载则重建当前 tab。
+    ui.events?.addEventListener?.("themechange", onThemeChange, { signal: ac.signal });
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape" || !panel || panel.hidden) return;
       if (!ui.isActive()) return;
       close();
     }, { signal: ac.signal });
+  }
+
+  /** themechange 订阅：design 写入跳过（避免拖动中重建 DOM），事务中只同步色块，其余重建。 */
+  function onThemeChange(e) {
+    if (!panel || panel.hidden) return;
+    if (e.detail?.origin === "design") return;
+    if (tokenTx) {
+      syncColorRows();
+      return;
+    }
+    renderBody(); // scrollTop 由 renderBody 保留
   }
 
   function setActiveTab(tab) {
@@ -231,23 +247,16 @@ export function createDesignPanel(ui) {
   // Color helpers
   /**
    * Write one color token into deck.theme.colors (caller owns the history transaction).
-   * Text/table styles are never touched: loader.applyColors only replaces theme.colors.
+   * Text/table styles are never touched: api.setThemeColor → loader.applyColors only
+   * replaces theme.colors. Invalid values raise ThemeError and are alerted here.
    */
   function writeToken(key, value) {
-    let next;
-    // 旧 deck 的 theme 可能是字符串预设：不能传给 setColorToken；
-    // 此时以已解析的 theme（含默认样式）为基底，写回时仍只取 colors。
-    const current = deps.state.deck.theme;
-    const base = current && typeof current === "object" && !Array.isArray(current)
-      ? current
-      : deps.state.theme;
     try {
-      next = setColorToken(base, key, value);
+      deps.api.setThemeColor(key, value);
     } catch (err) {
       ui.dialogs.alert(err.message);
       return false;
     }
-    deps.io.applyColors(next.colors);
     return true;
   }
 
@@ -258,9 +267,26 @@ export function createDesignPanel(ui) {
   }
 
   function endTokenTx() {
+    clearThumbTimer();
     if (!tokenTx) return;
     tokenTx = false;
     deps.api.endChange({ thumbs: "all" }); // color token write: theme-level, all thumbnails
+  }
+
+  /** 取消待执行的缩略图刷新（提交/关闭时调用）。 */
+  function clearThumbTimer() {
+    if (!thumbTimer) return;
+    clearTimeout(thumbTimer);
+    thumbTimer = 0;
+  }
+
+  /** 取色器 input：画布实时，缩略图 debounce ~100ms（拖动结束由 change 全量提交）。 */
+  function scheduleThumbRefresh() {
+    clearThumbTimer();
+    thumbTimer = setTimeout(() => {
+      thumbTimer = 0;
+      deps?.api?.refreshThumbnails?.();
+    }, 100);
   }
 
   // Render dispatcher
@@ -341,10 +367,13 @@ export function createDesignPanel(ui) {
     picker.addEventListener("pointerdown", () => endTokenTx(), { signal: ac.signal });
     picker.addEventListener("input", () => {
       beginTokenTx();
-      if (writeToken(tok.key, picker.value)) paint();
+      if (writeToken(tok.key, picker.value)) {
+        paint(); // canvas is live (api.setThemeColor repaints); thumbnails debounce
+        scheduleThumbRefresh();
+      }
     }, { signal: ac.signal });
     picker.addEventListener("change", () => {
-      endTokenTx();
+      endTokenTx(); // commit one history entry + full thumbnail rebuild
       syncColorRows();
     }, { signal: ac.signal });
     hex.addEventListener("change", () => {
@@ -376,14 +405,20 @@ export function createDesignPanel(ui) {
     return row;
   }
 
-  /** 只同步颜色行的色块（3.2 无主题卡/当前主题标签）。 */
+  /** 只同步颜色行的色块与 hex 文本（不重建 DOM；撤销/重做时保持拖动不中断）。 */
   function syncColorRows() {
     if (!bodyEl || activeTab !== "colors") return;
     for (const row of bodyEl.querySelectorAll(".design-token")) {
       const key = row.dataset.token;
+      const raw = deps.state.theme?.colors?.[key] || "";
       const resolved = resolveColor(deps.state.theme, deps.state.theme?.colors?.[key]);
       const sw = row.querySelector(".design-token-swatch");
       if (sw) sw.style.background = resolved || "transparent";
+      const hex = row.querySelector(".design-token-hex");
+      if (hex && hex !== document.activeElement) hex.value = raw;
+      const picker = row.querySelector(".design-token-picker");
+      const h6 = toHex6(resolved);
+      if (picker && h6 && picker !== document.activeElement) picker.value = h6;
     }
   }
 
@@ -399,7 +434,7 @@ export function createDesignPanel(ui) {
       return;
     }
     beginTokenTx();
-    deps.io.applyColors(report.theme.colors);
+    deps.api.setThemeColors(report.theme.colors, { origin: "design" });
     endTokenTx();
     ui.toast.show(`已删除颜色 $${key}`, "info");
     renderBody();

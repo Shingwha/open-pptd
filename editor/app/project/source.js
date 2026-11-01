@@ -312,6 +312,7 @@ export function applyDeck(deckData, ctx) {
   setBrandFile(handle ? projectName : manifestPath);
   // 主题：直接解析 deck.theme（3.2 不再迁移/规范化旧主题结构，colors 编辑由 loader.applyColors 负责）
   state.theme = resolveTheme(state.deck);
+  state.themeRevision = (state.themeRevision || 0) + 1; // 新项目/重载：缩略图全量重画
   state.currentPage = 0;
   ops.clearSelection();
   state.history = createHistory();

@@ -1,5 +1,18 @@
 # Changelog
 
+## 未发布 · 3.2
+
+主题库下线（breaking）：颜色编辑保留，主题切换能力删除。
+
+- 删除主题库/主题切换、内置主题与“我的主题”、`/api/themes`、`assets themes`、
+  `build --theme`、服务端 theme store；不再产生 `ERR_THEME_NOT_FOUND`。
+- deck theme 仍是标准 `{colors, textStyles, tableStyles}`；不迁移旧 deck（字符串 theme 仅警告并回退默认）；
+  编辑器颜色编辑只写 `colors`，永不改动 `textStyles` / `tableStyles`。
+- Design 面板保留颜色令牌编辑；修复颜色变更后缩略图不失效的问题（`themeRevision` 驱动全量重画，
+  撤销/重做同步画布、全部缩略图与面板）；取色器拖动时画布实时、缩略图约 100ms debounce，松手一步历史。
+- EV 示例封面/尾页渐变改为 `$primaryDeep` / `$primary` / `$accent3` token；EV golden rebaseline。
+- CLI：`assets` 只剩 fonts / icons / skill；`build --theme` 显式报错“已移除”（`ERR_INVALID_OPTION`）。
+
 ## 3.0.0（开发中）
 
 破坏性接口收口：契约 3.0 + CLI 5 命令 + 最小编辑器 + skill 入主仓。零 npm 依赖、零构建保持不变；

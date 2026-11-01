@@ -23,6 +23,9 @@ export function createEditorState() {
   const state = {
     deck: null,
     theme: null,
+    // 已解析主题的版本号：每次 theme 变化 +1。view.render 用它决定是否强制全量重画缩略图
+    // （颜色/样式变化会影响所有页），调用方不必记得传 thumbs:"all"。
+    themeRevision: 0,
     currentPage: 0,
     history: createHistory(),
     selection: new Set(), // selected element ids (multi-select)

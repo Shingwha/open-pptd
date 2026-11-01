@@ -11,12 +11,24 @@ import { resolveTheme, syncElementId } from "../../../packages/model/index.js";
 
 export function createLoader({ state, view, ops, images, fontManager, source, ui, connect, renderStatusBar, onDeckChange, onError }) {
   const { dom, toast, dialogs } = ui;
+  /** 主题签名：只比较 colors/textStyles/tableStyles（字体资源等不影响颜色失效语义）。 */
+  function themeSignature(theme) {
+    const t = theme && typeof theme === "object" ? theme : {};
+    return JSON.stringify([t.colors || {}, t.textStyles || {}, t.tableStyles || {}]);
+  }
+
+  /** 主题变化 +1 并广播：view 依据 revision 自动全量重画缩略图，面板据此同步。 */
+  function bumpThemeRevision(origin) {
+    state.themeRevision = (state.themeRevision || 0) + 1;
+    ui.events?.dispatchEvent?.(new CustomEvent("themechange", { detail: { origin } }));
+  }
+
   // Theme and state application
   /**
    * 颜色编辑的唯一写入点：只替换 theme.colors，textStyles / tableStyles 原样保留。
    * 3.2 起前端不再提供主题/样式切换，字体与表格样式由 deck 作者（AI/文件）维护。
    */
-  function applyColors(colors) {
+  function applyColors(colors, { origin = "editor" } = {}) {
     // 旧 deck 可能把 theme 写成字符串（2.x 预设）：它不是对象，不能参与展开，
     // 否则会产生数字键污染。颜色写入统一收敛为标准的 {colors} 对象。
     const current = state.deck.theme;
@@ -27,13 +39,18 @@ export function createLoader({ state, view, ops, images, fontManager, source, ui
     };
     // A deck-level font declaration overrides the theme font (otherwise the theme default, e.g. Microsoft YaHei)
     state.theme = resolveTheme(state.deck);
+    bumpThemeRevision(origin);
   }
 
   /** Apply an undo/redo snapshot to the current state. */
   function applyHistory(deckSnapshot) {
     if (!deckSnapshot) return;
+    const previous = state.theme;
     ops.replaceDeck(deckSnapshot);
-    state.theme = resolveTheme(state.deck);
+    const next = resolveTheme(state.deck);
+    const changed = themeSignature(previous) !== themeSignature(next);
+    state.theme = next;
+    if (changed) bumpThemeRevision("history");
     if (state.currentPage >= state.deck.pages.length) state.currentPage = state.deck.pages.length - 1;
     ops.clearSelection();
     // Undo/redo lands: mark dirty first, then the render hook equality-compares against the saved baseline
@@ -91,6 +108,8 @@ export function createLoader({ state, view, ops, images, fontManager, source, ui
       { manifestText, pageFiles, manifestPath, handle, projectName, revision },
       { state, ops, images, renderStatusBar, setBrandFile }
     );
+    // 重新加载/切换项目：面板若开着需要重建颜色行（初次加载面板未创建，无副作用）
+    ui.events?.dispatchEvent?.(new CustomEvent("themechange", { detail: { origin: "load" } }));
     try {
       onDeckChange?.(state.deck);
     } catch (err) {

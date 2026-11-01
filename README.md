@@ -34,7 +34,7 @@ This installs into `~/.open-pptd` and adds a user-level PATH entry (no admin nee
 open-pptd open <project-dir> --detach --json   # editor in the browser, edits refresh live
 open-pptd build <project-dir>/deck.pptd --format pptx
 open-pptd check <project-dir>/deck.pptd        # read-only validation
-open-pptd assets list                          # fonts / icons / themes
+open-pptd assets list                          # fonts / icons
 open-pptd doctor                               # environment self-check
 ```
 
@@ -63,10 +63,10 @@ The AI delivers **two things**: an editable PPTD project directory (manifest + p
 ## What it does
 
 - **PPTD, not a black box** — the AI writes a human-readable YAML project (manifest + pages + media) you can edit by hand; `open` shows every page as it is written.
-- **Minimal web editor** — text/table/chart content editing, drag/resize with alignment guides, multi-select, page insert/delete/reorder, and a Design panel for themes, color tokens, fonts and light/dark.
+- **Minimal web editor** — text/table/chart content editing, drag/resize with alignment guides, multi-select, page insert/delete/reorder, and a Design panel for color tokens, fonts and light/dark.
 - **Native PPTX + PNG** — native, editable PowerPoint (fade transitions), per-page PNG, and a project bundle. Preview and PNG share one layout/paint pipeline; minor typographic differences from the browser are expected.
 - **Charts, shapes, icons, formulas** — 13 chart types with a data grid, 187 preset shapes + custom paths, ~2000 Font Awesome icons, LaTeX formula mixing.
-- **Themes and fonts** — built-in theme and font libraries, subset/full font embedding with a pre-export health check (`build --fetch` completes missing fonts).
+- **Fonts** — font library, subset/full font embedding with a pre-export health check (`build --fetch` completes missing fonts).
 - **6 kits for the AI** — academic, business-review, consulting-report, brand-proposal, lecture, poster.
 
 ## Upgrading from 2.x

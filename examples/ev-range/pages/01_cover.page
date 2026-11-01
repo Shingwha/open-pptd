@@ -4,9 +4,9 @@ background:
   gradientType: linear
   angle: 135
   stops:
-    - { position: 0, color: "#0E2E5F" }
-    - { position: 0.55, color: "#1F5FBF" }
-    - { position: 1, color: "#3E7BD6" }
+    - { position: 0, color: "$primaryDeep" }
+    - { position: 0.55, color: "$primary" }
+    - { position: 1, color: "$accent3" }
 notes: |-
   封面：深蓝渐变底、白色思源宋体大标题、白色描边胶囊标签。
   报告论文发表于《新能源车辆工程学报》，研究聚焦"用量化因子代替聚类标签刻画驾驶行为，

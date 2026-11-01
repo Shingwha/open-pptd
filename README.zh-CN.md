@@ -34,7 +34,7 @@ curl -fsSL https://raw.githubusercontent.com/Shingwha/open-pptd/main/install.sh 
 open-pptd open <项目目录> --detach --json   # 浏览器打开编辑器，改文件实时刷新
 open-pptd build <项目目录>/deck.pptd --format pptx
 open-pptd check <项目目录>/deck.pptd        # 只读体检
-open-pptd assets list                       # 字体 / 图标 / 主题
+open-pptd assets list                       # 字体 / 图标
 open-pptd doctor                            # 环境自检
 ```
 
@@ -63,10 +63,10 @@ AI 会交付**两样东西**：可编辑的 PPTD 项目目录（manifest + pages
 ## 能做什么
 
 - **PPTD，不是黑盒** — AI 写出人类可读的 YAML 项目（manifest + pages + media），可手改；`open` 实时展示每一页的生成过程。
-- **最小网页编辑器** — 文字/表格/图表内容编辑，拖动缩放 + 对齐参考线，多选，页面插入/删除/排序，Design 面板管理主题、颜色令牌、字体与深浅色。
+- **最小网页编辑器** — 文字/表格/图表内容编辑，拖动缩放 + 对齐参考线，多选，页面插入/删除/排序，Design 面板管理颜色令牌、字体与深浅色。
 - **原生 PPTX + PNG** — 原生可编辑 PowerPoint（淡入淡出转场）、逐页 PNG、项目包。预览与 PNG 走同一条 layout/paint 管线；与浏览器预览存在轻微字体度量差异属正常。
 - **图表、形状、图标、公式** — 13 种图表 + 数据网格，187 种预置形状 + 自定义路径，约 2000 个 Font Awesome 图标，LaTeX 公式混排。
-- **主题与字体** — 内置主题/字体库，子集/完整字体嵌入与导出前体检（`build --fetch` 显式补齐缺失字体）。
+- **字体** — 字体库，子集/完整字体嵌入与导出前体检（`build --fetch` 显式补齐缺失字体）。
 - **给 AI 的 6 个 kit** — academic、business-review、consulting-report、brand-proposal、lecture、poster。
 
 ## 从 2.x 迁移
