@@ -1,19 +1,8 @@
-// ============================================================================
 // runtime/source.js — ProjectSource contract, normalization and the memory source
-// ----------------------------------------------------------------------------
-// ProjectSource (interfaces.md §2):
-//   capabilities: { writable, liveWatch, binary }
-//   read(input?): Promise<ProjectFiles>
-//   write?(files: SourceFile[], opts?: { expectedRevision? }): Promise<number>
-//   readMedia?(path): Promise<Uint8Array|null>
-//   watch?(cb): () => void
-//
-// ProjectFiles: { manifestText, pageFiles: Map, media?: Map, manifestPath?, revision? }
-// SourceFile:   { path, text?, bytes? }
-//
-// The memory source is pure (Map-backed) and is reused by tests and browser
-// hosts. Node disk IO lives in packages/server/runtime-node.js.
-// ============================================================================
+// ProjectSource is the only project read/write seam. The memory source is pure
+// (Map-backed) and reused by tests and browser hosts; Node disk IO lives in
+// packages/server/runtime-node.js. Writes check expectedRevision before mutating,
+// so external edits are never silently overwritten.
 
 import { assertRevision } from "./errors.js";
 import { basename, dirname } from "./paths.js";

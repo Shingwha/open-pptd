@@ -1,18 +1,9 @@
-// ============================================================================
 // runtime/resolve.js — Deck/Project + ResourceProvider -> ResolvedProject
-// ----------------------------------------------------------------------------
-// Resolves the environment-dependent parts of a project:
-//   theme      — normalizeTheme + deck.fonts merged (model/theme resolveTheme)
-//   imageMap   — every referenced image src -> { bytes, ext } (data URLs decoded)
-//   iconMap    — every referenced iconName -> SVG text (null when missing)
-//   fontStatus — every used font family -> ready/system/fetchable/missing
-// Missing and unsupported resources are collected as diagnostics; nothing here
-// throws for a missing resource (ExportService applies strict/warning policy).
-//
-// ResourceProvider is required: loadProject never touches fonts/images, all IO
-// happens here (interfaces.md §4). The optional themeLibrary hook belongs to W6
-// (ThemeStore) and is deliberately not implemented in this wave.
-// ============================================================================
+// Resolves the environment-dependent parts of a project: theme (normalizeTheme + deck.fonts
+// merged), imageMap (data URLs decoded), iconMap and fontStatus. Missing/unsupported
+// resources are collected as diagnostics; nothing here throws for a missing resource
+// (ExportService applies the strict/warning policy). ResourceProvider is required:
+// loadProject never touches fonts/images, all IO happens here.
 
 import { parseFontResources } from "../model/font.js";
 import { resolveTheme } from "../model/theme.js";
@@ -60,7 +51,7 @@ function allFamilies(deck) {
 
 /**
  * @param {object} input deck model or Project
- * @param {{resources: import("./provider.js").ResourceProvider, themeLibrary?: object}} options
+ * @param {{resources: import("./provider.js").ResourceProvider}} options
  * @returns {Promise<ResolvedProject>}
  */
 export async function resolveProject(input, { resources } = {}) {

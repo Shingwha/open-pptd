@@ -1,10 +1,7 @@
-// ============================================================================
 // runtime/paths.js — environment-free path helpers (internal)
-// ----------------------------------------------------------------------------
-// The runtime package may not import node:path (dual-end, dep-graph enforced),
-// but project paths are slash-separated project-relative strings on both ends.
-// These helpers normalize Windows separators and never touch the filesystem.
-// ============================================================================
+// The runtime package may not import node:path (dual-end, dep-graph enforced), but
+// project paths are slash-separated project-relative strings on both ends. These
+// helpers normalize Windows separators and never touch the filesystem.
 
 /** Backslashes -> slashes (project paths are always stored slash-separated). */
 export function normalizePath(path) {

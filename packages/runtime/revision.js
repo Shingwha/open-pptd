@@ -1,18 +1,9 @@
-// ============================================================================
 // runtime/revision.js — stable project revision (pure JS, no node:crypto)
-// ----------------------------------------------------------------------------
-// ProjectSource.read() returns an opaque revision and ProjectSource.write() checks
-// it (expectedRevision) so external edits are never silently overwritten
-// (interfaces.md §2/§14). The hash must run unchanged in Node and in the browser,
-// hence a hand-written FNV-1a pair instead of crypto.subtle / node:crypto (the
-// latter would make this a dual-end package depend on an environment).
-//
-// Scope: manifest text + every page path/text + every media path/byte digest.
-// Fields are length-prefixed and sorted, so map insertion order never changes the
-// result. Callers that only keep some of these (e.g. an HTTP read that fetches
-// manifest + pages but not media) get a revision over exactly the same subset on
-// both ends (read and save).
-// ============================================================================
+// ProjectSource.read() returns an opaque revision and write() checks it (expectedRevision)
+// so external edits are never silently overwritten. The hash must run unchanged in Node
+// and the browser, hence a hand-written FNV-1a pair instead of crypto.subtle/node:crypto.
+// Scope: manifest text + every page path/text + every media path/byte digest. Fields are
+// length-prefixed and sorted, so map insertion order never changes the result.
 
 const encoder = new TextEncoder();
 

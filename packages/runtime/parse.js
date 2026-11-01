@@ -1,14 +1,8 @@
-// ============================================================================
 // runtime/parse.js — ProjectFiles -> Deck, Project assembly
-// ----------------------------------------------------------------------------
-// parseProject is the single PPTD parse entry for the runtime: it accepts
-// ProjectFiles (or an already assembled Project via .manifestText) and delegates
-// to model/pptd-io (lenient parse, unknown fields kept in `extra`).
-//
-// Project (interfaces.md §4): { manifestName, manifestPath, baseDir?, pageFiles,
-// media?, deck }. The runtime Project additionally keeps manifestText/revision so
-// raw serialization and conflict detection need no second source read.
-// ============================================================================
+// parseProject is the single PPTD parse entry for the runtime: it accepts ProjectFiles
+// (or an assembled Project via .manifestText) and delegates to model/pptd-io (lenient
+// parse, unknown fields kept in `extra`). The runtime Project keeps manifestText and
+// revision so raw serialization and conflict detection need no second source read.
 
 import { parseDeck } from "../model/pptd-io.js";
 import { normalizeProjectFiles } from "./source.js";
