@@ -28,14 +28,14 @@ elements:
     fill: { type: solid, color: "$line" }
   - elementId: chrome-rule-accent
     elementType: shape
-    bounds: [60, 85, 44, 3]
+    bounds: [60, 87, 44, 1]
     shapeName: rect
     fill: { type: solid, color: "$accent" }
   - elementId: why-label
     elementType: text
     bounds: [60, 106, 300, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$accent"
       wrap: false
@@ -57,7 +57,7 @@ elements:
     elementType: text
     bounds: [60, 220, 300, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$accent"
       wrap: false
@@ -88,7 +88,7 @@ elements:
     elementType: text
     bounds: [60, 370, 300, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$accent"
       wrap: false
@@ -143,9 +143,9 @@ elements:
     elementType: text
     bounds: [566, 392, 334, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 11
-      color: "$text"
+      color: "$primary"
       wrap: false
       text: 权重排序（对驱动电机能耗的重要性）
   - elementId: rank-list
@@ -157,9 +157,9 @@ elements:
       color: "$text"
       lineHeight: 1.5
       text: |
-        <p><span style="color:$accent;font-weight:bold;">1</span> 高速时长占比　<span style="color:$accent;font-weight:bold;">2</span> 车速均值　<span style="color:$accent;font-weight:bold;">3</span> 急加速时长</p>
-        <p><span style="color:$accent;font-weight:bold;">4</span> 能量回收占比　<span style="color:$accent;font-weight:bold;">5</span> 加速度均值</p>
-        <p><span style="color:$accent;font-weight:bold;">6</span> 车速标准差　<span style="color:$accent;font-weight:bold;">7</span> 加速度标准差</p>
+        <p><span style="color:$primary;font-weight:bold;">1</span> 高速时长占比　<span style="color:$primary;font-weight:bold;">2</span> 车速均值　<span style="color:$primary;font-weight:bold;">3</span> 急加速时长</p>
+        <p><span style="color:$primary;font-weight:bold;">4</span> 能量回收占比　<span style="color:$primary;font-weight:bold;">5</span> 加速度均值</p>
+        <p><span style="color:$primary;font-weight:bold;">6</span> 车速标准差　<span style="color:$primary;font-weight:bold;">7</span> 加速度标准差</p>
         <p style="margin-top:4px"><span style="color:$muted;">权重越高，指标对能耗影响越大——车辆处于高速状态时电耗较高。</span></p>
   - elementId: chrome-foot-rule
     elementType: shape
@@ -177,9 +177,9 @@ elements:
     elementType: text
     bounds: [856, 512, 44, 18]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 11
-      color: "$text"
+      color: "$primary"
       align: [right, top]
       wrap: false
       text: "09"

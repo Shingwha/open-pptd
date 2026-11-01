@@ -28,14 +28,14 @@ elements:
     fill: { type: solid, color: "$line" }
   - elementId: chrome-rule-accent
     elementType: shape
-    bounds: [60, 85, 44, 3]
+    bounds: [60, 87, 44, 1]
     shapeName: rect
     fill: { type: solid, color: "$accent" }
   - elementId: logic-label
     elementType: text
     bounds: [60, 106, 290, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$accent"
       wrap: false
@@ -57,7 +57,7 @@ elements:
     elementType: text
     bounds: [60, 244, 290, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$accent"
       wrap: false
@@ -79,7 +79,7 @@ elements:
     elementType: text
     bounds: [60, 384, 290, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$accent"
       wrap: false
@@ -168,9 +168,9 @@ elements:
     elementType: text
     bounds: [856, 512, 44, 18]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 11
-      color: "$text"
+      color: "$primary"
       align: [right, top]
       wrap: false
       text: "07"

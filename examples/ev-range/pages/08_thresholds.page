@@ -28,7 +28,7 @@ elements:
     fill: { type: solid, color: "$line" }
   - elementId: chrome-rule-accent
     elementType: shape
-    bounds: [60, 85, 44, 3]
+    bounds: [60, 87, 44, 1]
     shapeName: rect
     fill: { type: solid, color: "$accent" }
   - elementId: fig4-plate
@@ -61,7 +61,7 @@ elements:
     elementType: text
     bounds: [440, 106, 460, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$accent"
       wrap: false
@@ -89,7 +89,7 @@ elements:
         - text: "33.98"
       - - text: 高速状态
         - text: |
-            <p><span style="color:$accent;font-weight:bold;">60.68</span></p>
+            <p><span style="color:$primary;font-weight:bold;">60.68</span></p>
   - elementId: table4-caption
     elementType: text
     bounds: [770, 192, 130, 96]
@@ -107,7 +107,7 @@ elements:
     elementType: text
     bounds: [440, 326, 460, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$accent"
       wrap: false
@@ -145,9 +145,9 @@ elements:
     elementType: text
     bounds: [856, 512, 44, 18]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 11
-      color: "$text"
+      color: "$primary"
       align: [right, top]
       wrap: false
       text: "08"

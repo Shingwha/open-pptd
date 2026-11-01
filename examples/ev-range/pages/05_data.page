@@ -28,14 +28,14 @@ elements:
     fill: { type: solid, color: "$line" }
   - elementId: chrome-rule-accent
     elementType: shape
-    bounds: [60, 85, 44, 3]
+    bounds: [60, 87, 44, 1]
     shapeName: rect
     fill: { type: solid, color: "$accent" }
   - elementId: src-label
     elementType: text
     bounds: [60, 106, 350, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$accent"
       wrap: false
@@ -57,7 +57,7 @@ elements:
     elementType: text
     bounds: [60, 230, 350, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$accent"
       wrap: false
@@ -79,7 +79,7 @@ elements:
     elementType: text
     bounds: [60, 322, 350, 16]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 12
       color: "$accent"
       wrap: false
@@ -101,15 +101,15 @@ elements:
     elementType: text
     bounds: [60, 416, 200, 26]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 20
       color: "$text"
       wrap: false
       text: |
-        <p><span style="color:$accent;">6,845,881</span></p>
+        <p><span style="color:$primary;">6,845,881</span></p>
   - elementId: res-label1
     elementType: text
-    bounds: [60, 444, 200, 12]
+    bounds: [60, 444, 200, 14]
     content:
       style: "$caption"
       wrap: false
@@ -118,15 +118,15 @@ elements:
     elementType: text
     bounds: [250, 416, 160, 26]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 20
       color: "$text"
       wrap: false
       text: |
-        <p><span style="color:$accent;">3,622</span></p>
+        <p><span style="color:$primary;">3,622</span></p>
   - elementId: res-label2
     elementType: text
-    bounds: [250, 444, 160, 12]
+    bounds: [250, 444, 160, 14]
     content:
       style: "$caption"
       wrap: false
@@ -234,9 +234,9 @@ elements:
     elementType: text
     bounds: [856, 512, 44, 18]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 11
-      color: "$text"
+      color: "$primary"
       align: [right, top]
       wrap: false
       text: "05"

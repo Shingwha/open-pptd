@@ -28,14 +28,14 @@ elements:
     fill: { type: solid, color: "$line" }
   - elementId: chrome-rule-accent
     elementType: shape
-    bounds: [60, 85, 44, 3]
+    bounds: [60, 87, 44, 1]
     shapeName: rect
     fill: { type: solid, color: "$accent" }
   - elementId: prob-label
     elementType: text
     bounds: [60, 108, 400, 18]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 13
       color: "$accent"
       wrap: false
@@ -57,7 +57,7 @@ elements:
     elementType: text
     bounds: [60, 226, 400, 18]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 13
       color: "$accent"
       wrap: false
@@ -79,7 +79,7 @@ elements:
     elementType: text
     bounds: [60, 344, 400, 18]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 13
       color: "$accent"
       wrap: false
@@ -96,12 +96,12 @@ elements:
     elementType: text
     bounds: [520, 116, 380, 34]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 28
       color: "$text"
       wrap: false
       text: |
-        <p><span style="color:$accent;">688.7</span> 万辆</p>
+        <p><span style="color:$primary;">688.7</span> 万辆</p>
   - elementId: stat1-label
     elementType: text
     bounds: [520, 154, 380, 14]
@@ -118,12 +118,12 @@ elements:
     elementType: text
     bounds: [520, 196, 380, 34]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 28
       color: "$text"
       wrap: false
       text: |
-        <p><span style="color:$accent;">20,300,600</span> 条</p>
+        <p><span style="color:$primary;">20,300,600</span> 条</p>
   - elementId: stat2-label
     elementType: text
     bounds: [520, 234, 380, 14]
@@ -140,12 +140,12 @@ elements:
     elementType: text
     bounds: [520, 276, 380, 34]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 28
       color: "$text"
       wrap: false
       text: |
-        <p><span style="color:$accent;">3,622</span> 个</p>
+        <p><span style="color:$primary;">3,622</span> 个</p>
   - elementId: stat3-label
     elementType: text
     bounds: [520, 314, 380, 14]
@@ -162,12 +162,12 @@ elements:
     elementType: text
     bounds: [520, 356, 380, 34]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 28
       color: "$text"
       wrap: false
       text: |
-        <p><span style="color:$accent;">0.9953</span></p>
+        <p><span style="color:$primary;">0.9953</span></p>
   - elementId: stat4-label
     elementType: text
     bounds: [520, 394, 380, 14]
@@ -191,9 +191,9 @@ elements:
     elementType: text
     bounds: [856, 512, 44, 18]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 11
-      color: "$text"
+      color: "$primary"
       align: [right, top]
       wrap: false
       text: "02"

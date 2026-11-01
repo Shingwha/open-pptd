@@ -28,25 +28,25 @@ elements:
     fill: { type: solid, color: "$line" }
   - elementId: chrome-rule-accent
     elementType: shape
-    bounds: [60, 85, 44, 3]
+    bounds: [60, 87, 44, 1]
     shapeName: rect
     fill: { type: solid, color: "$accent" }
   - elementId: concl-label
     elementType: text
     bounds: [60, 106, 520, 18]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 14
-      color: "$text"
+      color: "$primary"
       wrap: false
       text: 主要结论
   - elementId: c1-num
     elementType: text
     bounds: [60, 134, 32, 24]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 16
-      color: "$accent"
+      color: "$primary"
       wrap: false
       text: "1"
   - elementId: c1-text
@@ -66,9 +66,9 @@ elements:
     elementType: text
     bounds: [60, 210, 32, 24]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 16
-      color: "$accent"
+      color: "$primary"
       wrap: false
       text: "2"
   - elementId: c2-text
@@ -88,9 +88,9 @@ elements:
     elementType: text
     bounds: [60, 308, 32, 24]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 16
-      color: "$accent"
+      color: "$primary"
       wrap: false
       text: "3"
   - elementId: c3-text
@@ -103,23 +103,23 @@ elements:
         <p>模型在实际应用中具有较高的准确度与泛化性，可为电动汽车续驶里程管理、充电规划等提供有力支持。</p>
   - elementId: v-rule
     elementType: shape
-    bounds: [600, 110, 3, 380]
+    bounds: [600, 110, 1, 380]
     shapeName: rect
-    fill: { type: solid, color: "$accent" }
+    fill: { type: solid, color: "$line" }
   - elementId: out-label
     elementType: text
     bounds: [624, 106, 276, 18]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 14
-      color: "$text"
+      color: "$primary"
       wrap: false
       text: 局限与展望
   - elementId: out-done-label
     elementType: text
     bounds: [624, 134, 276, 14]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 10
       color: "$success"
       letterSpacing: 1
@@ -142,9 +142,9 @@ elements:
     elementType: text
     bounds: [624, 262, 276, 14]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 10
-      color: "$warning"
+      color: "$accent"
       letterSpacing: 1
       wrap: false
       text: 尚待确定
@@ -172,9 +172,9 @@ elements:
     elementType: text
     bounds: [856, 512, 44, 18]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 11
-      color: "$text"
+      color: "$primary"
       align: [right, top]
       wrap: false
       text: "16"

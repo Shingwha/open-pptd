@@ -1,36 +1,16 @@
 pageType: chapter
 background:
   type: solid
-  color: "$primaryDeep"
+  color: "$bg"
 notes: 章节页：进入第三部分——LSTM 剩余续驶里程预测模型。
 elements:
-  - elementId: spine
-    elementType: shape
-    bounds: [0, 0, 10, 540]
-    shapeName: rect
-    fill: { type: solid, color: "$accent" }
-  - elementId: deco-frame
-    elementType: shape
-    bounds: [660, 110, 240, 240]
-    shapeName: rect
-    border: { style: solid, width: 1, color: "#FFFFFF1F" }
-  - elementId: deco-ring
-    elementType: shape
-    bounds: [660, 110, 240, 240]
-    shapeName: ellipse
-    border: { style: solid, width: 1, color: "#FFFFFF1F" }
-  - elementId: deco-dot
-    elementType: shape
-    bounds: [775, 105, 10, 10]
-    shapeName: rect
-    fill: { type: solid, color: "$accent" }
   - elementId: kicker
     elementType: text
     bounds: [60, 60, 700, 16]
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 10
-      color: "#FFFFFF59"
+      color: "$muted"
       letterSpacing: 3
       wrap: false
       text: 基于驾驶行为量化特征的电动汽车剩余续驶里程预测
@@ -38,18 +18,18 @@ elements:
     elementType: text
     bounds: [60, 140, 320, 130]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 100
-      color: "$accent"
+      color: "$primary"
       wrap: false
       text: "03"
   - elementId: title
     elementType: text
     bounds: [60, 292, 800, 46]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 32
-      color: "#FFFFFF"
+      color: "$primary"
       wrap: false
       text: LSTM 剩余续驶里程预测模型
   - elementId: subtitle
@@ -58,32 +38,12 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 14
-      color: "#FFFFFFB3"
+      color: "$muted"
       wrap: false
       text: 如何把 SOC、量化因子与工况信息，变成逐时刻的里程预测？
-  - elementId: tick1
+  - elementId: rule
     elementType: shape
-    bounds: [60, 468, 60, 3]
-    shapeName: rect
-    fill: { type: solid, color: "#FFFFFF33" }
-  - elementId: tick2
-    elementType: shape
-    bounds: [132, 468, 60, 3]
-    shapeName: rect
-    fill: { type: solid, color: "#FFFFFF33" }
-  - elementId: tick3
-    elementType: shape
-    bounds: [204, 468, 60, 3]
-    shapeName: rect
-    fill: { type: solid, color: "$accent" }
-  - elementId: tick4
-    elementType: shape
-    bounds: [276, 468, 60, 3]
-    shapeName: rect
-    fill: { type: solid, color: "#FFFFFF33" }
-  - elementId: deco-end-cap
-    elementType: shape
-    bounds: [350, 467, 5, 5]
+    bounds: [60, 414, 48, 1]
     shapeName: rect
     fill: { type: solid, color: "$accent" }
   - elementId: tick-label
@@ -92,7 +52,7 @@ elements:
     content:
       fontFamily: "LXGW Neo XiHei"
       fontSize: 9
-      color: "#FFFFFF66"
+      color: "$muted"
       letterSpacing: 2
       wrap: false
       text: SECTION 03 / 04

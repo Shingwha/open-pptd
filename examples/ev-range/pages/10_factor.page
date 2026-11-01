@@ -28,25 +28,25 @@ elements:
     fill: { type: solid, color: "$line" }
   - elementId: chrome-rule-accent
     elementType: shape
-    bounds: [60, 85, 44, 3]
+    bounds: [60, 87, 44, 1]
     shapeName: rect
     fill: { type: solid, color: "$accent" }
   - elementId: step1-num
     elementType: text
     bounds: [60, 108, 40, 20]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 14
-      color: "$accent"
+      color: "$primary"
       wrap: false
       text: "01"
   - elementId: step1-title
     elementType: text
     bounds: [104, 108, 280, 20]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 13
-      color: "$text"
+      color: "$primary"
       wrap: false
       text: 趋势反向化
   - elementId: step1-text
@@ -61,18 +61,18 @@ elements:
     elementType: text
     bounds: [60, 194, 40, 20]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 14
-      color: "$accent"
+      color: "$primary"
       wrap: false
       text: "02"
   - elementId: step2-title
     elementType: text
     bounds: [104, 194, 280, 20]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 13
-      color: "$text"
+      color: "$primary"
       wrap: false
       text: 归一化处理
   - elementId: step2-text
@@ -87,18 +87,18 @@ elements:
     elementType: text
     bounds: [60, 280, 40, 20]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 14
-      color: "$accent"
+      color: "$primary"
       wrap: false
       text: "03"
   - elementId: step3-title
     elementType: text
     bounds: [104, 280, 280, 20]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "Source Han Serif CN"
       fontSize: 13
-      color: "$text"
+      color: "$primary"
       wrap: false
       text: 加权求和
   - elementId: step3-formula
@@ -135,14 +135,9 @@ elements:
       style: "$caption"
       text: |
         <p><span style="color:$accent;font-weight:bold;">图 12</span>　不同速度工况下驾驶行为量化因子与驱动电机能耗均值</p>
-  - elementId: concl-bar
-    elementType: shape
-    bounds: [60, 466, 3, 28]
-    shapeName: rect
-    fill: { type: solid, color: "$accent" }
   - elementId: concl-text
     elementType: text
-    bounds: [74, 464, 826, 36]
+    bounds: [60, 464, 840, 36]
     content:
       style: "$body"
       fontSize: 12
@@ -164,9 +159,9 @@ elements:
     elementType: text
     bounds: [856, 512, 44, 18]
     content:
-      fontFamily: "Alimama ShuHeiTi"
+      fontFamily: "LXGW Neo XiHei"
       fontSize: 11
-      color: "$text"
+      color: "$primary"
       align: [right, top]
       wrap: false
       text: "10"
