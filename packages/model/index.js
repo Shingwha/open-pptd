@@ -26,7 +26,7 @@ export {
 export { registerType, getType, allTypes } from "./registry.js";
 export { ELEMENT_TYPES } from "./style-spec.js";
 
-// ---- Theme and colors (theme.js; DEFAULT_THEME/THEME_PALETTES are re-exported by theme.js) ----
+// ---- Theme and colors (theme.js; DEFAULT_THEME is re-exported by theme.js) ----
 export {
   resolveTheme,
   resolveColor,
@@ -37,29 +37,17 @@ export {
   themeChartPalette,
   DEFAULT_THEME,
   DEFAULT_FONT,
-  THEME_PALETTES,
-  mergePaletteColors,
 } from "./theme.js";
 
-// ---- Theme library core (theme-library.js: built-in snapshots, user ThemeStore factory, applyTheme) ----
+// ---- Color tokens (color-tokens.js: standard keys, token list/write/remove, deck reference usage) ----
 export {
-  BUILTIN_THEMES,
-  BUILTIN_THEME_PREFIX,
   STANDARD_COLOR_KEYS,
-  THEME_FILE_VERSION,
   ThemeError,
-  applyTheme,
-  collectThemeReferences,
   colorTokenUsage,
-  createThemeStore,
-  isBuiltinThemeId,
-  isUserThemeId,
-  listBuiltinThemes,
   listColorTokens,
-  normalizeThemeFile,
   removeColorToken,
   setColorToken,
-} from "./theme-library.js";
+} from "./color-tokens.js";
 
 // ---- Font library core (font-library.js: built-in registry + user library factory) ----
 export {
