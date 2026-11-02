@@ -50,7 +50,7 @@ const suites = [
   // Fast and artifact-free — run before the regression suites so interface breakage is visible first.
   ["包级公开契约（contract 3.0）", "node tests/contract/public-api.mjs"],
   ["CLI 命令面（5 命令）", "node tests/cli/surface.mjs"],
-  ["skill 知识包（SKILL/refs/kits）", "node tests/skill/run.mjs"],
+  ["skill 知识包（SKILL/refs/categories）", "node tests/skill/run.mjs"],
   ["文档与发布口径（docs/README）", "node tests/docs/run.mjs"],
   ["依赖方向与环境全局", "node tests/regression/dep-graph.mjs"],
   ["项目运行时（runtime）", "node tests/runtime/run.mjs"],

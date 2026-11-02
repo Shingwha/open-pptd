@@ -185,13 +185,13 @@ function packRuntime() {
   logZip(runtimePath, files.length, files.reduce((s, f) => s + f.data.length, 0));
 }
 
-// 2) Skill knowledge-pack zip: skill/{SKILL.md,README.md,references/**,kits/**}. Top level is
+// 2) Skill knowledge-pack zip: skill/{SKILL.md,README.md,references/**}. Top level is
 // open-pptd/ so unzipping into an agent's skills directory works directly; tests, demos,
 // generated media, and executable scripts never enter this zip.
 function collectSkillFiles() {
   const skillRoot = path.join(ROOT, "skill");
   const allowed = (rel) =>
-    rel === "SKILL.md" || rel === "README.md" || rel.startsWith("references/") || rel.startsWith("kits/");
+    rel === "SKILL.md" || rel === "README.md" || rel.startsWith("references/");
   const listed = execSync("git ls-files --cached --others --exclude-standard -- skill", { cwd: ROOT, encoding: "utf8" })
     .split("\n")
     .map((s) => s.trim())
@@ -201,7 +201,7 @@ function collectSkillFiles() {
     .filter((rel) => existsSync(path.join(skillRoot, rel)))
     .sort();
   if (!listed.length) {
-    console.error("✗ skill 知识包为空（skill/{SKILL.md,README.md,references,kits} 未找到文件）");
+    console.error("✗ skill 知识包为空（skill/{SKILL.md,README.md,references} 未找到文件）");
     process.exit(1);
   }
   return listed.map((rel) => {

@@ -4,7 +4,7 @@
 #   - 任何一步失败都不会发布（坏提交不会进 release）
 #   - 产物: dist/ 全部资产一起上传 —— open-pptd-v<ver>.zip（CLI 运行时，顶层目录
 #     open-pptd/，含 skill/ 知识包）、open-pptd-skill-v<ver>.zip + open-pptd-skill.zip
-#     （技能知识包，顶层目录 open-pptd/，含 SKILL.md + README.md + references/ + kits/；
+#     （技能知识包，顶层目录 open-pptd/，含 SKILL.md + README.md + references/；
 #     稳定名与版本 zip 同字节，供 latest/download 固定链接）、open-pptd-icons-v<ver>.zip、
 #     open-pptd-fonts-v<ver>.zip（后两者以本地工作树实际存在的本体为准，CI 无本体时
 #     自动跳过）、install.ps1/install.sh、SHA256SUMS（覆盖全部 zip，skill 两名两行）

@@ -11,8 +11,8 @@ disable-model-invocation: false
 
 open-pptd turns content into presentations through **PPTD**, a YAML slide DSL.
 Every page is self-contained and editable; there are no master slides to fight.
-This file is the operating procedure. Format details and design depth live in
-`references/`; audience logic lives in the flat `kits/*.md` files.
+This file is the operating procedure. Format, design, and scenario depth live in
+`references/`, read on demand rather than all at once.
 
 ## Deliverables — both, unless the user opts out
 
@@ -40,27 +40,27 @@ If the CLI cannot be installed (no network/Node), say so explicitly. You may
 still author PPTD YAML offline, but preview and export are unavailable; report
 the blocker instead of pretending. Do not invent version requirements.
 
-## Step 2 — Classify the job and choose one kit
+## Step 2 — Classify the job and choose one scenario
 
 Classify first: **create** (from a topic, outline, or reference), **edit** (an
-existing `.pptd` project), or **replicate** (images/PDF → PPTD). Then pick the
-single best kit:
+existing `.pptd` project), or **replicate** (images/PDF → PPTD). Then read
+`references/design.md` and choose the single best scenario:
 
-| Kit | Audience and reader task | System |
+| Scenario | Audience and reader task | Default direction |
 |---|---|---|
-| `kits/academic.md` | Committee, advisor, reviewers; judge problem, method, evidence, contribution | academic |
-| `kits/business-review.md` | Managers, board; grasp period status, drivers, risks, actions | executive |
-| `kits/consulting-report.md` | Decision makers, clients; compare options and commit to a recommendation | executive |
-| `kits/brand-proposal.md` | Brand owner, creative jury; believe the concept and buy the direction | editorial |
-| `kits/lecture.md` | Students, trainees; understand, practise, and apply one idea | instructional |
-| `kits/poster.md` | Poster-hall visitors at 1–2 m; get one claim from a single page | editorial (single page) |
+| `academic-research` | Committee, advisor, reviewers; judge problem, method, evidence, contribution | `consulting-classic` or the category's 科研答辩蓝 |
+| `business-plan` | Customers, partners, investors; believe the value and take action | `editorial` |
+| `management-report` | Managers, board; grasp status, drivers, risks, actions | `consulting-classic` |
+| `analysis-decision` | Decision makers, clients; compare options and commit | `consulting-classic` |
+| `tech-engineering` | Engineers and reviewers; see structure, dependencies, metrics, trade-offs | `swiss-minimal` or `blueprint` |
+| `brand-creative` | Brand owner, creative jury; believe the concept and approve the direction | `editorial` |
+| `education-training` | Students and trainees; understand, practise, apply | `editorial` |
 
-Read the selected `kits/<kit>.md`, its matching section in
-`references/themes.md`, and `references/design.md`. The kit owns narrative and
-evidence; `themes.md` is the single source for palette, typography, density,
-motif, and layout grammar. If the user supplies a template or design system, it
-overrides the visual direction. Mix kits only when the story genuinely changes
-mode, and state the primary kit.
+Read exactly one matching `references/slides_categories/<scenario>.md`.
+Use `references/slides_categories/poster.md` only for a poster, infographic, or
+highly visual single page. A user template, reference, or design system overrides
+the default look. Mix scenarios only when the story genuinely changes mode, and
+state the primary scenario.
 
 ## Step 3 — One round of interview, plan first
 
@@ -68,34 +68,30 @@ Ask once, with a concrete default for every dimension; the user overrides what
 they care about in one reply, and unaddressed items fall back to your stated
 plan. Cover:
 
-1. **Kit and visual direction** — name 2–3 concrete combinations from the
-   matching `references/themes.md` section (system + palette + light mode), not
-   adjectives. For academic work, default to Defense Blue and offer Research
-   Green or Scholar Purple when a choice is useful.
+1. **Scenario and visual direction** — name 2–3 concrete combinations from
+   `design.md` §2 (scenario + visual style + light mode), not adjectives. For an
+   academic defense, 科研答辩蓝 may be the default when it fits the reference.
 2. **Page count and expansion** — user count wins; an outline matches itself;
    otherwise propose a count from the content. Say whether you will expand
    missing material and with what (search, user files, or leave placeholders).
 3. **Sources and citations** — whether every external fact needs a source line
    and whether a references page is required.
 4. **Speaker notes** — always ask; notes are opt-in. Default: no `notes` field.
-5. **Image plan — conditional.** Ask only when **all** of these hold: an
-   image-generation tool actually exists in this session, the page plan needs
-   non-evidence visuals (hero, concept art, texture, transparent objects), and
-   the kit allows it. Default is **no**. Image search is a separate question,
-   also default no. Academic decks default to no generation at all. If the user
-   declines, do not ask again. Read `references/images.md` only when images are
-   actually in scope.
+5. **Image plan — conditional.** Ask only when an image-generation tool exists,
+   the page plan needs non-evidence visuals, and the scenario allows it. Default
+   is **no**. Image search is a separate question, also default no. Academic
+   decks default to no generation at all.
 
 After the interview, state the confirmed plan in one short paragraph: page
-count, kit/system, palette direction, font pairing (≤2 families), density,
-layout direction, and whether notes/images are on. Then start building.
+count, scenario, visual style, palette direction, font pairing (≤2 families),
+type-scale anchors, density, signature motif, layout direction, and whether
+notes/images are on. Then start building.
 
 ## Step 4 — Page map, manifest, live preview
 
-1. List the pages by **reader task**, not by a fixed template: one line per
-   page (purpose + evidence + layout grammar). Choose a suitable grammar from
-   the selected `themes.md` section and adapt its proportions; do not repeat
-   the same composition on consecutive pages.
+1. List pages by **reader task**, not a fixed template: one line per page with
+   purpose + evidence + recipe. Choose a recipe and variant from the selected
+   scenario file; do not repeat the same composition on consecutive pages.
 2. Create the project directory (`pages/`, `media/` if needed).
 3. Write `deck.pptd` with the full page list, theme, and font declarations.
    Missing page files are fine while preview runs.
@@ -124,8 +120,8 @@ point and at least one visual element (chart, figure, diagram, composed shape).
 
 Run `open-pptd build /abs/path/project/deck.pptd --format pptx -o /abs/path/project/deck.pptx`.
 The command runs a full check first: errors block, warnings do not. Relay the
-result faithfully: `embedded`, `skipped`, and `missing` mean what they say. If a
-font was skipped, say so. Do not manually unzip the PPTX to inspect
+result faithfully — `embedded`, `skipped`, and `missing` mean what they say. If
+a font was skipped, say so. Do not manually unzip the PPTX to inspect
 transitions; the writer and engine tests own that.
 
 Deliver absolute links to: the project directory, the manifest, `pages/`,
@@ -136,42 +132,37 @@ restart command. Never leave the user guessing whether the server is running.
 
 - **No fabricated evidence.** Never invent data, citations, cases, results,
   logos, or sources. Mark missing material as a placeholder or assumption.
-- **No full-deck template.** Kits provide narrative and evidence rules;
-  `themes.md` provides adaptable layout grammars. Build the deck's own page
-  order and compositions rather than copying a fixed sequence.
-- **No AI visual clichés.** No card grids as a substitute for hierarchy, no
-  gradients as decoration, no multicolor palettes on one page, no decorative
-  title underlines, no color-bar motifs. See `references/design.md`.
+- **No full-deck template.** Scenario recipes are adaptable page patterns, not a
+  fixed deck to copy. Build the deck's own page order and compositions.
+- **No AI visual clichés.** No card grids as a hierarchy substitute, decorative
+  gradients, multicolor palettes on one page, decorative title underlines, or
+  color-bar motifs. See `references/design.md`.
 - **Native charts for quantitative data.** Never approximate a chart with
   shapes. Shapes are for structure, flow, relationship, and annotation.
-- **One theme per deck, self-contained.** Write the theme into `deck.pptd` and
-  reference tokens with `$key`. Do not reference a preset by string.
-- **Registered font names only** in `deck.fonts` and `fontFamily`. Ask in
-  display names, write registered names. At most two families per deck.
+- **One theme per deck, self-contained.** Write the complete theme into
+  `deck.pptd` and reference tokens with `$key`. Never reference a preset by string.
+- **Registered font names only** in `deck.fonts` and `fontFamily`. Ask in display
+  names, write registered names. At most two families per deck.
 - **Sources, units, captions.** Every external number has a source and period;
-  every figure/table has a caption; every chart has units. See
-  `references/quality.md`.
-- **Images follow `references/images.md`.** Original evidence first; never
-  generate or search for evidence; generated art is expression only.
+  every figure/table has a caption; every chart has units.
+- **Images are evidence first.** Never generate or search for evidence. Generated
+  art is expression only, with consent and provenance.
 - **Speaker notes are opt-in.** No `notes` field unless confirmed.
-- **Do not read engine source by default.** This skill is text; only consult
-  source when a reproducible engine defect blocks the job.
+- **Do not read engine source by default.** This skill is text; consult source
+  only when a reproducible engine defect blocks the job.
 
-## Reference map — read only what the job needs
+## Reference map
 
 | File | Read when |
 |---|---|
-| `references/format.md` | Writing the manifest, page shell, theme, or file layout |
-| `references/elements.md` | Text/rich text, shape, line, image, icon, table fields |
-| `references/charts.md` | Any chart: type choice, `data`/`encode`, export behavior |
-| `references/design.md` | Choosing the system and applying cross-system design rules |
-| `references/themes.md` | After choosing a kit: palette, fonts, density, motif, and layout grammar |
-| `references/quality.md` | Sources, captions, placeholders, pre-export QA checklists |
+| `references/pptd.md` | Writing a manifest, page, element, table, chart, formula, or resource path |
+| `references/design.md` | Choosing scenario, visual style, palette, fonts, icons, density, and shared layout rules |
 | `references/shapes.md` | Choosing a preset shape or its `adjustments` |
-| `references/images.md` | Evidence extraction, generation, search, transparency, wiring |
-| `kits/<kit>.md` | Always after choosing a kit |
+| `references/slides_categories/<scenario>.md` | Exactly one matched scenario, before generating |
+| `references/slides_categories/poster.md` | Poster / infographic / highly visual single page only |
 
 CLI surface (3.0 only): `open`, `build`, `check`, `assets`, `doctor`. The 2.x
 command names are gone — do not look for aliases. Use `open --detach --json`
 for preview, `build --format pptx|png|bundle` for artifacts, `check` read-only,
-`assets` for themes and font/icon libraries, and `doctor` for environment facts.
+`assets` for font/icon libraries and Skill installation, and `doctor` for
+environment facts.

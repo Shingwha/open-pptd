@@ -34,7 +34,7 @@ push tag 后 CI 自动执行：
 | 校验版本 | tag 与 package.json 的 version 必须一致 |
 | 生成公式产物 | `npm run test:fixtures`（`tests/fixtures/formula/mml/` 不入库，KaTeX 本地生成） |
 | 回归测试 | `npm test`（含 `test:docs` 文档门禁与 `test:skill` 技能包回归；与 Deploy Pages 同款守门，任何一步失败都不会发布） |
-| 打包 | `npm run pack` → `dist/`：`open-pptd-v<版本>.zip`（CLI 运行时白名单包，含 `skill/` 知识包）+ `open-pptd-skill-v<版本>.zip` 与稳定别名 `open-pptd-skill.zip`（技能知识包，两者同字节；顶层 `open-pptd/`，含 `SKILL.md`/`README.md`/`references/`/`kits/`，不含测试与媒体）+ `open-pptd-icons-v<版本>.zip` + `open-pptd-fonts-v<版本>.zip`（图标/字体本体仅取本地工作树实际存在的，CI 无本体时自动跳过）+ `install.ps1`/`install.sh`（同步自仓库根）+ `SHA256SUMS`（覆盖全部 zip；skill 版本名与稳定名各一行） |
+| 打包 | `npm run pack` → `dist/`：`open-pptd-v<版本>.zip`（CLI 运行时白名单包，含 `skill/` 知识包）+ `open-pptd-skill-v<版本>.zip` 与稳定别名 `open-pptd-skill.zip`（技能知识包，两者同字节；顶层 `open-pptd/`，含 `SKILL.md`/`README.md`/`references/`（含 `slides_categories/`），不含测试与媒体）+ `open-pptd-icons-v<版本>.zip` + `open-pptd-fonts-v<版本>.zip`（图标/字体本体仅取本地工作树实际存在的，CI 无本体时自动跳过）+ `install.ps1`/`install.sh`（同步自仓库根）+ `SHA256SUMS`（覆盖全部 zip；skill 版本名与稳定名各一行） |
 | 发布 | 创建 GitHub Release 并上传 `dist/*` 全部资产；notes 优先取 tag 注释，未写则 commit 列表自动生成。用户侧安装走仓库根 install 脚本（raw URL 一键安装），Release zip 是离线/手动安装渠道 |
 
 ## 更新说明（Release Notes）
@@ -89,7 +89,7 @@ git tag -a v3.0.0 -F notes.md --cleanup=verbatim
 | 资产 | 内容 |
 |---|---|
 | `open-pptd-v<版本>.zip` | CLI 运行时。白名单单一事实来源是 [`scripts/pack-release.mjs`](../scripts/pack-release.mjs) 顶部的 `WHITELIST`（11 项）：`README.md` / `README.zh-CN.md` / `index.html` / `package.json` / `contract.json` / `bin/` / `packages/` / `editor/` / `skill/` / `assets/fonts/registry.json` / `assets/icons/registry.json` |
-| `open-pptd-skill-v<版本>.zip` | 技能知识包（固定版本）：顶层目录 `open-pptd/`，内容仅 `SKILL.md` / `README.md` / `references/**` / `kits/**`；不含测试、demo、媒体与可执行脚本。可跑 `npm run pack -- --only skill` 单独复验 |
+| `open-pptd-skill-v<版本>.zip` | 技能知识包（固定版本）：顶层目录 `open-pptd/`，内容仅 `SKILL.md` / `README.md` / `references/**`（含 `slides_categories/`）；不含测试、demo、媒体与可执行脚本。可跑 `npm run pack -- --only skill` 单独复验 |
 | `open-pptd-skill.zip` | 技能知识包稳定别名：与同版本 `open-pptd-skill-v<版本>.zip` 同字节副本，默认与 `--only skill` 都产出；用于 `releases/latest/download/open-pptd-skill.zip` 固定链接 |
 | `open-pptd-icons-v<版本>.zip` | 图标本体（`solid/regular/brands/**/*.svg`，不含 registry.json），本机工作树有本体时才产出 |
 | `open-pptd-fonts-v<版本>.zip` | 字体本体（`*.ttf`，不含 registry.json），本机工作树有本体时才产出 |

@@ -4,7 +4,7 @@
 
 **对 AI 说一句话，得到可编辑的 PPT 或海报，导出为原生 PPTX。**
 
-`v3.0.1` · `MIT` · `Node ≥ 18` · `contract 3.0` · 零依赖 · 零构建
+`v3.0.2` · `MIT` · `Node ≥ 18` · `contract 3.0` · 零依赖 · 零构建
 
 [English](README.md) · [线上画廊](https://shingwha.github.io/open-pptd/) · [发布流程](docs/release-workflow.md)
 
@@ -52,7 +52,7 @@ Install or upgrade open-pptd and its Skill on my device. Detect my OS and curren
 # A. CLI 安装（推荐；--force 覆盖已有安装）
 open-pptd assets skill install --dir ~/.claude/skills
 
-# B. Release zip：稳定名（或固定版本 open-pptd-skill-v3.0.1.zip）
+# B. Release zip：稳定名（或固定版本 open-pptd-skill-v3.0.2.zip）
 curl -L -o open-pptd-skill.zip https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-skill.zip
 unzip open-pptd-skill.zip -d <技能目录>
 # PowerShell: Invoke-WebRequest https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-skill.zip -OutFile open-pptd-skill.zip
