@@ -15,7 +15,9 @@
 
 /* <760: one column, icon-only chrome, mini page cards, full-width drawer */
 @media (max-width: 759px) {
-  /* Touch scale: controls one step up */
+  /* Touch scale: controls one step up. Chrome controls opt into icon-only collapse;
+     nested panels (e.g. the guide panel inside the top action strip) keep full
+     controls, so compression never depends on where a panel happens to be mounted. */
   body {
     --control-h: 36px;
     --control-h-sm: 36px;
@@ -24,6 +26,8 @@
     --topbar-h: 52px;
     --thumbbar-h: 72px;
   }
+  body .btn-collapse { width: var(--control-h); padding: 0; }
+  body .btn-collapse .btn-label { display: none; }
 
   /* -- Topbar: brand + undo/redo + file/design (+ present icon); everything
         secondary leaves the chrome -- */
@@ -34,8 +38,6 @@
   body #tb-status,
   body .topbar-divider,
   body .topbar-actions > a.icon-btn { display: none; }
-  body .btn-label { display: none; }
-  body .topbar-actions .btn { width: var(--control-h); padding: 0; }
   body .topbar-actions { gap: 0; }
   body .icon-btn { width: var(--control-h); height: var(--control-h); }
 
@@ -58,7 +60,6 @@
   body .gallery-top-inner { padding: 0 var(--space-4); }
   body .gallery-top-actions { gap: var(--space-1); }
   body .gallery-top-actions .gallery-mode { display: none; }
-  body .gallery-top-actions .btn { width: var(--control-h); padding: 0; }
   body .gallery-guide-panel {
     position: fixed;
     top: calc(var(--gallery-top-h) + var(--space-2));

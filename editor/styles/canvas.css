@@ -210,8 +210,13 @@
   box-shadow: var(--shadow-md);
   transform-origin: center;
   overflow: hidden;
-  touch-action: none;
 }
+
+/* Touch actions follow the interaction capability declared on the stage (preview.js):
+ * a static preview keeps the browser default so the host page scrolls over it; only
+ * a stage that owns gestures (editor / full viewer / interactive embed) disables
+ * native touch handling on the sheet. */
+.stage[data-interactive="true"] .canvas { touch-action: none; }
 
 /* topbar status cluster */
 

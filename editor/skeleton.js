@@ -37,7 +37,7 @@ const ZOOM_GROUP =
 
 /** Present entry (preview topbar / editor topbar). */
 const PRESENT_BUTTON =
-  `<button id="btn-present" class="btn btn-present" title="放映：从当前页开始全屏演示 (F5)">` +
+  `<button id="btn-present" class="btn btn-present btn-collapse" title="放映：从当前页开始全屏演示 (F5)">` +
   `<span class="btn-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 21v-2M8 21h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 8.5v5l4.2-2.5z" fill="currentColor"/></svg></span>` +
   `<span class="btn-label">放映</span>` +
   `</button>`;
@@ -97,11 +97,11 @@ export function editorSkeletonHtml() {
     `<svg viewBox="0 0 24 24"><path d="M16 7l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 11H10a5 5 0 0 0 0 10h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>` +
     `</button>` +
     `<span class="topbar-divider"></span>` +
-    `<button id="btn-file" class="btn" title="文件：新建 / 打开本地项目 / 保存 / 导出（Ctrl+S 可直接保存）">` +
+    `<button id="btn-file" class="btn btn-collapse" title="文件：新建 / 打开本地项目 / 保存 / 导出（Ctrl+S 可直接保存）">` +
     `<span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M3 6a1.5 1.5 0 0 1 1.5-1.5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.2V18a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>` +
     `<span class="btn-label">文件</span>` +
     `</button>` +
-    `<button id="btn-design" class="btn" title="设计：颜色 / 字体 / 外观">` +
+    `<button id="btn-design" class="btn btn-collapse" title="设计：颜色 / 字体 / 外观">` +
     `<span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18h1.6a1.6 1.6 0 0 0 0-3.2H12a1.6 1.6 0 0 1 0-3.2h4.4A4.6 4.6 0 0 0 21 10C21 6.1 17 3 12 3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7.4" cy="10.6" r="1.1" fill="currentColor"/><circle cx="11.8" cy="7.4" r="1.1" fill="currentColor"/><circle cx="16.4" cy="8.6" r="1.1" fill="currentColor"/></svg></span>` +
     `<span class="btn-label">设计</span>` +
     `</button>` +
@@ -182,7 +182,7 @@ export function homeSkeletonHtml() {
     `<div class="gallery-top-actions">` +
     `<div id="gallery-mode" class="gallery-mode" hidden></div>` +
     `<details class="gallery-guide">` +
-    `<summary class="btn" title="安装与使用说明">` +
+    `<summary class="btn btn-collapse" title="安装与使用说明">` +
     `<span class="btn-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v6M12 7.5v.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>` +
     `<span class="btn-label">使用说明</span>` +
     `</summary>` +
@@ -196,7 +196,7 @@ export function homeSkeletonHtml() {
     `</div>` +
     `</div>` +
     `</details>` +
-    `<button id="btn-file" class="btn" title="文件：新建 / 打开本地项目 / 最近打开">` +
+    `<button id="btn-file" class="btn btn-collapse" title="文件：新建 / 打开本地项目 / 最近打开">` +
     `<span class="btn-ic"><svg viewBox="0 0 24 24"><path d="M3 6a1.5 1.5 0 0 1 1.5-1.5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.2V18a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>` +
     `<span class="btn-label">文件</span>` +
     `</button>` +

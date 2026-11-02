@@ -112,6 +112,12 @@ export function createPreviewCore(rootEl, options, { html, chrome, editable }) {
   // the pointer or swallow the host's wheel/page keys. Full viewers keep the
   // interactive chrome; a host embedding a preview may opt in via the internal flag.
   const interactive = options.interactive ?? chrome === "full";
+  // Gesture ownership is an instance capability, not a paint-surface default: a
+  // static preview must leave the host page's native touch scrolling alone. The
+  // stage declares it once for CSS (canvas.css); editors always own gestures,
+  // read-only previews only when interactive.
+  const ownsGestures = editable || interactive;
+  if (ui.dom.stage) ui.dom.stage.dataset.interactive = String(ownsGestures);
   const view = headless
     ? createPageView({ state, container: mount })
     : createView({
