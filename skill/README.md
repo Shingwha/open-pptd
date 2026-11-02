@@ -1,8 +1,8 @@
 # open-pptd skill
 
-This directory is the knowledge pack an AI agent reads to design, write,
-preview, and export presentations with open-pptd. It contains text and YAML
-examples only — no runtime, no executable scripts, no complete deck.
+This directory is the text knowledge pack an AI agent reads to design, write,
+preview, and export presentations with open-pptd. It contains no runtime,
+executable scripts, complete deck, or page-fragment library.
 
 ## Contents
 
@@ -10,9 +10,13 @@ examples only — no runtime, no executable scripts, no complete deck.
 skill/
   SKILL.md          # entry procedure: 6 steps, hard rules, reference map
   README.md         # this file
-  references/       # format, elements, charts, design, quality, shapes, images
-  kits/             # page recipes and single-page fragments by scenario
+  references/       # format, elements, charts, design, themes, quality, shapes, images
+  kits/             # one narrative and evidence contract per scenario
 ```
+
+`references/themes.md` is the single theme entry point for all kits. Each flat
+`kits/<kit>.md` retains only that audience's narrative, page-content, and
+evidence requirements.
 
 ## Requirements
 
@@ -62,15 +66,18 @@ starts a detached preview, fills pages, runs `check`, and exports a PPTX.
 
 ## Maintenance
 
-- `SKILL.md` is the only entry point. Keep it 8–12 KB: procedure and routing,
-  not format details. Push detail into `references/` and `kits/`.
-- `references/format.md`, `elements.md`, `charts.md`, `shapes.md` must track
-  the engine's accepted schema. When the engine changes, update the reference
-  first, then the page recipes and fragments that depend on it.
-- `references/design.md` holds the four visual systems; `quality.md` holds the
-  evidence/QA rules; `images.md` is the only image rule set.
-- `kits/*/fragments/*.page` are real single-page YAML and must keep passing
-  `open-pptd check` and `build --format pptx` when assembled into a temporary
-  project. Run `node tests/skill/run.mjs` from the main repository after edits.
+- `SKILL.md` is the only entry point. Keep it focused on procedure and routing,
+  not format details. Push detail into `references/` and the flat `kits/*.md` files.
+- `references/format.md`, `elements.md`, `charts.md`, and `shapes.md` must track
+  the engine's accepted schema. Update these references when the engine changes.
+- `references/design.md` holds cross-system design rules; `themes.md` holds all
+  theme-specific visual and layout guidance; `quality.md` holds evidence/QA;
+  `images.md` is the only image rule set.
+- Do not recreate per-kit `theme.md`, `pages/`, or `fragments/` directories.
+  Add complex layout guidance as proportional region, alignment, and reading-
+  order instructions in the matching `themes.md` section.
+- Validate edits by generating representative decks and running `open-pptd
+  check` and `build --format pptx`. Run `node tests/skill/run.mjs` from the main
+  repository when that test suite is available.
 - Do not add complete decks, calibration demos, executable scripts, generated
   media, or duplicated format tables to this directory.

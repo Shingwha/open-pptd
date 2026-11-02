@@ -4,7 +4,7 @@
 
 **Say one sentence to your AI — get an editable deck or poster, exported as native PPTX.**
 
-`v3.0.0` · `MIT` · `Node ≥ 18` · `contract 3.0` · zero dependencies · zero build
+`v3.0.1` · `MIT` · `Node ≥ 18` · `contract 3.0` · zero dependencies · zero build
 
 [README.zh-CN.md](README.zh-CN.md) · [Online gallery](https://shingwha.github.io/open-pptd/) · [Release workflow](docs/release-workflow.md)
 
@@ -52,7 +52,7 @@ For a manual Skill-only install, use your agent's skills directory (`~/.claude/s
 # A. CLI install (recommended; --force replaces an existing install)
 open-pptd assets skill install --dir ~/.claude/skills
 
-# B. Release zip: stable latest name (or a pinned open-pptd-skill-v3.0.0.zip)
+# B. Release zip: stable latest name (or a pinned open-pptd-skill-v3.0.1.zip)
 curl -L -o open-pptd-skill.zip https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-skill.zip
 unzip open-pptd-skill.zip -d <skills-dir>
 # PowerShell: Invoke-WebRequest https://github.com/Shingwha/open-pptd/releases/latest/download/open-pptd-skill.zip -OutFile open-pptd-skill.zip

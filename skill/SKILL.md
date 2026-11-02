@@ -12,7 +12,7 @@ disable-model-invocation: false
 open-pptd turns content into presentations through **PPTD**, a YAML slide DSL.
 Every page is self-contained and editable; there are no master slides to fight.
 This file is the operating procedure. Format details and design depth live in
-`references/`, read on demand — never all at once.
+`references/`; audience logic lives in the flat `kits/*.md` files.
 
 ## Deliverables — both, unless the user opts out
 
@@ -48,17 +48,19 @@ single best kit:
 
 | Kit | Audience and reader task | System |
 |---|---|---|
-| `kits/academic` | Committee, advisor, reviewers; judge problem, method, evidence, contribution | academic |
-| `kits/business-review` | Managers, board; grasp period status, drivers, risks, actions | executive |
-| `kits/consulting-report` | Decision makers, clients; compare options and commit to a recommendation | executive |
-| `kits/brand-proposal` | Brand owner, creative jury; believe the concept and buy the direction | editorial |
-| `kits/lecture` | Students, trainees; understand, practise, and apply one idea | instructional |
-| `kits/poster` | Poster-hall visitors at 1–2 m; get one claim from a single page | editorial (single page) |
+| `kits/academic.md` | Committee, advisor, reviewers; judge problem, method, evidence, contribution | academic |
+| `kits/business-review.md` | Managers, board; grasp period status, drivers, risks, actions | executive |
+| `kits/consulting-report.md` | Decision makers, clients; compare options and commit to a recommendation | executive |
+| `kits/brand-proposal.md` | Brand owner, creative jury; believe the concept and buy the direction | editorial |
+| `kits/lecture.md` | Students, trainees; understand, practise, and apply one idea | instructional |
+| `kits/poster.md` | Poster-hall visitors at 1–2 m; get one claim from a single page | editorial (single page) |
 
-Read that kit's `kit.md`, then only the `pages/*.md` recipes needed for this
-deck's page map, plus the matching system section of `references/design.md`.
-If the user supplies a template or design system, it overrides the kit's look.
-Mix kits only when the story genuinely changes mode, and state the primary kit.
+Read the selected `kits/<kit>.md`, its matching section in
+`references/themes.md`, and `references/design.md`. The kit owns narrative and
+evidence; `themes.md` is the single source for palette, typography, density,
+motif, and layout grammar. If the user supplies a template or design system, it
+overrides the visual direction. Mix kits only when the story genuinely changes
+mode, and state the primary kit.
 
 ## Step 3 — One round of interview, plan first
 
@@ -67,7 +69,9 @@ they care about in one reply, and unaddressed items fall back to your stated
 plan. Cover:
 
 1. **Kit and visual direction** — name 2–3 concrete combinations from the
-   kit's `theme.md` (system + palette direction + light mode), not adjectives.
+   matching `references/themes.md` section (system + palette + light mode), not
+   adjectives. For academic work, default to Defense Blue and offer Research
+   Green or Scholar Purple when a choice is useful.
 2. **Page count and expansion** — user count wins; an outline matches itself;
    otherwise propose a count from the content. Say whether you will expand
    missing material and with what (search, user files, or leave placeholders).
@@ -83,14 +87,15 @@ plan. Cover:
    actually in scope.
 
 After the interview, state the confirmed plan in one short paragraph: page
-count, kit/system, palette direction, font pairing (≤2 families), density, and
-whether notes/images are on. Then start building.
+count, kit/system, palette direction, font pairing (≤2 families), density,
+layout direction, and whether notes/images are on. Then start building.
 
 ## Step 4 — Page map, manifest, live preview
 
 1. List the pages by **reader task**, not by a fixed template: one line per
-   page (purpose + evidence + recipe). Choose a recipe and one of its variants
-   per page; do not repeat the same recipe on consecutive pages.
+   page (purpose + evidence + layout grammar). Choose a suitable grammar from
+   the selected `themes.md` section and adapt its proportions; do not repeat
+   the same composition on consecutive pages.
 2. Create the project directory (`pages/`, `media/` if needed).
 3. Write `deck.pptd` with the full page list, theme, and font declarations.
    Missing page files are fine while preview runs.
@@ -119,8 +124,8 @@ point and at least one visual element (chart, figure, diagram, composed shape).
 
 Run `open-pptd build /abs/path/project/deck.pptd --format pptx -o /abs/path/project/deck.pptx`.
 The command runs a full check first: errors block, warnings do not. Relay the
-result faithfully — `embedded`, `skipped`, and `missing` mean what they say. If
-a font was skipped, say so. Do not manually unzip the PPTX to inspect
+result faithfully: `embedded`, `skipped`, and `missing` mean what they say. If a
+font was skipped, say so. Do not manually unzip the PPTX to inspect
 transitions; the writer and engine tests own that.
 
 Deliver absolute links to: the project directory, the manifest, `pages/`,
@@ -131,11 +136,12 @@ restart command. Never leave the user guessing whether the server is running.
 
 - **No fabricated evidence.** Never invent data, citations, cases, results,
   logos, or sources. Mark missing material as a placeholder or assumption.
-- **No full-deck template.** Kits give page recipes and single-page fragments;
-  build the deck's own page order. Do not copy a whole kit as a deck.
-- **No AI visual clichés.** No card grids for hierarchy, no gradients as
-  decoration, no multicolor palettes on one page, no decorative title
-  underlines, no color-bar motifs. See `references/design.md`.
+- **No full-deck template.** Kits provide narrative and evidence rules;
+  `themes.md` provides adaptable layout grammars. Build the deck's own page
+  order and compositions rather than copying a fixed sequence.
+- **No AI visual clichés.** No card grids as a substitute for hierarchy, no
+  gradients as decoration, no multicolor palettes on one page, no decorative
+  title underlines, no color-bar motifs. See `references/design.md`.
 - **Native charts for quantitative data.** Never approximate a chart with
   shapes. Shapes are for structure, flow, relationship, and annotation.
 - **One theme per deck, self-contained.** Write the theme into `deck.pptd` and
@@ -158,17 +164,14 @@ restart command. Never leave the user guessing whether the server is running.
 | `references/format.md` | Writing the manifest, page shell, theme, or file layout |
 | `references/elements.md` | Text/rich text, shape, line, image, icon, table fields |
 | `references/charts.md` | Any chart: type choice, `data`/`encode`, export behavior |
-| `references/design.md` | Choosing the system, grid, type scale, density, chart/table look |
+| `references/design.md` | Choosing the system and applying cross-system design rules |
+| `references/themes.md` | After choosing a kit: palette, fonts, density, motif, and layout grammar |
 | `references/quality.md` | Sources, captions, placeholders, pre-export QA checklists |
 | `references/shapes.md` | Choosing a preset shape or its `adjustments` |
 | `references/images.md` | Evidence extraction, generation, search, transparency, wiring |
-| `kits/README.md` | Kit choice when the table above is not decisive |
-| `kits/<kit>/kit.md` | Always after choosing a kit |
-| `kits/<kit>/theme.md` | Palette/font direction for this deck |
-| `kits/<kit>/pages/<recipe>.md` | Each page type in the page map |
-| `kits/<kit>/fragments/*.page` | Single-page geometry reference to adapt |
+| `kits/<kit>.md` | Always after choosing a kit |
 
 CLI surface (3.0 only): `open`, `build`, `check`, `assets`, `doctor`. The 2.x
 command names are gone — do not look for aliases. Use `open --detach --json`
 for preview, `build --format pptx|png|bundle` for artifacts, `check` read-only,
-`assets` for themes and font/icon libraries, `doctor` for environment facts.
+`assets` for themes and font/icon libraries, and `doctor` for environment facts.

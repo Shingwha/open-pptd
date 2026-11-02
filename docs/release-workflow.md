@@ -118,7 +118,7 @@ npm run pack -- --only skill          # 只产 skill 版本 zip + 稳定别名 +
 |---|---|
 | `node bin/open-pptd.js --help` | 复核 CLI 只有 5 个命令（open/build/check/assets/doctor） |
 | `npm run test:docs` | docs 目录白名单、已删文档/DSH 引用扫描、README 口径、版本一致性 |
-| `npm run test:skill` | SKILL/refs/kits lint + 6 个 kit 的 check/build 回归 + skill zip 条目与 SHA |
+| `npm run test:skill` | SKILL frontmatter、内部链接、拍平 kits 结构与 skill zip 条目/SHA；不写死主题、kit 数量或页面示例 |
 | `npm test` | 全量回归（含上述两项、contract、CLI surface、golden 等） |
 | `npm run pack` | 按白名单产出全部发布资产与 `SHA256SUMS` |
 
